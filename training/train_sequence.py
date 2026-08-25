@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from sklearn.metrics import classification_report, confusion_matrix, top_k_accuracy_score
+from sklearn.metrics import classification_report, confusion_matrix, f1_score, precision_recall_fscore_support, top_k_accuracy_score
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
@@ -55,6 +55,25 @@ def evaluate(model, loader, device):
     return torch.cat(logits).numpy(), torch.cat(targets).numpy()
 
 
+def open_set_predictions(probabilities: np.ndarray, unknown_index: int, confidence: float, margin: float) -> np.ndarray:
+    ranked = np.argsort(probabilities, axis=1)
+    predictions = ranked[:, -1]
+    top = probabilities[np.arange(len(probabilities)), predictions]
+    runner_up = probabilities[np.arange(len(probabilities)), ranked[:, -2]]
+    return np.where((top >= confidence) & ((top - runner_up) >= margin), predictions, unknown_index)
+
+
+def calibrate_open_set(probabilities: np.ndarray, targets: np.ndarray, unknown_index: int) -> tuple[float, float]:
+    best = (0.0, 0.0, -1.0)
+    for confidence in np.linspace(0.25, 0.99, 38):
+        for margin in np.linspace(0.0, 0.90, 19):
+            predictions = open_set_predictions(probabilities, unknown_index, float(confidence), float(margin))
+            score = f1_score(targets, predictions, average="macro", zero_division=0)
+            if score > best[2]:
+                best = (float(confidence), float(margin), float(score))
+    return best[0], best[1]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("index", type=Path)
@@ -62,13 +81,24 @@ def main() -> None:
     parser.add_argument("--sequence-length", type=int, default=48)
     parser.add_argument("--epochs", type=int, default=35)
     parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--unknown-gloss", default="NO_SIGN", help="Explicitly consented non-sign class; never synthesize this label")
+    parser.add_argument("--expected-known-classes", type=int, default=500)
     args = parser.parse_args(); args.output.mkdir(parents=True, exist_ok=True)
 
     torch.manual_seed(42); np.random.seed(42)
     rows = json.loads(args.index.read_text(encoding="utf-8"))
     glosses = sorted({row["gloss"] for row in rows})
     vocabulary = {gloss: index for index, gloss in enumerate(glosses)}
+    if args.unknown_gloss not in vocabulary:
+        raise ValueError(f"Missing required open-set class {args.unknown_gloss!r}. Collect it with explicit consent; do not relabel a sign video.")
+    if len(glosses) != args.expected_known_classes + 1:
+        raise ValueError(f"Expected {args.expected_known_classes} sign classes plus {args.unknown_gloss}, found {len(glosses)} labels")
     datasets = {split: SequenceDataset([row for row in rows if row["split"] == split], vocabulary, args.sequence_length) for split in ["train", "validation", "test"]}
+    if any(not len(dataset) for dataset in datasets.values()):
+        raise ValueError("Train, validation and test splits must all contain examples")
+    unknown_index = vocabulary[args.unknown_gloss]
+    if any(not any(row["gloss"] == args.unknown_gloss for row in rows if row["split"] == split) for split in datasets):
+        raise ValueError(f"{args.unknown_gloss} must have examples in train, validation and test")
     loaders = {split: DataLoader(dataset, batch_size=args.batch_size, shuffle=split == "train") for split, dataset in datasets.items()}
     sample, _, _ = datasets["train"][0]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -87,18 +117,35 @@ def main() -> None:
         validation_loss = loss_fn(torch.tensor(validation_logits), torch.tensor(validation_targets)).item()
         if validation_loss < best_loss:
             best_loss = validation_loss
-            best_state = {key: value.cpu() for key, value in model.state_dict().items()}
+            best_state = {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
 
     model.load_state_dict(best_state); model.to(device)
     test_logits, test_targets = evaluate(model, loaders["test"], device)
     probabilities = torch.softmax(torch.tensor(test_logits), dim=-1).numpy()
-    predictions = probabilities.argmax(-1)
+    validation_probabilities = torch.softmax(torch.tensor(validation_logits), dim=-1).numpy()
+    confidence_threshold, margin_threshold = calibrate_open_set(validation_probabilities, validation_targets, unknown_index)
+    predictions = open_set_predictions(probabilities, unknown_index, confidence_threshold, margin_threshold)
+    unknown_precision, unknown_recall, unknown_f1, unknown_support = precision_recall_fscore_support(
+        test_targets, predictions, labels=[unknown_index], zero_division=0
+    )
+    unknown_mask = test_targets == unknown_index
     metrics = {
-        "classification_report": classification_report(test_targets, predictions, target_names=glosses, output_dict=True, zero_division=0),
+        "classification_report": classification_report(test_targets, predictions, labels=list(range(len(glosses))), target_names=glosses, output_dict=True, zero_division=0),
         "confusion_matrix": confusion_matrix(test_targets, predictions).tolist(),
         "top_1_accuracy": float((predictions == test_targets).mean()),
         "top_5_accuracy": float(top_k_accuracy_score(test_targets, probabilities, k=min(5, len(glosses)), labels=list(range(len(glosses))))),
-        "signer_independent": True,
+        "open_set_gate": {
+            "unknown_gloss": args.unknown_gloss,
+            "confidence_threshold": confidence_threshold,
+            "margin_threshold": margin_threshold,
+            "validation_macro_f1": float(f1_score(validation_targets, open_set_predictions(validation_probabilities, unknown_index, confidence_threshold, margin_threshold), average="macro", zero_division=0)),
+            "test_unknown_precision": float(unknown_precision[0]),
+            "test_unknown_recall": float(unknown_recall[0]),
+            "test_unknown_f1": float(unknown_f1[0]),
+            "test_unknown_support": int(unknown_support[0]),
+            "test_false_accept_rate": float((predictions[unknown_mask] != unknown_index).mean()) if unknown_mask.any() else None,
+        },
+        "signer_independent": "verify from the prepared manifest report before publishing",
     }
     (args.output / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     (args.output / "vocabulary.json").write_text(json.dumps(vocabulary, indent=2), encoding="utf-8")
