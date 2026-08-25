@@ -190,9 +190,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .calibration-heading { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 24px; border-bottom: 1px solid var(--line); }
 .calibration-heading h2 { margin: 4px 0 7px; font-size: clamp(1.35rem, 2.5vw, 2rem); letter-spacing: -.045em; }
 .calibration-heading > div:first-child > p:last-child { max-width: 690px; margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.55; }
-.calibration-progress { flex: 0 0 auto; display: flex; align-items: baseline; gap: 5px; min-width: 126px; padding: 16px 18px; color: var(--brand-dark); background: var(--brand-soft); border-radius: 16px; }
+.calibration-progress { flex: 0 0 auto; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 5px; min-width: 126px; padding: 16px 18px; color: var(--brand-dark); background: var(--brand-soft); border-radius: 16px; }
 .calibration-progress strong { font-size: 1.75rem; letter-spacing: -.05em; }
 .calibration-progress span { font-size: .72rem; font-weight: 750; }
+.calibration-progress small { width: 100%; color: var(--brand-dark); font-size: .64rem; font-weight: 760; }
 .calibration-controls { display: grid; grid-template-columns: minmax(220px, .6fr) minmax(420px, 1.4fr); gap: 14px; padding: 18px 20px 10px; }
 .vocabulary-search { display: flex; align-items: center; gap: 9px; min-height: 48px; padding: 0 14px; color: var(--muted); background: #f7faf8; border: 1px solid var(--line); border-radius: 12px; }
 .vocabulary-search:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(13,107,87,.09); }
@@ -203,6 +204,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .selected-word-card strong { margin-top: 2px; font-size: 1.02rem; }
 .selected-word-card small { margin-top: 3px; color: var(--muted); font-size: .68rem; }
 .selected-word-actions { display: flex; gap: 7px; }
+.custom-word-controls { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 4px 20px 12px; padding: 13px 14px 13px 17px; background: #f7faf8; border: 1px dashed #b7cdc4; border-radius: 14px; }
+.custom-word-label { display: block; color: var(--brand-dark); font-size: .74rem; font-weight: 820; letter-spacing: .04em; text-transform: uppercase; }
+.custom-word-controls p { margin: 4px 0 0; color: var(--muted); font-size: .72rem; line-height: 1.42; }
+.custom-word-input { display: flex; flex: 0 1 420px; align-items: center; gap: 8px; }
+.custom-word-input input { width: 100%; min-width: 0; min-height: 38px; padding: 0 11px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 9px; outline: 0; }
+.custom-word-input input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(13,107,87,.09); }
 .calibration-message { margin: 0 20px 10px; padding: 10px 12px; color: var(--muted); background: #f7faf8; border-radius: 10px; font-size: .76rem; line-height: 1.45; }
 .calibration-message.saved { color: var(--brand-dark); background: var(--brand-soft); }
 .calibration-message.error { color: var(--danger); background: #fff0ed; }
@@ -255,6 +262,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .translator-grid { grid-template-columns: 1fr; }
   .transcript-panel { min-height: 660px; }
   .calibration-controls { grid-template-columns: 1fr; }
+  .custom-word-controls { align-items: stretch; flex-direction: column; }
+  .custom-word-input { flex-basis: auto; }
   .vocabulary-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 
@@ -284,6 +293,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .selected-word-card { align-items: stretch; flex-direction: column; }
   .selected-word-actions { flex-wrap: wrap; }
   .selected-word-actions .button { flex: 1; }
+  .custom-word-input { align-items: stretch; flex-direction: column; }
+  .custom-word-input .button { width: 100%; }
   .vocabulary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); max-height: 340px; }
   .info-page { padding-left: 22px; padding-right: 22px; }
   .info-section { grid-template-columns: 1fr; gap: 16px; }
