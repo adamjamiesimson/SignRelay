@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import {
   DEFAULT_SETTINGS,
-  clearLocalSignBridgeData,
+  clearLocalSignRelayData,
   loadHistory,
   loadSettings,
   saveSession,
@@ -335,7 +335,7 @@ export function TranslatorExperience() {
       const permissionDenied = error instanceof DOMException && (error.name === "NotAllowedError" || error.name === "PermissionDeniedError");
       setCameraState(permissionDenied ? "denied" : "error");
       setCameraMessage(permissionDenied
-        ? "Camera permission was denied. SignBridge cannot analyse video without it."
+        ? "Camera permission was denied. SignRelay cannot analyse video without it."
         : "Camera or vision models could not be started. Check your connection and try again.");
     }
   }, []);
@@ -431,7 +431,7 @@ export function TranslatorExperience() {
   };
 
   const clearAllLocalData = async () => {
-    clearLocalSignBridgeData();
+    clearLocalSignRelayData();
     await clearCalibrationTemplates();
     setEntries([]);
     setHistory([]);
@@ -460,7 +460,7 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <Sparkles size={18} aria-hidden="true" />
-            <p><strong>54-sign research vocabulary:</strong> 4 built-in starter signs plus 50 words that activate after you record personal examples. SignBridge stays silent outside verified matches.</p>
+            <p><strong>54-sign research vocabulary:</strong> 4 built-in starter signs plus 50 words that activate after you record personal examples. SignRelay stays silent outside verified matches.</p>
             <a href="#personal-vocabulary">Teach words</a>
           </div>
 
@@ -643,7 +643,7 @@ export function TranslatorExperience() {
               <div>
                 <p className="panel-kicker">On-device personal recognizer</p>
                 <h2 id="calibration-title">Teach your 50-word ASL pack</h2>
-                <p>Record the complete sign one to three times. SignBridge stores only normalized landmarks on this device—not camera video.</p>
+                <p>Record the complete sign one to three times. SignRelay stores only normalized landmarks on this device—not camera video.</p>
               </div>
               <div className="calibration-progress" aria-label={`${trainedGlosses.size} of 50 personal words active`}>
                 <strong>{trainedGlosses.size}</strong><span>/ 50 active</span>
@@ -722,7 +722,7 @@ export function TranslatorExperience() {
             <p className="eyebrow">Communication, made visible</p>
             <h1 id="hero-title">Sign freely.<br /><span>Be understood.</span></h1>
             <p className="hero-copy">
-              SignBridge translates continuous sign language into text and speech by analysing hand movement, facial expression and body language — locally in your browser.
+              SignRelay translates continuous sign language into text and speech by analysing hand movement, facial expression and body language — locally in your browser.
             </p>
             <div className="hero-actions">
               <button className="button primary" onClick={() => document.getElementById("choose-language")?.scrollIntoView({ behavior: "smooth" })}>

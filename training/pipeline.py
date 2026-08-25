@@ -1,4 +1,4 @@
-"""SignBridge reproducible training pipeline scaffold.
+"""SignRelay reproducible training pipeline scaffold.
 
 This script validates dataset provenance and prepares signer-independent splits.
 Landmark extraction and model training are explicit opt-in stages because their
@@ -108,7 +108,7 @@ def file_sha256(path: Path) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Audit and split a SignBridge dataset manifest")
+    parser = argparse.ArgumentParser(description="Audit and split a SignRelay dataset manifest")
     parser.add_argument("manifest", type=Path)
     parser.add_argument("--approved-license", action="append", default=[], help="Verified licence identifier; repeat as needed")
     parser.add_argument("--output", type=Path, default=Path("artifacts/split-manifest.csv"))

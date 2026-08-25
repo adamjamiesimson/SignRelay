@@ -22,8 +22,8 @@ export type SpeechSettings = {
   showOverlay: boolean;
 };
 
-const SETTINGS_KEY = "signbridge.settings.v1";
-const HISTORY_KEY = "signbridge.history.v1";
+const SETTINGS_KEY = "signrelay.settings.v1";
+const HISTORY_KEY = "signrelay.history.v1";
 
 export const DEFAULT_SETTINGS: SpeechSettings = {
   autoSpeak: false,
@@ -61,7 +61,7 @@ export function saveSession(session: TranscriptSession) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify([session, ...history].slice(0, 8)));
 }
 
-export function clearLocalSignBridgeData() {
+export function clearLocalSignRelayData() {
   localStorage.removeItem(SETTINGS_KEY);
   localStorage.removeItem(HISTORY_KEY);
 }

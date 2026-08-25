@@ -2,9 +2,9 @@ import Link from "next/link";
 
 export function Brand() {
   return (
-    <Link className="brand" href="/" aria-label="SignBridge home">
+    <Link className="brand" href="/" aria-label="SignRelay home">
       <span className="brand-mark" aria-hidden="true">S</span>
-      <span>SignBridge</span>
+      <span>SignRelay</span>
     </Link>
   );
 }
@@ -29,7 +29,7 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      <span>SignBridge · Private by default · Research preview</span>
+      <span>SignRelay · Private by default · Research preview</span>
       <nav aria-label="Footer navigation">
         <Link href="/privacy">Privacy</Link>
         <Link href="/about">About</Link>

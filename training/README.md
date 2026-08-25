@@ -1,4 +1,4 @@
-# SignBridge training pipeline
+# SignRelay training pipeline
 
 The training path is designed for repeatability and licence traceability. It does not download or relabel a dataset automatically.
 

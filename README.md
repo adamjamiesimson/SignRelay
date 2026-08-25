@@ -1,6 +1,6 @@
-# SignBridge
+# SignRelay
 
-SignBridge is a privacy-first research web application for continuous sign-language recognition. It observes ordered hand, face and upper-body landmarks, evaluates a language-specific temporal adapter, confirms only high-confidence sequences, and can read confirmed text aloud.
+SignRelay is a privacy-first research web application for continuous sign-language recognition. It observes ordered hand, face and upper-body landmarks, evaluates a language-specific temporal adapter, confirms only high-confidence sequences, and can read confirmed text aloud.
 
 This repository is an engineering foundation, not a claim of full sign-language translation.
 

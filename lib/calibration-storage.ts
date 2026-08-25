@@ -1,6 +1,6 @@
 import type { CalibrationTemplate } from "./vision-types";
 
-const DATABASE_NAME = "signbridge-personal-vocabulary";
+const DATABASE_NAME = "signrelay-personal-vocabulary";
 const STORE_NAME = "templates";
 const DATABASE_VERSION = 1;
 const MAX_EXAMPLES_PER_GLOSS = 3;
