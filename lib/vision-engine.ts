@@ -11,7 +11,9 @@ const FACE_CUE_INDICES = [
   334, 362, 374, 386,
 ];
 
-const POSE_CUE_INDICES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+// Retain the complete 33-point MediaPipe pose. The ASL-1000 Pose-TGCN adapter
+// maps the relevant upper-body points to its 13-point OpenPose body contract.
+const POSE_CUE_INDICES = Array.from({ length: 33 }, (_, index) => index);
 
 type EngineParts = {
   gesture: GestureRecognizer;

@@ -3,18 +3,19 @@
 import type { CalibrationTemplate, HandObservation, Point, VisionFrame, WorkerInput, WorkerMessage } from "@/lib/vision-types";
 import { shouldConfirm } from "@/lib/decoder";
 import { recognizePersonalTemplate } from "@/lib/personalized-recognition";
-import { hasAsl100CompletedSignMotion, recognizeAsl100 } from "@/lib/asl100-runtime";
+import { hasAsl100CompletedSignMotion } from "@/lib/asl100-runtime";
+import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
 
-const MAX_FRAMES = 32;
-const CONFIDENCE_THRESHOLD = 0.82;
+const MAX_FRAMES = 40;
+const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
 const frames: VisionFrame[] = [];
 let candidateLabel: string | null = null;
 let candidateStreak = 0;
 let lastConfirmation = { label: "", time: 0 };
 let personalTemplates: CalibrationTemplate[] = [];
-let latestAsl100: Awaited<ReturnType<typeof recognizeAsl100>> = null;
-let pendingAsl100 = false;
+let latestAsl1000: Awaited<ReturnType<typeof recognizeAsl1000>> = null;
+let pendingAsl1000 = false;
 let modelGeneration = 0;
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
@@ -23,6 +24,8 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     frames.length = 0;
     candidateLabel = null;
     candidateStreak = 0;
+    latestAsl1000 = null;
+    modelGeneration += 1;
     return;
   }
 
@@ -30,6 +33,8 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     frames.length = 0;
     candidateLabel = null;
     candidateStreak = 0;
+    latestAsl1000 = null;
+    modelGeneration += 1;
     return;
   }
 
@@ -39,16 +44,16 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (!hasAsl100CompletedSignMotion(frames)) {
     // A classifier always has a mathematical "best" class. Idle or random
     // motion must never turn that arbitrary label into spoken text.
-    latestAsl100 = null;
+    latestAsl1000 = null;
     candidateLabel = null;
     candidateStreak = 0;
     modelGeneration += 1;
-  } else if (frames.length >= 24 && !pendingAsl100 && frames.length % 6 === 0) {
-    pendingAsl100 = true;
+  } else if (frames.length >= 24 && !pendingAsl1000 && frames.length % 6 === 0) {
+    pendingAsl1000 = true;
     const generation = modelGeneration;
-    recognizeAsl100([...frames]).then((prediction) => {
-      if (generation === modelGeneration) latestAsl100 = prediction;
-    }).catch(() => { latestAsl100 = null; }).finally(() => { pendingAsl100 = false; });
+    recognizeAsl1000([...frames]).then((prediction) => {
+      if (generation === modelGeneration) latestAsl1000 = prediction;
+    }).catch(() => { latestAsl1000 = null; }).finally(() => { pendingAsl1000 = false; });
   }
 
   const result = recognize(frames);
@@ -101,7 +106,7 @@ function recognize(sequence: VisionFrame[]) {
     ?? recognizeHello(sequence)
     ?? recognizeThankYou(sequence)
     ?? recognizeYes(sequence)
-    ?? latestAsl100;
+    ?? latestAsl1000;
 }
 
 function recognizeILoveYou(sequence: VisionFrame[]) {

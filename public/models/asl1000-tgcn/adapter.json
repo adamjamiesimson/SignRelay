@@ -1,0 +1,10 @@
+{
+  "language": "ASL",
+  "model": "wlasl1000-pose-tgcn-official-quantised-v1",
+  "input": "50 frames x (13 OpenPose upper-body + 21 left-hand + 21 right-hand) x 2D",
+  "liveAdapter": "MediaPipe 33-point pose and two 21-point hands mapped to the OpenPose 55-node contract",
+  "confidenceThreshold": 0.62,
+  "marginThreshold": 0.22,
+  "segmentation": "Completed-motion gate before closed-set classification",
+  "privacy": "Inference runs locally; model input is landmarks, not uploaded camera video"
+}

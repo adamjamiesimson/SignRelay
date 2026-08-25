@@ -1,0 +1,2748 @@
+{
+  "format": "signrelay-tgcn-v1",
+  "modelVersion": "wlasl1000-pose-tgcn-official-quantised-v1",
+  "language": "ASL",
+  "classes": 1000,
+  "nodes": 55,
+  "sequenceLength": 50,
+  "inputFeatures": 100,
+  "hiddenFeatures": 256,
+  "stages": 24,
+  "layers": [
+    {
+      "inputFeatures": 100,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 0,
+        "length": 25600,
+        "shape": [
+          100,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 25600,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 26624,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 29652,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 29872,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 58032,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 86192,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 151728,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 152752,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 155780,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 156000,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 184160,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 212320,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 277856,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 278880,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 281908,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 282128,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 310288,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 338448,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 403984,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 405008,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 408036,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 408256,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 436416,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 464576,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 530112,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 531136,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 534164,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 534384,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 562544,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 590704,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 656240,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 657264,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 660292,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 660512,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 688672,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 716832,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 782368,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 783392,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 786420,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 786640,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 814800,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 842960,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 908496,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 909520,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 912548,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 912768,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 940928,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 969088,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 1034624,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 1035648,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 1038676,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 1038896,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 1067056,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 1095216,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 1160752,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 1161776,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 1164804,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 1165024,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 1193184,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 1221344,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 1286880,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 1287904,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 1290932,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 1291152,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 1319312,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 1347472,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 1413008,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 1414032,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 1417060,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 1417280,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 1445440,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 1473600,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 1539136,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 1540160,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 1543188,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 1543408,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 1571568,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 1599728,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 1665264,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 1666288,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 1669316,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 1669536,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 1697696,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 1725856,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 1791392,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 1792416,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 1795444,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 1795664,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 1823824,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 1851984,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 1917520,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 1918544,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 1921572,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 1921792,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 1949952,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 1978112,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 2043648,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 2044672,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 2047700,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 2047920,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 2076080,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 2104240,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 2169776,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 2170800,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 2173828,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 2174048,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 2202208,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 2230368,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 2295904,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 2296928,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 2299956,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 2300176,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 2328336,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 2356496,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 2422032,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 2423056,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 2426084,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 2426304,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 2454464,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 2482624,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 2548160,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 2549184,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 2552212,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 2552432,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 2580592,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 2608752,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 2674288,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 2675312,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 2678340,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 2678560,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 2706720,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 2734880,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 2800416,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 2801440,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 2804468,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 2804688,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 2832848,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 2861008,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 2926544,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 2927568,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 2930596,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 2930816,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 2958976,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 2987136,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 3052672,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 3053696,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 3056724,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 3056944,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 3085104,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 3113264,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 3178800,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 3179824,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 3182852,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 3183072,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 3211232,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 3239392,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 3304928,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 3305952,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 3308980,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 3309200,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 3337360,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 3365520,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 3431056,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 3432080,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 3435108,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 3435328,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 3463488,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 3491648,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 3557184,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 3558208,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 3561236,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 3561456,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 3589616,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 3617776,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 3683312,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 3684336,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 3687364,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 3687584,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 3715744,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 3743904,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 3809440,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 3810464,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 3813492,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 3813712,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 3841872,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 3870032,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 3935568,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 3936592,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 3939620,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 3939840,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 3968000,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 3996160,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 4061696,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 4062720,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 4065748,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 4065968,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 4094128,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 4122288,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 4187824,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 4188848,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 4191876,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 4192096,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 4220256,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 4248416,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 4313952,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 4314976,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 4318004,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 4318224,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 4346384,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 4374544,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 4440080,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 4441104,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 4444132,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 4444352,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 4472512,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 4500672,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 4566208,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 4567232,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 4570260,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 4570480,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 4598640,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 4626800,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 4692336,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 4693360,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 4696388,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 4696608,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 4724768,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 4752928,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 4818464,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 4819488,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 4822516,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 4822736,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 4850896,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 4879056,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 4944592,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 4945616,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 4948644,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 4948864,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 4977024,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 5005184,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 5070720,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 5071744,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 5074772,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 5074992,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 5103152,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 5131312,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 5196848,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 5197872,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 5200900,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 5201120,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 5229280,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 5257440,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 5322976,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 5324000,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 5327028,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 5327248,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 5355408,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 5383568,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 5449104,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 5450128,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 5453156,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 5453376,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 5481536,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 5509696,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 5575232,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 5576256,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 5579284,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 5579504,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 5607664,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 5635824,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 5701360,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 5702384,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 5705412,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 5705632,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 5733792,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 5761952,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 5827488,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 5828512,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 5831540,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 5831760,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 5859920,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": false,
+      "weight": {
+        "offset": 5888080,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 5953616,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 5954640,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 5957668,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 5957888,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 5986048,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    },
+    {
+      "inputFeatures": 256,
+      "outputFeatures": 256,
+      "residual": true,
+      "weight": {
+        "offset": 6014208,
+        "length": 65536,
+        "shape": [
+          256,
+          256
+        ],
+        "dtype": "i8"
+      },
+      "weightScales": {
+        "offset": 6079744,
+        "length": 256,
+        "shape": [
+          256
+        ],
+        "dtype": "f32"
+      },
+      "attention": {
+        "offset": 6080768,
+        "length": 3025,
+        "shape": [
+          55,
+          55
+        ],
+        "dtype": "i8"
+      },
+      "attentionScales": {
+        "offset": 6083796,
+        "length": 55,
+        "shape": [
+          55
+        ],
+        "dtype": "f32"
+      },
+      "normalScale": {
+        "offset": 6084016,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      },
+      "normalShift": {
+        "offset": 6112176,
+        "length": 14080,
+        "shape": [
+          14080
+        ],
+        "dtype": "f16"
+      }
+    }
+  ],
+  "classifier": {
+    "inputFeatures": 256,
+    "outputFeatures": 1000,
+    "weight": {
+      "offset": 6140336,
+      "length": 256000,
+      "shape": [
+        1000,
+        256
+      ],
+      "dtype": "i8"
+    },
+    "weightScales": {
+      "offset": 6396336,
+      "length": 1000,
+      "shape": [
+        1000
+      ],
+      "dtype": "f32"
+    },
+    "bias": {
+      "offset": 6400336,
+      "length": 1000,
+      "shape": [
+        1000
+      ],
+      "dtype": "f16"
+    }
+  },
+  "binaryBytes": 6402336,
+  "compressedBytes": 6068069,
+  "binarySha256": "8e244660ed290956f48fc069347fdccdf62b629467cec87f993732c26aaf0216",
+  "compressedSha256": "9f192b537919f78e60a65d92f3d92e365827c806429d287d54786da1a7f7454e",
+  "source": {
+    "dataset": "WLASL1000",
+    "architecture": "Pose-TGCN",
+    "publisher": "Official WLASL authors",
+    "usage": "Academic and computational use only; no commercial use"
+  },
+  "quantisation": "Per-output symmetric int8 graph/classifier weights; float16 fused batch normalisation"
+}

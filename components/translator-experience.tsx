@@ -487,7 +487,7 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <Sparkles size={18} aria-hidden="true" />
-            <p><strong>100 built-in ASL test signs:</strong> a real local WLASL100 isolated-sign model runs in your browser. You can separately type any word or short phrase and record your own personal sign.</p>
+            <p><strong>{ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in ASL test signs:</strong> the official WLASL1000 Pose-TGCN isolated-sign model runs locally in your browser. You can separately type any word or short phrase and record your own personal sign.</p>
             <a href="#personal-vocabulary">Teach a sign</a>
           </div>
 
@@ -670,7 +670,7 @@ export function TranslatorExperience() {
               <div>
                 <p className="panel-kicker">On-device personal recognizer</p>
                 <h2 id="calibration-title">Add your own personal sign</h2>
-                <p>The 100 WLASL words above are already built in. For a word or short phrase outside that model, type it below and record the complete sign one to three times. SignRelay stores only normalized landmarks on this device—not camera video.</p>
+                <p>The {ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} WLASL words above are already built in. For a word or short phrase outside that model, type it below and record the complete sign one to three times. SignRelay stores only normalized landmarks on this device—not camera video.</p>
               </div>
               <div className="calibration-progress" aria-label={`${activeCustomCount} personal words active`}>
                 <strong>{activeCustomCount}</strong><span> personal</span>

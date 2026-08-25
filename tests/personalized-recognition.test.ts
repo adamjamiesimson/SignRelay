@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
 import { hasAsl100CompletedSignMotion, hasAsl100HandEvidence } from "../lib/asl100-runtime";
+import { halfToFloat, prepareTgcnInput } from "../lib/asl1000-runtime";
 import { prepareCalibrationSequence, sequenceDistance } from "../lib/personalized-recognition";
 import type { VisionFrame } from "../lib/vision-types";
 
 describe("ASL vocabulary", () => {
-  it("ships 100 distinct built-in WLASL signs without personal calibration", () => {
-    expect(ASL_BUILT_IN_VOCABULARY).toHaveLength(100);
-    expect(new Set(ASL_BUILT_IN_VOCABULARY.map((word) => word.gloss)).size).toBe(100);
-    expect(ASL_VOCABULARY).toHaveLength(100);
+  it("ships 1,000 distinct built-in WLASL signs without personal calibration", () => {
+    expect(ASL_BUILT_IN_VOCABULARY).toHaveLength(1000);
+    expect(new Set(ASL_BUILT_IN_VOCABULARY.map((word) => word.gloss)).size).toBe(1000);
+    expect(ASL_VOCABULARY).toHaveLength(1000);
   });
 
   it("creates a safe personal vocabulary entry from a typed word or phrase", () => {
@@ -31,6 +32,14 @@ describe("ASL vocabulary", () => {
     expect(hasAsl100CompletedSignMotion(waving)).toBe(false);
     expect(hasAsl100CompletedSignMotion(completed)).toBe(true);
     expect(hasAsl100CompletedSignMotion(naturalCompleted)).toBe(true);
+  });
+
+  it("maps live landmarks to the 55-node, 50-frame Pose-TGCN contract", () => {
+    const prepared = prepareTgcnInput(Array.from({ length: 30 }, (_, index) => makeFrame(index / 100)));
+    expect(prepared).toHaveLength(55 * 50 * 2);
+    expect(Number.isFinite(prepared[0])).toBe(true);
+    expect(halfToFloat(0x3c00)).toBe(1);
+    expect(halfToFloat(0xc000)).toBe(-2);
   });
 
   it("normalizes recordings to the fixed temporal contract", () => {

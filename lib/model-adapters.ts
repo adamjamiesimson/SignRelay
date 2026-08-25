@@ -1,3 +1,5 @@
+import WLASL1000_LABELS from "../public/models/asl1000-tgcn/labels.json";
+
 export type LanguageId = "asl" | "isl" | "csl";
 
 export type ModelAdapter = {
@@ -28,9 +30,11 @@ export const WLASL100_GLOSSES = [
   "BOOK", "DRINK", "COMPUTER", "BEFORE", "CHAIR", "GO", "CLOTHES", "WHO", "CANDY", "COUSIN", "DEAF", "FINE", "HELP", "NO", "THIN", "WALK", "YEAR", "YES", "ALL", "BLACK", "COOL", "FINISH", "HOT", "LIKE", "MANY", "MOTHER", "NOW", "ORANGE", "TABLE", "THANKSGIVING", "WHAT", "WOMAN", "BED", "BLUE", "BOWLING", "CAN", "DOG", "FAMILY", "FISH", "GRADUATE", "HAT", "HEARING", "KISS", "LANGUAGE", "LATER", "MAN", "SHIRT", "STUDY", "TALL", "WHITE", "WRONG", "ACCIDENT", "APPLE", "BIRD", "CHANGE", "COLOR", "CORN", "COW", "DANCE", "DARK", "DOCTOR", "EAT", "ENJOY", "FORGET", "GIVE", "LAST", "MEET", "PINK", "PIZZA", "PLAY", "SCHOOL", "SECRETARY", "SHORT", "TIME", "WANT", "WORK", "AFRICA", "BASKETBALL", "BIRTHDAY", "BROWN", "BUT", "CHEAT", "CITY", "COOK", "DECIDE", "FULL", "HOW", "JACKET", "LETTER", "MEDICINE", "NEED", "PAINT", "PAPER", "PULL", "PURPLE", "RIGHT", "SAME", "SON", "TELL", "THURSDAY",
 ] as const;
 
+export const WLASL1000_GLOSSES = WLASL1000_LABELS as string[];
+
 const title = (value: string) => value.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-export const ASL_BUILT_IN_VOCABULARY: AslVocabularyEntry[] = WLASL100_GLOSSES.map((gloss) => ({
+export const ASL_BUILT_IN_VOCABULARY: AslVocabularyEntry[] = WLASL1000_GLOSSES.map((gloss) => ({
   gloss, text: title(gloss), category: "learning", recognition: "built-in",
 }));
 
@@ -59,16 +63,16 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     shortName: "ASL",
     language: "American Sign Language",
     status: "experimental",
-    modelFile: "Local WLASL100 landmark MLP + MediaPipe vision + personal-DTW-v1",
+    modelFile: "Official WLASL1000 Pose-TGCN + MediaPipe vision + personal-DTW-v1",
     vocabulary: ASL_VOCABULARY.map((entry) => entry.gloss),
-    inputFormat: "24 frames × 54 two-dimensional upper-body and hand landmarks",
-    sequenceLength: 24,
-    confidenceThreshold: 0.82,
-    decoder: "Quantised on-device WLASL100 isolated-sign model; personal templates and four starter rules take priority",
+    inputFormat: "50 samples × 55 two-dimensional upper-body and hand landmarks",
+    sequenceLength: 50,
+    confidenceThreshold: 0.62,
+    decoder: "Quantised on-device WLASL1000 Pose-TGCN; personal templates and four starter rules take priority",
     postProcessing: "Cooldown, consensus smoothing and duplicate suppression",
-    version: "0.4.0-wlasl100-experimental",
-    dataset: "WLASL100 landmark sequences from the SPOTER supplementary release (CC BY-NC 4.0); WLASL data are research/non-commercial only",
-    summary: "A genuine local 100-sign ASL isolated-sign model. Initial untouched signer-independent test result: 29.8% top-1 and 52.7% top-5; it is for testing and research, not unrestricted ASL translation.",
+    version: "0.5.0-wlasl1000-pose-tgcn",
+    dataset: "Official WLASL1000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
+    summary: "A genuine local 1,000-sign ASL isolated-sign model. The published held-out Pose-TGCN benchmark is 34.86% top-1, 61.73% top-5 and 71.91% top-10; the live MediaPipe adapter remains experimental and is not unrestricted ASL translation.",
   },
   isl: {
     id: "isl",

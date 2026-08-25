@@ -10,7 +10,7 @@ This repository is an engineering foundation, not a claim of full sign-language 
 - Camera permission is requested only after language selection.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
 - A Web Worker maintains an ordered 32-frame temporal buffer.
-- The experimental ASL adapter includes a genuine local 100-sign WLASL isolated-sign model plus user-defined words or short phrases.
+- The experimental ASL adapter includes the official local 1,000-sign WLASL Pose-TGCN isolated-sign model plus user-defined words or short phrases.
 - Personal and user-defined words are learned from one to three signer examples and matched on-device with dynamic time warping.
 - Results are gated by confidence, temporal consensus and cooldown.
 - Confirmed text can be edited, removed, saved locally, cleared and spoken.
@@ -21,11 +21,11 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
-| ASL | Experimental | 100 built-in WLASL signs + user-defined personal words | Local quantised WLASL100 landmark model, MediaPipe tracking and on-device personal DTW templates |
+| ASL | Experimental | 1,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL1000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
 | ISL | Model not installed | None | Separate inactive adapter |
 | CSL | Model not installed | None | Separate inactive adapter |
 
-The 100-word ASL model is genuinely trained on the WLASL100 landmark sequences. Its initial untouched signer-independent result is 29.8% top-1 and 52.7% top-5, so it is an experimental test model rather than a claim of unrestricted translation. Typed custom words activate only after the signer records personal examples; they do not alter the shared model. There is no unrestricted ASL, ISL or CSL model in this repository.
+The 1,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL1000 OpenPose sequences. Its published held-out benchmark is 34.86% top-1, 61.73% top-5 and 71.91% top-10. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. Typed custom words activate only after the signer records personal examples; they do not alter the shared model. There is no unrestricted ASL, ISL or CSL model in this repository.
 
 ## Architecture
 
@@ -126,7 +126,7 @@ The application targets the Vinext/Cloudflare-compatible Sites runtime. The prod
 
 ## Known limitations
 
-- The only installed shared checkpoint is the experimental 100-sign ASL model (29.8% top-1, 52.7% top-5). It is not appropriate to inflate to 500 labels without retraining and a fresh evaluation.
+- The installed shared checkpoint is the official experimental 1,000-sign WLASL Pose-TGCN model (published benchmark: 34.86% top-1, 61.73% top-5, 71.91% top-10). Its live MediaPipe input adapter and closed-set rejection gate must still be evaluated separately.
 - Personal template matching is signer-specific and is not a substitute for a signer-independent ASL benchmark.
 - Performance varies with viewpoint, signing speed, hand dominance, occlusion and lighting.
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.

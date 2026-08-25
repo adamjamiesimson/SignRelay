@@ -1,0 +1,24 @@
+{
+  "publishedHeldOutBenchmark": {
+    "dataset": "WLASL1000",
+    "input": "Official OpenPose sequences",
+    "top1": 0.3486,
+    "top5": 0.6173,
+    "top10": 0.7191,
+    "source": "Li et al., WACV 2020, Table 3"
+  },
+  "exportVerification": {
+    "random_inputs": 3,
+    "top1_agreement": 1.0,
+    "maximum_logit_error": 0.16452312469482422
+  },
+  "liveMediaPipeAccuracy": null,
+  "warning": "The live MediaPipe-to-OpenPose adapter is a domain change and needs a separate signer-independent benchmark.",
+  "localOfficialPoseSpotCheck": {
+    "sampleCount": 40,
+    "top1": 0.175,
+    "top5": 0.575,
+    "quantisedTop1Agreement": 0.95,
+    "note": "Small deterministic audit sample; not a replacement for the published full-test benchmark."
+  }
+}
