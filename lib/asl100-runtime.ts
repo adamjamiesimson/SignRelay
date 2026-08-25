@@ -20,8 +20,11 @@ export type Asl100Prediction = { label: string; text: string; confidence: number
 // This small experimental model is closed-set: without a reject gate it has to
 // turn every detected hand movement into one of its 100 labels. Silence is
 // safer than a confident-looking wrong word.
-const MODEL_MIN_CONFIDENCE = 0.95;
-const MODEL_MIN_MARGIN = 0.75;
+// These values are deliberately lower than the first emergency fix. The old
+// 95% / 0.75 gate made a lightly imperfect real sign virtually impossible to
+// recognise. Segmentation still rejects idle hands and ongoing waving first.
+const MODEL_MIN_CONFIDENCE = 0.88;
+const MODEL_MIN_MARGIN = 0.25;
 
 let modelPromise: Promise<Asl100Model> | null = null;
 let labelsPromise: Promise<string[]> | null = null;
@@ -62,7 +65,7 @@ export async function recognizeAsl100(sequence: VisionFrame[]): Promise<Asl100Pr
 /** Never classify a face, an empty camera, or tracking noise as a sign. */
 export function hasAsl100HandEvidence(sequence: VisionFrame[]) {
   const recent = sequence.slice(-24);
-  return recent.filter((frame) => frame.hands.some((hand) => hand.landmarks.length >= 21)).length >= 14;
+  return recent.filter((frame) => frame.hands.some((hand) => hand.landmarks.length >= 21)).length >= 12;
 }
 
 /**
@@ -74,11 +77,11 @@ export function hasAsl100CompletedSignMotion(sequence: VisionFrame[]) {
   const recent = sequence.slice(-24);
   if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return false;
   const wrists = dominantTrackedWrists(recent);
-  if (wrists.length < 18) return false;
+  if (wrists.length < 15) return false;
   const tail = wrists.slice(-7);
   const tailRange = Math.hypot(range(tail.map((point) => point.x)), range(tail.map((point) => point.y)));
   const pathLength = wrists.slice(1).reduce((total, point, index) => total + distance(point, wrists[index]), 0);
-  return pathLength >= 0.12 && tailRange <= 0.035;
+  return pathLength >= 0.075 && tailRange <= 0.06;
 }
 
 function prepare(sequence: VisionFrame[], model: Asl100Model) {

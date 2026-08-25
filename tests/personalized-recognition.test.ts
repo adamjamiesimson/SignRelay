@@ -26,9 +26,11 @@ describe("ASL vocabulary", () => {
     const idle = Array.from({ length: 24 }, () => makeFrame(0));
     const waving = Array.from({ length: 24 }, (_, index) => makeFrame(index % 2 ? 0.12 : -0.12));
     const completed = Array.from({ length: 24 }, (_, index) => makeFrame(index < 15 ? index * 0.012 : 0.168));
+    const naturalCompleted = Array.from({ length: 24 }, (_, index) => makeFrame(index < 15 ? index * 0.008 : 0.12 + (index % 2 ? 0.018 : -0.018)));
     expect(hasAsl100CompletedSignMotion(idle)).toBe(false);
     expect(hasAsl100CompletedSignMotion(waving)).toBe(false);
     expect(hasAsl100CompletedSignMotion(completed)).toBe(true);
+    expect(hasAsl100CompletedSignMotion(naturalCompleted)).toBe(true);
   });
 
   it("normalizes recordings to the fixed temporal contract", () => {
