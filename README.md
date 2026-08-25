@@ -10,8 +10,8 @@ This repository is an engineering foundation, not a claim of full sign-language 
 - Camera permission is requested only after language selection.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
 - A Web Worker maintains an ordered 32-frame temporal buffer.
-- The experimental ASL adapter includes four built-in signs and a 50-word personal vocabulary pack.
-- Personal words are learned from one to three signer examples and matched on-device with dynamic time warping.
+- The experimental ASL adapter includes four built-in signs, a 100-word ready-to-teach vocabulary pack and user-defined words or short phrases.
+- Personal and user-defined words are learned from one to three signer examples and matched on-device with dynamic time warping.
 - Results are gated by confidence, temporal consensus and cooldown.
 - Confirmed text can be edited, removed, saved locally, cleared and spoken.
 - Auto speak, volume, rate and landmark overlay preferences are stored locally.
@@ -21,11 +21,11 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
-| ASL | Experimental | 4 built-in signs + 50 personally calibrated words | Pretrained MediaPipe handshape classification, transparent temporal rules and on-device personal DTW templates |
+| ASL | Experimental | 4 built-in signs + 100 ready-to-teach words + user-defined personal words | Pretrained MediaPipe handshape classification, transparent temporal rules and on-device personal DTW templates |
 | ISL | Model not installed | None | Separate inactive adapter |
 | CSL | Model not installed | None | Separate inactive adapter |
 
-The MediaPipe gesture submodel is genuinely pretrained and includes the `ILoveYou` canned class. The remaining starter ASL phrases use real landmark-sequence inference but rules are not dataset-trained. The 50-word pack activates word by word after a user records personal examples; it is not a population-trained classifier. There is no unrestricted ASL, ISL or CSL model in this repository.
+The MediaPipe gesture submodel is genuinely pretrained and includes the `ILoveYou` canned class. The remaining starter ASL phrases use real landmark-sequence inference but rules are not dataset-trained. The 100-word pack and typed custom words activate word by word after a user records personal examples; they are not a population-trained classifier. There is no unrestricted ASL, ISL or CSL model in this repository.
 
 ## Architecture
 
