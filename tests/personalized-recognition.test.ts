@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { ASL_PERSONAL_VOCABULARY, ASL_VOCABULARY } from "../lib/model-adapters";
+import { ASL_PERSONAL_VOCABULARY, ASL_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
 import { prepareCalibrationSequence, sequenceDistance } from "../lib/personalized-recognition";
 import type { VisionFrame } from "../lib/vision-types";
 
 describe("personal ASL vocabulary", () => {
-  it("ships at least 50 distinct personal words", () => {
-    expect(ASL_PERSONAL_VOCABULARY).toHaveLength(50);
-    expect(new Set(ASL_PERSONAL_VOCABULARY.map((word) => word.gloss)).size).toBe(50);
-    expect(ASL_VOCABULARY).toHaveLength(54);
+  it("ships 100 distinct ready-to-teach personal words", () => {
+    expect(ASL_PERSONAL_VOCABULARY).toHaveLength(100);
+    expect(new Set(ASL_PERSONAL_VOCABULARY.map((word) => word.gloss)).size).toBe(100);
+    expect(ASL_VOCABULARY).toHaveLength(104);
+  });
+
+  it("creates a safe personal vocabulary entry from a typed word or phrase", () => {
+    expect(createCustomAslVocabularyEntry("  pizza   night! ")).toMatchObject({ gloss: "PIZZA NIGHT", text: "pizza night", category: "custom" });
+    expect(createCustomAslVocabularyEntry("  !!! ")).toBeNull();
   });
 
   it("normalizes recordings to the fixed temporal contract", () => {
