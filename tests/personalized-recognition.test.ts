@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
-import { hasAsl100HandEvidence } from "../lib/asl100-runtime";
+import { hasAsl100CompletedSignMotion, hasAsl100HandEvidence } from "../lib/asl100-runtime";
 import { prepareCalibrationSequence, sequenceDistance } from "../lib/personalized-recognition";
 import type { VisionFrame } from "../lib/vision-types";
 
@@ -20,6 +20,15 @@ describe("ASL vocabulary", () => {
     const empty = Array.from({ length: 24 }, (_, index) => ({ ...makeFrame(index / 100), hands: [] }));
     expect(hasAsl100HandEvidence(empty)).toBe(false);
     expect(hasAsl100HandEvidence(Array.from({ length: 24 }, (_, index) => makeFrame(index / 100)))).toBe(true);
+  });
+
+  it("requires movement followed by a settled end pose before the generic model runs", () => {
+    const idle = Array.from({ length: 24 }, () => makeFrame(0));
+    const waving = Array.from({ length: 24 }, (_, index) => makeFrame(index % 2 ? 0.12 : -0.12));
+    const completed = Array.from({ length: 24 }, (_, index) => makeFrame(index < 15 ? index * 0.012 : 0.168));
+    expect(hasAsl100CompletedSignMotion(idle)).toBe(false);
+    expect(hasAsl100CompletedSignMotion(waving)).toBe(false);
+    expect(hasAsl100CompletedSignMotion(completed)).toBe(true);
   });
 
   it("normalizes recordings to the fixed temporal contract", () => {

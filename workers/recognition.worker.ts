@@ -3,7 +3,7 @@
 import type { CalibrationTemplate, HandObservation, Point, VisionFrame, WorkerInput, WorkerMessage } from "@/lib/vision-types";
 import { shouldConfirm } from "@/lib/decoder";
 import { recognizePersonalTemplate } from "@/lib/personalized-recognition";
-import { hasAsl100HandEvidence, recognizeAsl100 } from "@/lib/asl100-runtime";
+import { hasAsl100CompletedSignMotion, recognizeAsl100 } from "@/lib/asl100-runtime";
 
 const MAX_FRAMES = 32;
 const CONFIDENCE_THRESHOLD = 0.82;
@@ -36,9 +36,9 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   frames.push(event.data.frame);
   while (frames.length > MAX_FRAMES) frames.shift();
 
-  if (!hasAsl100HandEvidence(frames)) {
-    // A classifier always has a mathematical "best" class. Empty frames must
-    // never turn that arbitrary class into spoken text.
+  if (!hasAsl100CompletedSignMotion(frames)) {
+    // A classifier always has a mathematical "best" class. Idle or random
+    // motion must never turn that arbitrary label into spoken text.
     latestAsl100 = null;
     candidateLabel = null;
     candidateStreak = 0;
