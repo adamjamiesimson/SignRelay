@@ -40,7 +40,7 @@ function loadLabels() {
 
 export async function recognizeAsl100(sequence: VisionFrame[]): Promise<Asl100Prediction | null> {
   const [model, labels] = await Promise.all([loadModel(), loadLabels()]);
-  if (sequence.length < model.sequenceLength) return null;
+  if (sequence.length < model.sequenceLength || !hasAsl100HandEvidence(sequence)) return null;
   const values = prepare(sequence.slice(-32), model);
   let activations = values;
   for (const layer of model.layers) activations = applyLayer(activations, layer);
@@ -48,6 +48,12 @@ export async function recognizeAsl100(sequence: VisionFrame[]): Promise<Asl100Pr
   const label = labels[best];
   if (!label) return null;
   return { label, text: title(label), confidence: activations[best] };
+}
+
+/** Never classify a face, an empty camera, or tracking noise as a sign. */
+export function hasAsl100HandEvidence(sequence: VisionFrame[]) {
+  const recent = sequence.slice(-24);
+  return recent.filter((frame) => frame.hands.some((hand) => hand.landmarks.length >= 21)).length >= 14;
 }
 
 function prepare(sequence: VisionFrame[], model: Asl100Model) {

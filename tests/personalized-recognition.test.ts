@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
+import { hasAsl100HandEvidence } from "../lib/asl100-runtime";
 import { prepareCalibrationSequence, sequenceDistance } from "../lib/personalized-recognition";
 import type { VisionFrame } from "../lib/vision-types";
 
@@ -13,6 +14,12 @@ describe("ASL vocabulary", () => {
   it("creates a safe personal vocabulary entry from a typed word or phrase", () => {
     expect(createCustomAslVocabularyEntry("  pizza   night! ")).toMatchObject({ gloss: "PIZZA NIGHT", text: "pizza night", category: "custom" });
     expect(createCustomAslVocabularyEntry("  !!! ")).toBeNull();
+  });
+
+  it("does not run the built-in ASL model without sustained hand tracking", () => {
+    const empty = Array.from({ length: 24 }, (_, index) => ({ ...makeFrame(index / 100), hands: [] }));
+    expect(hasAsl100HandEvidence(empty)).toBe(false);
+    expect(hasAsl100HandEvidence(Array.from({ length: 24 }, (_, index) => makeFrame(index / 100)))).toBe(true);
   });
 
   it("normalizes recordings to the fixed temporal contract", () => {

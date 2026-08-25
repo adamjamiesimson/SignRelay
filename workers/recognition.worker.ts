@@ -3,7 +3,7 @@
 import type { CalibrationTemplate, HandObservation, Point, VisionFrame, WorkerInput, WorkerMessage } from "@/lib/vision-types";
 import { shouldConfirm } from "@/lib/decoder";
 import { recognizePersonalTemplate } from "@/lib/personalized-recognition";
-import { recognizeAsl100 } from "@/lib/asl100-runtime";
+import { hasAsl100HandEvidence, recognizeAsl100 } from "@/lib/asl100-runtime";
 
 const MAX_FRAMES = 32;
 const CONFIDENCE_THRESHOLD = 0.82;
@@ -15,6 +15,7 @@ let lastConfirmation = { label: "", time: 0 };
 let personalTemplates: CalibrationTemplate[] = [];
 let latestAsl100: Awaited<ReturnType<typeof recognizeAsl100>> = null;
 let pendingAsl100 = false;
+let modelGeneration = 0;
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "templates") {
@@ -35,9 +36,19 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   frames.push(event.data.frame);
   while (frames.length > MAX_FRAMES) frames.shift();
 
-  if (frames.length >= 24 && !pendingAsl100 && frames.length % 6 === 0) {
+  if (!hasAsl100HandEvidence(frames)) {
+    // A classifier always has a mathematical "best" class. Empty frames must
+    // never turn that arbitrary class into spoken text.
+    latestAsl100 = null;
+    candidateLabel = null;
+    candidateStreak = 0;
+    modelGeneration += 1;
+  } else if (frames.length >= 24 && !pendingAsl100 && frames.length % 6 === 0) {
     pendingAsl100 = true;
-    recognizeAsl100([...frames]).then((prediction) => { latestAsl100 = prediction; }).catch(() => { latestAsl100 = null; }).finally(() => { pendingAsl100 = false; });
+    const generation = modelGeneration;
+    recognizeAsl100([...frames]).then((prediction) => {
+      if (generation === modelGeneration) latestAsl100 = prediction;
+    }).catch(() => { latestAsl100 = null; }).finally(() => { pendingAsl100 = false; });
   }
 
   const result = recognize(frames);
