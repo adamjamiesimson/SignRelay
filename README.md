@@ -96,8 +96,8 @@ Free GPU notebooks on Google Colab or Kaggle are appropriate for training; the d
 ## Dataset research notes
 
 - [WLASL](https://dxli94.github.io/WLASL/) contains more than 2,000 word-level ASL signs from over 100 signers. Its C-UDA terms restrict use to academic/computational purposes and disallow commercial use.
-- [INCLUDE](https://dl.acm.org/doi/10.1145/3394171.3413528) reports 4,287 ISL videos across 263 signs. Re-check current access and redistribution terms before use.
-- [CSL-Daily](https://ustc-slr.github.io/datasets/2021_csl_daily/) is a continuous CSL translation dataset with gloss and spoken-language annotations. Re-check access terms before training or redistribution.
+- [INCLUDE](https://huggingface.co/datasets/ai4bharat/INCLUDE) publishes CC-BY-4.0 metadata for 4,292 ISL videos across 263 signs. The repository contains an audited, **not-trained** 100-label candidate vocabulary in training/manifests/isl100-include-vocabulary.json; public metadata does not identify signers, so it is not yet suitable for SignRelay's signer-aware benchmark.
+- [SLR500](https://ustc-slr.github.io/datasets/2015_csl/) offers 500 isolated CSL signs, but its official research agreement must be signed by a full-time staff member. No CSL vocabulary or model is bundled until that permission or an appropriate open alternative is available.
 
 Dataset names, vocabulary size and availability do not imply a licence suitable for deployment. The training pipeline requires a human-confirmed licence record.
 
@@ -126,7 +126,7 @@ The application targets the Vinext/Cloudflare-compatible Sites runtime. The prod
 
 ## Known limitations
 
-- Four ASL signs are built in; the 50 additional words require per-device personal calibration.
+- The only installed shared checkpoint is the experimental 100-sign ASL model (29.8% top-1, 52.7% top-5). It is not appropriate to inflate to 500 labels without retraining and a fresh evaluation.
 - Personal template matching is signer-specific and is not a substitute for a signer-independent ASL benchmark.
 - Performance varies with viewpoint, signing speed, hand dominance, occlusion and lighting.
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.

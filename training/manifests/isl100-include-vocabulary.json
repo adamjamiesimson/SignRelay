@@ -1,0 +1,532 @@
+{
+  "format": "signrelay-vocabulary-manifest-v1",
+  "status": "curated-not-trained",
+  "language": "isl",
+  "languageName": "Indian Sign Language",
+  "dataset": {
+    "name": "INCLUDE",
+    "recordUrl": "https://zenodo.org/records/4010759",
+    "metadataUrl": "https://huggingface.co/datasets/ai4bharat/INCLUDE",
+    "metadataSnapshot": "9530511747c03569465c6c217102ec3bbcce2fc1",
+    "license": "CC-BY-4.0",
+    "publishedVideoCount": 4292,
+    "publishedWordSignCount": 263
+  },
+  "selection": {
+    "classes": 100,
+    "criterion": "Every selected label occurs in the public metadata train, validation, and test splits. This manifest is a candidate vocabulary only; it is not a deployed model.",
+    "metadataSplitCounts": {
+      "train": 3816,
+      "validation": 425,
+      "test": 1009
+    }
+  },
+  "classes": [
+    {
+      "label": "48. Hello",
+      "text": "Hello",
+      "category": "Greetings"
+    },
+    {
+      "label": "49. How are you",
+      "text": "How are you",
+      "category": "Greetings"
+    },
+    {
+      "label": "50. Alright",
+      "text": "Alright",
+      "category": "Greetings"
+    },
+    {
+      "label": "51. Good Morning",
+      "text": "Good morning",
+      "category": "Greetings"
+    },
+    {
+      "label": "52. Good afternoon",
+      "text": "Good afternoon",
+      "category": "Greetings"
+    },
+    {
+      "label": "53. Good evening",
+      "text": "Good evening",
+      "category": "Greetings"
+    },
+    {
+      "label": "54. Good night",
+      "text": "Good night",
+      "category": "Greetings"
+    },
+    {
+      "label": "55. Thank you",
+      "text": "Thank you",
+      "category": "Greetings"
+    },
+    {
+      "label": "56. Pleased",
+      "text": "Pleased",
+      "category": "Greetings"
+    },
+    {
+      "label": "40. I",
+      "text": "I",
+      "category": "Pronouns"
+    },
+    {
+      "label": "41. you",
+      "text": "You",
+      "category": "Pronouns"
+    },
+    {
+      "label": "42. he",
+      "text": "He",
+      "category": "Pronouns"
+    },
+    {
+      "label": "43. she",
+      "text": "She",
+      "category": "Pronouns"
+    },
+    {
+      "label": "44. it",
+      "text": "It",
+      "category": "Pronouns"
+    },
+    {
+      "label": "45. we",
+      "text": "We",
+      "category": "Pronouns"
+    },
+    {
+      "label": "46. you (plural)",
+      "text": "You (plural)",
+      "category": "Pronouns"
+    },
+    {
+      "label": "47. they",
+      "text": "They",
+      "category": "Pronouns"
+    },
+    {
+      "label": "66. Sunday",
+      "text": "Sunday",
+      "category": "Days and time"
+    },
+    {
+      "label": "67. Monday",
+      "text": "Monday",
+      "category": "Days and time"
+    },
+    {
+      "label": "68. Tuesday",
+      "text": "Tuesday",
+      "category": "Days and time"
+    },
+    {
+      "label": "69. Wednesday",
+      "text": "Wednesday",
+      "category": "Days and time"
+    },
+    {
+      "label": "70. Thursday",
+      "text": "Thursday",
+      "category": "Days and time"
+    },
+    {
+      "label": "71. Friday",
+      "text": "Friday",
+      "category": "Days and time"
+    },
+    {
+      "label": "72. Saturday",
+      "text": "Saturday",
+      "category": "Days and time"
+    },
+    {
+      "label": "73. Today",
+      "text": "Today",
+      "category": "Days and time"
+    },
+    {
+      "label": "74. Tomorrow",
+      "text": "Tomorrow",
+      "category": "Days and time"
+    },
+    {
+      "label": "75. Yesterday",
+      "text": "Yesterday",
+      "category": "Days and time"
+    },
+    {
+      "label": "82. Morning",
+      "text": "Morning",
+      "category": "Days and time"
+    },
+    {
+      "label": "83. Afternoon",
+      "text": "Afternoon",
+      "category": "Days and time"
+    },
+    {
+      "label": "85. Night",
+      "text": "Night",
+      "category": "Days and time"
+    },
+    {
+      "label": "47. Red",
+      "text": "Red",
+      "category": "Colours"
+    },
+    {
+      "label": "48. Green",
+      "text": "Green",
+      "category": "Colours"
+    },
+    {
+      "label": "49. Blue",
+      "text": "Blue",
+      "category": "Colours"
+    },
+    {
+      "label": "50. Yellow",
+      "text": "Yellow",
+      "category": "Colours"
+    },
+    {
+      "label": "51. Brown",
+      "text": "Brown",
+      "category": "Colours"
+    },
+    {
+      "label": "52. Pink",
+      "text": "Pink",
+      "category": "Colours"
+    },
+    {
+      "label": "53. Orange",
+      "text": "Orange",
+      "category": "Colours"
+    },
+    {
+      "label": "54. Black",
+      "text": "Black",
+      "category": "Colours"
+    },
+    {
+      "label": "55. White",
+      "text": "White",
+      "category": "Colours"
+    },
+    {
+      "label": "56. Grey",
+      "text": "Grey",
+      "category": "Colours"
+    },
+    {
+      "label": "1. Dog",
+      "text": "Dog",
+      "category": "Animals"
+    },
+    {
+      "label": "2. Cat",
+      "text": "Cat",
+      "category": "Animals"
+    },
+    {
+      "label": "3. Fish",
+      "text": "Fish",
+      "category": "Animals"
+    },
+    {
+      "label": "4. Bird",
+      "text": "Bird",
+      "category": "Animals"
+    },
+    {
+      "label": "5. Cow",
+      "text": "Cow",
+      "category": "Animals"
+    },
+    {
+      "label": "6. Mouse",
+      "text": "Mouse",
+      "category": "Animals"
+    },
+    {
+      "label": "7. Horse",
+      "text": "Horse",
+      "category": "Animals"
+    },
+    {
+      "label": "8. Animal",
+      "text": "Animal",
+      "category": "Animals"
+    },
+    {
+      "label": "51. Clock",
+      "text": "Clock",
+      "category": "Electronics"
+    },
+    {
+      "label": "52. Lamp",
+      "text": "Lamp",
+      "category": "Electronics"
+    },
+    {
+      "label": "53. Fan",
+      "text": "Fan",
+      "category": "Electronics"
+    },
+    {
+      "label": "54. Cell phone",
+      "text": "Cell phone",
+      "category": "Electronics"
+    },
+    {
+      "label": "55. Computer",
+      "text": "Computer",
+      "category": "Electronics"
+    },
+    {
+      "label": "56. Laptop",
+      "text": "Laptop",
+      "category": "Electronics"
+    },
+    {
+      "label": "58. Camera",
+      "text": "Camera",
+      "category": "Electronics"
+    },
+    {
+      "label": "59. Television",
+      "text": "Television",
+      "category": "Electronics"
+    },
+    {
+      "label": "24. Table",
+      "text": "Table",
+      "category": "Home"
+    },
+    {
+      "label": "25. Chair",
+      "text": "Chair",
+      "category": "Home"
+    },
+    {
+      "label": "26. Bed",
+      "text": "Bed",
+      "category": "Home"
+    },
+    {
+      "label": "28. Window",
+      "text": "Window",
+      "category": "Home"
+    },
+    {
+      "label": "29. Door",
+      "text": "Door",
+      "category": "Home"
+    },
+    {
+      "label": "37. Book",
+      "text": "Book",
+      "category": "Home"
+    },
+    {
+      "label": "39. Key",
+      "text": "Key",
+      "category": "Home"
+    },
+    {
+      "label": "60. Mother",
+      "text": "Mother",
+      "category": "People"
+    },
+    {
+      "label": "61. Father",
+      "text": "Father",
+      "category": "People"
+    },
+    {
+      "label": "64. Man",
+      "text": "Man",
+      "category": "People"
+    },
+    {
+      "label": "65. Woman",
+      "text": "Woman",
+      "category": "People"
+    },
+    {
+      "label": "66. Brother",
+      "text": "Brother",
+      "category": "People"
+    },
+    {
+      "label": "67. Sister",
+      "text": "Sister",
+      "category": "People"
+    },
+    {
+      "label": "68. Family",
+      "text": "Family",
+      "category": "People"
+    },
+    {
+      "label": "81. Friend",
+      "text": "Friend",
+      "category": "People"
+    },
+    {
+      "label": "18. City",
+      "text": "City",
+      "category": "Places"
+    },
+    {
+      "label": "19. House",
+      "text": "House",
+      "category": "Places"
+    },
+    {
+      "label": "24. School",
+      "text": "School",
+      "category": "Places"
+    },
+    {
+      "label": "25. Office",
+      "text": "Office",
+      "category": "Places"
+    },
+    {
+      "label": "26. University",
+      "text": "University",
+      "category": "Places"
+    },
+    {
+      "label": "30. Hospital",
+      "text": "Hospital",
+      "category": "Places"
+    },
+    {
+      "label": "32. Market",
+      "text": "Market",
+      "category": "Places"
+    },
+    {
+      "label": "4. Money",
+      "text": "Money",
+      "category": "Society"
+    },
+    {
+      "label": "3. Medicine",
+      "text": "Medicine",
+      "category": "Society"
+    },
+    {
+      "label": "12. Peace",
+      "text": "Peace",
+      "category": "Society"
+    },
+    {
+      "label": "17. Sport",
+      "text": "Sport",
+      "category": "Society"
+    },
+    {
+      "label": "37. Hat",
+      "text": "Hat",
+      "category": "Clothes"
+    },
+    {
+      "label": "38. Dress",
+      "text": "Dress",
+      "category": "Clothes"
+    },
+    {
+      "label": "41. Shirt",
+      "text": "Shirt",
+      "category": "Clothes"
+    },
+    {
+      "label": "44. Shoes",
+      "text": "Shoes",
+      "category": "Clothes"
+    },
+    {
+      "label": "84. Teacher",
+      "text": "Teacher",
+      "category": "Jobs"
+    },
+    {
+      "label": "85. Student",
+      "text": "Student",
+      "category": "Jobs"
+    },
+    {
+      "label": "87. Doctor",
+      "text": "Doctor",
+      "category": "Jobs"
+    },
+    {
+      "label": "9. Train",
+      "text": "Train",
+      "category": "Transport"
+    },
+    {
+      "label": "10. Plane",
+      "text": "Plane",
+      "category": "Transport"
+    },
+    {
+      "label": "11. Car",
+      "text": "Car",
+      "category": "Transport"
+    },
+    {
+      "label": "14. Bus",
+      "text": "Bus",
+      "category": "Transport"
+    },
+    {
+      "label": "3. happy",
+      "text": "Happy",
+      "category": "Adjectives"
+    },
+    {
+      "label": "94. good",
+      "text": "Good",
+      "category": "Adjectives"
+    },
+    {
+      "label": "95. bad",
+      "text": "Bad",
+      "category": "Adjectives"
+    },
+    {
+      "label": "61. Summer",
+      "text": "Summer",
+      "category": "Seasons"
+    },
+    {
+      "label": "62. Spring",
+      "text": "Spring",
+      "category": "Seasons"
+    },
+    {
+      "label": "63. Winter",
+      "text": "Winter",
+      "category": "Seasons"
+    },
+    {
+      "label": "64. Fall",
+      "text": "Fall",
+      "category": "Seasons"
+    }
+  ],
+  "trainingBlockers": [
+    "No ISL checkpoint is installed or implied by this file.",
+    "The public INCLUDE metadata does not contain signer IDs, so it cannot satisfy SignRelay's signer-disjoint benchmark requirement by itself.",
+    "Raw videos must not be copied into the application repository or used to train a deployed model until a reproducible signer-aware evaluation plan has been completed.",
+    "Any trained ISL model must be reviewed with ISL signers before it is presented as available."
+  ]
+}

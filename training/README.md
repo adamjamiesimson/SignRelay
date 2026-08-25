@@ -12,6 +12,13 @@ sample_id,video_path,gloss,signer_id,language,source,license_id,split
 
 `signer_id`, `source` and `license_id` are required. `split` may be blank before the signer-independent split step.
 
+## Registered research sources
+
+- **manifests/isl100-include-vocabulary.json** is a **curated, not-trained** 100-label ISL candidate vocabulary from the public [INCLUDE](https://huggingface.co/datasets/ai4bharat/INCLUDE) metadata. It is CC-BY-4.0 and every selected label appears in each published metadata split. Run **python training/fetch_include_isl100_metadata.py** to re-audit the paths and licence before work begins.
+- INCLUDE's public metadata does not provide signer IDs. The audit therefore marks it **not train-ready**: do not put its provisional CSV through pipeline.py or report signer-independent accuracy until a signer-aware evaluation plan is available.
+- WLASL500 needs a recorded acceptance of WLASL's C-UDA terms plus lawful access to the original video/keypoint data. The existing WLASL100 experiment must not be mechanically expanded and relabelled as WLASL500.
+- The official CSL/SLR500 and CSL-Daily releases require a research agreement signed by a full-time staff member. They are not cleared for this student project yet, so no CSL vocabulary or checkpoint is bundled.
+
 ## Stages
 
 1. `audit`: validate files, labels, signer IDs and an approved licence record.
