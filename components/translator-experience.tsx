@@ -51,6 +51,7 @@ import {
 import {
   ASL_BUILT_IN_VOCABULARY,
   ASL_PERSONAL_VOCABULARY,
+  createCustomAslVocabularyEntry,
   LANGUAGE_LIST,
   type AslVocabularyEntry,
   type LanguageId,
@@ -78,6 +79,8 @@ const EMPTY_DETECTION: DetectionStatus = {
   pose: false,
 };
 
+const PRESET_ASL_GLOSSES = new Set(ASL_PERSONAL_VOCABULARY.map((word) => word.gloss));
+
 export function TranslatorExperience() {
   const [step, setStep] = useState<Step>("welcome");
   const [selected, setSelected] = useState<LanguageId>("asl");
@@ -96,8 +99,9 @@ export function TranslatorExperience() {
   const [calibrationTemplates, setCalibrationTemplates] = useState<CalibrationTemplate[]>([]);
   const [calibrationWord, setCalibrationWord] = useState<AslVocabularyEntry>(ASL_PERSONAL_VOCABULARY[0]);
   const [calibrationSearch, setCalibrationSearch] = useState("");
+  const [customWordInput, setCustomWordInput] = useState("");
   const [calibrationState, setCalibrationState] = useState<CalibrationState>("idle");
-  const [calibrationMessage, setCalibrationMessage] = useState("Choose a word, then record the complete sign.");
+  const [calibrationMessage, setCalibrationMessage] = useState("Choose one of 100 words or type your own, then record the complete sign.");
   const [countdown, setCountdown] = useState(3);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -127,11 +131,36 @@ export function TranslatorExperience() {
 
   const trainedGlosses = useMemo(() => new Set(calibrationCounts.keys()), [calibrationCounts]);
 
+  const calibrationVocabulary = useMemo(() => {
+    const knownGlosses = new Set(ASL_PERSONAL_VOCABULARY.map((word) => word.gloss));
+    const customWords: AslVocabularyEntry[] = [];
+
+    calibrationTemplates.forEach((template) => {
+      if (knownGlosses.has(template.gloss)) return;
+      const word = createCustomAslVocabularyEntry(template.text || template.gloss);
+      if (!word || knownGlosses.has(word.gloss)) return;
+      knownGlosses.add(word.gloss);
+      customWords.push(word);
+    });
+
+    return [...ASL_PERSONAL_VOCABULARY, ...customWords];
+  }, [calibrationTemplates]);
+
+  const activePresetCount = useMemo(
+    () => ASL_PERSONAL_VOCABULARY.filter((word) => trainedGlosses.has(word.gloss)).length,
+    [trainedGlosses],
+  );
+
+  const activeCustomCount = useMemo(
+    () => [...trainedGlosses].filter((gloss) => !PRESET_ASL_GLOSSES.has(gloss)).length,
+    [trainedGlosses],
+  );
+
   const filteredCalibrationVocabulary = useMemo(() => {
     const query = calibrationSearch.trim().toLowerCase();
-    if (!query) return ASL_PERSONAL_VOCABULARY;
-    return ASL_PERSONAL_VOCABULARY.filter((word) => `${word.gloss} ${word.category}`.toLowerCase().includes(query));
-  }, [calibrationSearch]);
+    if (!query) return calibrationVocabulary;
+    return calibrationVocabulary.filter((word) => `${word.gloss} ${word.category}`.toLowerCase().includes(query));
+  }, [calibrationSearch, calibrationVocabulary]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -405,6 +434,21 @@ export function TranslatorExperience() {
     }
   }, [calibrationWord, requestCamera]);
 
+  const selectCustomWord = () => {
+    const customWord = createCustomAslVocabularyEntry(customWordInput);
+    if (!customWord) {
+      setCalibrationState("error");
+      setCalibrationMessage("Type a word or short phrase first—letters, numbers, spaces, apostrophes and hyphens are supported.");
+      return;
+    }
+
+    setCalibrationWord(customWord);
+    setCustomWordInput("");
+    captureStateRef.current = "idle";
+    setCalibrationState("idle");
+    setCalibrationMessage(`${customWord.text} is selected. Record one to three examples to teach your personal recognizer.`);
+  };
+
   const removeCalibration = useCallback(async (gloss: string) => {
     await deleteCalibrationGloss(gloss);
     setCalibrationTemplates(await loadCalibrationTemplates());
@@ -460,8 +504,8 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <Sparkles size={18} aria-hidden="true" />
-            <p><strong>54-sign research vocabulary:</strong> 4 built-in starter signs plus 50 words that activate after you record personal examples. SignRelay stays silent outside verified matches.</p>
-            <a href="#personal-vocabulary">Teach words</a>
+            <p><strong>104-sign test vocabulary:</strong> 4 built-in starter signs plus 100 ready-to-teach ASL words. You can also type any word or short phrase, then teach SignRelay your signing on this device.</p>
+            <a href="#personal-vocabulary">Teach a sign</a>
           </div>
 
           <div className="translator-grid">
@@ -642,11 +686,12 @@ export function TranslatorExperience() {
             <div className="calibration-heading">
               <div>
                 <p className="panel-kicker">On-device personal recognizer</p>
-                <h2 id="calibration-title">Teach your 50-word ASL pack</h2>
-                <p>Record the complete sign one to three times. SignRelay stores only normalized landmarks on this device—not camera video.</p>
+                <h2 id="calibration-title">Teach ASL signs your way</h2>
+                <p>Choose from 100 ready-to-teach test words, or type any word or short phrase. Record the complete sign one to three times; SignRelay stores only normalized landmarks on this device—not camera video.</p>
               </div>
-              <div className="calibration-progress" aria-label={`${trainedGlosses.size} of 50 personal words active`}>
-                <strong>{trainedGlosses.size}</strong><span>/ 50 active</span>
+              <div className="calibration-progress" aria-label={`${activePresetCount} of ${ASL_PERSONAL_VOCABULARY.length} preset words active${activeCustomCount ? `, plus ${activeCustomCount} custom words` : ""}`}>
+                <strong>{activePresetCount}</strong><span>/ {ASL_PERSONAL_VOCABULARY.length} preset</span>
+                {activeCustomCount > 0 && <small>+ {activeCustomCount} custom</small>}
               </div>
             </div>
 
@@ -654,7 +699,7 @@ export function TranslatorExperience() {
               <label className="vocabulary-search">
                 <Search size={17} aria-hidden="true" />
                 <span className="sr-only">Search personal vocabulary</span>
-                <input value={calibrationSearch} onChange={(event) => setCalibrationSearch(event.target.value)} placeholder="Search 50 words" />
+                <input value={calibrationSearch} onChange={(event) => setCalibrationSearch(event.target.value)} placeholder="Search 100 preset words" />
               </label>
               <div className="selected-word-card">
                 <div>
@@ -672,6 +717,26 @@ export function TranslatorExperience() {
                     </button>
                   )}
                 </div>
+              </div>
+            </div>
+
+            <div className="custom-word-controls">
+              <div>
+                <span className="custom-word-label">Teach any word</span>
+                <p>Type what you want SignRelay to say, select it, then record yourself signing it.</p>
+              </div>
+              <div className="custom-word-input">
+                <input
+                  value={customWordInput}
+                  maxLength={48}
+                  onChange={(event) => setCustomWordInput(event.target.value)}
+                  onKeyDown={(event) => event.key === "Enter" && selectCustomWord()}
+                  placeholder="e.g. Pizza"
+                  aria-label="Word or short phrase to teach"
+                />
+                <button className="button secondary small" onClick={selectCustomWord} disabled={!customWordInput.trim()}>
+                  <ArrowRight size={16} /> Select word
+                </button>
               </div>
             </div>
 
@@ -759,7 +824,7 @@ export function TranslatorExperience() {
           </div>
           <div className="language-continue" aria-live="polite">
             <p>{model.status === "experimental"
-              ? `Selected: ${model.language} · ${ASL_BUILT_IN_VOCABULARY.length} built-in signs + ${ASL_PERSONAL_VOCABULARY.length} personal vocabulary words`
+              ? `Selected: ${model.language} · ${ASL_BUILT_IN_VOCABULARY.length} built-in signs + ${ASL_PERSONAL_VOCABULARY.length} ready-to-teach words + your own custom signs`
               : `${model.language} needs a trained, licensed checkpoint before translation can begin.`}</p>
             <button className="button primary" disabled={model.status !== "experimental"} onClick={beginTranslation}>
               Continue to camera <ArrowRight size={18} aria-hidden="true" />
