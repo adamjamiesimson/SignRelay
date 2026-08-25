@@ -3,6 +3,7 @@
 import type { CalibrationTemplate, HandObservation, Point, VisionFrame, WorkerInput, WorkerMessage } from "@/lib/vision-types";
 import { shouldConfirm } from "@/lib/decoder";
 import { recognizePersonalTemplate } from "@/lib/personalized-recognition";
+import { recognizeAsl100 } from "@/lib/asl100-runtime";
 
 const MAX_FRAMES = 32;
 const CONFIDENCE_THRESHOLD = 0.82;
@@ -12,8 +13,10 @@ let candidateLabel: string | null = null;
 let candidateStreak = 0;
 let lastConfirmation = { label: "", time: 0 };
 let personalTemplates: CalibrationTemplate[] = [];
+let latestAsl100: Awaited<ReturnType<typeof recognizeAsl100>> = null;
+let pendingAsl100 = false;
 
-self.onmessage = (event: MessageEvent<WorkerInput>) => {
+self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "templates") {
     personalTemplates = event.data.templates;
     frames.length = 0;
@@ -31,6 +34,11 @@ self.onmessage = (event: MessageEvent<WorkerInput>) => {
 
   frames.push(event.data.frame);
   while (frames.length > MAX_FRAMES) frames.shift();
+
+  if (frames.length >= 24 && !pendingAsl100 && frames.length % 6 === 0) {
+    pendingAsl100 = true;
+    recognizeAsl100([...frames]).then((prediction) => { latestAsl100 = prediction; }).catch(() => { latestAsl100 = null; }).finally(() => { pendingAsl100 = false; });
+  }
 
   const result = recognize(frames);
   const analysis: WorkerMessage = {
@@ -81,7 +89,8 @@ function recognize(sequence: VisionFrame[]) {
     ?? recognizeILoveYou(sequence)
     ?? recognizeHello(sequence)
     ?? recognizeThankYou(sequence)
-    ?? recognizeYes(sequence);
+    ?? recognizeYes(sequence)
+    ?? latestAsl100;
 }
 
 function recognizeILoveYou(sequence: VisionFrame[]) {

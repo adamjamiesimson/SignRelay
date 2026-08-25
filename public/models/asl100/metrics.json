@@ -1,0 +1,13 @@
+{
+  "top_1_accuracy": 0.29844961240310075,
+  "top_5_accuracy": 0.5271317829457365,
+  "validation_top_1_accuracy": 0.27596439169139464,
+  "train_top_1_accuracy": 0.8848821081830791,
+  "train_samples": 1442,
+  "validation_samples": 337,
+  "test_samples": 258,
+  "sequence_length": 24,
+  "feature_size": 2592,
+  "dataset": "WLASL100 SPOTER supplementary landmarks",
+  "license": "CC BY-NC 4.0 / research and non-commercial use"
+}

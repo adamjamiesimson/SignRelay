@@ -10,7 +10,7 @@ This repository is an engineering foundation, not a claim of full sign-language 
 - Camera permission is requested only after language selection.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
 - A Web Worker maintains an ordered 32-frame temporal buffer.
-- The experimental ASL adapter includes four built-in signs, a 100-word ready-to-teach vocabulary pack and user-defined words or short phrases.
+- The experimental ASL adapter includes a genuine local 100-sign WLASL isolated-sign model plus user-defined words or short phrases.
 - Personal and user-defined words are learned from one to three signer examples and matched on-device with dynamic time warping.
 - Results are gated by confidence, temporal consensus and cooldown.
 - Confirmed text can be edited, removed, saved locally, cleared and spoken.
@@ -21,11 +21,11 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
-| ASL | Experimental | 4 built-in signs + 100 ready-to-teach words + user-defined personal words | Pretrained MediaPipe handshape classification, transparent temporal rules and on-device personal DTW templates |
+| ASL | Experimental | 100 built-in WLASL signs + user-defined personal words | Local quantised WLASL100 landmark model, MediaPipe tracking and on-device personal DTW templates |
 | ISL | Model not installed | None | Separate inactive adapter |
 | CSL | Model not installed | None | Separate inactive adapter |
 
-The MediaPipe gesture submodel is genuinely pretrained and includes the `ILoveYou` canned class. The remaining starter ASL phrases use real landmark-sequence inference but rules are not dataset-trained. The 100-word pack and typed custom words activate word by word after a user records personal examples; they are not a population-trained classifier. There is no unrestricted ASL, ISL or CSL model in this repository.
+The 100-word ASL model is genuinely trained on the WLASL100 landmark sequences. Its initial untouched signer-independent result is 29.8% top-1 and 52.7% top-5, so it is an experimental test model rather than a claim of unrestricted translation. Typed custom words activate only after the signer records personal examples; they do not alter the shared model. There is no unrestricted ASL, ISL or CSL model in this repository.
 
 ## Architecture
 

@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { ASL_PERSONAL_VOCABULARY, ASL_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
+import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
 import { prepareCalibrationSequence, sequenceDistance } from "../lib/personalized-recognition";
 import type { VisionFrame } from "../lib/vision-types";
 
-describe("personal ASL vocabulary", () => {
-  it("ships 100 distinct ready-to-teach personal words", () => {
-    expect(ASL_PERSONAL_VOCABULARY).toHaveLength(100);
-    expect(new Set(ASL_PERSONAL_VOCABULARY.map((word) => word.gloss)).size).toBe(100);
-    expect(ASL_VOCABULARY).toHaveLength(104);
+describe("ASL vocabulary", () => {
+  it("ships 100 distinct built-in WLASL signs without personal calibration", () => {
+    expect(ASL_BUILT_IN_VOCABULARY).toHaveLength(100);
+    expect(new Set(ASL_BUILT_IN_VOCABULARY.map((word) => word.gloss)).size).toBe(100);
+    expect(ASL_VOCABULARY).toHaveLength(100);
   });
 
   it("creates a safe personal vocabulary entry from a typed word or phrase", () => {
