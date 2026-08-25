@@ -1,0 +1,10 @@
+mediapipe==0.10.21
+numpy==2.2.6
+opencv-python-headless==4.11.0.86
+pandas==2.2.3
+scikit-learn==1.6.1
+torch==2.7.0
+onnx==1.18.0
+onnxruntime==1.22.0
+matplotlib==3.10.3
+seaborn==0.13.2
