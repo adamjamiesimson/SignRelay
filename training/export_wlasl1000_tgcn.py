@@ -26,6 +26,7 @@ import numpy as np
 MAGIC_NUMBER = 0x1950A86A20F9469CFC6C
 PROTOCOL_VERSION = 1001
 BN_EPSILON = 1e-5
+MAX_BROWSER_PART_BYTES = 700 * 1024
 
 
 @dataclass(frozen=True)
@@ -295,7 +296,15 @@ def main() -> None:
     binary = bytes(packer.payload)
     compressed = gzip.compress(binary, compresslevel=9, mtime=0)
     binary_path = args.output / "model.bin.gz"
-    binary_path.write_bytes(compressed)
+    if binary_path.exists():
+        binary_path.unlink()
+    for stale_part in args.output.glob("model.part*.bin"):
+        stale_part.unlink()
+    binary_parts: list[str] = []
+    for index, offset in enumerate(range(0, len(compressed), MAX_BROWSER_PART_BYTES)):
+        name = f"model.part{index:02d}.bin"
+        (args.output / name).write_bytes(compressed[offset:offset + MAX_BROWSER_PART_BYTES])
+        binary_parts.append(name)
     (args.output / "labels.json").write_text(json.dumps(labels, indent=2), encoding="utf-8")
 
     manifest = {
@@ -312,6 +321,7 @@ def main() -> None:
         "classifier": classifier,
         "binaryBytes": len(binary),
         "compressedBytes": len(compressed),
+        "binaryParts": binary_parts,
         "binarySha256": hashlib.sha256(binary).hexdigest(),
         "compressedSha256": hashlib.sha256(compressed).hexdigest(),
         "source": {
@@ -384,7 +394,7 @@ def main() -> None:
         "and real webcam conditions require separate evaluation, so SignRelay labels the feature experimental.\n",
         encoding="utf-8",
     )
-    hash_files = ["model.bin.gz", "model.json", "labels.json", "adapter.json", "metrics.json", "dataset-card.md"]
+    hash_files = [*binary_parts, "model.json", "labels.json", "adapter.json", "metrics.json", "dataset-card.md"]
     (args.output / "sha256.txt").write_text("".join(
         f"{hashlib.sha256((args.output / name).read_bytes()).hexdigest()}  {name}\n"
         for name in hash_files

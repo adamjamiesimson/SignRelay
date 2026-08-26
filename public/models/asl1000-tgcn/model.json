@@ -2736,6 +2736,17 @@
   },
   "binaryBytes": 6402336,
   "compressedBytes": 6068069,
+  "binaryParts": [
+    "model.part00.bin",
+    "model.part01.bin",
+    "model.part02.bin",
+    "model.part03.bin",
+    "model.part04.bin",
+    "model.part05.bin",
+    "model.part06.bin",
+    "model.part07.bin",
+    "model.part08.bin"
+  ],
   "binarySha256": "8e244660ed290956f48fc069347fdccdf62b629467cec87f993732c26aaf0216",
   "compressedSha256": "9f192b537919f78e60a65d92f3d92e365827c806429d287d54786da1a7f7454e",
   "source": {

@@ -38,6 +38,8 @@ export type TgcnManifest = {
   layers: PackedGraphLayer[];
   classifier: PackedClassifier;
   binaryBytes: number;
+  compressedBytes: number;
+  binaryParts: string[];
 };
 
 type MaterialisedLayer = {
@@ -83,10 +85,9 @@ let modelPromise: Promise<MaterialisedModel> | null = null;
 function loadModel() {
   modelPromise ??= Promise.all([
     fetch("/models/asl1000-tgcn/model.json"),
-    fetch("/models/asl1000-tgcn/model.bin.gz"),
     fetch("/models/asl1000-tgcn/labels.json"),
-  ]).then(async ([manifestResponse, binaryResponse, labelsResponse]) => {
-    if (!manifestResponse.ok || !binaryResponse.ok || !labelsResponse.ok) {
+  ]).then(async ([manifestResponse, labelsResponse]) => {
+    if (!manifestResponse.ok || !labelsResponse.ok) {
       throw new Error("ASL-1000 model assets could not load");
     }
     if (!("DecompressionStream" in self)) {
@@ -94,7 +95,29 @@ function loadModel() {
     }
     const manifest = await manifestResponse.json() as TgcnManifest;
     const labels = await labelsResponse.json() as string[];
-    const stream = new Blob([await binaryResponse.arrayBuffer()])
+    if (!Array.isArray(manifest.binaryParts) || manifest.binaryParts.length === 0) {
+      throw new Error("ASL-1000 model shard manifest is invalid");
+    }
+    const partResponses = await Promise.all(manifest.binaryParts.map((name) =>
+      fetch(`/models/asl1000-tgcn/${name}`)
+    ));
+    if (partResponses.some((response) => !response.ok)) {
+      throw new Error("ASL-1000 model assets could not load");
+    }
+    const partBuffers = await Promise.all(partResponses.map((response) => response.arrayBuffer()));
+    const compressed = new Uint8Array(manifest.compressedBytes);
+    let compressedOffset = 0;
+    for (const part of partBuffers) {
+      if (compressedOffset + part.byteLength > compressed.byteLength) {
+        throw new Error("ASL-1000 compressed model integrity check failed");
+      }
+      compressed.set(new Uint8Array(part), compressedOffset);
+      compressedOffset += part.byteLength;
+    }
+    if (compressedOffset !== manifest.compressedBytes) {
+      throw new Error("ASL-1000 compressed model integrity check failed");
+    }
+    const stream = new Blob([compressed.buffer])
       .stream()
       .pipeThrough(new DecompressionStream("gzip"));
     const binary = await new Response(stream).arrayBuffer();

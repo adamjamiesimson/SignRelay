@@ -10,7 +10,7 @@
   "exportVerification": {
     "random_inputs": 3,
     "top1_agreement": 1.0,
-    "maximum_logit_error": 0.16452312469482422
+    "maximum_logit_error": 0.1645221710205078
   },
   "liveMediaPipeAccuracy": null,
   "warning": "The live MediaPipe-to-OpenPose adapter is a domain change and needs a separate signer-independent benchmark.",
