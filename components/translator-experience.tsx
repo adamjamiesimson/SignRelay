@@ -205,7 +205,7 @@ export function TranslatorExperience() {
 
   useEffect(() => {
     if (step !== "workspace") return;
-    const worker = new Worker(new URL("../workers/recognition.worker.ts", import.meta.url), { type: "module" });
+    const worker = new Worker("/workers/recognition.worker.js", { type: "module" });
     worker.onmessage = (event: MessageEvent<WorkerMessage>) => handleWorkerMessage(event.data);
     worker.postMessage({ type: "templates", templates: templatesRef.current });
     workerRef.current = worker;

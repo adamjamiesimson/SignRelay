@@ -4,6 +4,16 @@ import { describe, expect, it } from "vitest";
 import { runPackedTgcn, type TgcnManifest } from "../lib/asl1000-runtime";
 
 describe("ASL-1000 packed runtime", () => {
+  it("ships an executable browser worker instead of raw TypeScript", () => {
+    const component = readFileSync("components/translator-experience.tsx", "utf8");
+    const worker = readFileSync("public/workers/recognition.worker.js", "utf8");
+
+    expect(component).toContain('new Worker("/workers/recognition.worker.js"');
+    expect(worker).toContain("binaryParts");
+    expect(worker).not.toContain("import type");
+    expect(worker).not.toContain('from "@/');
+  });
+
   it("reproduces the Python exporter's deterministic top prediction", () => {
     const manifest = JSON.parse(readFileSync("public/models/asl1000-tgcn/model.json", "utf8")) as TgcnManifest;
     const labels = JSON.parse(readFileSync("public/models/asl1000-tgcn/labels.json", "utf8")) as string[];
