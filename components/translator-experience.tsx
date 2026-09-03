@@ -96,6 +96,7 @@ export function TranslatorExperience() {
   const [calibrationTemplates, setCalibrationTemplates] = useState<CalibrationTemplate[]>([]);
   const [calibrationWord, setCalibrationWord] = useState<AslVocabularyEntry>(() => createCustomVocabularyEntry("Personal sign")!);
   const [customWordInput, setCustomWordInput] = useState("");
+  const [vocabularySearch, setVocabularySearch] = useState("");
   const [calibrationState, setCalibrationState] = useState<CalibrationState>("idle");
   const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
   const [countdown, setCountdown] = useState(3);
@@ -149,12 +150,20 @@ export function TranslatorExperience() {
   const filteredCalibrationVocabulary = useMemo(() => {
     const builtInStarter = selected === "asl" ? [] : PERSONAL_STARTER_VOCABULARY;
     const knownGlosses = new Set<string>();
-    return [...builtInStarter, ...calibrationVocabulary].filter((word) => {
+    return [...calibrationVocabulary, ...builtInStarter].filter((word) => {
       if (knownGlosses.has(word.gloss)) return false;
       knownGlosses.add(word.gloss);
       return true;
     });
   }, [calibrationVocabulary, selected]);
+
+  const visibleCalibrationVocabulary = useMemo(() => {
+    const search = vocabularySearch.trim().toLocaleLowerCase();
+    const matches = search
+      ? filteredCalibrationVocabulary.filter((word) => `${word.text} ${word.gloss}`.toLocaleLowerCase().includes(search))
+      : filteredCalibrationVocabulary;
+    return matches.slice(0, search ? 200 : 80);
+  }, [filteredCalibrationVocabulary, vocabularySearch]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -179,6 +188,7 @@ export function TranslatorExperience() {
     const personalSign = createCustomVocabularyEntry("Personal sign")!;
     setCalibrationWord(personalSign);
     setCustomWordInput("");
+    setVocabularySearch("");
     captureStateRef.current = "idle";
     setCalibrationState("idle");
     setCalibrationMessage(`Type a ${selected.toUpperCase()} word or short phrase, then record two or three examples.`);
@@ -737,9 +747,26 @@ export function TranslatorExperience() {
               </div>
             </div>
 
+            {selected !== "asl" && (
+              <div className="custom-word-controls starter-library-search">
+                <div>
+                  <span className="custom-word-label">Search the {model.vocabulary.length.toLocaleString()} built-in concepts</span>
+                  <p>Choose a concept first, then record two or three examples of the sign you use for it.</p>
+                </div>
+                <div className="custom-word-input">
+                  <input
+                    value={vocabularySearch}
+                    onChange={(event) => setVocabularySearch(event.target.value)}
+                    placeholder="Search, e.g. doctor, travel, happy"
+                    aria-label={`Search built-in ${model.shortName} concepts`}
+                  />
+                </div>
+              </div>
+            )}
+
             <p className={`calibration-message ${calibrationState}`} role="status">{calibrationMessage}</p>
             <div className="vocabulary-grid" aria-label={`Personal ${model.shortName} vocabulary`}>
-              {filteredCalibrationVocabulary.map((word) => {
+              {visibleCalibrationVocabulary.map((word) => {
                 const exampleCount = calibrationCounts.get(word.gloss) ?? 0;
                 return (
                   <button
@@ -759,6 +786,9 @@ export function TranslatorExperience() {
                 );
               })}
             </div>
+            {filteredCalibrationVocabulary.length > visibleCalibrationVocabulary.length && (
+              <p className="calibration-message">Showing {visibleCalibrationVocabulary.length} of {filteredCalibrationVocabulary.length.toLocaleString()} words. Search to narrow the library.</p>
+            )}
           </section>
 
           <section className="privacy-strip" aria-labelledby="privacy-heading">

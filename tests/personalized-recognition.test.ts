@@ -22,11 +22,11 @@ describe("ASL vocabulary", () => {
     expect(LANGUAGE_LIST.filter((language) => language.status === "personal").map((language) => language.id).sort()).toEqual(["bsl", "csl", "isl"]);
   });
 
-  it("includes a 400-plus word built-in starter library for every teachable language", () => {
-    expect(PERSONAL_STARTER_VOCABULARY.length).toBeGreaterThanOrEqual(400);
+  it("includes a 2,000-plus concept library for every teachable language", () => {
+    expect(PERSONAL_STARTER_VOCABULARY.length).toBeGreaterThanOrEqual(2000);
     expect(new Set(PERSONAL_STARTER_VOCABULARY.map((word) => word.gloss)).size).toBe(PERSONAL_STARTER_VOCABULARY.length);
     for (const language of ["bsl", "csl", "isl"] as const) {
-      expect(MODEL_ADAPTERS[language].vocabulary.length).toBeGreaterThanOrEqual(400);
+      expect(MODEL_ADAPTERS[language].vocabulary.length).toBeGreaterThanOrEqual(2000);
     }
   });
 

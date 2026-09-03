@@ -1,4 +1,5 @@
 import WLASL1000_LABELS from "../public/models/asl1000-tgcn/labels.json";
+import WLASL2000_CONCEPTS from "../public/vocabularies/wlasl2000-concepts.json";
 
 export type LanguageId = "asl" | "bsl" | "csl" | "isl";
 
@@ -73,8 +74,14 @@ export const PERSONAL_STARTER_GLOSSES = [
   ["GOOD", "BAD", "BIG", "SMALL", "LONG", "SHORT", "NEW", "OLD", "YOUNG", "FULL", "EMPTY", "POLITE", "DIRTY", "STRONG", "WEAK", "QUIET", "LOUD", "TRUE", "FALSE", "IMPORTANT"],
 ] as const satisfies readonly (readonly string[])[];
 
-export const PERSONAL_STARTER_VOCABULARY: AslVocabularyEntry[] = PERSONAL_STARTER_GLOSSES
-  .flat()
+export const WLASL2000_GLOSSES = WLASL2000_CONCEPTS as string[];
+
+export const PERSONAL_STARTER_CONCEPTS = Array.from(new Set([
+  ...WLASL2000_GLOSSES,
+  ...PERSONAL_STARTER_GLOSSES.flat(),
+]));
+
+export const PERSONAL_STARTER_VOCABULARY: AslVocabularyEntry[] = PERSONAL_STARTER_CONCEPTS
   .map((gloss) => ({ gloss, text: title(gloss), category: "learning", recognition: "personal-calibration" }));
 
 export function createCustomVocabularyEntry(value: string): AslVocabularyEntry | null {
@@ -120,7 +127,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     language: "British Sign Language",
     status: "personal",
     modelFile: "On-device personal landmark recognizer",
-    vocabulary: PERSONAL_STARTER_GLOSSES.flat(),
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
     inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
     sequenceLength: 24,
     confidenceThreshold: 0.76,
@@ -129,7 +136,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     version: "personal-dtw-v2",
     dataset: "No shared BSL checkpoint is installed. Each word is intentionally learned from the signer on this device.",
     speechLocale: "en-GB",
-    summary: `400+ built-in BSL starter labels: choose one and record two or three examples on this device.`,
+    summary: `2,000+ built-in BSL starter concepts: choose one and record two or three examples on this device.`,
   },
   isl: {
     id: "isl",
@@ -137,7 +144,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     language: "Indian Sign Language",
     status: "personal",
     modelFile: "On-device personal landmark recognizer",
-    vocabulary: PERSONAL_STARTER_GLOSSES.flat(),
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
     inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
     sequenceLength: 24,
     confidenceThreshold: 0.76,
@@ -146,7 +153,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     version: "personal-dtw-v2",
     dataset: "INCLUDE (CC-BY-4.0) remains a future shared-model research source; personal examples require no uploaded video or dataset licence.",
     speechLocale: "en-IN",
-    summary: "400+ built-in ISL starter labels, ready to teach privately on this device.",
+    summary: "2,000+ built-in ISL starter concepts, ready to teach privately on this device.",
   },
   csl: {
     id: "csl",
@@ -154,7 +161,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     language: "Chinese Sign Language",
     status: "personal",
     modelFile: "On-device personal landmark recognizer",
-    vocabulary: PERSONAL_STARTER_GLOSSES.flat(),
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
     inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
     sequenceLength: 24,
     confidenceThreshold: 0.76,
@@ -163,7 +170,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     version: "personal-dtw-v2",
     dataset: "SLR500 and CSL-Daily remain future shared-model sources; personal examples do not use or redistribute those datasets.",
     speechLocale: "zh-CN",
-    summary: "400+ built-in CSL starter labels, ready to teach privately on this device.",
+    summary: "2,000+ built-in CSL starter concepts, ready to teach privately on this device.",
   },
 };
 
