@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, LANGUAGE_LIST, createCustomAslVocabularyEntry } from "../lib/model-adapters";
+import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, LANGUAGE_LIST, MODEL_ADAPTERS, PERSONAL_STARTER_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
 import { hasAsl100CompletedSignMotion, hasAsl100HandEvidence } from "../lib/asl100-runtime";
 import { halfToFloat, prepareTgcnInput } from "../lib/asl1000-runtime";
 import { prepareCalibrationSequence, sequenceDistance, templatesForLanguage } from "../lib/personalized-recognition";
@@ -20,6 +20,14 @@ describe("ASL vocabulary", () => {
   it("exposes separate ASL, BSL, CSL and ISL recognition paths", () => {
     expect(LANGUAGE_LIST.map((language) => language.id)).toEqual(["asl", "bsl", "isl", "csl"]);
     expect(LANGUAGE_LIST.filter((language) => language.status === "personal").map((language) => language.id).sort()).toEqual(["bsl", "csl", "isl"]);
+  });
+
+  it("includes a 400-plus word built-in starter library for every teachable language", () => {
+    expect(PERSONAL_STARTER_VOCABULARY.length).toBeGreaterThanOrEqual(400);
+    expect(new Set(PERSONAL_STARTER_VOCABULARY.map((word) => word.gloss)).size).toBe(PERSONAL_STARTER_VOCABULARY.length);
+    for (const language of ["bsl", "csl", "isl"] as const) {
+      expect(MODEL_ADAPTERS[language].vocabulary.length).toBeGreaterThanOrEqual(400);
+    }
   });
 
   it("keeps personal sign templates inside their selected language", () => {

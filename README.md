@@ -22,9 +22,9 @@ This repository is an engineering foundation, not a claim of full sign-language 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
 | ASL | Experimental | 1,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL1000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
-| BSL | Personal recognizer | Unlimited signer-taught words | On-device dynamic time warping |
-| ISL | Personal recognizer | Unlimited signer-taught words | On-device dynamic time warping |
-| CSL | Personal recognizer | Unlimited signer-taught words | On-device dynamic time warping |
+| BSL | Personal recognizer | 400+ built-in starter labels + unlimited signer-taught words | On-device dynamic time warping |
+| ISL | Personal recognizer | 400+ built-in starter labels + unlimited signer-taught words | On-device dynamic time warping |
+| CSL | Personal recognizer | 400+ built-in starter labels + unlimited signer-taught words | On-device dynamic time warping |
 
 The 1,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL1000 OpenPose sequences. Its published held-out benchmark is 34.86% top-1, 61.73% top-5 and 71.91% top-10. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. Typed custom words activate only after the signer records personal examples; they do not alter the shared model. BSL, CSL and ISL are functional through their own signer-taught local recognizers, not through a fabricated shared checkpoint.
 

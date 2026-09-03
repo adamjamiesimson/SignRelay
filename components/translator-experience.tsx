@@ -51,6 +51,7 @@ import {
   ASL_BUILT_IN_VOCABULARY,
   createCustomVocabularyEntry,
   LANGUAGE_LIST,
+  PERSONAL_STARTER_VOCABULARY,
   type AslVocabularyEntry,
   type LanguageId,
 } from "@/lib/model-adapters";
@@ -145,7 +146,15 @@ export function TranslatorExperience() {
 
   const activeCustomCount = trainedGlosses.size;
 
-  const filteredCalibrationVocabulary = calibrationVocabulary;
+  const filteredCalibrationVocabulary = useMemo(() => {
+    const builtInStarter = selected === "asl" ? [] : PERSONAL_STARTER_VOCABULARY;
+    const knownGlosses = new Set<string>();
+    return [...builtInStarter, ...calibrationVocabulary].filter((word) => {
+      if (knownGlosses.has(word.gloss)) return false;
+      knownGlosses.add(word.gloss);
+      return true;
+    });
+  }, [calibrationVocabulary, selected]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -498,7 +507,7 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <Sparkles size={18} aria-hidden="true" />
-            <p>{selected === "asl" ? <><strong>{ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in ASL test signs:</strong> the official WLASL1000 Pose-TGCN isolated-sign model runs locally in your browser. You can separately teach any ASL word or short phrase.</> : <><strong>Personal {model.shortName} recognizer:</strong> teach any word or short phrase with two or three examples. Its landmark templates are kept only on this device and are never mixed with another sign language.</>}</p>
+            <p>{selected === "asl" ? <><strong>{ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in ASL test signs:</strong> the official WLASL1000 Pose-TGCN isolated-sign model runs locally in your browser. You can separately teach any ASL word or short phrase.</> : <><strong>{model.vocabulary.length.toLocaleString()} built-in {model.shortName} starter labels:</strong> choose one below and record two or three examples to activate it. Its landmark templates stay on this device and are never mixed with another sign language.</>}</p>
             <a href="#personal-vocabulary">Teach a sign</a>
           </div>
 
@@ -681,7 +690,7 @@ export function TranslatorExperience() {
               <div>
                 <p className="panel-kicker">On-device personal recognizer</p>
                 <h2 id="calibration-title">Teach your {model.shortName} vocabulary</h2>
-                <p>{selected === "asl" ? `The ${ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} WLASL words above are built in. For a word or short phrase outside that model, type it below and record the complete sign two or three times.` : `Add as many ${model.shortName} words or short phrases as you need. Type the intended text, then record the complete sign two or three times for a more reliable personal match.`} SignRelay stores only normalised landmarks on this device—not camera video.</p>
+                <p>{selected === "asl" ? `The ${ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} WLASL words above are built in. For a word or short phrase outside that model, type it below and record the complete sign two or three times.` : `Choose from ${model.vocabulary.length.toLocaleString()} built-in ${model.shortName} starter labels below, or type your own. Record the complete sign two or three times to activate a reliable personal match.`} SignRelay stores only normalised landmarks on this device—not camera video.</p>
               </div>
               <div className="calibration-progress" aria-label={`${activeCustomCount} personal words active`}>
                 <strong>{activeCustomCount}</strong><span> personal</span>
@@ -805,7 +814,7 @@ export function TranslatorExperience() {
                 <p>{language.summary}</p>
                 <span className={`model-pill ${language.status === "experimental" ? "available" : "personal"}`}>
                   <span className="mini-dot" aria-hidden="true" />
-                  {language.status === "experimental" ? "1,000-sign research model + personal vocabulary" : "Personal recognizer ready"}
+                  {language.status === "experimental" ? "1,000-sign research model + personal vocabulary" : `${language.vocabulary.length}+ word starter library`}
                 </span>
               </button>
             ))}
@@ -813,7 +822,7 @@ export function TranslatorExperience() {
           <div className="language-continue" aria-live="polite">
             <p>{model.status === "experimental"
               ? `Selected: ${model.language} · ${ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in research signs + your own personal signs`
-              : `Selected: ${model.language} · teach an unlimited private vocabulary with two or three examples per sign`}</p>
+              : `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} starter labels + unlimited private vocabulary`}</p>
             <button className="button primary" onClick={beginTranslation}>
               Continue to camera <ArrowRight size={18} aria-hidden="true" />
             </button>

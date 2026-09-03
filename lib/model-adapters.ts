@@ -42,11 +42,46 @@ export const ASL_BUILT_IN_VOCABULARY: AslVocabularyEntry[] = WLASL1000_GLOSSES.m
 
 export const ASL_VOCABULARY = ASL_BUILT_IN_VOCABULARY;
 
+/**
+ * These are intentionally language-neutral *labels*, not claims that a
+ * single sign form is shared by BSL, CSL or ISL. They make a substantial
+ * starter dictionary available to teach in each language without inventing
+ * an unvalidated shared checkpoint.
+ */
+export const PERSONAL_STARTER_GLOSSES = [
+  ["HELLO", "GOODBYE", "PLEASE", "THANK YOU", "SORRY", "EXCUSE ME", "YES", "NO", "MAYBE", "OKAY", "HELP", "STOP", "WAIT", "AGAIN", "UNDERSTAND", "DON'T UNDERSTAND", "NICE", "WELCOME", "READY", "FINISH"],
+  ["PERSON", "MAN", "WOMAN", "CHILD", "BABY", "FRIEND", "NEIGHBOUR", "TEACHER", "STUDENT", "DOCTOR", "NURSE", "DRIVER", "CUSTOMER", "VISITOR", "MOTHER", "FATHER", "SISTER", "BROTHER", "GRANDMOTHER", "GRANDFATHER"],
+  ["FAMILY", "PARENT", "SON", "DAUGHTER", "HUSBAND", "WIFE", "PARTNER", "AUNT", "UNCLE", "COUSIN", "RELATIVE", "MARRIED", "SINGLE", "LOVE", "MISS", "MEET", "CALL", "INVITE", "CELEBRATE", "TOGETHER"],
+  ["GO", "COME", "LEAVE", "ARRIVE", "WALK", "RUN", "SIT", "STAND", "OPEN", "CLOSE", "GIVE", "TAKE", "PUT", "FIND", "LOSE", "BUY", "SELL", "PAY", "CHOOSE", "CHANGE"],
+  ["WAKE UP", "SLEEP", "SHOWER", "WASH", "DRESS", "COOK", "CLEAN", "EAT", "DRINK", "REST", "PLAY", "WATCH", "LISTEN", "READ", "WRITE", "SIGN", "TALK", "THINK", "REMEMBER", "FORGET"],
+  ["FOOD", "BREAD", "RICE", "NOODLES", "PASTA", "SOUP", "SALAD", "CHICKEN", "FISH", "MEAT", "EGG", "CHEESE", "FRUIT", "APPLE", "BANANA", "ORANGE", "VEGETABLE", "PIZZA", "CAKE", "SWEET"],
+  ["WATER", "TEA", "COFFEE", "JUICE", "MILK", "HOT", "COLD", "HUNGRY", "THIRSTY", "BREAKFAST", "LUNCH", "DINNER", "SNACK", "RESTAURANT", "MENU", "BILL", "DELICIOUS", "SPICY", "SUGAR", "SALT"],
+  ["HAPPY", "SAD", "ANGRY", "WORRIED", "SCARED", "TIRED", "EXCITED", "SURPRISED", "BORED", "CONFUSED", "PROUD", "SHY", "CALM", "STRESSED", "SICK", "BETTER", "WORSE", "BUSY", "FREE", "LUCKY"],
+  ["HOME", "SCHOOL", "UNIVERSITY", "OFFICE", "SHOP", "MARKET", "HOSPITAL", "PHARMACY", "BANK", "HOTEL", "AIRPORT", "STATION", "PARK", "BEACH", "MOSQUE", "CHURCH", "TOILET", "KITCHEN", "BEDROOM", "BATHROOM"],
+  ["TODAY", "TOMORROW", "YESTERDAY", "NOW", "LATER", "EARLY", "LATE", "MORNING", "AFTERNOON", "EVENING", "NIGHT", "WEEK", "MONTH", "YEAR", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "WEEKEND"],
+  ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE", "TWENTY", "FIFTY", "HUNDRED", "THOUSAND", "FIRST", "LAST", "MORE", "LESS"],
+  ["BLACK", "WHITE", "RED", "BLUE", "GREEN", "YELLOW", "ORANGE COLOUR", "PURPLE", "PINK", "BROWN", "GREY", "GOLD", "SILVER", "LIGHT", "DARK", "BRIGHT", "COLOUR", "SAME", "DIFFERENT", "BEAUTIFUL"],
+  ["SUN", "RAIN", "WIND", "CLOUD", "STORM", "HOT WEATHER", "COLD WEATHER", "WEATHER", "UMBRELLA", "SUMMER", "WINTER", "SPRING", "AUTUMN", "DAY", "TEMPERATURE", "WET", "DRY", "DUST", "FLOOD", "SUNNY"],
+  ["LEARN", "STUDY", "CLASS", "COURSE", "BOOK", "PAPER", "PEN", "COMPUTER", "EXAM", "QUESTION", "ANSWER", "EXPLAIN", "PRACTICE", "CORRECT", "WRONG", "EASY", "DIFFICULT", "IDEA", "PROJECT", "HOMEWORK"],
+  ["PHONE", "MOBILE", "INTERNET", "EMAIL", "MESSAGE", "VIDEO", "PHOTO", "CAMERA", "CHARGER", "BATTERY", "SCREEN", "KEYBOARD", "PASSWORD", "WEBSITE", "DOWNLOAD", "UPLOAD", "ONLINE", "OFFLINE", "MACHINE", "ROBOT"],
+  ["PAIN", "HEADACHE", "MEDICINE", "APPOINTMENT", "EMERGENCY", "ALLERGY", "INJURY", "BLOOD", "HEART", "BREATHE", "DIZZY", "FEVER", "COUGH", "MASK", "HEALTHY", "EXERCISE", "GYM", "SWIM", "SLEEPY", "RECOVER"],
+  ["DANGER", "SAFE", "POLICE", "FIRE", "ACCIDENT", "LOST", "ADDRESS", "NAME", "PHONE NUMBER", "CONTACT", "NEED ASSISTANCE", "CALL POLICE", "CALL AMBULANCE", "EXIT", "ENTRANCE", "LOCK", "UNLOCK", "CAREFUL", "WARNING", "PROBLEM"],
+  ["CAR", "BUS", "TAXI", "TRAIN", "METRO", "PLANE", "BOAT", "BICYCLE", "ROAD", "TRAFFIC", "TICKET", "MAP", "DIRECTION", "LEFT", "RIGHT", "STRAIGHT", "NEAR", "FAR", "FAST", "SLOW"],
+  ["DOOR", "WINDOW", "TABLE", "CHAIR", "BED", "SOFA", "LIGHT SWITCH", "FAN", "AIR CONDITIONING", "FRIDGE", "OVEN", "CUP", "PLATE", "BOWL", "SPOON", "FORK", "KNIFE", "KEY", "BAG", "CLOTHES"],
+  ["WORK", "JOB", "MEETING", "MANAGER", "TEAM", "CLIENT", "MONEY", "PRICE", "CHEAP", "EXPENSIVE", "RECEIPT", "CASH", "CARD", "DELIVERY", "ORDER", "RETURN", "DISCOUNT", "OPEN NOW", "CLOSED", "AVAILABLE"],
+  ["WHO", "WHAT", "WHERE", "WHEN", "WHY", "HOW", "WHICH", "HOW MANY", "HOW MUCH", "CAN", "CAN'T", "WANT", "NEED", "LIKE", "DON'T LIKE", "KNOW", "NOT KNOW", "HAVE", "DON'T HAVE", "SHOULD"],
+  ["GOOD", "BAD", "BIG", "SMALL", "LONG", "SHORT", "NEW", "OLD", "YOUNG", "FULL", "EMPTY", "POLITE", "DIRTY", "STRONG", "WEAK", "QUIET", "LOUD", "TRUE", "FALSE", "IMPORTANT"],
+] as const satisfies readonly (readonly string[])[];
+
+export const PERSONAL_STARTER_VOCABULARY: AslVocabularyEntry[] = PERSONAL_STARTER_GLOSSES
+  .flat()
+  .map((gloss) => ({ gloss, text: title(gloss), category: "learning", recognition: "personal-calibration" }));
+
 export function createCustomVocabularyEntry(value: string): AslVocabularyEntry | null {
   const text = value
     .trim()
     .replace(/\s+/g, " ")
-    .replace(/[^a-zA-Z0-9 '\-]/g, "")
+    .replace(/[^\p{L}\p{N} '\-]/gu, "")
     .trim();
   if (!text) return null;
 
@@ -85,7 +120,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     language: "British Sign Language",
     status: "personal",
     modelFile: "On-device personal landmark recognizer",
-    vocabulary: [],
+    vocabulary: PERSONAL_STARTER_GLOSSES.flat(),
     inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
     sequenceLength: 24,
     confidenceThreshold: 0.76,
@@ -94,7 +129,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     version: "personal-dtw-v2",
     dataset: "No shared BSL checkpoint is installed. Each word is intentionally learned from the signer on this device.",
     speechLocale: "en-GB",
-    summary: "Ready to teach: add any BSL word or short phrase, then record two or three examples on this device.",
+    summary: `400+ built-in BSL starter labels: choose one and record two or three examples on this device.`,
   },
   isl: {
     id: "isl",
@@ -102,7 +137,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     language: "Indian Sign Language",
     status: "personal",
     modelFile: "On-device personal landmark recognizer",
-    vocabulary: [],
+    vocabulary: PERSONAL_STARTER_GLOSSES.flat(),
     inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
     sequenceLength: 24,
     confidenceThreshold: 0.76,
@@ -111,7 +146,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     version: "personal-dtw-v2",
     dataset: "INCLUDE (CC-BY-4.0) remains a future shared-model research source; personal examples require no uploaded video or dataset licence.",
     speechLocale: "en-IN",
-    summary: "Ready to teach: create an ISL vocabulary that matches your own signing, entirely on this device.",
+    summary: "400+ built-in ISL starter labels, ready to teach privately on this device.",
   },
   csl: {
     id: "csl",
@@ -119,7 +154,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     language: "Chinese Sign Language",
     status: "personal",
     modelFile: "On-device personal landmark recognizer",
-    vocabulary: [],
+    vocabulary: PERSONAL_STARTER_GLOSSES.flat(),
     inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
     sequenceLength: 24,
     confidenceThreshold: 0.76,
@@ -128,7 +163,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     version: "personal-dtw-v2",
     dataset: "SLR500 and CSL-Daily remain future shared-model sources; personal examples do not use or redistribute those datasets.",
     speechLocale: "zh-CN",
-    summary: "Ready to teach: label and record the CSL words or short phrases you need, privately on this device.",
+    summary: "400+ built-in CSL starter labels, ready to teach privately on this device.",
   },
 };
 
