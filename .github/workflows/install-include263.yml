@@ -1,0 +1,39 @@
+name: Install official INCLUDE-263 ISL browser model
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [firebase-hosting]
+    paths: [.github/workflows/install-include263.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: firebase-hosting
+          persist-credentials: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download and export the official ISL model
+        run: |
+          python -m pip install --disable-pip-version-check torch onnx
+          curl -fL --retry 3 -o /tmp/include263.pth 'https://api.wandb.ai/files/abdur-ai4bharat/include-no-cnn/2kuznb3t/augs_transformer.pth'
+          curl -fL --retry 3 -o /tmp/include-labels.json 'https://raw.githubusercontent.com/AI4Bharat/INCLUDE/main/label_maps/label_map_include.json'
+          python training/export_include263_onnx.py /tmp/include263.pth /tmp/include-labels.json
+
+      - name: Commit the browser model
+        run: |
+          git add public/models/isl263-include
+          git diff --cached --quiet && exit 0
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'assets: install official INCLUDE263 ISL browser model'
+          git push
