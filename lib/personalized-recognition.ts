@@ -2,6 +2,16 @@ import type { CalibrationTemplate, Point, VisionFrame } from "./vision-types";
 
 export const CALIBRATION_SEQUENCE_LENGTH = 24;
 
+export function templatesForLanguage(
+  templates: CalibrationTemplate[],
+  language: NonNullable<CalibrationTemplate["language"]>,
+) {
+  // Version-one templates had no language field and could only have been
+  // recorded in ASL. Preserve them there, but never leak them into a new
+  // BSL, CSL or ISL vocabulary.
+  return templates.filter((template) => (template.language ?? "asl") === language);
+}
+
 const ZERO_HAND = new Array(66).fill(0);
 const ZERO_FACE = new Array(41).fill(0);
 const ZERO_POSE = new Array(35).fill(0);

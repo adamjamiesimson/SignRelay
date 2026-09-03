@@ -1,12 +1,12 @@
 import WLASL1000_LABELS from "../public/models/asl1000-tgcn/labels.json";
 
-export type LanguageId = "asl" | "isl" | "csl";
+export type LanguageId = "asl" | "bsl" | "csl" | "isl";
 
 export type ModelAdapter = {
   id: LanguageId;
   shortName: string;
   language: string;
-  status: "experimental" | "not-installed";
+  status: "experimental" | "personal";
   modelFile: string | null;
   vocabulary: string[];
   inputFormat: string;
@@ -16,6 +16,7 @@ export type ModelAdapter = {
   postProcessing: string;
   version: string;
   dataset: string;
+  speechLocale: string;
   summary: string;
 };
 
@@ -41,7 +42,7 @@ export const ASL_BUILT_IN_VOCABULARY: AslVocabularyEntry[] = WLASL1000_GLOSSES.m
 
 export const ASL_VOCABULARY = ASL_BUILT_IN_VOCABULARY;
 
-export function createCustomAslVocabularyEntry(value: string): AslVocabularyEntry | null {
+export function createCustomVocabularyEntry(value: string): AslVocabularyEntry | null {
   const text = value
     .trim()
     .replace(/\s+/g, " ")
@@ -56,6 +57,9 @@ export function createCustomAslVocabularyEntry(value: string): AslVocabularyEntr
     recognition: "personal-calibration",
   };
 }
+
+/** @deprecated Use createCustomVocabularyEntry for every language. */
+export const createCustomAslVocabularyEntry = createCustomVocabularyEntry;
 
 export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
   asl: {
@@ -72,39 +76,59 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     postProcessing: "Cooldown, consensus smoothing and duplicate suppression",
     version: "0.5.0-wlasl1000-pose-tgcn",
     dataset: "Official WLASL1000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
+    speechLocale: "en-US",
     summary: "A genuine local 1,000-sign ASL isolated-sign model. The published held-out Pose-TGCN benchmark is 34.86% top-1, 61.73% top-5 and 71.91% top-10; the live MediaPipe adapter remains experimental and is not unrestricted ASL translation.",
+  },
+  bsl: {
+    id: "bsl",
+    shortName: "BSL",
+    language: "British Sign Language",
+    status: "personal",
+    modelFile: "On-device personal landmark recognizer",
+    vocabulary: [],
+    inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
+    sequenceLength: 24,
+    confidenceThreshold: 0.76,
+    decoder: "Signer-specific dynamic-time-warping templates, kept separate from every other sign language",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "personal-dtw-v2",
+    dataset: "No shared BSL checkpoint is installed. Each word is intentionally learned from the signer on this device.",
+    speechLocale: "en-GB",
+    summary: "Ready to teach: add any BSL word or short phrase, then record two or three examples on this device.",
   },
   isl: {
     id: "isl",
     shortName: "ISL",
     language: "Indian Sign Language",
-    status: "not-installed",
-    modelFile: null,
+    status: "personal",
+    modelFile: "On-device personal landmark recognizer",
     vocabulary: [],
-    inputFormat: "Planned holistic landmark sequence",
-    sequenceLength: 48,
-    confidenceThreshold: 0.85,
-    decoder: "Not installed",
-    postProcessing: "Language-specific decoder required",
-    version: "unavailable",
-    dataset: "INCLUDE (CC-BY-4.0): a 100-label candidate vocabulary is audited, but no trained checkpoint is installed",
-    summary: "The adapter is separate. A real 100-label ISL vocabulary manifest is ready for signer-aware training, but no ISL recognition checkpoint is installed.",
+    inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
+    sequenceLength: 24,
+    confidenceThreshold: 0.76,
+    decoder: "Signer-specific dynamic-time-warping templates, stored only on this device",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "personal-dtw-v2",
+    dataset: "INCLUDE (CC-BY-4.0) remains a future shared-model research source; personal examples require no uploaded video or dataset licence.",
+    speechLocale: "en-IN",
+    summary: "Ready to teach: create an ISL vocabulary that matches your own signing, entirely on this device.",
   },
   csl: {
     id: "csl",
     shortName: "CSL",
     language: "Chinese Sign Language",
-    status: "not-installed",
-    modelFile: null,
+    status: "personal",
+    modelFile: "On-device personal landmark recognizer",
     vocabulary: [],
-    inputFormat: "Planned holistic landmark sequence",
-    sequenceLength: 64,
-    confidenceThreshold: 0.86,
-    decoder: "Not installed",
-    postProcessing: "CSL gloss-to-Chinese decoder required",
-    version: "unavailable",
-    dataset: "SLR500 and CSL-Daily require an institutional research-access agreement signed by full-time staff",
-    summary: "The adapter is separate, but no CSL recognition checkpoint or unlicensed vocabulary list is installed.",
+    inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
+    sequenceLength: 24,
+    confidenceThreshold: 0.76,
+    decoder: "Signer-specific dynamic-time-warping templates, stored only on this device",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "personal-dtw-v2",
+    dataset: "SLR500 and CSL-Daily remain future shared-model sources; personal examples do not use or redistribute those datasets.",
+    speechLocale: "zh-CN",
+    summary: "Ready to teach: label and record the CSL words or short phrases you need, privately on this device.",
   },
 };
 

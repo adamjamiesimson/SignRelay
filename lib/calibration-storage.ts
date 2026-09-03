@@ -16,7 +16,7 @@ export async function loadCalibrationTemplates(): Promise<CalibrationTemplate[]>
 
 export async function saveCalibrationTemplate(template: CalibrationTemplate) {
   const existing = (await loadCalibrationTemplates())
-    .filter((item) => item.gloss === template.gloss)
+    .filter((item) => item.gloss === template.gloss && (item.language ?? "asl") === (template.language ?? "asl"))
     .sort((a, b) => b.createdAt - a.createdAt);
   const database = await openDatabase();
 
@@ -30,8 +30,8 @@ export async function saveCalibrationTemplate(template: CalibrationTemplate) {
   });
 }
 
-export async function deleteCalibrationGloss(gloss: string) {
-  const matching = (await loadCalibrationTemplates()).filter((item) => item.gloss === gloss);
+export async function deleteCalibrationGloss(gloss: string, language: NonNullable<CalibrationTemplate["language"]>) {
+  const matching = (await loadCalibrationTemplates()).filter((item) => item.gloss === gloss && (item.language ?? "asl") === language);
   const database = await openDatabase();
   await new Promise<void>((resolve, reject) => {
     const transaction = database.transaction(STORE_NAME, "readwrite");

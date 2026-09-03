@@ -6,7 +6,7 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 ## What works now
 
-- ASL, ISL and CSL have separate model adapter configurations.
+- ASL, BSL, ISL and CSL have separate model adapter configurations and personal vocabularies.
 - Camera permission is requested only after language selection.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
 - A Web Worker maintains an ordered 32-frame temporal buffer.
@@ -22,10 +22,11 @@ This repository is an engineering foundation, not a claim of full sign-language 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
 | ASL | Experimental | 1,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL1000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
-| ISL | Model not installed | None | Separate inactive adapter |
-| CSL | Model not installed | None | Separate inactive adapter |
+| BSL | Personal recognizer | Unlimited signer-taught words | On-device dynamic time warping |
+| ISL | Personal recognizer | Unlimited signer-taught words | On-device dynamic time warping |
+| CSL | Personal recognizer | Unlimited signer-taught words | On-device dynamic time warping |
 
-The 1,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL1000 OpenPose sequences. Its published held-out benchmark is 34.86% top-1, 61.73% top-5 and 71.91% top-10. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. Typed custom words activate only after the signer records personal examples; they do not alter the shared model. There is no unrestricted ASL, ISL or CSL model in this repository.
+The 1,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL1000 OpenPose sequences. Its published held-out benchmark is 34.86% top-1, 61.73% top-5 and 71.91% top-10. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. Typed custom words activate only after the signer records personal examples; they do not alter the shared model. BSL, CSL and ISL are functional through their own signer-taught local recognizers, not through a fabricated shared checkpoint.
 
 ## Architecture
 
@@ -45,7 +46,7 @@ Important modules:
 
 - `lib/vision-engine.ts`: model loading and per-frame holistic tracking
 - `workers/recognition.worker.ts`: temporal buffer, segmentation and ASL starter inference
-- `lib/model-adapters.ts`: independent language model registry
+- `lib/model-adapters.ts`: independent ASL, BSL, CSL and ISL model registry
 - `lib/decoder.ts`: confidence gating and duplicate suppression
 - `components/translator-experience.tsx`: camera, transcript and speech experience
 - `lib/browser-storage.ts`: device-local settings and transcript sessions
@@ -131,7 +132,7 @@ The application targets the Vinext/Cloudflare-compatible Sites runtime. The prod
 - Performance varies with viewpoint, signing speed, hand dominance, occlusion and lighting.
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.
 - No continuous unrestricted grammar decoder is installed.
-- ISL and CSL are unavailable until independently trained checkpoints pass evaluation.
+- A shared BSL, ISL or CSL model is unavailable until an independently trained checkpoint passes evaluation; their private personal recognizers are available now.
 - The first model load requires internet access to download official MediaPipe assets.
 
 ## Roadmap

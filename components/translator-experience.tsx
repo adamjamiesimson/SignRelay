@@ -49,7 +49,7 @@ import {
 } from "@/lib/calibration-storage";
 import {
   ASL_BUILT_IN_VOCABULARY,
-  createCustomAslVocabularyEntry,
+  createCustomVocabularyEntry,
   LANGUAGE_LIST,
   type AslVocabularyEntry,
   type LanguageId,
@@ -93,7 +93,7 @@ export function TranslatorExperience() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [settings, setSettings] = useState<SpeechSettings>(DEFAULT_SETTINGS);
   const [calibrationTemplates, setCalibrationTemplates] = useState<CalibrationTemplate[]>([]);
-  const [calibrationWord, setCalibrationWord] = useState<AslVocabularyEntry>(() => createCustomAslVocabularyEntry("Personal sign")!);
+  const [calibrationWord, setCalibrationWord] = useState<AslVocabularyEntry>(() => createCustomVocabularyEntry("Personal sign")!);
   const [customWordInput, setCustomWordInput] = useState("");
   const [calibrationState, setCalibrationState] = useState<CalibrationState>("idle");
   const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
@@ -120,9 +120,11 @@ export function TranslatorExperience() {
 
   const calibrationCounts = useMemo(() => {
     const counts = new Map<string, number>();
-    calibrationTemplates.forEach((template) => counts.set(template.gloss, (counts.get(template.gloss) ?? 0) + 1));
+    calibrationTemplates
+      .filter((template) => (template.language ?? "asl") === selected)
+      .forEach((template) => counts.set(template.gloss, (counts.get(template.gloss) ?? 0) + 1));
     return counts;
-  }, [calibrationTemplates]);
+  }, [calibrationTemplates, selected]);
 
   const trainedGlosses = useMemo(() => new Set(calibrationCounts.keys()), [calibrationCounts]);
 
@@ -130,16 +132,16 @@ export function TranslatorExperience() {
     const knownGlosses = new Set<string>();
     const customWords: AslVocabularyEntry[] = [];
 
-    calibrationTemplates.forEach((template) => {
+    calibrationTemplates.filter((template) => (template.language ?? "asl") === selected).forEach((template) => {
       if (knownGlosses.has(template.gloss)) return;
-      const word = createCustomAslVocabularyEntry(template.text || template.gloss);
+      const word = createCustomVocabularyEntry(template.text || template.gloss);
       if (!word || knownGlosses.has(word.gloss)) return;
       knownGlosses.add(word.gloss);
       customWords.push(word);
     });
 
     return customWords;
-  }, [calibrationTemplates]);
+  }, [calibrationTemplates, selected]);
 
   const activeCustomCount = trainedGlosses.size;
 
@@ -161,8 +163,17 @@ export function TranslatorExperience() {
 
   useEffect(() => {
     templatesRef.current = calibrationTemplates;
-    workerRef.current?.postMessage({ type: "templates", templates: calibrationTemplates });
-  }, [calibrationTemplates]);
+    workerRef.current?.postMessage({ type: "templates", language: selected, templates: calibrationTemplates });
+  }, [calibrationTemplates, selected]);
+
+  useEffect(() => {
+    const personalSign = createCustomVocabularyEntry("Personal sign")!;
+    setCalibrationWord(personalSign);
+    setCustomWordInput("");
+    captureStateRef.current = "idle";
+    setCalibrationState("idle");
+    setCalibrationMessage(`Type a ${selected.toUpperCase()} word or short phrase, then record two or three examples.`);
+  }, [selected]);
 
   useEffect(() => {
     settingsRef.current = settings;
@@ -175,9 +186,9 @@ export function TranslatorExperience() {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.volume = settingsRef.current.volume;
     utterance.rate = settingsRef.current.rate;
-    utterance.lang = "en-US";
+    utterance.lang = model.speechLocale;
     window.speechSynthesis.speak(utterance);
-  }, []);
+  }, [model.speechLocale]);
 
   const handleWorkerMessage = useCallback((message: WorkerMessage) => {
     if (message.type === "analysis") {
@@ -207,13 +218,13 @@ export function TranslatorExperience() {
     if (step !== "workspace") return;
     const worker = new Worker("/workers/recognition.worker.js", { type: "module" });
     worker.onmessage = (event: MessageEvent<WorkerMessage>) => handleWorkerMessage(event.data);
-    worker.postMessage({ type: "templates", templates: templatesRef.current });
+    worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current });
     workerRef.current = worker;
     return () => {
       worker.terminate();
       workerRef.current = null;
     };
-  }, [step, handleWorkerMessage]);
+  }, [step, selected, handleWorkerMessage]);
 
   const stopCamera = useCallback(() => {
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -353,7 +364,6 @@ export function TranslatorExperience() {
   }, []);
 
   const beginTranslation = () => {
-    if (model.status !== "experimental") return;
     sessionStartedRef.current = Date.now();
     setStep("workspace");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -397,6 +407,7 @@ export function TranslatorExperience() {
     const createdAt = Date.now();
     const template: CalibrationTemplate = {
       id: `${calibrationWord.gloss}-${createdAt}-${Math.random().toString(36).slice(2, 7)}`,
+      language: selected,
       gloss: calibrationWord.gloss,
       text: calibrationWord.text,
       createdAt,
@@ -409,16 +420,16 @@ export function TranslatorExperience() {
       setCalibrationTemplates(updated);
       captureStateRef.current = "saved";
       setCalibrationState("saved");
-      setCalibrationMessage(`${calibrationWord.text} is now active in your personal recognizer. Record two or three examples for better consistency.`);
+      setCalibrationMessage(`${calibrationWord.text} is now active for ${model.shortName}. Record two or three examples for better consistency.`);
     } catch {
       captureStateRef.current = "error";
       setCalibrationState("error");
       setCalibrationMessage("This browser could not save the example. Check private-browsing storage settings and try again.");
     }
-  }, [calibrationWord, requestCamera]);
+  }, [calibrationWord, model.shortName, requestCamera, selected]);
 
   const selectCustomWord = () => {
-    const customWord = createCustomAslVocabularyEntry(customWordInput);
+    const customWord = createCustomVocabularyEntry(customWordInput);
     if (!customWord) {
       setCalibrationState("error");
       setCalibrationMessage("Type a word or short phrase first—letters, numbers, spaces, apostrophes and hyphens are supported.");
@@ -429,16 +440,16 @@ export function TranslatorExperience() {
     setCustomWordInput("");
     captureStateRef.current = "idle";
     setCalibrationState("idle");
-    setCalibrationMessage(`${customWord.text} is selected. Record one to three examples to teach your personal recognizer.`);
+    setCalibrationMessage(`${customWord.text} is selected for ${model.shortName}. Record two or three examples for the most reliable match.`);
   };
 
   const removeCalibration = useCallback(async (gloss: string) => {
-    await deleteCalibrationGloss(gloss);
+    await deleteCalibrationGloss(gloss, selected);
     setCalibrationTemplates(await loadCalibrationTemplates());
     captureStateRef.current = "idle";
     setCalibrationState("idle");
     setCalibrationMessage("Personal examples removed for this word.");
-  }, []);
+  }, [selected]);
 
   const returnHome = () => {
     stopCamera();
@@ -487,7 +498,7 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <Sparkles size={18} aria-hidden="true" />
-            <p><strong>{ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in ASL test signs:</strong> the official WLASL1000 Pose-TGCN isolated-sign model runs locally in your browser. You can separately type any word or short phrase and record your own personal sign.</p>
+            <p>{selected === "asl" ? <><strong>{ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in ASL test signs:</strong> the official WLASL1000 Pose-TGCN isolated-sign model runs locally in your browser. You can separately teach any ASL word or short phrase.</> : <><strong>Personal {model.shortName} recognizer:</strong> teach any word or short phrase with two or three examples. Its landmark templates are kept only on this device and are never mixed with another sign language.</>}</p>
             <a href="#personal-vocabulary">Teach a sign</a>
           </div>
 
@@ -669,8 +680,8 @@ export function TranslatorExperience() {
             <div className="calibration-heading">
               <div>
                 <p className="panel-kicker">On-device personal recognizer</p>
-                <h2 id="calibration-title">Add your own personal sign</h2>
-                <p>The {ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} WLASL words above are already built in. For a word or short phrase outside that model, type it below and record the complete sign one to three times. SignRelay stores only normalized landmarks on this device—not camera video.</p>
+                <h2 id="calibration-title">Teach your {model.shortName} vocabulary</h2>
+                <p>{selected === "asl" ? `The ${ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} WLASL words above are built in. For a word or short phrase outside that model, type it below and record the complete sign two or three times.` : `Add as many ${model.shortName} words or short phrases as you need. Type the intended text, then record the complete sign two or three times for a more reliable personal match.`} SignRelay stores only normalised landmarks on this device—not camera video.</p>
               </div>
               <div className="calibration-progress" aria-label={`${activeCustomCount} personal words active`}>
                 <strong>{activeCustomCount}</strong><span> personal</span>
@@ -718,7 +729,7 @@ export function TranslatorExperience() {
             </div>
 
             <p className={`calibration-message ${calibrationState}`} role="status">{calibrationMessage}</p>
-            <div className="vocabulary-grid" aria-label="Personal ASL vocabulary">
+            <div className="vocabulary-grid" aria-label={`Personal ${model.shortName} vocabulary`}>
               {filteredCalibrationVocabulary.map((word) => {
                 const exampleCount = calibrationCounts.get(word.gloss) ?? 0;
                 return (
@@ -778,7 +789,7 @@ export function TranslatorExperience() {
         <section className="language-section" id="choose-language" aria-labelledby="language-title">
           <div className="section-heading">
             <h2 id="language-title">Choose your sign language</h2>
-            <p>ASL, ISL and CSL are distinct languages. Each uses its own vocabulary, sequence model and decoder.</p>
+            <p>ASL, BSL, CSL and ISL are distinct languages. Each has its own vocabulary and recognizer—nothing is relabelled across languages.</p>
           </div>
           <div className="language-grid" role="radiogroup" aria-label="Sign language">
             {LANGUAGE_LIST.map((language) => (
@@ -792,18 +803,18 @@ export function TranslatorExperience() {
                 <span className="language-code">{language.shortName}</span>
                 <h3>{language.language}</h3>
                 <p>{language.summary}</p>
-                <span className={`model-pill ${language.status === "experimental" ? "available" : "unavailable"}`}>
+                <span className={`model-pill ${language.status === "experimental" ? "available" : "personal"}`}>
                   <span className="mini-dot" aria-hidden="true" />
-                  {language.status === "experimental" ? "Experimental starter available" : "Model not installed"}
+                  {language.status === "experimental" ? "1,000-sign research model + personal vocabulary" : "Personal recognizer ready"}
                 </span>
               </button>
             ))}
           </div>
           <div className="language-continue" aria-live="polite">
             <p>{model.status === "experimental"
-              ? `Selected: ${model.language} · ${ASL_BUILT_IN_VOCABULARY.length} built-in test signs + your own personal signs`
-              : `${model.language} needs a trained, licensed checkpoint before translation can begin.`}</p>
-            <button className="button primary" disabled={model.status !== "experimental"} onClick={beginTranslation}>
+              ? `Selected: ${model.language} · ${ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in research signs + your own personal signs`
+              : `Selected: ${model.language} · teach an unlimited private vocabulary with two or three examples per sign`}</p>
+            <button className="button primary" onClick={beginTranslation}>
               Continue to camera <ArrowRight size={18} aria-hidden="true" />
             </button>
           </div>

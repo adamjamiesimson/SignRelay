@@ -13,6 +13,9 @@ function shouldConfirm({
 
 // lib/personalized-recognition.ts
 var CALIBRATION_SEQUENCE_LENGTH = 24;
+function templatesForLanguage(templates, language) {
+  return templates.filter((template) => (template.language ?? "asl") === language);
+}
 var ZERO_HAND = new Array(66).fill(0);
 var ZERO_FACE = new Array(41).fill(0);
 var ZERO_POSE = new Array(35).fill(0);
@@ -429,12 +432,14 @@ var candidateLabel = null;
 var candidateStreak = 0;
 var lastConfirmation = { label: "", time: 0 };
 var personalTemplates = [];
+var activeLanguage = "asl";
 var latestAsl1000 = null;
 var pendingAsl1000 = false;
 var modelGeneration = 0;
 self.onmessage = async (event) => {
   if (event.data.type === "templates") {
-    personalTemplates = event.data.templates;
+    activeLanguage = event.data.language;
+    personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
     frames.length = 0;
     candidateLabel = null;
     candidateStreak = 0;
@@ -452,12 +457,12 @@ self.onmessage = async (event) => {
   }
   frames.push(event.data.frame);
   while (frames.length > MAX_FRAMES) frames.shift();
-  if (!hasAsl100CompletedSignMotion(frames)) {
+  if (activeLanguage === "asl" && !hasAsl100CompletedSignMotion(frames)) {
     latestAsl1000 = null;
     candidateLabel = null;
     candidateStreak = 0;
     modelGeneration += 1;
-  } else if (frames.length >= 24 && !pendingAsl1000 && frames.length % 6 === 0) {
+  } else if (activeLanguage === "asl" && frames.length >= 24 && !pendingAsl1000 && frames.length % 6 === 0) {
     pendingAsl1000 = true;
     const generation = modelGeneration;
     recognizeAsl1000([...frames]).then((prediction) => {
@@ -509,7 +514,9 @@ self.onmessage = async (event) => {
   }
 };
 function recognize(sequence) {
-  return recognizePersonalTemplate(sequence, personalTemplates) ?? recognizeILoveYou(sequence) ?? recognizeHello(sequence) ?? recognizeThankYou(sequence) ?? recognizeYes(sequence) ?? latestAsl1000;
+  const personal = recognizePersonalTemplate(sequence, personalTemplates);
+  if (activeLanguage !== "asl") return personal;
+  return personal ?? recognizeILoveYou(sequence) ?? recognizeHello(sequence) ?? recognizeThankYou(sequence) ?? recognizeYes(sequence) ?? latestAsl1000;
 }
 function recognizeILoveYou(sequence) {
   const recent = sequence.slice(-10);

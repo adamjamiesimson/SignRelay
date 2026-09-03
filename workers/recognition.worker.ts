@@ -2,7 +2,7 @@
 
 import type { CalibrationTemplate, HandObservation, Point, VisionFrame, WorkerInput, WorkerMessage } from "@/lib/vision-types";
 import { shouldConfirm } from "@/lib/decoder";
-import { recognizePersonalTemplate } from "@/lib/personalized-recognition";
+import { recognizePersonalTemplate, templatesForLanguage } from "@/lib/personalized-recognition";
 import { hasAsl100CompletedSignMotion } from "@/lib/asl100-runtime";
 import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
 
@@ -14,13 +14,16 @@ let candidateLabel: string | null = null;
 let candidateStreak = 0;
 let lastConfirmation = { label: "", time: 0 };
 let personalTemplates: CalibrationTemplate[] = [];
+let activeLanguage: "asl" | "bsl" | "csl" | "isl" = "asl";
 let latestAsl1000: Awaited<ReturnType<typeof recognizeAsl1000>> = null;
 let pendingAsl1000 = false;
 let modelGeneration = 0;
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "templates") {
-    personalTemplates = event.data.templates;
+    activeLanguage = event.data.language;
+    // Records created before language separation were ASL-only.
+    personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
     frames.length = 0;
     candidateLabel = null;
     candidateStreak = 0;
@@ -41,14 +44,14 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   frames.push(event.data.frame);
   while (frames.length > MAX_FRAMES) frames.shift();
 
-  if (!hasAsl100CompletedSignMotion(frames)) {
+  if (activeLanguage === "asl" && !hasAsl100CompletedSignMotion(frames)) {
     // A classifier always has a mathematical "best" class. Idle or random
     // motion must never turn that arbitrary label into spoken text.
     latestAsl1000 = null;
     candidateLabel = null;
     candidateStreak = 0;
     modelGeneration += 1;
-  } else if (frames.length >= 24 && !pendingAsl1000 && frames.length % 6 === 0) {
+  } else if (activeLanguage === "asl" && frames.length >= 24 && !pendingAsl1000 && frames.length % 6 === 0) {
     pendingAsl1000 = true;
     const generation = modelGeneration;
     recognizeAsl1000([...frames]).then((prediction) => {
@@ -101,7 +104,9 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
 };
 
 function recognize(sequence: VisionFrame[]) {
-  return recognizePersonalTemplate(sequence, personalTemplates)
+  const personal = recognizePersonalTemplate(sequence, personalTemplates);
+  if (activeLanguage !== "asl") return personal;
+  return personal
     ?? recognizeILoveYou(sequence)
     ?? recognizeHello(sequence)
     ?? recognizeThankYou(sequence)

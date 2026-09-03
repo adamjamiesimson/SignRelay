@@ -39,6 +39,8 @@ export type WorkerMessage = WorkerAnalysis | WorkerConfirmation;
 
 export type CalibrationTemplate = {
   id: string;
+  /** Older records without this field are treated as ASL for compatibility. */
+  language?: "asl" | "bsl" | "csl" | "isl";
   gloss: string;
   text: string;
   createdAt: number;
@@ -48,7 +50,7 @@ export type CalibrationTemplate = {
 export type WorkerInput =
   | { type: "frame"; frame: VisionFrame }
   | { type: "reset" }
-  | { type: "templates"; templates: CalibrationTemplate[] };
+  | { type: "templates"; language: "asl" | "bsl" | "csl" | "isl"; templates: CalibrationTemplate[] };
 
 export type DetectionStatus = {
   person: boolean;

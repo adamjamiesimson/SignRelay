@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
+import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, LANGUAGE_LIST, createCustomAslVocabularyEntry } from "../lib/model-adapters";
 import { hasAsl100CompletedSignMotion, hasAsl100HandEvidence } from "../lib/asl100-runtime";
 import { halfToFloat, prepareTgcnInput } from "../lib/asl1000-runtime";
-import { prepareCalibrationSequence, sequenceDistance } from "../lib/personalized-recognition";
+import { prepareCalibrationSequence, sequenceDistance, templatesForLanguage } from "../lib/personalized-recognition";
 import type { VisionFrame } from "../lib/vision-types";
 
 describe("ASL vocabulary", () => {
@@ -15,6 +15,22 @@ describe("ASL vocabulary", () => {
   it("creates a safe personal vocabulary entry from a typed word or phrase", () => {
     expect(createCustomAslVocabularyEntry("  pizza   night! ")).toMatchObject({ gloss: "PIZZA NIGHT", text: "pizza night", category: "custom" });
     expect(createCustomAslVocabularyEntry("  !!! ")).toBeNull();
+  });
+
+  it("exposes separate ASL, BSL, CSL and ISL recognition paths", () => {
+    expect(LANGUAGE_LIST.map((language) => language.id)).toEqual(["asl", "bsl", "isl", "csl"]);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "personal").map((language) => language.id).sort()).toEqual(["bsl", "csl", "isl"]);
+  });
+
+  it("keeps personal sign templates inside their selected language", () => {
+    const templates = [
+      { id: "old-asl", gloss: "HELLO", text: "Hello", createdAt: 1, frames: [] },
+      { id: "bsl-hello", language: "bsl" as const, gloss: "HELLO", text: "Hello", createdAt: 2, frames: [] },
+      { id: "isl-help", language: "isl" as const, gloss: "HELP", text: "Help", createdAt: 3, frames: [] },
+    ];
+    expect(templatesForLanguage(templates, "asl").map((item) => item.id)).toEqual(["old-asl"]);
+    expect(templatesForLanguage(templates, "bsl").map((item) => item.id)).toEqual(["bsl-hello"]);
+    expect(templatesForLanguage(templates, "csl")).toEqual([]);
   });
 
   it("does not run the built-in ASL model without sustained hand tracking", () => {
