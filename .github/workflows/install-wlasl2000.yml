@@ -2,6 +2,9 @@ name: Install official WLASL2000 browser model
 
 on:
   workflow_dispatch:
+  push:
+    branches: [firebase-hosting]
+    paths: [.github/workflows/install-wlasl2000.yml]
 
 permissions:
   contents: write
