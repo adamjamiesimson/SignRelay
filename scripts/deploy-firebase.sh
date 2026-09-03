@@ -6,7 +6,6 @@ npm install
 npm run build:firebase
 
 echo "Deploying to Firebase project signrelay-76f34, site signrelay..."
-firebase use signrelay-76f34 --add >/dev/null 2>&1 || firebase use signrelay-76f34
-firebase deploy --only hosting
+firebase deploy --only hosting --project signrelay-76f34
 
 echo "Done: https://signrelay.web.app"
