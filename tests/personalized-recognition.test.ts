@@ -6,10 +6,10 @@ import { prepareCalibrationSequence, sequenceDistance, templatesForLanguage } fr
 import type { VisionFrame } from "../lib/vision-types";
 
 describe("ASL vocabulary", () => {
-  it("ships 1,000 distinct built-in WLASL signs without personal calibration", () => {
-    expect(ASL_BUILT_IN_VOCABULARY).toHaveLength(1000);
-    expect(new Set(ASL_BUILT_IN_VOCABULARY.map((word) => word.gloss)).size).toBe(1000);
-    expect(ASL_VOCABULARY).toHaveLength(1000);
+  it("ships 2,000 distinct built-in WLASL signs without personal calibration", () => {
+    expect(ASL_BUILT_IN_VOCABULARY).toHaveLength(2000);
+    expect(new Set(ASL_BUILT_IN_VOCABULARY.map((word) => word.gloss)).size).toBe(2000);
+    expect(ASL_VOCABULARY).toHaveLength(2000);
   });
 
   it("creates a safe personal vocabulary entry from a typed word or phrase", () => {

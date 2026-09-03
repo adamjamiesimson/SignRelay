@@ -1,5 +1,4 @@
-import WLASL1000_LABELS from "../public/models/asl1000-tgcn/labels.json";
-import WLASL2000_CONCEPTS from "../public/vocabularies/wlasl2000-concepts.json";
+import WLASL2000_LABELS from "../public/models/asl2000-tgcn/labels.json";
 
 export type LanguageId = "asl" | "bsl" | "csl" | "isl";
 
@@ -32,11 +31,11 @@ export const WLASL100_GLOSSES = [
   "BOOK", "DRINK", "COMPUTER", "BEFORE", "CHAIR", "GO", "CLOTHES", "WHO", "CANDY", "COUSIN", "DEAF", "FINE", "HELP", "NO", "THIN", "WALK", "YEAR", "YES", "ALL", "BLACK", "COOL", "FINISH", "HOT", "LIKE", "MANY", "MOTHER", "NOW", "ORANGE", "TABLE", "THANKSGIVING", "WHAT", "WOMAN", "BED", "BLUE", "BOWLING", "CAN", "DOG", "FAMILY", "FISH", "GRADUATE", "HAT", "HEARING", "KISS", "LANGUAGE", "LATER", "MAN", "SHIRT", "STUDY", "TALL", "WHITE", "WRONG", "ACCIDENT", "APPLE", "BIRD", "CHANGE", "COLOR", "CORN", "COW", "DANCE", "DARK", "DOCTOR", "EAT", "ENJOY", "FORGET", "GIVE", "LAST", "MEET", "PINK", "PIZZA", "PLAY", "SCHOOL", "SECRETARY", "SHORT", "TIME", "WANT", "WORK", "AFRICA", "BASKETBALL", "BIRTHDAY", "BROWN", "BUT", "CHEAT", "CITY", "COOK", "DECIDE", "FULL", "HOW", "JACKET", "LETTER", "MEDICINE", "NEED", "PAINT", "PAPER", "PULL", "PURPLE", "RIGHT", "SAME", "SON", "TELL", "THURSDAY",
 ] as const;
 
-export const WLASL1000_GLOSSES = WLASL1000_LABELS as string[];
+export const WLASL2000_GLOSSES = WLASL2000_LABELS as string[];
 
 const title = (value: string) => value.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-export const ASL_BUILT_IN_VOCABULARY: AslVocabularyEntry[] = WLASL1000_GLOSSES.map((gloss) => ({
+export const ASL_BUILT_IN_VOCABULARY: AslVocabularyEntry[] = WLASL2000_GLOSSES.map((gloss) => ({
   gloss, text: title(gloss), category: "learning", recognition: "built-in",
 }));
 
@@ -74,8 +73,6 @@ export const PERSONAL_STARTER_GLOSSES = [
   ["GOOD", "BAD", "BIG", "SMALL", "LONG", "SHORT", "NEW", "OLD", "YOUNG", "FULL", "EMPTY", "POLITE", "DIRTY", "STRONG", "WEAK", "QUIET", "LOUD", "TRUE", "FALSE", "IMPORTANT"],
 ] as const satisfies readonly (readonly string[])[];
 
-export const WLASL2000_GLOSSES = WLASL2000_CONCEPTS as string[];
-
 export const PERSONAL_STARTER_CONCEPTS = Array.from(new Set([
   ...WLASL2000_GLOSSES,
   ...PERSONAL_STARTER_GLOSSES.flat(),
@@ -109,17 +106,17 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     shortName: "ASL",
     language: "American Sign Language",
     status: "experimental",
-    modelFile: "Official WLASL1000 Pose-TGCN + MediaPipe vision + personal-DTW-v1",
+    modelFile: "Official WLASL2000 Pose-TGCN + MediaPipe vision + personal-DTW-v1",
     vocabulary: ASL_VOCABULARY.map((entry) => entry.gloss),
     inputFormat: "50 samples × 55 two-dimensional upper-body and hand landmarks",
     sequenceLength: 50,
     confidenceThreshold: 0.62,
-    decoder: "Quantised on-device WLASL1000 Pose-TGCN; personal templates and four starter rules take priority",
+    decoder: "Quantised on-device WLASL2000 Pose-TGCN; personal templates and four starter rules take priority",
     postProcessing: "Cooldown, consensus smoothing and duplicate suppression",
-    version: "0.5.0-wlasl1000-pose-tgcn",
-    dataset: "Official WLASL1000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
+    version: "0.6.0-wlasl2000-pose-tgcn",
+    dataset: "Official WLASL2000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
     speechLocale: "en-US",
-    summary: "A genuine local 1,000-sign ASL isolated-sign model. The published held-out Pose-TGCN benchmark is 34.86% top-1, 61.73% top-5 and 71.91% top-10; the live MediaPipe adapter remains experimental and is not unrestricted ASL translation.",
+    summary: "A genuine local 2,000-sign ASL isolated-sign model. The live MediaPipe adapter remains experimental and is not unrestricted ASL translation.",
   },
   bsl: {
     id: "bsl",

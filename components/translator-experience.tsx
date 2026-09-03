@@ -517,7 +517,7 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <Sparkles size={18} aria-hidden="true" />
-            <p>{selected === "asl" ? <><strong>{ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in ASL test signs:</strong> the official WLASL1000 Pose-TGCN isolated-sign model runs locally in your browser. You can separately teach any ASL word or short phrase.</> : <><strong>{model.vocabulary.length.toLocaleString()} built-in {model.shortName} starter labels:</strong> choose one below and record two or three examples to activate it. Its landmark templates stay on this device and are never mixed with another sign language.</>}</p>
+            <p>{selected === "asl" ? <><strong>{ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in ASL test signs:</strong> the official WLASL2000 Pose-TGCN isolated-sign model runs locally in your browser. You can separately teach any ASL word or short phrase.</> : <><strong>{model.vocabulary.length.toLocaleString()} built-in {model.shortName} starter labels:</strong> choose one below and record two or three examples to activate it. Its landmark templates stay on this device and are never mixed with another sign language.</>}</p>
             <a href="#personal-vocabulary">Teach a sign</a>
           </div>
 

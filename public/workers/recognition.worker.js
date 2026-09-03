@@ -172,46 +172,46 @@ var MODEL_MIN_MARGIN = 0.22;
 var modelPromise = null;
 function loadModel() {
   modelPromise ?? (modelPromise = Promise.all([
-    fetch("/models/asl1000-tgcn/model.json"),
-    fetch("/models/asl1000-tgcn/labels.json")
+    fetch("/models/asl2000-tgcn/model.json"),
+    fetch("/models/asl2000-tgcn/labels.json")
   ]).then(async ([manifestResponse, labelsResponse]) => {
     if (!manifestResponse.ok || !labelsResponse.ok) {
-      throw new Error("ASL-1000 model assets could not load");
+      throw new Error("ASL-2000 model assets could not load");
     }
     if (!("DecompressionStream" in self)) {
-      throw new Error("This browser cannot unpack the ASL-1000 model");
+      throw new Error("This browser cannot unpack the ASL-2000 model");
     }
     const manifest = await manifestResponse.json();
     const labels = await labelsResponse.json();
     if (!Array.isArray(manifest.binaryParts) || manifest.binaryParts.length === 0) {
-      throw new Error("ASL-1000 model shard manifest is invalid");
+      throw new Error("ASL-2000 model shard manifest is invalid");
     }
     const partResponses = await Promise.all(manifest.binaryParts.map(
-      (name) => fetch(`/models/asl1000-tgcn/${name}`)
+      (name) => fetch(`/models/asl2000-tgcn/${name}`)
     ));
     if (partResponses.some((response) => !response.ok)) {
-      throw new Error("ASL-1000 model assets could not load");
+      throw new Error("ASL-2000 model assets could not load");
     }
     const partBuffers = await Promise.all(partResponses.map((response) => response.arrayBuffer()));
     const compressed = new Uint8Array(manifest.compressedBytes);
     let compressedOffset = 0;
     for (const part of partBuffers) {
       if (compressedOffset + part.byteLength > compressed.byteLength) {
-        throw new Error("ASL-1000 compressed model integrity check failed");
+        throw new Error("ASL-2000 compressed model integrity check failed");
       }
       compressed.set(new Uint8Array(part), compressedOffset);
       compressedOffset += part.byteLength;
     }
     if (compressedOffset !== manifest.compressedBytes) {
-      throw new Error("ASL-1000 compressed model integrity check failed");
+      throw new Error("ASL-2000 compressed model integrity check failed");
     }
     const stream = new Blob([compressed.buffer]).stream().pipeThrough(new DecompressionStream("gzip"));
     const binary = await new Response(stream).arrayBuffer();
     if (manifest.format !== "signrelay-tgcn-v1" || binary.byteLength !== manifest.binaryBytes) {
-      throw new Error("ASL-1000 model integrity check failed");
+      throw new Error("ASL-2000 model integrity check failed");
     }
     if (labels.length !== manifest.classes) {
-      throw new Error("ASL-1000 vocabulary does not match the model");
+      throw new Error("ASL-2000 vocabulary does not match the model");
     }
     return materialiseTgcnModel(manifest, binary, labels);
   }));
