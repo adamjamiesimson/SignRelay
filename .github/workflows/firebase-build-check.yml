@@ -1,0 +1,43 @@
+name: Firebase Static Build Check
+
+on:
+  push:
+    branches:
+      - firebase-hosting
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Firebase static export
+        run: npm run build:firebase
+
+      - name: Verify export
+        run: |
+          test -d out
+          test -f out/index.html
+          echo "Static export created successfully."
+
+      - name: Upload static export
+        uses: actions/upload-artifact@v4
+        with:
+          name: signrelay-firebase-out
+          path: out
+          retention-days: 3
