@@ -3,7 +3,8 @@ import Link from "next/link";
 export function Brand() {
   return (
     <Link className="brand" href="/" aria-label="SignRelay home">
-      <img className="brand-mark" src="/signrelay-logo.png" width="150" height="58" alt="SignRelay" />
+      <img className="brand-mark" src="/signrelay-mark.png" width="42" height="42" alt="" aria-hidden="true" />
+      <span className="brand-wordmark">SignRelay</span>
     </Link>
   );
 }
@@ -13,10 +14,10 @@ export function SiteHeader() {
     <header className="site-header">
       <Brand />
       <nav className="site-nav" aria-label="Primary navigation">
-        <Link href="/">Translator</Link>
+        <Link href="/">Translate</Link>
         <Link href="/how-it-works">How it works</Link>
         <Link href="/languages">Languages</Link>
-        <Link href="/models">Model status</Link>
+        <Link href="/models">Research</Link>
         <Link className="nav-status" href="/models">
           <span className="status-dot" aria-hidden="true" />
           Research preview

@@ -811,22 +811,33 @@ export function TranslatorExperience() {
       <main>
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-inner">
-            <p className="eyebrow">On-device sign recognition</p>
-            <h1 id="hero-title">Every sign.<br /><span>Closer to understood.</span></h1>
-            <p className="hero-copy">A private, research-led space for sign language recognition — built to run locally in your browser.</p>
+            <p className="eyebrow">Private sign recognition · in your browser</p>
+            <h1 id="hero-title">SIGN WHAT<br />YOU <span>MEAN.</span></h1>
+            <p className="hero-copy">A private, research-led translator for the moments that deserve to be understood.</p>
             <div className="hero-actions">
               <button className="button primary" onClick={() => document.getElementById("choose-language")?.scrollIntoView({ behavior: "smooth" })}>
-                <Play size={18} fill="currentColor" aria-hidden="true" /> Start translating
+                Start translating <ArrowRight size={18} aria-hidden="true" />
               </button>
-              <a className="button secondary" href="/how-it-works"><ShieldCheck size={19} /> How it works</a>
+              <a className="button secondary" href="/how-it-works">How it works</a>
             </div>
+            <p className="hero-note">Runs on your device. Camera frames stay with you.</p>
+          </div>
+          <div className="hero-visual" aria-hidden="true">
+            <div className="hero-arc" />
+            <div className="hero-mark-wrap"><img src="/signrelay-mark.png" width="560" height="560" alt="" /></div>
+            <div className="hero-signal-card">
+              <span>Live relay</span>
+              <strong>YOU&apos;RE<br />WELCOME.</strong>
+              <small>Confidence 96%</small>
+            </div>
+            <div className="hero-caption">Signal found · ASL</div>
           </div>
         </section>
 
         <section className="language-section" id="choose-language" aria-labelledby="language-title">
           <div className="section-heading">
-            <h2 id="language-title">Choose a language.</h2>
-            <p>Each language uses its own recognizer.</p>
+            <h2 id="language-title">Pick your language.</h2>
+            <p>Every language stays separate, so its signing is treated with the respect it deserves.</p>
           </div>
           <div className="language-grid" role="radiogroup" aria-label="Sign language">
             {LANGUAGE_LIST.map((language) => (
