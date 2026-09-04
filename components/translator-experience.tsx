@@ -517,7 +517,7 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <Sparkles size={18} aria-hidden="true" />
-            <p>{selected === "asl" ? <><strong>{ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in ASL test signs:</strong> the official WLASL2000 Pose-TGCN isolated-sign model runs locally in your browser. You can separately teach any ASL word or short phrase.</> : <><strong>{model.vocabulary.length.toLocaleString()} built-in {model.shortName} starter labels:</strong> choose one below and record two or three examples to activate it. Its landmark templates stay on this device and are never mixed with another sign language.</>}</p>
+            <p>{model.automaticVocabularyCount ? <><strong>{model.automaticVocabularyCount.toLocaleString()} automatic {model.shortName} test signs:</strong> its official isolated-sign model runs locally in your browser. You can separately teach any word or short phrase.</> : <><strong>{model.vocabulary.length.toLocaleString()} {model.shortName} starter labels:</strong> choose one below and record two or three examples to activate it. Its landmark templates stay on this device and are never mixed with another sign language.</>}</p>
             <a href="#personal-vocabulary">Teach a sign</a>
           </div>
 
@@ -844,14 +844,14 @@ export function TranslatorExperience() {
                 <p>{language.summary}</p>
                 <span className={`model-pill ${language.status === "experimental" ? "available" : "personal"}`}>
                   <span className="mini-dot" aria-hidden="true" />
-                  {language.status === "experimental" ? "1,000-sign research model + personal vocabulary" : `${language.vocabulary.length}+ word starter library`}
+                  {language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()}-sign research model + personal vocabulary` : `${language.vocabulary.length}+ word starter library`}
                 </span>
               </button>
             ))}
           </div>
           <div className="language-continue" aria-live="polite">
             <p>{model.status === "experimental"
-              ? `Selected: ${model.language} · ${ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} built-in research signs + your own personal signs`
+              ? `Selected: ${model.language} · ${model.automaticVocabularyCount.toLocaleString()} automatic research signs + your own personal signs`
               : `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} starter labels + unlimited private vocabulary`}</p>
             <button className="button primary" onClick={beginTranslation}>
               Continue to camera <ArrowRight size={18} aria-hidden="true" />

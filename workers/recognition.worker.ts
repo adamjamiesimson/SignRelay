@@ -5,8 +5,9 @@ import { shouldConfirm } from "@/lib/decoder";
 import { recognizePersonalTemplate, templatesForLanguage } from "@/lib/personalized-recognition";
 import { hasAsl100CompletedSignMotion } from "@/lib/asl100-runtime";
 import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
+import { recognizeIsl263 } from "@/lib/isl263-runtime";
 
-const MAX_FRAMES = 40;
+const MAX_FRAMES = 80;
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
 const frames: VisionFrame[] = [];
@@ -17,6 +18,8 @@ let personalTemplates: CalibrationTemplate[] = [];
 let activeLanguage: "asl" | "bsl" | "csl" | "isl" = "asl";
 let latestAsl1000: Awaited<ReturnType<typeof recognizeAsl1000>> = null;
 let pendingAsl1000 = false;
+let latestIsl263: Awaited<ReturnType<typeof recognizeIsl263>> = null;
+let pendingIsl263 = false;
 let modelGeneration = 0;
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
@@ -28,6 +31,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     candidateLabel = null;
     candidateStreak = 0;
     latestAsl1000 = null;
+    latestIsl263 = null;
     modelGeneration += 1;
     return;
   }
@@ -37,6 +41,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     candidateLabel = null;
     candidateStreak = 0;
     latestAsl1000 = null;
+    latestIsl263 = null;
     modelGeneration += 1;
     return;
   }
@@ -57,6 +62,12 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     recognizeAsl1000([...frames]).then((prediction) => {
       if (generation === modelGeneration) latestAsl1000 = prediction;
     }).catch(() => { latestAsl1000 = null; }).finally(() => { pendingAsl1000 = false; });
+  } else if (activeLanguage === "isl" && hasAsl100CompletedSignMotion(frames) && frames.length >= 24 && !pendingIsl263 && frames.length % 8 === 0) {
+    pendingIsl263 = true;
+    const generation = modelGeneration;
+    recognizeIsl263([...frames]).then((prediction) => {
+      if (generation === modelGeneration) latestIsl263 = prediction;
+    }).catch(() => { latestIsl263 = null; }).finally(() => { pendingIsl263 = false; });
   }
 
   const result = recognize(frames);
@@ -105,6 +116,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
 
 function recognize(sequence: VisionFrame[]) {
   const personal = recognizePersonalTemplate(sequence, personalTemplates);
+  if (activeLanguage === "isl") return personal ?? latestIsl263;
   if (activeLanguage !== "asl") return personal;
   return personal
     ?? recognizeILoveYou(sequence)

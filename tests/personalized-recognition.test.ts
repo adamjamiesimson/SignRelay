@@ -19,7 +19,8 @@ describe("ASL vocabulary", () => {
 
   it("exposes separate ASL, BSL, CSL and ISL recognition paths", () => {
     expect(LANGUAGE_LIST.map((language) => language.id)).toEqual(["asl", "bsl", "isl", "csl"]);
-    expect(LANGUAGE_LIST.filter((language) => language.status === "personal").map((language) => language.id).sort()).toEqual(["bsl", "csl", "isl"]);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "personal").map((language) => language.id).sort()).toEqual(["bsl", "csl"]);
+    expect(MODEL_ADAPTERS.isl.automaticVocabularyCount).toBe(263);
   });
 
   it("includes a 2,000-plus concept library for every teachable language", () => {

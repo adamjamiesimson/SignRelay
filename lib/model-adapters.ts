@@ -8,6 +8,8 @@ export type ModelAdapter = {
   language: string;
   status: "experimental" | "personal";
   modelFile: string | null;
+  /** Number of shared model labels that run without a personal recording. */
+  automaticVocabularyCount: number;
   vocabulary: string[];
   inputFormat: string;
   sequenceLength: number;
@@ -107,6 +109,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     language: "American Sign Language",
     status: "experimental",
     modelFile: "Official WLASL2000 Pose-TGCN + MediaPipe vision + personal-DTW-v1",
+    automaticVocabularyCount: 2000,
     vocabulary: ASL_VOCABULARY.map((entry) => entry.gloss),
     inputFormat: "50 samples × 55 two-dimensional upper-body and hand landmarks",
     sequenceLength: 50,
@@ -124,6 +127,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     language: "British Sign Language",
     status: "personal",
     modelFile: "On-device personal landmark recognizer",
+    automaticVocabularyCount: 0,
     vocabulary: PERSONAL_STARTER_CONCEPTS,
     inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
     sequenceLength: 24,
@@ -139,18 +143,19 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     id: "isl",
     shortName: "ISL",
     language: "Indian Sign Language",
-    status: "personal",
-    modelFile: "On-device personal landmark recognizer",
+    status: "experimental",
+    modelFile: "Official AI4Bharat INCLUDE-263 landmark transformer + on-device personal recognizer",
+    automaticVocabularyCount: 263,
     vocabulary: PERSONAL_STARTER_CONCEPTS,
-    inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
-    sequenceLength: 24,
-    confidenceThreshold: 0.76,
-    decoder: "Signer-specific dynamic-time-warping templates, stored only on this device",
+    inputFormat: "Up to 200 MediaPipe body and hand frames (134 x/y landmark features); private examples use 24 samples",
+    sequenceLength: 200,
+    confidenceThreshold: 0.78,
+    decoder: "Official INCLUDE-263 browser transformer with WebGPU/WASM inference; personal templates take priority",
     postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
-    version: "personal-dtw-v2",
-    dataset: "INCLUDE (CC-BY-4.0) remains a future shared-model research source; personal examples require no uploaded video or dataset licence.",
+    version: "include263-small-transformer-v1 + personal-dtw-v2",
+    dataset: "Official AI4Bharat INCLUDE-263 landmark model (CC-BY-4.0); the live MediaPipe adapter is experimental. Personal examples require no uploaded video.",
     speechLocale: "en-IN",
-    summary: "2,000+ built-in ISL starter concepts, ready to teach privately on this device.",
+    summary: "A genuine local 263-sign ISL isolated-sign model, plus a separate private vocabulary you can teach.",
   },
   csl: {
     id: "csl",
@@ -158,6 +163,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     language: "Chinese Sign Language",
     status: "personal",
     modelFile: "On-device personal landmark recognizer",
+    automaticVocabularyCount: 0,
     vocabulary: PERSONAL_STARTER_CONCEPTS,
     inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
     sequenceLength: 24,
