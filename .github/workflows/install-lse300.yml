@@ -42,22 +42,7 @@ jobs:
 
       - name: Mark the model installed and commit it
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          path = Path('lib/model-adapters.ts')
-          text = path.read_text()
-          old = '''    // The installer workflow changes this to `experimental` only in the
-    // commit that contains its trained ONNX asset and labels.
-    status: "preparing",
-    modelFile: null,
-    automaticVocabularyCount: 0,'''
-          new = '''    status: "experimental",
-    modelFile: "SWL-LSE temporal landmark model + on-device personal recognizer",
-    automaticVocabularyCount: 300,'''
-          if old not in text:
-              raise SystemExit('Expected pending LSE marker was not found')
-          path.write_text(text.replace(old, new))
-          PY
+          python -c "from pathlib import Path; import re; p=Path('lib/model-adapters.ts'); s=p.read_text(); s,n=re.subn(r'(id: \\\"lse\\\",.*?status: )\\\"preparing\\\",\\n    modelFile: null,\\n    automaticVocabularyCount: 0,', r'\\1\\\"experimental\\\",\\n    modelFile: \\\"SWL-LSE temporal landmark model + on-device personal recognizer\\\",\\n    automaticVocabularyCount: 300,', s, flags=re.S); assert n == 1, 'Expected pending LSE marker'; p.write_text(s)"
           git config user.name 'signrelay-model-bot'
           git config user.email 'signrelay-model-bot@users.noreply.github.com'
           git add public/models/lse300-swl lib/model-adapters.ts
