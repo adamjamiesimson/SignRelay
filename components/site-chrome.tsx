@@ -3,8 +3,7 @@ import Link from "next/link";
 export function Brand() {
   return (
     <Link className="brand" href="/" aria-label="SignRelay home">
-      <img className="brand-mark" src="/signrelay-logo.png" width="38" height="38" alt="" />
-      <span>SignRelay</span>
+      <img className="brand-mark" src="/signrelay-logo.png" width="150" height="58" alt="SignRelay" />
     </Link>
   );
 }

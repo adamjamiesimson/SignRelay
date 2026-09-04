@@ -811,9 +811,9 @@ export function TranslatorExperience() {
       <main>
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-inner">
-            <p className="eyebrow">Private by design</p>
-            <h1 id="hero-title">Understand<br /><span>without noise.</span></h1>
-            <p className="hero-copy">Real-time sign recognition. Built to stay on your device.</p>
+            <p className="eyebrow">On-device sign recognition</p>
+            <h1 id="hero-title">Every sign.<br /><span>Closer to understood.</span></h1>
+            <p className="hero-copy">A private, research-led space for sign language recognition — built to run locally in your browser.</p>
             <div className="hero-actions">
               <button className="button primary" onClick={() => document.getElementById("choose-language")?.scrollIntoView({ behavior: "smooth" })}>
                 <Play size={18} fill="currentColor" aria-hidden="true" /> Start translating
