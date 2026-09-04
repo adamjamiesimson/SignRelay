@@ -38,7 +38,10 @@ jobs:
 
       - name: Train and export the 300-sign browser model
         run: |
-          python training/train_swl_lse_onnx.py /tmp/swl-lse/mediapipe /tmp/swl-lse/annotations /tmp/swl-lse/videos_ref_annotations.csv --epochs 24
+          # The release archive contains its CSV files in an ANNOTATIONS/
+          # directory, so pass that extracted directory rather than the ZIP
+          # destination itself.
+          python training/train_swl_lse_onnx.py /tmp/swl-lse/mediapipe /tmp/swl-lse/annotations/ANNOTATIONS /tmp/swl-lse/videos_ref_annotations.csv --epochs 24
 
       - name: Mark the model installed and commit it
         run: |
