@@ -132,7 +132,7 @@ The application targets the Vinext/Cloudflare-compatible Sites runtime. The prod
 - Performance varies with viewpoint, signing speed, hand dominance, occlusion and lighting.
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.
 - No continuous unrestricted grammar decoder is installed.
-- A shared BSL, ISL or CSL model is unavailable until an independently trained checkpoint passes evaluation; their private personal recognizers are available now.
+- BSL and ISL now use their own official isolated-sign checkpoints (1,064 and 263 labels respectively), still marked experimental because browser-side signer-independent evaluation has not yet been completed. CSL remains private-template only until a compatible real model is available.
 - The first model load requires internet access to download official MediaPipe assets.
 
 ## Roadmap
