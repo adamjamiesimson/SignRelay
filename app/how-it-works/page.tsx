@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { InfoPage } from "@/components/info-page";
 
-export const metadata: Metadata = { title: "How it works", description: "The SignRelay camera-to-transcript recognition pipeline." };
+export const metadata: Metadata = { title: "How it works", description: "The SignRelay camera-to-transcript recognition pipeline.", alternates: { canonical: "/how-it-works" } };
 
 export default function HowItWorksPage() {
   return <InfoPage eyebrow="Recognition architecture" title="Movement first, words second." intro="SignRelay analyses a short ordered sequence of hand, face and body landmarks. It never treats one frozen hand pose as a complete language." sections={[

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { SiteFooter, SiteHeader } from "./site-chrome";
+import Link from "next/link";
 
 export type InfoSection = {
   title: string;
@@ -21,6 +22,7 @@ export function InfoPage({
     <div className="app-shell">
       <SiteHeader />
       <main className="info-page">
+        <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true">/</span><span aria-current="page">{eyebrow}</span></nav>
         <header className="info-hero">
           <p className="eyebrow">{eyebrow}</p>
           <h1>{title}</h1>

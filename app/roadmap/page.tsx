@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { InfoPage } from "@/components/info-page";
 
-export const metadata: Metadata = { title: "Roadmap", description: "The staged development roadmap for SignRelay." };
+export const metadata: Metadata = { title: "Roadmap", description: "The staged development roadmap for SignRelay.", alternates: { canonical: "/roadmap" } };
 
 export default function RoadmapPage() {
   return <InfoPage eyebrow="Development roadmap" title="From honest prototype to useful translator." intro="Continuous translation requires data, linguistic expertise and careful evaluation. The roadmap keeps those dependencies visible." sections={[

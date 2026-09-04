@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { InfoPage } from "@/components/info-page";
 import { ASL_BUILT_IN_VOCABULARY } from "@/lib/model-adapters";
 
-export const metadata: Metadata = { title: "Supported languages", description: "Honest language and vocabulary support for SignRelay." };
+export const metadata: Metadata = { title: "Supported languages", description: "Honest language and vocabulary support for SignRelay.", alternates: { canonical: "/languages" } };
 
 export default function LanguagesPage() {
   return <InfoPage eyebrow="Language support" title="Six languages. Separate recognizers." intro="ASL, Auslan, BSL, CSL, ISL and LSE are independent languages with different lexicons and grammar. SignRelay never shares a vocabulary by changing a label." sections={[

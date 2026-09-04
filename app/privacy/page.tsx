@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { InfoPage } from "@/components/info-page";
 
-export const metadata: Metadata = { title: "Privacy", description: "How SignRelay handles camera video and local transcripts." };
+export const metadata: Metadata = { title: "Privacy", description: "How SignRelay handles camera video and local transcripts.", alternates: { canonical: "/privacy" } };
 
 export default function PrivacyPage() {
   return <InfoPage eyebrow="Privacy by default" title="Your video belongs to you." intro="SignRelay is designed so the normal translation path runs on your device, without sending raw camera frames to a server." sections={[

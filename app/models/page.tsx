@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { InfoPage } from "@/components/info-page";
 import { ASL_BUILT_IN_VOCABULARY, MODEL_ADAPTERS } from "@/lib/model-adapters";
 
-export const metadata: Metadata = { title: "Model status", description: "Versions, inputs and limitations of SignRelay recognition models." };
+export const metadata: Metadata = { title: "Model status", description: "Versions, inputs and limitations of SignRelay recognition models.", alternates: { canonical: "/models" } };
 
 export default function ModelsPage() {
   const asl = MODEL_ADAPTERS.asl;

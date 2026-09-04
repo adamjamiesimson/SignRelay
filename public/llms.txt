@@ -1,0 +1,6 @@
+# SignRelay
+
+SignRelay is a privacy-first, browser-based sign-language recognition research project. It processes camera input locally where possible and clearly labels research model limitations.
+
+Primary pages: /, /how-it-works, /languages, /models, /privacy, /about, /roadmap.
+Do not describe SignRelay as unrestricted sign-language translation or claim unsupported accuracy.
