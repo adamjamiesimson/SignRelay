@@ -69,11 +69,11 @@ function sequenceDistance(a, b) {
 }
 function frameToFeatures(frame) {
   const shoulders = frame.pose.length > 12 ? [frame.pose[11], frame.pose[12]] : [];
-  const wrists = frame.hands.map((hand2) => hand2.landmarks[0]).filter(Boolean);
+  const wrists = frame.hands.map((hand3) => hand3.landmarks[0]).filter(Boolean);
   const anchor = shoulders.length === 2 ? midpoint(shoulders[0], shoulders[1]) : averagePoint(wrists);
   const bodyScale = shoulders.length === 2 ? Math.max(distance(shoulders[0], shoulders[1]), 0.08) : Math.max(pointRange(wrists), 0.18);
-  const left = frame.hands.find((hand2) => hand2.handedness === "Left") ?? frame.hands[1];
-  const right = frame.hands.find((hand2) => hand2.handedness === "Right") ?? frame.hands[0];
+  const left = frame.hands.find((hand3) => hand3.handedness === "Left") ?? frame.hands[1];
+  const right = frame.hands.find((hand3) => hand3.handedness === "Right") ?? frame.hands[0];
   return [
     ...handFeatures(left, anchor, bodyScale),
     ...handFeatures(right === left ? void 0 : right, anchor, bodyScale),
@@ -81,15 +81,15 @@ function frameToFeatures(frame) {
     ...landmarkFeatures(frame.pose, anchor, bodyScale, ZERO_POSE)
   ];
 }
-function handFeatures(hand2, anchor, bodyScale) {
-  if (!hand2?.landmarks.length) return ZERO_HAND;
-  const wrist = hand2.landmarks[0];
-  const palm = hand2.landmarks[9] ?? hand2.landmarks[5] ?? wrist;
+function handFeatures(hand3, anchor, bodyScale) {
+  if (!hand3?.landmarks.length) return ZERO_HAND;
+  const wrist = hand3.landmarks[0];
+  const palm = hand3.landmarks[9] ?? hand3.landmarks[5] ?? wrist;
   const handScale = Math.max(distance(wrist, palm), 0.025);
-  const local = hand2.landmarks.slice(0, 21).flatMap((point) => [
-    clamp((point.x - wrist.x) / handScale, -5, 5),
-    clamp((point.y - wrist.y) / handScale, -5, 5),
-    clamp((point.z - wrist.z) / handScale, -5, 5)
+  const local = hand3.landmarks.slice(0, 21).flatMap((point2) => [
+    clamp((point2.x - wrist.x) / handScale, -5, 5),
+    clamp((point2.y - wrist.y) / handScale, -5, 5),
+    clamp((point2.z - wrist.z) / handScale, -5, 5)
   ]);
   while (local.length < 63) local.push(0);
   return [
@@ -101,9 +101,9 @@ function handFeatures(hand2, anchor, bodyScale) {
 }
 function landmarkFeatures(points, anchor, scale, empty) {
   if (!points.length) return empty;
-  const values = points.flatMap((point) => [
-    clamp((point.x - anchor.x) / scale, -4, 4),
-    clamp((point.y - anchor.y) / scale, -4, 4)
+  const values = points.flatMap((point2) => [
+    clamp((point2.x - anchor.x) / scale, -4, 4),
+    clamp((point2.y - anchor.y) / scale, -4, 4)
   ]);
   return [1, ...values];
 }
@@ -127,10 +127,10 @@ function resample(sequence, targetLength) {
 }
 function averagePoint(points) {
   if (!points.length) return { x: 0.5, y: 0.5, z: 0 };
-  return points.reduce((total, point) => ({
-    x: total.x + point.x / points.length,
-    y: total.y + point.y / points.length,
-    z: total.z + point.z / points.length
+  return points.reduce((total, point2) => ({
+    x: total.x + point2.x / points.length,
+    y: total.y + point2.y / points.length,
+    z: total.z + point2.z / points.length
   }), { x: 0, y: 0, z: 0 });
 }
 function midpoint(a, b) {
@@ -138,8 +138,8 @@ function midpoint(a, b) {
 }
 function pointRange(points) {
   if (points.length < 2) return 0;
-  const xs2 = points.map((point) => point.x);
-  const ys2 = points.map((point) => point.y);
+  const xs2 = points.map((point2) => point2.x);
+  const ys2 = points.map((point2) => point2.y);
   return Math.max(Math.max(...xs2) - Math.min(...xs2), Math.max(...ys2) - Math.min(...ys2));
 }
 function distance(a, b) {
@@ -152,7 +152,7 @@ function clamp(value, min, max) {
 // lib/asl100-runtime.ts
 function hasAsl100HandEvidence(sequence) {
   const recent = sequence.slice(-24);
-  return recent.filter((frame) => frame.hands.some((hand2) => hand2.landmarks.length >= 21)).length >= 12;
+  return recent.filter((frame) => frame.hands.some((hand3) => hand3.landmarks.length >= 21)).length >= 12;
 }
 function hasAsl100CompletedSignMotion(sequence) {
   const recent = sequence.slice(-24);
@@ -160,13 +160,13 @@ function hasAsl100CompletedSignMotion(sequence) {
   const wrists = dominantTrackedWrists(recent);
   if (wrists.length < 15) return false;
   const tail = wrists.slice(-7);
-  const tailRange = Math.hypot(range(tail.map((point) => point.x)), range(tail.map((point) => point.y)));
-  const pathLength = wrists.slice(1).reduce((total, point, index) => total + distance2(point, wrists[index]), 0);
+  const tailRange = Math.hypot(range(tail.map((point2) => point2.x)), range(tail.map((point2) => point2.y)));
+  const pathLength = wrists.slice(1).reduce((total, point2, index) => total + distance2(point2, wrists[index]), 0);
   return pathLength >= 0.075 && tailRange <= 0.06;
 }
 function dominantTrackedWrists(sequence) {
-  const left = sequence.map((frame) => frame.hands.find((hand2) => hand2.handedness === "Left")?.landmarks[0]).filter((point) => Boolean(point));
-  const right = sequence.map((frame) => frame.hands.find((hand2) => hand2.handedness === "Right")?.landmarks[0]).filter((point) => Boolean(point));
+  const left = sequence.map((frame) => frame.hands.find((hand3) => hand3.handedness === "Left")?.landmarks[0]).filter((point2) => Boolean(point2));
+  const right = sequence.map((frame) => frame.hands.find((hand3) => hand3.handedness === "Right")?.landmarks[0]).filter((point2) => Boolean(point2));
   return right.length >= left.length ? right : left;
 }
 function distance2(a, b) {
@@ -251,14 +251,14 @@ function prepareTgcnInput(sequence, sequenceLength = 50) {
     const sourceIndex = sequenceLength === 1 ? sequence.length - 1 : Math.round(targetFrame * (sequence.length - 1) / (sequenceLength - 1));
     const points = openPosePoints(sequence[sourceIndex]);
     for (let node = 0; node < points.length; node += 1) {
-      const point = points[node];
+      const point2 = points[node];
       const offset = node * inputFeatures + targetFrame * 2;
-      if (!point || point.visibility === 0) {
+      if (!point2 || point2.visibility === 0) {
         result[offset] = -1;
         result[offset + 1] = -1;
       } else {
-        result[offset] = 2 * (point.x - 0.5);
-        result[offset + 1] = 2 * (point.y - 0.5);
+        result[offset] = 2 * (point2.x - 0.5);
+        result[offset + 1] = 2 * (point2.y - 0.5);
       }
     }
   }
@@ -357,30 +357,30 @@ function applyGraphLayer(input, layer, nodes) {
 }
 function openPosePoints(frame) {
   const pose = frame.pose;
-  const point = (index) => visible(pose[index]) ? pose[index] : null;
+  const point2 = (index) => visible(pose[index]) ? pose[index] : null;
   const body = [
-    point(0),
-    midpoint2(point(11), point(12)),
-    point(12),
-    point(14),
-    point(16),
-    point(11),
-    point(13),
-    point(15),
-    midpoint2(point(23), point(24)),
-    point(5),
-    point(2),
-    point(8),
-    point(7)
+    point2(0),
+    midpoint2(point2(11), point2(12)),
+    point2(12),
+    point2(14),
+    point2(16),
+    point2(11),
+    point2(13),
+    point2(15),
+    midpoint2(point2(23), point2(24)),
+    point2(5),
+    point2(2),
+    point2(8),
+    point2(7)
   ];
   return [...body, ...handPoints(frame, "Left"), ...handPoints(frame, "Right")];
 }
 function handPoints(frame, side) {
-  const hand2 = frame.hands.find((candidate) => candidate.handedness === side)?.landmarks;
-  return Array.from({ length: 21 }, (_, index) => hand2?.[index] ?? null);
+  const hand3 = frame.hands.find((candidate) => candidate.handedness === side)?.landmarks;
+  return Array.from({ length: 21 }, (_, index) => hand3?.[index] ?? null);
 }
-function visible(point) {
-  return Boolean(point && (point.visibility === void 0 || point.visibility >= 0.3));
+function visible(point2) {
+  return Boolean(point2 && (point2.visibility === void 0 || point2.visibility >= 0.3));
 }
 function midpoint2(a, b) {
   if (!a || !b) return null;
@@ -10630,8 +10630,8 @@ function prepareIncludeInput(sequence) {
     interpolateCoordinate(frames2, landmark, "x");
     interpolateCoordinate(frames2, landmark, "y");
   }
-  frames2.forEach((frame, index) => values.set(frame.flatMap((point) => [point.x, point.y]), index * FEATURES_PER_FRAME));
-  return { values, visibleFrames: frames2.filter((frame) => frame.some((point) => point.x !== 0 || point.y !== 0)).length };
+  frames2.forEach((frame, index) => values.set(frame.flatMap((point2) => [point2.x, point2.y]), index * FEATURES_PER_FRAME));
+  return { values, visibleFrames: frames2.filter((frame) => frame.some((point2) => point2.x !== 0 || point2.y !== 0)).length };
 }
 function frameFeatures(frame) {
   const pose = Array.from({ length: 25 }, (_, index) => toPixels(frame.pose[index]));
@@ -10643,9 +10643,9 @@ function hand(frame, handedness) {
   const landmarks = frame.hands.find((candidate) => candidate.handedness === handedness)?.landmarks;
   return Array.from({ length: 21 }, (_, index) => toPixels(landmarks?.[index]));
 }
-function toPixels(point) {
-  if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return { x: 0, y: 0 };
-  return { x: point.x * 1920, y: point.y * 1080 };
+function toPixels(point2) {
+  if (!point2 || !Number.isFinite(point2.x) || !Number.isFinite(point2.y)) return { x: 0, y: 0 };
+  return { x: point2.x * 1920, y: point2.y * 1080 };
 }
 function interpolateCoordinate(frames2, landmark, axis) {
   const known = frames2.map((frame, index) => ({ index, value: frame[landmark][axis] })).filter(({ value }) => value !== 0);
@@ -10669,6 +10669,80 @@ function readable(label) {
   return words.replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
+// lib/bsl1064-runtime.ts
+var FRAMES = 16;
+var LANDMARKS = 60;
+var MIN_CONFIDENCE2 = 0.82;
+var MIN_MARGIN2 = 0.14;
+var modelPromise3 = null;
+async function loadModel3() {
+  modelPromise3 ?? (modelPromise3 = Promise.all([
+    Kp.create("/models/bsl1064-pose2sign/model.onnx", { executionProviders: ["webgpu", "wasm"] }),
+    fetch("/models/bsl1064-pose2sign/labels.json").then(async (response) => {
+      if (!response.ok) throw new Error("BSL-1064 labels could not load");
+      return response.json();
+    })
+  ]).then(([session, labels]) => {
+    if (labels.length !== 1064) throw new Error("BSL-1064 label contract is invalid");
+    return { session, labels };
+  }));
+  return modelPromise3;
+}
+async function recognizeBsl1064(sequence) {
+  if (sequence.length < FRAMES) return null;
+  const { session, labels } = await loadModel3();
+  const output = await session.run({ pose: new qe("float32", prepareBslInput(sequence), [1, 3, FRAMES, LANDMARKS]) });
+  const logits = output.logits?.data;
+  if (!(logits instanceof Float32Array) || logits.length !== labels.length) return null;
+  const probabilities = softmax3(logits);
+  const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
+  const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
+  const confidence = probabilities[best];
+  const margin = confidence - probabilities[runnerUp];
+  const label = labels[best];
+  if (!label || confidence < MIN_CONFIDENCE2 || margin < MIN_MARGIN2) return null;
+  return { label, text: readable2(label), confidence, margin };
+}
+function prepareBslInput(sequence) {
+  const samples = sequence.slice(-FRAMES);
+  const values = new Float32Array(3 * FRAMES * LANDMARKS);
+  samples.forEach((frame, frameIndex) => {
+    const points = [...body18(frame), ...hand2(frame, "Left"), ...hand2(frame, "Right")];
+    points.forEach((point2, landmarkIndex) => {
+      values[frameIndex * LANDMARKS + landmarkIndex] = point2.x;
+      values[FRAMES * LANDMARKS + frameIndex * LANDMARKS + landmarkIndex] = point2.y;
+      values[2 * FRAMES * LANDMARKS + frameIndex * LANDMARKS + landmarkIndex] = point2.score;
+    });
+  });
+  return values;
+}
+function body18(frame) {
+  const pose = (index) => point(frame.pose[index]);
+  const neck = midpoint3(pose(11), pose(12));
+  return [pose(0), neck, pose(12), pose(14), pose(16), pose(11), pose(13), pose(15), pose(24), pose(26), pose(28), pose(23), pose(25), pose(27), pose(5), pose(2), pose(8), pose(7)];
+}
+function hand2(frame, handedness) {
+  const landmarks = frame.hands.find((candidate) => candidate.handedness === handedness)?.landmarks;
+  return Array.from({ length: 21 }, (_, index) => point(landmarks?.[index]));
+}
+function point(value) {
+  if (!value || !Number.isFinite(value.x) || !Number.isFinite(value.y)) return { x: 0, y: 0, score: 0 };
+  return { x: value.x, y: value.y, score: value.visibility ?? 1 };
+}
+function midpoint3(a, b) {
+  if (!a.score || !b.score) return { x: 0, y: 0, score: 0 };
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, score: Math.min(a.score, b.score) };
+}
+function softmax3(logits) {
+  const maximum = Math.max(...logits);
+  const values = Array.from(logits, (value) => Math.exp(value - maximum));
+  const total = values.reduce((sum, value) => sum + value, 0);
+  return values.map((value) => value / total);
+}
+function readable2(label) {
+  return label.toLowerCase().replace(/[_.-]+/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
 // workers/recognition.worker.ts
 var MAX_FRAMES = 80;
 var CONFIDENCE_THRESHOLD = 0.62;
@@ -10683,6 +10757,8 @@ var latestAsl1000 = null;
 var pendingAsl1000 = false;
 var latestIsl263 = null;
 var pendingIsl263 = false;
+var latestBsl1064 = null;
+var pendingBsl1064 = false;
 var modelGeneration = 0;
 self.onmessage = async (event) => {
   if (event.data.type === "templates") {
@@ -10693,6 +10769,7 @@ self.onmessage = async (event) => {
     candidateStreak = 0;
     latestAsl1000 = null;
     latestIsl263 = null;
+    latestBsl1064 = null;
     modelGeneration += 1;
     return;
   }
@@ -10702,6 +10779,7 @@ self.onmessage = async (event) => {
     candidateStreak = 0;
     latestAsl1000 = null;
     latestIsl263 = null;
+    latestBsl1064 = null;
     modelGeneration += 1;
     return;
   }
@@ -10731,6 +10809,16 @@ self.onmessage = async (event) => {
       latestIsl263 = null;
     }).finally(() => {
       pendingIsl263 = false;
+    });
+  } else if (activeLanguage === "bsl" && hasAsl100CompletedSignMotion(frames) && frames.length >= 24 && !pendingBsl1064 && frames.length % 6 === 0) {
+    pendingBsl1064 = true;
+    const generation = modelGeneration;
+    recognizeBsl1064([...frames]).then((prediction) => {
+      if (generation === modelGeneration) latestBsl1064 = prediction;
+    }).catch(() => {
+      latestBsl1064 = null;
+    }).finally(() => {
+      pendingBsl1064 = false;
     });
   }
   const result = recognize(frames);
@@ -10775,26 +10863,27 @@ self.onmessage = async (event) => {
 };
 function recognize(sequence) {
   const personal = recognizePersonalTemplate(sequence, personalTemplates);
+  if (activeLanguage === "bsl") return personal ?? latestBsl1064;
   if (activeLanguage === "isl") return personal ?? latestIsl263;
   if (activeLanguage !== "asl") return personal;
   return personal ?? recognizeILoveYou(sequence) ?? recognizeHello(sequence) ?? recognizeThankYou(sequence) ?? recognizeYes(sequence) ?? latestAsl1000;
 }
 function recognizeILoveYou(sequence) {
   const recent = sequence.slice(-10);
-  const matches = recent.flatMap((frame) => frame.hands).filter((hand2) => hand2.gesture === "ILoveYou" && hand2.gestureScore >= 0.62);
+  const matches = recent.flatMap((frame) => frame.hands).filter((hand3) => hand3.gesture === "ILoveYou" && hand3.gestureScore >= 0.62);
   if (matches.length < 7) return null;
-  const average = matches.reduce((sum, hand2) => sum + hand2.gestureScore, 0) / matches.length;
+  const average = matches.reduce((sum, hand3) => sum + hand3.gestureScore, 0) / matches.length;
   return { label: "I LOVE YOU", text: "I love you", confidence: clamp2(0.84 + average * 0.13) };
 }
 function recognizeHello(sequence) {
   const samples = dominantHandSamples(sequence.slice(-16));
   if (samples.length < 12 || !isMostlyOpen(samples)) return null;
-  const wrists = samples.map((hand2) => hand2.landmarks[0]);
-  const xRange = range2(wrists.map((point) => point.x));
-  const yRange = range2(wrists.map((point) => point.y));
+  const wrists = samples.map((hand3) => hand3.landmarks[0]);
+  const xRange = range2(wrists.map((point2) => point2.x));
+  const yRange = range2(wrists.map((point2) => point2.y));
   const facePresent = sequence.slice(-16).filter((frame) => frame.face.length > 0).length >= 8;
-  const nearHead = wrists.filter((point) => point.y < 0.48).length >= 8;
-  const directionChanges = countDirectionChanges(wrists.map((point) => point.x), 8e-3);
+  const nearHead = wrists.filter((point2) => point2.y < 0.48).length >= 8;
+  const directionChanges = countDirectionChanges(wrists.map((point2) => point2.x), 8e-3);
   if (!facePresent || !nearHead || xRange < 0.11 || yRange > 0.15 || directionChanges < 1) return null;
   return { label: "HELLO", text: "Hello", confidence: clamp2(0.76 + xRange * 0.75) };
 }
@@ -10802,7 +10891,7 @@ function recognizeThankYou(sequence) {
   const recent = sequence.slice(-18);
   const samples = dominantHandSamples(recent);
   if (samples.length < 13 || !isMostlyOpen(samples)) return null;
-  const tips = samples.map((hand2) => hand2.landmarks[8]);
+  const tips = samples.map((hand3) => hand3.landmarks[8]);
   const start = averagePoint2(tips.slice(0, 4));
   const end = averagePoint2(tips.slice(-4));
   const face = recent.find((frame) => frame.face.length)?.face;
@@ -10816,35 +10905,35 @@ function recognizeThankYou(sequence) {
 function recognizeYes(sequence) {
   const samples = dominantHandSamples(sequence.slice(-22));
   if (samples.length < 16 || !isMostlyFist(samples)) return null;
-  const wrists = samples.map((hand2) => hand2.landmarks[0]);
-  const yValues = wrists.map((point) => point.y);
-  const xRange = range2(wrists.map((point) => point.x));
+  const wrists = samples.map((hand3) => hand3.landmarks[0]);
+  const yValues = wrists.map((point2) => point2.y);
+  const xRange = range2(wrists.map((point2) => point2.x));
   const yRange = range2(yValues);
   const directionChanges = countDirectionChanges(yValues, 8e-3);
   if (yRange < 0.07 || xRange > 0.11 || directionChanges < 2) return null;
   return { label: "YES", text: "Yes", confidence: clamp2(0.77 + yRange * 0.85 + directionChanges * 0.02) };
 }
 function dominantHandSamples(sequence) {
-  const right = sequence.map((frame) => frame.hands.find((hand2) => hand2.handedness === "Right") ?? frame.hands[0]).filter(Boolean);
-  const left = sequence.map((frame) => frame.hands.find((hand2) => hand2.handedness === "Left") ?? frame.hands[0]).filter(Boolean);
+  const right = sequence.map((frame) => frame.hands.find((hand3) => hand3.handedness === "Right") ?? frame.hands[0]).filter(Boolean);
+  const left = sequence.map((frame) => frame.hands.find((hand3) => hand3.handedness === "Left") ?? frame.hands[0]).filter(Boolean);
   return right.length >= left.length ? right : left;
 }
-function extendedFingers(hand2) {
+function extendedFingers(hand3) {
   const tips = [8, 12, 16, 20];
   const pips = [6, 10, 14, 18];
   let count = 0;
   for (let index = 0; index < tips.length; index += 1) {
-    const tip = hand2.landmarks[tips[index]];
-    const pip = hand2.landmarks[pips[index]];
-    if (tip && pip && distance3(tip, hand2.landmarks[0]) > distance3(pip, hand2.landmarks[0]) * 1.18) count += 1;
+    const tip = hand3.landmarks[tips[index]];
+    const pip = hand3.landmarks[pips[index]];
+    if (tip && pip && distance3(tip, hand3.landmarks[0]) > distance3(pip, hand3.landmarks[0]) * 1.18) count += 1;
   }
   return count;
 }
 function isMostlyOpen(samples) {
-  return samples.filter((hand2) => extendedFingers(hand2) >= 3).length / samples.length >= 0.72;
+  return samples.filter((hand3) => extendedFingers(hand3) >= 3).length / samples.length >= 0.72;
 }
 function isMostlyFist(samples) {
-  return samples.filter((hand2) => extendedFingers(hand2) <= 1).length / samples.length >= 0.72;
+  return samples.filter((hand3) => extendedFingers(hand3) <= 1).length / samples.length >= 0.72;
 }
 function countDirectionChanges(values, epsilon) {
   let previous = 0;
@@ -10858,7 +10947,7 @@ function countDirectionChanges(values, epsilon) {
   return changes;
 }
 function averagePoint2(points) {
-  return points.reduce((total, point) => ({ x: total.x + point.x / points.length, y: total.y + point.y / points.length, z: total.z + point.z / points.length }), { x: 0, y: 0, z: 0 });
+  return points.reduce((total, point2) => ({ x: total.x + point2.x / points.length, y: total.y + point2.y / points.length, z: total.z + point2.z / points.length }), { x: 0, y: 0, z: 0 });
 }
 function distance3(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);

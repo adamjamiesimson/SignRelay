@@ -6,6 +6,7 @@ import { recognizePersonalTemplate, templatesForLanguage } from "@/lib/personali
 import { hasAsl100CompletedSignMotion } from "@/lib/asl100-runtime";
 import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
 import { recognizeIsl263 } from "@/lib/isl263-runtime";
+import { recognizeBsl1064 } from "@/lib/bsl1064-runtime";
 
 const MAX_FRAMES = 80;
 const CONFIDENCE_THRESHOLD = 0.62;
@@ -20,6 +21,8 @@ let latestAsl1000: Awaited<ReturnType<typeof recognizeAsl1000>> = null;
 let pendingAsl1000 = false;
 let latestIsl263: Awaited<ReturnType<typeof recognizeIsl263>> = null;
 let pendingIsl263 = false;
+let latestBsl1064: Awaited<ReturnType<typeof recognizeBsl1064>> = null;
+let pendingBsl1064 = false;
 let modelGeneration = 0;
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
@@ -32,6 +35,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     candidateStreak = 0;
     latestAsl1000 = null;
     latestIsl263 = null;
+    latestBsl1064 = null;
     modelGeneration += 1;
     return;
   }
@@ -42,6 +46,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     candidateStreak = 0;
     latestAsl1000 = null;
     latestIsl263 = null;
+    latestBsl1064 = null;
     modelGeneration += 1;
     return;
   }
@@ -68,6 +73,12 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     recognizeIsl263([...frames]).then((prediction) => {
       if (generation === modelGeneration) latestIsl263 = prediction;
     }).catch(() => { latestIsl263 = null; }).finally(() => { pendingIsl263 = false; });
+  } else if (activeLanguage === "bsl" && hasAsl100CompletedSignMotion(frames) && frames.length >= 24 && !pendingBsl1064 && frames.length % 6 === 0) {
+    pendingBsl1064 = true;
+    const generation = modelGeneration;
+    recognizeBsl1064([...frames]).then((prediction) => {
+      if (generation === modelGeneration) latestBsl1064 = prediction;
+    }).catch(() => { latestBsl1064 = null; }).finally(() => { pendingBsl1064 = false; });
   }
 
   const result = recognize(frames);
@@ -116,6 +127,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
 
 function recognize(sequence: VisionFrame[]) {
   const personal = recognizePersonalTemplate(sequence, personalTemplates);
+  if (activeLanguage === "bsl") return personal ?? latestBsl1064;
   if (activeLanguage === "isl") return personal ?? latestIsl263;
   if (activeLanguage !== "asl") return personal;
   return personal

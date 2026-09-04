@@ -19,7 +19,8 @@ describe("ASL vocabulary", () => {
 
   it("exposes separate ASL, BSL, CSL and ISL recognition paths", () => {
     expect(LANGUAGE_LIST.map((language) => language.id)).toEqual(["asl", "bsl", "isl", "csl"]);
-    expect(LANGUAGE_LIST.filter((language) => language.status === "personal").map((language) => language.id).sort()).toEqual(["bsl", "csl"]);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "personal").map((language) => language.id).sort()).toEqual(["csl"]);
+    expect(MODEL_ADAPTERS.bsl.automaticVocabularyCount).toBe(1064);
     expect(MODEL_ADAPTERS.isl.automaticVocabularyCount).toBe(263);
   });
 
