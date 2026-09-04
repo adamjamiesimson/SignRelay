@@ -811,24 +811,22 @@ export function TranslatorExperience() {
       <main>
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-inner">
-            <p className="eyebrow">Communication, made visible</p>
-            <h1 id="hero-title">Sign freely.<br /><span>Be understood.</span></h1>
-            <p className="hero-copy">
-              SignRelay translates continuous sign language into text and speech by analysing hand movement, facial expression and body language — locally in your browser.
-            </p>
+            <p className="eyebrow">Private by design</p>
+            <h1 id="hero-title">Understand<br /><span>without noise.</span></h1>
+            <p className="hero-copy">Real-time sign recognition. Built to stay on your device.</p>
             <div className="hero-actions">
               <button className="button primary" onClick={() => document.getElementById("choose-language")?.scrollIntoView({ behavior: "smooth" })}>
                 <Play size={18} fill="currentColor" aria-hidden="true" /> Start translating
               </button>
-              <a className="button secondary" href="/how-it-works"><ShieldCheck size={19} /> See how it works</a>
+              <a className="button secondary" href="/how-it-works"><ShieldCheck size={19} /> How it works</a>
             </div>
           </div>
         </section>
 
         <section className="language-section" id="choose-language" aria-labelledby="language-title">
           <div className="section-heading">
-            <h2 id="language-title">Choose your sign language</h2>
-            <p>Each language has its own vocabulary and recognizer—nothing is relabelled across languages. A shared model is shown as available only after its browser files are installed.</p>
+            <h2 id="language-title">Choose a language.</h2>
+            <p>Each language uses its own recognizer.</p>
           </div>
           <div className="language-grid" role="radiogroup" aria-label="Sign language">
             {LANGUAGE_LIST.map((language) => (
