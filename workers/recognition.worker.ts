@@ -7,6 +7,7 @@ import { hasAsl100CompletedSignMotion } from "@/lib/asl100-runtime";
 import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
 import { recognizeIsl263 } from "@/lib/isl263-runtime";
 import { recognizeBsl1064 } from "@/lib/bsl1064-runtime";
+import { recognizeLse300 } from "@/lib/lse300-runtime";
 
 const MAX_FRAMES = 80;
 const CONFIDENCE_THRESHOLD = 0.62;
@@ -16,13 +17,15 @@ let candidateLabel: string | null = null;
 let candidateStreak = 0;
 let lastConfirmation = { label: "", time: 0 };
 let personalTemplates: CalibrationTemplate[] = [];
-let activeLanguage: "asl" | "bsl" | "csl" | "isl" = "asl";
+let activeLanguage: "asl" | "auslan" | "bsl" | "csl" | "isl" | "lse" = "asl";
 let latestAsl1000: Awaited<ReturnType<typeof recognizeAsl1000>> = null;
 let pendingAsl1000 = false;
 let latestIsl263: Awaited<ReturnType<typeof recognizeIsl263>> = null;
 let pendingIsl263 = false;
 let latestBsl1064: Awaited<ReturnType<typeof recognizeBsl1064>> = null;
 let pendingBsl1064 = false;
+let latestLse300: Awaited<ReturnType<typeof recognizeLse300>> = null;
+let pendingLse300 = false;
 let modelGeneration = 0;
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
@@ -36,6 +39,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     latestAsl1000 = null;
     latestIsl263 = null;
     latestBsl1064 = null;
+    latestLse300 = null;
     modelGeneration += 1;
     return;
   }
@@ -47,6 +51,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     latestAsl1000 = null;
     latestIsl263 = null;
     latestBsl1064 = null;
+    latestLse300 = null;
     modelGeneration += 1;
     return;
   }
@@ -79,6 +84,12 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     recognizeBsl1064([...frames]).then((prediction) => {
       if (generation === modelGeneration) latestBsl1064 = prediction;
     }).catch(() => { latestBsl1064 = null; }).finally(() => { pendingBsl1064 = false; });
+  } else if (activeLanguage === "lse" && hasAsl100CompletedSignMotion(frames) && frames.length >= 24 && !pendingLse300 && frames.length % 6 === 0) {
+    pendingLse300 = true;
+    const generation = modelGeneration;
+    recognizeLse300([...frames]).then((prediction) => {
+      if (generation === modelGeneration) latestLse300 = prediction;
+    }).catch(() => { latestLse300 = null; }).finally(() => { pendingLse300 = false; });
   }
 
   const result = recognize(frames);
@@ -129,6 +140,7 @@ function recognize(sequence: VisionFrame[]) {
   const personal = recognizePersonalTemplate(sequence, personalTemplates);
   if (activeLanguage === "bsl") return personal ?? latestBsl1064;
   if (activeLanguage === "isl") return personal ?? latestIsl263;
+  if (activeLanguage === "lse") return personal ?? latestLse300;
   if (activeLanguage !== "asl") return personal;
   return personal
     ?? recognizeILoveYou(sequence)

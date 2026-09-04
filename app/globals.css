@@ -85,6 +85,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .language-card p { margin: 0; color: var(--muted); font-size: .92rem; line-height: 1.55; }
 .model-pill { margin-top: auto; display: inline-flex; align-items: center; gap: 7px; padding-top: 22px; font-size: .78rem; font-weight: 760; }
 .model-pill.available { color: var(--brand-dark); }
+.model-pill.preparing { color: var(--amber); }
 .model-pill.unavailable { color: var(--amber); }
 .model-pill .mini-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .language-continue { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; padding: 18px 20px; background: #eaf2ee; border: 1px solid #d4e2dc; border-radius: 17px; }

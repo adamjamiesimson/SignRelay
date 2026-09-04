@@ -1,877 +1,219 @@
-"use client";
+import WLASL2000_LABELS from "../public/models/asl2000-tgcn/labels.json";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Camera,
-  CameraOff,
-  Check,
-  Clock3,
-  Edit3,
-  Eye,
-  Hand,
-  History,
-  Mic2,
-  Pause,
-  Play,
-  RefreshCw,
-  ShieldCheck,
-  Sparkles,
-  Trash2,
-  UserRound,
-  Volume2,
-  VolumeX,
-  X,
-} from "lucide-react";
-import {
-  DEFAULT_SETTINGS,
-  clearLocalSignRelayData,
-  loadHistory,
-  loadSettings,
-  saveSession,
-  saveSettings,
-  type SpeechSettings,
-  type TranscriptEntry,
-  type TranscriptSession,
-} from "@/lib/browser-storage";
-import {
-  clearCalibrationTemplates,
-  deleteCalibrationGloss,
-  loadCalibrationTemplates,
-  saveCalibrationTemplate,
-} from "@/lib/calibration-storage";
-import {
-  ASL_BUILT_IN_VOCABULARY,
-  createCustomVocabularyEntry,
-  LANGUAGE_LIST,
-  PERSONAL_STARTER_VOCABULARY,
-  type AslVocabularyEntry,
-  type LanguageId,
-} from "@/lib/model-adapters";
-import { isRecentDuplicate } from "@/lib/decoder";
-import { prepareCalibrationSequence } from "@/lib/personalized-recognition";
-import { VisionEngine } from "@/lib/vision-engine";
-import type {
-  CalibrationTemplate,
-  DetectionStatus,
-  VisionFrame,
-  WorkerMessage,
-} from "@/lib/vision-types";
-import { SiteFooter, SiteHeader } from "./site-chrome";
+export type LanguageId = "asl" | "auslan" | "bsl" | "csl" | "isl" | "lse";
 
-type Step = "welcome" | "workspace";
-type CameraState = "idle" | "requesting" | "loading" | "active" | "denied" | "error";
-type RecognitionState = "listening" | "processing" | "uncertain";
-type CalibrationState = "idle" | "countdown" | "recording" | "saving" | "saved" | "error";
-
-const EMPTY_DETECTION: DetectionStatus = {
-  person: false,
-  hands: false,
-  face: false,
-  pose: false,
+export type ModelAdapter = {
+  id: LanguageId;
+  shortName: string;
+  language: string;
+  /** `experimental` means a browser-loadable shared model is installed. */
+  status: "experimental" | "personal" | "preparing";
+  modelFile: string | null;
+  /** Number of shared model labels that run without a personal recording. */
+  automaticVocabularyCount: number;
+  vocabulary: string[];
+  inputFormat: string;
+  sequenceLength: number;
+  confidenceThreshold: number;
+  decoder: string;
+  postProcessing: string;
+  version: string;
+  dataset: string;
+  speechLocale: string;
+  summary: string;
 };
 
-export function TranslatorExperience() {
-  const [step, setStep] = useState<Step>("welcome");
-  const [selected, setSelected] = useState<LanguageId>("asl");
-  const [cameraState, setCameraState] = useState<CameraState>("idle");
-  const [cameraMessage, setCameraMessage] = useState("Camera is off");
-  const [detection, setDetection] = useState<DetectionStatus>(EMPTY_DETECTION);
-  const [recognitionState, setRecognitionState] = useState<RecognitionState>("listening");
-  const [candidate, setCandidate] = useState<string | null>(null);
-  const [confidence, setConfidence] = useState(0);
-  const [bufferSize, setBufferSize] = useState(0);
-  const [entries, setEntries] = useState<TranscriptEntry[]>([]);
-  const [history, setHistory] = useState<TranscriptSession[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [settings, setSettings] = useState<SpeechSettings>(DEFAULT_SETTINGS);
-  const [calibrationTemplates, setCalibrationTemplates] = useState<CalibrationTemplate[]>([]);
-  const [calibrationWord, setCalibrationWord] = useState<AslVocabularyEntry>(() => createCustomVocabularyEntry("Personal sign")!);
-  const [customWordInput, setCustomWordInput] = useState("");
-  const [vocabularySearch, setVocabularySearch] = useState("");
-  const [calibrationState, setCalibrationState] = useState<CalibrationState>("idle");
-  const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
-  const [countdown, setCountdown] = useState(3);
+export type AslVocabularyEntry = {
+  gloss: string;
+  text: string;
+  category: "conversation" | "actions" | "food" | "feelings" | "people" | "places" | "learning" | "questions" | "time" | "safety" | "custom";
+  recognition: "built-in" | "personal-calibration";
+};
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const engineRef = useRef<VisionEngine | null>(null);
-  const workerRef = useRef<Worker | null>(null);
-  const animationRef = useRef<number | null>(null);
-  const lastFrameRef = useRef(0);
-  const frameLoopRef = useRef<() => void>(() => {});
-  const settingsRef = useRef(settings);
-  const sessionStartedRef = useRef(0);
-  const templatesRef = useRef<CalibrationTemplate[]>([]);
-  const captureFramesRef = useRef<VisionFrame[]>([]);
-  const captureStateRef = useRef<CalibrationState>("idle");
+export const WLASL100_GLOSSES = [
+  "BOOK", "DRINK", "COMPUTER", "BEFORE", "CHAIR", "GO", "CLOTHES", "WHO", "CANDY", "COUSIN", "DEAF", "FINE", "HELP", "NO", "THIN", "WALK", "YEAR", "YES", "ALL", "BLACK", "COOL", "FINISH", "HOT", "LIKE", "MANY", "MOTHER", "NOW", "ORANGE", "TABLE", "THANKSGIVING", "WHAT", "WOMAN", "BED", "BLUE", "BOWLING", "CAN", "DOG", "FAMILY", "FISH", "GRADUATE", "HAT", "HEARING", "KISS", "LANGUAGE", "LATER", "MAN", "SHIRT", "STUDY", "TALL", "WHITE", "WRONG", "ACCIDENT", "APPLE", "BIRD", "CHANGE", "COLOR", "CORN", "COW", "DANCE", "DARK", "DOCTOR", "EAT", "ENJOY", "FORGET", "GIVE", "LAST", "MEET", "PINK", "PIZZA", "PLAY", "SCHOOL", "SECRETARY", "SHORT", "TIME", "WANT", "WORK", "AFRICA", "BASKETBALL", "BIRTHDAY", "BROWN", "BUT", "CHEAT", "CITY", "COOK", "DECIDE", "FULL", "HOW", "JACKET", "LETTER", "MEDICINE", "NEED", "PAINT", "PAPER", "PULL", "PURPLE", "RIGHT", "SAME", "SON", "TELL", "THURSDAY",
+] as const;
 
-  const model = useMemo(
-    () => LANGUAGE_LIST.find((item) => item.id === selected)!,
-    [selected],
-  );
+export const WLASL2000_GLOSSES = WLASL2000_LABELS as string[];
 
-  const calibrationCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    calibrationTemplates
-      .filter((template) => (template.language ?? "asl") === selected)
-      .forEach((template) => counts.set(template.gloss, (counts.get(template.gloss) ?? 0) + 1));
-    return counts;
-  }, [calibrationTemplates, selected]);
+const title = (value: string) => value.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-  const trainedGlosses = useMemo(() => new Set(calibrationCounts.keys()), [calibrationCounts]);
+export const ASL_BUILT_IN_VOCABULARY: AslVocabularyEntry[] = WLASL2000_GLOSSES.map((gloss) => ({
+  gloss, text: title(gloss), category: "learning", recognition: "built-in",
+}));
 
-  const calibrationVocabulary = useMemo(() => {
-    const knownGlosses = new Set<string>();
-    const customWords: AslVocabularyEntry[] = [];
 
-    calibrationTemplates.filter((template) => (template.language ?? "asl") === selected).forEach((template) => {
-      if (knownGlosses.has(template.gloss)) return;
-      const word = createCustomVocabularyEntry(template.text || template.gloss);
-      if (!word || knownGlosses.has(word.gloss)) return;
-      knownGlosses.add(word.gloss);
-      customWords.push(word);
-    });
+export const ASL_VOCABULARY = ASL_BUILT_IN_VOCABULARY;
 
-    return customWords;
-  }, [calibrationTemplates, selected]);
+/**
+ * These are intentionally language-neutral *labels*, not claims that a
+ * single sign form is shared by BSL, CSL or ISL. They make a substantial
+ * starter dictionary available to teach in each language without inventing
+ * an unvalidated shared checkpoint.
+ */
+export const PERSONAL_STARTER_GLOSSES = [
+  ["HELLO", "GOODBYE", "PLEASE", "THANK YOU", "SORRY", "EXCUSE ME", "YES", "NO", "MAYBE", "OKAY", "HELP", "STOP", "WAIT", "AGAIN", "UNDERSTAND", "DON'T UNDERSTAND", "NICE", "WELCOME", "READY", "FINISH"],
+  ["PERSON", "MAN", "WOMAN", "CHILD", "BABY", "FRIEND", "NEIGHBOUR", "TEACHER", "STUDENT", "DOCTOR", "NURSE", "DRIVER", "CUSTOMER", "VISITOR", "MOTHER", "FATHER", "SISTER", "BROTHER", "GRANDMOTHER", "GRANDFATHER"],
+  ["FAMILY", "PARENT", "SON", "DAUGHTER", "HUSBAND", "WIFE", "PARTNER", "AUNT", "UNCLE", "COUSIN", "RELATIVE", "MARRIED", "SINGLE", "LOVE", "MISS", "MEET", "CALL", "INVITE", "CELEBRATE", "TOGETHER"],
+  ["GO", "COME", "LEAVE", "ARRIVE", "WALK", "RUN", "SIT", "STAND", "OPEN", "CLOSE", "GIVE", "TAKE", "PUT", "FIND", "LOSE", "BUY", "SELL", "PAY", "CHOOSE", "CHANGE"],
+  ["WAKE UP", "SLEEP", "SHOWER", "WASH", "DRESS", "COOK", "CLEAN", "EAT", "DRINK", "REST", "PLAY", "WATCH", "LISTEN", "READ", "WRITE", "SIGN", "TALK", "THINK", "REMEMBER", "FORGET"],
+  ["FOOD", "BREAD", "RICE", "NOODLES", "PASTA", "SOUP", "SALAD", "CHICKEN", "FISH", "MEAT", "EGG", "CHEESE", "FRUIT", "APPLE", "BANANA", "ORANGE", "VEGETABLE", "PIZZA", "CAKE", "SWEET"],
+  ["WATER", "TEA", "COFFEE", "JUICE", "MILK", "HOT", "COLD", "HUNGRY", "THIRSTY", "BREAKFAST", "LUNCH", "DINNER", "SNACK", "RESTAURANT", "MENU", "BILL", "DELICIOUS", "SPICY", "SUGAR", "SALT"],
+  ["HAPPY", "SAD", "ANGRY", "WORRIED", "SCARED", "TIRED", "EXCITED", "SURPRISED", "BORED", "CONFUSED", "PROUD", "SHY", "CALM", "STRESSED", "SICK", "BETTER", "WORSE", "BUSY", "FREE", "LUCKY"],
+  ["HOME", "SCHOOL", "UNIVERSITY", "OFFICE", "SHOP", "MARKET", "HOSPITAL", "PHARMACY", "BANK", "HOTEL", "AIRPORT", "STATION", "PARK", "BEACH", "MOSQUE", "CHURCH", "TOILET", "KITCHEN", "BEDROOM", "BATHROOM"],
+  ["TODAY", "TOMORROW", "YESTERDAY", "NOW", "LATER", "EARLY", "LATE", "MORNING", "AFTERNOON", "EVENING", "NIGHT", "WEEK", "MONTH", "YEAR", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "WEEKEND"],
+  ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE", "TWENTY", "FIFTY", "HUNDRED", "THOUSAND", "FIRST", "LAST", "MORE", "LESS"],
+  ["BLACK", "WHITE", "RED", "BLUE", "GREEN", "YELLOW", "ORANGE COLOUR", "PURPLE", "PINK", "BROWN", "GREY", "GOLD", "SILVER", "LIGHT", "DARK", "BRIGHT", "COLOUR", "SAME", "DIFFERENT", "BEAUTIFUL"],
+  ["SUN", "RAIN", "WIND", "CLOUD", "STORM", "HOT WEATHER", "COLD WEATHER", "WEATHER", "UMBRELLA", "SUMMER", "WINTER", "SPRING", "AUTUMN", "DAY", "TEMPERATURE", "WET", "DRY", "DUST", "FLOOD", "SUNNY"],
+  ["LEARN", "STUDY", "CLASS", "COURSE", "BOOK", "PAPER", "PEN", "COMPUTER", "EXAM", "QUESTION", "ANSWER", "EXPLAIN", "PRACTICE", "CORRECT", "WRONG", "EASY", "DIFFICULT", "IDEA", "PROJECT", "HOMEWORK"],
+  ["PHONE", "MOBILE", "INTERNET", "EMAIL", "MESSAGE", "VIDEO", "PHOTO", "CAMERA", "CHARGER", "BATTERY", "SCREEN", "KEYBOARD", "PASSWORD", "WEBSITE", "DOWNLOAD", "UPLOAD", "ONLINE", "OFFLINE", "MACHINE", "ROBOT"],
+  ["PAIN", "HEADACHE", "MEDICINE", "APPOINTMENT", "EMERGENCY", "ALLERGY", "INJURY", "BLOOD", "HEART", "BREATHE", "DIZZY", "FEVER", "COUGH", "MASK", "HEALTHY", "EXERCISE", "GYM", "SWIM", "SLEEPY", "RECOVER"],
+  ["DANGER", "SAFE", "POLICE", "FIRE", "ACCIDENT", "LOST", "ADDRESS", "NAME", "PHONE NUMBER", "CONTACT", "NEED ASSISTANCE", "CALL POLICE", "CALL AMBULANCE", "EXIT", "ENTRANCE", "LOCK", "UNLOCK", "CAREFUL", "WARNING", "PROBLEM"],
+  ["CAR", "BUS", "TAXI", "TRAIN", "METRO", "PLANE", "BOAT", "BICYCLE", "ROAD", "TRAFFIC", "TICKET", "MAP", "DIRECTION", "LEFT", "RIGHT", "STRAIGHT", "NEAR", "FAR", "FAST", "SLOW"],
+  ["DOOR", "WINDOW", "TABLE", "CHAIR", "BED", "SOFA", "LIGHT SWITCH", "FAN", "AIR CONDITIONING", "FRIDGE", "OVEN", "CUP", "PLATE", "BOWL", "SPOON", "FORK", "KNIFE", "KEY", "BAG", "CLOTHES"],
+  ["WORK", "JOB", "MEETING", "MANAGER", "TEAM", "CLIENT", "MONEY", "PRICE", "CHEAP", "EXPENSIVE", "RECEIPT", "CASH", "CARD", "DELIVERY", "ORDER", "RETURN", "DISCOUNT", "OPEN NOW", "CLOSED", "AVAILABLE"],
+  ["WHO", "WHAT", "WHERE", "WHEN", "WHY", "HOW", "WHICH", "HOW MANY", "HOW MUCH", "CAN", "CAN'T", "WANT", "NEED", "LIKE", "DON'T LIKE", "KNOW", "NOT KNOW", "HAVE", "DON'T HAVE", "SHOULD"],
+  ["GOOD", "BAD", "BIG", "SMALL", "LONG", "SHORT", "NEW", "OLD", "YOUNG", "FULL", "EMPTY", "POLITE", "DIRTY", "STRONG", "WEAK", "QUIET", "LOUD", "TRUE", "FALSE", "IMPORTANT"],
+] as const satisfies readonly (readonly string[])[];
 
-  const activeCustomCount = trainedGlosses.size;
+export const PERSONAL_STARTER_CONCEPTS = Array.from(new Set([
+  ...WLASL2000_GLOSSES,
+  ...PERSONAL_STARTER_GLOSSES.flat(),
+]));
 
-  const filteredCalibrationVocabulary = useMemo(() => {
-    const builtInStarter = selected === "asl" ? [] : PERSONAL_STARTER_VOCABULARY;
-    const knownGlosses = new Set<string>();
-    return [...calibrationVocabulary, ...builtInStarter].filter((word) => {
-      if (knownGlosses.has(word.gloss)) return false;
-      knownGlosses.add(word.gloss);
-      return true;
-    });
-  }, [calibrationVocabulary, selected]);
+export const PERSONAL_STARTER_VOCABULARY: AslVocabularyEntry[] = PERSONAL_STARTER_CONCEPTS
+  .map((gloss) => ({ gloss, text: title(gloss), category: "learning", recognition: "personal-calibration" }));
 
-  const visibleCalibrationVocabulary = useMemo(() => {
-    const search = vocabularySearch.trim().toLocaleLowerCase();
-    const matches = search
-      ? filteredCalibrationVocabulary.filter((word) => `${word.text} ${word.gloss}`.toLocaleLowerCase().includes(search))
-      : filteredCalibrationVocabulary;
-    return matches.slice(0, search ? 200 : 80);
-  }, [filteredCalibrationVocabulary, vocabularySearch]);
+export function createCustomVocabularyEntry(value: string): AslVocabularyEntry | null {
+  const text = value
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[^\p{L}\p{N} '\-]/gu, "")
+    .trim();
+  if (!text) return null;
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setSettings(loadSettings());
-      setHistory(loadHistory());
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    void loadCalibrationTemplates()
-      .then(setCalibrationTemplates)
-      .catch(() => setCalibrationMessage("Personal vocabulary storage is unavailable in this browser."));
-  }, []);
-
-  useEffect(() => {
-    templatesRef.current = calibrationTemplates;
-    workerRef.current?.postMessage({ type: "templates", language: selected, templates: calibrationTemplates });
-  }, [calibrationTemplates, selected]);
-
-  useEffect(() => {
-    const personalSign = createCustomVocabularyEntry("Personal sign")!;
-    setCalibrationWord(personalSign);
-    setCustomWordInput("");
-    setVocabularySearch("");
-    captureStateRef.current = "idle";
-    setCalibrationState("idle");
-    setCalibrationMessage(`Type a ${selected.toUpperCase()} word or short phrase, then record two or three examples.`);
-  }, [selected]);
-
-  useEffect(() => {
-    settingsRef.current = settings;
-    if (typeof window !== "undefined") saveSettings(settings);
-  }, [settings]);
-
-  const speak = useCallback((text: string) => {
-    if (!text || typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.volume = settingsRef.current.volume;
-    utterance.rate = settingsRef.current.rate;
-    utterance.lang = model.speechLocale;
-    window.speechSynthesis.speak(utterance);
-  }, [model.speechLocale]);
-
-  const handleWorkerMessage = useCallback((message: WorkerMessage) => {
-    if (message.type === "analysis") {
-      setRecognitionState(message.state);
-      setCandidate(message.candidate);
-      setConfidence(message.confidence);
-      setBufferSize(message.bufferSize);
-      return;
-    }
-
-    const entry: TranscriptEntry = {
-      id: `${message.timestamp}-${message.gloss}`,
-      text: message.text,
-      gloss: message.gloss,
-      confidence: message.confidence,
-      timestamp: message.timestamp,
-    };
-    setEntries((current) => {
-      const previous = current[current.length - 1];
-      if (isRecentDuplicate(previous, entry)) return current;
-      return [...current, entry];
-    });
-    if (settingsRef.current.autoSpeak) speak(message.text);
-  }, [speak]);
-
-  useEffect(() => {
-    if (step !== "workspace") return;
-    const worker = new Worker("/workers/recognition.worker.js", { type: "module" });
-    worker.onmessage = (event: MessageEvent<WorkerMessage>) => handleWorkerMessage(event.data);
-    worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current });
-    workerRef.current = worker;
-    return () => {
-      worker.terminate();
-      workerRef.current = null;
-    };
-  }, [step, selected, handleWorkerMessage]);
-
-  const stopCamera = useCallback(() => {
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    animationRef.current = null;
-    engineRef.current?.close();
-    engineRef.current = null;
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    streamRef.current = null;
-    if (videoRef.current) videoRef.current.srcObject = null;
-    workerRef.current?.postMessage({ type: "reset" });
-    setCameraState("idle");
-    setCameraMessage("Camera is off");
-    setDetection(EMPTY_DETECTION);
-    setCandidate(null);
-    setConfidence(0);
-    setBufferSize(0);
-    captureStateRef.current = "idle";
-    captureFramesRef.current = [];
-    setCalibrationState("idle");
-  }, []);
-
-  useEffect(() => () => {
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    engineRef.current?.close();
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    window.speechSynthesis?.cancel();
-  }, []);
-
-  const drawOverlay = useCallback((frame: VisionFrame) => {
-    const canvas = canvasRef.current;
-    const video = videoRef.current;
-    if (!canvas || !video) return;
-    if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-    }
-    const context = canvas.getContext("2d");
-    if (!context) return;
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    if (!settingsRef.current.showOverlay) return;
-
-    const drawPoints = (points: Array<{ x: number; y: number }>, color: string, radius: number) => {
-      context.fillStyle = color;
-      for (const point of points) {
-        context.beginPath();
-        context.arc(point.x * canvas.width, point.y * canvas.height, radius, 0, Math.PI * 2);
-        context.fill();
-      }
-    };
-
-    frame.hands.forEach((hand) => {
-      context.strokeStyle = "rgba(118, 236, 199, .78)";
-      context.lineWidth = 2;
-      const connections = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-      for (const [a, b] of connections) {
-        const start = hand.landmarks[a];
-        const end = hand.landmarks[b];
-        if (!start || !end) continue;
-        context.beginPath();
-        context.moveTo(start.x * canvas.width, start.y * canvas.height);
-        context.lineTo(end.x * canvas.width, end.y * canvas.height);
-        context.stroke();
-      }
-      drawPoints(hand.landmarks, "#b8ffe9", 3.2);
-    });
-    drawPoints(frame.face, "rgba(255, 217, 129, .9)", 2.6);
-    drawPoints(frame.pose, "rgba(190, 220, 255, .9)", 3.2);
-  }, []);
-
-  const runFrameLoop = useCallback(() => {
-    const video = videoRef.current;
-    const engine = engineRef.current;
-    if (!video || !engine || video.readyState < 2) {
-      animationRef.current = requestAnimationFrame(frameLoopRef.current);
-      return;
-    }
-
-    const now = performance.now();
-    if (now - lastFrameRef.current >= 105) {
-      try {
-        const frame = engine.process(video, now);
-        lastFrameRef.current = now;
-        const nextDetection = {
-          person: frame.face.length > 0 || frame.pose.length > 0,
-          hands: frame.hands.length > 0,
-          face: frame.face.length > 0,
-          pose: frame.pose.length > 0,
-        };
-        setDetection(nextDetection);
-        drawOverlay(frame);
-        if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
-        else workerRef.current?.postMessage({ type: "frame", frame });
-      } catch (error) {
-        console.warn("A video frame could not be processed", error);
-      }
-    }
-    animationRef.current = requestAnimationFrame(frameLoopRef.current);
-  }, [drawOverlay]);
-
-  useEffect(() => {
-    frameLoopRef.current = runFrameLoop;
-  }, [runFrameLoop]);
-
-  const requestCamera = useCallback(async () => {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setCameraState("error");
-      setCameraMessage("This browser does not expose camera access.");
-      return;
-    }
-    setCameraState("requesting");
-    setCameraMessage("Waiting for camera permission");
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false,
-      });
-      streamRef.current = stream;
-      if (!videoRef.current) throw new Error("Camera view was not ready");
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
-
-      setCameraState("loading");
-      const engine = await VisionEngine.create(setCameraMessage);
-      engineRef.current = engine;
-      setCameraState("active");
-      setCameraMessage("Camera and vision models active");
-      animationRef.current = requestAnimationFrame(frameLoopRef.current);
-    } catch (error) {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-      const permissionDenied = error instanceof DOMException && (error.name === "NotAllowedError" || error.name === "PermissionDeniedError");
-      setCameraState(permissionDenied ? "denied" : "error");
-      setCameraMessage(permissionDenied
-        ? "Camera permission was denied. SignRelay cannot analyse video without it."
-        : "Camera or vision models could not be started. Check your connection and try again.");
-    }
-  }, []);
-
-  const beginTranslation = () => {
-    sessionStartedRef.current = Date.now();
-    setStep("workspace");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    window.setTimeout(() => void requestCamera(), 0);
+  return {
+    gloss: text.toUpperCase(),
+    text,
+    category: "custom",
+    recognition: "personal-calibration",
   };
-
-  const recordCalibration = useCallback(async () => {
-    if (captureStateRef.current !== "idle" && captureStateRef.current !== "saved" && captureStateRef.current !== "error") return;
-    if (!engineRef.current) await requestCamera();
-    if (!engineRef.current) {
-      setCalibrationState("error");
-      setCalibrationMessage("Start the camera before recording a personal sign example.");
-      return;
-    }
-
-    captureStateRef.current = "countdown";
-    setCalibrationState("countdown");
-    setCalibrationMessage(`Get ready to sign ${calibrationWord.text}.`);
-    for (let value = 3; value >= 1; value -= 1) {
-      setCountdown(value);
-      await wait(700);
-      if (!engineRef.current) return;
-    }
-
-    captureFramesRef.current = [];
-    captureStateRef.current = "recording";
-    setCalibrationState("recording");
-    setCalibrationMessage(`Signing ${calibrationWord.text} — complete the full movement.`);
-    await wait(3000);
-
-    captureStateRef.current = "saving";
-    setCalibrationState("saving");
-    const validFrames = captureFramesRef.current.filter((frame) => frame.hands.length > 0);
-    if (validFrames.length < 16) {
-      captureStateRef.current = "error";
-      setCalibrationState("error");
-      setCalibrationMessage("Not enough hand movement was visible. Keep your hands in frame and try again.");
-      return;
-    }
-
-    const createdAt = Date.now();
-    const template: CalibrationTemplate = {
-      id: `${calibrationWord.gloss}-${createdAt}-${Math.random().toString(36).slice(2, 7)}`,
-      language: selected,
-      gloss: calibrationWord.gloss,
-      text: calibrationWord.text,
-      createdAt,
-      frames: prepareCalibrationSequence(validFrames),
-    };
-
-    try {
-      await saveCalibrationTemplate(template);
-      const updated = await loadCalibrationTemplates();
-      setCalibrationTemplates(updated);
-      captureStateRef.current = "saved";
-      setCalibrationState("saved");
-      setCalibrationMessage(`${calibrationWord.text} is now active for ${model.shortName}. Record two or three examples for better consistency.`);
-    } catch {
-      captureStateRef.current = "error";
-      setCalibrationState("error");
-      setCalibrationMessage("This browser could not save the example. Check private-browsing storage settings and try again.");
-    }
-  }, [calibrationWord, model.shortName, requestCamera, selected]);
-
-  const selectCustomWord = () => {
-    const customWord = createCustomVocabularyEntry(customWordInput);
-    if (!customWord) {
-      setCalibrationState("error");
-      setCalibrationMessage("Type a word or short phrase first—letters, numbers, spaces, apostrophes and hyphens are supported.");
-      return;
-    }
-
-    setCalibrationWord(customWord);
-    setCustomWordInput("");
-    captureStateRef.current = "idle";
-    setCalibrationState("idle");
-    setCalibrationMessage(`${customWord.text} is selected for ${model.shortName}. Record two or three examples for the most reliable match.`);
-  };
-
-  const removeCalibration = useCallback(async (gloss: string) => {
-    await deleteCalibrationGloss(gloss, selected);
-    setCalibrationTemplates(await loadCalibrationTemplates());
-    captureStateRef.current = "idle";
-    setCalibrationState("idle");
-    setCalibrationMessage("Personal examples removed for this word.");
-  }, [selected]);
-
-  const returnHome = () => {
-    stopCamera();
-    setStep("welcome");
-  };
-
-  const clearTranscript = () => {
-    saveSession({
-      id: String(sessionStartedRef.current),
-      language: selected,
-      createdAt: sessionStartedRef.current,
-      entries,
-    });
-    setEntries([]);
-    sessionStartedRef.current = Date.now();
-    setHistory(loadHistory());
-  };
-
-  const clearAllLocalData = async () => {
-    clearLocalSignRelayData();
-    await clearCalibrationTemplates();
-    setEntries([]);
-    setHistory([]);
-    setCalibrationTemplates([]);
-    setSettings(DEFAULT_SETTINGS);
-  };
-
-  if (step === "workspace") {
-    return (
-      <div className="app-shell">
-        <SiteHeader />
-        <main className="workspace-page">
-          <div className="workspace-topbar">
-            <button className="back-link" onClick={returnHome}>
-              <ArrowLeft size={18} aria-hidden="true" /> Change language
-            </button>
-            <div className="workspace-title">
-              <span className="language-code compact">{model.shortName}</span>
-              <div>
-                <h1>Live translation</h1>
-                <p>{model.language} · {model.version}</p>
-              </div>
-            </div>
-            <span className="local-badge"><ShieldCheck size={16} /> On-device processing</span>
-          </div>
-
-          <div className="honesty-banner" role="note">
-            <Sparkles size={18} aria-hidden="true" />
-            <p>{model.automaticVocabularyCount ? <><strong>{model.automaticVocabularyCount.toLocaleString()} automatic {model.shortName} test signs:</strong> its official isolated-sign model runs locally in your browser. You can separately teach any word or short phrase.</> : <><strong>{model.vocabulary.length.toLocaleString()} {model.shortName} starter labels:</strong> choose one below and record two or three examples to activate it. Its landmark templates stay on this device and are never mixed with another sign language.</>}</p>
-            <a href="#personal-vocabulary">Teach a sign</a>
-          </div>
-
-          <div className="translator-grid">
-            <section className="camera-panel" aria-labelledby="camera-title">
-              <div className="panel-heading">
-                <div>
-                  <p className="panel-kicker">Live input</p>
-                  <h2 id="camera-title">Camera</h2>
-                </div>
-                <StatusBadge active={cameraState === "active"} label={cameraMessage} />
-              </div>
-
-              <div className="camera-stage">
-                <video ref={videoRef} muted playsInline aria-label="Mirrored live camera preview" />
-                <canvas ref={canvasRef} aria-hidden="true" />
-                {cameraState !== "active" && (
-                  <div className="camera-placeholder">
-                    {cameraState === "requesting" || cameraState === "loading" ? (
-                      <RefreshCw className="spin" size={34} aria-hidden="true" />
-                    ) : cameraState === "denied" ? (
-                      <CameraOff size={38} aria-hidden="true" />
-                    ) : (
-                      <Camera size={38} aria-hidden="true" />
-                    )}
-                    <h3>{cameraState === "loading" ? "Preparing private vision models" : cameraState === "requesting" ? "Allow camera access" : "Camera unavailable"}</h3>
-                    <p>{cameraMessage}</p>
-                    {(cameraState === "denied" || cameraState === "error" || cameraState === "idle") && (
-                      <button className="button secondary small" onClick={requestCamera}>
-                        <RefreshCw size={16} aria-hidden="true" /> Retry camera
-                      </button>
-                    )}
-                  </div>
-                )}
-                {cameraState === "active" && (
-                  <div className="camera-guidance">Keep both hands, your face and shoulders in frame · use even front lighting</div>
-                )}
-                {calibrationState !== "idle" && calibrationState !== "saved" && calibrationState !== "error" && (
-                  <div className={`calibration-capture ${calibrationState}`} role="status" aria-live="assertive">
-                    <span>{calibrationState === "countdown" ? countdown : calibrationState === "recording" ? "REC" : "···"}</span>
-                    <strong>{calibrationState === "countdown" ? `Get ready: ${calibrationWord.text}` : calibrationState === "recording" ? `Sign ${calibrationWord.text}` : "Saving example"}</strong>
-                  </div>
-                )}
-              </div>
-
-              <div className="detection-grid" aria-label="Vision detection status">
-                <DetectionItem icon={<Camera size={16} />} label="Camera" active={cameraState === "active"} />
-                <DetectionItem icon={<UserRound size={16} />} label="Person" active={detection.person} />
-                <DetectionItem icon={<Hand size={16} />} label="Hands" active={detection.hands} />
-                <DetectionItem icon={<Eye size={16} />} label="Face" active={detection.face} />
-                <DetectionItem icon={<UserRound size={16} />} label="Upper body" active={detection.pose} />
-              </div>
-
-              <div className="camera-actions">
-                <label className="switch-row">
-                  <input
-                    type="checkbox"
-                    checked={settings.showOverlay}
-                    onChange={(event) => setSettings((current) => ({ ...current, showOverlay: event.target.checked }))}
-                  />
-                  <span>Show landmarks</span>
-                </label>
-                <button className="button ghost small" onClick={cameraState === "active" ? stopCamera : requestCamera}>
-                  {cameraState === "active" ? <><Pause size={16} /> Pause camera</> : <><Play size={16} /> Start camera</>}
-                </button>
-              </div>
-            </section>
-
-            <section className="transcript-panel" aria-labelledby="transcript-title">
-              <div className="panel-heading">
-                <div>
-                  <p className="panel-kicker">Live output</p>
-                  <h2 id="transcript-title">Transcript</h2>
-                </div>
-                <div className={`recognition-state ${recognitionState}`}>
-                  <span /> {recognitionState}
-                </div>
-              </div>
-
-              <div className="candidate-bar" aria-live="polite">
-                <div>
-                  <span className="candidate-label">Current sequence</span>
-                  <strong>{candidate ? candidate : bufferSize < 10 ? "Building movement context…" : "No confident match"}</strong>
-                </div>
-                <div className="confidence-ring" style={{ "--confidence": `${Math.round(confidence * 100)}%` } as React.CSSProperties}>
-                  <span>{Math.round(confidence * 100)}%</span>
-                </div>
-              </div>
-
-              <div className="transcript-body" aria-live="polite" aria-label="Confirmed translation">
-                {!entries.length ? (
-                  <div className="transcript-empty">
-                    <Mic2 size={28} aria-hidden="true" />
-                    <h3>Your confirmed translation appears here</h3>
-                    <p>Sign naturally and complete the full movement. Low-confidence sequences remain unconfirmed.</p>
-                  </div>
-                ) : (
-                  <div className="transcript-list">
-                    {entries.map((entry) => (
-                      <article className="transcript-entry" key={entry.id}>
-                        <div className="entry-time">
-                          <Check size={14} /> {new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </div>
-                        {editingId === entry.id ? (
-                          <input
-                            className="entry-editor"
-                            value={entry.text}
-                            autoFocus
-                            onChange={(event) => setEntries((current) => current.map((item) => item.id === entry.id ? { ...item, text: event.target.value } : item))}
-                            onBlur={() => setEditingId(null)}
-                            onKeyDown={(event) => event.key === "Enter" && setEditingId(null)}
-                            aria-label={`Edit ${entry.text}`}
-                          />
-                        ) : (
-                          <p>{entry.text}</p>
-                        )}
-                        <div className="entry-actions">
-                          <span>{Math.round(entry.confidence * 100)}% · {entry.gloss}</span>
-                          <button onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`}><Edit3 size={15} /></button>
-                          <button onClick={() => setEntries((current) => current.filter((item) => item.id !== entry.id))} aria-label={`Remove ${entry.text}`}><X size={16} /></button>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="speech-controls">
-                <label className="switch-row prominent">
-                  <input
-                    type="checkbox"
-                    checked={settings.autoSpeak}
-                    onChange={(event) => setSettings((current) => ({ ...current, autoSpeak: event.target.checked }))}
-                  />
-                  <span><strong>Auto speak</strong><small>Speak only newly confirmed text</small></span>
-                </label>
-                <div className="speech-buttons">
-                  <button className="button secondary small" disabled={!entries.length} onClick={() => speak(entries.map((entry) => entry.text).join(" "))}>
-                    <Volume2 size={16} /> Speak
-                  </button>
-                  <button className="button ghost small" onClick={() => window.speechSynthesis?.cancel()}>
-                    <VolumeX size={16} /> Stop
-                  </button>
-                </div>
-                <label className="range-control">
-                  <span>Volume <strong>{Math.round(settings.volume * 100)}%</strong></span>
-                  <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => setSettings((current) => ({ ...current, volume: Number(event.target.value) }))} />
-                </label>
-                <label className="range-control">
-                  <span>Rate <strong>{settings.rate.toFixed(2)}×</strong></span>
-                  <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => setSettings((current) => ({ ...current, rate: Number(event.target.value) }))} />
-                </label>
-              </div>
-
-              <div className="transcript-actions">
-                <button className="button ghost small" onClick={() => setShowHistory((current) => !current)}>
-                  <History size={16} /> History ({history.length})
-                </button>
-                <button className="button danger small" disabled={!entries.length} onClick={clearTranscript}>
-                  <Trash2 size={16} /> Save & clear
-                </button>
-              </div>
-
-              {showHistory && (
-                <div className="history-drawer">
-                  <div className="history-heading"><strong>Local history</strong><button onClick={() => setShowHistory(false)} aria-label="Close history"><X size={17} /></button></div>
-                  {!history.length ? <p>No saved sessions on this device.</p> : history.map((session) => (
-                    <div className="history-session" key={session.id}>
-                      <span><Clock3 size={14} /> {new Date(session.createdAt).toLocaleString()}</span>
-                      <p>{session.entries.map((entry) => entry.text).join(" ")}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-
-          <section className="calibration-panel" id="personal-vocabulary" aria-labelledby="calibration-title">
-            <div className="calibration-heading">
-              <div>
-                <p className="panel-kicker">On-device personal recognizer</p>
-                <h2 id="calibration-title">Teach your {model.shortName} vocabulary</h2>
-                <p>{selected === "asl" ? `The ${ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} WLASL words above are built in. For a word or short phrase outside that model, type it below and record the complete sign two or three times.` : `Choose from ${model.vocabulary.length.toLocaleString()} built-in ${model.shortName} starter labels below, or type your own. Record the complete sign two or three times to activate a reliable personal match.`} SignRelay stores only normalised landmarks on this device—not camera video.</p>
-              </div>
-              <div className="calibration-progress" aria-label={`${activeCustomCount} personal words active`}>
-                <strong>{activeCustomCount}</strong><span> personal</span>
-              </div>
-            </div>
-
-            <div className="calibration-controls">
-              <div className="selected-word-card">
-                <div>
-                  <span>Selected word</span>
-                  <strong>{calibrationWord.text}</strong>
-                  <small>{calibrationCounts.get(calibrationWord.gloss) ?? 0} of 3 examples recorded</small>
-                </div>
-                <div className="selected-word-actions">
-                  <button className="button primary small" onClick={() => void recordCalibration()} disabled={calibrationState === "countdown" || calibrationState === "recording" || calibrationState === "saving"}>
-                    <Camera size={16} /> {cameraState === "active" ? "Record example" : "Start camera & record"}
-                  </button>
-                  {trainedGlosses.has(calibrationWord.gloss) && (
-                    <button className="button ghost small" onClick={() => void removeCalibration(calibrationWord.gloss)}>
-                      <Trash2 size={15} /> Remove
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="custom-word-controls">
-              <div>
-                <span className="custom-word-label">Type a word, then sign it</span>
-                <p>Type what you want SignRelay to say, select it, then record yourself signing it.</p>
-              </div>
-              <div className="custom-word-input">
-                <input
-                  value={customWordInput}
-                  maxLength={48}
-                  onChange={(event) => setCustomWordInput(event.target.value)}
-                  onKeyDown={(event) => event.key === "Enter" && selectCustomWord()}
-                  placeholder="e.g. Pizza"
-                  aria-label="Word or short phrase to teach"
-                />
-                <button className="button secondary small" onClick={selectCustomWord} disabled={!customWordInput.trim()}>
-                  <ArrowRight size={16} /> Select word
-                </button>
-              </div>
-            </div>
-
-            {selected !== "asl" && (
-              <div className="custom-word-controls starter-library-search">
-                <div>
-                  <span className="custom-word-label">Search the {model.vocabulary.length.toLocaleString()} built-in concepts</span>
-                  <p>Choose a concept first, then record two or three examples of the sign you use for it.</p>
-                </div>
-                <div className="custom-word-input">
-                  <input
-                    value={vocabularySearch}
-                    onChange={(event) => setVocabularySearch(event.target.value)}
-                    placeholder="Search, e.g. doctor, travel, happy"
-                    aria-label={`Search built-in ${model.shortName} concepts`}
-                  />
-                </div>
-              </div>
-            )}
-
-            <p className={`calibration-message ${calibrationState}`} role="status">{calibrationMessage}</p>
-            <div className="vocabulary-grid" aria-label={`Personal ${model.shortName} vocabulary`}>
-              {visibleCalibrationVocabulary.map((word) => {
-                const exampleCount = calibrationCounts.get(word.gloss) ?? 0;
-                return (
-                  <button
-                    key={word.gloss}
-                    className={`${calibrationWord.gloss === word.gloss ? "selected" : ""} ${exampleCount ? "trained" : ""}`}
-                    onClick={() => {
-                      setCalibrationWord(word);
-                      captureStateRef.current = "idle";
-                      setCalibrationState("idle");
-                      setCalibrationMessage(exampleCount ? `${word.text} is active. Add another example to improve consistency.` : `Record ${word.text} to activate it in your personal recognizer.`);
-                    }}
-                  >
-                    <span>{word.text}</span>
-                    <small>{exampleCount ? `${exampleCount} example${exampleCount === 1 ? "" : "s"}` : word.category}</small>
-                    {exampleCount > 0 && <Check size={14} aria-hidden="true" />}
-                  </button>
-                );
-              })}
-            </div>
-            {filteredCalibrationVocabulary.length > visibleCalibrationVocabulary.length && (
-              <p className="calibration-message">Showing {visibleCalibrationVocabulary.length} of {filteredCalibrationVocabulary.length.toLocaleString()} words. Search to narrow the library.</p>
-            )}
-          </section>
-
-          <section className="privacy-strip" aria-labelledby="privacy-heading">
-            <ShieldCheck size={25} aria-hidden="true" />
-            <div>
-              <h2 id="privacy-heading">Your camera stays private</h2>
-              <p>Frames are analysed in this browser. Raw video is not uploaded or stored. Settings and saved transcripts stay in local browser storage.</p>
-            </div>
-            <button className="button ghost small" onClick={clearAllLocalData}>Clear local data</button>
-          </section>
-        </main>
-        <SiteFooter />
-      </div>
-    );
-  }
-
-  return (
-    <div className="app-shell">
-      <SiteHeader />
-      <main>
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-inner">
-            <p className="eyebrow">Communication, made visible</p>
-            <h1 id="hero-title">Sign freely.<br /><span>Be understood.</span></h1>
-            <p className="hero-copy">
-              SignRelay translates continuous sign language into text and speech by analysing hand movement, facial expression and body language — locally in your browser.
-            </p>
-            <div className="hero-actions">
-              <button className="button primary" onClick={() => document.getElementById("choose-language")?.scrollIntoView({ behavior: "smooth" })}>
-                <Play size={18} fill="currentColor" aria-hidden="true" /> Start translating
-              </button>
-              <a className="button secondary" href="/how-it-works"><ShieldCheck size={19} /> See how it works</a>
-            </div>
-          </div>
-        </section>
-
-        <section className="language-section" id="choose-language" aria-labelledby="language-title">
-          <div className="section-heading">
-            <h2 id="language-title">Choose your sign language</h2>
-            <p>ASL, BSL, CSL and ISL are distinct languages. Each has its own vocabulary and recognizer—nothing is relabelled across languages.</p>
-          </div>
-          <div className="language-grid" role="radiogroup" aria-label="Sign language">
-            {LANGUAGE_LIST.map((language) => (
-              <button
-                key={language.id}
-                className={`language-card ${selected === language.id ? "selected" : ""}`}
-                onClick={() => setSelected(language.id)}
-                role="radio"
-                aria-checked={selected === language.id}
-              >
-                <span className="language-code">{language.shortName}</span>
-                <h3>{language.language}</h3>
-                <p>{language.summary}</p>
-                <span className={`model-pill ${language.status === "experimental" ? "available" : "personal"}`}>
-                  <span className="mini-dot" aria-hidden="true" />
-                  {language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()}-sign research model + personal vocabulary` : `${language.vocabulary.length}+ word starter library`}
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="language-continue" aria-live="polite">
-            <p>{model.status === "experimental"
-              ? `Selected: ${model.language} · ${model.automaticVocabularyCount.toLocaleString()} automatic research signs + your own personal signs`
-              : `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} starter labels + unlimited private vocabulary`}</p>
-            <button className="button primary" onClick={beginTranslation}>
-              Continue to camera <ArrowRight size={18} aria-hidden="true" />
-            </button>
-          </div>
-        </section>
-      </main>
-      <SiteFooter />
-    </div>
-  );
 }
 
-function StatusBadge({ active, label }: { active: boolean; label: string }) {
-  return <span className={`status-badge ${active ? "active" : ""}`} title={label}><span />{active ? "Active" : label}</span>;
-}
+/** @deprecated Use createCustomVocabularyEntry for every language. */
+export const createCustomAslVocabularyEntry = createCustomVocabularyEntry;
 
-function DetectionItem({ icon, label, active }: { icon: React.ReactNode; label: string; active: boolean }) {
-  return <div className={`detection-item ${active ? "active" : ""}`}>{icon}<span>{label}</span><strong>{active ? "Detected" : "Waiting"}</strong></div>;
-}
+export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
+  asl: {
+    id: "asl",
+    shortName: "ASL",
+    language: "American Sign Language",
+    status: "experimental",
+    modelFile: "Official WLASL2000 Pose-TGCN + MediaPipe vision + personal-DTW-v1",
+    automaticVocabularyCount: 2000,
+    vocabulary: ASL_VOCABULARY.map((entry) => entry.gloss),
+    inputFormat: "50 samples × 55 two-dimensional upper-body and hand landmarks",
+    sequenceLength: 50,
+    confidenceThreshold: 0.62,
+    decoder: "Quantised on-device WLASL2000 Pose-TGCN; personal templates and four starter rules take priority",
+    postProcessing: "Cooldown, consensus smoothing and duplicate suppression",
+    version: "0.6.0-wlasl2000-pose-tgcn",
+    dataset: "Official WLASL2000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
+    speechLocale: "en-US",
+    summary: "A genuine local 2,000-sign ASL isolated-sign model. The live MediaPipe adapter remains experimental and is not unrestricted ASL translation.",
+  },
+  lse: {
+    id: "lse",
+    shortName: "LSE",
+    language: "Spanish Sign Language",
+    // The installer workflow changes this to `experimental` only in the
+    // commit that contains its trained ONNX asset and labels.
+    status: "preparing",
+    modelFile: null,
+    automaticVocabularyCount: 0,
+    vocabulary: [],
+    inputFormat: "64 body-and-hand landmark frames (19 pose points + two 21-point hands, x/y/z)",
+    sequenceLength: 64,
+    confidenceThreshold: 0.76,
+    decoder: "Official SWL-LSE MediaPipe landmark pipeline; browser model is being prepared from its real-signer training split",
+    postProcessing: "Will use confidence and margin gating plus temporal consensus when the model is installed",
+    version: "swl-lse300-browser-model-pending",
+    dataset: "SWL-LSE (SignaMed), 8,000 real signer sequences across 300 Spanish Sign Language health-domain signs; open Zenodo release.",
+    speechLocale: "es-ES",
+    summary: "A real 300-sign LSE browser model is being built from the open SWL-LSE landmark dataset. It is not marked installed until the trained model passes its build.",
+  },
+  auslan: {
+    id: "auslan",
+    shortName: "AUSLAN",
+    language: "Australian Sign Language",
+    status: "preparing",
+    modelFile: null,
+    automaticVocabularyCount: 0,
+    vocabulary: [],
+    inputFormat: "Planned: video/pose sequence model using the official MM-WLAuslan data contract",
+    sequenceLength: 0,
+    confidenceThreshold: 0,
+    decoder: "No browser checkpoint is installed yet",
+    postProcessing: "No automatic output until an evaluated Auslan model is installed",
+    version: "mm-wlauslan-model-pending",
+    dataset: "MM-WLAuslan: 282,000+ videos, 3,215 Auslan glosses and 73 signers (CC BY-NC-SA 4.0).",
+    speechLocale: "en-AU",
+    summary: "Official MM-WLAuslan data is mapped for a future 3,215-gloss model. No automatic Auslan translation is claimed until that model exists.",
+  },
+  bsl: {
+    id: "bsl",
+    shortName: "BSL",
+    language: "British Sign Language",
+    status: "experimental",
+    modelFile: "Official BSL-1K Pose2Sign body-and-hands model + on-device personal recognizer",
+    automaticVocabularyCount: 1064,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "16 body-and-hand pose frames (OpenPose COCO-18 + two 21-point hands); private examples use 24 samples",
+    sequenceLength: 16,
+    confidenceThreshold: 0.82,
+    decoder: "Official BSL-1K Pose2Sign browser model with WebGPU/WASM inference; personal templates take priority",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "bsl1k-pose2sign-bodyhands-v1 + personal-dtw-v2",
+    dataset: "Official BSL-1K body-and-hands Pose2Sign checkpoint. The live MediaPipe-to-OpenPose adapter is experimental.",
+    speechLocale: "en-GB",
+    summary: "A genuine local 1,064-sign BSL isolated-sign model, plus a separate private vocabulary you can teach.",
+  },
+  isl: {
+    id: "isl",
+    shortName: "ISL",
+    language: "Indian Sign Language",
+    status: "experimental",
+    modelFile: "Official AI4Bharat INCLUDE-263 landmark transformer + on-device personal recognizer",
+    automaticVocabularyCount: 263,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "Up to 200 MediaPipe body and hand frames (134 x/y landmark features); private examples use 24 samples",
+    sequenceLength: 200,
+    confidenceThreshold: 0.78,
+    decoder: "Official INCLUDE-263 browser transformer with WebGPU/WASM inference; personal templates take priority",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "include263-small-transformer-v1 + personal-dtw-v2",
+    dataset: "Official AI4Bharat INCLUDE-263 landmark model (CC-BY-4.0); the live MediaPipe adapter is experimental. Personal examples require no uploaded video.",
+    speechLocale: "en-IN",
+    summary: "A genuine local 263-sign ISL isolated-sign model, plus a separate private vocabulary you can teach.",
+  },
+  csl: {
+    id: "csl",
+    shortName: "CSL",
+    language: "Chinese Sign Language",
+    status: "personal",
+    modelFile: "On-device personal landmark recognizer",
+    automaticVocabularyCount: 0,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
+    sequenceLength: 24,
+    confidenceThreshold: 0.76,
+    decoder: "Signer-specific dynamic-time-warping templates, stored only on this device",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "personal-dtw-v2",
+    dataset: "SLR500 and CSL-Daily remain future shared-model sources; personal examples do not use or redistribute those datasets.",
+    speechLocale: "zh-CN",
+    summary: "2,000+ built-in CSL starter concepts, ready to teach privately on this device.",
+  },
+};
 
-function wait(milliseconds: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
-}
+export const LANGUAGE_LIST = Object.values(MODEL_ADAPTERS);

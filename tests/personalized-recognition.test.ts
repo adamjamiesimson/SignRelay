@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, LANGUAGE_LIST, MODEL_ADAPTERS, PERSONAL_STARTER_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
 import { hasAsl100CompletedSignMotion, hasAsl100HandEvidence } from "../lib/asl100-runtime";
 import { halfToFloat, prepareTgcnInput } from "../lib/asl1000-runtime";
+import { prepareLseInput } from "../lib/lse300-runtime";
 import { prepareCalibrationSequence, sequenceDistance, templatesForLanguage } from "../lib/personalized-recognition";
 import type { VisionFrame } from "../lib/vision-types";
 
@@ -17,11 +18,13 @@ describe("ASL vocabulary", () => {
     expect(createCustomAslVocabularyEntry("  !!! ")).toBeNull();
   });
 
-  it("exposes separate ASL, BSL, CSL and ISL recognition paths", () => {
-    expect(LANGUAGE_LIST.map((language) => language.id)).toEqual(["asl", "bsl", "isl", "csl"]);
+  it("exposes separate ASL, Auslan, BSL, CSL, ISL and LSE recognition paths", () => {
+    expect(LANGUAGE_LIST.map((language) => language.id)).toEqual(["asl", "lse", "auslan", "bsl", "isl", "csl"]);
     expect(LANGUAGE_LIST.filter((language) => language.status === "personal").map((language) => language.id).sort()).toEqual(["csl"]);
     expect(MODEL_ADAPTERS.bsl.automaticVocabularyCount).toBe(1064);
     expect(MODEL_ADAPTERS.isl.automaticVocabularyCount).toBe(263);
+    expect(MODEL_ADAPTERS.lse.status).toBe("preparing");
+    expect(MODEL_ADAPTERS.auslan.status).toBe("preparing");
   });
 
   it("includes a 2,000-plus concept library for every teachable language", () => {
@@ -66,6 +69,12 @@ describe("ASL vocabulary", () => {
     expect(Number.isFinite(prepared[0])).toBe(true);
     expect(halfToFloat(0x3c00)).toBe(1);
     expect(halfToFloat(0xc000)).toBe(-2);
+  });
+
+  it("maps live landmarks to the 61-node, 64-frame SWL-LSE contract", () => {
+    const prepared = prepareLseInput(Array.from({ length: 30 }, (_, index) => makeFrame(index / 100)));
+    expect(prepared).toHaveLength(64 * 61 * 3);
+    expect(Array.from(prepared).every(Number.isFinite)).toBe(true);
   });
 
   it("normalizes recordings to the fixed temporal contract", () => {

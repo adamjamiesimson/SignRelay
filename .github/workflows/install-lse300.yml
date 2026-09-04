@@ -1,0 +1,66 @@
+name: Build SWL-LSE Spanish Sign Language browser model
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [firebase-hosting]
+    paths:
+      - .github/workflows/install-lse300.yml
+      - training/train_swl_lse_onnx.py
+      - lib/lse300-runtime.ts
+
+permissions:
+  contents: write
+
+jobs:
+  train-and-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: firebase-hosting
+          persist-credentials: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download official SWL-LSE landmarks and annotations
+        run: |
+          python -m pip install --disable-pip-version-check torch onnx mediapipe
+          mkdir -p /tmp/swl-lse
+          curl -fL --retry 4 --retry-delay 5 -o /tmp/swl-lse/MEDIAPIPE.zip 'https://zenodo.org/records/13691887/files/MEDIAPIPE.zip?download=1'
+          curl -fL --retry 4 --retry-delay 5 -o /tmp/swl-lse/ANNOTATIONS.zip 'https://zenodo.org/records/13691887/files/ANNOTATIONS.zip?download=1'
+          curl -fL --retry 4 --retry-delay 5 -o /tmp/swl-lse/videos_ref_annotations.csv 'https://zenodo.org/records/13691887/files/videos_ref_annotations.csv?download=1'
+          unzip -q /tmp/swl-lse/ANNOTATIONS.zip -d /tmp/swl-lse/annotations
+          unzip -q /tmp/swl-lse/MEDIAPIPE.zip -d /tmp/swl-lse/mediapipe
+
+      - name: Train and export the 300-sign browser model
+        run: |
+          python training/train_swl_lse_onnx.py /tmp/swl-lse/mediapipe /tmp/swl-lse/annotations /tmp/swl-lse/videos_ref_annotations.csv --epochs 24
+
+      - name: Mark the model installed and commit it
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('lib/model-adapters.ts')
+          text = path.read_text()
+          old = '''    // The installer workflow changes this to `experimental` only in the
+    // commit that contains its trained ONNX asset and labels.
+    status: "preparing",
+    modelFile: null,
+    automaticVocabularyCount: 0,'''
+          new = '''    status: "experimental",
+    modelFile: "SWL-LSE temporal landmark model + on-device personal recognizer",
+    automaticVocabularyCount: 300,'''
+          if old not in text:
+              raise SystemExit('Expected pending LSE marker was not found')
+          path.write_text(text.replace(old, new))
+          PY
+          git config user.name 'signrelay-model-bot'
+          git config user.email 'signrelay-model-bot@users.noreply.github.com'
+          git add public/models/lse300-swl lib/model-adapters.ts
+          git diff --cached --quiet && exit 0
+          git commit -m 'assets: install trained SWL-LSE Spanish browser model'
+          git push
