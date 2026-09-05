@@ -811,9 +811,9 @@ export function TranslatorExperience() {
       <main>
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-inner">
-            <p className="eyebrow">Private sign recognition · in your browser</p>
-            <h1 id="hero-title">SIGN WHAT<br />YOU <span>MEAN.</span></h1>
-            <p className="hero-copy">A private, research-led translator for the moments that deserve to be understood.</p>
+            <p className="eyebrow">Private sign recognition</p>
+            <h1 id="hero-title">Sign freely.<br /><span>Be understood.</span></h1>
+            <p className="hero-copy">Turning signs into conversation, privately and directly in your browser.</p>
             <div className="hero-actions">
               <button className="button primary" onClick={() => document.getElementById("choose-language")?.scrollIntoView({ behavior: "smooth" })}>
                 Start translating <ArrowRight size={18} aria-hidden="true" />
@@ -826,9 +826,9 @@ export function TranslatorExperience() {
             <div className="hero-arc" />
             <div className="hero-mark-wrap"><img src="/signrelay-mark.png" width="560" height="560" alt="" /></div>
             <div className="hero-signal-card">
-              <span>Live relay</span>
-              <strong>YOU&apos;RE<br />WELCOME.</strong>
-              <small>Confidence 96%</small>
+              <span>Designed for conversation</span>
+              <strong>PRIVATE.<br />PRESENT.</strong>
+              <small>On-device by default</small>
             </div>
             <div className="hero-caption">Signal found · ASL</div>
           </div>
