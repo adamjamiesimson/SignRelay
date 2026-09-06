@@ -494,3 +494,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-event
   .feature-ribbon > div { padding: 22px 4px; border-left: 0; border-right: 0; }
   .hero-trust { gap: 13px; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+}
