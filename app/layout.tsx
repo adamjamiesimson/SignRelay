@@ -22,9 +22,9 @@ export const metadata: Metadata = {
     images: ["/signrelay-social.png"],
   },
   icons: {
-    icon: "/signrelay-logo.png",
-    shortcut: "/signrelay-logo.png",
-    apple: "/signrelay-logo.png",
+    icon: { url: "/favicon.png?v=signrelay", type: "image/png" },
+    shortcut: "/favicon.png?v=signrelay",
+    apple: "/signrelay-mark.png",
   },
   robots: { index: true, follow: true },
 };
@@ -40,7 +40,7 @@ export default function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org", "@type": "Organization", name: "SignRelay", url: "https://signrelay.web.app",
           description: "Privacy-first browser research platform for sign-language recognition.",
-          logo: "https://signrelay.web.app/favicon.svg", sameAs: ["https://github.com/adamjamiesimson/SignRelay"],
+          logo: "https://signrelay.web.app/signrelay-mark.png", sameAs: ["https://github.com/adamjamiesimson/SignRelay"],
         }) }} />
         {children}
       </body>

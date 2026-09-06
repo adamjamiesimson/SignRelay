@@ -14,7 +14,6 @@ export function SiteHeader() {
     <header className="site-header">
       <Brand />
       <nav className="site-nav" aria-label="Primary navigation">
-        <Link href="/how-it-works">How it works</Link>
         <Link href="/languages">Languages</Link>
       </nav>
     </header>
