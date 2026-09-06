@@ -17,7 +17,7 @@ function shouldConfirm({
   elapsedSinceLast,
   cooldown
 }) {
-  if (confidence < threshold || streak < 2) return false;
+  if (!Number.isFinite(confidence) || confidence < threshold || streak < 2) return false;
   return !sameLabel || elapsedSinceLast > cooldown;
 }
 
@@ -69,11 +69,11 @@ function sequenceDistance(a, b) {
 }
 function frameToFeatures(frame) {
   const shoulders = frame.pose.length > 12 ? [frame.pose[11], frame.pose[12]] : [];
-  const wrists = frame.hands.map((hand3) => hand3.landmarks[0]).filter(Boolean);
+  const wrists = frame.hands.map((hand4) => hand4.landmarks[0]).filter(Boolean);
   const anchor = shoulders.length === 2 ? midpoint(shoulders[0], shoulders[1]) : averagePoint(wrists);
   const bodyScale = shoulders.length === 2 ? Math.max(distance(shoulders[0], shoulders[1]), 0.08) : Math.max(pointRange(wrists), 0.18);
-  const left = frame.hands.find((hand3) => hand3.handedness === "Left") ?? frame.hands[1];
-  const right = frame.hands.find((hand3) => hand3.handedness === "Right") ?? frame.hands[0];
+  const left = frame.hands.find((hand4) => hand4.handedness === "Left") ?? frame.hands[1];
+  const right = frame.hands.find((hand4) => hand4.handedness === "Right") ?? frame.hands[0];
   return [
     ...handFeatures(left, anchor, bodyScale),
     ...handFeatures(right === left ? void 0 : right, anchor, bodyScale),
@@ -81,15 +81,15 @@ function frameToFeatures(frame) {
     ...landmarkFeatures(frame.pose, anchor, bodyScale, ZERO_POSE)
   ];
 }
-function handFeatures(hand3, anchor, bodyScale) {
-  if (!hand3?.landmarks.length) return ZERO_HAND;
-  const wrist = hand3.landmarks[0];
-  const palm = hand3.landmarks[9] ?? hand3.landmarks[5] ?? wrist;
+function handFeatures(hand4, anchor, bodyScale) {
+  if (!hand4?.landmarks.length) return ZERO_HAND;
+  const wrist = hand4.landmarks[0];
+  const palm = hand4.landmarks[9] ?? hand4.landmarks[5] ?? wrist;
   const handScale = Math.max(distance(wrist, palm), 0.025);
-  const local = hand3.landmarks.slice(0, 21).flatMap((point2) => [
-    clamp((point2.x - wrist.x) / handScale, -5, 5),
-    clamp((point2.y - wrist.y) / handScale, -5, 5),
-    clamp((point2.z - wrist.z) / handScale, -5, 5)
+  const local = hand4.landmarks.slice(0, 21).flatMap((point3) => [
+    clamp((point3.x - wrist.x) / handScale, -5, 5),
+    clamp((point3.y - wrist.y) / handScale, -5, 5),
+    clamp((point3.z - wrist.z) / handScale, -5, 5)
   ]);
   while (local.length < 63) local.push(0);
   return [
@@ -101,9 +101,9 @@ function handFeatures(hand3, anchor, bodyScale) {
 }
 function landmarkFeatures(points, anchor, scale, empty) {
   if (!points.length) return empty;
-  const values = points.flatMap((point2) => [
-    clamp((point2.x - anchor.x) / scale, -4, 4),
-    clamp((point2.y - anchor.y) / scale, -4, 4)
+  const values = points.flatMap((point3) => [
+    clamp((point3.x - anchor.x) / scale, -4, 4),
+    clamp((point3.y - anchor.y) / scale, -4, 4)
   ]);
   return [1, ...values];
 }
@@ -127,10 +127,10 @@ function resample(sequence, targetLength) {
 }
 function averagePoint(points) {
   if (!points.length) return { x: 0.5, y: 0.5, z: 0 };
-  return points.reduce((total, point2) => ({
-    x: total.x + point2.x / points.length,
-    y: total.y + point2.y / points.length,
-    z: total.z + point2.z / points.length
+  return points.reduce((total, point3) => ({
+    x: total.x + point3.x / points.length,
+    y: total.y + point3.y / points.length,
+    z: total.z + point3.z / points.length
   }), { x: 0, y: 0, z: 0 });
 }
 function midpoint(a, b) {
@@ -138,8 +138,8 @@ function midpoint(a, b) {
 }
 function pointRange(points) {
   if (points.length < 2) return 0;
-  const xs2 = points.map((point2) => point2.x);
-  const ys2 = points.map((point2) => point2.y);
+  const xs2 = points.map((point3) => point3.x);
+  const ys2 = points.map((point3) => point3.y);
   return Math.max(Math.max(...xs2) - Math.min(...xs2), Math.max(...ys2) - Math.min(...ys2));
 }
 function distance(a, b) {
@@ -152,7 +152,7 @@ function clamp(value, min, max) {
 // lib/asl100-runtime.ts
 function hasAsl100HandEvidence(sequence) {
   const recent = sequence.slice(-24);
-  return recent.filter((frame) => frame.hands.some((hand3) => hand3.landmarks.length >= 21)).length >= 12;
+  return recent.filter((frame) => frame.hands.some((hand4) => hand4.landmarks.length >= 21)).length >= 12;
 }
 function hasAsl100CompletedSignMotion(sequence) {
   const recent = sequence.slice(-24);
@@ -160,13 +160,13 @@ function hasAsl100CompletedSignMotion(sequence) {
   const wrists = dominantTrackedWrists(recent);
   if (wrists.length < 15) return false;
   const tail = wrists.slice(-7);
-  const tailRange = Math.hypot(range(tail.map((point2) => point2.x)), range(tail.map((point2) => point2.y)));
-  const pathLength = wrists.slice(1).reduce((total, point2, index) => total + distance2(point2, wrists[index]), 0);
+  const tailRange = Math.hypot(range(tail.map((point3) => point3.x)), range(tail.map((point3) => point3.y)));
+  const pathLength = wrists.slice(1).reduce((total, point3, index) => total + distance2(point3, wrists[index]), 0);
   return pathLength >= 0.075 && tailRange <= 0.06;
 }
 function dominantTrackedWrists(sequence) {
-  const left = sequence.map((frame) => frame.hands.find((hand3) => hand3.handedness === "Left")?.landmarks[0]).filter((point2) => Boolean(point2));
-  const right = sequence.map((frame) => frame.hands.find((hand3) => hand3.handedness === "Right")?.landmarks[0]).filter((point2) => Boolean(point2));
+  const left = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Left")?.landmarks[0]).filter((point3) => Boolean(point3));
+  const right = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Right")?.landmarks[0]).filter((point3) => Boolean(point3));
   return right.length >= left.length ? right : left;
 }
 function distance2(a, b) {
@@ -251,14 +251,14 @@ function prepareTgcnInput(sequence, sequenceLength = 50) {
     const sourceIndex = sequenceLength === 1 ? sequence.length - 1 : Math.round(targetFrame * (sequence.length - 1) / (sequenceLength - 1));
     const points = openPosePoints(sequence[sourceIndex]);
     for (let node = 0; node < points.length; node += 1) {
-      const point2 = points[node];
+      const point3 = points[node];
       const offset = node * inputFeatures + targetFrame * 2;
-      if (!point2 || point2.visibility === 0) {
+      if (!point3 || point3.visibility === 0) {
         result[offset] = -1;
         result[offset + 1] = -1;
       } else {
-        result[offset] = 2 * (point2.x - 0.5);
-        result[offset + 1] = 2 * (point2.y - 0.5);
+        result[offset] = 2 * (point3.x - 0.5);
+        result[offset + 1] = 2 * (point3.y - 0.5);
       }
     }
   }
@@ -357,30 +357,30 @@ function applyGraphLayer(input, layer, nodes) {
 }
 function openPosePoints(frame) {
   const pose = frame.pose;
-  const point2 = (index) => visible(pose[index]) ? pose[index] : null;
+  const point3 = (index) => visible(pose[index]) ? pose[index] : null;
   const body = [
-    point2(0),
-    midpoint2(point2(11), point2(12)),
-    point2(12),
-    point2(14),
-    point2(16),
-    point2(11),
-    point2(13),
-    point2(15),
-    midpoint2(point2(23), point2(24)),
-    point2(5),
-    point2(2),
-    point2(8),
-    point2(7)
+    point3(0),
+    midpoint2(point3(11), point3(12)),
+    point3(12),
+    point3(14),
+    point3(16),
+    point3(11),
+    point3(13),
+    point3(15),
+    midpoint2(point3(23), point3(24)),
+    point3(5),
+    point3(2),
+    point3(8),
+    point3(7)
   ];
   return [...body, ...handPoints(frame, "Left"), ...handPoints(frame, "Right")];
 }
 function handPoints(frame, side) {
-  const hand3 = frame.hands.find((candidate) => candidate.handedness === side)?.landmarks;
-  return Array.from({ length: 21 }, (_, index) => hand3?.[index] ?? null);
+  const hand4 = frame.hands.find((candidate) => candidate.handedness === side)?.landmarks;
+  return Array.from({ length: 21 }, (_, index) => hand4?.[index] ?? null);
 }
-function visible(point2) {
-  return Boolean(point2 && (point2.visibility === void 0 || point2.visibility >= 0.3));
+function visible(point3) {
+  return Boolean(point3 && (point3.visibility === void 0 || point3.visibility >= 0.3));
 }
 function midpoint2(a, b) {
   if (!a || !b) return null;
@@ -10630,8 +10630,8 @@ function prepareIncludeInput(sequence) {
     interpolateCoordinate(frames2, landmark, "x");
     interpolateCoordinate(frames2, landmark, "y");
   }
-  frames2.forEach((frame, index) => values.set(frame.flatMap((point2) => [point2.x, point2.y]), index * FEATURES_PER_FRAME));
-  return { values, visibleFrames: frames2.filter((frame) => frame.some((point2) => point2.x !== 0 || point2.y !== 0)).length };
+  frames2.forEach((frame, index) => values.set(frame.flatMap((point3) => [point3.x, point3.y]), index * FEATURES_PER_FRAME));
+  return { values, visibleFrames: frames2.filter((frame) => frame.some((point3) => point3.x !== 0 || point3.y !== 0)).length };
 }
 function frameFeatures(frame) {
   const pose = Array.from({ length: 25 }, (_, index) => toPixels(frame.pose[index]));
@@ -10643,9 +10643,9 @@ function hand(frame, handedness) {
   const landmarks = frame.hands.find((candidate) => candidate.handedness === handedness)?.landmarks;
   return Array.from({ length: 21 }, (_, index) => toPixels(landmarks?.[index]));
 }
-function toPixels(point2) {
-  if (!point2 || !Number.isFinite(point2.x) || !Number.isFinite(point2.y)) return { x: 0, y: 0 };
-  return { x: point2.x * 1920, y: point2.y * 1080 };
+function toPixels(point3) {
+  if (!point3 || !Number.isFinite(point3.x) || !Number.isFinite(point3.y)) return { x: 0, y: 0 };
+  return { x: point3.x * 1920, y: point3.y * 1080 };
 }
 function interpolateCoordinate(frames2, landmark, axis) {
   const known = frames2.map((frame, index) => ({ index, value: frame[landmark][axis] })).filter(({ value }) => value !== 0);
@@ -10708,10 +10708,10 @@ function prepareBslInput(sequence) {
   const values = new Float32Array(3 * FRAMES * LANDMARKS);
   samples.forEach((frame, frameIndex) => {
     const points = [...body18(frame), ...hand2(frame, "Left"), ...hand2(frame, "Right")];
-    points.forEach((point2, landmarkIndex) => {
-      values[frameIndex * LANDMARKS + landmarkIndex] = point2.x;
-      values[FRAMES * LANDMARKS + frameIndex * LANDMARKS + landmarkIndex] = point2.y;
-      values[2 * FRAMES * LANDMARKS + frameIndex * LANDMARKS + landmarkIndex] = point2.score;
+    points.forEach((point3, landmarkIndex) => {
+      values[frameIndex * LANDMARKS + landmarkIndex] = point3.x;
+      values[FRAMES * LANDMARKS + frameIndex * LANDMARKS + landmarkIndex] = point3.y;
+      values[2 * FRAMES * LANDMARKS + frameIndex * LANDMARKS + landmarkIndex] = point3.score;
     });
   });
   return values;
@@ -10743,6 +10743,2247 @@ function readable2(label) {
   return label.toLowerCase().replace(/[_.-]+/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
+// lib/lse300-runtime.ts
+var FRAMES2 = 64;
+var LANDMARKS2 = 61;
+var FEATURES = LANDMARKS2 * 3;
+var MIN_CONFIDENCE3 = 0.76;
+var MIN_MARGIN3 = 0.16;
+var POSE_INDICES = [0, 2, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
+var modelPromise4 = null;
+async function loadModel4() {
+  modelPromise4 ?? (modelPromise4 = Promise.all([
+    Kp.create("/models/lse300-swl/model.onnx", { executionProviders: ["webgpu", "wasm"] }),
+    fetch("/models/lse300-swl/labels.json").then(async (response) => {
+      if (!response.ok) throw new Error("SWL-LSE labels could not load");
+      return response.json();
+    })
+  ]).then(([session, labels]) => {
+    if (labels.length !== 300) throw new Error("SWL-LSE 300-label contract is invalid");
+    return { session, labels };
+  }));
+  return modelPromise4;
+}
+async function recognizeLse300(sequence) {
+  if (sequence.length < 18) return null;
+  const { session, labels } = await loadModel4();
+  const output = await session.run({ landmarks: new qe("float32", prepareLseInput(sequence), [1, FRAMES2, FEATURES]) });
+  const logits = output.logits?.data;
+  if (!(logits instanceof Float32Array) || logits.length !== labels.length) return null;
+  const probabilities = softmax4(logits);
+  const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
+  const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
+  const confidence = probabilities[best];
+  const margin = confidence - probabilities[runnerUp];
+  const label = labels[best];
+  if (!label || confidence < MIN_CONFIDENCE3 || margin < MIN_MARGIN3) return null;
+  return { label, text: readable3(label), confidence, margin };
+}
+function prepareLseInput(sequence) {
+  const source = sequence.slice(-FRAMES2).map(framePoints);
+  const samples = resample2(source, FRAMES2);
+  const values = new Float32Array(FRAMES2 * FEATURES);
+  samples.forEach((points, frameIndex) => {
+    const leftShoulder = points[5];
+    const rightShoulder = points[6];
+    const centre = leftShoulder.valid && rightShoulder.valid ? midpoint4(leftShoulder, rightShoulder) : { x: 0.5, y: 0.5, z: 0, valid: false };
+    const scale = leftShoulder.valid && rightShoulder.valid ? Math.max(Math.hypot(leftShoulder.x - rightShoulder.x, leftShoulder.y - rightShoulder.y), 0.08) : 0.25;
+    points.forEach((point3, landmarkIndex) => {
+      const offset = frameIndex * FEATURES + landmarkIndex * 3;
+      if (!point3.valid) return;
+      values[offset] = (point3.x - centre.x) / scale;
+      values[offset + 1] = (point3.y - centre.y) / scale;
+      values[offset + 2] = (point3.z - centre.z) / scale;
+    });
+  });
+  return values;
+}
+function framePoints(frame) {
+  const pose = POSE_INDICES.map((index) => point2(frame.pose[index]));
+  return [...pose, ...hand3(frame, "Left"), ...hand3(frame, "Right")];
+}
+function hand3(frame, handedness) {
+  const landmarks = frame.hands.find((candidate) => candidate.handedness === handedness)?.landmarks;
+  return Array.from({ length: 21 }, (_, index) => point2(landmarks?.[index]));
+}
+function point2(value) {
+  if (!value || !Number.isFinite(value.x) || !Number.isFinite(value.y) || !Number.isFinite(value.z)) return { x: 0, y: 0, z: 0, valid: false };
+  return { x: value.x, y: value.y, z: value.z, valid: true };
+}
+function midpoint4(a, b) {
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2, valid: a.valid && b.valid };
+}
+function resample2(sequence, length) {
+  if (!sequence.length) return [];
+  return Array.from({ length }, (_, index) => sequence[Math.round(index * (sequence.length - 1) / Math.max(1, length - 1))]);
+}
+function softmax4(logits) {
+  const maximum = Math.max(...logits);
+  const values = Array.from(logits, (value) => Math.exp(value - maximum));
+  const total = values.reduce((sum, value) => sum + value, 0);
+  return values.map((value) => value / total);
+}
+function readable3(label) {
+  return label.toLocaleLowerCase("es-ES").replace(/[_.-]+/g, " ").replace(/\b\p{L}/gu, (character) => character.toLocaleUpperCase("es-ES"));
+}
+
+// public/models/asl2000-tgcn/labels.json
+var labels_default = [
+  "A",
+  "A LOT",
+  "ABDOMEN",
+  "ABLE",
+  "ABOUT",
+  "ABOVE",
+  "ACCENT",
+  "ACCEPT",
+  "ACCIDENT",
+  "ACCOMPLISH",
+  "ACCOUNTANT",
+  "ACROSS",
+  "ACT",
+  "ACTION",
+  "ACTIVE",
+  "ACTIVITY",
+  "ACTOR",
+  "ADAPT",
+  "ADD",
+  "ADDRESS",
+  "ADJECTIVE",
+  "ADJUST",
+  "ADMIRE",
+  "ADMIT",
+  "ADOPT",
+  "ADULT",
+  "ADVANCED",
+  "ADVANTAGE",
+  "ADVERB",
+  "AFFECT",
+  "AFRAID",
+  "AFRICA",
+  "AFTER",
+  "AFTERNOON",
+  "AGAIN",
+  "AGAINST",
+  "AGE",
+  "AGENDA",
+  "AGO",
+  "AGREE",
+  "AGREEMENT",
+  "AHEAD",
+  "AID",
+  "AIM",
+  "AIRPLANE",
+  "ALARM",
+  "ALCOHOL",
+  "ALGEBRA",
+  "ALL",
+  "ALL DAY",
+  "ALLERGY",
+  "ALLIGATOR",
+  "ALLOW",
+  "ALMOST",
+  "ALONE",
+  "ALPHABET",
+  "ALREADY",
+  "ALSO",
+  "ALWAYS",
+  "AMAZING",
+  "AMERICA",
+  "AMPUTATE",
+  "ANALYZE",
+  "ANATOMY",
+  "AND",
+  "ANGEL",
+  "ANGLE",
+  "ANGRY",
+  "ANIMAL",
+  "ANNIVERSARY",
+  "ANNOUNCE",
+  "ANNOY",
+  "ANOTHER",
+  "ANSWER",
+  "ANY",
+  "ANYWAY",
+  "APART",
+  "APARTMENT",
+  "APOSTROPHE",
+  "APPEAR",
+  "APPETITE",
+  "APPLE",
+  "APPOINTMENT",
+  "APPRECIATE",
+  "APPROACH",
+  "APPROPRIATE",
+  "APPROVE",
+  "APRIL",
+  "ARCHERY",
+  "AREA",
+  "ARGUE",
+  "ARIZONA",
+  "ARM",
+  "ARMY",
+  "AROUND",
+  "ARREST",
+  "ARRIVE",
+  "ARROGANT",
+  "ART",
+  "ARTICLE",
+  "ARTIST",
+  "ASIA",
+  "ASK",
+  "ASL",
+  "ASSIST",
+  "ASSISTANT",
+  "ASSUME",
+  "ATTEND",
+  "ATTENTION",
+  "ATTITUDE",
+  "ATTORNEY",
+  "ATTRACT",
+  "AUCTION",
+  "AUDIENCE",
+  "AUDIOLOGIST",
+  "AUDIOLOGY",
+  "AUGUST",
+  "AUNT",
+  "AUSTRALIA",
+  "AUSTRIA",
+  "AUTHOR",
+  "AUTHORITY",
+  "AUTUMN",
+  "AVAILABLE",
+  "AVERAGE",
+  "AVOID",
+  "AWAKE",
+  "AWARD",
+  "AWARE",
+  "AWAY",
+  "AWFUL",
+  "AWKWARD",
+  "B",
+  "BABY",
+  "BABYSITTER",
+  "BACK",
+  "BACKGROUND",
+  "BACKPACK",
+  "BACON",
+  "BAD",
+  "BAKE",
+  "BALANCE",
+  "BALD",
+  "BALL",
+  "BALLOON",
+  "BANANA",
+  "BANK",
+  "BAPTIZE",
+  "BAR",
+  "BARELY",
+  "BARK",
+  "BASEBALL",
+  "BASEMENT",
+  "BASIC",
+  "BASKETBALL",
+  "BATH",
+  "BATHROOM",
+  "BATTERY",
+  "BATTLE",
+  "BEAR",
+  "BEARD",
+  "BEAUTIFUL",
+  "BECAUSE",
+  "BECOME",
+  "BED",
+  "BEDROOM",
+  "BEE",
+  "BEER",
+  "BEFORE",
+  "BEG",
+  "BEGINNING",
+  "BEHAVIOR",
+  "BEHIND",
+  "BELIEF",
+  "BELIEVE",
+  "BELL",
+  "BELOW",
+  "BELT",
+  "BENEFIT",
+  "BERRY",
+  "BESIDE",
+  "BEST",
+  "BET",
+  "BETTER",
+  "BETWEEN",
+  "BIBLE",
+  "BICYCLE",
+  "BIG",
+  "BIKE",
+  "BINOCULARS",
+  "BIOLOGY",
+  "BIRD",
+  "BIRTH",
+  "BIRTHDAY",
+  "BITE",
+  "BITTER",
+  "BLACK",
+  "BLAME",
+  "BLANKET",
+  "BLEND",
+  "BLESS",
+  "BLIND",
+  "BLOOD",
+  "BLOW",
+  "BLUE",
+  "BOAST",
+  "BOAT",
+  "BODY",
+  "BOIL",
+  "BONE",
+  "BOOK",
+  "BOOKSHELF",
+  "BOOKSTORE",
+  "BOOTS",
+  "BORED",
+  "BORROW",
+  "BOSS",
+  "BOTH",
+  "BOTHER",
+  "BOTTLE",
+  "BOTTOM",
+  "BOWL",
+  "BOWLING",
+  "BOX",
+  "BOXING",
+  "BOY",
+  "BOYFRIEND",
+  "BRA",
+  "BRACELET",
+  "BRAG",
+  "BRAID",
+  "BRAIN",
+  "BRAVE",
+  "BREAD",
+  "BREAK",
+  "BREAKDOWN",
+  "BREAKFAST",
+  "BREATHE",
+  "BREEZE",
+  "BRIBE",
+  "BRIDGE",
+  "BRIEF",
+  "BRIGHT",
+  "BRING",
+  "BROCHURE",
+  "BROKE",
+  "BROTHER",
+  "BROWN",
+  "BRUSH",
+  "BUFFALO",
+  "BUG",
+  "BUILD",
+  "BUILDING",
+  "BULL",
+  "BULLY",
+  "BURP",
+  "BUS",
+  "BUSH",
+  "BUSINESS",
+  "BUSY",
+  "BUT",
+  "BUTTER",
+  "BUTTERFLY",
+  "BUTTON",
+  "BUY",
+  "BYE",
+  "CABBAGE",
+  "CABINET",
+  "CAFETERIA",
+  "CAKE",
+  "CALCULATE",
+  "CALCULATOR",
+  "CALCULUS",
+  "CALIFORNIA",
+  "CALL",
+  "CALM",
+  "CAMEL",
+  "CAMERA",
+  "CAMP",
+  "CAMPING",
+  "CAN",
+  "CANADA",
+  "CANCEL",
+  "CANDIDATE",
+  "CANDLE",
+  "CANDY",
+  "CANNOT",
+  "CANOE",
+  "CAPTAIN",
+  "CAPTION",
+  "CAR",
+  "CARD",
+  "CARDS",
+  "CARE",
+  "CAREFUL",
+  "CARELESS",
+  "CARNIVAL",
+  "CARROT",
+  "CARRY",
+  "CAT",
+  "CATCH",
+  "CATEGORY",
+  "CATERPILLAR",
+  "CATHOLIC",
+  "CAUSE",
+  "CEILING",
+  "CELEBRATE",
+  "CEMETERY",
+  "CENT",
+  "CENTER",
+  "CEREAL",
+  "CERTIFICATE",
+  "CHAIN",
+  "CHAIR",
+  "CHALLENGE",
+  "CHAMPION",
+  "CHANCE",
+  "CHANGE",
+  "CHAPTER",
+  "CHARACTER",
+  "CHASE",
+  "CHAT",
+  "CHEAP",
+  "CHEAT",
+  "CHECK",
+  "CHEERLEADER",
+  "CHEESE",
+  "CHEMICAL",
+  "CHEMISTRY",
+  "CHERRY",
+  "CHICAGO",
+  "CHICKEN",
+  "CHILD",
+  "CHILDREN",
+  "CHINA",
+  "CHOCOLATE",
+  "CHOICE",
+  "CHOIR",
+  "CHOKE",
+  "CHOOSE",
+  "CHOP",
+  "CHRIST",
+  "CHRISTIAN",
+  "CHRISTMAS",
+  "CHURCH",
+  "CIGARETTE",
+  "CIRCLE",
+  "CITY",
+  "CLASS",
+  "CLASSROOM",
+  "CLEAN",
+  "CLEAR",
+  "CLEVER",
+  "CLICK",
+  "CLIMB",
+  "CLOCK",
+  "CLOSE",
+  "CLOSET",
+  "CLOTHES",
+  "CLOUD",
+  "CLOWN",
+  "CLUELESS",
+  "CLUMSY",
+  "COACH",
+  "COAT",
+  "COCHLEAR IMPLANT",
+  "COCONUT",
+  "COFFEE",
+  "COLD",
+  "COLLECT",
+  "COLLEGE",
+  "COLOR",
+  "COMB",
+  "COME",
+  "COME HERE",
+  "COMFORTABLE",
+  "COMMA",
+  "COMMAND",
+  "COMMENT",
+  "COMMIT",
+  "COMMITTEE",
+  "COMMON",
+  "COMMON SENSE",
+  "COMMUNITY",
+  "COMMUTE",
+  "COMPANY",
+  "COMPARE",
+  "COMPETE",
+  "COMPLAIN",
+  "COMPLETE",
+  "COMPLEX",
+  "COMPROMISE",
+  "COMPUTER",
+  "CONCENTRATE",
+  "CONCEPT",
+  "CONCERN",
+  "CONFLICT",
+  "CONFRONT",
+  "CONFUSED",
+  "CONGRATULATIONS",
+  "CONGRESS",
+  "CONNECT",
+  "CONQUER",
+  "CONSIDER",
+  "CONSTITUTION",
+  "CONSTRUCT",
+  "CONSUME",
+  "CONTACT",
+  "CONTEST",
+  "CONTINUE",
+  "CONTRACT",
+  "CONTRIBUTE",
+  "CONTROL",
+  "CONVERSATION",
+  "CONVERT",
+  "CONVINCE",
+  "COOK",
+  "COOKIE",
+  "COOL",
+  "COOPERATE",
+  "COP",
+  "COPY",
+  "CORN",
+  "CORNER",
+  "CORRECT",
+  "COST",
+  "COUCH",
+  "COUGH",
+  "COUNSEL",
+  "COUNSELOR",
+  "COUNT",
+  "COUNTRY",
+  "COURT",
+  "COUSIN",
+  "COVER",
+  "COW",
+  "CRAB",
+  "CRACKER",
+  "CRASH",
+  "CRAVE",
+  "CRAZY",
+  "CREATE",
+  "CROCODILE",
+  "CROSS",
+  "CROWN",
+  "CRUEL",
+  "CRUSH",
+  "CRY",
+  "CUBA",
+  "CULTURE",
+  "CUP",
+  "CURIOUS",
+  "CURRICULUM",
+  "CURSE",
+  "CURTAIN",
+  "CUSTOMER",
+  "CUT",
+  "CUTE",
+  "D",
+  "DAD",
+  "DAILY",
+  "DAMAGE",
+  "DANCE",
+  "DANCER",
+  "DANGER",
+  "DANGEROUS",
+  "DARK",
+  "DATE",
+  "DAUGHTER",
+  "DAWN",
+  "DAY",
+  "DEAD",
+  "DEAF",
+  "DEATH",
+  "DEBATE",
+  "DEBT",
+  "DECEMBER",
+  "DECIDE",
+  "DECORATE",
+  "DECREASE",
+  "DEDUCT",
+  "DEEP",
+  "DEER",
+  "DEFEAT",
+  "DEFEND",
+  "DEGREE",
+  "DELAY",
+  "DELICIOUS",
+  "DELIVER",
+  "DEMAND",
+  "DEMOCRAT",
+  "DEMONSTRATE",
+  "DENTIST",
+  "DENY",
+  "DEODORANT",
+  "DEPARTMENT",
+  "DEPEND",
+  "DEPOSIT",
+  "DEPRESSED",
+  "DESCEND",
+  "DESCRIBE",
+  "DESERT",
+  "DESIGN",
+  "DESK",
+  "DESSERT",
+  "DESTROY",
+  "DETACH",
+  "DETECTIVE",
+  "DETERMINE",
+  "DEVELOP",
+  "DEVIL",
+  "DIABETES",
+  "DIAMOND",
+  "DIAPER",
+  "DIARRHEA",
+  "DICE",
+  "DICTIONARY",
+  "DIE",
+  "DIFFERENT",
+  "DIFFICULT",
+  "DIG",
+  "DIME",
+  "DINING ROOM",
+  "DINNER",
+  "DINOSAUR",
+  "DIPLOMA",
+  "DIRECTOR",
+  "DIRT",
+  "DIRTY",
+  "DISAGREE",
+  "DISAPPEAR",
+  "DISCIPLINE",
+  "DISCONNECT",
+  "DISCOUNT",
+  "DISCOVER",
+  "DISCUSS",
+  "DISGUST",
+  "DISGUSTED",
+  "DISMISS",
+  "DISSOLVE",
+  "DISTURB",
+  "DIVE",
+  "DIVIDE",
+  "DIVISION",
+  "DIVORCE",
+  "DIZZY",
+  "DOCTOR",
+  "DOCUMENT",
+  "DOG",
+  "DOLL",
+  "DOLLAR",
+  "DOLPHIN",
+  "DON'T WANT",
+  "DONE",
+  "DOOR",
+  "DORM",
+  "DORMITORY",
+  "DOUBLE",
+  "DOUBT",
+  "DOWN",
+  "DOWNSTAIRS",
+  "DRAG",
+  "DRAGON",
+  "DRAMA",
+  "DRAW",
+  "DRAWER",
+  "DREAM",
+  "DRESS",
+  "DRINK",
+  "DRIVE",
+  "DROP",
+  "DRUG",
+  "DRUM",
+  "DRUNK",
+  "DRY",
+  "DUCK",
+  "DUE",
+  "DULL",
+  "DUMB",
+  "DURING",
+  "DUSK",
+  "DUTY",
+  "DVD",
+  "DYE",
+  "E",
+  "EACH",
+  "EAGLE",
+  "EAR",
+  "EARLY",
+  "EARN",
+  "EARRING",
+  "EARTH",
+  "EARTHQUAKE",
+  "EAST",
+  "EASTER",
+  "EASY",
+  "EAT",
+  "ECONOMY",
+  "EDUCATE",
+  "EDUCATION",
+  "EFFORT",
+  "EGG",
+  "EGYPT",
+  "EIGHT",
+  "EIGHTEEN",
+  "EITHER",
+  "ELECTRICIAN",
+  "ELECTRICITY",
+  "ELEMENTARY",
+  "ELEPHANT",
+  "ELEVATOR",
+  "ELSE",
+  "EMAIL",
+  "EMBARRASS",
+  "EMERGENCY",
+  "EMOTION",
+  "EMPTY",
+  "ENCOURAGE",
+  "END",
+  "ENERGY",
+  "ENGAGE",
+  "ENGAGEMENT",
+  "ENGINE",
+  "ENGINEER",
+  "ENGLAND",
+  "ENGLISH",
+  "ENJOY",
+  "ENORMOUS",
+  "ENOUGH",
+  "ENTER",
+  "ENVELOPE",
+  "ENVIRONMENT",
+  "EQUAL",
+  "ERASE",
+  "ERASER",
+  "ESCAPE",
+  "ESTABLISH",
+  "ETERNITY",
+  "EUROPE",
+  "EVALUATE",
+  "EVENING",
+  "EVENT",
+  "EVERY",
+  "EVERY MONDAY",
+  "EVERY TUESDAY",
+  "EVERYDAY",
+  "EVERYTHING",
+  "EVIDENCE",
+  "EXACT",
+  "EXAGGERATE",
+  "EXAMPLE",
+  "EXCEPT",
+  "EXCHANGE",
+  "EXCITED",
+  "EXCUSE",
+  "EXERCISE",
+  "EXHIBIT",
+  "EXPAND",
+  "EXPECT",
+  "EXPENSIVE",
+  "EXPERIENCE",
+  "EXPERIMENT",
+  "EXPERT",
+  "EXPLAIN",
+  "EXPLODE",
+  "EXPRESS",
+  "EYE",
+  "EYEGLASSES",
+  "EYES",
+  "F",
+  "FACE",
+  "FACT",
+  "FACULTY",
+  "FAIL",
+  "FAIRY",
+  "FAKE",
+  "FALL IN LOVE",
+  "FAMILIAR",
+  "FAMILY",
+  "FAMOUS",
+  "FANCY",
+  "FAR",
+  "FARM",
+  "FARMER",
+  "FAST",
+  "FAT",
+  "FATHER",
+  "FAULT",
+  "FAVORITE",
+  "FEAR",
+  "FEBRUARY",
+  "FEDERAL",
+  "FEED",
+  "FEEDBACK",
+  "FEEL",
+  "FENCE",
+  "FESTIVAL",
+  "FEW",
+  "FIGHT",
+  "FINAL",
+  "FINALLY",
+  "FINANCE",
+  "FIND",
+  "FINE",
+  "FINGERSPELL",
+  "FINISH",
+  "FIRE",
+  "FIREFIGHTER",
+  "FIRST",
+  "FISH",
+  "FISHING",
+  "FIVE",
+  "FIX",
+  "FLAG",
+  "FLATTER",
+  "FLEXIBLE",
+  "FLIRT",
+  "FLOOD",
+  "FLOOR",
+  "FLORIDA",
+  "FLOWER",
+  "FLUTE",
+  "FLY",
+  "FOLD",
+  "FOLLOW",
+  "FOOD",
+  "FOOL",
+  "FOOTBALL",
+  "FOR",
+  "FORBID",
+  "FOREST",
+  "FOREVER",
+  "FORGET",
+  "FORGIVE",
+  "FORK",
+  "FORM",
+  "FORMER",
+  "FOUR",
+  "FOURTH",
+  "FOX",
+  "FRANCE",
+  "FREE",
+  "FREEWAY",
+  "FREEZE",
+  "FRENCH",
+  "FRENCH FRIES",
+  "FRIDAY",
+  "FRIEND",
+  "FRIENDLY",
+  "FROG",
+  "FROM",
+  "FROM NOW ON",
+  "FRONT",
+  "FRUIT",
+  "FULL",
+  "FUN",
+  "FUNCTION",
+  "FUNERAL",
+  "FUNNY",
+  "FURNITURE",
+  "FUTURE",
+  "G",
+  "GALLAUDET",
+  "GAMBLE",
+  "GAME",
+  "GANG",
+  "GARAGE",
+  "GAS",
+  "GASOLINE",
+  "GATHER",
+  "GAY",
+  "GENERAL",
+  "GENERATION",
+  "GEOGRAPHY",
+  "GEOMETRY",
+  "GERMAN",
+  "GERMANY",
+  "GET",
+  "GET UP",
+  "GHOST",
+  "GIFT",
+  "GIRAFFE",
+  "GIRL",
+  "GIRLFRIEND",
+  "GIVE",
+  "GIVE UP",
+  "GLASS",
+  "GLASSES",
+  "GLOVES",
+  "GO",
+  "GOAL",
+  "GOAT",
+  "GOD",
+  "GOLD",
+  "GOLF",
+  "GONE",
+  "GOOD",
+  "GOODBYE",
+  "GORILLA",
+  "GOSSIP",
+  "GOVERNMENT",
+  "GRAB",
+  "GRADUATE",
+  "GRADUATION",
+  "GRAMMAR",
+  "GRANDFATHER",
+  "GRANDMA",
+  "GRANDMOTHER",
+  "GRAPES",
+  "GRASS",
+  "GRATEFUL",
+  "GRAY",
+  "GREAT",
+  "GREECE",
+  "GREEN",
+  "GREY",
+  "GROUP",
+  "GROW",
+  "GROW UP",
+  "GUESS",
+  "GUIDE",
+  "GUILTY",
+  "GUITAR",
+  "GUM",
+  "GUN",
+  "GYMNASTICS",
+  "H",
+  "HABIT",
+  "HAIR",
+  "HAIRCUT",
+  "HALF",
+  "HALLOWEEN",
+  "HAMBURGER",
+  "HAMMER",
+  "HANG UP",
+  "HANUKKAH",
+  "HAPPEN",
+  "HAPPY",
+  "HARD",
+  "HARD OF HEARING",
+  "HAT",
+  "HATE",
+  "HAVE",
+  "HAWAII",
+  "HEAD",
+  "HEADACHE",
+  "HEALTH",
+  "HEAP",
+  "HEAR",
+  "HEARING",
+  "HEARING AID",
+  "HEART",
+  "HEART ATTACK",
+  "HEAVEN",
+  "HEAVY",
+  "HELICOPTER",
+  "HELLO",
+  "HELMET",
+  "HELP",
+  "HER",
+  "HERE",
+  "HERSELF",
+  "HIDE",
+  "HIGH",
+  "HIGH SCHOOL",
+  "HIGHWAY",
+  "HILL",
+  "HIPPOPOTAMUS",
+  "HIS",
+  "HISTORY",
+  "HIT",
+  "HOCKEY",
+  "HOLD",
+  "HOLY",
+  "HOME",
+  "HOMEWORK",
+  "HONEST",
+  "HONEY",
+  "HONOR",
+  "HOP",
+  "HOPE",
+  "HORSE",
+  "HOSPITAL",
+  "HOST",
+  "HOT",
+  "HOT DOG",
+  "HOUR",
+  "HOUSE",
+  "HOW",
+  "HUG",
+  "HUMAN",
+  "HUMBLE",
+  "HUNGRY",
+  "HUNT",
+  "HURRICANE",
+  "HURRY",
+  "HURT",
+  "HUSBAND",
+  "I",
+  "ICE CREAM",
+  "IDEA",
+  "IDENTIFY",
+  "IF",
+  "IGNORE",
+  "ILL",
+  "ILLEGAL",
+  "IMAGE",
+  "IMPACT",
+  "IMPORTANT",
+  "IMPOSSIBLE",
+  "IMPROVE",
+  "IN",
+  "INCLUDE",
+  "INCREASE",
+  "INDEPENDENT",
+  "INDIA",
+  "INDIVIDUAL",
+  "INFECTION",
+  "INFLUENCE",
+  "INFORM",
+  "INFORMATION",
+  "INNOCENT",
+  "INSECT",
+  "INSIDE",
+  "INSPECT",
+  "INSPIRE",
+  "INSTEAD",
+  "INSTITUTE",
+  "INSURANCE",
+  "INTEREST",
+  "INTERESTING",
+  "INTERNATIONAL",
+  "INTERNET",
+  "INTERPRET",
+  "INTERPRETER",
+  "INTERRUPT",
+  "INTERSECTION",
+  "INTERVIEW",
+  "INTRODUCE",
+  "INVEST",
+  "INVESTIGATE",
+  "INVITE",
+  "INVOLVE",
+  "IRAN",
+  "IRELAND",
+  "IRON",
+  "ISLAND",
+  "ISRAEL",
+  "ITALY",
+  "J",
+  "JACKET",
+  "JAIL",
+  "JANUARY",
+  "JAPAN",
+  "JEALOUS",
+  "JESUS",
+  "JEWELRY",
+  "JEWISH",
+  "JOIN",
+  "JOKE",
+  "JOURNEY",
+  "JOY",
+  "JUDGE",
+  "JULY",
+  "JUMP",
+  "JUNE",
+  "K",
+  "KANGAROO",
+  "KARATE",
+  "KEEP",
+  "KEY",
+  "KEYBOARD",
+  "KICK",
+  "KID",
+  "KILL",
+  "KINDERGARTEN",
+  "KING",
+  "KISS",
+  "KITCHEN",
+  "KNEEL",
+  "KNIFE",
+  "KNOCK",
+  "KNOW",
+  "LABEL",
+  "LADY",
+  "LAMP",
+  "LAND",
+  "LANGUAGE",
+  "LAPTOP",
+  "LARGE",
+  "LAST",
+  "LAST WEEK",
+  "LAST YEAR",
+  "LATE",
+  "LATER",
+  "LAUGH",
+  "LAUNDRY",
+  "LAW",
+  "LAWYER",
+  "LAZY",
+  "LEAD",
+  "LEADER",
+  "LEAF",
+  "LEAGUE",
+  "LEAK",
+  "LEARN",
+  "LEAVE",
+  "LECTURE",
+  "LEFT",
+  "LEGAL",
+  "LEMON",
+  "LEND",
+  "LESBIAN",
+  "LESS",
+  "LESSON",
+  "LET",
+  "LETTER",
+  "LETTUCE",
+  "LIABILITY",
+  "LIBRARIAN",
+  "LIBRARY",
+  "LICENSE",
+  "LIE",
+  "LIFT",
+  "LIGHT",
+  "LIGHTNING",
+  "LIKE",
+  "LIMIT",
+  "LINE",
+  "LINGUISTICS",
+  "LION",
+  "LIP",
+  "LIPSTICK",
+  "LIST",
+  "LISTEN",
+  "LITTLE BIT",
+  "LIVE",
+  "LOAN",
+  "LOBSTER",
+  "LOCAL",
+  "LOCK",
+  "LONELY",
+  "LONG",
+  "LOOK AT",
+  "LOOK FOR",
+  "LORD",
+  "LOSE",
+  "LOUD",
+  "LOUSY",
+  "LOVE",
+  "LUCKY",
+  "LUNCH",
+  "M",
+  "MACHINE",
+  "MAD",
+  "MAGAZINE",
+  "MAGIC",
+  "MAINSTREAM",
+  "MAJOR",
+  "MAKE",
+  "MAN",
+  "MANAGE",
+  "MANAGER",
+  "MANY",
+  "MARCH",
+  "MARRY",
+  "MATCH",
+  "MATH",
+  "MATURE",
+  "MAXIMUM",
+  "MAYBE",
+  "ME",
+  "MEAN",
+  "MEANING",
+  "MEASURE",
+  "MEAT",
+  "MECHANIC",
+  "MEDICINE",
+  "MEET",
+  "MEETING",
+  "MELODY",
+  "MELT",
+  "MEMBER",
+  "MEMORIZE",
+  "MENTION",
+  "MESSAGE",
+  "METAL",
+  "MEXICO",
+  "MICROPHONE",
+  "MICROSCOPE",
+  "MICROWAVE",
+  "MIDDLE",
+  "MIDNIGHT",
+  "MILITARY",
+  "MILK",
+  "MIND",
+  "MINE",
+  "MINUS",
+  "MINUTE",
+  "MIRROR",
+  "MISS",
+  "MISTAKE",
+  "MISUNDERSTAND",
+  "MIX",
+  "MOCK",
+  "MOM",
+  "MONDAY",
+  "MONEY",
+  "MONKEY",
+  "MONSTER",
+  "MONTH",
+  "MONTHLY",
+  "MOON",
+  "MOOSE",
+  "MORE",
+  "MORNING",
+  "MOSQUITO",
+  "MOST",
+  "MOTHER",
+  "MOTIVATE",
+  "MOTOR",
+  "MOTORCYCLE",
+  "MOUNTAIN",
+  "MOUSE",
+  "MOUTH",
+  "MOVE",
+  "MOVIE",
+  "MUCH",
+  "MULTIPLY",
+  "MURDER",
+  "MUSCLE",
+  "MUSEUM",
+  "MUSHROOM",
+  "MUSIC",
+  "MUST",
+  "MUSTACHE",
+  "MY",
+  "MYSELF",
+  "N",
+  "NAME",
+  "NAPKIN",
+  "NARROW",
+  "NATION",
+  "NEAR",
+  "NECESSARY",
+  "NECK",
+  "NECKLACE",
+  "NEED",
+  "NEGATIVE",
+  "NEGOTIATE",
+  "NEIGHBOR",
+  "NEPHEW",
+  "NERVOUS",
+  "NETWORK",
+  "NEUTRAL",
+  "NEVER",
+  "NEW",
+  "NEW YORK",
+  "NEWSPAPER",
+  "NEXT",
+  "NICE",
+  "NICKEL",
+  "NIECE",
+  "NIGHT",
+  "NINE",
+  "NINETEEN",
+  "NO",
+  "NONE",
+  "NOON",
+  "NORMAL",
+  "NORTH",
+  "NORTHWEST",
+  "NOSE",
+  "NOT",
+  "NOT YET",
+  "NOTHING",
+  "NOTICE",
+  "NOVEMBER",
+  "NOW",
+  "NUMBER",
+  "NUMEROUS",
+  "NUN",
+  "NURSE",
+  "NUT",
+  "O",
+  "OBJECTIVE",
+  "OBSESS",
+  "OBTAIN",
+  "OCCUR",
+  "OCEAN",
+  "OCTOBER",
+  "OCTOPUS",
+  "ODD",
+  "ODOR",
+  "OFF",
+  "OFFER",
+  "OFFICE",
+  "OFTEN",
+  "OK",
+  "OLD",
+  "OLYMPICS",
+  "ON",
+  "ONCE",
+  "ONE",
+  "ONION",
+  "ONLY",
+  "OPEN",
+  "OPERATE",
+  "OPINION",
+  "OPPOSITE",
+  "OR",
+  "ORAL",
+  "ORANGE",
+  "ORDER",
+  "ORGANIZE",
+  "OTHER",
+  "OUR",
+  "OUT",
+  "OUTSIDE",
+  "OVER",
+  "OVERCOME",
+  "OVERLOOK",
+  "OVERWHELM",
+  "OWE",
+  "OWL",
+  "P",
+  "PACK",
+  "PAGE",
+  "PAIN",
+  "PAINT",
+  "PAINTER",
+  "PANTS",
+  "PAPER",
+  "PARACHUTE",
+  "PARADE",
+  "PARAGRAPH",
+  "PARALLEL",
+  "PARENTS",
+  "PART",
+  "PARTY",
+  "PASS",
+  "PAST",
+  "PATH",
+  "PATIENT",
+  "PAUSE",
+  "PAY",
+  "PAY ATTENTION",
+  "PEACE",
+  "PEACEFUL",
+  "PEACH",
+  "PEANUT BUTTER",
+  "PEAR",
+  "PEEL",
+  "PENALTY",
+  "PENCIL",
+  "PENNSYLVANIA",
+  "PENNY",
+  "PEOPLE",
+  "PEPPER",
+  "PERCENT",
+  "PERFECT",
+  "PERFUME",
+  "PERIOD",
+  "PERMIT",
+  "PERSON",
+  "PERSONALITY",
+  "PERSPECTIVE",
+  "PET",
+  "PHILADELPHIA",
+  "PHILOSOPHY",
+  "PHONE",
+  "PHOTOGRAPHER",
+  "PHRASE",
+  "PHYSICIAN",
+  "PHYSICS",
+  "PIANO",
+  "PICK",
+  "PICKLE",
+  "PICTURE",
+  "PIE",
+  "PIECE",
+  "PIG",
+  "PILLOW",
+  "PILOT",
+  "PINK",
+  "PITY",
+  "PIZZA",
+  "PLACE",
+  "PLAN",
+  "PLANT",
+  "PLATE",
+  "PLAY",
+  "PLAYER",
+  "PLEASE",
+  "PLENTY",
+  "PLUS",
+  "PNEUMONIA",
+  "POCKET",
+  "POINT",
+  "POLAR BEAR",
+  "POLICE",
+  "POLICEMAN",
+  "POLICY",
+  "POLITE",
+  "POLITICS",
+  "POOP",
+  "POOR",
+  "POPCORN",
+  "POPULAR",
+  "POSITION",
+  "POSITIVE",
+  "POSSIBLE",
+  "POST",
+  "POSTPONE",
+  "POTATO",
+  "POTENTIAL",
+  "POUND",
+  "POUR",
+  "POVERTY",
+  "POWER",
+  "PRACTICE",
+  "PRAISE",
+  "PRAY",
+  "PREACH",
+  "PREACHER",
+  "PRECIOUS",
+  "PRECIPITATION",
+  "PRECISE",
+  "PREDICT",
+  "PREFER",
+  "PREGNANT",
+  "PREPARE",
+  "PRESCHOOL",
+  "PRESENT",
+  "PRESENTATION",
+  "PRESIDENT",
+  "PRESSURE",
+  "PRETTY",
+  "PREVENT",
+  "PRICE",
+  "PRIDE",
+  "PRIEST",
+  "PRINCE",
+  "PRINCESS",
+  "PRINCIPAL",
+  "PRINCIPLE",
+  "PRINT",
+  "PRINTER",
+  "PRIORITY",
+  "PRISON",
+  "PRIVATE",
+  "PROBLEM",
+  "PROCESS",
+  "PROCRASTINATE",
+  "PROFESSIONAL",
+  "PROFESSOR",
+  "PROFIT",
+  "PROGRAM",
+  "PROGRESS",
+  "PROJECT",
+  "PROMISE",
+  "PROMOTE",
+  "PROOF",
+  "PROPAGANDA",
+  "PROPER",
+  "PROSTITUTE",
+  "PROTECT",
+  "PROUD",
+  "PROVE",
+  "PROVIDE",
+  "PSYCHOLOGIST",
+  "PSYCHOLOGY",
+  "PUBLIC",
+  "PUBLISH",
+  "PULL",
+  "PUMPKIN",
+  "PUNISH",
+  "PURCHASE",
+  "PURE",
+  "PURPLE",
+  "PURPOSE",
+  "PURSUE",
+  "PUSH",
+  "PUT",
+  "PUT OFF",
+  "PUZZLED",
+  "Q",
+  "QUALITY",
+  "QUARREL",
+  "QUARTER",
+  "QUEEN",
+  "QUESTION",
+  "QUICK",
+  "QUIET",
+  "QUIT",
+  "QUOTE",
+  "R",
+  "RABBIT",
+  "RACCOON",
+  "RACE",
+  "RADIO",
+  "RAGE",
+  "RAIN",
+  "RAINBOW",
+  "RAKE",
+  "RAT",
+  "RATHER",
+  "READ",
+  "READY",
+  "REAL",
+  "REALIZE",
+  "REALLY",
+  "REASON",
+  "RECEIVE",
+  "RECENT",
+  "RECLINER",
+  "RECOGNIZE",
+  "RECOMMEND",
+  "RECOVER",
+  "RED",
+  "REDUCE",
+  "REFER",
+  "REFEREE",
+  "REFUSE",
+  "REGULAR",
+  "REHEARSE",
+  "REJECT",
+  "RELATE",
+  "RELATIONSHIP",
+  "RELAX",
+  "RELEASE",
+  "RELIEF",
+  "RELIGION",
+  "RELY",
+  "REMEMBER",
+  "REMOTE CONTROL",
+  "REMOVE",
+  "RENT",
+  "REPEAT",
+  "REPLACE",
+  "REPLY",
+  "REPORT",
+  "REPRESENT",
+  "REPUTATION",
+  "REQUEST",
+  "REQUIRE",
+  "RESCUE",
+  "RESEARCH",
+  "RESIGN",
+  "RESIST",
+  "RESPECT",
+  "RESPONSIBILITY",
+  "RESPONSIBLE",
+  "REST",
+  "RESTAURANT",
+  "RESTROOM",
+  "RESULT",
+  "RETIRE",
+  "RETREAT",
+  "REVEAL",
+  "REVENGE",
+  "REVIEW",
+  "RICH",
+  "RIDE",
+  "RIDICULOUS",
+  "RIGHT",
+  "RING",
+  "RISE",
+  "RIVER",
+  "ROAD",
+  "ROAR",
+  "ROB",
+  "ROBBER",
+  "ROBOT",
+  "ROCK",
+  "ROLE",
+  "ROOF",
+  "ROOM",
+  "ROOMMATE",
+  "ROOSTER",
+  "ROPE",
+  "ROSE",
+  "ROUGH",
+  "RUBBER",
+  "RUDE",
+  "RUIN",
+  "RULE",
+  "RUN",
+  "RUSH",
+  "RUSSIA",
+  "S",
+  "SAD",
+  "SAFE",
+  "SALAD",
+  "SALARY",
+  "SALT",
+  "SALUTE",
+  "SAME",
+  "SANDWICH",
+  "SATISFY",
+  "SATURDAY",
+  "SAUCE",
+  "SAUSAGE",
+  "SAVE",
+  "SAW",
+  "SAY",
+  "SCAN",
+  "SCARED",
+  "SCHEDULE",
+  "SCHOOL",
+  "SCIENCE",
+  "SCIENTIST",
+  "SCISSORS",
+  "SCOLD",
+  "SCORE",
+  "SCOTLAND",
+  "SCREAM",
+  "SCREWDRIVER",
+  "SCULPTURE",
+  "SEA",
+  "SEARCH",
+  "SECOND",
+  "SECRET",
+  "SECRETARY",
+  "SEE",
+  "SEEM",
+  "SELDOM",
+  "SELFISH",
+  "SELL",
+  "SENATE",
+  "SEND",
+  "SENIOR",
+  "SENSITIVE",
+  "SENTENCE",
+  "SEPARATE",
+  "SEPTEMBER",
+  "SEQUENCE",
+  "SERIOUS",
+  "SERVE",
+  "SERVICE",
+  "SETTLE",
+  "SEVEN",
+  "SEVERAL",
+  "SEW",
+  "SHAME",
+  "SHAMPOO",
+  "SHAPE",
+  "SHARE",
+  "SHAVE",
+  "SHE",
+  "SHEEP",
+  "SHELF",
+  "SHINE",
+  "SHIRT",
+  "SHOCK",
+  "SHOES",
+  "SHOOT",
+  "SHOP",
+  "SHOPPING",
+  "SHORT",
+  "SHOULD",
+  "SHOULDER",
+  "SHOUT",
+  "SHOVEL",
+  "SHOW",
+  "SHOWER",
+  "SHRIMP",
+  "SHY",
+  "SICK",
+  "SIDE",
+  "SIGN",
+  "SIGN LANGUAGE",
+  "SILENT",
+  "SILLY",
+  "SILVER",
+  "SIMILAR",
+  "SIMPLE",
+  "SIN",
+  "SINCE",
+  "SING",
+  "SINGER",
+  "SINGLE",
+  "SIREN",
+  "SISTER",
+  "SIT",
+  "SITUATION",
+  "SIX",
+  "SIXTEEN",
+  "SIZE",
+  "SKATE",
+  "SKELETON",
+  "SKETCH",
+  "SKI",
+  "SKILL",
+  "SKIN",
+  "SKINNY",
+  "SKIP",
+  "SKIRT",
+  "SKUNK",
+  "SKY",
+  "SLAVE",
+  "SLEEP",
+  "SLEEPY",
+  "SLICE",
+  "SLIP",
+  "SLOW",
+  "SMALL",
+  "SMART",
+  "SMELL",
+  "SMILE",
+  "SMOKING",
+  "SMOOTH",
+  "SNACK",
+  "SNAKE",
+  "SNEEZE",
+  "SNOB",
+  "SNOW",
+  "SNOWMAN",
+  "SOAP",
+  "SOCCER",
+  "SOCIETY",
+  "SOCKS",
+  "SODA",
+  "SOFA",
+  "SOFT",
+  "SOLDIER",
+  "SOLID",
+  "SOLVE",
+  "SOME",
+  "SOMEDAY",
+  "SOMEONE",
+  "SOMETHING",
+  "SOMETIMES",
+  "SOMEWHERE",
+  "SON",
+  "SONG",
+  "SOON",
+  "SORE THROAT",
+  "SORRY",
+  "SOUL",
+  "SOUND",
+  "SOUP",
+  "SOUR",
+  "SOUTH",
+  "SOUTH AMERICA",
+  "SPAIN",
+  "SPANISH",
+  "SPEAK",
+  "SPECIAL",
+  "SPECIFIC",
+  "SPEECH",
+  "SPEED",
+  "SPELL",
+  "SPIDER",
+  "SPILL",
+  "SPIN",
+  "SPIRIT",
+  "SPIT",
+  "SPOON",
+  "SPRAY",
+  "SPREAD",
+  "SPRING",
+  "SPRINT",
+  "SQUARE",
+  "SQUEEZE",
+  "SQUIRREL",
+  "STADIUM",
+  "STAFF",
+  "STAIRS",
+  "STAMP",
+  "STAND",
+  "STANDARD",
+  "STAR",
+  "STARE",
+  "START",
+  "STATISTICS",
+  "STAY",
+  "STEAL",
+  "STEEL",
+  "STEPFATHER",
+  "STICKY",
+  "STILL",
+  "STING",
+  "STINK",
+  "STIR",
+  "STITCH",
+  "STOMACH",
+  "STOP",
+  "STORE",
+  "STORY",
+  "STRAIGHT",
+  "STRANGE",
+  "STRAW",
+  "STRAWBERRY",
+  "STREET",
+  "STRESS",
+  "STRETCH",
+  "STRICT",
+  "STRONG",
+  "STRUCTURE",
+  "STRUGGLE",
+  "STUBBORN",
+  "STUCK",
+  "STUDENT",
+  "STUDY",
+  "STUPID",
+  "SUBTRACT",
+  "SUBWAY",
+  "SUE",
+  "SUFFER",
+  "SUGAR",
+  "SUGGEST",
+  "SUMMER",
+  "SUMMON",
+  "SUN",
+  "SUNDAY",
+  "SUNRISE",
+  "SUNSET",
+  "SUNSHINE",
+  "SUPERMAN",
+  "SUPPORT",
+  "SUPPOSE",
+  "SURE",
+  "SURFACE",
+  "SURGEON",
+  "SURGERY",
+  "SURPRISE",
+  "SURRENDER",
+  "SUSPECT",
+  "SUSPEND",
+  "SWALLOW",
+  "SWEATER",
+  "SWEDEN",
+  "SWEEP",
+  "SWEET",
+  "SWEETHEART",
+  "SWIM",
+  "SWIMMING",
+  "SWIMSUIT",
+  "SWING",
+  "SWITZERLAND",
+  "SYMBOL",
+  "SYMPATHY",
+  "T",
+  "TABLE",
+  "TAKE",
+  "TAKE TURNS",
+  "TAKE UP",
+  "TALE",
+  "TALENT",
+  "TALK",
+  "TALL",
+  "TAN",
+  "TASTE",
+  "TEA",
+  "TEACH",
+  "TEACHER",
+  "TEAM",
+  "TEASE",
+  "TECHNOLOGY",
+  "TEETH",
+  "TELEPHONE",
+  "TELESCOPE",
+  "TELEVISION",
+  "TELL",
+  "TEMPERATURE",
+  "TEMPLE",
+  "TEMPT",
+  "TEN",
+  "TEND",
+  "TENDER",
+  "TENNIS",
+  "TENT",
+  "TERRIBLE",
+  "TEST",
+  "TESTIFY",
+  "TEXAS",
+  "TEXT",
+  "THAILAND",
+  "THAN",
+  "THANK YOU",
+  "THANKFUL",
+  "THANKSGIVING",
+  "THAT",
+  "THEATER",
+  "THEIR",
+  "THEM",
+  "THEME",
+  "THEMSELVES",
+  "THEN",
+  "THEORY",
+  "THERAPY",
+  "THERE",
+  "THEREFORE",
+  "THERMOMETER",
+  "THEY",
+  "THICK",
+  "THIN",
+  "THING",
+  "THINK",
+  "THIRD",
+  "THIRSTY",
+  "THIS",
+  "THOUSAND",
+  "THREE",
+  "THRILL",
+  "THROAT",
+  "THROUGH",
+  "THROW",
+  "THURSDAY",
+  "TICKET",
+  "TIE",
+  "TIGER",
+  "TIME",
+  "TIPTOE",
+  "TIRED",
+  "TISSUE",
+  "TITLE",
+  "TO",
+  "TOAST",
+  "TOBACCO",
+  "TODAY",
+  "TOGETHER",
+  "TOILET",
+  "TOILET PAPER",
+  "TOLERATE",
+  "TOMATO",
+  "TOMORROW",
+  "TONGUE",
+  "TONIGHT",
+  "TOOTH",
+  "TOOTHBRUSH",
+  "TOP",
+  "TOPIC",
+  "TORNADO",
+  "TORTURE",
+  "TOTAL",
+  "TOUCH",
+  "TOUGH",
+  "TOURNAMENT",
+  "TOWEL",
+  "TOWER",
+  "TOWN",
+  "TRADE",
+  "TRADITION",
+  "TRAFFIC",
+  "TRAIN",
+  "TRANQUIL",
+  "TRANSFER",
+  "TRANSFORM",
+  "TRANSLATE",
+  "TRAVEL",
+  "TREE",
+  "TRIANGLE",
+  "TRIP",
+  "TROPHY",
+  "TROUBLE",
+  "TRUCK",
+  "TRUE",
+  "TRUST",
+  "TRUTH",
+  "TRY",
+  "TUESDAY",
+  "TURKEY",
+  "TURN",
+  "TURTLE",
+  "TUTOR",
+  "TV",
+  "TWIN",
+  "TWO",
+  "TYPE",
+  "U",
+  "UGLY",
+  "UMBRELLA",
+  "UNCLE",
+  "UNDER",
+  "UNDERSTAND",
+  "UNDERWEAR",
+  "UNIQUE",
+  "UNITED STATES",
+  "UNIVERSITY",
+  "UNTIL",
+  "UP",
+  "UPSET",
+  "UPSTAIRS",
+  "USE",
+  "V",
+  "VACANT",
+  "VACATION",
+  "VAGUE",
+  "VALLEY",
+  "VALUE",
+  "VAMPIRE",
+  "VEGETABLE",
+  "VERB",
+  "VERY",
+  "VICE PRESIDENT",
+  "VIEWPOINT",
+  "VIOLIN",
+  "VISIT",
+  "VISITOR",
+  "VISUALIZE",
+  "VLOG",
+  "VOCABULARY",
+  "VOICE",
+  "VOLLEYBALL",
+  "VOLUNTEER",
+  "VOMIT",
+  "VOTE",
+  "W",
+  "WAIT",
+  "WAITER",
+  "WAKE UP",
+  "WALK",
+  "WALL",
+  "WALLET",
+  "WANDER",
+  "WANT",
+  "WAR",
+  "WARM",
+  "WARN",
+  "WASH",
+  "WASH FACE",
+  "WASHINGTON",
+  "WASTE",
+  "WATCH",
+  "WATER",
+  "WATERFALL",
+  "WATERMELON",
+  "WAY",
+  "WE",
+  "WEAK",
+  "WEAR",
+  "WEATHER",
+  "WEDDING",
+  "WEDNESDAY",
+  "WEEK",
+  "WEEKEND",
+  "WEEKLY",
+  "WEIGH",
+  "WEIGHT",
+  "WEIRD",
+  "WELCOME",
+  "WEST",
+  "WET",
+  "WHALE",
+  "WHAT",
+  "WHATEVER",
+  "WHEELCHAIR",
+  "WHEN",
+  "WHERE",
+  "WHICH",
+  "WHILE",
+  "WHISTLE",
+  "WHITE",
+  "WHO",
+  "WHY",
+  "WIDE",
+  "WIFE",
+  "WILL",
+  "WILLING",
+  "WIN",
+  "WIND",
+  "WINDOW",
+  "WINE",
+  "WINTER",
+  "WISH",
+  "WITH",
+  "WITHIN",
+  "WITHOUT",
+  "WITNESS",
+  "WOLF",
+  "WOMAN",
+  "WONDER",
+  "WONDERFUL",
+  "WOOD",
+  "WORD",
+  "WORK",
+  "WORKER",
+  "WORKSHOP",
+  "WORLD",
+  "WORM",
+  "WORRY",
+  "WORSE",
+  "WORTHLESS",
+  "WOW",
+  "WRAP",
+  "WRENCH",
+  "WRISTWATCH",
+  "WRITE",
+  "WRONG",
+  "YEAR",
+  "YELLOW",
+  "YES",
+  "YESTERDAY",
+  "YOU",
+  "YOUNG",
+  "YOUR",
+  "YOURSELF",
+  "ZERO"
+];
+
+// lib/model-adapters.ts
+var WLASL2000_GLOSSES = labels_default;
+var title2 = (value) => value.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+var ASL_BUILT_IN_VOCABULARY = WLASL2000_GLOSSES.map((gloss) => ({
+  gloss,
+  text: title2(gloss),
+  category: "learning",
+  recognition: "built-in"
+}));
+var ASL_VOCABULARY = ASL_BUILT_IN_VOCABULARY;
+var PERSONAL_STARTER_GLOSSES = [
+  ["HELLO", "GOODBYE", "PLEASE", "THANK YOU", "SORRY", "EXCUSE ME", "YES", "NO", "MAYBE", "OKAY", "HELP", "STOP", "WAIT", "AGAIN", "UNDERSTAND", "DON'T UNDERSTAND", "NICE", "WELCOME", "READY", "FINISH"],
+  ["PERSON", "MAN", "WOMAN", "CHILD", "BABY", "FRIEND", "NEIGHBOUR", "TEACHER", "STUDENT", "DOCTOR", "NURSE", "DRIVER", "CUSTOMER", "VISITOR", "MOTHER", "FATHER", "SISTER", "BROTHER", "GRANDMOTHER", "GRANDFATHER"],
+  ["FAMILY", "PARENT", "SON", "DAUGHTER", "HUSBAND", "WIFE", "PARTNER", "AUNT", "UNCLE", "COUSIN", "RELATIVE", "MARRIED", "SINGLE", "LOVE", "MISS", "MEET", "CALL", "INVITE", "CELEBRATE", "TOGETHER"],
+  ["GO", "COME", "LEAVE", "ARRIVE", "WALK", "RUN", "SIT", "STAND", "OPEN", "CLOSE", "GIVE", "TAKE", "PUT", "FIND", "LOSE", "BUY", "SELL", "PAY", "CHOOSE", "CHANGE"],
+  ["WAKE UP", "SLEEP", "SHOWER", "WASH", "DRESS", "COOK", "CLEAN", "EAT", "DRINK", "REST", "PLAY", "WATCH", "LISTEN", "READ", "WRITE", "SIGN", "TALK", "THINK", "REMEMBER", "FORGET"],
+  ["FOOD", "BREAD", "RICE", "NOODLES", "PASTA", "SOUP", "SALAD", "CHICKEN", "FISH", "MEAT", "EGG", "CHEESE", "FRUIT", "APPLE", "BANANA", "ORANGE", "VEGETABLE", "PIZZA", "CAKE", "SWEET"],
+  ["WATER", "TEA", "COFFEE", "JUICE", "MILK", "HOT", "COLD", "HUNGRY", "THIRSTY", "BREAKFAST", "LUNCH", "DINNER", "SNACK", "RESTAURANT", "MENU", "BILL", "DELICIOUS", "SPICY", "SUGAR", "SALT"],
+  ["HAPPY", "SAD", "ANGRY", "WORRIED", "SCARED", "TIRED", "EXCITED", "SURPRISED", "BORED", "CONFUSED", "PROUD", "SHY", "CALM", "STRESSED", "SICK", "BETTER", "WORSE", "BUSY", "FREE", "LUCKY"],
+  ["HOME", "SCHOOL", "UNIVERSITY", "OFFICE", "SHOP", "MARKET", "HOSPITAL", "PHARMACY", "BANK", "HOTEL", "AIRPORT", "STATION", "PARK", "BEACH", "MOSQUE", "CHURCH", "TOILET", "KITCHEN", "BEDROOM", "BATHROOM"],
+  ["TODAY", "TOMORROW", "YESTERDAY", "NOW", "LATER", "EARLY", "LATE", "MORNING", "AFTERNOON", "EVENING", "NIGHT", "WEEK", "MONTH", "YEAR", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "WEEKEND"],
+  ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE", "TWENTY", "FIFTY", "HUNDRED", "THOUSAND", "FIRST", "LAST", "MORE", "LESS"],
+  ["BLACK", "WHITE", "RED", "BLUE", "GREEN", "YELLOW", "ORANGE COLOUR", "PURPLE", "PINK", "BROWN", "GREY", "GOLD", "SILVER", "LIGHT", "DARK", "BRIGHT", "COLOUR", "SAME", "DIFFERENT", "BEAUTIFUL"],
+  ["SUN", "RAIN", "WIND", "CLOUD", "STORM", "HOT WEATHER", "COLD WEATHER", "WEATHER", "UMBRELLA", "SUMMER", "WINTER", "SPRING", "AUTUMN", "DAY", "TEMPERATURE", "WET", "DRY", "DUST", "FLOOD", "SUNNY"],
+  ["LEARN", "STUDY", "CLASS", "COURSE", "BOOK", "PAPER", "PEN", "COMPUTER", "EXAM", "QUESTION", "ANSWER", "EXPLAIN", "PRACTICE", "CORRECT", "WRONG", "EASY", "DIFFICULT", "IDEA", "PROJECT", "HOMEWORK"],
+  ["PHONE", "MOBILE", "INTERNET", "EMAIL", "MESSAGE", "VIDEO", "PHOTO", "CAMERA", "CHARGER", "BATTERY", "SCREEN", "KEYBOARD", "PASSWORD", "WEBSITE", "DOWNLOAD", "UPLOAD", "ONLINE", "OFFLINE", "MACHINE", "ROBOT"],
+  ["PAIN", "HEADACHE", "MEDICINE", "APPOINTMENT", "EMERGENCY", "ALLERGY", "INJURY", "BLOOD", "HEART", "BREATHE", "DIZZY", "FEVER", "COUGH", "MASK", "HEALTHY", "EXERCISE", "GYM", "SWIM", "SLEEPY", "RECOVER"],
+  ["DANGER", "SAFE", "POLICE", "FIRE", "ACCIDENT", "LOST", "ADDRESS", "NAME", "PHONE NUMBER", "CONTACT", "NEED ASSISTANCE", "CALL POLICE", "CALL AMBULANCE", "EXIT", "ENTRANCE", "LOCK", "UNLOCK", "CAREFUL", "WARNING", "PROBLEM"],
+  ["CAR", "BUS", "TAXI", "TRAIN", "METRO", "PLANE", "BOAT", "BICYCLE", "ROAD", "TRAFFIC", "TICKET", "MAP", "DIRECTION", "LEFT", "RIGHT", "STRAIGHT", "NEAR", "FAR", "FAST", "SLOW"],
+  ["DOOR", "WINDOW", "TABLE", "CHAIR", "BED", "SOFA", "LIGHT SWITCH", "FAN", "AIR CONDITIONING", "FRIDGE", "OVEN", "CUP", "PLATE", "BOWL", "SPOON", "FORK", "KNIFE", "KEY", "BAG", "CLOTHES"],
+  ["WORK", "JOB", "MEETING", "MANAGER", "TEAM", "CLIENT", "MONEY", "PRICE", "CHEAP", "EXPENSIVE", "RECEIPT", "CASH", "CARD", "DELIVERY", "ORDER", "RETURN", "DISCOUNT", "OPEN NOW", "CLOSED", "AVAILABLE"],
+  ["WHO", "WHAT", "WHERE", "WHEN", "WHY", "HOW", "WHICH", "HOW MANY", "HOW MUCH", "CAN", "CAN'T", "WANT", "NEED", "LIKE", "DON'T LIKE", "KNOW", "NOT KNOW", "HAVE", "DON'T HAVE", "SHOULD"],
+  ["GOOD", "BAD", "BIG", "SMALL", "LONG", "SHORT", "NEW", "OLD", "YOUNG", "FULL", "EMPTY", "POLITE", "DIRTY", "STRONG", "WEAK", "QUIET", "LOUD", "TRUE", "FALSE", "IMPORTANT"]
+];
+var PERSONAL_STARTER_CONCEPTS = Array.from(/* @__PURE__ */ new Set([
+  ...WLASL2000_GLOSSES,
+  ...PERSONAL_STARTER_GLOSSES.flat()
+]));
+var PERSONAL_STARTER_VOCABULARY = PERSONAL_STARTER_CONCEPTS.map((gloss) => ({ gloss, text: title2(gloss), category: "learning", recognition: "personal-calibration" }));
+var MODEL_ADAPTERS = {
+  asl: {
+    id: "asl",
+    shortName: "ASL",
+    language: "American Sign Language",
+    status: "experimental",
+    modelFile: "Official WLASL2000 Pose-TGCN + MediaPipe vision + personal-DTW-v1",
+    automaticVocabularyCount: 2e3,
+    vocabulary: ASL_VOCABULARY.map((entry) => entry.gloss),
+    inputFormat: "50 samples \xD7 55 two-dimensional upper-body and hand landmarks",
+    sequenceLength: 50,
+    confidenceThreshold: 0.62,
+    decoder: "Quantised on-device WLASL2000 Pose-TGCN; personal templates and four starter rules take priority",
+    postProcessing: "Cooldown, consensus smoothing and duplicate suppression",
+    version: "0.6.0-wlasl2000-pose-tgcn",
+    dataset: "Official WLASL2000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
+    speechLocale: "en-US",
+    summary: "A genuine local 2,000-sign ASL isolated-sign model. The live MediaPipe adapter remains experimental and is not unrestricted ASL translation."
+  },
+  lse: {
+    id: "lse",
+    shortName: "LSE",
+    language: "Spanish Sign Language",
+    // The installer workflow changes this to `experimental` only in the
+    // commit that contains its trained ONNX asset and labels.
+    status: "preparing",
+    modelFile: null,
+    automaticVocabularyCount: 0,
+    vocabulary: [],
+    inputFormat: "64 body-and-hand landmark frames (19 pose points + two 21-point hands, x/y/z)",
+    sequenceLength: 64,
+    confidenceThreshold: 0.76,
+    decoder: "Official SWL-LSE MediaPipe landmark pipeline; browser model is being prepared from its real-signer training split",
+    postProcessing: "Will use confidence and margin gating plus temporal consensus when the model is installed",
+    version: "swl-lse300-browser-model-pending",
+    dataset: "SWL-LSE (SignaMed), 8,000 real signer sequences across 300 Spanish Sign Language health-domain signs; open Zenodo release.",
+    speechLocale: "es-ES",
+    summary: "A real 300-sign LSE browser model is being built from the open SWL-LSE landmark dataset. It is not marked installed until the trained model passes its build."
+  },
+  auslan: {
+    id: "auslan",
+    shortName: "AUSLAN",
+    language: "Australian Sign Language",
+    status: "preparing",
+    modelFile: null,
+    automaticVocabularyCount: 0,
+    vocabulary: [],
+    inputFormat: "Planned: video/pose sequence model using the official MM-WLAuslan data contract",
+    sequenceLength: 0,
+    confidenceThreshold: 0,
+    decoder: "No browser checkpoint is installed yet",
+    postProcessing: "No automatic output until an evaluated Auslan model is installed",
+    version: "mm-wlauslan-model-pending",
+    dataset: "MM-WLAuslan: 282,000+ videos, 3,215 Auslan glosses and 73 signers (CC BY-NC-SA 4.0).",
+    speechLocale: "en-AU",
+    summary: "Official MM-WLAuslan data is mapped for a future 3,215-gloss model. No automatic Auslan translation is claimed until that model exists."
+  },
+  bsl: {
+    id: "bsl",
+    shortName: "BSL",
+    language: "British Sign Language",
+    status: "experimental",
+    modelFile: "Official BSL-1K Pose2Sign body-and-hands model + on-device personal recognizer",
+    automaticVocabularyCount: 1064,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "16 body-and-hand pose frames (OpenPose COCO-18 + two 21-point hands); private examples use 24 samples",
+    sequenceLength: 16,
+    confidenceThreshold: 0.82,
+    decoder: "Official BSL-1K Pose2Sign browser model with WebGPU/WASM inference; personal templates take priority",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "bsl1k-pose2sign-bodyhands-v1 + personal-dtw-v2",
+    dataset: "Official BSL-1K body-and-hands Pose2Sign checkpoint. The live MediaPipe-to-OpenPose adapter is experimental.",
+    speechLocale: "en-GB",
+    summary: "A genuine local 1,064-sign BSL isolated-sign model, plus a separate private vocabulary you can teach."
+  },
+  isl: {
+    id: "isl",
+    shortName: "ISL",
+    language: "Indian Sign Language",
+    status: "experimental",
+    modelFile: "Official AI4Bharat INCLUDE-263 landmark transformer + on-device personal recognizer",
+    automaticVocabularyCount: 263,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "Up to 200 MediaPipe body and hand frames (134 x/y landmark features); private examples use 24 samples",
+    sequenceLength: 200,
+    confidenceThreshold: 0.78,
+    decoder: "Official INCLUDE-263 browser transformer with WebGPU/WASM inference; personal templates take priority",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "include263-small-transformer-v1 + personal-dtw-v2",
+    dataset: "Official AI4Bharat INCLUDE-263 landmark model (CC-BY-4.0); the live MediaPipe adapter is experimental. Personal examples require no uploaded video.",
+    speechLocale: "en-IN",
+    summary: "A genuine local 263-sign ISL isolated-sign model, plus a separate private vocabulary you can teach."
+  },
+  csl: {
+    id: "csl",
+    shortName: "CSL",
+    language: "Chinese Sign Language",
+    status: "personal",
+    modelFile: "On-device personal landmark recognizer",
+    automaticVocabularyCount: 0,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
+    sequenceLength: 24,
+    confidenceThreshold: 0.76,
+    decoder: "Signer-specific dynamic-time-warping templates, stored only on this device",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "personal-dtw-v2",
+    dataset: "SLR500 and CSL-Daily remain future shared-model sources; personal examples do not use or redistribute those datasets.",
+    speechLocale: "zh-CN",
+    summary: "2,000+ built-in CSL starter concepts, ready to teach privately on this device."
+  }
+};
+var LANGUAGE_LIST = Object.values(MODEL_ADAPTERS);
+
 // workers/recognition.worker.ts
 var MAX_FRAMES = 80;
 var CONFIDENCE_THRESHOLD = 0.62;
@@ -10750,78 +12991,76 @@ var COOLDOWN_MS = 2600;
 var frames = [];
 var candidateLabel = null;
 var candidateStreak = 0;
+var candidateIsModel = false;
 var lastConfirmation = { label: "", time: 0 };
 var personalTemplates = [];
 var activeLanguage = "asl";
-var latestAsl1000 = null;
-var pendingAsl1000 = false;
-var latestIsl263 = null;
-var pendingIsl263 = false;
-var latestBsl1064 = null;
-var pendingBsl1064 = false;
+var classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
+var pending = /* @__PURE__ */ new Set();
+var MAX_PREDICTION_AGE_MS = 2500;
+var latestPrediction = null;
+var predictionTimestamp = 0;
+var predictionVersion = 0;
+var consumedPredictionVersion = 0;
+var receivedFrames = 0;
 var modelGeneration = 0;
+function invalidatePrediction() {
+  latestPrediction = null;
+  if (candidateIsModel) {
+    candidateLabel = null;
+    candidateStreak = 0;
+  }
+  modelGeneration += 1;
+}
+function resetSession() {
+  frames.length = 0;
+  receivedFrames = 0;
+  lastConfirmation = { label: "", time: 0 };
+  invalidatePrediction();
+  candidateLabel = null;
+  candidateStreak = 0;
+  candidateIsModel = false;
+}
 self.onmessage = async (event) => {
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
-    frames.length = 0;
-    candidateLabel = null;
-    candidateStreak = 0;
-    latestAsl1000 = null;
-    latestIsl263 = null;
-    latestBsl1064 = null;
-    modelGeneration += 1;
+    resetSession();
     return;
   }
   if (event.data.type === "reset") {
-    frames.length = 0;
-    candidateLabel = null;
-    candidateStreak = 0;
-    latestAsl1000 = null;
-    latestIsl263 = null;
-    latestBsl1064 = null;
-    modelGeneration += 1;
+    resetSession();
     return;
   }
+  const now = event.data.frame.timestamp;
+  receivedFrames += 1;
   frames.push(event.data.frame);
   while (frames.length > MAX_FRAMES) frames.shift();
-  if (activeLanguage === "asl" && !hasAsl100CompletedSignMotion(frames)) {
-    latestAsl1000 = null;
-    candidateLabel = null;
-    candidateStreak = 0;
-    modelGeneration += 1;
-  } else if (activeLanguage === "asl" && frames.length >= 24 && !pendingAsl1000 && frames.length % 6 === 0) {
-    pendingAsl1000 = true;
-    const generation = modelGeneration;
-    recognizeAsl1000([...frames]).then((prediction) => {
-      if (generation === modelGeneration) latestAsl1000 = prediction;
-    }).catch(() => {
-      latestAsl1000 = null;
-    }).finally(() => {
-      pendingAsl1000 = false;
-    });
-  } else if (activeLanguage === "isl" && hasAsl100CompletedSignMotion(frames) && frames.length >= 24 && !pendingIsl263 && frames.length % 8 === 0) {
-    pendingIsl263 = true;
-    const generation = modelGeneration;
-    recognizeIsl263([...frames]).then((prediction) => {
-      if (generation === modelGeneration) latestIsl263 = prediction;
-    }).catch(() => {
-      latestIsl263 = null;
-    }).finally(() => {
-      pendingIsl263 = false;
-    });
-  } else if (activeLanguage === "bsl" && hasAsl100CompletedSignMotion(frames) && frames.length >= 24 && !pendingBsl1064 && frames.length % 6 === 0) {
-    pendingBsl1064 = true;
-    const generation = modelGeneration;
-    recognizeBsl1064([...frames]).then((prediction) => {
-      if (generation === modelGeneration) latestBsl1064 = prediction;
-    }).catch(() => {
-      latestBsl1064 = null;
-    }).finally(() => {
-      pendingBsl1064 = false;
-    });
+  if (!hasAsl100CompletedSignMotion(frames)) {
+    invalidatePrediction();
+  } else {
+    if (latestPrediction && now - predictionTimestamp > MAX_PREDICTION_AGE_MS) invalidatePrediction();
+    const language = activeLanguage;
+    const classifier = language in classifiers ? classifiers[language] : null;
+    const cadence = language === "isl" ? 8 : 6;
+    if (classifier && MODEL_ADAPTERS[language].status === "experimental" && frames.length >= 24 && receivedFrames % cadence === 0 && !pending.has(language)) {
+      pending.add(language);
+      const generation = modelGeneration;
+      classifier([...frames]).then((prediction) => {
+        if (generation !== modelGeneration) return;
+        if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS) return;
+        latestPrediction = prediction;
+        predictionTimestamp = now;
+        predictionVersion += 1;
+      }).catch(() => {
+        if (generation === modelGeneration) invalidatePrediction();
+      }).finally(() => {
+        pending.delete(language);
+      });
+    }
   }
-  const result = recognize(frames);
+  const rawResult = recognize(frames);
+  const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
   const analysis = {
     type: "analysis",
     state: frames.length < 10 ? "listening" : result ? "processing" : "uncertain",
@@ -10830,17 +13069,21 @@ self.onmessage = async (event) => {
     bufferSize: frames.length
   };
   self.postMessage(analysis);
-  if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
+  if (!result || !Number.isFinite(result.confidence) || result.confidence < CONFIDENCE_THRESHOLD) {
     candidateLabel = null;
     candidateStreak = 0;
     return;
   }
+  if (result === latestPrediction) {
+    if (consumedPredictionVersion === predictionVersion) return;
+    consumedPredictionVersion = predictionVersion;
+  }
+  candidateIsModel = result === latestPrediction;
   if (candidateLabel === result.label) candidateStreak += 1;
   else {
     candidateLabel = result.label;
     candidateStreak = 1;
   }
-  const now = event.data.frame.timestamp;
   if (shouldConfirm({
     confidence: result.confidence,
     threshold: CONFIDENCE_THRESHOLD,
@@ -10857,33 +13100,33 @@ self.onmessage = async (event) => {
       timestamp: Date.now()
     });
     lastConfirmation = { label: result.label, time: now };
+    invalidatePrediction();
     candidateStreak = 0;
     frames.splice(0, Math.max(0, frames.length - 5));
   }
 };
 function recognize(sequence) {
   const personal = recognizePersonalTemplate(sequence, personalTemplates);
-  if (activeLanguage === "bsl") return personal ?? latestBsl1064;
-  if (activeLanguage === "isl") return personal ?? latestIsl263;
+  if (activeLanguage === "bsl" || activeLanguage === "isl" || activeLanguage === "lse") return personal ?? latestPrediction;
   if (activeLanguage !== "asl") return personal;
-  return personal ?? recognizeILoveYou(sequence) ?? recognizeHello(sequence) ?? recognizeThankYou(sequence) ?? recognizeYes(sequence) ?? latestAsl1000;
+  return personal ?? recognizeILoveYou(sequence) ?? recognizeHello(sequence) ?? recognizeThankYou(sequence) ?? recognizeYes(sequence) ?? latestPrediction;
 }
 function recognizeILoveYou(sequence) {
   const recent = sequence.slice(-10);
-  const matches = recent.flatMap((frame) => frame.hands).filter((hand3) => hand3.gesture === "ILoveYou" && hand3.gestureScore >= 0.62);
+  const matches = recent.flatMap((frame) => frame.hands).filter((hand4) => hand4.gesture === "ILoveYou" && hand4.gestureScore >= 0.62);
   if (matches.length < 7) return null;
-  const average = matches.reduce((sum, hand3) => sum + hand3.gestureScore, 0) / matches.length;
+  const average = matches.reduce((sum, hand4) => sum + hand4.gestureScore, 0) / matches.length;
   return { label: "I LOVE YOU", text: "I love you", confidence: clamp2(0.84 + average * 0.13) };
 }
 function recognizeHello(sequence) {
   const samples = dominantHandSamples(sequence.slice(-16));
   if (samples.length < 12 || !isMostlyOpen(samples)) return null;
-  const wrists = samples.map((hand3) => hand3.landmarks[0]);
-  const xRange = range2(wrists.map((point2) => point2.x));
-  const yRange = range2(wrists.map((point2) => point2.y));
+  const wrists = samples.map((hand4) => hand4.landmarks[0]);
+  const xRange = range2(wrists.map((point3) => point3.x));
+  const yRange = range2(wrists.map((point3) => point3.y));
   const facePresent = sequence.slice(-16).filter((frame) => frame.face.length > 0).length >= 8;
-  const nearHead = wrists.filter((point2) => point2.y < 0.48).length >= 8;
-  const directionChanges = countDirectionChanges(wrists.map((point2) => point2.x), 8e-3);
+  const nearHead = wrists.filter((point3) => point3.y < 0.48).length >= 8;
+  const directionChanges = countDirectionChanges(wrists.map((point3) => point3.x), 8e-3);
   if (!facePresent || !nearHead || xRange < 0.11 || yRange > 0.15 || directionChanges < 1) return null;
   return { label: "HELLO", text: "Hello", confidence: clamp2(0.76 + xRange * 0.75) };
 }
@@ -10891,7 +13134,7 @@ function recognizeThankYou(sequence) {
   const recent = sequence.slice(-18);
   const samples = dominantHandSamples(recent);
   if (samples.length < 13 || !isMostlyOpen(samples)) return null;
-  const tips = samples.map((hand3) => hand3.landmarks[8]);
+  const tips = samples.map((hand4) => hand4.landmarks[8]);
   const start = averagePoint2(tips.slice(0, 4));
   const end = averagePoint2(tips.slice(-4));
   const face = recent.find((frame) => frame.face.length)?.face;
@@ -10905,35 +13148,35 @@ function recognizeThankYou(sequence) {
 function recognizeYes(sequence) {
   const samples = dominantHandSamples(sequence.slice(-22));
   if (samples.length < 16 || !isMostlyFist(samples)) return null;
-  const wrists = samples.map((hand3) => hand3.landmarks[0]);
-  const yValues = wrists.map((point2) => point2.y);
-  const xRange = range2(wrists.map((point2) => point2.x));
+  const wrists = samples.map((hand4) => hand4.landmarks[0]);
+  const yValues = wrists.map((point3) => point3.y);
+  const xRange = range2(wrists.map((point3) => point3.x));
   const yRange = range2(yValues);
   const directionChanges = countDirectionChanges(yValues, 8e-3);
   if (yRange < 0.07 || xRange > 0.11 || directionChanges < 2) return null;
   return { label: "YES", text: "Yes", confidence: clamp2(0.77 + yRange * 0.85 + directionChanges * 0.02) };
 }
 function dominantHandSamples(sequence) {
-  const right = sequence.map((frame) => frame.hands.find((hand3) => hand3.handedness === "Right") ?? frame.hands[0]).filter(Boolean);
-  const left = sequence.map((frame) => frame.hands.find((hand3) => hand3.handedness === "Left") ?? frame.hands[0]).filter(Boolean);
+  const right = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Right") ?? frame.hands[0]).filter(Boolean);
+  const left = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Left") ?? frame.hands[0]).filter(Boolean);
   return right.length >= left.length ? right : left;
 }
-function extendedFingers(hand3) {
+function extendedFingers(hand4) {
   const tips = [8, 12, 16, 20];
   const pips = [6, 10, 14, 18];
   let count = 0;
   for (let index = 0; index < tips.length; index += 1) {
-    const tip = hand3.landmarks[tips[index]];
-    const pip = hand3.landmarks[pips[index]];
-    if (tip && pip && distance3(tip, hand3.landmarks[0]) > distance3(pip, hand3.landmarks[0]) * 1.18) count += 1;
+    const tip = hand4.landmarks[tips[index]];
+    const pip = hand4.landmarks[pips[index]];
+    if (tip && pip && distance3(tip, hand4.landmarks[0]) > distance3(pip, hand4.landmarks[0]) * 1.18) count += 1;
   }
   return count;
 }
 function isMostlyOpen(samples) {
-  return samples.filter((hand3) => extendedFingers(hand3) >= 3).length / samples.length >= 0.72;
+  return samples.filter((hand4) => extendedFingers(hand4) >= 3).length / samples.length >= 0.72;
 }
 function isMostlyFist(samples) {
-  return samples.filter((hand3) => extendedFingers(hand3) <= 1).length / samples.length >= 0.72;
+  return samples.filter((hand4) => extendedFingers(hand4) <= 1).length / samples.length >= 0.72;
 }
 function countDirectionChanges(values, epsilon) {
   let previous = 0;
@@ -10947,7 +13190,7 @@ function countDirectionChanges(values, epsilon) {
   return changes;
 }
 function averagePoint2(points) {
-  return points.reduce((total, point2) => ({ x: total.x + point2.x / points.length, y: total.y + point2.y / points.length, z: total.z + point2.z / points.length }), { x: 0, y: 0, z: 0 });
+  return points.reduce((total, point3) => ({ x: total.x + point3.x / points.length, y: total.y + point3.y / points.length, z: total.z + point3.z / points.length }), { x: 0, y: 0, z: 0 });
 }
 function distance3(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);

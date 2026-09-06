@@ -36,7 +36,15 @@ jobs:
         run: |
           test -d out
           test -f out/index.html
+          test -f out/workers/ort-wasm-simd-threaded.jsep.wasm
+          test -f out/workers/ort-wasm-simd-threaded.jsep.mjs
           echo "Static export created successfully."
+
+      - name: Test recognition and model contracts
+        run: npm test
+
+      - name: Lint application source
+        run: npm run lint
 
       - name: Upload static export
         uses: actions/upload-artifact@v4

@@ -44,3 +44,6 @@ next-env.d.ts
 /.sites-runtime/
 /outputs/
 /work/
+
+# Copied from the locked ONNX Runtime package by build:worker.
+/public/workers/ort-wasm-*

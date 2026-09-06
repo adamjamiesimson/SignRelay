@@ -14,7 +14,7 @@ describe("ASL-2000 packed runtime", () => {
     expect(worker).not.toContain('from "@/');
   });
 
-  it("reproduces the Python exporter's deterministic top prediction", () => {
+  it("executes the packed model on synthetic input with a finite output (not sign accuracy)", () => {
     const manifest = JSON.parse(readFileSync("public/models/asl2000-tgcn/model.json", "utf8")) as TgcnManifest;
     const labels = JSON.parse(readFileSync("public/models/asl2000-tgcn/labels.json", "utf8")) as string[];
     const compressed = Buffer.concat(manifest.binaryParts.map((name) =>

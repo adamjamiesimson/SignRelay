@@ -7,7 +7,7 @@
   },
   "scripts": {
     "install:ci": "bash scripts/install-ci.sh",
-    "build:worker": "esbuild workers/recognition.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outfile=public/workers/recognition.worker.js",
+    "build:worker": "esbuild workers/recognition.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outfile=public/workers/recognition.worker.js && node scripts/copy-onnx-runtime.mjs",
     "dev": "npm run build:worker && WRANGLER_LOG_PATH=.wrangler/wrangler.log vite",
     "build": "npm run build:worker && bash scripts/build-verified.sh",
     "build:firebase": "npm run build:worker && next build",

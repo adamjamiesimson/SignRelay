@@ -184,15 +184,17 @@ export function TranslatorExperience() {
     workerRef.current?.postMessage({ type: "templates", language: selected, templates: calibrationTemplates });
   }, [calibrationTemplates, selected]);
 
-  useEffect(() => {
+  function selectLanguage(language: LanguageId) {
+    if (language === selected) return;
+    setSelected(language);
     const personalSign = createCustomVocabularyEntry("Personal sign")!;
     setCalibrationWord(personalSign);
     setCustomWordInput("");
     setVocabularySearch("");
     captureStateRef.current = "idle";
     setCalibrationState("idle");
-    setCalibrationMessage(`Type a ${selected.toUpperCase()} word or short phrase, then record two or three examples.`);
-  }, [selected]);
+    setCalibrationMessage(`Type a ${language.toUpperCase()} word or short phrase, then record two or three examples.`);
+  }
 
   useEffect(() => {
     settingsRef.current = settings;
@@ -837,7 +839,7 @@ export function TranslatorExperience() {
               <button
                 key={language.id}
                 className={`language-card ${selected === language.id ? "selected" : ""}`}
-                onClick={() => setSelected(language.id)}
+                onClick={() => selectLanguage(language.id)}
                 role="radio"
                 aria-checked={selected === language.id}
               >

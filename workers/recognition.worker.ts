@@ -8,6 +8,7 @@ import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
 import { recognizeIsl263 } from "@/lib/isl263-runtime";
 import { recognizeBsl1064 } from "@/lib/bsl1064-runtime";
 import { recognizeLse300 } from "@/lib/lse300-runtime";
+import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 
 const MAX_FRAMES = 80;
 const CONFIDENCE_THRESHOLD = 0.62;
@@ -15,84 +16,86 @@ const COOLDOWN_MS = 2600;
 const frames: VisionFrame[] = [];
 let candidateLabel: string | null = null;
 let candidateStreak = 0;
+let candidateIsModel = false;
 let lastConfirmation = { label: "", time: 0 };
 let personalTemplates: CalibrationTemplate[] = [];
-let activeLanguage: "asl" | "auslan" | "bsl" | "csl" | "isl" | "lse" = "asl";
-let latestAsl1000: Awaited<ReturnType<typeof recognizeAsl1000>> = null;
-let pendingAsl1000 = false;
-let latestIsl263: Awaited<ReturnType<typeof recognizeIsl263>> = null;
-let pendingIsl263 = false;
-let latestBsl1064: Awaited<ReturnType<typeof recognizeBsl1064>> = null;
-let pendingBsl1064 = false;
-let latestLse300: Awaited<ReturnType<typeof recognizeLse300>> = null;
-let pendingLse300 = false;
+let activeLanguage: LanguageId = "asl";
+const classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
+const pending = new Set<LanguageId>();
+const MAX_PREDICTION_AGE_MS = 2500;
+let latestPrediction: Awaited<ReturnType<typeof recognizeAsl1000>> = null;
+let predictionTimestamp = 0;
+let predictionVersion = 0;
+let consumedPredictionVersion = 0;
+let receivedFrames = 0;
 let modelGeneration = 0;
+
+function invalidatePrediction() {
+  latestPrediction = null;
+  if (candidateIsModel) {
+    candidateLabel = null;
+    candidateStreak = 0;
+  }
+  modelGeneration += 1;
+}
+
+function resetSession() {
+  frames.length = 0;
+  receivedFrames = 0;
+  lastConfirmation = { label: "", time: 0 };
+  invalidatePrediction();
+  candidateLabel = null;
+  candidateStreak = 0;
+  candidateIsModel = false;
+}
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
     // Records created before language separation were ASL-only.
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
-    frames.length = 0;
-    candidateLabel = null;
-    candidateStreak = 0;
-    latestAsl1000 = null;
-    latestIsl263 = null;
-    latestBsl1064 = null;
-    latestLse300 = null;
-    modelGeneration += 1;
+    resetSession();
     return;
   }
 
   if (event.data.type === "reset") {
-    frames.length = 0;
-    candidateLabel = null;
-    candidateStreak = 0;
-    latestAsl1000 = null;
-    latestIsl263 = null;
-    latestBsl1064 = null;
-    latestLse300 = null;
-    modelGeneration += 1;
+    resetSession();
     return;
   }
 
+  const now = event.data.frame.timestamp;
+  receivedFrames += 1;
   frames.push(event.data.frame);
   while (frames.length > MAX_FRAMES) frames.shift();
 
-  if (activeLanguage === "asl" && !hasAsl100CompletedSignMotion(frames)) {
-    // A classifier always has a mathematical "best" class. Idle or random
-    // motion must never turn that arbitrary label into spoken text.
-    latestAsl1000 = null;
-    candidateLabel = null;
-    candidateStreak = 0;
-    modelGeneration += 1;
-  } else if (activeLanguage === "asl" && frames.length >= 24 && !pendingAsl1000 && frames.length % 6 === 0) {
-    pendingAsl1000 = true;
-    const generation = modelGeneration;
-    recognizeAsl1000([...frames]).then((prediction) => {
-      if (generation === modelGeneration) latestAsl1000 = prediction;
-    }).catch(() => { latestAsl1000 = null; }).finally(() => { pendingAsl1000 = false; });
-  } else if (activeLanguage === "isl" && hasAsl100CompletedSignMotion(frames) && frames.length >= 24 && !pendingIsl263 && frames.length % 8 === 0) {
-    pendingIsl263 = true;
-    const generation = modelGeneration;
-    recognizeIsl263([...frames]).then((prediction) => {
-      if (generation === modelGeneration) latestIsl263 = prediction;
-    }).catch(() => { latestIsl263 = null; }).finally(() => { pendingIsl263 = false; });
-  } else if (activeLanguage === "bsl" && hasAsl100CompletedSignMotion(frames) && frames.length >= 24 && !pendingBsl1064 && frames.length % 6 === 0) {
-    pendingBsl1064 = true;
-    const generation = modelGeneration;
-    recognizeBsl1064([...frames]).then((prediction) => {
-      if (generation === modelGeneration) latestBsl1064 = prediction;
-    }).catch(() => { latestBsl1064 = null; }).finally(() => { pendingBsl1064 = false; });
-  } else if (activeLanguage === "lse" && hasAsl100CompletedSignMotion(frames) && frames.length >= 24 && !pendingLse300 && frames.length % 6 === 0) {
-    pendingLse300 = true;
-    const generation = modelGeneration;
-    recognizeLse300([...frames]).then((prediction) => {
-      if (generation === modelGeneration) latestLse300 = prediction;
-    }).catch(() => { latestLse300 = null; }).finally(() => { pendingLse300 = false; });
+  if (!hasAsl100CompletedSignMotion(frames)) {
+    // Invalidate in-flight results as well as cached output in every language.
+    invalidatePrediction();
+  } else {
+    if (latestPrediction && now - predictionTimestamp > MAX_PREDICTION_AGE_MS) invalidatePrediction();
+    const language = activeLanguage;
+    const classifier = language in classifiers ? classifiers[language as keyof typeof classifiers] : null;
+    const cadence = language === "isl" ? 8 : 6;
+    // Use a counter independent of the capped rolling buffer. Pending languages
+    // must not repeatedly request checkpoints that have not been installed.
+    if (classifier && MODEL_ADAPTERS[language].status === "experimental"
+      && frames.length >= 24 && receivedFrames % cadence === 0 && !pending.has(language)) {
+      pending.add(language);
+      const generation = modelGeneration;
+      classifier([...frames]).then((prediction) => {
+        if (generation !== modelGeneration) return;
+        if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS) return;
+        latestPrediction = prediction;
+        predictionTimestamp = now;
+        predictionVersion += 1;
+      }).catch(() => {
+        if (generation === modelGeneration) invalidatePrediction();
+      }).finally(() => { pending.delete(language); });
+    }
   }
 
-  const result = recognize(frames);
+  const rawResult = recognize(frames);
+  const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
   const analysis: WorkerMessage = {
     type: "analysis",
     state: frames.length < 10 ? "listening" : result ? "processing" : "uncertain",
@@ -102,11 +105,19 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   };
   self.postMessage(analysis);
 
-  if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
+  if (!result || !Number.isFinite(result.confidence) || result.confidence < CONFIDENCE_THRESHOLD) {
     candidateLabel = null;
     candidateStreak = 0;
     return;
   }
+
+  if (result === latestPrediction) {
+    // A cached result may update the display, but cannot vote twice in consensus.
+    if (consumedPredictionVersion === predictionVersion) return;
+    consumedPredictionVersion = predictionVersion;
+  }
+
+  candidateIsModel = result === latestPrediction;
 
   if (candidateLabel === result.label) candidateStreak += 1;
   else {
@@ -114,7 +125,6 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     candidateStreak = 1;
   }
 
-  const now = event.data.frame.timestamp;
   if (shouldConfirm({
     confidence: result.confidence,
     threshold: CONFIDENCE_THRESHOLD,
@@ -131,6 +141,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
       timestamp: Date.now(),
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
+    invalidatePrediction();
     candidateStreak = 0;
     frames.splice(0, Math.max(0, frames.length - 5));
   }
@@ -138,16 +149,14 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
 
 function recognize(sequence: VisionFrame[]) {
   const personal = recognizePersonalTemplate(sequence, personalTemplates);
-  if (activeLanguage === "bsl") return personal ?? latestBsl1064;
-  if (activeLanguage === "isl") return personal ?? latestIsl263;
-  if (activeLanguage === "lse") return personal ?? latestLse300;
+  if (activeLanguage === "bsl" || activeLanguage === "isl" || activeLanguage === "lse") return personal ?? latestPrediction;
   if (activeLanguage !== "asl") return personal;
   return personal
     ?? recognizeILoveYou(sequence)
     ?? recognizeHello(sequence)
     ?? recognizeThankYou(sequence)
     ?? recognizeYes(sequence)
-    ?? latestAsl1000;
+    ?? latestPrediction;
 }
 
 function recognizeILoveYou(sequence: VisionFrame[]) {
