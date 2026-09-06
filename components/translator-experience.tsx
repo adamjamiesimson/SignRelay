@@ -761,18 +761,45 @@ export function TranslatorExperience() {
       <main>
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-inner">
-            <p className="eyebrow">Communication, made visible</p>
-            <h1 id="hero-title">Sign freely.<br /><span>Be understood.</span></h1>
-            <p className="hero-copy">
-              SignRelay translates continuous sign language into text and speech by analysing hand movement, facial expression and body language — locally in your browser.
-            </p>
-            <div className="hero-actions">
-              <button className="button primary" onClick={() => document.getElementById("choose-language")?.scrollIntoView({ behavior: "smooth" })}>
-                <Play size={18} fill="currentColor" aria-hidden="true" /> Start translating
-              </button>
-              <a className="button secondary" href="/how-it-works"><ShieldCheck size={19} /> See how it works</a>
+            <div className="hero-copy-block">
+              <p className="eyebrow">Private communication, in motion</p>
+              <h1 id="hero-title">Sign freely.<br /><span>Be understood.</span></h1>
+              <p className="hero-copy">
+                A calmer way to connect. SignRelay turns expressive signing into clear text and speech, with your camera processed locally in the browser.
+              </p>
+              <div className="hero-actions">
+                <button className="button primary" onClick={() => document.getElementById("choose-language")?.scrollIntoView({ behavior: "smooth" })}>
+                  <Play size={18} fill="currentColor" aria-hidden="true" /> Start translating
+                </button>
+                <a className="button secondary" href="/how-it-works"><ShieldCheck size={19} /> How it works</a>
+              </div>
+              <div className="hero-trust" aria-label="SignRelay privacy and language support">
+                <span><ShieldCheck size={16} /> On-device processing</span>
+                <span>ASL · ISL · CSL</span>
+              </div>
+            </div>
+
+            <div className="hero-preview" aria-label="Preview of the SignRelay translation workspace">
+              <div className="preview-topbar"><span className="preview-live"><i /> Live translation</span><span>ASL</span></div>
+              <div className="preview-camera">
+                <div className="preview-orbit orbit-one" />
+                <div className="preview-orbit orbit-two" />
+                <div className="preview-hand" aria-hidden="true"><Hand size={72} strokeWidth={1.35} /></div>
+                <span className="preview-frame-label">Hands detected</span>
+              </div>
+              <div className="preview-output">
+                <span className="preview-caption">CURRENT SEQUENCE</span>
+                <strong>Nice to meet you.</strong>
+                <div><span>98% confidence</span><Volume2 size={15} /></div>
+              </div>
             </div>
           </div>
+        </section>
+
+        <section className="feature-ribbon" aria-label="SignRelay features">
+          <div><span className="feature-icon"><Sparkles size={18} /></span><p><strong>Real-time relay</strong>Continuous movement, not isolated gestures.</p></div>
+          <div><span className="feature-icon"><Volume2 size={18} /></span><p><strong>Text and speech</strong>Make every confirmed phrase audible.</p></div>
+          <div><span className="feature-icon"><ShieldCheck size={18} /></span><p><strong>Private by design</strong>Your video stays on your device.</p></div>
         </section>
 
         <section className="language-section" id="choose-language" aria-labelledby="language-title">
