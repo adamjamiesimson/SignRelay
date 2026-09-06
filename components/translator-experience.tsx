@@ -811,7 +811,6 @@ export function TranslatorExperience() {
       <main>
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-inner">
-            <p className="eyebrow">Private sign recognition</p>
             <h1 id="hero-title">Sign freely.<br /><span>Be understood.</span></h1>
             <p className="hero-copy">Turning signs into conversation, privately and directly in your browser.</p>
             <div className="hero-actions">
@@ -825,12 +824,6 @@ export function TranslatorExperience() {
           <div className="hero-visual" aria-hidden="true">
             <div className="hero-arc" />
             <div className="hero-mark-wrap"><img src="/signrelay-mark.png" width="560" height="560" alt="" /></div>
-            <div className="hero-signal-card">
-              <span>Designed for conversation</span>
-              <strong>PRIVATE.<br />PRESENT.</strong>
-              <small>On-device by default</small>
-            </div>
-            <div className="hero-caption">Signal found · ASL</div>
           </div>
         </section>
 
