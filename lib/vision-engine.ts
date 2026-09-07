@@ -23,7 +23,7 @@ type EngineParts = {
 
 export class VisionEngine {
   private parts: EngineParts;
-  private frameIndex = 0;
+  private lastAuxTimestamp = -Infinity;
   private lastFace: Point[] = [];
   private lastPose: Point[] = [];
 
@@ -37,7 +37,7 @@ export class VisionEngine {
     const files = await vision.FilesetResolver.forVisionTasks(WASM_PATH);
 
     onProgress?.("Loading hand, face and pose models");
-    const [gesture, face, pose] = await Promise.all([
+    const results = await Promise.allSettled([
       vision.GestureRecognizer.createFromOptions(files, {
         baseOptions: { modelAssetPath: GESTURE_MODEL, delegate: "CPU" },
         runningMode: "VIDEO",
@@ -54,7 +54,7 @@ export class VisionEngine {
         minFaceDetectionConfidence: 0.55,
         minFacePresenceConfidence: 0.55,
         minTrackingConfidence: 0.55,
-        outputFaceBlendshapes: true,
+        outputFaceBlendshapes: false,
       }),
       vision.PoseLandmarker.createFromOptions(files, {
         baseOptions: { modelAssetPath: POSE_MODEL, delegate: "CPU" },
@@ -66,19 +66,28 @@ export class VisionEngine {
       }),
     ]);
 
-    return new VisionEngine({ gesture, face, pose });
+    const failed = results.find(result => result.status === "rejected");
+    if (failed) {
+      for (const result of results) if (result.status === "fulfilled") result.value.close();
+      throw failed.reason;
+    }
+    const [gesture, face, pose] = results;
+    if (gesture.status !== "fulfilled" || face.status !== "fulfilled" || pose.status !== "fulfilled") {
+      throw new Error("Vision models could not start");
+    }
+    return new VisionEngine({ gesture: gesture.value, face: face.value, pose: pose.value });
   }
 
   process(video: HTMLVideoElement, timestamp: number): VisionFrame {
     const handResult = this.parts.gesture.recognizeForVideo(video, timestamp);
 
-    if (this.frameIndex % 2 === 0) {
+    if (timestamp - this.lastAuxTimestamp >= 150) {
       const faceResult = this.parts.face.detectForVideo(video, timestamp);
       const poseResult = this.parts.pose.detectForVideo(video, timestamp);
       this.lastFace = pickPoints(faceResult.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
       this.lastPose = pickPoints(poseResult.landmarks[0] ?? [], POSE_CUE_INDICES);
+      this.lastAuxTimestamp = timestamp;
     }
-    this.frameIndex += 1;
 
     return {
       timestamp,

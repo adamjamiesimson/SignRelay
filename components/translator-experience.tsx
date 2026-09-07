@@ -88,6 +88,7 @@ export function TranslatorExperience() {
   const [candidate, setCandidate] = useState<string | null>(null);
   const [confidence, setConfidence] = useState(0);
   const [bufferSize, setBufferSize] = useState(0);
+  const [recognitionFeedback, setRecognitionFeedback] = useState("");
   const [entries, setEntries] = useState<TranscriptEntry[]>([]);
   const [history, setHistory] = useState<TranscriptSession[]>([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -108,6 +109,10 @@ export function TranslatorExperience() {
   const workerRef = useRef<Worker | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
+  const lastVideoTimeRef = useRef(-1);
+  const cameraGenerationRef = useRef(0);
+  const cameraPendingRef = useRef(false);
+  const captureGenerationRef = useRef(0);
   const frameLoopRef = useRef<() => void>(() => {});
   const settingsRef = useRef(settings);
   const sessionStartedRef = useRef(0);
@@ -186,6 +191,7 @@ export function TranslatorExperience() {
 
   function selectLanguage(language: LanguageId) {
     if (language === selected) return;
+    captureGenerationRef.current++;
     setSelected(language);
     const personalSign = createCustomVocabularyEntry("Personal sign")!;
     setCalibrationWord(personalSign);
@@ -217,6 +223,7 @@ export function TranslatorExperience() {
       setCandidate(message.candidate);
       setConfidence(message.confidence);
       setBufferSize(message.bufferSize);
+      setRecognitionFeedback(message.feedback ?? "");
       return;
     }
 
@@ -239,6 +246,7 @@ export function TranslatorExperience() {
     if (step !== "workspace") return;
     const worker = new Worker("/workers/recognition.worker.js", { type: "module" });
     worker.onmessage = (event: MessageEvent<WorkerMessage>) => handleWorkerMessage(event.data);
+    worker.onerror = () => setRecognitionFeedback("Recognition stopped unexpectedly. Reload this page to restart it.");
     worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current });
     workerRef.current = worker;
     return () => {
@@ -248,6 +256,9 @@ export function TranslatorExperience() {
   }, [step, selected, handleWorkerMessage]);
 
   const stopCamera = useCallback(() => {
+    cameraGenerationRef.current++;
+    captureGenerationRef.current++;
+    cameraPendingRef.current = false;
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     animationRef.current = null;
     engineRef.current?.close();
@@ -262,12 +273,16 @@ export function TranslatorExperience() {
     setCandidate(null);
     setConfidence(0);
     setBufferSize(0);
+    setRecognitionFeedback("");
+    lastVideoTimeRef.current = -1;
     captureStateRef.current = "idle";
     captureFramesRef.current = [];
     setCalibrationState("idle");
   }, []);
 
   useEffect(() => () => {
+    cameraGenerationRef.current++;
+    captureGenerationRef.current++;
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     engineRef.current?.close();
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -324,10 +339,11 @@ export function TranslatorExperience() {
     }
 
     const now = performance.now();
-    if (now - lastFrameRef.current >= 105) {
+    if (now - lastFrameRef.current >= 50 && video.currentTime !== lastVideoTimeRef.current) {
+      lastFrameRef.current = now;
+      lastVideoTimeRef.current = video.currentTime;
       try {
         const frame = engine.process(video, now);
-        lastFrameRef.current = now;
         const nextDetection = {
           person: frame.face.length > 0 || frame.pose.length > 0,
           hands: frame.hands.length > 0,
@@ -350,11 +366,14 @@ export function TranslatorExperience() {
   }, [runFrameLoop]);
 
   const requestCamera = useCallback(async () => {
+    if (cameraPendingRef.current || engineRef.current) return;
     if (!navigator.mediaDevices?.getUserMedia) {
       setCameraState("error");
       setCameraMessage("This browser does not expose camera access.");
       return;
     }
+    const generation = ++cameraGenerationRef.current;
+    cameraPendingRef.current = true;
     setCameraState("requesting");
     setCameraMessage("Waiting for camera permission");
     try {
@@ -362,18 +381,27 @@ export function TranslatorExperience() {
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
+      if (generation !== cameraGenerationRef.current) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
       streamRef.current = stream;
       if (!videoRef.current) throw new Error("Camera view was not ready");
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
+      if (generation !== cameraGenerationRef.current) return;
 
       setCameraState("loading");
-      const engine = await VisionEngine.create(setCameraMessage);
+      const engine = await VisionEngine.create(message => {
+        if (generation === cameraGenerationRef.current) setCameraMessage(message);
+      });
+      if (generation !== cameraGenerationRef.current) { engine.close(); return; }
       engineRef.current = engine;
       setCameraState("active");
       setCameraMessage("Camera and vision models active");
       animationRef.current = requestAnimationFrame(frameLoopRef.current);
     } catch (error) {
+      if (generation !== cameraGenerationRef.current) return;
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
       const permissionDenied = error instanceof DOMException && (error.name === "NotAllowedError" || error.name === "PermissionDeniedError");
@@ -381,6 +409,8 @@ export function TranslatorExperience() {
       setCameraMessage(permissionDenied
         ? "Camera permission was denied. SignRelay cannot analyse video without it."
         : "Camera or vision models could not be started. Check your connection and try again.");
+    } finally {
+      if (generation === cameraGenerationRef.current) cameraPendingRef.current = false;
     }
   }, []);
 
@@ -393,7 +423,9 @@ export function TranslatorExperience() {
 
   const recordCalibration = useCallback(async () => {
     if (captureStateRef.current !== "idle" && captureStateRef.current !== "saved" && captureStateRef.current !== "error") return;
+    const captureGeneration = ++captureGenerationRef.current;
     if (!engineRef.current) await requestCamera();
+    if (captureGeneration !== captureGenerationRef.current) return;
     if (!engineRef.current) {
       setCalibrationState("error");
       setCalibrationMessage("Start the camera before recording a personal sign example.");
@@ -406,7 +438,7 @@ export function TranslatorExperience() {
     for (let value = 3; value >= 1; value -= 1) {
       setCountdown(value);
       await wait(700);
-      if (!engineRef.current) return;
+      if (!engineRef.current || captureGeneration !== captureGenerationRef.current) return;
     }
 
     captureFramesRef.current = [];
@@ -414,6 +446,7 @@ export function TranslatorExperience() {
     setCalibrationState("recording");
     setCalibrationMessage(`Signing ${calibrationWord.text} — complete the full movement.`);
     await wait(3000);
+    if (!engineRef.current || captureGeneration !== captureGenerationRef.current) return;
 
     captureStateRef.current = "saving";
     setCalibrationState("saving");
@@ -439,10 +472,12 @@ export function TranslatorExperience() {
       await saveCalibrationTemplate(template);
       const updated = await loadCalibrationTemplates();
       setCalibrationTemplates(updated);
+      if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "saved";
       setCalibrationState("saved");
       setCalibrationMessage(`${calibrationWord.text} is now active for ${model.shortName}. Record two or three examples for better consistency.`);
     } catch {
+      if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "error";
       setCalibrationState("error");
       setCalibrationMessage("This browser could not save the example. Check private-browsing storage settings and try again.");
@@ -457,6 +492,7 @@ export function TranslatorExperience() {
       return;
     }
 
+    captureGenerationRef.current++;
     setCalibrationWord(customWord);
     setCustomWordInput("");
     captureStateRef.current = "idle";
@@ -465,6 +501,7 @@ export function TranslatorExperience() {
   };
 
   const removeCalibration = useCallback(async (gloss: string) => {
+    captureGenerationRef.current++;
     await deleteCalibrationGloss(gloss, selected);
     setCalibrationTemplates(await loadCalibrationTemplates());
     captureStateRef.current = "idle";
@@ -604,11 +641,12 @@ export function TranslatorExperience() {
                   <span className="candidate-label">Current sequence</span>
                   <strong>{candidate ? candidate : bufferSize < 10 ? "Building movement context…" : "No confident match"}</strong>
                 </div>
-                <div className="confidence-ring" style={{ "--confidence": `${Math.round(confidence * 100)}%` } as React.CSSProperties}>
+                <div className="confidence-ring" title="Match score, not a measured probability of correct translation" style={{ "--confidence": `${Math.round(confidence * 100)}%` } as React.CSSProperties}>
                   <span>{Math.round(confidence * 100)}%</span>
                 </div>
               </div>
 
+              {recognitionFeedback && <p className="calibration-message" role="status">{recognitionFeedback}</p>}
               <div className="transcript-body" aria-live="polite" aria-label="Confirmed translation">
                 {!entries.length ? (
                   <div className="transcript-empty">
@@ -775,6 +813,7 @@ export function TranslatorExperience() {
                     key={word.gloss}
                     className={`${calibrationWord.gloss === word.gloss ? "selected" : ""} ${exampleCount ? "trained" : ""}`}
                     onClick={() => {
+                      captureGenerationRef.current++;
                       setCalibrationWord(word);
                       captureStateRef.current = "idle";
                       setCalibrationState("idle");

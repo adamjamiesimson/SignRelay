@@ -128,14 +128,17 @@ function loadModel() {
       throw new Error("ASL-2000 vocabulary does not match the model");
     }
     return materialiseTgcnModel(manifest, binary, labels);
+  }).catch(error => {
+    modelPromise = null;
+    throw error;
   });
   return modelPromise;
 }
 
 export async function recognizeAsl1000(sequence: VisionFrame[]): Promise<Asl1000Prediction | null> {
+  if (sequence.length < 6) return null;
   const model = await loadModel();
-  if (sequence.length < 24) return null;
-  const input = prepareTgcnInput(sequence.slice(-40), model.manifest.sequenceLength);
+  const input = prepareTgcnInput(sequence, model.manifest.sequenceLength);
   const logits = runMaterialisedTgcn(model, input);
   const probabilities = softmax(logits);
   const [best, runnerUp] = topTwo(probabilities);

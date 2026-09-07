@@ -10,6 +10,7 @@ vi.mock("../lib/bsl1064-runtime", () => ({ recognizeBsl1064: mocks.bsl }));
 vi.mock("../lib/isl263-runtime", () => ({ recognizeIsl263: mocks.isl }));
 vi.mock("../lib/lse300-runtime", () => ({ recognizeLse300: mocks.lse }));
 vi.mock("../lib/asl100-runtime", () => ({ hasAsl100CompletedSignMotion: mocks.motion }));
+vi.mock("../lib/sign-motion", () => ({ analyzeSignMotion: (sequence: VisionFrame[]) => ({ ready: mocks.motion(), sequence, reason: "idle" }) }));
 vi.mock("../lib/personalized-recognition", () => ({
   recognizePersonalTemplate: mocks.personal,
   templatesForLanguage: (templates: unknown[]) => templates,
@@ -92,7 +93,7 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
   it.each(["asl", "bsl", "isl"] as const)("confirms two fresh matching %s predictions", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks[language].mockResolvedValue(prediction);
-    await frames(34);
+    await frames(language === "asl" ? 14 : 34);
     expect(confirmations()).toHaveLength(1);
     expect(confirmations()[0]).toMatchObject({ gloss: "BOOK", text: "Book" });
     // Confirmation must consume the prediction; holding its cached output
@@ -137,5 +138,15 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     await frames(2);
     expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: null });
     expect(confirmations()).toHaveLength(0);
+  });
+  it("backs off a failed ASL load and resumes after the network recovers", async () => {
+    mocks.asl.mockRejectedValue(new Error("Network unavailable"));
+    await frames(6);
+    await frames(40);
+    expect(mocks.asl).toHaveBeenCalledOnce();
+    expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ feedback: expect.stringContaining("could not run") });
+    mocks.asl.mockResolvedValue(prediction);
+    await frames(20);
+    expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
   });
 });

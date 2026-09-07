@@ -25,6 +25,7 @@ export type WorkerAnalysis = {
   candidate: string | null;
   confidence: number;
   bufferSize: number;
+  feedback?: string;
 };
 
 export type WorkerConfirmation = {

@@ -115,7 +115,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     inputFormat: "50 samples × 55 two-dimensional upper-body and hand landmarks",
     sequenceLength: 50,
     confidenceThreshold: 0.62,
-    decoder: "Quantised on-device WLASL2000 Pose-TGCN; personal templates and four starter rules take priority",
+    decoder: "Quantised on-device WLASL2000 Pose-TGCN; personal templates and seven common-sign rules take priority",
     postProcessing: "Cooldown, consensus smoothing and duplicate suppression",
     version: "0.6.0-wlasl2000-pose-tgcn",
     dataset: "Official WLASL2000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",

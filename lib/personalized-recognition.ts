@@ -1,4 +1,5 @@
 import type { CalibrationTemplate, Point, VisionFrame } from "./vision-types";
+import { validHand } from "./asl-starter-recognition";
 
 export const CALIBRATION_SEQUENCE_LENGTH = 24;
 
@@ -14,7 +15,7 @@ export function templatesForLanguage(
 
 const ZERO_HAND = new Array(66).fill(0);
 const ZERO_FACE = new Array(41).fill(0);
-const ZERO_POSE = new Array(35).fill(0);
+const ZERO_POSE = new Array(67).fill(0);
 
 export function prepareCalibrationSequence(frames: VisionFrame[]) {
   if (!frames.length) return [];
@@ -26,20 +27,27 @@ export function recognizePersonalTemplate(
   frames: VisionFrame[],
   templates: CalibrationTemplate[],
 ) {
-  if (!templates.length || frames.length < 18) return null;
-  const recent = frames.slice(-CALIBRATION_SEQUENCE_LENGTH);
-  if (recent.filter((frame) => frame.hands.length > 0).length < 15) return null;
-
-  const candidate = prepareCalibrationSequence(recent);
-  let best: { template: CalibrationTemplate; distance: number } | null = null;
-
-  for (const template of templates) {
-    if (template.frames.length !== CALIBRATION_SEQUENCE_LENGTH) continue;
-    const distance = sequenceDistance(candidate, template.frames);
-    if (!best || distance < best.distance) best = { template, distance };
+  const now = frames.at(-1)?.timestamp;
+  if (!templates.length || frames.length < 8 || now === undefined || !frames.at(-1)?.hands.some(validHand)) return null;
+  const matches = new Map<string, { template: CalibrationTemplate; distance: number }>();
+  let previousLength = 0;
+  for (const duration of [650, 1200, 2000, 3000, 4200]) {
+    const recent = frames.filter(frame => now - frame.timestamp <= duration);
+    if (recent.length === previousLength) continue;
+    previousLength = recent.length;
+    if (recent.length < 8 || recent.filter(frame => frame.hands.some(validHand)).length / recent.length < 0.7
+      || recent.some((frame, index) => index > 0 && (frame.timestamp <= recent[index - 1].timestamp
+        || frame.timestamp - recent[index - 1].timestamp > 250))) continue;
+    const candidate = prepareCalibrationSequence(recent);
+    for (const template of templates) {
+      if (template.frames.length !== CALIBRATION_SEQUENCE_LENGTH) continue;
+      const distance = sequenceDistance(candidate, template.frames);
+      if (distance < (matches.get(template.gloss)?.distance ?? Infinity)) matches.set(template.gloss, { template, distance });
+    }
   }
-
-  if (!best || best.distance > 0.62) return null;
+  const [best, rival] = [...matches.values()].sort((a, b) => a.distance - b.distance);
+  // Ambiguous recordings of different words must not turn into an arbitrary winner.
+  if (!best || best.distance > 0.5 || (rival && rival.distance - best.distance < 0.06)) return null;
   const confidence = clamp(0.965 - best.distance * 0.24, 0, 0.96);
   return {
     label: best.template.gloss,
@@ -50,6 +58,12 @@ export function recognizePersonalTemplate(
 
 export function sequenceDistance(a: number[][], b: number[][]) {
   if (!a.length || !b.length) return Number.POSITIVE_INFINITY;
+  // Previous versions used 17 pose points (208 features). Keep those saved examples readable.
+  const canonical = (sequence: number[][]) => sequence.map(row => row.length === 208 ? [...row, ...new Array(32).fill(0)] : row);
+  a = canonical(a);
+  b = canonical(b);
+  const length = a[0].length;
+  if (!length || [...a, ...b].some(row => row.length !== length || row.some(value => !Number.isFinite(value)))) return Infinity;
   const rows = a.length + 1;
   const cols = b.length + 1;
   const matrix = Array.from({ length: rows }, () => new Float64Array(cols).fill(Number.POSITIVE_INFINITY));
@@ -111,22 +125,29 @@ function handFeatures(
 
 function landmarkFeatures(points: Point[], anchor: Point, scale: number, empty: number[]) {
   if (!points.length) return empty;
-  const values = points.flatMap((point) => [
+  const values = points.slice(0, (empty.length - 1) / 2).flatMap((point) => [
     clamp((point.x - anchor.x) / scale, -4, 4),
     clamp((point.y - anchor.y) / scale, -4, 4),
   ]);
+  while (values.length < empty.length - 1) values.push(0);
   return [1, ...values];
 }
 
 function featureDistance(a: number[], b: number[]) {
-  const length = Math.min(a.length, b.length);
+  const length = a.length;
   if (!length) return Number.POSITIVE_INFINITY;
   let total = 0;
+  let compared = 0;
   for (let index = 0; index < length; index += 1) {
+    if (length === 240) {
+      const group = index < 66 ? 0 : index < 132 ? 66 : index < 173 ? 132 : 173;
+      if (group >= 132 ? (!a[group] || !b[group]) : (!a[group] && !b[group])) continue;
+    }
     const delta = a[index] - b[index];
     total += Math.min(delta * delta, 4);
+    compared++;
   }
-  return Math.sqrt(total / length);
+  return compared ? Math.sqrt(total / compared) : Infinity;
 }
 
 function resample(sequence: number[][], targetLength: number) {

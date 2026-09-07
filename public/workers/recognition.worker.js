@@ -21,6 +21,156 @@ function shouldConfirm({
   return !sameLabel || elapsedSinceLast > cooldown;
 }
 
+// lib/asl-starter-recognition.ts
+function validHand(hand4) {
+  return !!hand4 && hand4.landmarks.length === 21 && hand4.landmarks.every((point3) => [point3.x, point3.y, point3.z].every(Number.isFinite));
+}
+var distance2 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+var handScale = (hand4) => Math.max(
+  distance2(hand4.landmarks[0], hand4.landmarks[9]),
+  distance2(hand4.landmarks[5], hand4.landmarks[17]),
+  0.015
+);
+function bodyReference(frame, hand4) {
+  const shoulders = [frame.pose[11], frame.pose[12]];
+  const tracked = shoulders.every((point3) => point3 && (point3.visibility ?? 1) > 0.4 && [point3.x, point3.y].every(Number.isFinite));
+  return {
+    anchor: tracked ? {
+      x: (shoulders[0].x + shoulders[1].x) / 2,
+      y: (shoulders[0].y + shoulders[1].y) / 2,
+      z: 0
+    } : { x: 0.5, y: 0.5, z: 0 },
+    scale: tracked ? Math.max(distance2(shoulders[0], shoulders[1]), 0.08) : handScale(hand4) * 4,
+    tracked
+  };
+}
+function extended(hand4, tip) {
+  const p = hand4.landmarks;
+  return distance2(p[tip], p[tip - 3]) > distance2(p[tip - 2], p[tip - 3]) * 1.55 && distance2(p[tip], p[0]) > distance2(p[tip - 2], p[0]) * 1.08;
+}
+function samplesFor(frames2, side) {
+  const samples = [];
+  const bodySamples = frames2.flatMap((frame) => {
+    const hand4 = frame.hands.find((hand5) => hand5.handedness === side && validHand(hand5));
+    if (!hand4) return [];
+    const reference = bodyReference(frame, hand4);
+    return reference.tracked ? [{ time: frame.timestamp, reference }] : [];
+  });
+  for (const frame of frames2) {
+    const hand4 = frame.hands.find((hand5) => hand5.handedness === side && validHand(hand5));
+    if (!hand4) continue;
+    const currentReference = bodyReference(frame, hand4);
+    const nearest = bodySamples.reduce((best, sample) => !best || Math.abs(sample.time - frame.timestamp) < Math.abs(best.time - frame.timestamp) ? sample : best, void 0);
+    const reference = currentReference.tracked ? currentReference : nearest?.reference ?? currentReference;
+    const point3 = (p) => ({
+      x: (p.x - reference.anchor.x) / reference.scale,
+      y: (p.y - reference.anchor.y) / reference.scale,
+      z: p.z
+    });
+    const nose = frame.pose[0] ?? frame.face[1];
+    const mouth = frame.face[3] ?? frame.pose[9] ?? nose;
+    samples.push({
+      hand: hand4,
+      time: frame.timestamp,
+      scale: reference.scale,
+      palm: handScale(hand4),
+      wrist: point3(hand4.landmarks[0]),
+      knuckle: point3(hand4.landmarks[9]),
+      tip: point3(hand4.landmarks[8]),
+      nose: nose && point3(nose),
+      mouth: mouth && point3(mouth),
+      open: [8, 12, 16, 20].filter((tip) => extended(hand4, tip)).length,
+      indexOpen: extended(hand4, 8),
+      middleOpen: extended(hand4, 12)
+    });
+  }
+  if (samples.length < 5 || samples.length / frames2.length < 0.6 || samples.at(-1)?.time !== frames2.at(-1)?.timestamp || samples.at(-1).time - samples[0].time < 160 || samples.some((sample, index) => index > 0 && (sample.time <= samples[index - 1].time || sample.time - samples[index - 1].time > 240))) return [];
+  return samples;
+}
+function recognizeAslStarter(sequence) {
+  const now = sequence.at(-1)?.timestamp;
+  if (now === void 0) return null;
+  for (const duration of [650, 1100, 1700, 2600]) {
+    const recent = sequence.filter((frame) => now - frame.timestamp <= duration);
+    for (const side of ["Right", "Left", "Unknown"]) {
+      const samples = samplesFor(recent, side);
+      if (!samples.length) continue;
+      const result = recognizeSamples(samples);
+      if (result) return result;
+    }
+  }
+  return null;
+}
+var span = (values) => Math.max(...values) - Math.min(...values);
+var ratio = (samples, predicate) => samples.filter(predicate).length / samples.length;
+var prediction = (label, text) => ({ label, text, confidence: 0.86 });
+function recognizeSamples(samples) {
+  const first = samples[0];
+  const last = samples.at(-1);
+  const mostlyOpen = ratio(samples, (sample) => sample.open >= 3) >= 0.75;
+  const mostlyFist = ratio(samples, (sample) => sample.open <= 1) >= 0.8;
+  const xs2 = samples.map((sample) => sample.wrist.x);
+  const ys2 = samples.map((sample) => sample.wrist.y);
+  const xRange = span(xs2);
+  const yRange = span(ys2);
+  const gaps = (sample) => [8, 12].map((index) => distance2(sample.hand.landmarks[index], sample.hand.landmarks[4]) / sample.palm);
+  const endGaps = gaps(last);
+  const opening = samples.slice(0, -2).find((sample) => sample.indexOpen && sample.middleOpen && !extended(sample.hand, 16) && !extended(sample.hand, 20) && gaps(sample).every((gap, index) => gap - endGaps[index] > 0.5));
+  if (opening && endGaps.every((gap) => gap < 0.8) && ratio(samples, (sample) => !extended(sample.hand, 16) && !extended(sample.hand, 20)) >= 0.8) {
+    return prediction("NO", "No");
+  }
+  const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
+  const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
+  if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12 && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth) > 0.25) {
+    return prediction("THANK YOU", "Thank you");
+  }
+  const raised = ratio(samples, (sample) => !!sample.nose && sample.wrist.y < sample.nose.y + 0.55) >= 0.7;
+  const startsNearHead = first.nose && distance2(first.tip, first.nose) < 0.8;
+  if (mostlyOpen && raised && xRange > 0.25 && yRange < Math.max(0.35, xRange * 0.75) && (directionChanges(xs2, 0.025) >= 1 || startsNearHead)) return prediction("HELLO", "Hello");
+  const atChest = ratio(samples, (sample) => sample.wrist.y > -0.1 && sample.wrist.y < 1.05 && Math.abs(sample.wrist.x) < 0.8) >= 0.8;
+  if (atChest && xRange > 0.16 && yRange > 0.16 && circularMotion(xs2, ys2)) {
+    if (mostlyOpen) return prediction("PLEASE", "Please");
+    if (mostlyFist) return prediction("SORRY", "Sorry");
+  }
+  const knuckleYs = samples.map((sample) => sample.knuckle.y);
+  if (mostlyFist && span(knuckleYs) > 0.16 && span(knuckleYs) > xRange * 1.5 && directionChanges(knuckleYs, 0.025) >= 1) return prediction("YES", "Yes");
+  if (last.time - first.time >= 280 && ratio(
+    samples,
+    (sample) => sample.hand.gesture === "ILoveYou" && sample.hand.gestureScore >= 0.65
+  ) >= 0.8) {
+    return prediction("I LOVE YOU", "I love you");
+  }
+  return null;
+}
+function directionChanges(values, epsilon) {
+  let previous = 0;
+  let anchor = values[0];
+  let changes = 0;
+  for (const value of values.slice(1)) {
+    if (Math.abs(value - anchor) < epsilon) continue;
+    const direction = Math.sign(value - anchor);
+    if (previous && previous !== direction) changes++;
+    previous = direction;
+    anchor = value;
+  }
+  return changes;
+}
+function circularMotion(xs2, ys2) {
+  const cx = (Math.max(...xs2) + Math.min(...xs2)) / 2;
+  const cy = (Math.max(...ys2) + Math.min(...ys2)) / 2;
+  const angles = xs2.map((x, index) => Math.atan2(ys2[index] - cy, x - cx));
+  let turn = 0;
+  let travel = 0;
+  for (let index = 1; index < angles.length; index++) {
+    let delta = angles[index] - angles[index - 1];
+    if (delta > Math.PI) delta -= 2 * Math.PI;
+    if (delta < -Math.PI) delta += 2 * Math.PI;
+    turn += delta;
+    travel += Math.abs(delta);
+  }
+  return Math.abs(turn) > 4.2 && Math.abs(turn) / Math.max(travel, 0.01) > 0.8;
+}
+
 // lib/personalized-recognition.ts
 var CALIBRATION_SEQUENCE_LENGTH = 24;
 function templatesForLanguage(templates, language) {
@@ -28,24 +178,31 @@ function templatesForLanguage(templates, language) {
 }
 var ZERO_HAND = new Array(66).fill(0);
 var ZERO_FACE = new Array(41).fill(0);
-var ZERO_POSE = new Array(35).fill(0);
+var ZERO_POSE = new Array(67).fill(0);
 function prepareCalibrationSequence(frames2) {
   if (!frames2.length) return [];
   const features = frames2.map(frameToFeatures);
   return resample(features, CALIBRATION_SEQUENCE_LENGTH);
 }
 function recognizePersonalTemplate(frames2, templates) {
-  if (!templates.length || frames2.length < 18) return null;
-  const recent = frames2.slice(-CALIBRATION_SEQUENCE_LENGTH);
-  if (recent.filter((frame) => frame.hands.length > 0).length < 15) return null;
-  const candidate = prepareCalibrationSequence(recent);
-  let best = null;
-  for (const template of templates) {
-    if (template.frames.length !== CALIBRATION_SEQUENCE_LENGTH) continue;
-    const distance4 = sequenceDistance(candidate, template.frames);
-    if (!best || distance4 < best.distance) best = { template, distance: distance4 };
+  const now = frames2.at(-1)?.timestamp;
+  if (!templates.length || frames2.length < 8 || now === void 0 || !frames2.at(-1)?.hands.some(validHand)) return null;
+  const matches = /* @__PURE__ */ new Map();
+  let previousLength = 0;
+  for (const duration of [650, 1200, 2e3, 3e3, 4200]) {
+    const recent = frames2.filter((frame) => now - frame.timestamp <= duration);
+    if (recent.length === previousLength) continue;
+    previousLength = recent.length;
+    if (recent.length < 8 || recent.filter((frame) => frame.hands.some(validHand)).length / recent.length < 0.7 || recent.some((frame, index) => index > 0 && (frame.timestamp <= recent[index - 1].timestamp || frame.timestamp - recent[index - 1].timestamp > 250))) continue;
+    const candidate = prepareCalibrationSequence(recent);
+    for (const template of templates) {
+      if (template.frames.length !== CALIBRATION_SEQUENCE_LENGTH) continue;
+      const distance4 = sequenceDistance(candidate, template.frames);
+      if (distance4 < (matches.get(template.gloss)?.distance ?? Infinity)) matches.set(template.gloss, { template, distance: distance4 });
+    }
   }
-  if (!best || best.distance > 0.62) return null;
+  const [best, rival] = [...matches.values()].sort((a, b) => a.distance - b.distance);
+  if (!best || best.distance > 0.5 || rival && rival.distance - best.distance < 0.06) return null;
   const confidence = clamp(0.965 - best.distance * 0.24, 0, 0.96);
   return {
     label: best.template.gloss,
@@ -55,6 +212,11 @@ function recognizePersonalTemplate(frames2, templates) {
 }
 function sequenceDistance(a, b) {
   if (!a.length || !b.length) return Number.POSITIVE_INFINITY;
+  const canonical = (sequence) => sequence.map((row) => row.length === 208 ? [...row, ...new Array(32).fill(0)] : row);
+  a = canonical(a);
+  b = canonical(b);
+  const length = a[0].length;
+  if (!length || [...a, ...b].some((row) => row.length !== length || row.some((value) => !Number.isFinite(value)))) return Infinity;
   const rows = a.length + 1;
   const cols = b.length + 1;
   const matrix = Array.from({ length: rows }, () => new Float64Array(cols).fill(Number.POSITIVE_INFINITY));
@@ -85,11 +247,11 @@ function handFeatures(hand4, anchor, bodyScale) {
   if (!hand4?.landmarks.length) return ZERO_HAND;
   const wrist = hand4.landmarks[0];
   const palm = hand4.landmarks[9] ?? hand4.landmarks[5] ?? wrist;
-  const handScale = Math.max(distance(wrist, palm), 0.025);
+  const handScale2 = Math.max(distance(wrist, palm), 0.025);
   const local = hand4.landmarks.slice(0, 21).flatMap((point3) => [
-    clamp((point3.x - wrist.x) / handScale, -5, 5),
-    clamp((point3.y - wrist.y) / handScale, -5, 5),
-    clamp((point3.z - wrist.z) / handScale, -5, 5)
+    clamp((point3.x - wrist.x) / handScale2, -5, 5),
+    clamp((point3.y - wrist.y) / handScale2, -5, 5),
+    clamp((point3.z - wrist.z) / handScale2, -5, 5)
   ]);
   while (local.length < 63) local.push(0);
   return [
@@ -101,21 +263,28 @@ function handFeatures(hand4, anchor, bodyScale) {
 }
 function landmarkFeatures(points, anchor, scale, empty) {
   if (!points.length) return empty;
-  const values = points.flatMap((point3) => [
+  const values = points.slice(0, (empty.length - 1) / 2).flatMap((point3) => [
     clamp((point3.x - anchor.x) / scale, -4, 4),
     clamp((point3.y - anchor.y) / scale, -4, 4)
   ]);
+  while (values.length < empty.length - 1) values.push(0);
   return [1, ...values];
 }
 function featureDistance(a, b) {
-  const length = Math.min(a.length, b.length);
+  const length = a.length;
   if (!length) return Number.POSITIVE_INFINITY;
   let total = 0;
+  let compared = 0;
   for (let index = 0; index < length; index += 1) {
+    if (length === 240) {
+      const group = index < 66 ? 0 : index < 132 ? 66 : index < 173 ? 132 : 173;
+      if (group >= 132 ? !a[group] || !b[group] : !a[group] && !b[group]) continue;
+    }
     const delta = a[index] - b[index];
     total += Math.min(delta * delta, 4);
+    compared++;
   }
-  return Math.sqrt(total / length);
+  return compared ? Math.sqrt(total / compared) : Infinity;
 }
 function resample(sequence, targetLength) {
   if (sequence.length === targetLength) return sequence;
@@ -149,6 +318,64 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+// lib/sign-motion.ts
+function analyzeSignMotion(frames2) {
+  const end = frames2.at(-1);
+  const reject = (reason) => ({ ready: false, sequence: [], reason });
+  if (!end?.hands.some(validHand)) return reject("hands");
+  const recent = frames2.filter((frame) => end.timestamp - frame.timestamp <= 3600);
+  if (recent.length < 6) return reject("idle");
+  if (recent.some((frame, index) => index > 0 && (frame.timestamp <= recent[index - 1].timestamp || frame.timestamp - recent[index - 1].timestamp > 250))) return reject("hands");
+  let moving = false;
+  for (const side of ["Left", "Right", "Unknown"]) {
+    const samples = recent.flatMap((frame, index) => {
+      const hand4 = frame.hands.find((hand5) => hand5.handedness === side && validHand(hand5));
+      return hand4 ? [{ frame, hand: hand4, index }] : [];
+    });
+    if (samples.length < 6 || samples.length / recent.length < 0.65 || samples.at(-1)?.frame.timestamp !== end.timestamp) continue;
+    if (samples.some((sample, index) => index > 0 && sample.frame.timestamp - samples[index - 1].frame.timestamp > 240)) continue;
+    const tracked = samples.map((sample) => bodyReference(sample.frame, sample.hand)).filter((ref) => ref.tracked);
+    const scale = tracked.length ? tracked[Math.floor(tracked.length / 2)].scale : handScale(samples[0].hand) * 4;
+    const first = samples[0];
+    const travel = (a, b) => distance2(a.landmarks[0], b.landmarks[0]) / scale;
+    const excursion = samples.some((sample) => travel(first.hand, sample.hand) > 0.18 || shapeDistance(first.hand, sample.hand) > 0.5);
+    if (!excursion) continue;
+    let startIndex = -1;
+    let lastActive = 0;
+    for (let index = 1; index < samples.length; index++) {
+      const current = samples[index];
+      const before = samples.slice(0, index).findLast((sample) => current.frame.timestamp - sample.frame.timestamp >= 100) ?? first;
+      if (travel(before.hand, current.hand) > 0.035 || shapeDistance(before.hand, current.hand) > 0.14) {
+        if (startIndex < 0) startIndex = Math.max(0, before.index - 1);
+        const previous = samples[index - 1];
+        if (travel(previous.hand, current.hand) > 0.01 || shapeDistance(previous.hand, current.hand) > 0.05) {
+          lastActive = current.frame.timestamp;
+        }
+      }
+    }
+    if (startIndex < 0) continue;
+    const segment = recent.slice(startIndex);
+    const settledFor = end.timestamp - lastActive;
+    if (settledFor < 140) {
+      moving = true;
+      continue;
+    }
+    if (settledFor > 1e3 || segment.length < 6 || end.timestamp - segment[0].timestamp < 220) continue;
+    return { ready: true, sequence: segment, reason: "ready" };
+  }
+  return reject(moving ? "moving" : "idle");
+}
+function shapeDistance(a, b) {
+  const scales = [handScale(a), handScale(b)];
+  return Math.max(...[4, 8, 12, 16, 20].map((index) => {
+    const ax = (a.landmarks[index].x - a.landmarks[0].x) / scales[0];
+    const ay = (a.landmarks[index].y - a.landmarks[0].y) / scales[0];
+    const bx = (b.landmarks[index].x - b.landmarks[0].x) / scales[1];
+    const by = (b.landmarks[index].y - b.landmarks[0].y) / scales[1];
+    return Math.hypot(ax - bx, ay - by);
+  }));
+}
+
 // lib/asl100-runtime.ts
 function hasAsl100HandEvidence(sequence) {
   const recent = sequence.slice(-24);
@@ -161,7 +388,7 @@ function hasAsl100CompletedSignMotion(sequence) {
   if (wrists.length < 15) return false;
   const tail = wrists.slice(-7);
   const tailRange = Math.hypot(range(tail.map((point3) => point3.x)), range(tail.map((point3) => point3.y)));
-  const pathLength = wrists.slice(1).reduce((total, point3, index) => total + distance2(point3, wrists[index]), 0);
+  const pathLength = wrists.slice(1).reduce((total, point3, index) => total + distance3(point3, wrists[index]), 0);
   return pathLength >= 0.075 && tailRange <= 0.06;
 }
 function dominantTrackedWrists(sequence) {
@@ -169,7 +396,7 @@ function dominantTrackedWrists(sequence) {
   const right = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Right")?.landmarks[0]).filter((point3) => Boolean(point3));
   return right.length >= left.length ? right : left;
 }
-function distance2(a, b) {
+function distance3(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 function range(values) {
@@ -224,13 +451,16 @@ function loadModel() {
       throw new Error("ASL-2000 vocabulary does not match the model");
     }
     return materialiseTgcnModel(manifest, binary, labels);
+  }).catch((error) => {
+    modelPromise = null;
+    throw error;
   }));
   return modelPromise;
 }
 async function recognizeAsl1000(sequence) {
+  if (sequence.length < 6) return null;
   const model = await loadModel();
-  if (sequence.length < 24) return null;
-  const input = prepareTgcnInput(sequence.slice(-40), model.manifest.sequenceLength);
+  const input = prepareTgcnInput(sequence, model.manifest.sequenceLength);
   const logits = runMaterialisedTgcn(model, input);
   const probabilities = softmax(logits);
   const [best, runnerUp] = topTwo(probabilities);
@@ -12882,7 +13112,7 @@ var MODEL_ADAPTERS = {
     inputFormat: "50 samples \xD7 55 two-dimensional upper-body and hand landmarks",
     sequenceLength: 50,
     confidenceThreshold: 0.62,
-    decoder: "Quantised on-device WLASL2000 Pose-TGCN; personal templates and four starter rules take priority",
+    decoder: "Quantised on-device WLASL2000 Pose-TGCN; personal templates and seven common-sign rules take priority",
     postProcessing: "Cooldown, consensus smoothing and duplicate suppression",
     version: "0.6.0-wlasl2000-pose-tgcn",
     dataset: "Official WLASL2000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
@@ -12985,7 +13215,6 @@ var MODEL_ADAPTERS = {
 var LANGUAGE_LIST = Object.values(MODEL_ADAPTERS);
 
 // workers/recognition.worker.ts
-var MAX_FRAMES = 80;
 var CONFIDENCE_THRESHOLD = 0.62;
 var COOLDOWN_MS = 2600;
 var frames = [];
@@ -13004,6 +13233,10 @@ var predictionVersion = 0;
 var consumedPredictionVersion = 0;
 var receivedFrames = 0;
 var modelGeneration = 0;
+var modelProblem = false;
+var retryAfter = 0;
+var blockedStarter = null;
+var starterSeenAt = 0;
 function invalidatePrediction() {
   latestPrediction = null;
   if (candidateIsModel) {
@@ -13020,6 +13253,10 @@ function resetSession() {
   candidateLabel = null;
   candidateStreak = 0;
   candidateIsModel = false;
+  blockedStarter = null;
+  starterSeenAt = 0;
+  modelProblem = false;
+  retryAfter = 0;
 }
 self.onmessage = async (event) => {
   if (event.data.type === "templates") {
@@ -13035,41 +13272,54 @@ self.onmessage = async (event) => {
   const now = event.data.frame.timestamp;
   receivedFrames += 1;
   frames.push(event.data.frame);
-  while (frames.length > MAX_FRAMES) frames.shift();
-  if (!hasAsl100CompletedSignMotion(frames)) {
-    invalidatePrediction();
-  } else {
+  while (frames.length > (activeLanguage === "asl" ? 120 : 80)) frames.shift();
+  const motion = activeLanguage === "asl" ? analyzeSignMotion(frames) : {
+    ready: hasAsl100CompletedSignMotion(frames),
+    sequence: frames,
+    reason: "idle"
+  };
+  if (!motion.ready) invalidatePrediction();
+  else {
     if (latestPrediction && now - predictionTimestamp > MAX_PREDICTION_AGE_MS) invalidatePrediction();
     const language = activeLanguage;
     const classifier = language in classifiers ? classifiers[language] : null;
     const cadence = language === "isl" ? 8 : 6;
-    if (classifier && MODEL_ADAPTERS[language].status === "experimental" && frames.length >= 24 && receivedFrames % cadence === 0 && !pending.has(language)) {
+    if (classifier && MODEL_ADAPTERS[language].status === "experimental" && frames.length >= (language === "asl" ? 6 : 24) && receivedFrames % cadence === 0 && !pending.has(language) && now >= retryAfter) {
       pending.add(language);
       const generation = modelGeneration;
-      classifier([...frames]).then((prediction) => {
+      classifier([...motion.sequence]).then((prediction2) => {
         if (generation !== modelGeneration) return;
         if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS) return;
-        latestPrediction = prediction;
+        latestPrediction = prediction2;
         predictionTimestamp = now;
         predictionVersion += 1;
+        modelProblem = false;
       }).catch(() => {
-        if (generation === modelGeneration) invalidatePrediction();
+        if (generation !== modelGeneration) return;
+        invalidatePrediction();
+        modelProblem = true;
+        retryAfter = now + 5e3;
       }).finally(() => {
         pending.delete(language);
       });
     }
   }
-  const rawResult = recognize(frames);
+  const personal = recognizePersonalTemplate(frames, personalTemplates);
+  const direct = personal ?? (activeLanguage === "asl" ? recognizeAslStarter(frames) : null);
+  if (direct?.label === blockedStarter) starterSeenAt = now;
+  else if (now - starterSeenAt > 500) blockedStarter = null;
+  const rawResult = direct?.label === blockedStarter ? null : direct ?? latestPrediction;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
-  const analysis = {
+  const feedback = modelProblem ? activeLanguage === "asl" ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly\u2026" : "The research model could not run. Saved personal signs are still available. Reload this page to try the research model again." : activeLanguage !== "asl" ? void 0 : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically." : motion.reason === "moving" ? "Following your movement\u2026" : result ? "Checking your sign\u2026" : "Ready. Sign naturally, then pause briefly between words.";
+  self.postMessage({
     type: "analysis",
-    state: frames.length < 10 ? "listening" : result ? "processing" : "uncertain",
+    state: frames.length < 6 ? "listening" : result ? "processing" : "uncertain",
     candidate: result?.label ?? null,
     confidence: result?.confidence ?? 0,
-    bufferSize: frames.length
-  };
-  self.postMessage(analysis);
-  if (!result || !Number.isFinite(result.confidence) || result.confidence < CONFIDENCE_THRESHOLD) {
+    bufferSize: frames.length,
+    feedback
+  });
+  if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
     candidateLabel = null;
     candidateStreak = 0;
     return;
@@ -13100,107 +13350,16 @@ self.onmessage = async (event) => {
       timestamp: Date.now()
     });
     lastConfirmation = { label: result.label, time: now };
+    if (activeLanguage === "asl" && !candidateIsModel) {
+      blockedStarter = result.label;
+      starterSeenAt = now;
+    }
     invalidatePrediction();
     candidateStreak = 0;
-    frames.splice(0, Math.max(0, frames.length - 5));
+    if (activeLanguage === "asl") frames.length = 0;
+    else frames.splice(0, Math.max(0, frames.length - 5));
   }
 };
-function recognize(sequence) {
-  const personal = recognizePersonalTemplate(sequence, personalTemplates);
-  if (activeLanguage === "bsl" || activeLanguage === "isl" || activeLanguage === "lse") return personal ?? latestPrediction;
-  if (activeLanguage !== "asl") return personal;
-  return personal ?? recognizeILoveYou(sequence) ?? recognizeHello(sequence) ?? recognizeThankYou(sequence) ?? recognizeYes(sequence) ?? latestPrediction;
-}
-function recognizeILoveYou(sequence) {
-  const recent = sequence.slice(-10);
-  const matches = recent.flatMap((frame) => frame.hands).filter((hand4) => hand4.gesture === "ILoveYou" && hand4.gestureScore >= 0.62);
-  if (matches.length < 7) return null;
-  const average = matches.reduce((sum, hand4) => sum + hand4.gestureScore, 0) / matches.length;
-  return { label: "I LOVE YOU", text: "I love you", confidence: clamp2(0.84 + average * 0.13) };
-}
-function recognizeHello(sequence) {
-  const samples = dominantHandSamples(sequence.slice(-16));
-  if (samples.length < 12 || !isMostlyOpen(samples)) return null;
-  const wrists = samples.map((hand4) => hand4.landmarks[0]);
-  const xRange = range2(wrists.map((point3) => point3.x));
-  const yRange = range2(wrists.map((point3) => point3.y));
-  const facePresent = sequence.slice(-16).filter((frame) => frame.face.length > 0).length >= 8;
-  const nearHead = wrists.filter((point3) => point3.y < 0.48).length >= 8;
-  const directionChanges = countDirectionChanges(wrists.map((point3) => point3.x), 8e-3);
-  if (!facePresent || !nearHead || xRange < 0.11 || yRange > 0.15 || directionChanges < 1) return null;
-  return { label: "HELLO", text: "Hello", confidence: clamp2(0.76 + xRange * 0.75) };
-}
-function recognizeThankYou(sequence) {
-  const recent = sequence.slice(-18);
-  const samples = dominantHandSamples(recent);
-  if (samples.length < 13 || !isMostlyOpen(samples)) return null;
-  const tips = samples.map((hand4) => hand4.landmarks[8]);
-  const start = averagePoint2(tips.slice(0, 4));
-  const end = averagePoint2(tips.slice(-4));
-  const face = recent.find((frame) => frame.face.length)?.face;
-  if (!face?.length) return null;
-  const mouth = face[3] ?? face[0];
-  const startsNearMouth = distance3(start, mouth) < 0.2;
-  const movesDownAndOut = end.y - start.y > 0.075 && distance3(end, mouth) - distance3(start, mouth) > 0.085;
-  if (!startsNearMouth || !movesDownAndOut) return null;
-  return { label: "THANK YOU", text: "Thank you", confidence: clamp2(0.78 + (end.y - start.y) * 0.7) };
-}
-function recognizeYes(sequence) {
-  const samples = dominantHandSamples(sequence.slice(-22));
-  if (samples.length < 16 || !isMostlyFist(samples)) return null;
-  const wrists = samples.map((hand4) => hand4.landmarks[0]);
-  const yValues = wrists.map((point3) => point3.y);
-  const xRange = range2(wrists.map((point3) => point3.x));
-  const yRange = range2(yValues);
-  const directionChanges = countDirectionChanges(yValues, 8e-3);
-  if (yRange < 0.07 || xRange > 0.11 || directionChanges < 2) return null;
-  return { label: "YES", text: "Yes", confidence: clamp2(0.77 + yRange * 0.85 + directionChanges * 0.02) };
-}
-function dominantHandSamples(sequence) {
-  const right = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Right") ?? frame.hands[0]).filter(Boolean);
-  const left = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Left") ?? frame.hands[0]).filter(Boolean);
-  return right.length >= left.length ? right : left;
-}
-function extendedFingers(hand4) {
-  const tips = [8, 12, 16, 20];
-  const pips = [6, 10, 14, 18];
-  let count = 0;
-  for (let index = 0; index < tips.length; index += 1) {
-    const tip = hand4.landmarks[tips[index]];
-    const pip = hand4.landmarks[pips[index]];
-    if (tip && pip && distance3(tip, hand4.landmarks[0]) > distance3(pip, hand4.landmarks[0]) * 1.18) count += 1;
-  }
-  return count;
-}
-function isMostlyOpen(samples) {
-  return samples.filter((hand4) => extendedFingers(hand4) >= 3).length / samples.length >= 0.72;
-}
-function isMostlyFist(samples) {
-  return samples.filter((hand4) => extendedFingers(hand4) <= 1).length / samples.length >= 0.72;
-}
-function countDirectionChanges(values, epsilon) {
-  let previous = 0;
-  let changes = 0;
-  for (let index = 1; index < values.length; index += 1) {
-    const delta = values[index] - values[index - 1];
-    const direction = Math.abs(delta) < epsilon ? 0 : Math.sign(delta);
-    if (direction && previous && direction !== previous) changes += 1;
-    if (direction) previous = direction;
-  }
-  return changes;
-}
-function averagePoint2(points) {
-  return points.reduce((total, point3) => ({ x: total.x + point3.x / points.length, y: total.y + point3.y / points.length, z: total.z + point3.z / points.length }), { x: 0, y: 0, z: 0 });
-}
-function distance3(a, b) {
-  return Math.hypot(a.x - b.x, a.y - b.y);
-}
-function range2(values) {
-  return Math.max(...values) - Math.min(...values);
-}
-function clamp2(value) {
-  return Math.min(0.97, Math.max(0, value));
-}
 /*! Bundled license information:
 
 onnxruntime-web/dist/ort.bundle.min.mjs:
