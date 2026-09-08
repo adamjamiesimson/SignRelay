@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { prepareCalibrationSequence, recognizePersonalTemplate, sequenceDistance } from "../lib/personalized-recognition";
+import { calibrationFrames, prepareCalibrationSequence, recognizePersonalTemplate, sequenceDistance } from "../lib/personalized-recognition";
 import type { CalibrationTemplate } from "../lib/vision-types";
 import { makeSign } from "./fixtures/asl-motion";
 
@@ -14,6 +14,20 @@ describe("personal recordings", () => {
   });
   it("matches a faster repeat without a fixed frame-count window", () => {
     expect(recognizePersonalTemplate(makeSign("HELLO", { duration: 600, count: 13 }), [template()])?.label).toBe("HELLO");
+  });
+  it("records and recognizes a personal sign on a slow camera", () => {
+    const frames = makeSign("HELLO", { duration: 2400, count: 9 });
+    const captured = calibrationFrames(frames);
+    expect(captured).toHaveLength(9);
+    const saved = { ...template(), frames: prepareCalibrationSequence(captured) };
+    expect(recognizePersonalTemplate(makeSign("HELLO"), [saved])?.label).toBe("HELLO");
+    expect(recognizePersonalTemplate(frames, [template()])?.label).toBe("HELLO");
+  });
+  it("does not save or recognize recordings broken by a long pause", () => {
+    const frames = makeSign("HELLO", { duration: 2400, count: 9 });
+    frames.forEach((frame, index) => { if (index >= 5) frame.timestamp += 1800; });
+    expect(calibrationFrames(frames)).toHaveLength(0);
+    expect(recognizePersonalTemplate(frames, [template()])).toBeNull();
   });
   it("keeps older 17-point pose recordings usable", () => {
     const saved = template(); saved.frames = saved.frames.map(row => row.slice(0, 208));

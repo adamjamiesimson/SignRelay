@@ -29,6 +29,7 @@ let predictionTimestamp = 0;
 let predictionVersion = 0;
 let consumedPredictionVersion = 0;
 let receivedFrames = 0;
+let lastInferenceAt = -Infinity;
 let modelGeneration = 0;
 let modelProblem = false;
 let retryAfter = 0;
@@ -47,6 +48,7 @@ function invalidatePrediction() {
 function resetSession() {
   frames.length = 0;
   receivedFrames = 0;
+  lastInferenceAt = -Infinity;
   lastConfirmation = { label: "", time: 0 };
   invalidatePrediction();
   candidateLabel = null;
@@ -81,10 +83,14 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     const language = activeLanguage;
     const classifier = language in classifiers ? classifiers[language as keyof typeof classifiers] : null;
     const cadence = language === "isl" ? 8 : 6;
+    // Frame-count scheduling can skip the entire completion window on a slow
+    // device. ASL needs fresh results while that movement is still available.
+    const inferenceDue = language === "asl" ? now - lastInferenceAt >= 250 : receivedFrames % cadence === 0;
     if (classifier && MODEL_ADAPTERS[language].status === "experimental"
-      && frames.length >= (language === "asl" ? 6 : 24) && receivedFrames % cadence === 0
+      && frames.length >= (language === "asl" ? 6 : 24) && inferenceDue
       && !pending.has(language) && now >= retryAfter) {
       pending.add(language);
+      lastInferenceAt = now;
       const generation = modelGeneration;
       classifier([...motion.sequence]).then((prediction) => {
         if (generation !== modelGeneration) return;

@@ -24,6 +24,7 @@ type EngineParts = {
 export class VisionEngine {
   private parts: EngineParts;
   private lastAuxTimestamp = -Infinity;
+  private handFramesSinceAux = 2;
   private lastFace: Point[] = [];
   private lastPose: Point[] = [];
 
@@ -80,13 +81,15 @@ export class VisionEngine {
 
   process(video: HTMLVideoElement, timestamp: number): VisionFrame {
     const handResult = this.parts.gesture.recognizeForVideo(video, timestamp);
-
-    if (timestamp - this.lastAuxTimestamp >= 150) {
+    this.handFramesSinceAux++;
+    // Leave alternate frames for hands even when CPU inference is already slow.
+    if (this.handFramesSinceAux >= 2 && timestamp - this.lastAuxTimestamp >= 150) {
       const faceResult = this.parts.face.detectForVideo(video, timestamp);
       const poseResult = this.parts.pose.detectForVideo(video, timestamp);
       this.lastFace = pickPoints(faceResult.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
       this.lastPose = pickPoints(poseResult.landmarks[0] ?? [], POSE_CUE_INDICES);
       this.lastAuxTimestamp = timestamp;
+      this.handFramesSinceAux = 0;
     }
 
     return {

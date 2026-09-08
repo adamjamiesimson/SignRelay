@@ -18,14 +18,14 @@ describe("vision resources and capture cadence", () => {
     expect(gesture.close).toHaveBeenCalledOnce();
     expect(pose.close).toHaveBeenCalledOnce();
   });
-  it("samples hand motion without running the face and pose models on every frame", async () => {
+  it.each([[0, 50, 100, 150], [0, 300, 600, 900]])("leaves capacity for hands at fast and slow camera cadence: %j", async (...times) => {
     const gesture = { close: vi.fn(), recognizeForVideo: vi.fn().mockReturnValue({ landmarks: [], handedness: [], gestures: [] }) };
     const face = { close: vi.fn(), detectForVideo: vi.fn().mockReturnValue({ faceLandmarks: [] }) };
     const pose = { close: vi.fn(), detectForVideo: vi.fn().mockReturnValue({ landmarks: [] }) };
     mocks.gesture.mockResolvedValue(gesture); mocks.face.mockResolvedValue(face); mocks.pose.mockResolvedValue(pose);
     const { VisionEngine } = await import("../lib/vision-engine");
     const engine = await VisionEngine.create();
-    for (const time of [0, 50, 100, 150]) engine.process({} as HTMLVideoElement, time);
+    for (const time of times) engine.process({} as HTMLVideoElement, time);
     expect(gesture.recognizeForVideo).toHaveBeenCalledTimes(4);
     expect(face.detectForVideo).toHaveBeenCalledTimes(2);
     expect(pose.detectForVideo).toHaveBeenCalledTimes(2);

@@ -56,7 +56,7 @@ import {
   type LanguageId,
 } from "@/lib/model-adapters";
 import { isRecentDuplicate } from "@/lib/decoder";
-import { prepareCalibrationSequence } from "@/lib/personalized-recognition";
+import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { VisionEngine } from "@/lib/vision-engine";
 import type {
   CalibrationTemplate,
@@ -110,6 +110,7 @@ export function TranslatorExperience() {
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
   const lastVideoTimeRef = useRef(-1);
+  const frameErrorsRef = useRef(0);
   const cameraGenerationRef = useRef(0);
   const cameraPendingRef = useRef(false);
   const captureGenerationRef = useRef(0);
@@ -275,6 +276,7 @@ export function TranslatorExperience() {
     setBufferSize(0);
     setRecognitionFeedback("");
     lastVideoTimeRef.current = -1;
+    frameErrorsRef.current = 0;
     captureStateRef.current = "idle";
     captureFramesRef.current = [];
     setCalibrationState("idle");
@@ -354,12 +356,19 @@ export function TranslatorExperience() {
         drawOverlay(frame);
         if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
         else workerRef.current?.postMessage({ type: "frame", frame });
+        frameErrorsRef.current = 0;
       } catch (error) {
         console.warn("A video frame could not be processed", error);
+        if (++frameErrorsRef.current >= 5) {
+          stopCamera();
+          setCameraState("error");
+          setCameraMessage("Hand tracking stopped. Start the camera again to reload tracking.");
+          return;
+        }
       }
     }
     animationRef.current = requestAnimationFrame(frameLoopRef.current);
-  }, [drawOverlay]);
+  }, [drawOverlay, stopCamera]);
 
   useEffect(() => {
     frameLoopRef.current = runFrameLoop;
@@ -376,6 +385,7 @@ export function TranslatorExperience() {
     cameraPendingRef.current = true;
     setCameraState("requesting");
     setCameraMessage("Waiting for camera permission");
+    let loadingVision = false;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -392,6 +402,7 @@ export function TranslatorExperience() {
       if (generation !== cameraGenerationRef.current) return;
 
       setCameraState("loading");
+      loadingVision = true;
       const engine = await VisionEngine.create(message => {
         if (generation === cameraGenerationRef.current) setCameraMessage(message);
       });
@@ -404,11 +415,19 @@ export function TranslatorExperience() {
       if (generation !== cameraGenerationRef.current) return;
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
-      const permissionDenied = error instanceof DOMException && (error.name === "NotAllowedError" || error.name === "PermissionDeniedError");
+      if (videoRef.current) videoRef.current.srcObject = null;
+      const name = error instanceof Error ? error.name : "";
+      const permissionDenied = !loadingVision && (name === "NotAllowedError" || name === "PermissionDeniedError");
       setCameraState(permissionDenied ? "denied" : "error");
-      setCameraMessage(permissionDenied
+      setCameraMessage(loadingVision
+        ? "The camera opened, but the tracking models could not load. Check your connection and start the camera again."
+        : permissionDenied
         ? "Camera permission was denied. SignRelay cannot analyse video without it."
-        : "Camera or vision models could not be started. Check your connection and try again.");
+        : name === "NotFoundError" || name === "DevicesNotFoundError"
+          ? "No camera was found. Connect or enable a camera, then start it again."
+          : name === "NotReadableError" || name === "TrackStartError"
+            ? "The camera is busy or unavailable. Close other apps using it, then start it again."
+            : "The camera could not start. Check camera access in your browser and device settings, then try again.");
     } finally {
       if (generation === cameraGenerationRef.current) cameraPendingRef.current = false;
     }
@@ -450,8 +469,8 @@ export function TranslatorExperience() {
 
     captureStateRef.current = "saving";
     setCalibrationState("saving");
-    const validFrames = captureFramesRef.current.filter((frame) => frame.hands.length > 0);
-    if (validFrames.length < 16) {
+    const validFrames = calibrationFrames(captureFramesRef.current);
+    if (!validFrames.length) {
       captureStateRef.current = "error";
       setCalibrationState("error");
       setCalibrationMessage("Not enough hand movement was visible. Keep your hands in frame and try again.");

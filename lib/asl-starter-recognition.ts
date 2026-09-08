@@ -1,4 +1,5 @@
 import type { HandObservation, Point, VisionFrame } from "./vision-types";
+import { recentContinuousFrames } from "./frame-timing";
 
 export type StarterPrediction = { label: string; text: string; confidence: number };
 
@@ -68,9 +69,7 @@ function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"]):
   // A brief dropped frame is tolerable; absent current hands and long gaps are not evidence.
   if (samples.length < 5 || samples.length / frames.length < 0.6
     || samples.at(-1)?.time !== frames.at(-1)?.timestamp
-    || samples.at(-1)!.time - samples[0].time < 160
-    || samples.some((sample, index) => index > 0
-      && (sample.time <= samples[index - 1].time || sample.time - samples[index - 1].time > 240))) return [];
+    || samples.at(-1)!.time - samples[0].time < 160) return [];
   return samples;
 }
 
@@ -81,8 +80,9 @@ export function recognizeAslStarter(sequence: VisionFrame[]): StarterPrediction 
   const now = sequence.at(-1)?.timestamp;
   if (now === undefined) return null;
   for (const duration of [650, 1100, 1700, 2600]) {
-    const recent = sequence.filter(frame => now - frame.timestamp <= duration);
     for (const side of ["Right", "Left", "Unknown"] as const) {
+      const recent = recentContinuousFrames(sequence, duration,
+        frame => frame.hands.some(hand => hand.handedness === side && validHand(hand)));
       const samples = samplesFor(recent, side);
       if (!samples.length) continue;
       const result = recognizeSamples(samples);

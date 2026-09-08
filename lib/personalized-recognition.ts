@@ -1,5 +1,6 @@
 import type { CalibrationTemplate, Point, VisionFrame } from "./vision-types";
 import { validHand } from "./asl-starter-recognition";
+import { recentContinuousFrames } from "./frame-timing";
 
 export const CALIBRATION_SEQUENCE_LENGTH = 24;
 
@@ -23,6 +24,14 @@ export function prepareCalibrationSequence(frames: VisionFrame[]) {
   return resample(features, CALIBRATION_SEQUENCE_LENGTH);
 }
 
+export function calibrationFrames(frames: VisionFrame[]) {
+  const recent = recentContinuousFrames(frames, 4200, frame => frame.hands.some(validHand));
+  const visible = recent.filter(frame => frame.hands.some(validHand));
+  if (visible.length < 8 || visible.length / recent.length < 0.7
+    || visible.at(-1)!.timestamp - visible[0].timestamp < 700) return [];
+  return visible;
+}
+
 export function recognizePersonalTemplate(
   frames: VisionFrame[],
   templates: CalibrationTemplate[],
@@ -32,12 +41,10 @@ export function recognizePersonalTemplate(
   const matches = new Map<string, { template: CalibrationTemplate; distance: number }>();
   let previousLength = 0;
   for (const duration of [650, 1200, 2000, 3000, 4200]) {
-    const recent = frames.filter(frame => now - frame.timestamp <= duration);
+    const recent = recentContinuousFrames(frames, duration, frame => frame.hands.some(validHand));
     if (recent.length === previousLength) continue;
     previousLength = recent.length;
-    if (recent.length < 8 || recent.filter(frame => frame.hands.some(validHand)).length / recent.length < 0.7
-      || recent.some((frame, index) => index > 0 && (frame.timestamp <= recent[index - 1].timestamp
-        || frame.timestamp - recent[index - 1].timestamp > 250))) continue;
+    if (recent.length < 8 || recent.filter(frame => frame.hands.some(validHand)).length / recent.length < 0.7) continue;
     const candidate = prepareCalibrationSequence(recent);
     for (const template of templates) {
       if (template.frames.length !== CALIBRATION_SEQUENCE_LENGTH) continue;

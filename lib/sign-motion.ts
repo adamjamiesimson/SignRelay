@@ -1,5 +1,6 @@
 import type { HandObservation, VisionFrame } from "./vision-types";
 import { bodyReference, distance2, handScale, validHand } from "./asl-starter-recognition";
+import { recentContinuousFrames } from "./frame-timing";
 
 export type SignMotion = { ready: boolean; sequence: VisionFrame[]; reason: "hands" | "moving" | "idle" | "ready" };
 
@@ -8,21 +9,16 @@ export function analyzeSignMotion(frames: VisionFrame[]): SignMotion {
   const end = frames.at(-1);
   const reject = (reason: SignMotion["reason"]): SignMotion => ({ ready: false, sequence: [], reason });
   if (!end?.hands.some(validHand)) return reject("hands");
-  const recent = frames.filter(frame => end.timestamp - frame.timestamp <= 3600);
-  if (recent.length < 6) return reject("idle");
-  if (recent.some((frame, index) => index > 0 && (frame.timestamp <= recent[index - 1].timestamp
-    || frame.timestamp - recent[index - 1].timestamp > 250))) return reject("hands");
-
   let moving = false;
   for (const side of ["Left", "Right", "Unknown"] as const) {
+    const recent = recentContinuousFrames(frames, 3600,
+      frame => frame.hands.some(hand => hand.handedness === side && validHand(hand)));
     const samples = recent.flatMap((frame, index) => {
       const hand = frame.hands.find(hand => hand.handedness === side && validHand(hand));
       return hand ? [{ frame, hand, index }] : [];
     });
     if (samples.length < 6 || samples.length / recent.length < 0.65
       || samples.at(-1)?.frame.timestamp !== end.timestamp) continue;
-    if (samples.some((sample, index) => index > 0
-      && sample.frame.timestamp - samples[index - 1].frame.timestamp > 240)) continue;
     // A common body reference avoids a spurious motion jump when pose briefly disappears.
     const tracked = samples.map(sample => bodyReference(sample.frame, sample.hand)).filter(ref => ref.tracked);
     const scale = tracked.length ? tracked[Math.floor(tracked.length / 2)].scale : handScale(samples[0].hand) * 4;
@@ -36,7 +32,13 @@ export function analyzeSignMotion(frames: VisionFrame[]): SignMotion {
     for (let index = 1; index < samples.length; index++) {
       const current = samples[index];
       // Compare over at least 100 ms so the gate does not depend on capture frame rate.
-      const before = samples.slice(0, index).findLast(sample => current.frame.timestamp - sample.frame.timestamp >= 100) ?? first;
+      let before = first;
+      for (let previous = index - 1; previous >= 0; previous--) {
+        if (current.frame.timestamp - samples[previous].frame.timestamp >= 100) {
+          before = samples[previous];
+          break;
+        }
+      }
       if (travel(before.hand, current.hand) > 0.035 || shapeDistance(before.hand, current.hand) > 0.14) {
         if (startIndex < 0) startIndex = Math.max(0, before.index - 1);
         const previous = samples[index - 1];
