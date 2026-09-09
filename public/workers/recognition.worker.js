@@ -21,6 +21,33 @@ function shouldConfirm({
   return !sameLabel || elapsedSinceLast > cooldown;
 }
 
+// lib/frame-timing.ts
+function trackingGapLimit(frames2) {
+  const intervals = frames2.slice(-13).flatMap((frame, index, recent) => {
+    const interval = index ? frame.timestamp - recent[index - 1].timestamp : 0;
+    return interval > 0 && interval <= 750 ? [interval] : [];
+  }).sort((a, b) => a - b);
+  const cadence = intervals[Math.floor(intervals.length / 2)] ?? 50;
+  return Math.min(750, Math.max(240, cadence * 2.5));
+}
+function recentContinuousFrames(frames2, duration, tracked) {
+  const end = frames2.at(-1);
+  if (!end || !Number.isFinite(end.timestamp) || tracked && !tracked(end)) return [];
+  const recent = frames2.filter((frame) => end.timestamp - frame.timestamp <= duration);
+  const gapLimit = trackingGapLimit(recent);
+  let start = recent.length - 1;
+  let lastTracked = end.timestamp;
+  for (let index = start - 1; index >= 0; index--) {
+    const frame = recent[index];
+    const gap = recent[index + 1].timestamp - frame.timestamp;
+    if (!Number.isFinite(gap) || gap <= 0 || gap > gapLimit || tracked && lastTracked - frame.timestamp > gapLimit) break;
+    if (!tracked || tracked(frame)) lastTracked = frame.timestamp;
+    start = index;
+  }
+  while (tracked && start < recent.length - 1 && !tracked(recent[start])) start++;
+  return recent.slice(start);
+}
+
 // lib/asl-starter-recognition.ts
 function validHand(hand4) {
   return !!hand4 && hand4.landmarks.length === 21 && hand4.landmarks.every((point3) => [point3.x, point3.y, point3.z].every(Number.isFinite));
@@ -84,15 +111,19 @@ function samplesFor(frames2, side) {
       middleOpen: extended(hand4, 12)
     });
   }
-  if (samples.length < 5 || samples.length / frames2.length < 0.6 || samples.at(-1)?.time !== frames2.at(-1)?.timestamp || samples.at(-1).time - samples[0].time < 160 || samples.some((sample, index) => index > 0 && (sample.time <= samples[index - 1].time || sample.time - samples[index - 1].time > 240))) return [];
+  if (samples.length < 5 || samples.length / frames2.length < 0.6 || samples.at(-1)?.time !== frames2.at(-1)?.timestamp || samples.at(-1).time - samples[0].time < 160) return [];
   return samples;
 }
 function recognizeAslStarter(sequence) {
   const now = sequence.at(-1)?.timestamp;
   if (now === void 0) return null;
   for (const duration of [650, 1100, 1700, 2600]) {
-    const recent = sequence.filter((frame) => now - frame.timestamp <= duration);
     for (const side of ["Right", "Left", "Unknown"]) {
+      const recent = recentContinuousFrames(
+        sequence,
+        duration,
+        (frame) => frame.hands.some((hand4) => hand4.handedness === side && validHand(hand4))
+      );
       const samples = samplesFor(recent, side);
       if (!samples.length) continue;
       const result = recognizeSamples(samples);
@@ -190,10 +221,10 @@ function recognizePersonalTemplate(frames2, templates) {
   const matches = /* @__PURE__ */ new Map();
   let previousLength = 0;
   for (const duration of [650, 1200, 2e3, 3e3, 4200]) {
-    const recent = frames2.filter((frame) => now - frame.timestamp <= duration);
+    const recent = recentContinuousFrames(frames2, duration, (frame) => frame.hands.some(validHand));
     if (recent.length === previousLength) continue;
     previousLength = recent.length;
-    if (recent.length < 8 || recent.filter((frame) => frame.hands.some(validHand)).length / recent.length < 0.7 || recent.some((frame, index) => index > 0 && (frame.timestamp <= recent[index - 1].timestamp || frame.timestamp - recent[index - 1].timestamp > 250))) continue;
+    if (recent.length < 8 || recent.filter((frame) => frame.hands.some(validHand)).length / recent.length < 0.7) continue;
     const candidate = prepareCalibrationSequence(recent);
     for (const template of templates) {
       if (template.frames.length !== CALIBRATION_SEQUENCE_LENGTH) continue;
@@ -323,17 +354,18 @@ function analyzeSignMotion(frames2) {
   const end = frames2.at(-1);
   const reject = (reason) => ({ ready: false, sequence: [], reason });
   if (!end?.hands.some(validHand)) return reject("hands");
-  const recent = frames2.filter((frame) => end.timestamp - frame.timestamp <= 3600);
-  if (recent.length < 6) return reject("idle");
-  if (recent.some((frame, index) => index > 0 && (frame.timestamp <= recent[index - 1].timestamp || frame.timestamp - recent[index - 1].timestamp > 250))) return reject("hands");
   let moving = false;
   for (const side of ["Left", "Right", "Unknown"]) {
+    const recent = recentContinuousFrames(
+      frames2,
+      3600,
+      (frame) => frame.hands.some((hand4) => hand4.handedness === side && validHand(hand4))
+    );
     const samples = recent.flatMap((frame, index) => {
       const hand4 = frame.hands.find((hand5) => hand5.handedness === side && validHand(hand5));
       return hand4 ? [{ frame, hand: hand4, index }] : [];
     });
     if (samples.length < 6 || samples.length / recent.length < 0.65 || samples.at(-1)?.frame.timestamp !== end.timestamp) continue;
-    if (samples.some((sample, index) => index > 0 && sample.frame.timestamp - samples[index - 1].frame.timestamp > 240)) continue;
     const tracked = samples.map((sample) => bodyReference(sample.frame, sample.hand)).filter((ref) => ref.tracked);
     const scale = tracked.length ? tracked[Math.floor(tracked.length / 2)].scale : handScale(samples[0].hand) * 4;
     const first = samples[0];
@@ -344,7 +376,13 @@ function analyzeSignMotion(frames2) {
     let lastActive = 0;
     for (let index = 1; index < samples.length; index++) {
       const current = samples[index];
-      const before = samples.slice(0, index).findLast((sample) => current.frame.timestamp - sample.frame.timestamp >= 100) ?? first;
+      let before = first;
+      for (let previous = index - 1; previous >= 0; previous--) {
+        if (current.frame.timestamp - samples[previous].frame.timestamp >= 100) {
+          before = samples[previous];
+          break;
+        }
+      }
       if (travel(before.hand, current.hand) > 0.035 || shapeDistance(before.hand, current.hand) > 0.14) {
         if (startIndex < 0) startIndex = Math.max(0, before.index - 1);
         const previous = samples[index - 1];
@@ -360,7 +398,7 @@ function analyzeSignMotion(frames2) {
       moving = true;
       continue;
     }
-    if (settledFor > 1e3 || segment.length < 6 || end.timestamp - segment[0].timestamp < 220) continue;
+    if (settledFor > 2500 || segment.length < 6 || end.timestamp - segment[0].timestamp < 220) continue;
     return { ready: true, sequence: segment, reason: "ready" };
   }
   return reject(moving ? "moving" : "idle");
@@ -461,7 +499,7 @@ async function recognizeAsl1000(sequence) {
   if (sequence.length < 6) return null;
   const model = await loadModel();
   const input = prepareTgcnInput(sequence, model.manifest.sequenceLength);
-  const logits = runMaterialisedTgcn(model, input);
+  const logits = await runMaterialisedTgcnCooperatively(model, input);
   const probabilities = softmax(logits);
   const [best, runnerUp] = topTwo(probabilities);
   const confidence = probabilities[best];
@@ -519,7 +557,20 @@ function materialiseTgcnModel(manifest, binary, labels) {
     labels
   };
 }
-function runMaterialisedTgcn(model, input) {
+async function runMaterialisedTgcnCooperatively(model, input) {
+  const steps = tgcnSteps(model, input);
+  let sliceStarted = performance.now();
+  let step = steps.next();
+  while (!step.done) {
+    if (performance.now() - sliceStarted >= 12) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      sliceStarted = performance.now();
+    }
+    step = steps.next();
+  }
+  return step.value;
+}
+function* tgcnSteps(model, input) {
   let activations = input;
   let pendingResidual = null;
   for (let index = 0; index < model.layers.length; index += 1) {
@@ -531,6 +582,7 @@ function runMaterialisedTgcn(model, input) {
       pendingResidual = null;
     }
     activations = output;
+    yield;
   }
   const pooled = new Float32Array(model.manifest.hiddenFeatures);
   for (let node = 0; node < model.manifest.nodes; node += 1) {
@@ -13225,13 +13277,14 @@ var lastConfirmation = { label: "", time: 0 };
 var personalTemplates = [];
 var activeLanguage = "asl";
 var classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
-var pending = /* @__PURE__ */ new Set();
+var pending = /* @__PURE__ */ new Map();
 var MAX_PREDICTION_AGE_MS = 2500;
 var latestPrediction = null;
 var predictionTimestamp = 0;
 var predictionVersion = 0;
 var consumedPredictionVersion = 0;
 var receivedFrames = 0;
+var lastInferenceAt = -Infinity;
 var modelGeneration = 0;
 var modelProblem = false;
 var retryAfter = 0;
@@ -13248,6 +13301,7 @@ function invalidatePrediction() {
 function resetSession() {
   frames.length = 0;
   receivedFrames = 0;
+  lastInferenceAt = -Infinity;
   lastConfirmation = { label: "", time: 0 };
   invalidatePrediction();
   candidateLabel = null;
@@ -13270,6 +13324,16 @@ self.onmessage = async (event) => {
     return;
   }
   const now = event.data.frame.timestamp;
+  if ([...pending.values()].some((started) => now - started >= 2e4)) {
+    invalidatePrediction();
+    pending.clear();
+    self.postMessage({
+      type: "fault",
+      session: event.data.session,
+      message: "The research model stopped responding. Restarting recognition\u2026"
+    });
+    return;
+  }
   receivedFrames += 1;
   frames.push(event.data.frame);
   while (frames.length > (activeLanguage === "asl" ? 120 : 80)) frames.shift();
@@ -13284,8 +13348,11 @@ self.onmessage = async (event) => {
     const language = activeLanguage;
     const classifier = language in classifiers ? classifiers[language] : null;
     const cadence = language === "isl" ? 8 : 6;
-    if (classifier && MODEL_ADAPTERS[language].status === "experimental" && frames.length >= (language === "asl" ? 6 : 24) && receivedFrames % cadence === 0 && !pending.has(language) && now >= retryAfter) {
-      pending.add(language);
+    const inferenceDue = language === "asl" ? now - lastInferenceAt >= 250 : receivedFrames % cadence === 0;
+    const freshResult = latestPrediction && Number.isFinite(latestPrediction.confidence) && latestPrediction.confidence >= CONFIDENCE_THRESHOLD && consumedPredictionVersion !== predictionVersion;
+    if (classifier && MODEL_ADAPTERS[language].status === "experimental" && frames.length >= (language === "asl" ? 6 : 24) && inferenceDue && !freshResult && !pending.has(language) && now >= retryAfter) {
+      pending.set(language, now);
+      lastInferenceAt = now;
       const generation = modelGeneration;
       classifier([...motion.sequence]).then((prediction2) => {
         if (generation !== modelGeneration) return;
@@ -13300,7 +13367,7 @@ self.onmessage = async (event) => {
         modelProblem = true;
         retryAfter = now + 5e3;
       }).finally(() => {
-        pending.delete(language);
+        if (pending.get(language) === now) pending.delete(language);
       });
     }
   }
@@ -13313,6 +13380,8 @@ self.onmessage = async (event) => {
   const feedback = modelProblem ? activeLanguage === "asl" ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly\u2026" : "The research model could not run. Saved personal signs are still available. Reload this page to try the research model again." : activeLanguage !== "asl" ? void 0 : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically." : motion.reason === "moving" ? "Following your movement\u2026" : result ? "Checking your sign\u2026" : "Ready. Sign naturally, then pause briefly between words.";
   self.postMessage({
     type: "analysis",
+    session: event.data.session,
+    frameId: event.data.frameId,
     state: frames.length < 6 ? "listening" : result ? "processing" : "uncertain",
     candidate: result?.label ?? null,
     confidence: result?.confidence ?? 0,
@@ -13344,6 +13413,7 @@ self.onmessage = async (event) => {
   })) {
     self.postMessage({
       type: "confirmed",
+      session: event.data.session,
       text: result.text,
       gloss: result.label,
       confidence: result.confidence,

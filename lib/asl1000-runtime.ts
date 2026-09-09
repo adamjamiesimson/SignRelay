@@ -139,7 +139,7 @@ export async function recognizeAsl1000(sequence: VisionFrame[]): Promise<Asl1000
   if (sequence.length < 6) return null;
   const model = await loadModel();
   const input = prepareTgcnInput(sequence, model.manifest.sequenceLength);
-  const logits = runMaterialisedTgcn(model, input);
+  const logits = await runMaterialisedTgcnCooperatively(model, input);
   const probabilities = softmax(logits);
   const [best, runnerUp] = topTwo(probabilities);
   const confidence = probabilities[best];
@@ -207,6 +207,29 @@ function materialiseTgcnModel(manifest: TgcnManifest, binary: ArrayBuffer, label
 }
 
 function runMaterialisedTgcn(model: MaterialisedModel, input: Float32Array) {
+  const steps = tgcnSteps(model, input);
+  let step = steps.next();
+  while (!step.done) step = steps.next();
+  return step.value;
+}
+
+async function runMaterialisedTgcnCooperatively(model: MaterialisedModel, input: Float32Array) {
+  const steps = tgcnSteps(model, input);
+  let sliceStarted = performance.now();
+  let step = steps.next();
+  while (!step.done) {
+    if (performance.now() - sliceStarted >= 12) {
+      // Yield a task, not just a microtask: camera messages and session resets
+      // must be handled before the remaining graph layers finish computing.
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
+      sliceStarted = performance.now();
+    }
+    step = steps.next();
+  }
+  return step.value;
+}
+
+function* tgcnSteps(model: MaterialisedModel, input: Float32Array): Generator<void, Float32Array> {
   let activations = input;
   let pendingResidual: Float32Array | null = null;
   for (let index = 0; index < model.layers.length; index += 1) {
@@ -218,6 +241,7 @@ function runMaterialisedTgcn(model: MaterialisedModel, input: Float32Array) {
       pendingResidual = null;
     }
     activations = output;
+    yield;
   }
 
   const pooled = new Float32Array(model.manifest.hiddenFeatures);

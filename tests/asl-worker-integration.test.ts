@@ -64,4 +64,36 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     await feed(makeSign("NO").map(frame => ({ ...frame, timestamp: frame.timestamp + 1150 })));
     expect(confirmations().map(result => result.gloss)).toEqual(["NO"]);
   });
+  it("confirms two slow model results while still processing camera frames", async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.model.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({
+        label: "BOOK", text: "Book", confidence: 0.94, margin: 0.5,
+      }), 700)));
+      const frames = makeSign("IDLE", { duration: 4000, count: 81 });
+      frames.forEach((frame, index) => frame.hands[0].landmarks.forEach(point => {
+        point.y += 0.3;
+        point.x += Math.min(1, index / 12) * 0.12;
+      }));
+      for (const frame of frames) {
+        await worker.onmessage({ data: { type: "frame", frame } });
+        await vi.advanceTimersByTimeAsync(50);
+      }
+      expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+      expect(mocks.model).toHaveBeenCalledTimes(2);
+      expect(worker.postMessage.mock.calls.filter(([message]) => message.type === "analysis")).toHaveLength(81);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("keeps recognizing successive signs throughout a long session", async () => {
+    const signs = ["NO", "HELLO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const;
+    const expected: string[] = [];
+    for (let repetition = 0; repetition < 60; repetition++) {
+      const sign = signs[repetition % signs.length];
+      expected.push(sign);
+      await feed(makeSign(sign).map(frame => ({ ...frame, timestamp: frame.timestamp + repetition * 1600 })));
+    }
+    expect(confirmations().map(result => result.gloss)).toEqual(expected);
+  });
 });

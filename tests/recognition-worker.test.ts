@@ -149,4 +149,12 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     await frames(20);
     expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
   });
+  it("requests recovery if a model never resolves, instead of leaving it permanently pending", async () => {
+    mocks.asl.mockImplementation(() => new Promise(() => {}));
+    await frames(200);
+    const faults = worker.postMessage.mock.calls.map(([message]) => message as WorkerMessage).filter(message => message.type === "fault");
+    expect(faults).toHaveLength(1);
+    expect(faults[0]).toMatchObject({ message: expect.stringContaining("stopped responding") });
+    expect(confirmations()).toHaveLength(0);
+  });
 });

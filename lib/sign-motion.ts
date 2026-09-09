@@ -51,7 +51,9 @@ export function analyzeSignMotion(frames: VisionFrame[]): SignMotion {
     const segment = recent.slice(startIndex);
     const settledFor = end.timestamp - lastActive;
     if (settledFor < 140) { moving = true; continue; }
-    if (settledFor > 1000 || segment.length < 6 || end.timestamp - segment[0].timestamp < 220) continue;
+    // Two real CPU predictions can take longer than one second. Keep a recent
+    // completed movement available while rejecting new motion and absent hands.
+    if (settledFor > 2500 || segment.length < 6 || end.timestamp - segment[0].timestamp < 220) continue;
     return { ready: true, sequence: segment, reason: "ready" };
   }
   return reject(moving ? "moving" : "idle");

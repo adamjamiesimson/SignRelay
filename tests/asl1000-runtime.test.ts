@@ -8,8 +8,9 @@ describe("ASL-2000 packed runtime", () => {
     const component = readFileSync("components/translator-experience.tsx", "utf8");
     const worker = readFileSync("public/workers/recognition.worker.js", "utf8");
 
-    expect(component).toContain('new Worker("/workers/recognition.worker.js"');
+    expect(component).toContain('new Worker("/workers/recognition.worker.js?v=session-recovery-1"');
     expect(worker).toContain("binaryParts");
+    expect(worker).toContain("frameId");
     expect(worker).not.toContain("import type");
     expect(worker).not.toContain('from "@/');
   });

@@ -21,6 +21,8 @@ export type VisionFrame = {
 
 export type WorkerAnalysis = {
   type: "analysis";
+  session?: number;
+  frameId?: number;
   state: "listening" | "processing" | "uncertain";
   candidate: string | null;
   confidence: number;
@@ -30,13 +32,15 @@ export type WorkerAnalysis = {
 
 export type WorkerConfirmation = {
   type: "confirmed";
+  session?: number;
   text: string;
   gloss: string;
   confidence: number;
   timestamp: number;
 };
 
-export type WorkerMessage = WorkerAnalysis | WorkerConfirmation;
+export type WorkerMessage = WorkerAnalysis | WorkerConfirmation
+  | { type: "fault"; session?: number; message: string };
 
 export type CalibrationTemplate = {
   id: string;
@@ -48,10 +52,11 @@ export type CalibrationTemplate = {
   frames: number[][];
 };
 
-export type WorkerInput =
+export type WorkerInput = (
   | { type: "frame"; frame: VisionFrame }
   | { type: "reset" }
-  | { type: "templates"; language: "asl" | "auslan" | "bsl" | "csl" | "isl" | "lse"; templates: CalibrationTemplate[] };
+  | { type: "templates"; language: "asl" | "auslan" | "bsl" | "csl" | "isl" | "lse"; templates: CalibrationTemplate[] }
+) & { session?: number; frameId?: number };
 
 export type DetectionStatus = {
   person: boolean;

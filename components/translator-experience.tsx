@@ -58,6 +58,7 @@ import {
 import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { VisionEngine } from "@/lib/vision-engine";
+import { RecognitionSession } from "@/lib/recognition-session";
 import type {
   CalibrationTemplate,
   DetectionStatus,
@@ -89,6 +90,7 @@ export function TranslatorExperience() {
   const [confidence, setConfidence] = useState(0);
   const [bufferSize, setBufferSize] = useState(0);
   const [recognitionFeedback, setRecognitionFeedback] = useState("");
+  const [recognitionUnavailable, setRecognitionUnavailable] = useState(false);
   const [entries, setEntries] = useState<TranscriptEntry[]>([]);
   const [history, setHistory] = useState<TranscriptSession[]>([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -106,11 +108,12 @@ export function TranslatorExperience() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const engineRef = useRef<VisionEngine | null>(null);
-  const workerRef = useRef<Worker | null>(null);
+  const workerRef = useRef<RecognitionSession | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
   const lastVideoTimeRef = useRef(-1);
   const frameErrorsRef = useRef(0);
+  const cameraProgressRef = useRef(0);
   const cameraGenerationRef = useRef(0);
   const cameraPendingRef = useRef(false);
   const captureGenerationRef = useRef(0);
@@ -220,6 +223,7 @@ export function TranslatorExperience() {
 
   const handleWorkerMessage = useCallback((message: WorkerMessage) => {
     if (message.type === "analysis") {
+      setRecognitionUnavailable(false);
       setRecognitionState(message.state);
       setCandidate(message.candidate);
       setConfidence(message.confidence);
@@ -227,6 +231,7 @@ export function TranslatorExperience() {
       setRecognitionFeedback(message.feedback ?? "");
       return;
     }
+    if (message.type !== "confirmed") return;
 
     const entry: TranscriptEntry = {
       id: `${message.timestamp}-${message.gloss}`,
@@ -245,9 +250,20 @@ export function TranslatorExperience() {
 
   useEffect(() => {
     if (step !== "workspace") return;
-    const worker = new Worker("/workers/recognition.worker.js", { type: "module" });
-    worker.onmessage = (event: MessageEvent<WorkerMessage>) => handleWorkerMessage(event.data);
-    worker.onerror = () => setRecognitionFeedback("Recognition stopped unexpectedly. Reload this page to restart it.");
+    const worker = new RecognitionSession(
+      () => new Worker("/workers/recognition.worker.js?v=session-recovery-1", { type: "module" }),
+      handleWorkerMessage,
+      status => {
+        setRecognitionUnavailable(status.state === "failed");
+        if (status.message) setRecognitionFeedback(status.message);
+        if (status.state !== "running") {
+          setCandidate(null);
+          setConfidence(0);
+          setBufferSize(0);
+          setRecognitionState("listening");
+        }
+      },
+    );
     worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current });
     workerRef.current = worker;
     return () => {
@@ -335,12 +351,21 @@ export function TranslatorExperience() {
   const runFrameLoop = useCallback(() => {
     const video = videoRef.current;
     const engine = engineRef.current;
-    if (!video || !engine || video.readyState < 2) {
+    const now = performance.now();
+    if (video && engine && !document.hidden) {
+      if (video.readyState >= 2 && video.currentTime !== lastVideoTimeRef.current) cameraProgressRef.current = now;
+      if (now - cameraProgressRef.current >= 8000) {
+        stopCamera();
+        setCameraState("error");
+        setCameraMessage("The camera stopped sending video. Start the camera again to reconnect.");
+        return;
+      }
+    }
+    if (!video || !engine || video.readyState < 2 || document.hidden) {
       animationRef.current = requestAnimationFrame(frameLoopRef.current);
       return;
     }
 
-    const now = performance.now();
     if (now - lastFrameRef.current >= 50 && video.currentTime !== lastVideoTimeRef.current) {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
@@ -396,6 +421,12 @@ export function TranslatorExperience() {
         return;
       }
       streamRef.current = stream;
+      for (const track of stream.getVideoTracks()) track.addEventListener("ended", () => {
+        if (generation !== cameraGenerationRef.current) return;
+        stopCamera();
+        setCameraState("error");
+        setCameraMessage("The camera was disconnected or stopped by your device. Start the camera again to reconnect.");
+      }, { once: true });
       if (!videoRef.current) throw new Error("Camera view was not ready");
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
@@ -408,6 +439,7 @@ export function TranslatorExperience() {
       });
       if (generation !== cameraGenerationRef.current) { engine.close(); return; }
       engineRef.current = engine;
+      cameraProgressRef.current = performance.now();
       setCameraState("active");
       setCameraMessage("Camera and vision models active");
       animationRef.current = requestAnimationFrame(frameLoopRef.current);
@@ -431,7 +463,25 @@ export function TranslatorExperience() {
     } finally {
       if (generation === cameraGenerationRef.current) cameraPendingRef.current = false;
     }
-  }, []);
+  }, [stopCamera]);
+
+  useEffect(() => {
+    const resume = () => {
+      workerRef.current?.postMessage({ type: "reset" });
+      cameraProgressRef.current = performance.now();
+      const video = videoRef.current;
+      if (document.hidden || !engineRef.current || !video?.paused) return;
+      const generation = cameraGenerationRef.current;
+      void video.play().catch(() => {
+        if (generation !== cameraGenerationRef.current) return;
+        stopCamera();
+        setCameraState("error");
+        setCameraMessage("Camera playback was interrupted. Start the camera again to resume.");
+      });
+    };
+    document.addEventListener("visibilitychange", resume);
+    return () => document.removeEventListener("visibilitychange", resume);
+  }, [stopCamera]);
 
   const beginTranslation = () => {
     sessionStartedRef.current = Date.now();
@@ -666,6 +716,11 @@ export function TranslatorExperience() {
               </div>
 
               {recognitionFeedback && <p className="calibration-message" role="status">{recognitionFeedback}</p>}
+              {recognitionUnavailable && (
+                <button className="button secondary small" onClick={() => workerRef.current?.restart()}>
+                  <RefreshCw size={16} /> Restart recognition
+                </button>
+              )}
               <div className="transcript-body" aria-live="polite" aria-label="Confirmed translation">
                 {!entries.length ? (
                   <div className="transcript-empty">
