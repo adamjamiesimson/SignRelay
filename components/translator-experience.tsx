@@ -251,7 +251,7 @@ export function TranslatorExperience() {
   useEffect(() => {
     if (step !== "workspace") return;
     const worker = new RecognitionSession(
-      () => new Worker("/workers/recognition.worker.js?v=session-recovery-1", { type: "module" }),
+      () => new Worker("/workers/recognition.worker.js?v=fist-motion-2", { type: "module" }),
       handleWorkerMessage,
       status => {
         setRecognitionUnavailable(status.state === "failed");

@@ -102,7 +102,6 @@ function samplesFor(frames2, side) {
       scale: reference.scale,
       palm: handScale(hand4),
       wrist: point3(hand4.landmarks[0]),
-      knuckle: point3(hand4.landmarks[9]),
       tip: point3(hand4.landmarks[8]),
       nose: nose && point3(nose),
       mouth: mouth && point3(mouth),
@@ -117,6 +116,7 @@ function samplesFor(frames2, side) {
 function recognizeAslStarter(sequence) {
   const now = sequence.at(-1)?.timestamp;
   if (now === void 0) return null;
+  let yes = null;
   for (const duration of [650, 1100, 1700, 2600]) {
     for (const side of ["Right", "Left", "Unknown"]) {
       const recent = recentContinuousFrames(
@@ -127,10 +127,11 @@ function recognizeAslStarter(sequence) {
       const samples = samplesFor(recent, side);
       if (!samples.length) continue;
       const result = recognizeSamples(samples);
-      if (result) return result;
+      if (result?.label === "YES") yes = result;
+      else if (result) return result;
     }
   }
-  return null;
+  return yes;
 }
 var span = (values) => Math.max(...values) - Math.min(...values);
 var ratio = (samples, predicate) => samples.filter(predicate).length / samples.length;
@@ -159,12 +160,11 @@ function recognizeSamples(samples) {
   const startsNearHead = first.nose && distance2(first.tip, first.nose) < 0.8;
   if (mostlyOpen && raised && xRange > 0.25 && yRange < Math.max(0.35, xRange * 0.75) && (directionChanges(xs2, 0.025) >= 1 || startsNearHead)) return prediction("HELLO", "Hello");
   const atChest = ratio(samples, (sample) => sample.wrist.y > -0.1 && sample.wrist.y < 1.05 && Math.abs(sample.wrist.x) < 0.8) >= 0.8;
-  if (atChest && xRange > 0.16 && yRange > 0.16 && circularMotion(xs2, ys2)) {
+  if (atChest && xRange > 0.1 && yRange > 0.1 && circularMotion(xs2, ys2)) {
     if (mostlyOpen) return prediction("PLEASE", "Please");
     if (mostlyFist) return prediction("SORRY", "Sorry");
   }
-  const knuckleYs = samples.map((sample) => sample.knuckle.y);
-  if (mostlyFist && span(knuckleYs) > 0.16 && span(knuckleYs) > xRange * 1.5 && directionChanges(knuckleYs, 0.025) >= 1) return prediction("YES", "Yes");
+  if (completedFistNod(samples)) return prediction("YES", "Yes");
   if (last.time - first.time >= 280 && ratio(
     samples,
     (sample) => sample.hand.gesture === "ILoveYou" && sample.hand.gestureScore >= 0.65
@@ -172,6 +172,49 @@ function recognizeSamples(samples) {
     return prediction("I LOVE YOU", "I love you");
   }
   return null;
+}
+function completedFistNod(history) {
+  let start = 0;
+  for (let i = 0; i < history.length; i++) if (history[i].open >= 2) start = i + 1;
+  const samples = history.slice(start);
+  if (samples.length < 5) return false;
+  const first = samples[0];
+  const last = samples.at(-1);
+  if (last.time - first.time < 220 || first.open || last.open || ratio(samples, (sample) => sample.open === 0) < 0.8) return false;
+  const orientations = samples.map((sample) => {
+    const p = sample.hand.landmarks;
+    const pitches2 = [5, 9, 13, 17].map((i) => Math.atan2(p[i].z - p[0].z, p[0].y - p[i].y));
+    const anchor = pitches2[0];
+    const unwrapped = pitches2.map((angle) => anchor + Math.atan2(Math.sin(angle - anchor), Math.cos(angle - anchor))).sort((a, b) => a - b);
+    const x = (p[5].x + p[9].x + p[13].x + p[17].x) / 4 - p[0].x;
+    const y = (p[5].y + p[9].y + p[13].y + p[17].y) / 4 - p[0].y;
+    const z = (p[5].z + p[9].z + p[13].z + p[17].z) / 4 - p[0].z;
+    return { pitch: (unwrapped[1] + unwrapped[2]) / 2, sideways: Math.atan2(x, Math.hypot(y, z)) };
+  });
+  const pitches = [orientations[0].pitch];
+  for (let i = 1; i < orientations.length; i++) {
+    const delta = orientations[i].pitch - orientations[i - 1].pitch;
+    const wrapped = Math.atan2(Math.sin(delta), Math.cos(delta));
+    if (Math.abs(wrapped) > 1.2) return false;
+    pitches.push(pitches[i - 1] + wrapped);
+  }
+  const smooth = pitches.map((pitch, i) => [
+    pitches[Math.max(0, i - 1)],
+    pitch,
+    pitches[Math.min(pitches.length - 1, i + 1)]
+  ].sort((a, b) => a - b)[1]);
+  const excursion = span(smooth);
+  if (excursion < 0.35 || span(orientations.map((o) => o.sideways)) > Math.min(0.45, excursion * 0.65) || span(samples.map((sample) => sample.wrist.x)) > 0.25) return false;
+  let tail = samples.length - 1;
+  while (tail > 0 && last.time - samples[tail].time < 75) tail--;
+  if (span(smooth.slice(tail)) > 0.12 || span(samples.slice(tail).map((s) => s.wrist.x)) > 0.035 || span(samples.slice(tail).map((s) => s.wrist.y)) > 0.035) return false;
+  return [1, -1].some((direction) => {
+    let peak = 0;
+    for (let i = 1; i < smooth.length; i++) if (direction * smooth[i] > direction * smooth[peak]) peak = i;
+    const outward = direction * (smooth[peak] - smooth[0]);
+    const back = direction * (smooth[peak] - smooth.at(-1));
+    return outward >= 0.35 && back >= Math.max(0.3, outward * 0.65) && Math.abs(smooth.at(-1) - smooth[0]) <= outward * 0.45 && samples[peak].time - first.time >= 60 && last.time - samples[peak].time >= 60;
+  });
 }
 function directionChanges(values, epsilon) {
   let previous = 0;
@@ -189,7 +232,9 @@ function directionChanges(values, epsilon) {
 function circularMotion(xs2, ys2) {
   const cx = (Math.max(...xs2) + Math.min(...xs2)) / 2;
   const cy = (Math.max(...ys2) + Math.min(...ys2)) / 2;
-  const angles = xs2.map((x, index) => Math.atan2(ys2[index] - cy, x - cx));
+  const width = span(xs2);
+  const height = span(ys2);
+  const angles = xs2.map((x, index) => Math.atan2((ys2[index] - cy) / height, (x - cx) / width));
   let turn = 0;
   let travel = 0;
   for (let index = 1; index < angles.length; index++) {
@@ -13337,6 +13382,9 @@ self.onmessage = async (event) => {
   receivedFrames += 1;
   frames.push(event.data.frame);
   while (frames.length > (activeLanguage === "asl" ? 120 : 80)) frames.shift();
+  const personal = recognizePersonalTemplate(frames, personalTemplates);
+  const starter = activeLanguage === "asl" ? recognizeAslStarter(frames) : null;
+  if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES" && starter?.label !== "YES") invalidatePrediction();
   const motion = activeLanguage === "asl" ? analyzeSignMotion(frames) : {
     ready: hasAsl100CompletedSignMotion(frames),
     sequence: frames,
@@ -13371,8 +13419,7 @@ self.onmessage = async (event) => {
       });
     }
   }
-  const personal = recognizePersonalTemplate(frames, personalTemplates);
-  const direct = personal ?? (activeLanguage === "asl" ? recognizeAslStarter(frames) : null);
+  const direct = personal ?? starter;
   if (direct?.label === blockedStarter) starterSeenAt = now;
   else if (now - starterSeenAt > 500) blockedStarter = null;
   const rawResult = direct?.label === blockedStarter ? null : direct ?? latestPrediction;

@@ -51,9 +51,13 @@ export function makeSign(sign: Sign, options: {
       x: 0.5 + (point.x - 0.5) * scale * (side === "Left" ? -1 : 1),
       y: 0.5 + (point.y - 0.5) * scale + shiftY, z: point.z * scale,
     });
+    // YES includes wrist flexion. Rigid whole-hand vertical travel alone is
+    // a counterexample covered by asl-fist-motion, not a positive YES fixture.
+    const pitch = sign === "YES" ? 0.15 + 0.8 * Math.sin(Math.PI * phase) ** 2 : 0;
     const landmarks = handshape(sign === "NO" ? "no" : sign === "YES" || sign === "SORRY" ? "fist" : "open", phase)
       .map((point, pointIndex) => transform({ x: x + point.x + jitter * Math.sin(index * 1.7 + pointIndex),
-        y: y + point.y + jitter * Math.cos(index * 1.3 + pointIndex), z: point.z }));
+        y: y + point.y * Math.cos(pitch) + jitter * Math.cos(index * 1.3 + pointIndex),
+        z: point.y * Math.sin(pitch) }));
     return { timestamp: 1000 + duration * index / (count - 1),
       hands: [{ landmarks, handedness: side, gesture: "None", gestureScore: 0 }],
       pose: pose.map(transform), face: face.map(transform) };

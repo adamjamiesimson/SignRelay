@@ -81,6 +81,13 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   receivedFrames += 1;
   frames.push(event.data.frame);
   while (frames.length > (activeLanguage === "asl" ? 120 : 80)) frames.shift();
+  const personal = recognizePersonalTemplate(frames, personalTemplates);
+  const starter = activeLanguage === "asl" ? recognizeAslStarter(frames) : null;
+  // The closed-set model can also label fist preparation YES. Require the
+  // same completed wrist nod for automatic YES, while preserving personal
+  // templates. Discard a rejected result so it cannot stall fresh inference.
+  if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES"
+    && starter?.label !== "YES") invalidatePrediction();
   const motion = activeLanguage === "asl" ? analyzeSignMotion(frames) : {
     ready: hasAsl100CompletedSignMotion(frames), sequence: frames, reason: "idle",
   };
@@ -118,8 +125,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     }
   }
 
-  const personal = recognizePersonalTemplate(frames, personalTemplates);
-  const direct = personal ?? (activeLanguage === "asl" ? recognizeAslStarter(frames) : null);
+  const direct = personal ?? starter;
   if (direct?.label === blockedStarter) starterSeenAt = now;
   else if (now - starterSeenAt > 500) blockedStarter = null;
   const rawResult = direct?.label === blockedStarter ? null : direct ?? latestPrediction;
