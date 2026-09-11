@@ -14,6 +14,7 @@ import {
   Camera,
   CameraOff,
   Check,
+  ChevronDown,
   Clock3,
   Edit3,
   Eye,
@@ -49,7 +50,6 @@ import {
   saveCalibrationTemplate,
 } from "@/lib/calibration-storage";
 import {
-  ASL_BUILT_IN_VOCABULARY,
   createCustomVocabularyEntry,
   LANGUAGE_LIST,
   PERSONAL_STARTER_VOCABULARY,
@@ -67,6 +67,7 @@ import type {
   WorkerMessage,
 } from "@/lib/vision-types";
 import { SiteFooter, SiteHeader } from "./site-chrome";
+import { SurfaceMotion } from "./surface-motion";
 
 type Step = "welcome" | "workspace";
 type CameraState = "idle" | "requesting" | "loading" | "active" | "denied" | "error";
@@ -106,6 +107,7 @@ export function TranslatorExperience() {
   const [countdown, setCountdown] = useState(3);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const vocabularyRef = useRef<HTMLDetailsElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const engineRef = useRef<VisionEngine | null>(null);
@@ -608,6 +610,7 @@ export function TranslatorExperience() {
   if (step === "workspace") {
     return (
       <div className="app-shell">
+        <SurfaceMotion scene={`workspace-${selected}`} cursor={false} />
         <SiteHeader />
         <main className="workspace-page">
           <div className="workspace-topbar">
@@ -618,7 +621,7 @@ export function TranslatorExperience() {
               <span className="language-code compact">{model.shortName}</span>
               <div>
                 <h1>Live translation</h1>
-                <p>{model.language} · {model.version}</p>
+                <p>{model.language}</p>
               </div>
             </div>
             <span className="local-badge"><ShieldCheck size={16} /> On-device processing</span>
@@ -626,15 +629,20 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <Sparkles size={18} aria-hidden="true" />
-            <p>{model.status === "experimental" ? <><strong>{model.automaticVocabularyCount.toLocaleString()} automatic {model.shortName} test signs:</strong> its isolated-sign model runs locally in your browser. You can separately teach any word or short phrase.</> : model.status === "preparing" ? <><strong>No shared automatic {model.shortName} model is installed yet.</strong> You can still record private examples below, but SignRelay will not invent a translation while the research model is being prepared.</> : <><strong>{model.vocabulary.length.toLocaleString()} {model.shortName} starter labels:</strong> choose one below and record two or three examples to activate it. Its landmark templates stay on this device and are never mixed with another sign language.</>}</p>
-            <a href="#personal-vocabulary">Teach a sign</a>
+            <p>{model.status === "experimental" ? <><strong>Research preview.</strong> {model.automaticVocabularyCount.toLocaleString()} isolated signs. Check translations before relying on them.</> : model.status === "preparing" ? <><strong>Personal signs only.</strong> The shared model is not installed. Teach a sign to get started.</> : <><strong>Personal signs only.</strong> Record examples to activate your {model.shortName} vocabulary.</>}</p>
+            <button className="text-action" onClick={() => {
+              const panel = vocabularyRef.current;
+              if (!panel) return;
+              panel.open = true;
+              panel.querySelector("summary")?.focus({ preventScroll: true });
+              panel.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+            }}>Teach a sign</button>
           </div>
 
           <div className="translator-grid">
             <section className="camera-panel" aria-labelledby="camera-title">
               <div className="panel-heading">
                 <div>
-                  <p className="panel-kicker">Live input</p>
                   <h2 id="camera-title">Camera</h2>
                 </div>
                 <StatusBadge active={cameraState === "active"} label={cameraMessage} />
@@ -652,17 +660,17 @@ export function TranslatorExperience() {
                     ) : (
                       <Camera size={38} aria-hidden="true" />
                     )}
-                    <h3>{cameraState === "loading" ? "Preparing private vision models" : cameraState === "requesting" ? "Allow camera access" : "Camera unavailable"}</h3>
+                    <h3>{cameraState === "loading" ? "Preparing your camera" : cameraState === "requesting" ? "Allow camera access" : cameraState === "idle" ? "Ready when you are" : "Camera unavailable"}</h3>
                     <p>{cameraMessage}</p>
                     {(cameraState === "denied" || cameraState === "error" || cameraState === "idle") && (
                       <button className="button secondary small" onClick={requestCamera}>
-                        <RefreshCw size={16} aria-hidden="true" /> Retry camera
+                        {cameraState === "idle" ? <><Play size={16} aria-hidden="true" /> Start camera</> : <><RefreshCw size={16} aria-hidden="true" /> Retry camera</>}
                       </button>
                     )}
                   </div>
                 )}
                 {cameraState === "active" && (
-                  <div className="camera-guidance">Keep both hands, your face and shoulders in frame · use even front lighting</div>
+                  <div className="camera-guidance">Keep your hands, face and shoulders in frame.</div>
                 )}
                 {calibrationState !== "idle" && calibrationState !== "saved" && calibrationState !== "error" && (
                   <div className={`calibration-capture ${calibrationState}`} role="status" aria-live="assertive">
@@ -672,6 +680,8 @@ export function TranslatorExperience() {
                 )}
               </div>
 
+              <details className="workspace-disclosure camera-options">
+                <summary>Camera options <ChevronDown size={16} aria-hidden="true" /></summary>
               <div className="detection-grid" aria-label="Vision detection status">
                 <DetectionItem icon={<Camera size={16} />} label="Camera" active={cameraState === "active"} />
                 <DetectionItem icon={<UserRound size={16} />} label="Person" active={detection.person} />
@@ -689,8 +699,12 @@ export function TranslatorExperience() {
                   />
                   <span>Show landmarks</span>
                 </label>
+              </div>
+              </details>
+              <div className="camera-session-actions">
+                <span>{cameraState === "active" ? "Camera on · video stays private" : "Video stays on this device"}</span>
                 <button className="button ghost small" onClick={cameraState === "active" ? stopCamera : requestCamera}>
-                  {cameraState === "active" ? <><Pause size={16} /> Pause camera</> : <><Play size={16} /> Start camera</>}
+                  {cameraState === "active" ? <><Pause size={16} /> Pause</> : <><Play size={16} /> Start camera</>}
                 </button>
               </div>
             </section>
@@ -698,7 +712,6 @@ export function TranslatorExperience() {
             <section className="transcript-panel" aria-labelledby="transcript-title">
               <div className="panel-heading">
                 <div>
-                  <p className="panel-kicker">Live output</p>
                   <h2 id="transcript-title">Transcript</h2>
                 </div>
                 <div className={`recognition-state ${recognitionState}`}>
@@ -726,8 +739,8 @@ export function TranslatorExperience() {
                 {!entries.length ? (
                   <div className="transcript-empty">
                     <Mic2 size={28} aria-hidden="true" />
-                    <h3>Your confirmed translation appears here</h3>
-                    <p>Sign naturally and complete the full movement. Low-confidence sequences remain unconfirmed.</p>
+                    <h3>Your words, here.</h3>
+                    <p>Complete each sign. Confident matches appear here.</p>
                   </div>
                 ) : (
                   <div className="transcript-list">
@@ -767,7 +780,7 @@ export function TranslatorExperience() {
                     checked={settings.autoSpeak}
                     onChange={(event) => setSettings((current) => ({ ...current, autoSpeak: event.target.checked }))}
                   />
-                  <span><strong>Auto speak</strong><small>Speak only newly confirmed text</small></span>
+                  <span><strong>Auto speak</strong></span>
                 </label>
                 <div className="speech-buttons">
                   <button className="button secondary small" disabled={!entries.length} onClick={() => speak(entries.map((entry) => entry.text).join(" "))}>
@@ -777,6 +790,10 @@ export function TranslatorExperience() {
                     <VolumeX size={16} /> Stop
                   </button>
                 </div>
+              </div>
+              <details className="workspace-disclosure voice-options">
+                <summary>Voice settings <ChevronDown size={16} aria-hidden="true" /></summary>
+                <div className="voice-ranges">
                 <label className="range-control">
                   <span>Volume <strong>{Math.round(settings.volume * 100)}%</strong></span>
                   <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => setSettings((current) => ({ ...current, volume: Number(event.target.value) }))} />
@@ -785,7 +802,8 @@ export function TranslatorExperience() {
                   <span>Rate <strong>{settings.rate.toFixed(2)}×</strong></span>
                   <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => setSettings((current) => ({ ...current, rate: Number(event.target.value) }))} />
                 </label>
-              </div>
+                </div>
+              </details>
 
               <div className="transcript-actions">
                 <button className="button ghost small" onClick={() => setShowHistory((current) => !current)}>
@@ -810,12 +828,12 @@ export function TranslatorExperience() {
             </section>
           </div>
 
-          <section className="calibration-panel" id="personal-vocabulary" aria-labelledby="calibration-title">
+          <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef}>
+            <summary><span>Personal vocabulary <small>{activeCustomCount} signs taught</small></span><ChevronDown size={18} aria-hidden="true" /></summary>
             <div className="calibration-heading">
               <div>
-                <p className="panel-kicker">On-device personal recognizer</p>
-                <h2 id="calibration-title">Teach your {model.shortName} vocabulary</h2>
-                <p>{selected === "asl" ? `The ${ASL_BUILT_IN_VOCABULARY.length.toLocaleString()} WLASL words above are built in. For a word or short phrase outside that model, type it below and record the complete sign two or three times.` : model.status === "preparing" ? `A shared ${model.shortName} model is not installed yet. You can type a word or short phrase and record two or three private examples; these never become a claimed built-in translation.` : `Choose from ${model.vocabulary.length.toLocaleString()} built-in ${model.shortName} starter labels below, or type your own. Record the complete sign two or three times to activate a reliable personal match.`} SignRelay stores only normalised landmarks on this device—not camera video.</p>
+                <h2 id="calibration-title">Teach a {model.shortName} sign</h2>
+                <p>Choose a word, then record its complete sign two or three times. Examples stay on this device.</p>
               </div>
               <div className="calibration-progress" aria-label={`${activeCustomCount} personal words active`}>
                 <strong>{activeCustomCount}</strong><span> personal</span>
@@ -905,8 +923,11 @@ export function TranslatorExperience() {
             {filteredCalibrationVocabulary.length > visibleCalibrationVocabulary.length && (
               <p className="calibration-message">Showing {visibleCalibrationVocabulary.length} of {filteredCalibrationVocabulary.length.toLocaleString()} words. Search to narrow the library.</p>
             )}
-          </section>
+          </details>
 
+          <details className="workspace-disclosure privacy-disclosure">
+            <summary>Privacy &amp; model details <ChevronDown size={18} aria-hidden="true" /></summary>
+            <p className="model-detail-copy">{model.status === "experimental" ? `${model.automaticVocabularyCount.toLocaleString()} automatic ${model.shortName} test signs · ${model.version}. This is an isolated-sign research model, not a validated continuous sign-language interpreter.` : model.status === "preparing" ? `No shared automatic ${model.shortName} model is installed. Recognition uses only the private signs you teach.` : `${model.vocabulary.length.toLocaleString()} ${model.shortName} starter labels are available to teach. Labels are not pre-trained translations.`} Personal examples store normalised landmarks, never camera video.</p>
           <section className="privacy-strip" aria-labelledby="privacy-heading">
             <ShieldCheck size={25} aria-hidden="true" />
             <div>
@@ -915,6 +936,7 @@ export function TranslatorExperience() {
             </div>
             <button className="button ghost small" onClick={clearAllLocalData}>Clear local data</button>
           </section>
+          </details>
         </main>
         <SiteFooter />
       </div>
@@ -923,6 +945,7 @@ export function TranslatorExperience() {
 
   return (
     <div className="app-shell">
+      <SurfaceMotion scene="welcome" />
       <SiteHeader />
       <main>
         <section className="cinematic-hero" aria-labelledby="hero-title">
@@ -956,7 +979,7 @@ export function TranslatorExperience() {
         </section>
 
         <section className="language-section" id="choose-language" tabIndex={-1} aria-labelledby="language-title">
-          <div className="section-heading">
+          <div className="section-heading" data-reveal>
             <h2 id="language-title">Your language.<br />Your conversation.</h2>
             <p>Every language stays separate, so its signing is treated with the respect it deserves.</p>
           </div>
@@ -964,6 +987,7 @@ export function TranslatorExperience() {
             {LANGUAGE_LIST.map((language, index) => (
               <button
                 key={language.id}
+                data-reveal
                 className={`language-card ${selected === language.id ? "selected" : ""}`}
                 onClick={() => selectLanguage(language.id)}
                 role="radio"
@@ -989,7 +1013,7 @@ export function TranslatorExperience() {
               </button>
             ))}
           </div>
-          <div className="language-continue" aria-live="polite">
+          <div className="language-continue" aria-live="polite" data-reveal>
             <p>{model.status === "experimental"
               ? `Selected: ${model.language} · ${model.automaticVocabularyCount.toLocaleString()} automatic research signs + your own personal signs`
               : model.status === "preparing"
