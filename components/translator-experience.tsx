@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   useCallback,
   useEffect,
@@ -924,37 +925,59 @@ export function TranslatorExperience() {
     <div className="app-shell">
       <SiteHeader />
       <main>
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-inner">
-            <h1 id="hero-title">Sign freely.<br /><span>Be understood.</span></h1>
-            <p className="hero-copy">Turning signs into conversation, privately and directly in your browser.</p>
-            <div className="hero-actions">
-              <button className="button primary" onClick={() => document.getElementById("choose-language")?.scrollIntoView({ behavior: "smooth" })}>
-                Start translating <ArrowRight size={18} aria-hidden="true" />
-              </button>
-              <a className="button secondary" href="/how-it-works">How it works</a>
+        <section className="cinematic-hero" aria-labelledby="hero-title">
+          <div className="product-preview" role="img" aria-label="Illustrative SignRelay interface preview. Camera is off. Example transcript: Hello. Nice to meet you.">
+            <div className="preview-toolbar" aria-hidden="true">
+              <span>SignRelay</span><span>Interface preview</span>
             </div>
-            <p className="hero-note">Runs on your device. Camera frames stay with you.</p>
+            <div className="preview-surface" aria-hidden="true">
+              <div className="preview-camera">
+                <span className="preview-label"><CameraOff size={14} /> Camera off</span>
+                <Image src="/signrelay-mark.png" width={220} height={220} alt="" priority unoptimized />
+                <span className="preview-camera-note">Your space to sign.</span>
+              </div>
+              <div className="preview-transcript">
+                <span className="preview-label">Example transcript</span>
+                <p>Hello.<br /><span>Nice to meet you.</span></p>
+                <span className="preview-privacy"><ShieldCheck size={15} /> On your device</span>
+              </div>
+            </div>
           </div>
-          <div className="hero-visual" aria-hidden="true">
-            <div className="hero-arc" />
-            <div className="hero-mark-wrap"><img src="/signrelay-mark.png" width="560" height="560" alt="" /></div>
+          <div className="cinematic-copy">
+            <p className="cinematic-label">A little closer. A little clearer.</p>
+            <h1 id="hero-title">Sign freely.<br />Connect naturally.</h1>
+            <p className="cinematic-description">Explore sign recognition in your browser.<br />Your camera stays yours.</p>
           </div>
+          <div className="cinematic-actions">
+            <a className="button cinematic-cta" href="#choose-language">Start translating <ArrowRight size={17} aria-hidden="true" /></a>
+            <a className="cinematic-learn" href="/how-it-works">How it works</a>
+          </div>
+          <p className="cinematic-footnote">Private by default <span aria-hidden="true">/</span> Research preview</p>
         </section>
 
-        <section className="language-section" id="choose-language" aria-labelledby="language-title">
+        <section className="language-section" id="choose-language" tabIndex={-1} aria-labelledby="language-title">
           <div className="section-heading">
-            <h2 id="language-title">Pick your language.</h2>
+            <h2 id="language-title">Your language.<br />Your conversation.</h2>
             <p>Every language stays separate, so its signing is treated with the respect it deserves.</p>
           </div>
           <div className="language-grid" role="radiogroup" aria-label="Sign language">
-            {LANGUAGE_LIST.map((language) => (
+            {LANGUAGE_LIST.map((language, index) => (
               <button
                 key={language.id}
                 className={`language-card ${selected === language.id ? "selected" : ""}`}
                 onClick={() => selectLanguage(language.id)}
                 role="radio"
                 aria-checked={selected === language.id}
+                tabIndex={selected === language.id ? 0 : -1}
+                onKeyDown={(event) => {
+                  const direction = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+                  if (direction === undefined && event.key !== "Home" && event.key !== "End") return;
+                  event.preventDefault();
+                  const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? LANGUAGE_LIST.length - 1
+                    : (index + direction! + LANGUAGE_LIST.length) % LANGUAGE_LIST.length;
+                  selectLanguage(LANGUAGE_LIST[nextIndex].id);
+                  event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[nextIndex]?.focus();
+                }}
               >
                 <span className="language-code">{language.shortName}</span>
                 <h3>{language.language}</h3>
