@@ -5,16 +5,28 @@ const STORE_NAME = "templates";
 const DATABASE_VERSION = 1;
 const MAX_EXAMPLES_PER_GLOSS = 3;
 
+export function validCalibrationTemplate(value: unknown): value is CalibrationTemplate {
+  if (!value || typeof value !== "object") return false;
+  const t = value as CalibrationTemplate;
+  return typeof t.id === "string" && t.id.length <= 200
+    && typeof t.gloss === "string" && t.gloss.length > 0 && t.gloss.length <= 100
+    && typeof t.text === "string" && t.text.length <= 100 && Number.isFinite(t.createdAt)
+    && (t.language === undefined || ["asl", "auslan", "bsl", "csl", "isl", "lse"].includes(t.language))
+    && Array.isArray(t.frames) && t.frames.length === 24
+    && t.frames.every(row => Array.isArray(row) && [208, 240].includes(row.length) && row.every(Number.isFinite));
+}
+
 export async function loadCalibrationTemplates(): Promise<CalibrationTemplate[]> {
   const database = await openDatabase();
   return new Promise((resolve, reject) => {
     const request = database.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll();
-    request.onsuccess = () => resolve((request.result as CalibrationTemplate[]).sort((a, b) => b.createdAt - a.createdAt));
+    request.onsuccess = () => { database.close(); resolve(request.result.filter(validCalibrationTemplate).sort((a: CalibrationTemplate, b: CalibrationTemplate) => b.createdAt - a.createdAt)); };
     request.onerror = () => reject(request.error);
   });
 }
 
 export async function saveCalibrationTemplate(template: CalibrationTemplate) {
+  if (!validCalibrationTemplate(template)) throw new Error("Invalid personal sign example");
   const existing = (await loadCalibrationTemplates())
     .filter((item) => item.gloss === template.gloss && (item.language ?? "asl") === (template.language ?? "asl"))
     .sort((a, b) => b.createdAt - a.createdAt);

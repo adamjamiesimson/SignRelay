@@ -35,33 +35,54 @@ export const DEFAULT_SETTINGS: SpeechSettings = {
 export function loadSettings(): SpeechSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS;
   try {
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? "{}") };
+    const value = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? "{}");
+    return {
+      autoSpeak: typeof value?.autoSpeak === "boolean" ? value.autoSpeak : false,
+      showOverlay: typeof value?.showOverlay === "boolean" ? value.showOverlay : true,
+      volume: Number.isFinite(value?.volume) ? Math.max(0, Math.min(1, value.volume)) : DEFAULT_SETTINGS.volume,
+      rate: Number.isFinite(value?.rate) ? Math.max(0.5, Math.min(2, value.rate)) : DEFAULT_SETTINGS.rate,
+    };
   } catch {
     return DEFAULT_SETTINGS;
   }
 }
 
 export function saveSettings(settings: SpeechSettings) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch { /* Device storage may be unavailable. */ }
 }
 
 export function loadHistory(): TranscriptSession[] {
   if (typeof window === "undefined") return [];
   try {
     const history = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]");
-    return Array.isArray(history) ? history : [];
+    return Array.isArray(history) ? history.filter(validSession).slice(0, 8) : [];
   } catch {
     return [];
   }
 }
 
 export function saveSession(session: TranscriptSession) {
-  if (!session.entries.length) return;
+  if (!validSession(session) || !session.entries.length) return false;
   const history = loadHistory();
-  localStorage.setItem(HISTORY_KEY, JSON.stringify([session, ...history].slice(0, 8)));
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify([session, ...history].slice(0, 8)));
+    return true;
+  } catch { return false; }
+}
+
+function validSession(value: unknown): value is TranscriptSession {
+  if (!value || typeof value !== "object") return false;
+  const s = value as TranscriptSession;
+  return typeof s.id === "string" && s.id.length <= 100 && ["asl", "auslan", "bsl", "csl", "isl", "lse"].includes(s.language)
+    && Number.isFinite(s.createdAt) && Array.isArray(s.entries) && s.entries.length <= 5000
+    && s.entries.every(e => e && typeof e.id === "string" && e.id.length <= 100
+      && typeof e.text === "string" && e.text.length <= 500 && typeof e.gloss === "string" && e.gloss.length <= 500
+      && Number.isFinite(e.timestamp) && Number.isFinite(e.confidence) && e.confidence >= 0 && e.confidence <= 1);
 }
 
 export function clearLocalSignRelayData() {
-  localStorage.removeItem(SETTINGS_KEY);
-  localStorage.removeItem(HISTORY_KEY);
+  try {
+    localStorage.removeItem(SETTINGS_KEY);
+    localStorage.removeItem(HISTORY_KEY);
+  } catch { /* Clearing site data through the browser remains available. */ }
 }

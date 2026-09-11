@@ -94,6 +94,7 @@ export function TranslatorExperience() {
   const [recognitionFeedback, setRecognitionFeedback] = useState("");
   const [recognitionUnavailable, setRecognitionUnavailable] = useState(false);
   const [entries, setEntries] = useState<TranscriptEntry[]>([]);
+  const [storageMessage, setStorageMessage] = useState("");
   const [history, setHistory] = useState<TranscriptSession[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -386,7 +387,7 @@ export function TranslatorExperience() {
         else workerRef.current?.postMessage({ type: "frame", frame });
         frameErrorsRef.current = 0;
       } catch (error) {
-        console.warn("A video frame could not be processed", error);
+        if (process.env.NODE_ENV === "development") console.warn("A video frame could not be processed", error);
         if (++frameErrorsRef.current >= 5) {
           stopCamera();
           setCameraState("error");
@@ -587,12 +588,14 @@ export function TranslatorExperience() {
   };
 
   const clearTranscript = () => {
-    saveSession({
+    const saved = saveSession({
       id: String(sessionStartedRef.current),
       language: selected,
       createdAt: sessionStartedRef.current,
       entries,
     });
+    if (!saved) { setStorageMessage("Could not save on this device. Your transcript has been kept here."); return; }
+    setStorageMessage("");
     setEntries([]);
     sessionStartedRef.current = Date.now();
     setHistory(loadHistory());
@@ -752,6 +755,7 @@ export function TranslatorExperience() {
                         {editingId === entry.id ? (
                           <input
                             className="entry-editor"
+                            maxLength={500}
                             value={entry.text}
                             autoFocus
                             onChange={(event) => setEntries((current) => current.map((item) => item.id === entry.id ? { ...item, text: event.target.value } : item))}
@@ -814,6 +818,7 @@ export function TranslatorExperience() {
                 </button>
               </div>
 
+              {storageMessage && <p className="calibration-message" role="status">{storageMessage}</p>}
               {showHistory && (
                 <div className="history-drawer">
                   <div className="history-heading"><strong>Local history</strong><button onClick={() => setShowHistory(false)} aria-label="Close history"><X size={17} /></button></div>
@@ -956,7 +961,7 @@ export function TranslatorExperience() {
             <div className="preview-surface" aria-hidden="true">
               <div className="preview-camera">
                 <span className="preview-label"><CameraOff size={14} /> Camera off</span>
-                <Image src="/signrelay-mark.png" width={220} height={220} alt="" priority unoptimized />
+                <Image src="/signrelay-mark.webp" width={220} height={220} alt="" priority unoptimized />
                 <span className="preview-camera-note">Your space to sign.</span>
               </div>
               <div className="preview-transcript">

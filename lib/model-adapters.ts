@@ -85,6 +85,7 @@ export const PERSONAL_STARTER_VOCABULARY: AslVocabularyEntry[] = PERSONAL_STARTE
   .map((gloss) => ({ gloss, text: title(gloss), category: "learning", recognition: "personal-calibration" }));
 
 export function createCustomVocabularyEntry(value: string): AslVocabularyEntry | null {
+  if (typeof value !== "string" || value.length > 48) return null;
   const text = value
     .trim()
     .replace(/\s+/g, " ")

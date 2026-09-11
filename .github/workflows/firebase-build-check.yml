@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -27,7 +29,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Firebase static export
         run: npm run build:firebase
@@ -45,6 +47,9 @@ jobs:
 
       - name: Lint application source
         run: npm run lint
+
+      - name: Audit dependencies, history and exported pages
+        run: npm run audit:security
 
       - name: Upload static export
         uses: actions/upload-artifact@v4

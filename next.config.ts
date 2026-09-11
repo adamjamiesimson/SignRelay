@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
   compress: true,
+  devIndicators: false,
+  allowedDevOrigins: ["terminal.local"],
 };
 
 export default nextConfig;

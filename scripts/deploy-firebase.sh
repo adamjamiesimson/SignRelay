@@ -3,7 +3,7 @@ set -euo pipefail
 
 if [[ "${1:-}" != "--deploy-only" ]]; then
   echo "Building SignRelay for Firebase Hosting..."
-  npm install
+  npm ci
   npm run build:firebase
 else
   echo "Using existing out/ build..."

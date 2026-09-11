@@ -1,9 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
+import { PrivacyChoices } from "./privacy-choices";
 
 export function Brand() {
   return (
     <Link className="brand" href="/" aria-label="SignRelay home">
-      <img className="brand-mark" src="/signrelay-mark.png" width="42" height="42" alt="" aria-hidden="true" />
+      <Image className="brand-mark" src="/signrelay-mark.webp" width={42} height={42} alt="" aria-hidden="true" unoptimized />
       <span className="brand-wordmark">SignRelay</span>
     </Link>
   );
@@ -26,8 +28,10 @@ export function SiteFooter() {
       <span>SignRelay · Private by default · Research preview</span>
       <nav aria-label="Footer navigation">
         <Link href="/privacy">Privacy</Link>
+        <Link href="/terms">Terms</Link>
         <Link href="/about">About</Link>
         <Link href="/roadmap">Roadmap</Link>
+        <PrivacyChoices />
       </nav>
     </footer>
   );

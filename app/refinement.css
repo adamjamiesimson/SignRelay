@@ -234,3 +234,14 @@ body, .app-shell, .workspace-page, .info-page, .not-found { background: var(--pa
 @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
   .cursor-aura { display: none; }
 }
+/* Privacy controls remain usable on narrow screens and above decorative layers. */
+.privacy-settings-link { color: #b4cecc; background: none; border: 0; padding: 8px 0; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
+.cookie-banner { position: fixed; z-index: 100; bottom: 20px; left: 20px; right: 20px; max-width: 760px; margin: auto; padding: 24px; border: 1px solid #426763; border-radius: 20px; background: #071a1c; color: #edfffc; box-shadow: 0 12px 60px #0009; max-height: 80svh; overflow: auto; }
+.cookie-banner h2 { font-size: 1.1rem; margin: 0 0 10px; }
+.cookie-banner p { font-size: 1rem; line-height: 1.6; color: #bdd4d1; }
+.cookie-banner a { color: #8ff5e2; text-decoration: underline; }
+.cookie-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.hero-note { color: #a7c7c3; }
+.calibration-message.error { background: #321c20; color: #ffc2b8; }
+:focus-visible { outline: 2px solid #8ff5e2; outline-offset: 4px; }
+@media (max-width: 480px) { .cookie-banner { bottom: 12px; left: 12px; right: 12px; padding: 20px; } }

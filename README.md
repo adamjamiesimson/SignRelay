@@ -69,6 +69,8 @@ The camera requires a secure origin in production. Localhost is treated as secur
 
 No application secrets or paid API keys are required. Vision model assets are fetched from the official public MediaPipe model bucket and inference runs locally after loading.
 
+The only supported public variable is `NEXT_PUBLIC_GA_MEASUREMENT_ID` (see `.env.example`). Leave it empty to disable analytics. To enable GA4, configure your own measurement ID, turn off Enhanced Measurement in the Google Analytics data stream (to avoid automatic collection of form, search and navigation data), choose the appropriate retention settings, and rebuild. Visitors must opt in before any analytics script loads. Never put a secret in a `NEXT_PUBLIC_` variable or in `public/`; both are delivered to browsers.
+
 ## Training a larger model
 
 Read [`training/README.md`](training/README.md), then use the provided pipeline entry point:
@@ -107,14 +109,17 @@ Dataset names, vocabulary size and availability do not imply a licence suitable 
 ```bash
 npm test
 npm run lint
-npm run test:rendered
+npm run build:firebase
+npm run audit:security
 ```
 
 The unit suite verifies low-confidence rejection, temporal consensus and duplicate suppression. The rendered test checks all public routes and production metadata.
 
 ## Deployment
 
-The application targets the Vinext/Cloudflare-compatible Sites runtime. The production build emits the worker and static assets used by the hosted site.
+The application is a Next.js static export hosted on Firebase. There are no deployed server API routes, admin pages, user accounts or cloud database. Run `npm ci`, then `npm run build:firebase`, then `firebase deploy --only hosting --project signrelay-76f34`. Deploy only `out/`, as configured in `firebase.json`. Build-generated HTML policies and Firebase response headers work together; do not skip the secure-export build step. `npm start` serves the export locally for verification.
+
+See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls, limitations and Firebase account settings that need owner verification. The Privacy Policy and Terms pages describe this research build; review them against your actual operator details and applicable requirements before public launch.
 
 ## Privacy
 
