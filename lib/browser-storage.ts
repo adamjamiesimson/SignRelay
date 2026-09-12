@@ -1,4 +1,4 @@
-import type { LanguageId } from "./model-adapters";
+import { isLanguageId, type LanguageId } from "./model-adapters";
 
 export type TranscriptEntry = {
   id: string;
@@ -73,7 +73,7 @@ export function saveSession(session: TranscriptSession) {
 function validSession(value: unknown): value is TranscriptSession {
   if (!value || typeof value !== "object") return false;
   const s = value as TranscriptSession;
-  return typeof s.id === "string" && s.id.length <= 100 && ["asl", "auslan", "bsl", "csl", "isl", "lse"].includes(s.language)
+  return typeof s.id === "string" && s.id.length <= 100 && isLanguageId(s.language)
     && Number.isFinite(s.createdAt) && Array.isArray(s.entries) && s.entries.length <= 5000
     && s.entries.every(e => e && typeof e.id === "string" && e.id.length <= 100
       && typeof e.text === "string" && e.text.length <= 500 && typeof e.gloss === "string" && e.gloss.length <= 500

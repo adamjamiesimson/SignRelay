@@ -72,7 +72,7 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(messages.at(-1)).toMatchObject({ type: "analysis", candidate: null });
   });
 
-  it.each(["csl", "auslan", "lse"] as const)("does not call another language's classifier for %s without installed assets", async language => {
+  it.each(["csl", "auslan", "lse", "uaesl", "vsl"] as const)("does not call another language's classifier for %s without installed assets", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     await frames(100);
     for (const id of ["asl", "bsl", "isl", "lse"] as const) expect(mocks[id]).not.toHaveBeenCalled();
@@ -103,7 +103,7 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(confirmations()).toHaveLength(1);
   });
 
-  it.each(["asl", "auslan", "bsl", "csl", "isl", "lse"] as const)("preserves personal recognition for %s", async language => {
+  it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "uaesl", "vsl"] as const)("preserves personal recognition for %s", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks.personal.mockReturnValue(prediction);
     // Personal templates and static starter signs have their own evidence gate.

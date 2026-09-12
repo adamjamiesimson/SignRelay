@@ -73,6 +73,12 @@ body, .app-shell, .workspace-page, .info-page, .not-found { background: var(--pa
 .section-heading { align-items: end; margin-bottom: 38px; }
 .section-heading h2 { color: var(--ink); font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 550; line-height: 1.12; letter-spacing: -.045em; }
 .section-heading p { max-width: 350px; font-size: 1rem; line-height: 1.65; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.language-browser { max-width: 1180px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 22px; }
+.language-search { width: min(100%, 430px); min-height: 50px; display: flex; align-items: center; gap: 11px; padding: 0 16px; color: var(--muted); border: 1px solid var(--line); border-radius: 14px; background: rgba(8, 28, 31, .7); }
+.language-search:focus-within { color: var(--brand); border-color: rgba(100, 228, 213, .55); box-shadow: 0 0 0 3px rgba(100, 228, 213, .08); }
+.language-search input { width: 100%; min-width: 0; padding: 13px 0; color: var(--ink); border: 0; outline: 0; background: transparent; font: inherit; font-size: 1rem; }
+.language-search input::placeholder { color: #718b8d; opacity: 1; }
 .language-grid { gap: 0; border-top: 1px solid var(--line); }
 .language-card, .language-card:nth-child(3n), .language-card:nth-child(2n) {
   min-height: 250px; padding: 28px 24px; border: 0; border-bottom: 1px solid var(--line);
@@ -84,6 +90,8 @@ body, .app-shell, .workspace-page, .info-page, .not-found { background: var(--pa
 .language-code { padding: 0; background: transparent; color: var(--brand); font-size: .875rem; font-weight: 600; }
 .language-card h3 { margin: 26px 0 10px; font-size: 1.125rem; font-weight: 550; color: var(--ink); }
 .language-card p { font-size: .9375rem; }
+.language-card.personal { min-height: 220px; }
+.language-empty { grid-column: 1 / -1; margin: 0; padding: 34px 24px; color: var(--muted); border: 1px solid var(--line); border-radius: 18px; font-size: 1rem; line-height: 1.6; }
 .model-pill { padding-top: 22px; font-size: .8125rem; font-weight: 500; line-height: 1.5; }
 .language-continue { padding-top: 30px; }
 .language-continue p { max-width: 620px; font-size: .875rem; line-height: 1.6; }
@@ -220,6 +228,9 @@ body, .app-shell, .workspace-page, .info-page, .not-found { background: var(--pa
   .workspace-title .language-code { display: none; }
 }
 @media (max-width: 560px) {
+  .language-browser { align-items: stretch; flex-direction: column; }
+  .language-search { width: 100%; }
+  .language-browser .button { width: 100%; }
   .workspace-page { padding-top: 20px; }
   .workspace-topbar { gap: 14px; }
   .honesty-banner { gap: 8px; }

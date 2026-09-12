@@ -1,6 +1,15 @@
 import WLASL2000_LABELS from "../public/models/asl2000-tgcn/labels.json";
 
-export type LanguageId = "asl" | "auslan" | "bsl" | "csl" | "isl" | "lse";
+export const LANGUAGE_IDS = [
+  "asl", "bsl", "isl", "lse", "auslan", "csl",
+  "lsf", "dgs", "libras", "lsa", "nzsl", "jsl", "ksl", "tid",
+  "uaesl", "ssl", "egysl", "lis", "lgp", "ngt", "vgt", "dsgs",
+  "irsl", "pjm", "usl", "rsl", "lsm", "lsc", "lsch", "lsp",
+  "sasl", "ksl_ke", "bisindo", "bim", "sgsl", "tsl", "fsl", "psl",
+  "bdsl", "vsl",
+] as const;
+
+export type LanguageId = typeof LANGUAGE_IDS[number];
 
 export type ModelAdapter = {
   id: LanguageId;
@@ -84,6 +93,34 @@ export const PERSONAL_STARTER_CONCEPTS = Array.from(new Set([
 export const PERSONAL_STARTER_VOCABULARY: AslVocabularyEntry[] = PERSONAL_STARTER_CONCEPTS
   .map((gloss) => ({ gloss, text: title(gloss), category: "learning", recognition: "personal-calibration" }));
 
+type PersonalLanguageDefinition = {
+  id: LanguageId;
+  shortName: string;
+  language: string;
+  speechLocale: string;
+};
+
+function personalLanguage({ id, shortName, language, speechLocale }: PersonalLanguageDefinition): ModelAdapter {
+  return {
+    id,
+    shortName,
+    language,
+    status: "personal",
+    modelFile: "On-device signer-taught landmark recognizer",
+    automaticVocabularyCount: 0,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
+    sequenceLength: 24,
+    confidenceThreshold: 0.76,
+    decoder: "Language-scoped, signer-specific dynamic-time-warping templates stored only on this device",
+    postProcessing: "Confidence gate, competing-sign margin, temporal consensus and duplicate suppression",
+    version: "personal-dtw-v2",
+    dataset: "No third-party training dataset is bundled; recognition uses only landmark examples recorded by the signer.",
+    speechLocale,
+    summary: `${PERSONAL_STARTER_CONCEPTS.length.toLocaleString()} concept prompts and unlimited custom signs, ready to teach privately on this device.`,
+  };
+}
+
 export function createCustomVocabularyEntry(value: string): AslVocabularyEntry | null {
   if (typeof value !== "string" || value.length > 48) return null;
   const text = value
@@ -132,7 +169,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     status: "preparing",
     modelFile: null,
     automaticVocabularyCount: 0,
-    vocabulary: [],
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
     inputFormat: "64 body-and-hand landmark frames (19 pose points + two 21-point hands, x/y/z)",
     sequenceLength: 64,
     confidenceThreshold: 0.76,
@@ -150,7 +187,7 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     status: "preparing",
     modelFile: null,
     automaticVocabularyCount: 0,
-    vocabulary: [],
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
     inputFormat: "Planned: video/pose sequence model using the official MM-WLAuslan data contract",
     sequenceLength: 0,
     confidenceThreshold: 0,
@@ -215,6 +252,44 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     speechLocale: "zh-CN",
     summary: "2,000+ built-in CSL starter concepts, ready to teach privately on this device.",
   },
+  lsf: personalLanguage({ id: "lsf", shortName: "LSF", language: "French Sign Language", speechLocale: "fr-FR" }),
+  dgs: personalLanguage({ id: "dgs", shortName: "DGS", language: "German Sign Language", speechLocale: "de-DE" }),
+  libras: personalLanguage({ id: "libras", shortName: "LIBRAS", language: "Brazilian Sign Language", speechLocale: "pt-BR" }),
+  lsa: personalLanguage({ id: "lsa", shortName: "LSA", language: "Argentine Sign Language", speechLocale: "es-AR" }),
+  nzsl: personalLanguage({ id: "nzsl", shortName: "NZSL", language: "New Zealand Sign Language", speechLocale: "en-NZ" }),
+  jsl: personalLanguage({ id: "jsl", shortName: "JSL", language: "Japanese Sign Language", speechLocale: "ja-JP" }),
+  ksl: personalLanguage({ id: "ksl", shortName: "KSL", language: "Korean Sign Language", speechLocale: "ko-KR" }),
+  tid: personalLanguage({ id: "tid", shortName: "TİD", language: "Turkish Sign Language", speechLocale: "tr-TR" }),
+  uaesl: personalLanguage({ id: "uaesl", shortName: "UAE SL", language: "Emirati Sign Language", speechLocale: "ar-AE" }),
+  ssl: personalLanguage({ id: "ssl", shortName: "Saudi SL", language: "Saudi Sign Language", speechLocale: "ar-SA" }),
+  egysl: personalLanguage({ id: "egysl", shortName: "Egyptian SL", language: "Egyptian Sign Language", speechLocale: "ar-EG" }),
+  lis: personalLanguage({ id: "lis", shortName: "LIS", language: "Italian Sign Language", speechLocale: "it-IT" }),
+  lgp: personalLanguage({ id: "lgp", shortName: "LGP", language: "Portuguese Sign Language", speechLocale: "pt-PT" }),
+  ngt: personalLanguage({ id: "ngt", shortName: "NGT", language: "Sign Language of the Netherlands", speechLocale: "nl-NL" }),
+  vgt: personalLanguage({ id: "vgt", shortName: "VGT", language: "Flemish Sign Language", speechLocale: "nl-BE" }),
+  dsgs: personalLanguage({ id: "dsgs", shortName: "DSGS", language: "Swiss German Sign Language", speechLocale: "de-CH" }),
+  irsl: personalLanguage({ id: "irsl", shortName: "Irish SL", language: "Irish Sign Language", speechLocale: "en-IE" }),
+  pjm: personalLanguage({ id: "pjm", shortName: "PJM", language: "Polish Sign Language", speechLocale: "pl-PL" }),
+  usl: personalLanguage({ id: "usl", shortName: "USL", language: "Ukrainian Sign Language", speechLocale: "uk-UA" }),
+  rsl: personalLanguage({ id: "rsl", shortName: "RSL", language: "Russian Sign Language", speechLocale: "ru-RU" }),
+  lsm: personalLanguage({ id: "lsm", shortName: "LSM", language: "Mexican Sign Language", speechLocale: "es-MX" }),
+  lsc: personalLanguage({ id: "lsc", shortName: "LSC", language: "Colombian Sign Language", speechLocale: "es-CO" }),
+  lsch: personalLanguage({ id: "lsch", shortName: "LSCh", language: "Chilean Sign Language", speechLocale: "es-CL" }),
+  lsp: personalLanguage({ id: "lsp", shortName: "LSP", language: "Peruvian Sign Language", speechLocale: "es-PE" }),
+  sasl: personalLanguage({ id: "sasl", shortName: "SASL", language: "South African Sign Language", speechLocale: "en-ZA" }),
+  ksl_ke: personalLanguage({ id: "ksl_ke", shortName: "KSL · Kenya", language: "Kenyan Sign Language", speechLocale: "en-KE" }),
+  bisindo: personalLanguage({ id: "bisindo", shortName: "BISINDO", language: "Indonesian Sign Language", speechLocale: "id-ID" }),
+  bim: personalLanguage({ id: "bim", shortName: "BIM", language: "Malaysian Sign Language", speechLocale: "ms-MY" }),
+  sgsl: personalLanguage({ id: "sgsl", shortName: "SgSL", language: "Singapore Sign Language", speechLocale: "en-SG" }),
+  tsl: personalLanguage({ id: "tsl", shortName: "TSL", language: "Thai Sign Language", speechLocale: "th-TH" }),
+  fsl: personalLanguage({ id: "fsl", shortName: "FSL", language: "Filipino Sign Language", speechLocale: "en-PH" }),
+  psl: personalLanguage({ id: "psl", shortName: "PSL", language: "Pakistan Sign Language", speechLocale: "ur-PK" }),
+  bdsl: personalLanguage({ id: "bdsl", shortName: "BdSL", language: "Bangla Sign Language", speechLocale: "bn-BD" }),
+  vsl: personalLanguage({ id: "vsl", shortName: "VSL", language: "Vietnamese Sign Language", speechLocale: "vi-VN" }),
 };
 
-export const LANGUAGE_LIST = Object.values(MODEL_ADAPTERS);
+export const LANGUAGE_LIST = LANGUAGE_IDS.map((id) => MODEL_ADAPTERS[id]);
+
+export function isLanguageId(value: unknown): value is LanguageId {
+  return typeof value === "string" && (LANGUAGE_IDS as readonly string[]).includes(value);
+}

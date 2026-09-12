@@ -24,6 +24,7 @@ import {
   Pause,
   Play,
   RefreshCw,
+  Search,
   ShieldCheck,
   Sparkles,
   Trash2,
@@ -103,6 +104,8 @@ export function TranslatorExperience() {
   const [calibrationWord, setCalibrationWord] = useState<AslVocabularyEntry>(() => createCustomVocabularyEntry("Personal sign")!);
   const [customWordInput, setCustomWordInput] = useState("");
   const [vocabularySearch, setVocabularySearch] = useState("");
+  const [languageSearch, setLanguageSearch] = useState("");
+  const [showAllLanguages, setShowAllLanguages] = useState(false);
   const [calibrationState, setCalibrationState] = useState<CalibrationState>("idle");
   const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
   const [countdown, setCountdown] = useState(3);
@@ -132,6 +135,16 @@ export function TranslatorExperience() {
     () => LANGUAGE_LIST.find((item) => item.id === selected)!,
     [selected],
   );
+
+  const visibleLanguages = useMemo(() => {
+    const query = languageSearch.trim().toLocaleLowerCase();
+    if (query) {
+      return LANGUAGE_LIST.filter((language) =>
+        `${language.shortName} ${language.language}`.toLocaleLowerCase().includes(query),
+      );
+    }
+    return showAllLanguages ? LANGUAGE_LIST : LANGUAGE_LIST.slice(0, 6);
+  }, [languageSearch, showAllLanguages]);
 
   const calibrationCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -986,14 +999,37 @@ export function TranslatorExperience() {
         <section className="language-section" id="choose-language" tabIndex={-1} aria-labelledby="language-title">
           <div className="section-heading" data-reveal>
             <h2 id="language-title">Your language.<br />Your conversation.</h2>
-            <p>Every language stays separate, so its signing is treated with the respect it deserves.</p>
+            <p>{LANGUAGE_LIST.length} separate sign-language workspaces. Three include automatic research models; every language supports private signs taught by its signer.</p>
+          </div>
+          <div className="language-browser" data-reveal>
+            <label className="language-search">
+              <Search size={17} aria-hidden="true" />
+              <span className="sr-only">Search sign languages</span>
+              <input
+                type="search"
+                value={languageSearch}
+                onChange={(event) => setLanguageSearch(event.target.value)}
+                placeholder={`Search ${LANGUAGE_LIST.length} sign languages`}
+              />
+            </label>
+            <button
+              className="button ghost small"
+              type="button"
+              aria-expanded={showAllLanguages}
+              onClick={() => {
+                setShowAllLanguages((current) => !current);
+                if (showAllLanguages) setLanguageSearch("");
+              }}
+            >
+              {showAllLanguages ? "Show core six" : `Browse all ${LANGUAGE_LIST.length}`}
+            </button>
           </div>
           <div className="language-grid" role="radiogroup" aria-label="Sign language">
-            {LANGUAGE_LIST.map((language, index) => (
+            {visibleLanguages.map((language, index) => (
               <button
                 key={language.id}
                 data-reveal
-                className={`language-card ${selected === language.id ? "selected" : ""}`}
+                className={`language-card ${language.status} ${selected === language.id ? "selected" : ""}`}
                 onClick={() => selectLanguage(language.id)}
                 role="radio"
                 aria-checked={selected === language.id}
@@ -1002,9 +1038,9 @@ export function TranslatorExperience() {
                   const direction = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
                   if (direction === undefined && event.key !== "Home" && event.key !== "End") return;
                   event.preventDefault();
-                  const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? LANGUAGE_LIST.length - 1
-                    : (index + direction! + LANGUAGE_LIST.length) % LANGUAGE_LIST.length;
-                  selectLanguage(LANGUAGE_LIST[nextIndex].id);
+                  const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? visibleLanguages.length - 1
+                    : (index + direction! + visibleLanguages.length) % visibleLanguages.length;
+                  selectLanguage(visibleLanguages[nextIndex].id);
                   event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[nextIndex]?.focus();
                 }}
               >
@@ -1013,16 +1049,19 @@ export function TranslatorExperience() {
                 <p>{language.summary}</p>
                 <span className={`model-pill ${language.status === "experimental" ? "available" : language.status === "preparing" ? "preparing" : "personal"}`}>
                   <span className="mini-dot" aria-hidden="true" />
-                  {language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()}-sign research model + personal vocabulary` : language.status === "preparing" ? "Shared model preparing · private vocabulary available" : `${language.vocabulary.length}+ word starter library`}
+                  {language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()}-sign research model + personal vocabulary` : language.status === "preparing" ? `${language.vocabulary.length.toLocaleString()} teachable concepts · model preparing` : `${language.vocabulary.length.toLocaleString()} concept prompts + custom signs`}
                 </span>
               </button>
             ))}
+            {!visibleLanguages.length && (
+              <p className="language-empty">No language matches “{languageSearch}”. You can still type any word or phrase inside a language workspace.</p>
+            )}
           </div>
           <div className="language-continue" aria-live="polite" data-reveal>
             <p>{model.status === "experimental"
               ? `Selected: ${model.language} · ${model.automaticVocabularyCount.toLocaleString()} automatic research signs + your own personal signs`
               : model.status === "preparing"
-                ? `Selected: ${model.language} · no shared automatic model installed yet + your own private signs`
+                ? `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} teachable concepts + your own private signs; shared model preparing`
                 : `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} starter labels + unlimited private vocabulary`}</p>
             <button className="button primary" onClick={beginTranslation}>
               Continue to camera <ArrowRight size={18} aria-hidden="true" />

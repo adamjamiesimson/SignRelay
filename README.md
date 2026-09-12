@@ -6,11 +6,12 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 ## What works now
 
-- ASL, BSL, ISL and CSL have separate model adapter configurations and personal vocabularies.
+- Forty sign-language workspaces have separate identities, output locales and personal vocabularies.
 - Camera permission is requested only after language selection.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
 - A Web Worker maintains an ordered 32-frame temporal buffer.
-- The experimental ASL adapter includes the official local 1,000-sign WLASL Pose-TGCN isolated-sign model plus user-defined words or short phrases.
+- ASL, BSL and ISL include separate experimental browser models with 2,000, 1,064 and 263 isolated-sign outputs respectively.
+- Every non-ASL workspace includes 2,000+ searchable concept prompts plus unlimited custom words or short phrases; prompts activate only after the signer records examples in that language.
 - Personal and user-defined words are learned from one to three signer examples and matched on-device with dynamic time warping.
 - Results are gated by confidence, temporal consensus and cooldown.
 - Confirmed text can be edited, removed, saved locally, cleared and spoken.
@@ -22,11 +23,12 @@ This repository is an engineering foundation, not a claim of full sign-language 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
 | ASL | Experimental | 2,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL2000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
-| BSL | Personal recognizer | 2,000+ built-in concepts + unlimited signer-taught words | On-device dynamic time warping |
-| ISL | Personal recognizer | 2,000+ built-in concepts + unlimited signer-taught words | On-device dynamic time warping |
-| CSL | Personal recognizer | 2,000+ built-in concepts + unlimited signer-taught words | On-device dynamic time warping |
+| BSL | Experimental | 1,064 automatic BSL-1K signs + unlimited signer-taught words | Official BSL-1K Pose2Sign model + personal DTW templates |
+| ISL | Experimental | 263 automatic INCLUDE signs + unlimited signer-taught words | Official AI4Bharat INCLUDE transformer + personal DTW templates |
+| LSE and Auslan | Model preparing | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates; no automatic output yet |
+| 35 personal workspaces | Signer-taught | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates |
 
-The 2,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL2000 OpenPose sequences. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. Typed custom words activate only after the signer records personal examples; they do not alter the shared model. BSL, CSL and ISL are functional through their own signer-taught local recognizers, not through a fabricated shared checkpoint.
+The 2,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL2000 OpenPose sequences. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. BSL and ISL likewise use their own official isolated-sign checkpoints. Typed custom words activate only after the signer records personal examples; they do not alter a shared model. The remaining languages never borrow, relabel or fabricate a checkpoint.
 
 ## Architecture
 
@@ -45,8 +47,8 @@ Camera
 Important modules:
 
 - `lib/vision-engine.ts`: model loading and per-frame holistic tracking
-- `workers/recognition.worker.ts`: temporal buffer, segmentation and ASL starter inference
-- `lib/model-adapters.ts`: independent ASL, BSL, CSL and ISL model registry
+- `workers/recognition.worker.ts`: temporal buffer, segmentation, automatic model routing and personal inference
+- `lib/model-adapters.ts`: 40-language registry and independent model contracts
 - `lib/decoder.ts`: confidence gating and duplicate suppression
 - `components/translator-experience.tsx`: camera, transcript and speech experience
 - `lib/browser-storage.ts`: device-local settings and transcript sessions
@@ -132,12 +134,12 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 
 ## Known limitations
 
-- The installed shared checkpoint is the official experimental 1,000-sign WLASL Pose-TGCN model (published benchmark: 34.86% top-1, 61.73% top-5, 71.91% top-10). Its live MediaPipe input adapter and closed-set rejection gate must still be evaluated separately.
+- The installed ASL checkpoint is the official experimental 2,000-sign WLASL Pose-TGCN model. Its live MediaPipe input adapter and closed-set rejection gate must still be evaluated separately.
 - Personal template matching is signer-specific and is not a substitute for a signer-independent ASL benchmark.
 - Performance varies with viewpoint, signing speed, hand dominance, occlusion and lighting.
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.
 - No continuous unrestricted grammar decoder is installed.
-- BSL and ISL now use their own official isolated-sign checkpoints (1,064 and 263 labels respectively), still marked experimental because browser-side signer-independent evaluation has not yet been completed. CSL remains private-template only until a compatible real model is available.
+- BSL and ISL use their own official isolated-sign checkpoints (1,064 and 263 labels respectively), still marked experimental because browser-side signer-independent evaluation has not yet been completed. The other workspaces are signer-specific until compatible, language-specific models are legally available and evaluated.
 - The first model load requires internet access to download official MediaPipe assets.
 
 ## Roadmap
@@ -145,5 +147,5 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 1. Create legally cleared, signer-independent ASL starter benchmarks.
 2. Train and export a compact temporal sequence model with a blank class.
 3. Add learned sign boundaries and continuous word error rate evaluation.
-4. Co-design ISL and CSL adapters with native signers and language experts.
+4. Co-design shared adapters with native signers and language experts, prioritising the existing 40 language communities by data readiness and contributor interest.
 5. Add language-specific gloss-to-text decoding without hiding uncertainty.

@@ -33,6 +33,11 @@ describe("untrusted and unavailable browser storage", () => {
     t.frames[0][0] = Infinity;
     expect(validCalibrationTemplate(t)).toBe(false);
   });
+  it("accepts the expanded language IDs but rejects invented ones", () => {
+    const frames = Array.from({ length: 24 }, () => Array(240).fill(0));
+    expect(validCalibrationTemplate({ id: "uae", language: "uaesl", gloss: "HELP", text: "Help", createdAt: 1, frames })).toBe(true);
+    expect(validCalibrationTemplate({ id: "bad", language: "made-up", gloss: "HELP", text: "Help", createdAt: 1, frames })).toBe(false);
+  });
 });
 describe("privacy defaults", () => {
   it("rejects absent, malformed, future and expired consent", () => {

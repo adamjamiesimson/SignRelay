@@ -52,7 +52,7 @@ describe("recognition with slow and uneven camera delivery", () => {
     expect(mocks.model).not.toHaveBeenCalled();
     expect(confirmations()).toHaveLength(0);
   });
-  it.each(["asl", "auslan", "bsl", "csl", "isl", "lse"] as const)("confirms saved personal %s signs with slow delivery", async language => {
+  it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "uaesl", "vsl"] as const)("confirms saved personal %s signs with slow delivery", async language => {
     const movement = (duration: number, count: number) => makeSign("IDLE", { duration, count }).map((frame, index) => ({
       ...frame, hands: frame.hands.map(hand => ({ ...hand, landmarks: hand.landmarks.map(point => ({
         ...point, y: point.y + 0.3, x: point.x + Math.min(1, index / (count - 1) / 0.75) * 0.12,

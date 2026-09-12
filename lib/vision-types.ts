@@ -1,3 +1,5 @@
+import type { LanguageId } from "./model-adapters";
+
 export type Point = {
   x: number;
   y: number;
@@ -45,7 +47,7 @@ export type WorkerMessage = WorkerAnalysis | WorkerConfirmation
 export type CalibrationTemplate = {
   id: string;
   /** Older records without this field are treated as ASL for compatibility. */
-  language?: "asl" | "auslan" | "bsl" | "csl" | "isl" | "lse";
+  language?: LanguageId;
   gloss: string;
   text: string;
   createdAt: number;
@@ -55,7 +57,7 @@ export type CalibrationTemplate = {
 export type WorkerInput = (
   | { type: "frame"; frame: VisionFrame }
   | { type: "reset" }
-  | { type: "templates"; language: "asl" | "auslan" | "bsl" | "csl" | "isl" | "lse"; templates: CalibrationTemplate[] }
+  | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[] }
 ) & { session?: number; frameId?: number };
 
 export type DetectionStatus = {

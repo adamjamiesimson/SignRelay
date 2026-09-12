@@ -1,4 +1,5 @@
 import type { CalibrationTemplate } from "./vision-types";
+import { isLanguageId } from "./model-adapters";
 
 const DATABASE_NAME = "signrelay-personal-vocabulary";
 const STORE_NAME = "templates";
@@ -11,7 +12,7 @@ export function validCalibrationTemplate(value: unknown): value is CalibrationTe
   return typeof t.id === "string" && t.id.length <= 200
     && typeof t.gloss === "string" && t.gloss.length > 0 && t.gloss.length <= 100
     && typeof t.text === "string" && t.text.length <= 100 && Number.isFinite(t.createdAt)
-    && (t.language === undefined || ["asl", "auslan", "bsl", "csl", "isl", "lse"].includes(t.language))
+    && (t.language === undefined || isLanguageId(t.language))
     && Array.isArray(t.frames) && t.frames.length === 24
     && t.frames.every(row => Array.isArray(row) && [208, 240].includes(row.length) && row.every(Number.isFinite));
 }

@@ -18,9 +18,12 @@ describe("ASL vocabulary", () => {
     expect(createCustomAslVocabularyEntry("  !!! ")).toBeNull();
   });
 
-  it("exposes separate ASL, Auslan, BSL, CSL, ISL and LSE recognition paths", () => {
-    expect(LANGUAGE_LIST.map((language) => language.id)).toEqual(["asl", "lse", "auslan", "bsl", "isl", "csl"]);
-    expect(LANGUAGE_LIST.filter((language) => language.status === "personal").map((language) => language.id).sort()).toEqual(["csl"]);
+  it("exposes 40 independent sign-language recognition paths", () => {
+    expect(LANGUAGE_LIST).toHaveLength(40);
+    expect(LANGUAGE_LIST.slice(0, 6).map((language) => language.id)).toEqual(["asl", "bsl", "isl", "lse", "auslan", "csl"]);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "experimental")).toHaveLength(3);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "preparing")).toHaveLength(2);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "personal")).toHaveLength(35);
     expect(MODEL_ADAPTERS.bsl.automaticVocabularyCount).toBe(1064);
     expect(MODEL_ADAPTERS.isl.automaticVocabularyCount).toBe(263);
     expect(MODEL_ADAPTERS.lse.status).toBe("preparing");
@@ -30,8 +33,8 @@ describe("ASL vocabulary", () => {
   it("includes a 2,000-plus concept library for every teachable language", () => {
     expect(PERSONAL_STARTER_VOCABULARY.length).toBeGreaterThanOrEqual(2000);
     expect(new Set(PERSONAL_STARTER_VOCABULARY.map((word) => word.gloss)).size).toBe(PERSONAL_STARTER_VOCABULARY.length);
-    for (const language of ["bsl", "csl", "isl"] as const) {
-      expect(MODEL_ADAPTERS[language].vocabulary.length).toBeGreaterThanOrEqual(2000);
+    for (const language of LANGUAGE_LIST.filter((item) => item.id !== "asl")) {
+      expect(language.vocabulary.length).toBe(PERSONAL_STARTER_VOCABULARY.length);
     }
   });
 
@@ -44,6 +47,7 @@ describe("ASL vocabulary", () => {
     expect(templatesForLanguage(templates, "asl").map((item) => item.id)).toEqual(["old-asl"]);
     expect(templatesForLanguage(templates, "bsl").map((item) => item.id)).toEqual(["bsl-hello"]);
     expect(templatesForLanguage(templates, "csl")).toEqual([]);
+    expect(templatesForLanguage(templates, "uaesl")).toEqual([]);
   });
 
   it("does not run the built-in ASL model without sustained hand tracking", () => {
