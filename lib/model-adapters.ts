@@ -1,4 +1,5 @@
 import WLASL2000_LABELS from "../public/models/asl2000-tgcn/labels.json";
+import RSL_LABELS from "../public/models/rsl1000-slovo/labels.json";
 
 export const LANGUAGE_IDS = [
   "asl", "bsl", "isl", "lse", "auslan", "csl",
@@ -271,7 +272,18 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
   irsl: personalLanguage({ id: "irsl", shortName: "Irish SL", language: "Irish Sign Language", speechLocale: "en-IE" }),
   pjm: personalLanguage({ id: "pjm", shortName: "PJM", language: "Polish Sign Language", speechLocale: "pl-PL" }),
   usl: personalLanguage({ id: "usl", shortName: "USL", language: "Ukrainian Sign Language", speechLocale: "uk-UA" }),
-  rsl: personalLanguage({ id: "rsl", shortName: "RSL", language: "Russian Sign Language", speechLocale: "ru-RU" }),
+  rsl: {
+    id: "rsl", shortName: "RSL", language: "Russian Sign Language", speechLocale: "ru-RU",
+    status: "experimental", modelFile: "Official Slovo MViTv2-small-32-2 ONNX",
+    automaticVocabularyCount: 1000, vocabulary: RSL_LABELS.slice(0, 1000),
+    inputFormat: "32 unmirrored RGB frames, letterboxed to 224×224, sampled at about 15 fps",
+    sequenceLength: 32, confidenceThreshold: 0.85,
+    decoder: "Pretrained probabilities; background rejection and competing-class margin",
+    postProcessing: "Manual clip capture, idle guard; no automatic speech or transcript insertion",
+    version: "slovo-mvit32-2-v1",
+    dataset: "Official Slovo checkpoint and label order. Custom attribution/share-alike public licence; see the model attribution. Live-camera accuracy unmeasured.",
+    summary: "967 pretrained word/phrase classes + 33 letters. No teaching required. Slow single-sign camera mode; 141 MB first load, not real-time translation.",
+  },
   lsm: personalLanguage({ id: "lsm", shortName: "LSM", language: "Mexican Sign Language", speechLocale: "es-MX" }),
   lsc: personalLanguage({ id: "lsc", shortName: "LSC", language: "Colombian Sign Language", speechLocale: "es-CO" }),
   lsch: personalLanguage({ id: "lsch", shortName: "LSCh", language: "Chilean Sign Language", speechLocale: "es-CL" }),

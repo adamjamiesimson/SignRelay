@@ -6,12 +6,13 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 ## What works now
 
-- Forty sign-language workspaces have separate identities, output locales and personal vocabularies.
+- Forty sign-language workspaces have separate identities; RSL has its own pretrained clip-recognition mode.
 - Camera permission is requested only after language selection.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
 - A Web Worker maintains an ordered 32-frame temporal buffer.
 - ASL, BSL and ISL include separate experimental browser models with 2,000, 1,064 and 263 isolated-sign outputs respectively.
-- Every non-ASL workspace includes 2,000+ searchable concept prompts plus unlimited custom words or short phrases; prompts activate only after the signer records examples in that language.
+- RSL adds the official pretrained Slovo video model: 967 word/phrase classes plus 33 letters, with no personal teaching required. It is explicit single-sign capture, not real-time; 141 MB first load and approximately 19 seconds per inference in the development WASM test.
+- Non-ASL/RSL workspaces include 2,000+ searchable concept prompts plus unlimited custom words or short phrases; prompts activate only after the signer records examples in that language.
 - Personal and user-defined words are learned from one to three signer examples and matched on-device with dynamic time warping.
 - Results are gated by confidence, temporal consensus and cooldown.
 - Confirmed text can be edited, removed, saved locally, cleared and spoken.
@@ -25,8 +26,17 @@ This repository is an engineering foundation, not a claim of full sign-language 
 | ASL | Experimental | 2,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL2000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
 | BSL | Experimental | 1,064 automatic BSL-1K signs + unlimited signer-taught words | Official BSL-1K Pose2Sign model + personal DTW templates |
 | ISL | Experimental | 263 automatic INCLUDE signs + unlimited signer-taught words | Official AI4Bharat INCLUDE transformer + personal DTW templates |
+| RSL | Experimental, slow clip mode | 967 pretrained word/phrase classes + 33 fingerspelling letters | Official Slovo MViTv2-small-32-2 RGB ONNX; no personal recordings required |
 | LSE and Auslan | Model preparing | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates; no automatic output yet |
-| 35 personal workspaces | Signer-taught | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates |
+| 34 personal workspaces | Signer-taught | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates |
+
+### RSL installation and use
+
+`npm run build:firebase` installs the official Slovo checkpoint automatically and verifies its pinned SHA-256 before exporting. `npm run install:rsl-model` installs it separately for development. The 141 MB binary is not committed to Git; builds fail if it cannot be fetched or verified. No paid service is used.
+
+Choose **Russian Sign Language** (search for RSL), enter its workspace, start the camera, then choose **Recognize one sign**. After a 3-second countdown, sign for about 2 seconds. Inference runs in a separate worker; Stop/cancel, leaving the workspace or hiding the tab releases the camera and worker. Results are suggestions, not automatically spoken or added to a transcript. Frames stay only in device memory.
+
+See [Slovo attribution and licence](public/models/rsl1000-slovo/ATTRIBUTION.md). The source uses a custom attribution/share-alike licence, not the application-code licence. Its benchmark results are not SignRelay live-camera accuracy. RSL has not received independent native-signer evaluation. This addition meets 400+ pretrained word/phrase classes for RSL; it does **not** establish 400+ pretrained signs for every workspace.
 
 The 2,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL2000 OpenPose sequences. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. BSL and ISL likewise use their own official isolated-sign checkpoints. Typed custom words activate only after the signer records personal examples; they do not alter a shared model. The remaining languages never borrow, relabel or fabricate a checkpoint.
 

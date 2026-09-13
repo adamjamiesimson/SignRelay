@@ -7,10 +7,11 @@
   },
   "scripts": {
     "install:ci": "npm ci",
-    "build:worker": "esbuild workers/recognition.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outfile=public/workers/recognition.worker.js && node scripts/copy-onnx-runtime.mjs",
+    "build:worker": "esbuild workers/recognition.worker.ts workers/rsl.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outdir=public/workers && node scripts/copy-onnx-runtime.mjs",
+    "install:rsl-model": "node scripts/install-rsl-model.mjs",
     "dev": "npm run build:worker && node scripts/dev.mjs",
     "build": "npm run build:firebase",
-    "build:firebase": "node scripts/prepare-export.mjs && npm run build:worker && next build && node scripts/secure-export.mjs",
+    "build:firebase": "npm run install:rsl-model && node scripts/prepare-export.mjs && npm run build:worker && next build && node scripts/secure-export.mjs",
     "start": "node scripts/serve-export.mjs",
     "test": "vitest run",
     "test:rendered": "node --test tests/rendered-html.test.mjs",

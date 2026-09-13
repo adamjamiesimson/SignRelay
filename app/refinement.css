@@ -1,4 +1,19 @@
 /* A single, restrained presentation layer. Recognition and camera layout stay independent. */
+.rsl-workspace { max-width: 1000px; margin: auto; padding: 36px clamp(20px, 5vw, 64px) 80px; }
+.rsl-workspace h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; letter-spacing: -.04em; margin: 18px 0; }
+.rsl-workspace > p { color: var(--muted); line-height: 1.65; max-width: 740px; }
+.rsl-workspace > .eyebrow { display: block; margin-top: 24px; }
+.rsl-workspace > [role="status"] { min-height: 3.3em; color: var(--ink); }
+.rsl-workspace video { margin-top: 16px; display: block; border: 1px solid var(--line); }
+.rsl-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0 24px; }
+.rsl-result { padding: 20px; margin: 24px 0; border: 1px solid var(--line); border-radius: 16px; }
+.rsl-result h2 { color: var(--brand); margin: 0; font-size: 2rem; }
+.rsl-workspace details { margin: 28px 0; border-top: 1px solid var(--line); padding-top: 20px; }
+.rsl-workspace summary { cursor: pointer; padding: 8px 0; }
+.rsl-workspace label { display: block; margin: 18px 0 8px; }
+.rsl-workspace input { width: min(100%, 420px); padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink); }
+.rsl-workspace ul { columns: 2; line-height: 1.8; }
+.rsl-workspace a { color: var(--brand); text-decoration: underline; }
 :root {
   color-scheme: dark;
   --ink: #f5faf9;

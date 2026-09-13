@@ -19,10 +19,11 @@ export default function LanguagesPage() {
     intro="Sign languages are independent languages, not signed versions of spoken languages. SignRelay keeps every personal vocabulary and recognition session inside its selected language."
     sections={[
       {
-        title: "Automatic research models · 3 languages",
+        title: `Pretrained research models · ${automatic.length} languages`,
         body: <>
           <p>{automatic.map((language) => `${language.shortName} (${language.automaticVocabularyCount.toLocaleString()})`).join(" · ")} have separate, browser-loadable isolated-sign models. They run on-device and remain experimental until independent live-camera evaluation is complete.</p>
           <p>ASL uses the official {ASL_BUILT_IN_VOCABULARY.length.toLocaleString()}-class WLASL Pose-TGCN checkpoint, BSL uses the 1,064-class BSL-1K Pose2Sign checkpoint, and ISL uses the 263-class AI4Bharat INCLUDE transformer. None is presented as continuous sentence interpretation.</p>
+          <p>RSL uses the official Slovo video model: 967 word/phrase classes and 33 fingerspelling letters, without teaching. It has a separate manual single-sign camera mode, a 141 MB first download and slow inference; it is not real-time.</p>
         </>,
       },
       {

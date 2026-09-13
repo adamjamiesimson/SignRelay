@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import {
   useCallback,
   useEffect,
@@ -61,6 +62,7 @@ import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
+const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 import type {
   CalibrationTemplate,
   DetectionStatus,
@@ -266,7 +268,7 @@ export function TranslatorExperience() {
   }, [speak]);
 
   useEffect(() => {
-    if (step !== "workspace") return;
+    if (step !== "workspace" || selected === "rsl") return;
     const worker = new RecognitionSession(
       () => new Worker("/workers/recognition.worker.js?v=fist-motion-2", { type: "module" }),
       handleWorkerMessage,
@@ -622,6 +624,10 @@ export function TranslatorExperience() {
     setCalibrationTemplates([]);
     setSettings(DEFAULT_SETTINGS);
   };
+
+  if (step === "workspace" && selected === "rsl") {
+    return <div className="app-shell"><SiteHeader /><main><RslRecognizer onBack={returnHome} /></main></div>;
+  }
 
   if (step === "workspace") {
     return (
@@ -999,7 +1005,7 @@ export function TranslatorExperience() {
         <section className="language-section" id="choose-language" tabIndex={-1} aria-labelledby="language-title">
           <div className="section-heading" data-reveal>
             <h2 id="language-title">Your language.<br />Your conversation.</h2>
-            <p>{LANGUAGE_LIST.length} separate sign-language workspaces. Three include automatic research models; every language supports private signs taught by its signer.</p>
+            <p>{LANGUAGE_LIST.length} separate sign-language workspaces. Four include pretrained research models; RSL has a slow single-sign camera mode. The other workspaces support private signs taught by their signer.</p>
           </div>
           <div className="language-browser" data-reveal>
             <label className="language-search">
@@ -1033,7 +1039,7 @@ export function TranslatorExperience() {
                 onClick={() => selectLanguage(language.id)}
                 role="radio"
                 aria-checked={selected === language.id}
-                tabIndex={selected === language.id ? 0 : -1}
+                tabIndex={selected === language.id || (!visibleLanguages.some(item => item.id === selected) && index === 0) ? 0 : -1}
                 onKeyDown={(event) => {
                   const direction = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
                   if (direction === undefined && event.key !== "Home" && event.key !== "End") return;
@@ -1049,7 +1055,7 @@ export function TranslatorExperience() {
                 <p>{language.summary}</p>
                 <span className={`model-pill ${language.status === "experimental" ? "available" : language.status === "preparing" ? "preparing" : "personal"}`}>
                   <span className="mini-dot" aria-hidden="true" />
-                  {language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()}-sign research model + personal vocabulary` : language.status === "preparing" ? `${language.vocabulary.length.toLocaleString()} teachable concepts · model preparing` : `${language.vocabulary.length.toLocaleString()} concept prompts + custom signs`}
+                  {language.id === "rsl" ? "1,000 pretrained classes · slow clip mode" : language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()}-sign research model + personal vocabulary` : language.status === "preparing" ? `${language.vocabulary.length.toLocaleString()} teachable concepts · model preparing` : `${language.vocabulary.length.toLocaleString()} concept prompts + custom signs`}
                 </span>
               </button>
             ))}
@@ -1058,7 +1064,7 @@ export function TranslatorExperience() {
             )}
           </div>
           <div className="language-continue" aria-live="polite" data-reveal>
-            <p>{model.status === "experimental"
+            <p>{model.id === "rsl" ? "Selected: Russian Sign Language · 967 pretrained word/phrase classes + 33 letters · slow single-sign camera mode" : model.status === "experimental"
               ? `Selected: ${model.language} · ${model.automaticVocabularyCount.toLocaleString()} automatic research signs + your own personal signs`
               : model.status === "preparing"
                 ? `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} teachable concepts + your own private signs; shared model preparing`
