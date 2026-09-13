@@ -133,7 +133,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   const feedback = modelProblem
     ? activeLanguage === "asl"
       ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly…"
-      : "The research model could not run. Saved personal signs are still available. Reload this page to try the research model again."
+      : "The research model could not run. Saved personal signs are still available. Retrying shortly…"
     : activeLanguage !== "asl" ? undefined
       : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically."
         : motion.reason === "moving" ? "Following your movement…"

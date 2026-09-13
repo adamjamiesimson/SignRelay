@@ -1,0 +1,9 @@
+# Legacy Holistic pickles require mediapipe.framework (removed in newer wheels).
+mediapipe==0.10.21
+numpy==1.26.4
+onnx==1.17.0
+onnxruntime==1.20.1
+# Keep transitive vision dependencies compatible with NumPy 1.x.
+jax==0.4.38
+jaxlib==0.4.38
+opencv-contrib-python==4.11.0.86

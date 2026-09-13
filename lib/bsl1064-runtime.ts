@@ -1,4 +1,5 @@
 import * as ort from "onnxruntime-web";
+import { createLandmarkModelLoader } from "./landmark-model-loader";
 import type { Point, VisionFrame } from "./vision-types";
 
 export type Bsl1064Prediction = { label: string; text: string; confidence: number; margin: number };
@@ -8,21 +9,7 @@ const LANDMARKS = 60;
 const MIN_CONFIDENCE = 0.82;
 const MIN_MARGIN = 0.14;
 
-let modelPromise: Promise<{ session: ort.InferenceSession; labels: string[] }> | null = null;
-
-async function loadModel() {
-  modelPromise ??= Promise.all([
-    ort.InferenceSession.create("/models/bsl1064-pose2sign/model.onnx", { executionProviders: ["webgpu", "wasm"] }),
-    fetch("/models/bsl1064-pose2sign/labels.json").then(async response => {
-      if (!response.ok) throw new Error("BSL-1064 labels could not load");
-      return response.json() as Promise<string[]>;
-    }),
-  ]).then(([session, labels]) => {
-    if (labels.length !== 1064) throw new Error("BSL-1064 label contract is invalid");
-    return { session, labels };
-  });
-  return modelPromise;
-}
+const loadModel = createLandmarkModelLoader("/models/bsl1064-pose2sign", 1064);
 
 /** Run the official BSL-1K body-and-hands Pose2Sign model in the worker. */
 export async function recognizeBsl1064(sequence: VisionFrame[]): Promise<Bsl1064Prediction | null> {
@@ -30,7 +17,7 @@ export async function recognizeBsl1064(sequence: VisionFrame[]): Promise<Bsl1064
   const { session, labels } = await loadModel();
   const output = await session.run({ pose: new ort.Tensor("float32", prepareBslInput(sequence), [1, 3, FRAMES, LANDMARKS]) });
   const logits = output.logits?.data;
-  if (!(logits instanceof Float32Array) || logits.length !== labels.length) return null;
+  if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
   const probabilities = softmax(logits);
   const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
   const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);

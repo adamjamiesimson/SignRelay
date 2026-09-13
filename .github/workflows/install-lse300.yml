@@ -7,10 +7,15 @@ on:
     paths:
       - .github/workflows/install-lse300.yml
       - training/train_swl_lse_onnx.py
-      - lib/lse300-runtime.ts
+      - scripts/activate-lse-model.mjs
+      - training/lse-requirements.txt
 
 permissions:
   contents: write
+
+concurrency:
+  group: lse-model-training
+  cancel-in-progress: false
 
 jobs:
   train-and-install:
@@ -26,13 +31,32 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - name: Install compatible training dependencies
+        run: |
+          python -m pip install --disable-pip-version-check torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install --disable-pip-version-check -r training/lse-requirements.txt
+          python -c "from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList; import pickle; pickle.loads(pickle.dumps(NormalizedLandmarkList()))"
+          python -m unittest discover -s training -p 'test_swl_lse.py'
+          npm ci
+
       - name: Download official SWL-LSE landmarks and annotations
         run: |
-          python -m pip install --disable-pip-version-check torch onnx mediapipe
           mkdir -p /tmp/swl-lse
           curl -fL --retry 4 --retry-delay 5 -o /tmp/swl-lse/MEDIAPIPE.zip 'https://zenodo.org/records/13691887/files/MEDIAPIPE.zip?download=1'
           curl -fL --retry 4 --retry-delay 5 -o /tmp/swl-lse/ANNOTATIONS.zip 'https://zenodo.org/records/13691887/files/ANNOTATIONS.zip?download=1'
           curl -fL --retry 4 --retry-delay 5 -o /tmp/swl-lse/videos_ref_annotations.csv 'https://zenodo.org/records/13691887/files/videos_ref_annotations.csv?download=1'
+          # Published file checksums for the pinned Zenodo release.
+          cd /tmp/swl-lse
+          md5sum --check <<'CHECKSUMS'
+          e128df76232e0c7dcd7a74935cd38335  MEDIAPIPE.zip
+          b235d2e43b8ef0f9e83e6f485cd8e68e  ANNOTATIONS.zip
+          2df5f818fe6550f60abf8af2edaea2c1  videos_ref_annotations.csv
+          CHECKSUMS
           unzip -q /tmp/swl-lse/ANNOTATIONS.zip -d /tmp/swl-lse/annotations
           unzip -q /tmp/swl-lse/MEDIAPIPE.zip -d /tmp/swl-lse/mediapipe
 
@@ -45,10 +69,14 @@ jobs:
 
       - name: Mark the model installed and commit it
         run: |
-          python -c "from pathlib import Path; import re; p=Path('lib/model-adapters.ts'); s=p.read_text(); s,n=re.subn(r'(id: \\\"lse\\\",.*?status: )\\\"preparing\\\",\\n    modelFile: null,\\n    automaticVocabularyCount: 0,', r'\\1\\\"experimental\\\",\\n    modelFile: \\\"SWL-LSE temporal landmark model + on-device personal recognizer\\\",\\n    automaticVocabularyCount: 300,', s, flags=re.S); assert n == 1, 'Expected pending LSE marker'; p.write_text(s)"
+          node scripts/activate-lse-model.mjs
+          npm run build:firebase
+          npm test
+          npm run lint
           git config user.name 'signrelay-model-bot'
           git config user.email 'signrelay-model-bot@users.noreply.github.com'
-          git add public/models/lse300-swl lib/model-adapters.ts
+          git add public/models/lse300-swl lib/model-adapters.ts public/workers/recognition.worker.js
           git diff --cached --quiet && exit 0
           git commit -m 'assets: install trained SWL-LSE Spanish browser model'
-          git push
+          git pull --rebase origin firebase-hosting
+          git push origin HEAD:firebase-hosting

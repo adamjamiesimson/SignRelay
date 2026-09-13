@@ -1,4 +1,5 @@
 import * as ort from "onnxruntime-web";
+import { createLandmarkModelLoader } from "./landmark-model-loader";
 import type { Point, VisionFrame } from "./vision-types";
 
 export type Lse300Prediction = { label: string; text: string; confidence: number; margin: number };
@@ -10,21 +11,7 @@ const MIN_CONFIDENCE = 0.76;
 const MIN_MARGIN = 0.16;
 const POSE_INDICES = [0, 2, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
 
-let modelPromise: Promise<{ session: ort.InferenceSession; labels: string[] }> | null = null;
-
-async function loadModel() {
-  modelPromise ??= Promise.all([
-    ort.InferenceSession.create("/models/lse300-swl/model.onnx", { executionProviders: ["webgpu", "wasm"] }),
-    fetch("/models/lse300-swl/labels.json").then(async response => {
-      if (!response.ok) throw new Error("SWL-LSE labels could not load");
-      return response.json() as Promise<string[]>;
-    }),
-  ]).then(([session, labels]) => {
-    if (labels.length !== 300) throw new Error("SWL-LSE 300-label contract is invalid");
-    return { session, labels };
-  });
-  return modelPromise;
-}
+const loadModel = createLandmarkModelLoader("/models/lse300-swl", 300);
 
 /** Run SignRelay's SWL-LSE model trained on the released real-signer landmarks. */
 export async function recognizeLse300(sequence: VisionFrame[]): Promise<Lse300Prediction | null> {
@@ -32,7 +19,7 @@ export async function recognizeLse300(sequence: VisionFrame[]): Promise<Lse300Pr
   const { session, labels } = await loadModel();
   const output = await session.run({ landmarks: new ort.Tensor("float32", prepareLseInput(sequence), [1, FRAMES, FEATURES]) });
   const logits = output.logits?.data;
-  if (!(logits instanceof Float32Array) || logits.length !== labels.length) return null;
+  if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
   const probabilities = softmax(logits);
   const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
   const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);

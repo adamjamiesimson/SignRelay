@@ -1,4 +1,5 @@
 import * as ort from "onnxruntime-web";
+import { createLandmarkModelLoader } from "./landmark-model-loader";
 import type { Point, VisionFrame } from "./vision-types";
 
 export type Isl263Prediction = { label: string; text: string; confidence: number; margin: number };
@@ -9,25 +10,7 @@ const MIN_VISIBLE_FRAMES = 16;
 const MIN_CONFIDENCE = 0.78;
 const MIN_MARGIN = 0.18;
 
-let modelPromise: Promise<{ session: ort.InferenceSession; labels: string[] }> | null = null;
-
-async function loadModel() {
-  modelPromise ??= Promise.all([
-    ort.InferenceSession.create("/models/isl263-include/model.onnx", {
-      // WebGPU is preferred for the transformer; ORT falls back to WASM on
-      // browsers that have not exposed WebGPU yet.
-      executionProviders: ["webgpu", "wasm"],
-    }),
-    fetch("/models/isl263-include/labels.json").then(async (response) => {
-      if (!response.ok) throw new Error("INCLUDE-263 labels could not load");
-      return response.json() as Promise<string[]>;
-    }),
-  ]).then(([session, labels]) => {
-    if (labels.length !== 263) throw new Error("INCLUDE-263 label contract is invalid");
-    return { session, labels };
-  });
-  return modelPromise;
-}
+const loadModel = createLandmarkModelLoader("/models/isl263-include", 263);
 
 /** Run the official 263-class AI4Bharat INCLUDE landmark transformer. */
 export async function recognizeIsl263(sequence: VisionFrame[]): Promise<Isl263Prediction | null> {
@@ -38,7 +21,7 @@ export async function recognizeIsl263(sequence: VisionFrame[]): Promise<Isl263Pr
     landmarks: new ort.Tensor("float32", prepared.values, [1, FRAME_COUNT, FEATURES_PER_FRAME]),
   });
   const logits = output.logits?.data;
-  if (!(logits instanceof Float32Array) || logits.length !== labels.length) return null;
+  if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
   const probabilities = softmax(logits);
   const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
   const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);

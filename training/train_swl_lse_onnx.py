@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import pickle
 import random
@@ -48,31 +49,41 @@ class TemporalLandmarkNet(nn.Module):
 
 class LandmarkDataset(Dataset[tuple[Tensor, Tensor]]):
     def __init__(self, rows: list[tuple[Path, int]]) -> None:
-        self.rows = rows
+        # Decode the 3.5 GB legacy release once, not on every training epoch.
+        values = []
+        for index, (path, _) in enumerate(rows):
+            with path.open("rb") as source:
+                sequence = sequence_from_release(pickle.load(source))
+            if not np.isfinite(sequence).all() or not np.any(sequence):
+                raise ValueError(f"Empty or non-finite landmark sequence: {path.name}")
+            values.append(sequence)
+            if (index + 1) % 500 == 0:
+                print(f"Decoded {index + 1}/{len(rows)} sequences", flush=True)
+        self.values = torch.from_numpy(np.stack(values))
+        self.labels = torch.tensor([label for _, label in rows], dtype=torch.long)
 
     def __len__(self) -> int:
-        return len(self.rows)
+        return len(self.labels)
 
     def __getitem__(self, index: int) -> tuple[Tensor, Tensor]:
-        path, label = self.rows[index]
-        with path.open("rb") as source:
-            result = pickle.load(source)
-        return torch.from_numpy(sequence_from_release(result)), torch.tensor(label, dtype=torch.long)
+        return self.values[index], self.labels[index]
 
 
 def sequence_from_release(result: object) -> np.ndarray:
     """Convert the authors' saved Holistic output into SignRelay's contract."""
+    if not isinstance(result, list) or not result:
+        raise ValueError("Expected a nonempty list of SWL-LSE frame records")
     frames: list[np.ndarray] = []
-    for record in result if isinstance(result, list) else []:
-        holistic = record.get("holistic_legacy", {}) if isinstance(record, dict) else {}
+    for record in result:
+        if not isinstance(record, dict) or not isinstance(record.get("holistic_legacy"), dict):
+            raise ValueError("SWL-LSE frame is missing its holistic_legacy record")
+        holistic = record["holistic_legacy"]
         pose = landmarks(holistic.get("pose_landmarks"))
         left = landmarks(holistic.get("left_hand_landmarks"))
         right = landmarks(holistic.get("right_hand_landmarks"))
         selected_pose = [pose[index] if index < len(pose) else zeros() for index in POSE_INDICES]
         points = selected_pose + pad(left, 21) + pad(right, 21)
         frames.append(normalise(np.asarray(points, dtype=np.float32)))
-    if not frames:
-        return np.zeros((FRAMES, FEATURES), dtype=np.float32)
     return resample(np.stack(frames), FRAMES).reshape(FRAMES, FEATURES)
 
 
@@ -101,7 +112,8 @@ def normalise(points: np.ndarray) -> np.ndarray:
 
 
 def resample(values: np.ndarray, count: int) -> np.ndarray:
-    indices = np.rint(np.linspace(0, max(0, len(values) - 1), count)).astype(int)
+    # Match JavaScript Math.round for nonnegative frame positions.
+    indices = np.floor(np.linspace(0, max(0, len(values) - 1), count) + 0.5).astype(int)
     return values[indices]
 
 
@@ -117,17 +129,35 @@ def read_labels(path: Path) -> list[str]:
 
 def read_split(path: Path, media_root: Path) -> list[tuple[Path, int]]:
     rows: list[tuple[Path, int]] = []
-    lookup = {file.stem: file for file in media_root.rglob("*.pkl")}
+    lookup = {}
+    for file in media_root.rglob("*.pkl"):
+        if file.stem in lookup:
+            raise ValueError(f"Duplicate SWL-LSE file ID: {file.stem}")
+        lookup[file.stem] = file
     with path.open(encoding="utf-8") as source:
         for row in csv.reader(source):
-            if len(row) < 2:
+            if not row or row[0].strip().upper() == "FILENAME":
                 continue
-            sample = lookup.get(row[0])
-            if sample:
-                rows.append((sample, int(row[1])))
+            if len(row) != 2:
+                raise ValueError(f"Invalid split row in {path.name}: {row}")
+            sample = lookup.get(Path(row[0].strip()).stem)
+            label = int(row[1])
+            if sample is None or not 0 <= label < 300:
+                raise ValueError(f"Missing sample or invalid class in {path.name}: {row}")
+            rows.append((sample, label))
     if not rows:
         raise ValueError(f"No SWL-LSE records matched {path.name}")
     return rows
+
+
+def validate_splits(train: list, valid: list, test: list) -> None:
+    groups = [{path.resolve() for path, _ in rows} for rows in (train, valid, test)]
+    if any(len(group) != len(rows) for group, rows in zip(groups, (train, valid, test))):
+        raise ValueError("Duplicate samples within an SWL-LSE split")
+    if groups[0] & groups[1] or groups[0] & groups[2] or groups[1] & groups[2]:
+        raise ValueError("SWL-LSE train/validation/test splits overlap")
+    if {label for _, label in train} != set(range(300)):
+        raise ValueError("Training split must cover all 300 classes")
 
 
 def accuracy(model: nn.Module, loader: DataLoader[tuple[Tensor, Tensor]], device: torch.device) -> float:
@@ -148,6 +178,7 @@ def main() -> None:
     parser.add_argument("label_map", type=Path)
     parser.add_argument("--output", type=Path, default=Path("public/models/lse300-swl"))
     parser.add_argument("--epochs", type=int, default=24)
+    parser.add_argument("--min-validation-accuracy", type=float, default=0.5)
     args = parser.parse_args()
 
     random.seed(42)
@@ -156,8 +187,11 @@ def main() -> None:
     labels = read_labels(args.label_map)
     train_rows = read_split(args.annotations / "train_labels.csv", args.media_root)
     valid_rows = read_split(args.annotations / "val_labels.csv", args.media_root)
-    train_loader = DataLoader(LandmarkDataset(train_rows), batch_size=48, shuffle=True, num_workers=2, persistent_workers=True)
-    valid_loader = DataLoader(LandmarkDataset(valid_rows), batch_size=96, num_workers=2, persistent_workers=True)
+    test_rows = read_split(args.annotations / "test_labels.csv", args.media_root)
+    validate_splits(train_rows, valid_rows, test_rows)
+    torch.set_num_threads(2)
+    train_loader = DataLoader(LandmarkDataset(train_rows), batch_size=48, shuffle=True)
+    valid_loader = DataLoader(LandmarkDataset(valid_rows), batch_size=96)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = TemporalLandmarkNet(len(labels)).to(device)
     optimiser = torch.optim.AdamW(model.parameters(), lr=0.0015, weight_decay=0.0002)
@@ -180,13 +214,30 @@ def main() -> None:
         raise RuntimeError("SWL-LSE training produced no checkpoint")
     model.load_state_dict(best["state"])
     model.eval()
+    if best["accuracy"] < args.min_validation_accuracy:
+        raise RuntimeError(f"Validation accuracy {best['accuracy']:.4f} is below the research install gate")
+    # The test split is evaluated once, after validation-based model selection.
+    test_score = accuracy(model, DataLoader(LandmarkDataset(test_rows), batch_size=96), device)
     args.output.mkdir(parents=True, exist_ok=True)
     torch.onnx.export(model.cpu(), torch.zeros((1, FRAMES, FEATURES), dtype=torch.float32), args.output / "model.onnx", input_names=["landmarks"], output_names=["logits"], opset_version=17, dynamo=False)
+    import onnxruntime as ort
+    session = ort.InferenceSession(str(args.output / "model.onnx"), providers=["CPUExecutionProvider"])
+    sample = next(iter(valid_loader))[0][:1]
+    with torch.inference_mode():
+        expected = model(sample).numpy()
+    actual = session.run(["logits"], {"landmarks": sample.numpy()})[0]
+    if actual.shape != (1, 300) or not np.isfinite(actual).all():
+        raise RuntimeError("Invalid exported ONNX output")
+    np.testing.assert_allclose(actual, expected, rtol=1e-3, atol=1e-4)
     (args.output / "labels.json").write_text(json.dumps(labels, ensure_ascii=False, indent=2), encoding="utf-8")
     (args.output / "model.json").write_text(json.dumps({
         "format": "onnx", "modelVersion": "swl-lse300-temporal-landmark-v1", "language": "LSE", "classes": 300,
         "sequenceLength": FRAMES, "inputFeatures": FEATURES, "inputName": "landmarks", "outputName": "logits",
-        "source": {"dataset": "SWL-LSE / SignaMed", "architecture": "TemporalLandmarkNet", "validationAccuracy": best["accuracy"]},
+        "sha256": hashlib.sha256((args.output / "model.onnx").read_bytes()).hexdigest(),
+        "exportVerified": True,
+        "source": {"dataset": "SWL-LSE / SignaMed", "url": "https://zenodo.org/records/13691887", "architecture": "TemporalLandmarkNet", "validationAccuracy": best["accuracy"], "testAccuracy": test_score,
+                   "splitCounts": {"train": len(train_rows), "validation": len(valid_rows), "test": len(test_rows)},
+                   "liveCameraAccuracy": None},
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
