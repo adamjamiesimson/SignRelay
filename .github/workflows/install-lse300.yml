@@ -9,6 +9,7 @@ on:
       - training/train_swl_lse_onnx.py
       - scripts/activate-lse-model.mjs
       - training/lse-requirements.txt
+      - training/download_swl_lse.py
 
 permissions:
   contents: write
@@ -42,14 +43,14 @@ jobs:
           python -m pip install --disable-pip-version-check -r training/lse-requirements.txt
           python -c "from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList; import pickle; pickle.loads(pickle.dumps(NormalizedLandmarkList()))"
           python -m unittest discover -s training -p 'test_swl_lse.py'
+          python -m unittest discover -s training -p 'test_model_download.py'
           npm ci
 
       - name: Download official SWL-LSE landmarks and annotations
         run: |
           mkdir -p /tmp/swl-lse
-          curl -fL --retry 4 --retry-delay 5 -o /tmp/swl-lse/MEDIAPIPE.zip 'https://zenodo.org/records/13691887/files/MEDIAPIPE.zip?download=1'
-          curl -fL --retry 4 --retry-delay 5 -o /tmp/swl-lse/ANNOTATIONS.zip 'https://zenodo.org/records/13691887/files/ANNOTATIONS.zip?download=1'
-          curl -fL --retry 4 --retry-delay 5 -o /tmp/swl-lse/videos_ref_annotations.csv 'https://zenodo.org/records/13691887/files/videos_ref_annotations.csv?download=1'
+          # Bounded ranges avoid repeatedly requesting one 3.5 GB response.
+          python training/download_swl_lse.py /tmp/swl-lse
           # Published file checksums for the pinned Zenodo release.
           cd /tmp/swl-lse
           md5sum --check <<'CHECKSUMS'

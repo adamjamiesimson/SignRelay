@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "npm run build:worker && npx next build"
+  "buildCommand": "npm run build:worker && npx next build",
+  "git": {
+    "deploymentEnabled": {
+      "feature/pretrained-language-expansion": false
+    }
+  }
 }

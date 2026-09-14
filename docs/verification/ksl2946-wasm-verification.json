@@ -1,0 +1,22 @@
+{
+  "engine": "onnxruntime-web single-thread WASM in Node",
+  "modelSha256": "4e3640d66b1630292dcc96b0ad6150e454e1a3947055409cc99444458f1d40df",
+  "results": [
+    {
+      "length": 1,
+      "maxAbsError": 0.0000095367431640625,
+      "elapsedMs": 1355
+    },
+    {
+      "length": 17,
+      "maxAbsError": 0.000011444091796875,
+      "elapsedMs": 1168
+    },
+    {
+      "length": 64,
+      "maxAbsError": 0.0000152587890625,
+      "elapsedMs": 1131
+    }
+  ],
+  "signAccuracyMeasuredHere": false
+}

@@ -1,0 +1,96 @@
+{
+  "datasetSource": "https://huggingface.co/datasets/Seoyoung07/korean-sign-word-classifier-mediapipe-test-100/tree/5dc76d221db9b74cc719cbbfb7528c7b5ec6a56d",
+  "modelSha256": "4e3640d66b1630292dcc96b0ad6150e454e1a3947055409cc99444458f1d40df",
+  "extractorSha256": "f8fde1664d7e61604bd430f3e9c0959068ad2258d5b8a97a1a57455f756c0215",
+  "extractorBackend": "legacy Holistic",
+  "versions": {
+    "mediapipe": "0.10.21",
+    "opencv": "4.11.0",
+    "numpy": "1.26.4",
+    "torch": "2.6.0+cpu",
+    "onnxruntime": "1.20.1"
+  },
+  "sampling": "Source FPS stride round(fps/15), at most first 64 sampled frames; no mirror",
+  "clips": [
+    {
+      "file": "간호사.mp4",
+      "videoSha256": "b73a2c8a9c833e0362d9854d793934093320476a216f173d5012b3749a70819e",
+      "expected": "간호사",
+      "frames": 64,
+      "top5": [
+        "간호사",
+        "키다리",
+        "예술가",
+        "취객",
+        "거지"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "targetRank": 1,
+      "maxAbsLogitError": 9.5367431640625e-06,
+      "extractionMs": 2603,
+      "nativeOnnxInferenceMs": 483,
+      "landmarkCoverage": {
+        "pose": 1.0,
+        "leftHand": 0.96875,
+        "rightHand": 0.6875,
+        "face": 1.0
+      }
+    },
+    {
+      "file": "갈등.mp4",
+      "videoSha256": "1ab03144dfe6a4c377f4d915a39152579cfb637530e1c619127282081c5404ea",
+      "expected": "갈등",
+      "frames": 48,
+      "top5": [
+        "맥없다",
+        "이기주의",
+        "여아",
+        "표리부동",
+        "갈등"
+      ],
+      "top1Correct": false,
+      "top5Correct": true,
+      "targetRank": 5,
+      "maxAbsLogitError": 1.0967254638671875e-05,
+      "extractionMs": 2180,
+      "nativeOnnxInferenceMs": 379,
+      "landmarkCoverage": {
+        "pose": 1.0,
+        "leftHand": 0.8541666666666666,
+        "rightHand": 0.9583333333333334,
+        "face": 1.0
+      }
+    },
+    {
+      "file": "갈색.mp4",
+      "videoSha256": "6ae48f443aea052df8b5734f3145105641c77aac015a9baae93560c0c10aa313",
+      "expected": "갈색",
+      "frames": 50,
+      "top5": [
+        "100만원",
+        "백만",
+        "최소",
+        "보라색",
+        "백삼십사"
+      ],
+      "top1Correct": false,
+      "top5Correct": false,
+      "targetRank": 8,
+      "maxAbsLogitError": 1.33514404296875e-05,
+      "extractionMs": 2029,
+      "nativeOnnxInferenceMs": 195,
+      "landmarkCoverage": {
+        "pose": 1.0,
+        "leftHand": 0.0,
+        "rightHand": 0.6,
+        "face": 1.0
+      }
+    }
+  ],
+  "top1Count": 1,
+  "top5Count": 2,
+  "total": 3,
+  "limitations": "Small labelled-clip smoke test; no signer-independence, general accuracy, browser or live-camera claim",
+  "selection": "First three alphabetically sorted MP4 filenames selected before observing predictions"
+}
