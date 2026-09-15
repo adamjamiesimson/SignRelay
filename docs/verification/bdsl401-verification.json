@@ -1,0 +1,141 @@
+{
+  "source": "https://huggingface.co/Shawon16/VideoMAE_BdSLW401_20_epochs_p5_SR_10/tree/f03fdadb20d1c59989ee7b2bfa95a07459b7fb56",
+  "sourceHashes": {
+    "model.safetensors": "e8f0e51df603dc2969c2d602dc8b8ee8f2c0e615afdcf903287336012a03a112",
+    "config.json": "552490518ff3de4264fdda33f8b7081601fd46759e2aa64dcb317927cb54a96b",
+    "preprocessor_config.json": "4bc9b255ff212041bc28127d4fa0ae1630abca52bb2d882f3e4c0b9e5b763f06",
+    "README.md": "bc2e5d2801318bfa7f3af5321e33cb044f865e270d87c8f205244e4cb108ca7a"
+  },
+  "clipSource": "https://huggingface.co/spaces/Shawon16/BdSLW60/tree/50f72af4a9e00ca736d1b345f4d42a5e1740ca68",
+  "selection": "All six standalone demo MP4s; selected before inference; publisher-selected examples",
+  "modelSha256": "840f6862f3988616fda45ac06704ed4be1e0378e59460abd7b4ce18d3634ce73",
+  "modelBytes": 351137555,
+  "input": [
+    1,
+    16,
+    3,
+    224,
+    224
+  ],
+  "output": [
+    1,
+    401
+  ],
+  "preprocessing": "Every tenth decoded RGB frame, uniform 16-frame selection with truncation, divide by 255, ImageNet normalization, bilinear square resize with antialiasing",
+  "clips": [
+    {
+      "file": "W002S08F_03.mp4",
+      "sha256": "458f4e951650394059f29092340e26620825fc0fd52e1bbc691705482ddb4adf",
+      "sourceFrames": 88,
+      "expectedCode": "W002",
+      "top5": [
+        "W002",
+        "W375",
+        "W342",
+        "W276",
+        "W320"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "nativeInferenceMs": 2222,
+      "maxAbsLogitError": 7.62939453125e-06
+    },
+    {
+      "file": "W003S08F_11.mp4",
+      "sha256": "62fb84edbe6ee196d1a4ce71c96836596431a6b7991767ef1034ffa6532703c6",
+      "sourceFrames": 115,
+      "expectedCode": "W003",
+      "top5": [
+        "W003",
+        "W301",
+        "W396",
+        "W268",
+        "W335"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "nativeInferenceMs": 2182,
+      "maxAbsLogitError": 6.67572021484375e-06
+    },
+    {
+      "file": "W205S08F_02.mp4",
+      "sha256": "aeab2353d5b69e797780ec1e1535d2b0d793e4fbdc0e18b73d07f5b1d0c248d9",
+      "sourceFrames": 62,
+      "expectedCode": "W205",
+      "top5": [
+        "W213",
+        "W102",
+        "W319",
+        "W205",
+        "W191"
+      ],
+      "top1Correct": false,
+      "top5Correct": true,
+      "nativeInferenceMs": 2028,
+      "maxAbsLogitError": 3.337860107421875e-05
+    },
+    {
+      "file": "W211S04F_03.mp4",
+      "sha256": "57fafb651ac5d0216f1c1632e88658a7871e467abec112a0df85bb9721c2c779",
+      "sourceFrames": 73,
+      "expectedCode": "W211",
+      "top5": [
+        "W082",
+        "W211",
+        "W243",
+        "W074",
+        "W200"
+      ],
+      "top1Correct": false,
+      "top5Correct": true,
+      "nativeInferenceMs": 2575,
+      "maxAbsLogitError": 1.33514404296875e-05
+    },
+    {
+      "file": "W389S08F_02.mp4",
+      "sha256": "97e715ef03b35cab865f4c0b2f945983b7b1817370e7749e2acf7ef7fcd84dfc",
+      "sourceFrames": 71,
+      "expectedCode": "W389",
+      "top5": [
+        "W389",
+        "W395",
+        "W364",
+        "W228",
+        "W154"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "nativeInferenceMs": 2111,
+      "maxAbsLogitError": 1.811981201171875e-05
+    },
+    {
+      "file": "W401S04F_06.mp4",
+      "sha256": "f2d27fe6031263d0007039d5b686876aeeb296a018eee8c18b2879c6ffba10e5",
+      "sourceFrames": 74,
+      "expectedCode": "W401",
+      "top5": [
+        "W401",
+        "W336",
+        "W311",
+        "W327",
+        "W313"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "nativeInferenceMs": 2029,
+      "maxAbsLogitError": 9.417533874511719e-06
+    }
+  ],
+  "top1Count": 4,
+  "top5Count": 6,
+  "total": 6,
+  "versions": {
+    "torch": "2.6.0+cpu",
+    "transformers": "4.48.3",
+    "onnx": "1.17.0",
+    "onnxruntime": "1.20.1"
+  },
+  "installed": false,
+  "readableVocabularyVerified": false,
+  "limitations": "Class-code smoke test on six publisher-selected clips, not a general accuracy benchmark; no live camera or browser verification; readable Bangla mapping missing"
+}

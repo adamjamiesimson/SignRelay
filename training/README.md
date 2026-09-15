@@ -81,6 +81,22 @@ python training/evaluate_ksl_clips.py /private/ksl-source work/ksl2946 /private/
 
 The optional `--tasks` flag selects the publisher's pinned `model/assets/holistic_landmarker.task`. MediaPipe 0.10.21 Tasks aborted with an empty-packet error in this environment; do not present that run as a passed test. See the dated verification note for subsequent runtime results. Raw clips and models must remain outside the public app and Git.
 
+## Bangla VideoMAE research export (not installed)
+
+Download the exact four model files listed in `training/export_bdsl401_onnx.py`'s `HASHES` from its pinned `SOURCE`/`REVISION` into `work/bdsl401-source`. Download all six MP4s in `CLIPS` from its pinned `SPACE_REVISION` into `work/bdsl401-clips`. The exporter verifies every hash before loading SafeTensors or decoding clips. Do not put those research assets in Git or `public/`.
+
+```bash
+python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install transformers==4.48.3 safetensors==0.5.3 onnx==1.17.0 onnxruntime==1.20.1 opencv-python-headless==4.11.0.86
+python -m unittest discover -s training -p test_bdsl401.py
+python training/export_bdsl401_onnx.py work/bdsl401-source work/bdsl401-clips
+node scripts/verify-bdsl401-wasm.mjs
+```
+
+This uses the author's video-demo preprocessing, not the generic image processor's center crop. Exported class codes preserve numeric classifier order; they are not readable translations. See `docs/pretrained-expansion-2026-09-15.md` for measured outcomes and remaining blockers.
+
+Korean's separate `.github/workflows/ksl-research-check.yml` repeats the fixed Tasks-tracker experiment with its required system libraries and uploads only JSON reports. It has no deployment step. To fetch the same Korean assets locally, run `python training/fetch_ksl_research_assets.py`.
+
 ## Leakage controls
 
 - Never split individual clips before grouping by signer.
