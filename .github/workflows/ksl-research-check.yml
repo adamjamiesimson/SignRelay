@@ -9,6 +9,9 @@ on:
       - training/export_ksl_onnx.py
       - training/evaluate_ksl_clips.py
       - training/fetch_ksl_research_assets.py
+      - training/ksl_clip_manifest.py
+      - training/ksl_test100_manifest.json
+      - training/test_ksl_manifest.py
 
 # This workflow evaluates downloaded research models and uploads JSON reports.
 # It has no deployment step or repository write permission.
@@ -22,7 +25,7 @@ concurrency:
 jobs:
   evaluate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,15 +40,18 @@ jobs:
           python -m pip install numpy==1.26.4 protobuf==4.25.9 mediapipe==0.10.35 onnx==1.17.0 onnxruntime==1.20.1 opencv-contrib-python==4.11.0.86
 
       - name: Download and verify pinned research assets
-        run: python training/fetch_ksl_research_assets.py
+        run: |
+          python -m unittest discover -s training -p test_ksl_manifest.py
+          python training/fetch_ksl_research_assets.py --clip-set test100
 
       - name: Export model and verify numerical equivalence
         run: python training/export_ksl_onnx.py work/ksl-research/source --output work/ksl-research/export
 
-      - name: Evaluate the three fixed clips with the publisher's Tasks tracker
+      - name: Evaluate all 100 publisher clips with the Tasks tracker
         run: |
           python training/evaluate_ksl_clips.py work/ksl-research/source work/ksl-research/export work/ksl-research/clips \
             --output work/ksl-research/reports/tasks-clips.json \
+            --manifest training/ksl_test100_manifest.json \
             --dataset-source https://huggingface.co/datasets/Seoyoung07/korean-sign-word-classifier-mediapipe-test-100/tree/5dc76d221db9b74cc719cbbfb7528c7b5ec6a56d \
             --tasks
 

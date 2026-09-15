@@ -12,13 +12,14 @@ from pathlib import Path
 import time
 
 from export_ksl_onnx import load_source_model, sha256, SOURCE_HASHES
+from ksl_clip_manifest import load_manifest, verify_clips
 
 EXTRACTOR_SHA256 = "f8fde1664d7e61604bd430f3e9c0959068ad2258d5b8a97a1a57455f756c0215"
 TASK_SHA256 = "e2dab61191e2dcd0a15f943d8e3ed1dce13c82dfa597b9dd39f562975a50c3f8"
 
 
 def evaluate(source: Path, exported: Path, videos: Path, output: Path,
-             dataset_source: str, use_tasks: bool = False):
+             dataset_source: str, use_tasks: bool = False, manifest_path: Path | None = None):
     import cv2
     import mediapipe as mp
     import numpy as np
@@ -56,11 +57,15 @@ def evaluate(source: Path, exported: Path, videos: Path, output: Path,
     paths = sorted(videos.glob("*.mp4"))
     if not paths:
         raise ValueError("No labelled MP4 clips found")
-    if any(path.stem not in labels for path in paths):
+    manifest = load_manifest(manifest_path) if manifest_path else None
+    targets = (verify_clips(videos, labels, manifest) if manifest else
+               {path.name: path.stem for path in paths})
+    if any(label not in labels for label in targets.values()):
         raise ValueError("Every video filename must be an exact checkpoint label")
     results = []
     try:
         for path in paths:
+            target = targets[path.name]
             started = time.perf_counter()
             raw = extractor.extract_video(path)
             extraction_ms = round((time.perf_counter() - started) * 1000)
@@ -83,10 +88,10 @@ def evaluate(source: Path, exported: Path, videos: Path, output: Path,
             ranking = np.argsort(-actual[0], kind="stable")
             top5 = [labels[index] for index in ranking[:5]]
             entry = {
-                "file": path.name, "videoSha256": sha256(path), "expected": path.stem,
-                "frames": length, "top5": top5, "top1Correct": top5[0] == path.stem,
-                "top5Correct": path.stem in top5,
-                "targetRank": int(np.flatnonzero(ranking == labels.index(path.stem))[0]) + 1,
+                "file": path.name, "videoSha256": sha256(path), "expected": target,
+                "frames": length, "top5": top5, "top1Correct": top5[0] == target,
+                "top5Correct": target in top5,
+                "targetRank": int(np.flatnonzero(ranking == labels.index(target))[0]) + 1,
                 "maxAbsLogitError": float(np.max(np.abs(actual - expected))),
                 "extractionMs": extraction_ms, "nativeOnnxInferenceMs": inference_ms,
                 "landmarkCoverage": {
@@ -102,6 +107,8 @@ def evaluate(source: Path, exported: Path, videos: Path, output: Path,
         extractor.close()
     result = {
         "datasetSource": dataset_source, "modelSha256": report["modelSha256"],
+        "manifestSha256": sha256(manifest_path) if manifest_path else None,
+        "datasetRevision": manifest["revision"] if manifest else None,
         "extractorSha256": EXTRACTOR_SHA256, "extractorBackend": backend,
         "taskAssetSha256": TASK_SHA256 if use_tasks else None,
         "versions": {"mediapipe": mp.__version__, "opencv": cv2.__version__,
@@ -109,7 +116,7 @@ def evaluate(source: Path, exported: Path, videos: Path, output: Path,
         "sampling": "Source FPS stride round(fps/15), at most first 64 sampled frames; no mirror",
         "clips": results, "top1Count": sum(item["top1Correct"] for item in results),
         "top5Count": sum(item["top5Correct"] for item in results), "total": len(results),
-        "limitations": "Small labelled-clip smoke test; no signer-independence, general accuracy, browser or live-camera claim",
+        "limitations": "Publisher-selected labelled clips; no signer-independence, general accuracy, browser or live-camera claim",
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
@@ -124,5 +131,6 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dataset-source", required=True)
     parser.add_argument("--tasks", action="store_true")
+    parser.add_argument("--manifest", type=Path)
     args = parser.parse_args()
-    evaluate(args.source, args.exported, args.videos, args.output, args.dataset_source, args.tasks)
+    evaluate(args.source, args.exported, args.videos, args.output, args.dataset_source, args.tasks, args.manifest)

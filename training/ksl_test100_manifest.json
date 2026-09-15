@@ -1,0 +1,611 @@
+{
+  "dataset": "Seoyoung07/korean-sign-word-classifier-mediapipe-test-100",
+  "revision": "5dc76d221db9b74cc719cbbfb7528c7b5ec6a56d",
+  "selection": "All 100 MP4 files in videos/ at the pinned dataset revision",
+  "labelAliases": {
+    "꺠끗하다": "깨끗하다"
+  },
+  "labelAliasSource": "https://huggingface.co/Seoyoung07/korean-sign-word-classifier-mediapipe/blob/214c0d87294695f4c79086440404bfb72fa7c5bc/README.md",
+  "clips": [
+    {
+      "file": "간호사.mp4",
+      "sha256": "b73a2c8a9c833e0362d9854d793934093320476a216f173d5012b3749a70819e",
+      "bytes": 261098,
+      "expected": "간호사"
+    },
+    {
+      "file": "갈등.mp4",
+      "sha256": "1ab03144dfe6a4c377f4d915a39152579cfb637530e1c619127282081c5404ea",
+      "bytes": 1004608,
+      "expected": "갈등"
+    },
+    {
+      "file": "갈색.mp4",
+      "sha256": "6ae48f443aea052df8b5734f3145105641c77aac015a9baae93560c0c10aa313",
+      "bytes": 1165691,
+      "expected": "갈색"
+    },
+    {
+      "file": "감기.mp4",
+      "sha256": "a9984476dfb18de00250202e8791f9c4536a62da139b54291e0e3609fde95aa7",
+      "bytes": 1017849,
+      "expected": "감기"
+    },
+    {
+      "file": "감동.mp4",
+      "sha256": "60b433037bb9a366f43d1f27a93ed21a1c94d9793f90859833c93e6967360918",
+      "bytes": 1403297,
+      "expected": "감동"
+    },
+    {
+      "file": "거북선.mp4",
+      "sha256": "8f683e3e294fd7b8358731d2b245bb48d689c5d82d2b401e7a12b3f673b75007",
+      "bytes": 19890849,
+      "expected": "거북선"
+    },
+    {
+      "file": "거지.mp4",
+      "sha256": "b7ebb9a51b7e193e2a6a84205a1f45153ee08ac9f6b1cfb1f9f6f2b1a965b71d",
+      "bytes": 1337663,
+      "expected": "거지"
+    },
+    {
+      "file": "검사.mp4",
+      "sha256": "af92a19b2393b3e3ca370f4dd2128657a5e4a54cc9b7c69a3aced671b3360899",
+      "bytes": 1240771,
+      "expected": "검사"
+    },
+    {
+      "file": "결혼.mp4",
+      "sha256": "46e8850ee2d70eb56870d3f6f85434dc9210fda5c2ab8185e6177b5e41cd09fa",
+      "bytes": 1050227,
+      "expected": "결혼"
+    },
+    {
+      "file": "결혼식.mp4",
+      "sha256": "e6b534c4578e9df9a7ba67a2f2071a6dff76051288325412989f7c97cc191052",
+      "bytes": 1256194,
+      "expected": "결혼식"
+    },
+    {
+      "file": "경고.mp4",
+      "sha256": "b3a9854f72b165f612d164b2b591c5c1f2158a72e627c76c423ff9c844406728",
+      "bytes": 1311374,
+      "expected": "경고"
+    },
+    {
+      "file": "경비실.mp4",
+      "sha256": "9ab124e9bcf5b7cd976a68c6ab6f96cd99532764fdb6ec9b5733b185d9d7bcbf",
+      "bytes": 1548335,
+      "expected": "경비실"
+    },
+    {
+      "file": "고모.mp4",
+      "sha256": "9c9f66551a0497ef47db66b4d7838a9ab67f219c1761e08ae48c6a1136b27639",
+      "bytes": 1416351,
+      "expected": "고모"
+    },
+    {
+      "file": "고민.mp4",
+      "sha256": "78bbe10320a61f2c6a529e2ade6665edec461eac196490ec6e37b28c68f0c023",
+      "bytes": 1494231,
+      "expected": "고민"
+    },
+    {
+      "file": "고아원.mp4",
+      "sha256": "d274ea50444b910c6a9e10c0d30c09717d81e097d446a6df3ca13648037d5403",
+      "bytes": 1217341,
+      "expected": "고아원"
+    },
+    {
+      "file": "고추.mp4",
+      "sha256": "d826071bd7df76fc29a9f37a7c45584eb8dc307279475d79766b93b341921c18",
+      "bytes": 1010817,
+      "expected": "고추"
+    },
+    {
+      "file": "골절.mp4",
+      "sha256": "508c76467a66be1102bca45afdf14f0ce498058b76984c3dafb90357b982eae1",
+      "bytes": 242713,
+      "expected": "골절"
+    },
+    {
+      "file": "골짜기.mp4",
+      "sha256": "c98cd22d0584195ad3f64620bb4d859b7c64ed928ce681e3068f5a45b608ea8b",
+      "bytes": 1223799,
+      "expected": "골짜기"
+    },
+    {
+      "file": "공범.mp4",
+      "sha256": "58b5e2daf676025040fdfe386fa531d5618fcd846cfb2acccbf9e82f1f71c3ad",
+      "bytes": 1469748,
+      "expected": "공범"
+    },
+    {
+      "file": "광주.mp4",
+      "sha256": "43084b40eb4cbbb646c917b91d66aaad48388d757d3edaf44ac9011a11bec0a2",
+      "bytes": 958177,
+      "expected": "광주"
+    },
+    {
+      "file": "교수.mp4",
+      "sha256": "7a75af0d664059c26fb374f7b3984d1c1d8dfff31ff8cb4327159d96776c8b30",
+      "bytes": 948149,
+      "expected": "교수"
+    },
+    {
+      "file": "교제.mp4",
+      "sha256": "c10bfa33166dbac1831737411bf26ac2da49328bb802ff0387460bb9a2545785",
+      "bytes": 1385555,
+      "expected": "교제"
+    },
+    {
+      "file": "구걸.mp4",
+      "sha256": "0a935a782d31da51dd754ca3e43c0cbff02a2a5d95d61258893406f339687f11",
+      "bytes": 206836,
+      "expected": "구걸"
+    },
+    {
+      "file": "구두.mp4",
+      "sha256": "e2a057c2c3bdfd5b3726ef80b3402957c17519557504d306552e9c933d7816da",
+      "bytes": 1341756,
+      "expected": "구두"
+    },
+    {
+      "file": "귀.mp4",
+      "sha256": "3d5558ebd6f8e89c655b837cb43c8f9003723fe64de8a995bfd1ab27412a58c5",
+      "bytes": 176521,
+      "expected": "귀"
+    },
+    {
+      "file": "금연.mp4",
+      "sha256": "e9897e9123461f22a8dc92261e53922f297d3efb647bc498225d55a5baaab981",
+      "bytes": 1186659,
+      "expected": "금연"
+    },
+    {
+      "file": "급행.mp4",
+      "sha256": "0f0eccf8e7d4d91a9732451a2afd3e4bf3f6686c95ddfb7ada6dac611d128f05",
+      "bytes": 1048904,
+      "expected": "급행"
+    },
+    {
+      "file": "기린.mp4",
+      "sha256": "09e75bec142c691ad612aac99f62c62ef532171c452d2268ce8d30e3dc57098e",
+      "bytes": 1265142,
+      "expected": "기린"
+    },
+    {
+      "file": "기분.mp4",
+      "sha256": "9da41e448864b83571b4846f8f2644430341d7bb0159fbb1b969e4ef5809e501",
+      "bytes": 973982,
+      "expected": "기분"
+    },
+    {
+      "file": "기술자.mp4",
+      "sha256": "d710d12b4fc65ac706807a3852f4159ee6cd1028bbc7a919d07cafa1e28897a5",
+      "bytes": 420897,
+      "expected": "기술자"
+    },
+    {
+      "file": "기차역.mp4",
+      "sha256": "e3233d220db04d80b2627c8f4cc63715452fd9b64c18cbb0abc6c723ed037012",
+      "bytes": 1423626,
+      "expected": "기차역"
+    },
+    {
+      "file": "까마귀.mp4",
+      "sha256": "1a62eabdb7b28278f133b1614e1e6394fdf1d041c129696a95b91f734d4cf040",
+      "bytes": 1128485,
+      "expected": "까마귀"
+    },
+    {
+      "file": "꺠끗하다.mp4",
+      "sha256": "11cb3cd851fd69baf66ed9826d77a4b21ff00c74ba5e35ebe82a5529b8ebc007",
+      "bytes": 1350089,
+      "expected": "깨끗하다"
+    },
+    {
+      "file": "꼬마.mp4",
+      "sha256": "f2d7d3f37e8fb4714affc4293cfdb7532c7e5f75e578c412071c6923d8e54576",
+      "bytes": 1101291,
+      "expected": "꼬마"
+    },
+    {
+      "file": "꿀벌.mp4",
+      "sha256": "4bcc5a2f4b8af9fc92ee588fb3e348623e90cae1a5b135be275a8b2fa14afce2",
+      "bytes": 1244231,
+      "expected": "꿀벌"
+    },
+    {
+      "file": "나누다.mp4",
+      "sha256": "da6ab12746077fcb6c80b3879ac92568c65d4b43c3b2d5389bf7677377e029d2",
+      "bytes": 995110,
+      "expected": "나누다"
+    },
+    {
+      "file": "나쁘다.mp4",
+      "sha256": "89d3104926dfdc3adac725bd35e19f1333f5a3b5386e4c6f227434934281ce5e",
+      "bytes": 1088892,
+      "expected": "나쁘다"
+    },
+    {
+      "file": "낚시.mp4",
+      "sha256": "7c3af69565672e58b613b605361d22b1f5ab36df722ab445c2f341085b77495a",
+      "bytes": 1192663,
+      "expected": "낚시"
+    },
+    {
+      "file": "남녀.mp4",
+      "sha256": "f186277a459617e7c14ebd5d9f54b077b4afbb6ad9a221430e464940bd961d06",
+      "bytes": 1149534,
+      "expected": "남녀"
+    },
+    {
+      "file": "남매.mp4",
+      "sha256": "8cce23650dbce50c3fd3d88ec00b4d5ed5d339489b8e50511e22f21760dc381e",
+      "bytes": 1429535,
+      "expected": "남매"
+    },
+    {
+      "file": "남자.mp4",
+      "sha256": "d0160ff52a0d20bc9e3ae4e8fc5b35c127f9518a2ea9d7d135e04287c62e7b65",
+      "bytes": 1095069,
+      "expected": "남자"
+    },
+    {
+      "file": "네쌍둥이.mp4",
+      "sha256": "e98561dc43e81d7afc43d78fe5e8521504c32d6c68013688cf681cef15357f05",
+      "bytes": 212644,
+      "expected": "네쌍둥이"
+    },
+    {
+      "file": "노래.mp4",
+      "sha256": "d28771b952b03a76270c9b09a69e598c8044bd5432ee5d21e2e1a487a71062a9",
+      "bytes": 1052749,
+      "expected": "노래"
+    },
+    {
+      "file": "노르웨이.mp4",
+      "sha256": "31bb90e260f7d789932157d06ff1a0e6e402137a08252895b04285ba16c12c87",
+      "bytes": 1016862,
+      "expected": "노르웨이"
+    },
+    {
+      "file": "논의.mp4",
+      "sha256": "9097c322e1dda624e23fca83a0ba1af22746cb89a5003b37e469c0829421f615",
+      "bytes": 1211982,
+      "expected": "논의"
+    },
+    {
+      "file": "농부.mp4",
+      "sha256": "883acfda6cace2a6b5650c007d576615b04431d1b817deba234e5cff1e6fa6f5",
+      "bytes": 1296240,
+      "expected": "농부"
+    },
+    {
+      "file": "누나.mp4",
+      "sha256": "406c0526c63f4dbfa5b83dc835838b499b0429d6862df931af5755754eff4eda",
+      "bytes": 1348445,
+      "expected": "누나"
+    },
+    {
+      "file": "뉴질랜드.mp4",
+      "sha256": "9f79a1b1732f16f8b39ab0580b20f89b099bf71025b80dc18070579c2a0d57ab",
+      "bytes": 1262091,
+      "expected": "뉴질랜드"
+    },
+    {
+      "file": "당황.mp4",
+      "sha256": "50595b75455878488588f047ee8f0e397b635ebfd3bc227a0c54979680cd4348",
+      "bytes": 1044715,
+      "expected": "당황"
+    },
+    {
+      "file": "대기업.mp4",
+      "sha256": "e9595f9a91d9a805ae228aeefcd8a7e227e4c08333e10336ad5add57e6f03bb9",
+      "bytes": 224376,
+      "expected": "대기업"
+    },
+    {
+      "file": "망각.mp4",
+      "sha256": "665fea741b263fe06e2236335c479502d0ba4ed6c1a8b2385a25227569430c1b",
+      "bytes": 1038253,
+      "expected": "망각"
+    },
+    {
+      "file": "매력.mp4",
+      "sha256": "b87de4e43d7be6daae4b451e43aeab29a52dc315311ce9123051d83d6b92adb8",
+      "bytes": 1254387,
+      "expected": "매력"
+    },
+    {
+      "file": "매표소.mp4",
+      "sha256": "9facf77d2b4bad7739ec2fbf69634f0253af5a1b291604ba3b34fab9f722e31c",
+      "bytes": 1111794,
+      "expected": "매표소"
+    },
+    {
+      "file": "매형.mp4",
+      "sha256": "14ed1d4470dc9da053489751a05fdb56ad1a0d5d4207795b1483fdf05c8e3852",
+      "bytes": 976622,
+      "expected": "매형"
+    },
+    {
+      "file": "맹세.mp4",
+      "sha256": "c311ba132d8d211766fff04279585ef566863fcf58e96b60765ebc74d07b73a6",
+      "bytes": 1211782,
+      "expected": "맹세"
+    },
+    {
+      "file": "머리.mp4",
+      "sha256": "004036e739d05d34825b1ded4750a69866e1d65539624e39d841e211191f0a08",
+      "bytes": 1241655,
+      "expected": "머리"
+    },
+    {
+      "file": "머리카락.mp4",
+      "sha256": "58085219b4a2449b763dd12f1b8139e16d80591d4dc0f93fbfaebe540eed0e8a",
+      "bytes": 1460814,
+      "expected": "머리카락"
+    },
+    {
+      "file": "먹구름.mp4",
+      "sha256": "2657e8355f71cd2ae47d2f88460fdff7fadda3f4944b79c8f474179fb525a641",
+      "bytes": 1389619,
+      "expected": "먹구름"
+    },
+    {
+      "file": "멀다.mp4",
+      "sha256": "ba4b4a443550258ba209883fd94ab46c616b13ec3173e58950ffd9a672715538",
+      "bytes": 828659,
+      "expected": "멀다"
+    },
+    {
+      "file": "멍청하다.mp4",
+      "sha256": "1e9d2c9f4ddf6db21a82867d2b200322b74460cc98477f257f1a2c528c149fac",
+      "bytes": 1270473,
+      "expected": "멍청하다"
+    },
+    {
+      "file": "며느리.mp4",
+      "sha256": "9a12e3657e1dc232b2979779ab2ba0a1a490633291e0bd93a653b7fca7084b86",
+      "bytes": 890412,
+      "expected": "며느리"
+    },
+    {
+      "file": "면역.mp4",
+      "sha256": "3dae217832c84d63cbfe910c1e1a695ae6d78747ba8859dc715cc342cec505b9",
+      "bytes": 282214,
+      "expected": "면역"
+    },
+    {
+      "file": "명령.mp4",
+      "sha256": "276931c3437f13bf56979714143247e45f0885dff63e2529ccf6d482a137e76b",
+      "bytes": 162335,
+      "expected": "명령"
+    },
+    {
+      "file": "명예.mp4",
+      "sha256": "d600906d733b082bff08ad978a1f085b0ffd66461dd0f6e09171267919cdcf63",
+      "bytes": 1424937,
+      "expected": "명예"
+    },
+    {
+      "file": "모범생.mp4",
+      "sha256": "adee541095cb257cc730ce532f02e3b1c17ee9b118a04fed450c85a1e61d2783",
+      "bytes": 1207315,
+      "expected": "모범생"
+    },
+    {
+      "file": "몸무게.mp4",
+      "sha256": "d5d9adb48549671df9b892eb54b9fb664ff12fd846cf663cf77d5539aca81a01",
+      "bytes": 1131719,
+      "expected": "몸무게"
+    },
+    {
+      "file": "무궁화.mp4",
+      "sha256": "2e2ad724f09b0c6efa48334694e718d3719dcea659129184841bb14ef921af58",
+      "bytes": 1128814,
+      "expected": "무궁화"
+    },
+    {
+      "file": "무지개.mp4",
+      "sha256": "834e73f814d15a3d107b12bd1e78dd2950c6b0e7574e30f01854d0236fe2c47e",
+      "bytes": 1048735,
+      "expected": "무지개"
+    },
+    {
+      "file": "물약.mp4",
+      "sha256": "22ac5b49057f0d2eb1f700b0803e8f6b0d593368b209e1868472d396604104b0",
+      "bytes": 1335337,
+      "expected": "물약"
+    },
+    {
+      "file": "미군.mp4",
+      "sha256": "b0622fdc785f332d4d00897469d6c92c1d20a849415a57aaa6cabdabd88be977",
+      "bytes": 1254024,
+      "expected": "미군"
+    },
+    {
+      "file": "미남.mp4",
+      "sha256": "ce5541a41f734b120e6dd54b3af5a30ece6d9fd22f68b3427c9bb660878c8d34",
+      "bytes": 1249723,
+      "expected": "미남"
+    },
+    {
+      "file": "미녀.mp4",
+      "sha256": "292986fc2ceef13265fc420555c587f4878245e89c8ed73772488f4e2fcd9efc",
+      "bytes": 1044486,
+      "expected": "미녀"
+    },
+    {
+      "file": "미소.mp4",
+      "sha256": "e93e7a79c017afd7948dbdd49ec6907a83c3bc7166ad192d58f6f10a53b6cd78",
+      "bytes": 1285247,
+      "expected": "미소"
+    },
+    {
+      "file": "바다.mp4",
+      "sha256": "31bf257802cf1ba77146e563b4dabc393c21be79eac6aed8414717360af293c2",
+      "bytes": 1606030,
+      "expected": "바다"
+    },
+    {
+      "file": "바람.mp4",
+      "sha256": "0510c40086a1d02f4a967e91cba8d485e88b6173cce5cecf422798def4f67651",
+      "bytes": 1045581,
+      "expected": "바람"
+    },
+    {
+      "file": "받다.mp4",
+      "sha256": "6bd33eeb22f7f8dc09115a3f07e71416ad06762d513abf2f8fa02fedf15e78a5",
+      "bytes": 944305,
+      "expected": "받다"
+    },
+    {
+      "file": "발각.mp4",
+      "sha256": "da5aa1af91fcbff10451cbebce73d766c08041cd4f8068ef1eeaa45192416a15",
+      "bytes": 1216262,
+      "expected": "발각"
+    },
+    {
+      "file": "발견.mp4",
+      "sha256": "0b2edb0e53fee4fe6530b10dbbc975f2782d7b8d1d7faaeca3dee8cabd25254e",
+      "bytes": 1279240,
+      "expected": "발견"
+    },
+    {
+      "file": "발인.mp4",
+      "sha256": "ba05d03840870e8b7995f9f040acb86e78617a638c508a69078f678c08dd39f2",
+      "bytes": 1263744,
+      "expected": "발인"
+    },
+    {
+      "file": "밤샘.mp4",
+      "sha256": "9549f349266bf023849cea3a5a11db73c1129b63b1bdba154798501164347585",
+      "bytes": 1612884,
+      "expected": "밤샘"
+    },
+    {
+      "file": "방금.mp4",
+      "sha256": "12bfe6fac28063f55dfba40f9cf0aa57fe990b333f42e1309b0be9fdfb322229",
+      "bytes": 1122604,
+      "expected": "방금"
+    },
+    {
+      "file": "배부르다.mp4",
+      "sha256": "0cdeb2b32a80409f2851a9a6a8ecb2ceddd1b8bcab6cf808d496be3272f2038a",
+      "bytes": 994970,
+      "expected": "배부르다"
+    },
+    {
+      "file": "백화점.mp4",
+      "sha256": "35abd16cb4c45a96ba8be06f8a9065760a464fb1c648cbfa927feb330e9b1ab8",
+      "bytes": 1143840,
+      "expected": "백화점"
+    },
+    {
+      "file": "버릇.mp4",
+      "sha256": "d6a50d5ea8c56e2d6315477f2be65746f8974894117ba565cf3abd3a07a8aea2",
+      "bytes": 1182595,
+      "expected": "버릇"
+    },
+    {
+      "file": "베트남.mp4",
+      "sha256": "ab87192af77315753a4236806b4afa3ccaa91dfb9461d17663f5ca78b22483c1",
+      "bytes": 803662,
+      "expected": "베트남"
+    },
+    {
+      "file": "벨기에.mp4",
+      "sha256": "df1dbfe514ae0a9141e28edd36f563c5886762460bc4bd0f1cc407f511d0f561",
+      "bytes": 710222,
+      "expected": "벨기에"
+    },
+    {
+      "file": "변덕.mp4",
+      "sha256": "a29ddf338e5ffb2d1f6e49f8d9ac9a03929093d5d7f5cd5e554c492a88841f39",
+      "bytes": 1104913,
+      "expected": "변덕"
+    },
+    {
+      "file": "변비.mp4",
+      "sha256": "b002e49f8e9d4f11f34947329d85d11c63c8e483db7593504e35ede0ce13f377",
+      "bytes": 261036,
+      "expected": "변비"
+    },
+    {
+      "file": "별.mp4",
+      "sha256": "78607363bf3e17245f7b5d85e2d07a03730437836a4f41c54742eff52e7e468d",
+      "bytes": 1521642,
+      "expected": "별"
+    },
+    {
+      "file": "병가.mp4",
+      "sha256": "368f609c4e80ef038b29e2cd6c8881214fdcd1d7b70ace4a57801fbb9acbdfec",
+      "bytes": 1390120,
+      "expected": "병가"
+    },
+    {
+      "file": "병문안.mp4",
+      "sha256": "de600b088fce81ebbd99781f78548fd78228fdb2254cbb0af98787d71eca091c",
+      "bytes": 208363,
+      "expected": "병문안"
+    },
+    {
+      "file": "분필.mp4",
+      "sha256": "10bc49944746c046360e0230436855976fe1a673a1a012a176b9bdc799a42027",
+      "bytes": 1250848,
+      "expected": "분필"
+    },
+    {
+      "file": "불안.mp4",
+      "sha256": "beb855d622536ad5602af7b6f43aba5ae89604b8e8f29a8af7907532521fa794",
+      "bytes": 1313964,
+      "expected": "불안"
+    },
+    {
+      "file": "불행.mp4",
+      "sha256": "fc895900569119655779f772c00a5d52a5335791392e25e58c90f6171aa5b5b7",
+      "bytes": 1185868,
+      "expected": "불행"
+    },
+    {
+      "file": "붕대.mp4",
+      "sha256": "709d25b7d82b2f615305097a20ecef3d206d570712d8f5b8bd5ad2283816c692",
+      "bytes": 1449130,
+      "expected": "붕대"
+    },
+    {
+      "file": "비.mp4",
+      "sha256": "4fb366c029381deb53471d37930044e031fa35054c3a07651569d4e7d3411744",
+      "bytes": 1929188,
+      "expected": "비"
+    },
+    {
+      "file": "비빔밥.mp4",
+      "sha256": "7b58979af1383c3771c9efbf92af6f41002ac9f1b5ab3c4d1055ca0a8e17fa6b",
+      "bytes": 1118083,
+      "expected": "비빔밥"
+    },
+    {
+      "file": "비율.mp4",
+      "sha256": "f1c6429eea396e75571dcc563542442e8df665cf0d72790ada5e532d21f61a3c",
+      "bytes": 1262470,
+      "expected": "비율"
+    },
+    {
+      "file": "빨강.mp4",
+      "sha256": "0433d9c5fe0087e6a837f2bd3fb21eb01c95fe05ae21468f63a4a617b18b1974",
+      "bytes": 1053288,
+      "expected": "빨강"
+    },
+    {
+      "file": "살인.mp4",
+      "sha256": "78b9d1f5361d103be2aa4238ed41d8ecc13e205e98bdcb334215bdf105ea0ebe",
+      "bytes": 1171129,
+      "expected": "살인"
+    }
+  ]
+}

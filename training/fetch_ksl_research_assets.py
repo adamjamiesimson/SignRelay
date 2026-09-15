@@ -9,9 +9,8 @@ from urllib.request import urlopen
 
 from export_ksl_onnx import SOURCE_HASHES, SOURCE_REPO, SOURCE_REVISION, sha256
 from evaluate_ksl_clips import EXTRACTOR_SHA256, TASK_SHA256
+from ksl_clip_manifest import DATASET, DATASET_REVISION, load_manifest
 
-DATASET_REVISION = "5dc76d221db9b74cc719cbbfb7528c7b5ec6a56d"
-DATASET = "Seoyoung07/korean-sign-word-classifier-mediapipe-test-100"
 CLIPS = {
     "간호사.mp4": "b73a2c8a9c833e0362d9854d793934093320476a216f173d5012b3749a70819e",
     "갈등.mp4": "1ab03144dfe6a4c377f4d915a39152579cfb637530e1c619127282081c5404ea",
@@ -47,7 +46,7 @@ def fetch(url: str, path: Path, expected: str):
         temporary.unlink(missing_ok=True)
 
 
-def download(root: Path):
+def download(root: Path, clip_set: str = "smoke"):
     root = root.resolve()
     project = Path(__file__).resolve().parents[1]
     if not root.is_relative_to(project / "work"):
@@ -57,7 +56,9 @@ def download(root: Path):
     for name, expected in sources.items():
         fetch(f"https://huggingface.co/{SOURCE_REPO}/resolve/{SOURCE_REVISION}/{name}",
               root / "source" / name, expected)
-    for name, expected in CLIPS.items():
+    clips = CLIPS if clip_set == "smoke" else {
+        clip["file"]: clip["sha256"] for clip in load_manifest()["clips"]}
+    for name, expected in clips.items():
         fetch(f"https://huggingface.co/datasets/{DATASET}/resolve/{DATASET_REVISION}/videos/{quote(name)}",
               root / "clips" / name, expected)
 
@@ -65,5 +66,6 @@ def download(root: Path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("work/ksl-research"))
+    parser.add_argument("--clip-set", choices=["smoke", "test100"], default="smoke")
     args = parser.parse_args()
-    download(args.output)
+    download(args.output, args.clip_set)
