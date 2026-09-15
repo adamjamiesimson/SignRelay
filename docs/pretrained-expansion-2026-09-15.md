@@ -24,7 +24,11 @@ All six standalone clips in the pinned author demo were included, including the 
 
 Added `fetch_ksl_research_assets.py` to fetch and hash-check the exact checkpoint, model modules, Tasks asset and three previously evaluated clips under Git-ignored `work/`. Added a feature-branch GitHub workflow with the system graphics libraries needed by MediaPipe 0.10.35. It exports the model, verifies PyTorch/ONNX equivalence and attempts the same three clips using the publisher's Tasks tracker.
 
-The workflow has read-only repository permissions and uploads only JSON verification reports. It does not deploy, activate models, commit weights or change the hosting branch. Its existence alone is not a successful tracker test; inspect the actual run and reports.
+The workflow has read-only repository permissions and uploads only JSON verification reports. It does not deploy, activate models, commit weights or change the hosting branch.
+
+[Run 34934013369](https://github.com/adamjamiesimson/SignRelay/actions/runs/34934013369) completed successfully on commit `6b487ff9ef1f3e3ad91e3062302c785cfdaa7a98`. Dependency installation, all pinned downloads, native export parity and the Tasks tracker evaluation passed. On the same three clips, Tasks achieved 2/3 top-1 and 3/3 top-5, compared with legacy Holistic's 1/3 and 2/3. The 갈색 clip's left-hand coverage improved from 0% to 82%, and its expected word moved from rank 8 to rank 1. This resolves the missing-system-library blocker for the research test, while model reuse terms and broader signer/camera evaluation remain unresolved.
+
+Measured per-clip JSON was mirrored from the completed job logs into `verification/ksl2946-tasks-clips.json`; the native export report is in `verification/ksl2946-ci-export.json`. The original two JSON files also remain in workflow artifact `10382362191` with seven-day retention. The CI export's binary hash differs from the earlier local export; each report records its own model hash and independently passing parity check. Do not substitute one export's hash for the other or infer equivalence solely from the checkpoint name.
 
 ## Coverage and release state
 
