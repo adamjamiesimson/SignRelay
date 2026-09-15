@@ -20,6 +20,8 @@ All six standalone clips in the pinned author demo were included, including the 
 
 **Bangla is not installed.** The model's 401 outputs map to `W001`–`W401`. A verified mapping to readable Bangla words is still missing. The author demo and training notebook also use numbered labels. Runtime cost is too high to call this real-time, and actual browser/camera evaluation has not been performed. The model card declares CC-BY-NC-4.0; the original [BdSLW401 dataset](https://www.kaggle.com/datasets/hasanssl/bdslw401) separately declares CC-BY-NC-ND-4.0. Model weights, source videos and generated tensors are kept outside public assets and Git.
 
+Further Bangla work is recorded in the [compression experiment](bdsl401-compression-2026-09-15.md), including model-size reductions, measured runtime costs and numerical verification failures.
+
 ## Korean: reproducible tracker verification workflow
 
 Added `fetch_ksl_research_assets.py` to fetch and hash-check the exact checkpoint, model modules, Tasks asset and three previously evaluated clips under Git-ignored `work/`. Added a feature-branch GitHub workflow with the system graphics libraries needed by MediaPipe 0.10.35. It exports the model, verifies PyTorch/ONNX equivalence and attempts the same three clips using the publisher's Tasks tracker.

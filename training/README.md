@@ -83,13 +83,14 @@ The optional `--tasks` flag selects the publisher's pinned `model/assets/holisti
 
 ## Bangla VideoMAE research export (not installed)
 
-Download the exact four model files listed in `training/export_bdsl401_onnx.py`'s `HASHES` from its pinned `SOURCE`/`REVISION` into `work/bdsl401-source`. Download all six MP4s in `CLIPS` from its pinned `SPACE_REVISION` into `work/bdsl401-clips`. The exporter verifies every hash before loading SafeTensors or decoding clips. Do not put those research assets in Git or `public/`.
+The fetcher downloads the exact four model files and six publisher demo MP4s pinned in `training/export_bdsl401_onnx.py` into `work/bdsl401-research`. Downloads and the export both verify every hash before loading SafeTensors or decoding clips. Do not put those research assets in Git or `public/`.
 
 ```bash
 python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
-python -m pip install transformers==4.48.3 safetensors==0.5.3 onnx==1.17.0 onnxruntime==1.20.1 opencv-python-headless==4.11.0.86
+python -m pip install numpy==1.26.4 transformers==4.48.3 safetensors==0.5.3 onnx==1.17.0 onnxruntime==1.20.1 opencv-python-headless==4.11.0.86
 python -m unittest discover -s training -p test_bdsl401.py
-python training/export_bdsl401_onnx.py work/bdsl401-source work/bdsl401-clips
+python training/fetch_bdsl401_research_assets.py
+python training/export_bdsl401_onnx.py work/bdsl401-research/source work/bdsl401-research/clips
 node scripts/verify-bdsl401-wasm.mjs
 ```
 
@@ -119,3 +120,24 @@ sha256.txt
 ```
 
 `adapter.json` must declare language, input landmark order, sequence length, confidence threshold, decoder version and model version.
+
+### Bangla size and runtime experiment
+
+After the verified export above, compare dynamic quantization of constant-weight MatMul operations. The original float32 model is preserved. Signed int8 storage uses per-channel scales and reduced 7-bit weight range; convolutions and attention products remain float32. This follows the [ONNX Runtime quantization API](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html). Quantization is lossy: prediction and logit changes are reported explicitly, while cross-runtime equivalence is checked against each variant's own native outputs.
+
+```bash
+python training/quantize_bdsl401_onnx.py work/bdsl401-export work/bdsl401-research/clips
+node scripts/benchmark-bdsl401-wasm.mjs float32 work/bdsl401-export/model.onnx
+node scripts/benchmark-bdsl401-wasm.mjs int8 work/bdsl401-int8/model.int8.onnx
+```
+
+Run the two Node commands sequentially, each in a fresh process on the same host. Each uses one untimed warm-up and one timed inference per clip. Reports under `work/bdsl401-int8/` include hashes, all six predictions, timings and peak process RSS. RSS includes Node, model buffers, fixtures and WASM, so it is not a browser-memory estimate. Numerical differences are checked with the existing absolute/relative tolerance of 0.0002; the benchmark retains a complete JSON report and exits with failure if numerical parity or ordered top-five agreement fails. These six publisher-selected coded clips do not establish general accuracy. No script activates Bangla or installs weights into the app.
+
+A separate weight-only experiment retains float32 activations and arithmetic, and inserts `DequantizeLinear` for the same 72 quantized MatMul weight tensors. The classifier Gemm and convolution remain float32. This checks whether stored-weight compression can avoid the dynamic activation quantization discrepancy observed between native and WASM. It does not promise faster inference.
+
+```bash
+python training/quantize_bdsl401_onnx.py work/bdsl401-export work/bdsl401-research/clips --weight-only
+node scripts/benchmark-bdsl401-wasm.mjs int8 work/bdsl401-weight-only/model.int8.onnx work/bdsl401-weight-only
+```
+
+The default directories for dynamic and weight-only experiments are separate. Both retain the original class codes and require readable Bangla vocabulary verification before app integration.
