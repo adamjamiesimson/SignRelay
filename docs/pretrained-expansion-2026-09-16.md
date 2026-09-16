@@ -26,6 +26,14 @@ The actual [SignON Spanish PoseFormer checkpoint](https://huggingface.co/signon-
 
 [CISLR](https://huggingface.co/datasets/Exploration-Lab/CISLR) describes a roughly 4,700-word Indian corpus and provides videos, annotations, prototypes and I3D features. The live page requires authentication and accepting its access conditions; the current browser session is logged out. The larger iSign dataset also requires authenticated access. A separate available pose-to-text T5 checkpoint does not establish a 400-word isolated-sign recognition vocabulary: language-model token counts must not be counted as recognized signs. The SignON model abbreviated ISL is Irish, not Indian. The currently installed Indian candidate remains at 263 classes.
 
+## Completed Bangla evaluation and account-free constraint
+
+[Run 35086996099](https://github.com/adamjamiesimson/SignRelay/actions/runs/35086996099) completed successfully on commit `2ac8fb9fd8d583703975d30dfe5b8993676b51cb`. All six preprocessing/vocabulary tests passed, the original checkpoint export passed numerical checks, and all 401 publisher clips were evaluated with zero decoding/inference errors. First-guess accuracy was 275/401 (68.58%); top-five coverage was 348/401 (86.78%). Median native CPU inference was 2,122 ms. These timings do not replace the previous WASM measurements and do not establish live browser performance.
+
+All predictions are retained in `verification/bdsl401-publisher-clips.json`, reconstructed from the successful job's per-clip JSON log records. Coverage remains 400 class codes: W109 twice, W111 absent. These are publisher-selected examples, not a representative or independent test set.
+
+The user has no Hugging Face account and requested continuing without one. Use anonymously accessible resources. Do not repeat sign-in requests or try alternate routes around the CISLR/iSign access gates. Public Hugging Face models and datasets can still be used where anonymous downloads and their terms permit it. The larger Indian recognition target remains unresolved; an account-free alternative must independently meet the vocabulary, permissions and evaluation requirements.
+
 ## Delivery boundary
 
 All work stays on `feature/pretrained-language-expansion`. No model was falsely marked active and no hosting branch was updated. Deployment remains deferred. The four candidates and overall 15-language goal are not complete.
