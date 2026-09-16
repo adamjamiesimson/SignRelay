@@ -94,9 +94,9 @@ python training/export_bdsl401_onnx.py work/bdsl401-research/source work/bdsl401
 node scripts/verify-bdsl401-wasm.mjs
 ```
 
-This uses the author's video-demo preprocessing, not the generic image processor's center crop. Exported class codes preserve numeric classifier order; they are not readable translations. See `docs/pretrained-expansion-2026-09-15.md` for measured outcomes and remaining blockers.
+This uses the author's video-demo preprocessing, not the generic image processor's center crop. Exports preserve numeric class codes and now write English `labels.json` from the original dataset's word list. The 401 classes have 398 distinct English glosses; shared glosses do not merge trained classes. See `docs/pretrained-expansion-2026-09-16.md` for measured outcomes and remaining blockers.
 
-Korean's separate `.github/workflows/ksl-research-check.yml` repeats the fixed Tasks-tracker experiment with its required system libraries and uploads only JSON reports. It has no deployment step. To fetch the same Korean assets locally, run `python training/fetch_ksl_research_assets.py`.
+Korean's separate `.github/workflows/ksl-research-check.yml` evaluates all 100 pinned publisher clips using the Tasks tracker and uploads only JSON reports. It has no deployment step. To fetch that complete set, run `python training/fetch_ksl_research_assets.py --clip-set test100`; evaluate it with `--tasks --manifest training/ksl_test100_manifest.json`. The default fetch remains the three-clip smoke set.
 
 ## Leakage controls
 
@@ -140,4 +140,20 @@ python training/quantize_bdsl401_onnx.py work/bdsl401-export work/bdsl401-resear
 node scripts/benchmark-bdsl401-wasm.mjs int8 work/bdsl401-weight-only/model.int8.onnx work/bdsl401-weight-only
 ```
 
-The default directories for dynamic and weight-only experiments are separate. Both retain the original class codes and require readable Bangla vocabulary verification before app integration.
+The default directories for dynamic and weight-only experiments are separate. Both retain class codes and attach the same verified-source English vocabulary. Runtime and real-browser validation remain required before app integration.
+
+### Original Bangla vocabulary and 401-clip evaluation
+
+`training/bdsl401_vocabulary.json` records all W001–W401 mappings, PDF page numbers, source attribution and four visually checked line-wrap repairs. The original PDF is in version 2 of the author's dataset. Download it with the URL in `extract_bdsl401_vocabulary.PDF_URL`; it is only 360,402 bytes and has a pinned SHA-256. Do not download the entire 52 GB video archive to obtain it.
+
+```bash
+python -m pip install pdfplumber==0.11.8
+python training/extract_bdsl401_vocabulary.py work/research/bdsl-words-complete.pdf \
+  --output work/research/reproduced-vocabulary.json
+python -m unittest discover -s training -p 'test_bdsl401*.py'
+python training/evaluate_bdsl401_publisher_set.py work/bdsl401-export
+```
+
+The extraction uses printed row codes instead of table borders: ordinary table extraction drops the first row on nine pages. English labels avoid the PDF's broken Bangla text encoding; no Bangla spelling corrections are guessed. The optional audit script detects the incomplete 392-entry community CSV and does not approve it for activation.
+
+The 401-clip evaluator downloads the publisher's hash-pinned 167 MB archive, verifies its exact coverage (400 class codes, W109 twice, W111 absent), retains all predictions and errors, and records class-code accuracy separately from display glosses. It never relabels a duplicate clip to fill the gap. These are publisher-selected examples, not a representative held-out evaluation. `.github/workflows/bdsl401-research-check.yml` reproduces the original checkpoint export and this larger check with read-only repository permissions; it uploads reports only.

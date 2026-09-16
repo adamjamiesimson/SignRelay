@@ -1,0 +1,161 @@
+{
+  "sourceReport": "bdsl401-verification.json",
+  "sourceReportSha256": "94f699bd16e381a75cc63c5651a138c4eff878ec9977f6d0e65aa028ace9cf7c",
+  "vocabularySha256": "e17db9a49a97fe577e1d736e3f3978081034ba4cf6d099c8b38418de63ee8ef5",
+  "note": "Readable labels attached to previously measured predictions; model inference was not rerun for this report.",
+  "total": 6,
+  "top1Count": 4,
+  "top5Count": 6,
+  "clips": [
+    {
+      "file": "W002S08F_03.mp4",
+      "sha256": "458f4e951650394059f29092340e26620825fc0fd52e1bbc691705482ddb4adf",
+      "sourceFrames": 88,
+      "expectedCode": "W002",
+      "top5": [
+        "W002",
+        "W375",
+        "W342",
+        "W276",
+        "W320"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "nativeInferenceMs": 2222,
+      "maxAbsLogitError": 7.62939453125e-06,
+      "expectedEnglish": "Relatives",
+      "top5English": [
+        "Relatives",
+        "Mask",
+        "Lamp",
+        "Blender Machine",
+        "Cattle House"
+      ]
+    },
+    {
+      "file": "W003S08F_11.mp4",
+      "sha256": "62fb84edbe6ee196d1a4ce71c96836596431a6b7991767ef1034ffa6532703c6",
+      "sourceFrames": 115,
+      "expectedCode": "W003",
+      "top5": [
+        "W003",
+        "W301",
+        "W396",
+        "W268",
+        "W335"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "nativeInferenceMs": 2182,
+      "maxAbsLogitError": 6.67572021484375e-06,
+      "expectedEnglish": "Brother",
+      "top5English": [
+        "Brother",
+        "Tar",
+        "Thermometer",
+        "Switch",
+        "Hand Fan"
+      ]
+    },
+    {
+      "file": "W205S08F_02.mp4",
+      "sha256": "aeab2353d5b69e797780ec1e1535d2b0d793e4fbdc0e18b73d07f5b1d0c248d9",
+      "sourceFrames": 62,
+      "expectedCode": "W205",
+      "top5": [
+        "W213",
+        "W102",
+        "W319",
+        "W205",
+        "W191"
+      ],
+      "top1Correct": false,
+      "top5Correct": true,
+      "nativeInferenceMs": 2028,
+      "maxAbsLogitError": 3.337860107421875e-05,
+      "expectedEnglish": "Thread",
+      "top5English": [
+        "Tube Light",
+        "Ribbon",
+        "Sitting place",
+        "Thread",
+        "Neck Scarf"
+      ]
+    },
+    {
+      "file": "W211S04F_03.mp4",
+      "sha256": "57fafb651ac5d0216f1c1632e88658a7871e467abec112a0df85bb9721c2c779",
+      "sourceFrames": 73,
+      "expectedCode": "W211",
+      "top5": [
+        "W082",
+        "W211",
+        "W243",
+        "W074",
+        "W200"
+      ],
+      "top1Correct": false,
+      "top5Correct": true,
+      "nativeInferenceMs": 2575,
+      "maxAbsLogitError": 1.33514404296875e-05,
+      "expectedEnglish": "Toothpaste",
+      "top5English": [
+        "Alah or Mahavar",
+        "Toothpaste",
+        "Jug",
+        "Rice cooked with oil",
+        "Raincoat"
+      ]
+    },
+    {
+      "file": "W389S08F_02.mp4",
+      "sha256": "97e715ef03b35cab865f4c0b2f945983b7b1817370e7749e2acf7ef7fcd84dfc",
+      "sourceFrames": 71,
+      "expectedCode": "W389",
+      "top5": [
+        "W389",
+        "W395",
+        "W364",
+        "W228",
+        "W154"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "nativeInferenceMs": 2111,
+      "maxAbsLogitError": 1.811981201171875e-05,
+      "expectedEnglish": "Medicine",
+      "top5English": [
+        "Medicine",
+        "Tablet",
+        "Homeopathy",
+        "Cassette Player",
+        "Tenant"
+      ]
+    },
+    {
+      "file": "W401S04F_06.mp4",
+      "sha256": "f2d27fe6031263d0007039d5b686876aeeb296a018eee8c18b2879c6ffba10e5",
+      "sourceFrames": 74,
+      "expectedCode": "W401",
+      "top5": [
+        "W401",
+        "W336",
+        "W311",
+        "W327",
+        "W313"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "nativeInferenceMs": 2029,
+      "maxAbsLogitError": 9.417533874511719e-06,
+      "expectedEnglish": "X-Ray",
+      "top5English": [
+        "X-Ray",
+        "Pan",
+        "Drum",
+        "Straw",
+        "File"
+      ]
+    }
+  ]
+}

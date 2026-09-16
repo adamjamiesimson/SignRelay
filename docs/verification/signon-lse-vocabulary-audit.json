@@ -1,0 +1,18 @@
+{
+  "source": "https://huggingface.co/signon-project/slr-poseformer-lse/tree/9078e2ae57678c48d20e7e599a45657414bea22b",
+  "checkpointSha256": "2c6594440b6a23b86dd432395dbdc91c9876893625f0dce42b5a49de1ec9afd2",
+  "checkpointBytes": 6857196,
+  "inspection": "torch.load(weights_only=True), no custom safe globals",
+  "headWeightShape": [
+    35,
+    192
+  ],
+  "headBiasShape": [
+    35
+  ],
+  "recognitionClasses": 35,
+  "requiredClasses": 400,
+  "meetsVocabularyThreshold": false,
+  "activationApproved": false,
+  "reason": "The trained head has 35 outputs. Its 192-dimensional embedding is not a recognition vocabulary."
+}

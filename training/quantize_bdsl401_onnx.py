@@ -13,6 +13,7 @@ import statistics
 import time
 
 from export_bdsl401_onnx import CLIPS, HASHES, digest, read_clip
+from bdsl401_vocabulary import VOCABULARY, labels_for_codes
 
 
 def summarize(logits, expected_code):
@@ -78,6 +79,8 @@ def compare(baseline: Path, clips: Path, output: Path, weight_only: bool = False
         raise ValueError("Baseline is not the verified pinned source export")
     if json.loads((baseline / "class-codes.json").read_text()) != [f"W{i:03d}" for i in range(1, 402)]:
         raise ValueError("Baseline class order mismatch")
+    codes = json.loads((baseline / "class-codes.json").read_text())
+    readable_labels = labels_for_codes(codes)
     for name, expected in CLIPS.items():
         if digest(clips / name) != expected:
             raise ValueError(f"Pinned clip mismatch: {name}")
@@ -137,6 +140,8 @@ def compare(baseline: Path, clips: Path, output: Path, weight_only: bool = False
         del sessions
         model = output / "model.int8.onnx"
         pending.replace(model)
+        (output / "class-codes.json").write_text(json.dumps(codes, indent=2) + "\n")
+        (output / "labels.json").write_text(json.dumps(readable_labels, ensure_ascii=False, indent=2) + "\n")
         variants = {}
         for variant, path in {"float32": original, "int8": model}.items():
             variants[variant] = {"modelSha256": digest(path), "modelBytes": path.stat().st_size,
@@ -153,7 +158,8 @@ def compare(baseline: Path, clips: Path, output: Path, weight_only: bool = False
                   "sizeReductionPercent": round(100 * (1 - model.stat().st_size / original.stat().st_size), 2),
                   "versions": {"onnx": onnx.__version__, "onnxruntime": ort.__version__, "torch": torch.__version__},
                   "timing": "Two native CPU threads; one untimed warm-up then one timed inference per clip and variant on the same host",
-                  "installed": False, "readableVocabularyVerified": False, "browserTested": False,
+                  "installed": False, "readableVocabularyVerified": True, "browserTested": False,
+                  "vocabularySha256": digest(VOCABULARY), "distinctEnglishLabels": len(set(readable_labels)),
                   "limitations": "Six publisher-selected coded examples; no independent accuracy estimate. Quantization changes logits. Native and WASM equivalence must use the matching variant reference. No activation or deployment."}
         (output / "verification.json").write_text(json.dumps(report, indent=2) + "\n")
         return report

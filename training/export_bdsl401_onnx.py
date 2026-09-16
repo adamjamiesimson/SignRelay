@@ -1,6 +1,7 @@
 """Verify and export the publisher's BdSLW401 VideoMAE for local research.
 
-Preserves numbered class IDs. Does not install a readable translation model.
+Preserves numbered class IDs and attaches the original dataset's English glosses.
+Does not install or activate a translation model.
 The preprocessing follows the publisher's video demo, not the generic image
 processor's center crop. All source files and generated weights stay in work/.
 """
@@ -11,6 +12,8 @@ import hashlib
 import json
 from pathlib import Path
 import time
+
+from bdsl401_vocabulary import VOCABULARY, labels_for_codes
 
 SOURCE = "Shawon16/VideoMAE_BdSLW401_20_epochs_p5_SR_10"
 REVISION = "f03fdadb20d1c59989ee7b2bfa95a07459b7fb56"
@@ -116,6 +119,7 @@ def export(source: Path, clips: Path, output: Path):
         if digest(source / name) != expected:
             raise ValueError(f"Pinned source mismatch: {name}")
     labels = ordered_codes(json.loads((source / "config.json").read_text()))
+    readable_labels = labels_for_codes(labels)
     for name, expected in CLIPS.items():
         if digest(clips / name) != expected:
             raise ValueError(f"Pinned clip mismatch: {name}")
@@ -173,6 +177,7 @@ def export(source: Path, clips: Path, output: Path):
                 expected.astype("<f4").tofile(output / "wasm-expected.f32")
         pending.replace(output / "model.onnx")
         (output / "class-codes.json").write_text(json.dumps(labels, indent=2) + "\n")
+        (output / "labels.json").write_text(json.dumps(readable_labels, ensure_ascii=False, indent=2) + "\n")
         report = {
             "source": f"https://huggingface.co/{SOURCE}/tree/{REVISION}",
             "sourceHashes": HASHES, "clipSource": f"{SPACE}/tree/{SPACE_REVISION}",
@@ -184,8 +189,10 @@ def export(source: Path, clips: Path, output: Path):
             "top5Count": sum(r["top5Correct"] for r in results), "total": len(results),
             "versions": {"torch": torch.__version__, "transformers": transformers.__version__,
                          "onnx": onnx.__version__, "onnxruntime": ort.__version__},
-            "installed": False, "readableVocabularyVerified": False,
-            "limitations": "Class-code smoke test on six publisher-selected clips, not a general accuracy benchmark; no live camera or browser verification; readable Bangla mapping missing",
+            "installed": False, "readableVocabularyVerified": True,
+            "vocabularySha256": digest(VOCABULARY),
+            "distinctEnglishLabels": len(set(readable_labels)),
+            "limitations": "Six publisher-selected clips, not a general accuracy benchmark; no live camera or browser verification; English labels are source glosses, not an independent linguistic review",
         }
         (output / "verification.json").write_text(json.dumps(report, indent=2) + "\n")
         return report

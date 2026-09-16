@@ -1,0 +1,24 @@
+{
+  "source": "https://www.kaggle.com/datasets/sahebaakter/bdslw401-1st-processed/versions/1",
+  "sourceSha256": "7e285120185929a5143c8d6f418a1f37bf933d7c397002a9d9a813e5ee7d4041",
+  "rows": 392,
+  "uniqueClassCodes": 392,
+  "missingCodes": [
+    "W070",
+    "W109",
+    "W146",
+    "W185",
+    "W224",
+    "W266",
+    "W308",
+    "W350",
+    "W392"
+  ],
+  "duplicateCodes": [],
+  "invalidCodes": [],
+  "emptyOrPlaceholderLabels": [],
+  "complete401CodeCoverage": false,
+  "linguisticallyVerified": false,
+  "activationApproved": false,
+  "limitations": "Structural audit only. Verify source provenance, text accuracy, permissions and checkpoint class order before use."
+}

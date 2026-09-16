@@ -1,0 +1,53 @@
+name: Bangla research model verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/pretrained-language-expansion]
+    paths:
+      - .github/workflows/bdsl401-research-check.yml
+      - training/export_bdsl401_onnx.py
+      - training/evaluate_bdsl401_publisher_set.py
+      - training/bdsl401_vocabulary.py
+      - training/bdsl401_vocabulary.json
+      - training/test_bdsl401_vocabulary.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bdsl401-research-check
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned research dependencies
+        run: |
+          python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install numpy==1.26.4 transformers==4.48.3 safetensors==0.5.3 onnx==1.17.0 onnxruntime==1.20.1 opencv-python-headless==4.11.0.86
+      - name: Verify preprocessing and readable vocabulary contracts
+        run: python -m unittest discover -s training -p 'test_bdsl401*.py'
+      - name: Download pinned research model and six export fixtures
+        run: python training/fetch_bdsl401_research_assets.py
+      - name: Verify original checkpoint conversion
+        run: python training/export_bdsl401_onnx.py work/bdsl401-research/source work/bdsl401-research/clips
+      - name: Evaluate all 401 publisher clips
+        run: python training/evaluate_bdsl401_publisher_set.py work/bdsl401-export
+      - name: Preserve reports only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdsl401-research-reports
+          path: |
+            work/bdsl401-export/verification.json
+            work/bdsl401-publisher-test/publisher-clips.json
+            work/bdsl401-publisher-test/publisher-progress.jsonl
+          retention-days: 7
+          if-no-files-found: warn

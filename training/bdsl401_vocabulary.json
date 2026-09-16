@@ -1,0 +1,2041 @@
+{
+  "source": "https://www.kaggle.com/datasets/hasanssl/bdslw401/versions/2",
+  "sourceFile": "bdsl words-complete.pdf",
+  "sourceSha256": "7996295dbdadbd0c4baa7e3c19e5c91c683a7e437467da6adf8bed1ba41099bd",
+  "sourceLicenseAsPublished": "CC-BY-NC-ND-4.0",
+  "attribution": "Husne Ara Rubaiyeat, Njayou Youssouf, Md Kamrul Hasan, Hasan Mahmud; BdSLW401 dataset",
+  "extraction": "Printed W### row positions and English column; four visually checked line-wrap repairs",
+  "classes": 401,
+  "distinctEnglishLabels": 398,
+  "repeatedEnglishLabels": {
+    "Wife": 2,
+    "T-shirt": 2,
+    "Scarf": 2
+  },
+  "wrapRepairs": {
+    "W009": {
+      "extracted": "Grandmother/Matern al Grandmother",
+      "display": "Grandmother/Maternal Grandmother"
+    },
+    "W011": {
+      "extracted": "Husband’s Younger Brother (Brother-in- Law)",
+      "display": "Husband’s Younger Brother (Brother-in-Law)"
+    },
+    "W036": {
+      "extracted": "Husband’s Elder Brother (Brother-in- Law)",
+      "display": "Husband’s Elder Brother (Brother-in-Law)"
+    },
+    "W263": {
+      "extracted": "Arrange/Furnish/Org anize",
+      "display": "Arrange/Furnish/Organize"
+    }
+  },
+  "limitations": "Source English glosses, not an independent linguistic review. Distinct sign classes may share an English gloss. Original Bangla text extraction is unsuitable for display. This file does not activate a recognition model.",
+  "entries": [
+    {
+      "code": "W001",
+      "english": "Father",
+      "sourcePage": 1
+    },
+    {
+      "code": "W002",
+      "english": "Relatives",
+      "sourcePage": 1
+    },
+    {
+      "code": "W003",
+      "english": "Brother",
+      "sourcePage": 1
+    },
+    {
+      "code": "W004",
+      "english": "Sister",
+      "sourcePage": 1
+    },
+    {
+      "code": "W005",
+      "english": "Wife",
+      "sourcePage": 1
+    },
+    {
+      "code": "W006",
+      "english": "Paternal Uncle",
+      "sourcePage": 1
+    },
+    {
+      "code": "W007",
+      "english": "Wife of Paternal Uncle",
+      "sourcePage": 1
+    },
+    {
+      "code": "W008",
+      "english": "Grandfather/Maternal grandfather",
+      "sourcePage": 1
+    },
+    {
+      "code": "W009",
+      "english": "Grandmother/Maternal Grandmother",
+      "sourcePage": 1
+    },
+    {
+      "code": "W010",
+      "english": "Responsibility",
+      "sourcePage": 1
+    },
+    {
+      "code": "W011",
+      "english": "Husband’s Younger Brother (Brother-in-Law)",
+      "sourcePage": 1
+    },
+    {
+      "code": "W012",
+      "english": "Sister’s Husband",
+      "sourcePage": 1
+    },
+    {
+      "code": "W013",
+      "english": "Wife",
+      "sourcePage": 1
+    },
+    {
+      "code": "W014",
+      "english": "Husband of Paternal Aunt",
+      "sourcePage": 1
+    },
+    {
+      "code": "W015",
+      "english": "Paternal Aunt",
+      "sourcePage": 1
+    },
+    {
+      "code": "W016",
+      "english": "Husband",
+      "sourcePage": 1
+    },
+    {
+      "code": "W017",
+      "english": "Maternal Aunt",
+      "sourcePage": 1
+    },
+    {
+      "code": "W018",
+      "english": "Husband of Maternal Aunt",
+      "sourcePage": 1
+    },
+    {
+      "code": "W019",
+      "english": "Daughter",
+      "sourcePage": 1
+    },
+    {
+      "code": "W020",
+      "english": "Mother",
+      "sourcePage": 1
+    },
+    {
+      "code": "W021",
+      "english": "Mother’s Brother",
+      "sourcePage": 1
+    },
+    {
+      "code": "W022",
+      "english": "Mother’s Brother’s Wife",
+      "sourcePage": 1
+    },
+    {
+      "code": "W023",
+      "english": "Husband’s Sister",
+      "sourcePage": 1
+    },
+    {
+      "code": "W024",
+      "english": "Family",
+      "sourcePage": 1
+    },
+    {
+      "code": "W025",
+      "english": "Son",
+      "sourcePage": 1
+    },
+    {
+      "code": "W026",
+      "english": "Mother-in-Law",
+      "sourcePage": 1
+    },
+    {
+      "code": "W027",
+      "english": "Father-in-Law",
+      "sourcePage": 1
+    },
+    {
+      "code": "W028",
+      "english": "Women who have the same husband",
+      "sourcePage": 1
+    },
+    {
+      "code": "W029",
+      "english": "Brother’s Wife",
+      "sourcePage": 1
+    },
+    {
+      "code": "W030",
+      "english": "Nephew (related to sister)",
+      "sourcePage": 1
+    },
+    {
+      "code": "W031",
+      "english": "Niece (related to sister)",
+      "sourcePage": 1
+    },
+    {
+      "code": "W032",
+      "english": "Wife’s Sister’s Husband",
+      "sourcePage": 1
+    },
+    {
+      "code": "W033",
+      "english": "Good",
+      "sourcePage": 2
+    },
+    {
+      "code": "W034",
+      "english": "Nephew (related to brother)",
+      "sourcePage": 2
+    },
+    {
+      "code": "W035",
+      "english": "Niece (related to brother)",
+      "sourcePage": 2
+    },
+    {
+      "code": "W036",
+      "english": "Husband’s Elder Brother (Brother-in-Law)",
+      "sourcePage": 2
+    },
+    {
+      "code": "W037",
+      "english": "Mango",
+      "sourcePage": 2
+    },
+    {
+      "code": "W038",
+      "english": "Potato",
+      "sourcePage": 2
+    },
+    {
+      "code": "W039",
+      "english": "Pineapple",
+      "sourcePage": 2
+    },
+    {
+      "code": "W040",
+      "english": "Grape",
+      "sourcePage": 2
+    },
+    {
+      "code": "W041",
+      "english": "Apple",
+      "sourcePage": 2
+    },
+    {
+      "code": "W042",
+      "english": "Biscuit",
+      "sourcePage": 2
+    },
+    {
+      "code": "W043",
+      "english": "Jujube/Chinese Date",
+      "sourcePage": 2
+    },
+    {
+      "code": "W044",
+      "english": "Cake",
+      "sourcePage": 2
+    },
+    {
+      "code": "W045",
+      "english": "Tea",
+      "sourcePage": 2
+    },
+    {
+      "code": "W046",
+      "english": "Rice",
+      "sourcePage": 2
+    },
+    {
+      "code": "W047",
+      "english": "Sugar",
+      "sourcePage": 2
+    },
+    {
+      "code": "W048",
+      "english": "Chips",
+      "sourcePage": 2
+    },
+    {
+      "code": "W049",
+      "english": "Chocolate",
+      "sourcePage": 2
+    },
+    {
+      "code": "W050",
+      "english": "Lentil",
+      "sourcePage": 2
+    },
+    {
+      "code": "W051",
+      "english": "Egg",
+      "sourcePage": 2
+    },
+    {
+      "code": "W052",
+      "english": "Milk",
+      "sourcePage": 2
+    },
+    {
+      "code": "W053",
+      "english": "Feeder",
+      "sourcePage": 2
+    },
+    {
+      "code": "W054",
+      "english": "Fruit",
+      "sourcePage": 2
+    },
+    {
+      "code": "W055",
+      "english": "Juice",
+      "sourcePage": 2
+    },
+    {
+      "code": "W056",
+      "english": "Carrot",
+      "sourcePage": 2
+    },
+    {
+      "code": "W057",
+      "english": "Unrefined Solid Brown Sugar",
+      "sourcePage": 2
+    },
+    {
+      "code": "W058",
+      "english": "Ice Cream",
+      "sourcePage": 2
+    },
+    {
+      "code": "W059",
+      "english": "Hot in Taste or Spicy",
+      "sourcePage": 2
+    },
+    {
+      "code": "W060",
+      "english": "A unique Bangladeshi Sweet",
+      "sourcePage": 2
+    },
+    {
+      "code": "W061",
+      "english": "Food",
+      "sourcePage": 2
+    },
+    {
+      "code": "W062",
+      "english": "Date",
+      "sourcePage": 2
+    },
+    {
+      "code": "W063",
+      "english": "Banana",
+      "sourcePage": 2
+    },
+    {
+      "code": "W064",
+      "english": "Orange",
+      "sourcePage": 2
+    },
+    {
+      "code": "W065",
+      "english": "Lemon",
+      "sourcePage": 2
+    },
+    {
+      "code": "W066",
+      "english": "Lichi",
+      "sourcePage": 2
+    },
+    {
+      "code": "W067",
+      "english": "Salt",
+      "sourcePage": 2
+    },
+    {
+      "code": "W068",
+      "english": "Fish",
+      "sourcePage": 2
+    },
+    {
+      "code": "W069",
+      "english": "Meat",
+      "sourcePage": 2
+    },
+    {
+      "code": "W070",
+      "english": "Sweet Taste",
+      "sourcePage": 3
+    },
+    {
+      "code": "W071",
+      "english": "Chilli Pepper",
+      "sourcePage": 3
+    },
+    {
+      "code": "W072",
+      "english": "Betel Leaf",
+      "sourcePage": 3
+    },
+    {
+      "code": "W073",
+      "english": "Guava",
+      "sourcePage": 3
+    },
+    {
+      "code": "W074",
+      "english": "Rice cooked with oil",
+      "sourcePage": 3
+    },
+    {
+      "code": "W075",
+      "english": "Flatbread",
+      "sourcePage": 3
+    },
+    {
+      "code": "W076",
+      "english": "Vegetable",
+      "sourcePage": 3
+    },
+    {
+      "code": "W077",
+      "english": "Betel Nut",
+      "sourcePage": 3
+    },
+    {
+      "code": "W078",
+      "english": "Palmyra",
+      "sourcePage": 3
+    },
+    {
+      "code": "W079",
+      "english": "Tamarind",
+      "sourcePage": 3
+    },
+    {
+      "code": "W080",
+      "english": "Melon",
+      "sourcePage": 3
+    },
+    {
+      "code": "W081",
+      "english": "Cooked Rice",
+      "sourcePage": 3
+    },
+    {
+      "code": "W082",
+      "english": "Alah or Mahavar",
+      "sourcePage": 3
+    },
+    {
+      "code": "W083",
+      "english": "Ring",
+      "sourcePage": 3
+    },
+    {
+      "code": "W084",
+      "english": "A type of Perfume",
+      "sourcePage": 3
+    },
+    {
+      "code": "W085",
+      "english": "Landlord",
+      "sourcePage": 3
+    },
+    {
+      "code": "W086",
+      "english": "Belt",
+      "sourcePage": 3
+    },
+    {
+      "code": "W087",
+      "english": "Bleed",
+      "sourcePage": 3
+    },
+    {
+      "code": "W088",
+      "english": "Woman’s Upper Garment",
+      "sourcePage": 3
+    },
+    {
+      "code": "W089",
+      "english": "Friend",
+      "sourcePage": 3
+    },
+    {
+      "code": "W090",
+      "english": "A Loose Garment Covering the Entire Body",
+      "sourcePage": 3
+    },
+    {
+      "code": "W091",
+      "english": "Button",
+      "sourcePage": 3
+    },
+    {
+      "code": "W092",
+      "english": "Cap",
+      "sourcePage": 3
+    },
+    {
+      "code": "W093",
+      "english": "Shawl",
+      "sourcePage": 3
+    },
+    {
+      "code": "W094",
+      "english": "Comb",
+      "sourcePage": 3
+    },
+    {
+      "code": "W095",
+      "english": "Spectacles",
+      "sourcePage": 3
+    },
+    {
+      "code": "W096",
+      "english": "Bangle",
+      "sourcePage": 3
+    },
+    {
+      "code": "W097",
+      "english": "Clip",
+      "sourcePage": 3
+    },
+    {
+      "code": "W098",
+      "english": "Cream",
+      "sourcePage": 3
+    },
+    {
+      "code": "W099",
+      "english": "Data",
+      "sourcePage": 3
+    },
+    {
+      "code": "W100",
+      "english": "Indebted",
+      "sourcePage": 3
+    },
+    {
+      "code": "W101",
+      "english": "Adopted Son/Daughter",
+      "sourcePage": 3
+    },
+    {
+      "code": "W102",
+      "english": "Ribbon",
+      "sourcePage": 3
+    },
+    {
+      "code": "W103",
+      "english": "A type of Men’s Upper Garment",
+      "sourcePage": 3
+    },
+    {
+      "code": "W104",
+      "english": "T-shirt",
+      "sourcePage": 3
+    },
+    {
+      "code": "W105",
+      "english": "Watch",
+      "sourcePage": 3
+    },
+    {
+      "code": "W106",
+      "english": "Gloves",
+      "sourcePage": 3
+    },
+    {
+      "code": "W107",
+      "english": "Necklace",
+      "sourcePage": 3
+    },
+    {
+      "code": "W108",
+      "english": "Recipient",
+      "sourcePage": 3
+    },
+    {
+      "code": "W109",
+      "english": "A Religious Leader or Teacher",
+      "sourcePage": 4
+    },
+    {
+      "code": "W110",
+      "english": "Halfpant",
+      "sourcePage": 4
+    },
+    {
+      "code": "W111",
+      "english": "Twin baby",
+      "sourcePage": 4
+    },
+    {
+      "code": "W112",
+      "english": "Shoe",
+      "sourcePage": 4
+    },
+    {
+      "code": "W113",
+      "english": "Kohl",
+      "sourcePage": 4
+    },
+    {
+      "code": "W114",
+      "english": "Ear Ring",
+      "sourcePage": 4
+    },
+    {
+      "code": "W115",
+      "english": "Lipstick",
+      "sourcePage": 4
+    },
+    {
+      "code": "W116",
+      "english": "A long piece of cloth worn as a loincloth",
+      "sourcePage": 4
+    },
+    {
+      "code": "W117",
+      "english": "Makeup",
+      "sourcePage": 4
+    },
+    {
+      "code": "W118",
+      "english": "Owner",
+      "sourcePage": 4
+    },
+    {
+      "code": "W119",
+      "english": "Henna",
+      "sourcePage": 4
+    },
+    {
+      "code": "W120",
+      "english": "Guest",
+      "sourcePage": 4
+    },
+    {
+      "code": "W121",
+      "english": "Socks",
+      "sourcePage": 4
+    },
+    {
+      "code": "W122",
+      "english": "Nailpolish",
+      "sourcePage": 4
+    },
+    {
+      "code": "W123",
+      "english": "Scarf",
+      "sourcePage": 4
+    },
+    {
+      "code": "W124",
+      "english": "Guardian",
+      "sourcePage": 4
+    },
+    {
+      "code": "W125",
+      "english": "Loose Fitting Trouser",
+      "sourcePage": 4
+    },
+    {
+      "code": "W126",
+      "english": "A Loose Fitting Men’s Upper Garment",
+      "sourcePage": 4
+    },
+    {
+      "code": "W127",
+      "english": "Pant",
+      "sourcePage": 4
+    },
+    {
+      "code": "W128",
+      "english": "Creditor",
+      "sourcePage": 4
+    },
+    {
+      "code": "W129",
+      "english": "Skirt of slip worn under a dress",
+      "sourcePage": 4
+    },
+    {
+      "code": "W130",
+      "english": "Perfume",
+      "sourcePage": 4
+    },
+    {
+      "code": "W131",
+      "english": "Pocket",
+      "sourcePage": 4
+    },
+    {
+      "code": "W132",
+      "english": "Powder",
+      "sourcePage": 4
+    },
+    {
+      "code": "W133",
+      "english": "Lover (man)",
+      "sourcePage": 4
+    },
+    {
+      "code": "W134",
+      "english": "Lover (woman)",
+      "sourcePage": 4
+    },
+    {
+      "code": "W135",
+      "english": "Neighbor",
+      "sourcePage": 4
+    },
+    {
+      "code": "W136",
+      "english": "Silver",
+      "sourcePage": 4
+    },
+    {
+      "code": "W137",
+      "english": "Slipper",
+      "sourcePage": 4
+    },
+    {
+      "code": "W138",
+      "english": "Shampoo",
+      "sourcePage": 4
+    },
+    {
+      "code": "W139",
+      "english": "Vedic Women’s Dress",
+      "sourcePage": 4
+    },
+    {
+      "code": "W140",
+      "english": "Shave",
+      "sourcePage": 4
+    },
+    {
+      "code": "W141",
+      "english": "Shirt",
+      "sourcePage": 4
+    },
+    {
+      "code": "W142",
+      "english": "A Knee Length Coat Buttoning to the Neck",
+      "sourcePage": 4
+    },
+    {
+      "code": "W143",
+      "english": "Disciple",
+      "sourcePage": 4
+    },
+    {
+      "code": "W144",
+      "english": "Well-wisher",
+      "sourcePage": 4
+    },
+    {
+      "code": "W145",
+      "english": "Colleague",
+      "sourcePage": 4
+    },
+    {
+      "code": "W146",
+      "english": "Students who Study in the Same Class",
+      "sourcePage": 5
+    },
+    {
+      "code": "W147",
+      "english": "Of the Same Age",
+      "sourcePage": 5
+    },
+    {
+      "code": "W148",
+      "english": "Relation",
+      "sourcePage": 5
+    },
+    {
+      "code": "W149",
+      "english": "Gold",
+      "sourcePage": 5
+    },
+    {
+      "code": "W150",
+      "english": "Enemy",
+      "sourcePage": 5
+    },
+    {
+      "code": "W151",
+      "english": "Sweater",
+      "sourcePage": 5
+    },
+    {
+      "code": "W152",
+      "english": "Tie",
+      "sourcePage": 5
+    },
+    {
+      "code": "W153",
+      "english": "Tip",
+      "sourcePage": 5
+    },
+    {
+      "code": "W154",
+      "english": "Tenant",
+      "sourcePage": 5
+    },
+    {
+      "code": "W155",
+      "english": "Extension to a Garment, specially Shari",
+      "sourcePage": 5
+    },
+    {
+      "code": "W156",
+      "english": "Dress Hanger",
+      "sourcePage": 5
+    },
+    {
+      "code": "W157",
+      "english": "Light",
+      "sourcePage": 5
+    },
+    {
+      "code": "W158",
+      "english": "Bag",
+      "sourcePage": 5
+    },
+    {
+      "code": "W159",
+      "english": "Pillow",
+      "sourcePage": 5
+    },
+    {
+      "code": "W160",
+      "english": "Flute",
+      "sourcePage": 5
+    },
+    {
+      "code": "W161",
+      "english": "Bathroom",
+      "sourcePage": 5
+    },
+    {
+      "code": "W162",
+      "english": "Bowl",
+      "sourcePage": 5
+    },
+    {
+      "code": "W163",
+      "english": "A type of Ornament",
+      "sourcePage": 5
+    },
+    {
+      "code": "W164",
+      "english": "Bed",
+      "sourcePage": 5
+    },
+    {
+      "code": "W165",
+      "english": "Box",
+      "sourcePage": 5
+    },
+    {
+      "code": "W166",
+      "english": "Bracelet",
+      "sourcePage": 5
+    },
+    {
+      "code": "W167",
+      "english": "Bulb",
+      "sourcePage": 5
+    },
+    {
+      "code": "W168",
+      "english": "Chair",
+      "sourcePage": 5
+    },
+    {
+      "code": "W169",
+      "english": "Spoon",
+      "sourcePage": 5
+    },
+    {
+      "code": "W170",
+      "english": "Umbrella",
+      "sourcePage": 5
+    },
+    {
+      "code": "W171",
+      "english": "Hair Band",
+      "sourcePage": 5
+    },
+    {
+      "code": "W172",
+      "english": "Coat",
+      "sourcePage": 5
+    },
+    {
+      "code": "W173",
+      "english": "Cup",
+      "sourcePage": 5
+    },
+    {
+      "code": "W174",
+      "english": "A Loincloth",
+      "sourcePage": 5
+    },
+    {
+      "code": "W175",
+      "english": "Door",
+      "sourcePage": 5
+    },
+    {
+      "code": "W176",
+      "english": "Fan",
+      "sourcePage": 5
+    },
+    {
+      "code": "W177",
+      "english": "Huk",
+      "sourcePage": 5
+    },
+    {
+      "code": "W178",
+      "english": "Jacket",
+      "sourcePage": 5
+    },
+    {
+      "code": "W179",
+      "english": "Window",
+      "sourcePage": 5
+    },
+    {
+      "code": "W180",
+      "english": "Men’s Undergarment",
+      "sourcePage": 5
+    },
+    {
+      "code": "W181",
+      "english": "Jeans",
+      "sourcePage": 5
+    },
+    {
+      "code": "W182",
+      "english": "Jersey",
+      "sourcePage": 5
+    },
+    {
+      "code": "W183",
+      "english": "Basket",
+      "sourcePage": 5
+    },
+    {
+      "code": "W184",
+      "english": "Scissors",
+      "sourcePage": 5
+    },
+    {
+      "code": "W185",
+      "english": "A Long Tunic Worn in the Indian Subcontinent",
+      "sourcePage": 6
+    },
+    {
+      "code": "W186",
+      "english": "Fork",
+      "sourcePage": 6
+    },
+    {
+      "code": "W187",
+      "english": "Braid",
+      "sourcePage": 6
+    },
+    {
+      "code": "W188",
+      "english": "Hairpin",
+      "sourcePage": 6
+    },
+    {
+      "code": "W189",
+      "english": "A type of Slipper",
+      "sourcePage": 6
+    },
+    {
+      "code": "W190",
+      "english": "Locket",
+      "sourcePage": 6
+    },
+    {
+      "code": "W191",
+      "english": "Neck Scarf",
+      "sourcePage": 6
+    },
+    {
+      "code": "W192",
+      "english": "Stool",
+      "sourcePage": 6
+    },
+    {
+      "code": "W193",
+      "english": "Mosquito Net",
+      "sourcePage": 6
+    },
+    {
+      "code": "W194",
+      "english": "Nose-pin",
+      "sourcePage": 6
+    },
+    {
+      "code": "W195",
+      "english": "Nighty",
+      "sourcePage": 6
+    },
+    {
+      "code": "W196",
+      "english": "Nose Ring",
+      "sourcePage": 6
+    },
+    {
+      "code": "W197",
+      "english": "Anklet",
+      "sourcePage": 6
+    },
+    {
+      "code": "W198",
+      "english": "Turban",
+      "sourcePage": 6
+    },
+    {
+      "code": "W199",
+      "english": "Plate",
+      "sourcePage": 6
+    },
+    {
+      "code": "W200",
+      "english": "Raincoat",
+      "sourcePage": 6
+    },
+    {
+      "code": "W201",
+      "english": "Women’s Trouser",
+      "sourcePage": 6
+    },
+    {
+      "code": "W202",
+      "english": "Scarf",
+      "sourcePage": 6
+    },
+    {
+      "code": "W203",
+      "english": "Women’s Undergarment",
+      "sourcePage": 6
+    },
+    {
+      "code": "W204",
+      "english": "Sunglasses",
+      "sourcePage": 6
+    },
+    {
+      "code": "W205",
+      "english": "Thread",
+      "sourcePage": 6
+    },
+    {
+      "code": "W206",
+      "english": "Table",
+      "sourcePage": 6
+    },
+    {
+      "code": "W207",
+      "english": "Telephone",
+      "sourcePage": 6
+    },
+    {
+      "code": "W208",
+      "english": "Tiepin",
+      "sourcePage": 6
+    },
+    {
+      "code": "W209",
+      "english": "An ornament worn in the forehead",
+      "sourcePage": 6
+    },
+    {
+      "code": "W210",
+      "english": "Toothbrush",
+      "sourcePage": 6
+    },
+    {
+      "code": "W211",
+      "english": "Toothpaste",
+      "sourcePage": 6
+    },
+    {
+      "code": "W212",
+      "english": "T-shirt",
+      "sourcePage": 6
+    },
+    {
+      "code": "W213",
+      "english": "Tube Light",
+      "sourcePage": 6
+    },
+    {
+      "code": "W214",
+      "english": "TV",
+      "sourcePage": 6
+    },
+    {
+      "code": "W215",
+      "english": "AC",
+      "sourcePage": 6
+    },
+    {
+      "code": "W216",
+      "english": "Apartment",
+      "sourcePage": 6
+    },
+    {
+      "code": "W217",
+      "english": "Audio Cassette",
+      "sourcePage": 6
+    },
+    {
+      "code": "W218",
+      "english": "Looking Mirror",
+      "sourcePage": 6
+    },
+    {
+      "code": "W219",
+      "english": "Water Bucket",
+      "sourcePage": 6
+    },
+    {
+      "code": "W220",
+      "english": "Sand",
+      "sourcePage": 6
+    },
+    {
+      "code": "W221",
+      "english": "A type of Hut",
+      "sourcePage": 6
+    },
+    {
+      "code": "W222",
+      "english": "Basin",
+      "sourcePage": 6
+    },
+    {
+      "code": "W223",
+      "english": "Bed Sheet",
+      "sourcePage": 6
+    },
+    {
+      "code": "W224",
+      "english": "Toilet Wash Jug",
+      "sourcePage": 7
+    },
+    {
+      "code": "W225",
+      "english": "Bookshelf",
+      "sourcePage": 7
+    },
+    {
+      "code": "W226",
+      "english": "Briefcase",
+      "sourcePage": 7
+    },
+    {
+      "code": "W227",
+      "english": "Calling Bell",
+      "sourcePage": 7
+    },
+    {
+      "code": "W228",
+      "english": "Cassette Player",
+      "sourcePage": 7
+    },
+    {
+      "code": "W229",
+      "english": "Moon",
+      "sourcePage": 7
+    },
+    {
+      "code": "W230",
+      "english": "Strainer",
+      "sourcePage": 7
+    },
+    {
+      "code": "W231",
+      "english": "Cooker/Stove",
+      "sourcePage": 7
+    },
+    {
+      "code": "W232",
+      "english": "Building",
+      "sourcePage": 7
+    },
+    {
+      "code": "W233",
+      "english": "Wall",
+      "sourcePage": 7
+    },
+    {
+      "code": "W234",
+      "english": "Brick",
+      "sourcePage": 7
+    },
+    {
+      "code": "W235",
+      "english": "Haphazard",
+      "sourcePage": 7
+    },
+    {
+      "code": "W236",
+      "english": "Fridge",
+      "sourcePage": 7
+    },
+    {
+      "code": "W237",
+      "english": "Fry Pan",
+      "sourcePage": 7
+    },
+    {
+      "code": "W238",
+      "english": "Flower Vase",
+      "sourcePage": 7
+    },
+    {
+      "code": "W239",
+      "english": "Rug/Carpet",
+      "sourcePage": 7
+    },
+    {
+      "code": "W240",
+      "english": "Towel",
+      "sourcePage": 7
+    },
+    {
+      "code": "W241",
+      "english": "Iron",
+      "sourcePage": 7
+    },
+    {
+      "code": "W242",
+      "english": "Broom",
+      "sourcePage": 7
+    },
+    {
+      "code": "W243",
+      "english": "Jug",
+      "sourcePage": 7
+    },
+    {
+      "code": "W244",
+      "english": "Decorated Bed Sheet",
+      "sourcePage": 7
+    },
+    {
+      "code": "W245",
+      "english": "Kettle",
+      "sourcePage": 7
+    },
+    {
+      "code": "W246",
+      "english": "Room",
+      "sourcePage": 7
+    },
+    {
+      "code": "W247",
+      "english": "Well",
+      "sourcePage": 7
+    },
+    {
+      "code": "W248",
+      "english": "Hut",
+      "sourcePage": 7
+    },
+    {
+      "code": "W249",
+      "english": "A type of Blanket",
+      "sourcePage": 7
+    },
+    {
+      "code": "W250",
+      "english": "Lift",
+      "sourcePage": 7
+    },
+    {
+      "code": "W251",
+      "english": "House Made of Mud",
+      "sourcePage": 7
+    },
+    {
+      "code": "W252",
+      "english": "Floor",
+      "sourcePage": 7
+    },
+    {
+      "code": "W253",
+      "english": "Wax Candle",
+      "sourcePage": 7
+    },
+    {
+      "code": "W254",
+      "english": "Mug",
+      "sourcePage": 7
+    },
+    {
+      "code": "W255",
+      "english": "Tube Well",
+      "sourcePage": 7
+    },
+    {
+      "code": "W256",
+      "english": "Water Tap",
+      "sourcePage": 7
+    },
+    {
+      "code": "W257",
+      "english": "Curtain",
+      "sourcePage": 7
+    },
+    {
+      "code": "W258",
+      "english": "Pressure Cooker",
+      "sourcePage": 7
+    },
+    {
+      "code": "W259",
+      "english": "Pond",
+      "sourcePage": 7
+    },
+    {
+      "code": "W260",
+      "english": "Radio",
+      "sourcePage": 7
+    },
+    {
+      "code": "W261",
+      "english": "Handkerchief",
+      "sourcePage": 7
+    },
+    {
+      "code": "W262",
+      "english": "Soap",
+      "sourcePage": 7
+    },
+    {
+      "code": "W263",
+      "english": "Arrange/Furnish/Organize",
+      "sourcePage": 7
+    },
+    {
+      "code": "W264",
+      "english": "Cement",
+      "sourcePage": 7
+    },
+    {
+      "code": "W265",
+      "english": "Stairs",
+      "sourcePage": 7
+    },
+    {
+      "code": "W266",
+      "english": "Sofa",
+      "sourcePage": 8
+    },
+    {
+      "code": "W267",
+      "english": "Suitcase",
+      "sourcePage": 8
+    },
+    {
+      "code": "W268",
+      "english": "Switch",
+      "sourcePage": 8
+    },
+    {
+      "code": "W269",
+      "english": "Table Lamp",
+      "sourcePage": 8
+    },
+    {
+      "code": "W270",
+      "english": "House with Roof of Iron Sheets",
+      "sourcePage": 8
+    },
+    {
+      "code": "W271",
+      "english": "Torchlight",
+      "sourcePage": 8
+    },
+    {
+      "code": "W272",
+      "english": "Ingredients",
+      "sourcePage": 8
+    },
+    {
+      "code": "W273",
+      "english": "Veranda",
+      "sourcePage": 8
+    },
+    {
+      "code": "W274",
+      "english": "Washing Machine",
+      "sourcePage": 8
+    },
+    {
+      "code": "W275",
+      "english": "Ashtray",
+      "sourcePage": 8
+    },
+    {
+      "code": "W276",
+      "english": "Blender Machine",
+      "sourcePage": 8
+    },
+    {
+      "code": "W277",
+      "english": "A Long Curved Blade",
+      "sourcePage": 8
+    },
+    {
+      "code": "W278",
+      "english": "Knife",
+      "sourcePage": 8
+    },
+    {
+      "code": "W279",
+      "english": "Chimney",
+      "sourcePage": 8
+    },
+    {
+      "code": "W280",
+      "english": "Tower Bolt for Door",
+      "sourcePage": 8
+    },
+    {
+      "code": "W281",
+      "english": "Long Cutting Blade",
+      "sourcePage": 8
+    },
+    {
+      "code": "W282",
+      "english": "Match Stick",
+      "sourcePage": 8
+    },
+    {
+      "code": "W283",
+      "english": "Detergent Powder",
+      "sourcePage": 8
+    },
+    {
+      "code": "W284",
+      "english": "Rope",
+      "sourcePage": 8
+    },
+    {
+      "code": "W285",
+      "english": "Grill",
+      "sourcePage": 8
+    },
+    {
+      "code": "W286",
+      "english": "Hanger",
+      "sourcePage": 8
+    },
+    {
+      "code": "W287",
+      "english": "Oil Lantern",
+      "sourcePage": 8
+    },
+    {
+      "code": "W288",
+      "english": "Blanket",
+      "sourcePage": 8
+    },
+    {
+      "code": "W289",
+      "english": "Commode",
+      "sourcePage": 8
+    },
+    {
+      "code": "W290",
+      "english": "Saw",
+      "sourcePage": 8
+    },
+    {
+      "code": "W291",
+      "english": "Microwave Oven",
+      "sourcePage": 8
+    },
+    {
+      "code": "W292",
+      "english": "Door Mat",
+      "sourcePage": 8
+    },
+    {
+      "code": "W293",
+      "english": "Nail",
+      "sourcePage": 8
+    },
+    {
+      "code": "W294",
+      "english": "A type of Long blade",
+      "sourcePage": 8
+    },
+    {
+      "code": "W295",
+      "english": "Screw",
+      "sourcePage": 8
+    },
+    {
+      "code": "W296",
+      "english": "Tank",
+      "sourcePage": 8
+    },
+    {
+      "code": "W297",
+      "english": "Wire",
+      "sourcePage": 8
+    },
+    {
+      "code": "W298",
+      "english": "Flower Tub",
+      "sourcePage": 8
+    },
+    {
+      "code": "W299",
+      "english": "Toilet Tissue",
+      "sourcePage": 8
+    },
+    {
+      "code": "W300",
+      "english": "Lawn",
+      "sourcePage": 8
+    },
+    {
+      "code": "W301",
+      "english": "Tar",
+      "sourcePage": 8
+    },
+    {
+      "code": "W302",
+      "english": "Bamboo",
+      "sourcePage": 8
+    },
+    {
+      "code": "W303",
+      "english": "Roti Roller",
+      "sourcePage": 8
+    },
+    {
+      "code": "W304",
+      "english": "Bottle",
+      "sourcePage": 8
+    },
+    {
+      "code": "W305",
+      "english": "Jar",
+      "sourcePage": 8
+    },
+    {
+      "code": "W306",
+      "english": "Shed",
+      "sourcePage": 8
+    },
+    {
+      "code": "W307",
+      "english": "Walking Stick",
+      "sourcePage": 8
+    },
+    {
+      "code": "W308",
+      "english": "Lime",
+      "sourcePage": 9
+    },
+    {
+      "code": "W309",
+      "english": "A Cover",
+      "sourcePage": 9
+    },
+    {
+      "code": "W310",
+      "english": "Cradle",
+      "sourcePage": 9
+    },
+    {
+      "code": "W311",
+      "english": "Drum",
+      "sourcePage": 9
+    },
+    {
+      "code": "W312",
+      "english": "Drawer",
+      "sourcePage": 9
+    },
+    {
+      "code": "W313",
+      "english": "File",
+      "sourcePage": 9
+    },
+    {
+      "code": "W314",
+      "english": "Flask",
+      "sourcePage": 9
+    },
+    {
+      "code": "W315",
+      "english": "Foam",
+      "sourcePage": 9
+    },
+    {
+      "code": "W316",
+      "english": "Folder",
+      "sourcePage": 9
+    },
+    {
+      "code": "W317",
+      "english": "Big Bowl",
+      "sourcePage": 9
+    },
+    {
+      "code": "W318",
+      "english": "Pillar",
+      "sourcePage": 9
+    },
+    {
+      "code": "W319",
+      "english": "Sitting place",
+      "sourcePage": 9
+    },
+    {
+      "code": "W320",
+      "english": "Cattle House",
+      "sourcePage": 9
+    },
+    {
+      "code": "W321",
+      "english": "Pounder/Mortar",
+      "sourcePage": 9
+    },
+    {
+      "code": "W322",
+      "english": "Cooking Pan",
+      "sourcePage": 9
+    },
+    {
+      "code": "W323",
+      "english": "Hammer",
+      "sourcePage": 9
+    },
+    {
+      "code": "W324",
+      "english": "Broom Stick",
+      "sourcePage": 9
+    },
+    {
+      "code": "W325",
+      "english": "Shoe Rack",
+      "sourcePage": 9
+    },
+    {
+      "code": "W326",
+      "english": "Sickle",
+      "sourcePage": 9
+    },
+    {
+      "code": "W327",
+      "english": "Straw",
+      "sourcePage": 9
+    },
+    {
+      "code": "W328",
+      "english": "Cooking Spud",
+      "sourcePage": 9
+    },
+    {
+      "code": "W329",
+      "english": "Koyel",
+      "sourcePage": 9
+    },
+    {
+      "code": "W330",
+      "english": "Kushon/Cushion",
+      "sourcePage": 9
+    },
+    {
+      "code": "W331",
+      "english": "Lighter",
+      "sourcePage": 9
+    },
+    {
+      "code": "W332",
+      "english": "Mat",
+      "sourcePage": 9
+    },
+    {
+      "code": "W333",
+      "english": "Ladder",
+      "sourcePage": 9
+    },
+    {
+      "code": "W334",
+      "english": "Weeder",
+      "sourcePage": 9
+    },
+    {
+      "code": "W335",
+      "english": "Hand Fan",
+      "sourcePage": 9
+    },
+    {
+      "code": "W336",
+      "english": "Pan",
+      "sourcePage": 9
+    },
+    {
+      "code": "W337",
+      "english": "Punching Machine",
+      "sourcePage": 9
+    },
+    {
+      "code": "W338",
+      "english": "Pin",
+      "sourcePage": 9
+    },
+    {
+      "code": "W339",
+      "english": "Plastic",
+      "sourcePage": 9
+    },
+    {
+      "code": "W340",
+      "english": "Plug",
+      "sourcePage": 9
+    },
+    {
+      "code": "W341",
+      "english": "Castle",
+      "sourcePage": 9
+    },
+    {
+      "code": "W342",
+      "english": "Lamp",
+      "sourcePage": 9
+    },
+    {
+      "code": "W343",
+      "english": "Watering",
+      "sourcePage": 9
+    },
+    {
+      "code": "W344",
+      "english": "Sewing Machine",
+      "sourcePage": 9
+    },
+    {
+      "code": "W345",
+      "english": "Shower",
+      "sourcePage": 9
+    },
+    {
+      "code": "W346",
+      "english": "Stapler",
+      "sourcePage": 9
+    },
+    {
+      "code": "W347",
+      "english": "Needle",
+      "sourcePage": 9
+    },
+    {
+      "code": "W348",
+      "english": "Tent",
+      "sourcePage": 9
+    },
+    {
+      "code": "W349",
+      "english": "Rack",
+      "sourcePage": 9
+    },
+    {
+      "code": "W350",
+      "english": "Tiffin Carrier",
+      "sourcePage": 10
+    },
+    {
+      "code": "W351",
+      "english": "AIDS",
+      "sourcePage": 10
+    },
+    {
+      "code": "W352",
+      "english": "Arthritis",
+      "sourcePage": 10
+    },
+    {
+      "code": "W353",
+      "english": "Bandage",
+      "sourcePage": 10
+    },
+    {
+      "code": "W354",
+      "english": "Capsule",
+      "sourcePage": 10
+    },
+    {
+      "code": "W355",
+      "english": "Treatment",
+      "sourcePage": 10
+    },
+    {
+      "code": "W356",
+      "english": "Conjunctivitis",
+      "sourcePage": 10
+    },
+    {
+      "code": "W357",
+      "english": "Dengue",
+      "sourcePage": 10
+    },
+    {
+      "code": "W358",
+      "english": "Doctor",
+      "sourcePage": 10
+    },
+    {
+      "code": "W359",
+      "english": "Bite",
+      "sourcePage": 10
+    },
+    {
+      "code": "W360",
+      "english": "Weak",
+      "sourcePage": 10
+    },
+    {
+      "code": "W361",
+      "english": "Skin Infection or Abscess",
+      "sourcePage": 10
+    },
+    {
+      "code": "W362",
+      "english": "Heat Rash",
+      "sourcePage": 10
+    },
+    {
+      "code": "W363",
+      "english": "Goitre",
+      "sourcePage": 10
+    },
+    {
+      "code": "W364",
+      "english": "Homeopathy",
+      "sourcePage": 10
+    },
+    {
+      "code": "W365",
+      "english": "Hospital",
+      "sourcePage": 10
+    },
+    {
+      "code": "W366",
+      "english": "Cardiac Disease",
+      "sourcePage": 10
+    },
+    {
+      "code": "W367",
+      "english": "Injection",
+      "sourcePage": 10
+    },
+    {
+      "code": "W368",
+      "english": "Germ",
+      "sourcePage": 10
+    },
+    {
+      "code": "W369",
+      "english": "Tuberculosis",
+      "sourcePage": 10
+    },
+    {
+      "code": "W370",
+      "english": "Jaundice",
+      "sourcePage": 10
+    },
+    {
+      "code": "W371",
+      "english": "Fever",
+      "sourcePage": 10
+    },
+    {
+      "code": "W372",
+      "english": "Cough",
+      "sourcePage": 10
+    },
+    {
+      "code": "W373",
+      "english": "Injury",
+      "sourcePage": 10
+    },
+    {
+      "code": "W374",
+      "english": "Worm",
+      "sourcePage": 10
+    },
+    {
+      "code": "W375",
+      "english": "Mask",
+      "sourcePage": 10
+    },
+    {
+      "code": "W376",
+      "english": "Headache",
+      "sourcePage": 10
+    },
+    {
+      "code": "W377",
+      "english": "Malaria",
+      "sourcePage": 10
+    },
+    {
+      "code": "W378",
+      "english": "Ointment",
+      "sourcePage": 10
+    },
+    {
+      "code": "W379",
+      "english": "Heal",
+      "sourcePage": 10
+    },
+    {
+      "code": "W380",
+      "english": "Nurse",
+      "sourcePage": 10
+    },
+    {
+      "code": "W381",
+      "english": "Paralyzed",
+      "sourcePage": 10
+    },
+    {
+      "code": "W382",
+      "english": "Senseless",
+      "sourcePage": 10
+    },
+    {
+      "code": "W383",
+      "english": "Insomnia",
+      "sourcePage": 10
+    },
+    {
+      "code": "W384",
+      "english": "Poor Nutrition",
+      "sourcePage": 10
+    },
+    {
+      "code": "W385",
+      "english": "Lack of Appetite",
+      "sourcePage": 10
+    },
+    {
+      "code": "W386",
+      "english": "Uncomfortable",
+      "sourcePage": 10
+    },
+    {
+      "code": "W387",
+      "english": "Sick",
+      "sourcePage": 10
+    },
+    {
+      "code": "W388",
+      "english": "Surgery",
+      "sourcePage": 10
+    },
+    {
+      "code": "W389",
+      "english": "Medicine",
+      "sourcePage": 10
+    },
+    {
+      "code": "W390",
+      "english": "Savlon",
+      "sourcePage": 10
+    },
+    {
+      "code": "W391",
+      "english": "Healthy",
+      "sourcePage": 10
+    },
+    {
+      "code": "W392",
+      "english": "Contagious",
+      "sourcePage": 11
+    },
+    {
+      "code": "W393",
+      "english": "Cold",
+      "sourcePage": 11
+    },
+    {
+      "code": "W394",
+      "english": "Stethoscope",
+      "sourcePage": 11
+    },
+    {
+      "code": "W395",
+      "english": "Tablet",
+      "sourcePage": 11
+    },
+    {
+      "code": "W396",
+      "english": "Thermometer",
+      "sourcePage": 11
+    },
+    {
+      "code": "W397",
+      "english": "Cotton",
+      "sourcePage": 11
+    },
+    {
+      "code": "W398",
+      "english": "Mad",
+      "sourcePage": 11
+    },
+    {
+      "code": "W399",
+      "english": "Virus",
+      "sourcePage": 11
+    },
+    {
+      "code": "W400",
+      "english": "Vitamin",
+      "sourcePage": 11
+    },
+    {
+      "code": "W401",
+      "english": "X-Ray",
+      "sourcePage": 11
+    }
+  ]
+}
