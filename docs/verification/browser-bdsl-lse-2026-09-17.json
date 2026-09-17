@@ -1,0 +1,23 @@
+{
+  "checkedCommit": "4b31ac64b0b60b57c306e6b1f2a8fd57a00deea8",
+  "weightsSavedCommit": "f06e849949656bfe0f60bfa74fdadde373a3e7be",
+  "workflowRun": "https://github.com/adamjamiesimson/SignRelay/actions/runs/35201537540",
+  "result": "success",
+  "environment": "Ubuntu GitHub runner, headless Google Chrome, fake camera",
+  "checks": [
+    "Firebase static export",
+    "201 application tests",
+    "TypeScript production build",
+    "ESLint",
+    "Bangla selection, 390px layout, lazy model loading",
+    "Bangla actual ONNX capture/inference, cancellation and camera release",
+    "Spanish selection, 390px layout, fake camera and live tracker startup",
+    "Spanish production model: three serial worker inferences on controlled landmarks",
+    "Spanish pause and back navigation",
+    "No camera POST uploads or uncaught page exceptions in either flow",
+    "npm audit: zero vulnerabilities",
+    "credential pattern scan: no findings",
+    "two rendered-page/security tests"
+  ],
+  "limitations": "Execution and synthetic-control checks only. No native signer, live sign accuracy, medical suitability or 15-language completion claim."
+}

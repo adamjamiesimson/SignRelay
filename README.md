@@ -21,6 +21,8 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 ## Honest model status
 
+The [17 September handoff](docs/pretrained-expansion-2026-09-17.md) records the current installation, evaluation limits and Firebase update steps.
+
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
 | ASL | Experimental | 2,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL2000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |

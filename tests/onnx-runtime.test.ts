@@ -21,6 +21,7 @@ describe("installed ONNX assets (execution checks, not sign accuracy)", () => {
   it.each([
     { directory: "bsl1064-pose2sign", input: "pose", dims: [1, 3, 16, 60], classes: 1064 },
     { directory: "isl263-include", input: "landmarks", dims: [1, 200, 134], classes: 263 },
+    { directory: "lse300-swl", input: "landmarks", dims: [1, 64, 183], classes: 300 },
   ])("executes $directory in WASM with the expected class mapping", async ({ directory, input, dims, classes }) => {
     ort.env.wasm.numThreads = 1;
     const labels = JSON.parse(readFileSync(`public/models/${directory}/labels.json`, "utf8")) as string[];
