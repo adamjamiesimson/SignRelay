@@ -56,8 +56,13 @@ try {
   await send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
   await send("Page.navigate", { url: origin });
   await until(() => evaluate("!!document.querySelector('.language-search input')"), "Language browser missing");
-  await click("Browse all 40");
-  await until(() => evaluate("document.querySelectorAll('[role=radio]').length === 40"), "Language browser did not hydrate");
+  // SSR renders the button before React attaches its event handler. Retry the
+  // idempotent expand action until hydration makes it interactive.
+  await until(async () => {
+    if (await evaluate("document.querySelectorAll('[role=radio]').length === 40")) return true;
+    await click("Browse all 40");
+    return false;
+  }, "Language browser did not hydrate");
   await evaluate("document.querySelector('.language-search input').focus()");
   await send("Input.insertText", { text: "Spanish" });
   await until(() => evaluate("document.querySelectorAll('[role=radio]').length === 1"), "Language search failed");
