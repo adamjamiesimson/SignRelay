@@ -17,17 +17,24 @@ const loadModel = createLandmarkModelLoader("/models/lse300-swl", 300);
 export async function recognizeLse300(sequence: VisionFrame[]): Promise<Lse300Prediction | null> {
   if (sequence.length < 18) return null;
   const { session, labels } = await loadModel();
-  const output = await session.run({ landmarks: new ort.Tensor("float32", prepareLseInput(sequence), [1, FRAMES, FEATURES]) });
-  const logits = output.logits?.data;
-  if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
-  const probabilities = softmax(logits);
-  const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
-  const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
-  const confidence = probabilities[best];
-  const margin = confidence - probabilities[runnerUp];
-  const label = labels[best];
-  if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
-  return { label, text: readable(label), confidence, margin };
+  const input = new ort.Tensor("float32", prepareLseInput(sequence), [1, FRAMES, FEATURES]);
+  let output: Record<string, ort.Tensor> = {};
+  try {
+    output = await session.run({ landmarks: input });
+    const logits = output.logits?.data;
+    if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
+    const probabilities = softmax(logits);
+    const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
+    const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
+    const confidence = probabilities[best];
+    const margin = confidence - probabilities[runnerUp];
+    const label = labels[best];
+    if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
+    return { label, text: readable(label), confidence, margin };
+  } finally {
+    input.dispose();
+    Object.values(output).forEach(tensor => tensor.dispose());
+  }
 }
 
 /**
@@ -36,7 +43,9 @@ export async function recognizeLse300(sequence: VisionFrame[]): Promise<Lse300Pr
  * shoulders, then nearest-neighbour resampled to the model's 64-frame input.
  */
 export function prepareLseInput(sequence: VisionFrame[]) {
-  const source = sequence.slice(-FRAMES).map(framePoints);
+  // The training reader resamples the whole clip. Cropping before resampling
+  // would silently discard the beginning of signs longer than 64 frames.
+  const source = sequence.map(framePoints);
   const samples = resample(source, FRAMES);
   const values = new Float32Array(FRAMES * FEATURES);
   samples.forEach((points, frameIndex) => {
@@ -72,7 +81,8 @@ function hand(frame: VisionFrame, handedness: "Left" | "Right") {
 }
 
 function point(value: Point | undefined): ModelPoint {
-  if (!value || !Number.isFinite(value.x) || !Number.isFinite(value.y) || !Number.isFinite(value.z)) return { x: 0, y: 0, z: 0, valid: false };
+  if (!value || !Number.isFinite(value.x) || !Number.isFinite(value.y) || !Number.isFinite(value.z)
+    || (value.x === 0 && value.y === 0 && value.z === 0)) return { x: 0, y: 0, z: 0, valid: false };
   return { x: value.x, y: value.y, z: value.z, valid: true };
 }
 

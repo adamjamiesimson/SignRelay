@@ -21,8 +21,8 @@ describe("ASL vocabulary", () => {
   it("exposes 40 independent sign-language recognition paths", () => {
     expect(LANGUAGE_LIST).toHaveLength(40);
     expect(LANGUAGE_LIST.slice(0, 6).map((language) => language.id)).toEqual(["asl", "bsl", "isl", "lse", "auslan", "csl"]);
-    expect(LANGUAGE_LIST.filter((language) => language.status === "experimental")).toHaveLength(5);
-    expect(LANGUAGE_LIST.filter((language) => language.status === "preparing")).toHaveLength(2);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "experimental")).toHaveLength(6);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "preparing")).toHaveLength(1);
     expect(LANGUAGE_LIST.filter((language) => language.status === "personal")).toHaveLength(33);
     expect(MODEL_ADAPTERS.bsl.automaticVocabularyCount).toBe(1064);
     expect(MODEL_ADAPTERS.isl.automaticVocabularyCount).toBe(263);
@@ -30,7 +30,8 @@ describe("ASL vocabulary", () => {
     expect(MODEL_ADAPTERS.rsl.vocabulary).toHaveLength(1000);
     expect(MODEL_ADAPTERS.bdsl.automaticVocabularyCount).toBe(401);
     expect(new Set(MODEL_ADAPTERS.bdsl.vocabulary).size).toBe(398);
-    expect(MODEL_ADAPTERS.lse.status).toBe("preparing");
+    expect(MODEL_ADAPTERS.lse.status).toBe("experimental");
+    expect(MODEL_ADAPTERS.lse.automaticVocabularyCount).toBe(300);
     expect(MODEL_ADAPTERS.auslan.status).toBe("preparing");
   });
 
@@ -83,6 +84,20 @@ describe("ASL vocabulary", () => {
     const prepared = prepareLseInput(Array.from({ length: 30 }, (_, index) => makeFrame(index / 100)));
     expect(prepared).toHaveLength(64 * 61 * 3);
     expect(Array.from(prepared).every(Number.isFinite)).toBe(true);
+  });
+
+  it("preserves both ends of Spanish signs longer than the model input", () => {
+    const frames = Array.from({ length: 80 }, (_, index) => makeFrame(index / 100));
+    const prepared = prepareLseInput(frames);
+    expect(Array.from(prepared.slice(0, 183))).toEqual(Array.from(prepareLseInput([frames[0]]).slice(0, 183)));
+    expect(Array.from(prepared.slice(-183))).toEqual(Array.from(prepareLseInput([frames[79]]).slice(-183)));
+  });
+
+  it("keeps absent Spanish landmark sentinels at zero", () => {
+    const frame = makeFrame(0);
+    frame.pose = frame.pose.map(() => ({ x: 0, y: 0, z: 0 }));
+    frame.hands = [];
+    expect(prepareLseInput([frame]).every(value => value === 0)).toBe(true);
   });
 
   it("normalizes recordings to the fixed temporal contract", () => {

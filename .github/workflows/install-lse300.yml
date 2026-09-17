@@ -2,14 +2,6 @@ name: Build SWL-LSE Spanish Sign Language browser model
 
 on:
   workflow_dispatch:
-  push:
-    branches: [feature/pretrained-language-expansion]
-    paths:
-      - .github/workflows/install-lse300.yml
-      - training/train_swl_lse_onnx.py
-      - scripts/activate-lse-model.mjs
-      - training/lse-requirements.txt
-      - training/download_swl_lse.py
 
 permissions:
   contents: read
@@ -82,5 +74,6 @@ jobs:
           path: |
             public/models/lse300-swl/
             work/lse-training-report.json
+            work/lse-training/checkpoint.pt
           retention-days: 14
           if-no-files-found: warn

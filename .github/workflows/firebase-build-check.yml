@@ -19,6 +19,7 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
+      actions: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,6 +34,21 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Recover the reviewed Spanish training artifact when weights are absent
+        if: hashFiles('public/models/lse300-swl/model.onnx') == ''
+        uses: actions/download-artifact@v4
+        with:
+          name: lse300-candidate
+          run-id: 35179535121
+          github-token: ${{ github.token }}
+          path: work/lse-recovery
+
+      - name: Verify recovered Spanish weights
+        if: hashFiles('public/models/lse300-swl/model.onnx') == ''
+        run: |
+          cp work/lse-recovery/public/models/lse300-swl/model.onnx public/models/lse300-swl/model.onnx
+          node scripts/verify-lse-assets.mjs
 
       - name: Set up reproducible Bangla model conversion when weights are absent
         if: hashFiles('public/models/bdsl401-videomae/model.onnx') == ''
@@ -72,19 +88,22 @@ jobs:
       - name: Verify Bangla camera flow in headless Chrome
         run: node tests/bdsl-browser-smoke.mjs "$(command -v google-chrome)"
 
+      - name: Verify Spanish camera and model worker in headless Chrome
+        run: node tests/lse-browser-smoke.mjs "$(command -v google-chrome)"
+
       - name: Audit dependencies, history and exported pages
         run: npm run audit:security
 
       - name: Save verified model weights on the development branch only
         if: github.event_name == 'push' && github.ref == 'refs/heads/feature/pretrained-language-expansion'
         run: |
-          git add public/models/bdsl401-videomae/model.onnx
+          git add public/models/bdsl401-videomae/model.onnx public/models/lse300-swl/model.onnx
           git diff --cached --quiet && exit 0
           git fetch origin feature/pretrained-language-expansion
           test "$(git rev-parse FETCH_HEAD)" = "$GITHUB_SHA"
           git config user.name 'signrelay-model-bot'
           git config user.email 'signrelay-model-bot@users.noreply.github.com'
-          git commit -m 'Install verified compact Bangla model after browser checks'
+          git commit -m 'Save verified model weights after browser checks'
           git push origin HEAD:feature/pretrained-language-expansion
 
       - name: Preserve browser evidence
@@ -92,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: signrelay-browser-evidence
-          path: outputs/bdsl-*.png
+          path: outputs/*-*.png
           retention-days: 7
           if-no-files-found: ignore
 

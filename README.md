@@ -9,7 +9,7 @@ This repository is an engineering foundation, not a claim of full sign-language 
 - Forty sign-language workspaces have separate identities; RSL and Bangla have separate pretrained clip-recognition modes.
 - Camera permission is requested only after language selection.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
-- A Web Worker maintains an ordered 32-frame temporal buffer.
+- A Web Worker maintains an ordered temporal buffer for landmark recognition.
 - ASL, BSL and ISL include separate experimental browser models with 2,000, 1,064 and 263 isolated-sign outputs respectively.
 - RSL adds the official pretrained Slovo video model: 967 word/phrase classes plus 33 letters, with no personal teaching required. It is explicit single-sign capture, not real-time; 141 MB first load and approximately 19 seconds per inference in the development WASM test.
 - Non-ASL/RSL/Bangla workspaces include 2,000+ searchable concept prompts plus unlimited custom words or short phrases; prompts activate only after the signer records examples in that language.
@@ -28,8 +28,13 @@ This repository is an engineering foundation, not a claim of full sign-language 
 | ISL | Experimental | 263 automatic INCLUDE signs + unlimited signer-taught words | Official AI4Bharat INCLUDE transformer + personal DTW templates |
 | RSL | Experimental, slow clip mode | 967 pretrained word/phrase classes + 33 fingerspelling letters | Official Slovo MViTv2-small-32-2 RGB ONNX; no personal recordings required |
 | Bangla | Experimental, slow clip mode | 401 trained classes / 398 distinct English glosses | BdSLW401 VideoMAE with verified weight-only compression |
-| LSE and Auslan | Model preparing | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates; no automatic output yet |
+| LSE | Experimental | 300 trained health-domain sign classes | SignRelay-trained SWL-LSE temporal landmark model; 60.5% released test-split top-1, live accuracy unmeasured |
+| Auslan | Model preparing | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates; no automatic output yet |
 | 33 personal workspaces | Signer-taught | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates |
+
+### Spanish installation and use
+
+The 3.5 MB Spanish model and 300 original labels are included and checksum-verified during the Firebase build. Choose Spanish Sign Language, start the camera, sign one word, then pause briefly. Personal examples retain priority. The model scored 706/1,052 on the released validation split and 363/600 on the released test split. These figures do not measure the live camera adapter. See [Spanish attribution and limitations](public/models/lse300-swl/ATTRIBUTION.md). The classes include health-domain sign variants and do not meet the 400-word target.
 
 ### Bangla installation and use
 
@@ -156,7 +161,7 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 - Performance varies with viewpoint, signing speed, hand dominance, occlusion and lighting.
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.
 - No continuous unrestricted grammar decoder is installed.
-- BSL and ISL use their own official isolated-sign checkpoints (1,064 and 263 labels respectively), still marked experimental because browser-side signer-independent evaluation has not yet been completed. The other workspaces are signer-specific until compatible, language-specific models are legally available and evaluated.
+- BSL and ISL use their own official isolated-sign checkpoints (1,064 and 263 labels respectively), still marked experimental because browser-side signer-independent evaluation has not yet been completed. Spanish adds a 300-class landmark model; Bangla and RSL use separate video models. The remaining workspaces are signer-specific until compatible, language-specific models are available and evaluated.
 - The first model load requires internet access to download official MediaPipe assets.
 
 ## Roadmap

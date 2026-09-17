@@ -1010,7 +1010,7 @@ export function TranslatorExperience() {
         <section className="language-section" id="choose-language" tabIndex={-1} aria-labelledby="language-title">
           <div className="section-heading" data-reveal>
             <h2 id="language-title">Your language.<br />Your conversation.</h2>
-            <p>{LANGUAGE_LIST.length} separate sign-language workspaces. Four include pretrained research models; RSL has a slow single-sign camera mode. The other workspaces support private signs taught by their signer.</p>
+            <p>{LANGUAGE_LIST.length} separate sign-language workspaces. {LANGUAGE_LIST.filter(language => language.status === "experimental").length} include pretrained research models; RSL and Bangla have slow single-sign camera modes. The other workspaces support private signs taught by their signer.</p>
           </div>
           <div className="language-browser" data-reveal>
             <label className="language-search">

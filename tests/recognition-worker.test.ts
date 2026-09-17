@@ -43,7 +43,7 @@ beforeEach(async () => {
 });
 
 describe("live worker regression coverage (synthetic control inputs, not sign accuracy)", () => {
-  it.each(["asl", "bsl", "isl"] as const)("keeps %s inference running after the rolling buffer fills", async language => {
+  it.each(["asl", "bsl", "isl", "lse"] as const)("keeps %s inference running after the rolling buffer fills", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     await frames(90);
     const before = mocks[language].mock.calls.length;
@@ -51,14 +51,14 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(mocks[language].mock.calls.length).toBeGreaterThan(before);
   });
 
-  it.each(["asl", "bsl", "isl"] as const)("requires two independent %s predictions, not two reads of a cached result", async language => {
+  it.each(["asl", "bsl", "isl", "lse"] as const)("requires two independent %s predictions, not two reads of a cached result", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks[language].mockResolvedValueOnce(prediction).mockImplementation(() => new Promise(() => {}));
     await frames(40);
     expect(confirmations()).toHaveLength(0);
   });
 
-  it.each(["bsl", "isl"] as const)("rejects a pending %s result after motion stops", async language => {
+  it.each(["bsl", "isl", "lse"] as const)("rejects a pending %s result after motion stops", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     let finish!: (value: typeof prediction) => void;
     mocks[language].mockImplementation(() => new Promise(resolve => { finish = resolve; }));
@@ -72,7 +72,7 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(messages.at(-1)).toMatchObject({ type: "analysis", candidate: null });
   });
 
-  it.each(["csl", "auslan", "lse", "uaesl", "vsl"] as const)("does not call another language's classifier for %s without installed assets", async language => {
+  it.each(["csl", "auslan", "uaesl", "vsl"] as const)("does not call another language's classifier for %s without installed assets", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     await frames(100);
     for (const id of ["asl", "bsl", "isl", "lse"] as const) expect(mocks[id]).not.toHaveBeenCalled();
@@ -90,7 +90,7 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(confirmations()).toHaveLength(0);
   });
 
-  it.each(["asl", "bsl", "isl"] as const)("confirms two fresh matching %s predictions", async language => {
+  it.each(["asl", "bsl", "isl", "lse"] as const)("confirms two fresh matching %s predictions", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks[language].mockResolvedValue(prediction);
     await frames(language === "asl" ? 14 : 34);

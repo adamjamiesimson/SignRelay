@@ -1,0 +1,25 @@
+{
+  "format": "onnx",
+  "modelVersion": "swl-lse300-temporal-landmark-v1",
+  "language": "LSE",
+  "classes": 300,
+  "sequenceLength": 64,
+  "inputFeatures": 183,
+  "inputName": "landmarks",
+  "outputName": "logits",
+  "sha256": "58ce0f861f7e095054386435bf1a506b933a68883befee60a33c163a152d0ae3",
+  "exportVerified": true,
+  "source": {
+    "dataset": "SWL-LSE / SignaMed",
+    "url": "https://zenodo.org/records/13691887",
+    "architecture": "TemporalLandmarkNet",
+    "validationAccuracy": 0.6711026615969582,
+    "testAccuracy": 0.605,
+    "splitCounts": {
+      "train": 6348,
+      "validation": 1052,
+      "test": 600
+    },
+    "liveCameraAccuracy": null
+  }
+}

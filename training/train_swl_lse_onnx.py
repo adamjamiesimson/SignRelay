@@ -179,7 +179,15 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("public/models/lse300-swl"))
     parser.add_argument("--epochs", type=int, default=24)
     parser.add_argument("--min-validation-accuracy", type=float, default=0.5)
+    parser.add_argument("--checkpoint", type=Path, default=Path("work/lse-training/checkpoint.pt"))
+    parser.add_argument("--report", type=Path, default=Path("work/lse-training-report.json"))
+    parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
+    work = Path(__file__).resolve().parents[1] / "work"
+    for path in (args.checkpoint, args.report):
+        if not path.resolve().is_relative_to(work):
+            raise ValueError("Keep checkpoints and training progress under ignored work/")
+        path.parent.mkdir(parents=True, exist_ok=True)
 
     random.seed(42)
     np.random.seed(42)
@@ -189,6 +197,9 @@ def main() -> None:
     valid_rows = read_split(args.annotations / "val_labels.csv", args.media_root)
     test_rows = read_split(args.annotations / "test_labels.csv", args.media_root)
     validate_splits(train_rows, valid_rows, test_rows)
+    signature = hashlib.sha256(json.dumps({"labels": labels, "frames": FRAMES, "features": FEATURES,
+        "splits": [[(p.name, label) for p, label in rows] for rows in (train_rows, valid_rows, test_rows)]},
+        sort_keys=True).encode()).hexdigest()
     torch.set_num_threads(2)
     train_loader = DataLoader(LandmarkDataset(train_rows), batch_size=48, shuffle=True)
     valid_loader = DataLoader(LandmarkDataset(valid_rows), batch_size=96)
@@ -196,8 +207,26 @@ def main() -> None:
     model = TemporalLandmarkNet(len(labels)).to(device)
     optimiser = torch.optim.AdamW(model.parameters(), lr=0.0015, weight_decay=0.0002)
     best = {"accuracy": -1.0, "state": None}
+    start_epoch, history = 0, []
+    if args.resume:
+        checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
+        if checkpoint["signature"] != signature:
+            raise ValueError("Checkpoint labels, splits or input contract differ from this run")
+        model.load_state_dict(checkpoint["model"])
+        optimiser.load_state_dict(checkpoint["optimiser"])
+        best, start_epoch, history = checkpoint["best"], checkpoint["epoch"], checkpoint["history"]
+        torch.set_rng_state(checkpoint["torchRng"])
+        if device.type == "cuda" and checkpoint.get("cudaRng") is not None:
+            torch.cuda.set_rng_state_all(checkpoint["cudaRng"])
+        print(f"Resuming after epoch {start_epoch}", flush=True)
 
-    for epoch in range(args.epochs):
+    def report(status, **extra):
+        args.report.write_text(json.dumps({"status": status, "signature": signature, "epochs": history,
+            "validationAccuracy": best["accuracy"], "minimumValidationAccuracy": args.min_validation_accuracy,
+            "splitCounts": {"train": len(train_rows), "validation": len(valid_rows), "test": len(test_rows)},
+            **extra}, indent=2) + "\n")
+
+    for epoch in range(start_epoch, args.epochs):
         model.train()
         for values, targets in train_loader:
             optimiser.zero_grad(set_to_none=True)
@@ -209,12 +238,20 @@ def main() -> None:
         print(f"epoch {epoch + 1}/{args.epochs}: validation accuracy={score:.4f}", flush=True)
         if score > best["accuracy"]:
             best = {"accuracy": score, "state": {key: value.cpu().clone() for key, value in model.state_dict().items()}}
+        history.append({"epoch": epoch + 1, "validationAccuracy": score})
+        pending = args.checkpoint.with_suffix(".partial")
+        torch.save({"signature": signature, "epoch": epoch + 1, "model": model.state_dict(),
+            "optimiser": optimiser.state_dict(), "best": best, "history": history,
+            "torchRng": torch.get_rng_state(), "cudaRng": torch.cuda.get_rng_state_all() if device.type == "cuda" else None}, pending)
+        pending.replace(args.checkpoint)
+        report("training")
 
     if best["state"] is None:
         raise RuntimeError("SWL-LSE training produced no checkpoint")
     model.load_state_dict(best["state"])
     model.eval()
     if best["accuracy"] < args.min_validation_accuracy:
+        report("validation-gate-failed")
         raise RuntimeError(f"Validation accuracy {best['accuracy']:.4f} is below the research install gate")
     # The test split is evaluated once, after validation-based model selection.
     test_score = accuracy(model, DataLoader(LandmarkDataset(test_rows), batch_size=96), device)
@@ -239,6 +276,8 @@ def main() -> None:
                    "splitCounts": {"train": len(train_rows), "validation": len(valid_rows), "test": len(test_rows)},
                    "liveCameraAccuracy": None},
     }, ensure_ascii=False, indent=2), encoding="utf-8")
+    report("exported", testAccuracy=test_score,
+        modelSha256=hashlib.sha256((args.output / "model.onnx").read_bytes()).hexdigest())
 
 
 if __name__ == "__main__":

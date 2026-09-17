@@ -23,6 +23,7 @@ export default function LanguagesPage() {
         body: <>
           <p>{automatic.map((language) => `${language.shortName} (${language.automaticVocabularyCount.toLocaleString()})`).join(" · ")} have separate, browser-loadable isolated-sign models. They run on-device and remain experimental until independent live-camera evaluation is complete.</p>
           <p>ASL uses the official {ASL_BUILT_IN_VOCABULARY.length.toLocaleString()}-class WLASL Pose-TGCN checkpoint, BSL uses the 1,064-class BSL-1K Pose2Sign checkpoint, and ISL uses the 263-class AI4Bharat INCLUDE transformer. None is presented as continuous sentence interpretation.</p>
+          <p>Spanish uses a 300-class model trained on the released SWL-LSE health-domain landmarks. Released test-split top-1 was 60.5%; live-camera accuracy remains unmeasured.</p>
           <p>Bangla uses a separate VideoMAE clip model with 401 sign classes and 398 distinct English glosses. Its first load is 97 MB; results remain experimental and inference is slow.</p>
           <p>RSL uses the official Slovo video model: 967 word/phrase classes and 33 fingerspelling letters, without teaching. It has a separate manual single-sign camera mode, a 141 MB first download and slow inference; it is not real-time.</p>
         </>,
@@ -30,7 +31,7 @@ export default function LanguagesPage() {
       {
         title: `Models in preparation · ${preparing.length} languages`,
         body: <>
-          <p>{preparing.map((language) => language.language).join(" and ")} have independent model pipelines in preparation. SignRelay does not request a missing checkpoint or show automatic output for those languages.</p>
+          <p>{preparing.map((language) => language.language).join(" and ")} {preparing.length === 1 ? "has an independent model pipeline" : "have independent model pipelines"} in preparation. SignRelay does not request a missing checkpoint or show automatic output for those languages.</p>
           <p>Their private signer-taught workspaces are available now, with the same language separation as every other workspace.</p>
         </>,
       },

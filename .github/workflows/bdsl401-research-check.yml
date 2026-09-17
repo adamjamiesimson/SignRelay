@@ -1,4 +1,4 @@
-name: Bangla research model verification
+name: Bangla installed model verification
 
 on:
   workflow_dispatch:
@@ -34,20 +34,21 @@ jobs:
           python -m pip install numpy==1.26.4 transformers==4.48.3 safetensors==0.5.3 onnx==1.17.0 onnxruntime==1.20.1 opencv-python-headless==4.11.0.86
       - name: Verify preprocessing and readable vocabulary contracts
         run: python -m unittest discover -s training -p 'test_bdsl401*.py'
-      - name: Download pinned research model and six export fixtures
-        run: python training/fetch_bdsl401_research_assets.py
-      - name: Verify original checkpoint conversion
-        run: python training/export_bdsl401_onnx.py work/bdsl401-research/source work/bdsl401-research/clips
-      - name: Evaluate all 401 publisher clips
-        run: python training/evaluate_bdsl401_publisher_set.py work/bdsl401-export
+      - name: Prepare the installed compact checkpoint for evaluation
+        run: |
+          mkdir -p work/bdsl401-weight-only
+          cp public/models/bdsl401-videomae/model.onnx work/bdsl401-weight-only/model.int8.onnx
+          cp public/models/bdsl401-videomae/class-codes.json work/bdsl401-weight-only/class-codes.json
+          cp docs/verification/bdsl401-weight-only-verification.json work/bdsl401-weight-only/verification.json
+      - name: Evaluate all 401 publisher clips with the installed compact model
+        run: python training/evaluate_bdsl401_publisher_set.py work/bdsl401-weight-only --variant weight-only --output work/bdsl401-compact-publisher
       - name: Preserve reports only
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bdsl401-research-reports
           path: |
-            work/bdsl401-export/verification.json
-            work/bdsl401-publisher-test/publisher-clips.json
-            work/bdsl401-publisher-test/publisher-progress.jsonl
+            work/bdsl401-compact-publisher/publisher-clips.json
+            work/bdsl401-compact-publisher/publisher-progress.jsonl
           retention-days: 7
           if-no-files-found: warn
