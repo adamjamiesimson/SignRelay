@@ -23,13 +23,14 @@ export default function LanguagesPage() {
         body: <>
           <p>{automatic.map((language) => `${language.shortName} (${language.automaticVocabularyCount.toLocaleString()})`).join(" · ")} have separate, browser-loadable isolated-sign models. They run on-device and remain experimental until independent live-camera evaluation is complete.</p>
           <p>ASL uses the official {ASL_BUILT_IN_VOCABULARY.length.toLocaleString()}-class WLASL Pose-TGCN checkpoint, BSL uses the 1,064-class BSL-1K Pose2Sign checkpoint, and ISL uses the 263-class AI4Bharat INCLUDE transformer. None is presented as continuous sentence interpretation.</p>
+          <p>Bangla uses a separate VideoMAE clip model with 401 sign classes and 398 distinct English glosses. Its first load is 97 MB; results remain experimental and inference is slow.</p>
           <p>RSL uses the official Slovo video model: 967 word/phrase classes and 33 fingerspelling letters, without teaching. It has a separate manual single-sign camera mode, a 141 MB first download and slow inference; it is not real-time.</p>
         </>,
       },
       {
-        title: "Models in preparation · 2 languages",
+        title: `Models in preparation · ${preparing.length} languages`,
         body: <>
-          <p>{preparing.map((language) => language.language).join(" and ")} have independent model pipelines in preparation. SignRelay does not request a missing checkpoint or show automatic output for either language.</p>
+          <p>{preparing.map((language) => language.language).join(" and ")} have independent model pipelines in preparation. SignRelay does not request a missing checkpoint or show automatic output for those languages.</p>
           <p>Their private signer-taught workspaces are available now, with the same language separation as every other workspace.</p>
         </>,
       },
@@ -43,7 +44,7 @@ export default function LanguagesPage() {
       {
         title: `${PERSONAL_STARTER_VOCABULARY.length.toLocaleString()} prompts, unlimited custom signs`,
         body: <>
-          <p>Every non-ASL workspace includes {PERSONAL_STARTER_VOCABULARY.length.toLocaleString()} searchable concept prompts. A prompt becomes recognisable only after the signer records examples of the correct sign in that selected language.</p>
+          <p>Each landmark-based workspace includes {PERSONAL_STARTER_VOCABULARY.length.toLocaleString()} searchable concept prompts. A prompt becomes recognisable only after the signer records examples of the correct sign in that selected language.</p>
           <p>Users can also type any word or short phrase, including text in their own writing system, and teach it privately. Prompt labels are organisational aids—not a claim that the same sign is shared between languages.</p>
         </>,
       },

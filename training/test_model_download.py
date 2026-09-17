@@ -5,7 +5,7 @@ import tempfile
 import threading
 import unittest
 from unittest.mock import patch
-from download_swl_lse import download
+from download_swl_lse import download, download_parallel
 from export_ksl_onnx import ordered_labels
 
 
@@ -41,7 +41,7 @@ class ModelContractTests(unittest.TestCase):
                 digest = hashlib.md5(data).hexdigest()
                 url = f"http://127.0.0.1:{server.server_port}/model"
                 download(path, len(data), digest, [url], chunk_bytes=8)
-                self.assertEqual(requests[0], (8, 15)); self.assertEqual(path.read_bytes(), data)
+                self.assertEqual(min(requests), (8, 15)); self.assertEqual(path.read_bytes(), data)
                 self.assertFalse(partial.exists())
                 count = len(requests)
                 download(path, len(data), digest, [url], chunk_bytes=8)
@@ -52,6 +52,10 @@ class ModelContractTests(unittest.TestCase):
                 self.assertFalse(path.exists()); self.assertFalse(partial.exists())
         finally:
             server.shutdown(); server.server_close(); thread.join()
+
+    def test_parallel_resume_and_corruption(self):
+        with patch.dict(globals(), {"download": download_parallel}):
+            self.test_resume_and_corruption()
 
     def test_ignored_or_wrong_ranges_never_append(self):
         for status, header in [(200, None), (206, "bytes 0-7/16")]:

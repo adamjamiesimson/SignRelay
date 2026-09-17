@@ -6,13 +6,13 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 ## What works now
 
-- Forty sign-language workspaces have separate identities; RSL has its own pretrained clip-recognition mode.
+- Forty sign-language workspaces have separate identities; RSL and Bangla have separate pretrained clip-recognition modes.
 - Camera permission is requested only after language selection.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
 - A Web Worker maintains an ordered 32-frame temporal buffer.
 - ASL, BSL and ISL include separate experimental browser models with 2,000, 1,064 and 263 isolated-sign outputs respectively.
 - RSL adds the official pretrained Slovo video model: 967 word/phrase classes plus 33 letters, with no personal teaching required. It is explicit single-sign capture, not real-time; 141 MB first load and approximately 19 seconds per inference in the development WASM test.
-- Non-ASL/RSL workspaces include 2,000+ searchable concept prompts plus unlimited custom words or short phrases; prompts activate only after the signer records examples in that language.
+- Non-ASL/RSL/Bangla workspaces include 2,000+ searchable concept prompts plus unlimited custom words or short phrases; prompts activate only after the signer records examples in that language.
 - Personal and user-defined words are learned from one to three signer examples and matched on-device with dynamic time warping.
 - Results are gated by confidence, temporal consensus and cooldown.
 - Confirmed text can be edited, removed, saved locally, cleared and spoken.
@@ -27,8 +27,15 @@ This repository is an engineering foundation, not a claim of full sign-language 
 | BSL | Experimental | 1,064 automatic BSL-1K signs + unlimited signer-taught words | Official BSL-1K Pose2Sign model + personal DTW templates |
 | ISL | Experimental | 263 automatic INCLUDE signs + unlimited signer-taught words | Official AI4Bharat INCLUDE transformer + personal DTW templates |
 | RSL | Experimental, slow clip mode | 967 pretrained word/phrase classes + 33 fingerspelling letters | Official Slovo MViTv2-small-32-2 RGB ONNX; no personal recordings required |
+| Bangla | Experimental, slow clip mode | 401 trained classes / 398 distinct English glosses | BdSLW401 VideoMAE with verified weight-only compression |
 | LSE and Auslan | Model preparing | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates; no automatic output yet |
-| 34 personal workspaces | Signer-taught | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates |
+| 33 personal workspaces | Signer-taught | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates |
+
+### Bangla installation and use
+
+The compact model and its original class map are included in the feature branch; `build:firebase` verifies their checksums. Choose Bangla, start the camera, begin a capture, and choose **Finish sign** after one complete sign. Capture ends automatically after six seconds. The first model load is 97 MB; inference can take 15–60 seconds. Cancelling or leaving the tab discards frames and stops the camera and worker. Suggestions are not automatically spoken or inserted into a transcript.
+
+See [Bangla model attribution](public/models/bdsl401-videomae/ATTRIBUTION.md) for model and dataset terms. This is an isolated-sign research preview, with unmeasured independent live-camera accuracy. The overall 15-language target is still incomplete.
 
 ### RSL installation and use
 

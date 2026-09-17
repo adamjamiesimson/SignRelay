@@ -54,6 +54,7 @@ import {
 import {
   createCustomVocabularyEntry,
   LANGUAGE_LIST,
+  MODEL_ADAPTERS,
   PERSONAL_STARTER_VOCABULARY,
   type AslVocabularyEntry,
   type LanguageId,
@@ -63,6 +64,7 @@ import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalize
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
+const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
 import type {
   CalibrationTemplate,
   DetectionStatus,
@@ -268,7 +270,7 @@ export function TranslatorExperience() {
   }, [speak]);
 
   useEffect(() => {
-    if (step !== "workspace" || selected === "rsl") return;
+    if (step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
     const worker = new RecognitionSession(
       () => new Worker("/workers/recognition.worker.js?v=fist-motion-2", { type: "module" }),
       handleWorkerMessage,
@@ -625,6 +627,9 @@ export function TranslatorExperience() {
     setSettings(DEFAULT_SETTINGS);
   };
 
+  if (step === "workspace" && selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental") {
+    return <div className="app-shell"><SiteHeader /><main><BdslRecognizer onBack={returnHome} /></main></div>;
+  }
   if (step === "workspace" && selected === "rsl") {
     return <div className="app-shell"><SiteHeader /><main><RslRecognizer onBack={returnHome} /></main></div>;
   }
@@ -1055,7 +1060,7 @@ export function TranslatorExperience() {
                 <p>{language.summary}</p>
                 <span className={`model-pill ${language.status === "experimental" ? "available" : language.status === "preparing" ? "preparing" : "personal"}`}>
                   <span className="mini-dot" aria-hidden="true" />
-                  {language.id === "rsl" ? "1,000 pretrained classes · slow clip mode" : language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()}-sign research model + personal vocabulary` : language.status === "preparing" ? `${language.vocabulary.length.toLocaleString()} teachable concepts · model preparing` : `${language.vocabulary.length.toLocaleString()} concept prompts + custom signs`}
+                  {language.id === "rsl" ? "1,000 pretrained classes · slow clip mode" : language.id === "bdsl" && language.status === "experimental" ? "401 trained classes · slow clip mode" : language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()}-sign research model + personal vocabulary` : language.status === "preparing" ? `${language.vocabulary.length.toLocaleString()} teachable concepts · model preparing` : `${language.vocabulary.length.toLocaleString()} concept prompts + custom signs`}
                 </span>
               </button>
             ))}
@@ -1064,7 +1069,7 @@ export function TranslatorExperience() {
             )}
           </div>
           <div className="language-continue" aria-live="polite" data-reveal>
-            <p>{model.id === "rsl" ? "Selected: Russian Sign Language · 967 pretrained word/phrase classes + 33 letters · slow single-sign camera mode" : model.status === "experimental"
+            <p>{model.id === "rsl" ? "Selected: Russian Sign Language · 967 pretrained word/phrase classes + 33 letters · slow single-sign camera mode" : model.id === "bdsl" && model.status === "experimental" ? "Selected: Bangla Sign Language · 401 trained classes, 398 English glosses · slow single-sign camera mode" : model.status === "experimental"
               ? `Selected: ${model.language} · ${model.automaticVocabularyCount.toLocaleString()} automatic research signs + your own personal signs`
               : model.status === "preparing"
                 ? `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} teachable concepts + your own private signs; shared model preparing`

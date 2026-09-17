@@ -1,5 +1,6 @@
 import WLASL2000_LABELS from "../public/models/asl2000-tgcn/labels.json";
 import RSL_LABELS from "../public/models/rsl1000-slovo/labels.json";
+import BDSL_LABELS from "../public/models/bdsl401-videomae/labels.json";
 
 export const LANGUAGE_IDS = [
   "asl", "bsl", "isl", "lse", "auslan", "csl",
@@ -296,7 +297,18 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
   tsl: personalLanguage({ id: "tsl", shortName: "TSL", language: "Thai Sign Language", speechLocale: "th-TH" }),
   fsl: personalLanguage({ id: "fsl", shortName: "FSL", language: "Filipino Sign Language", speechLocale: "en-PH" }),
   psl: personalLanguage({ id: "psl", shortName: "PSL", language: "Pakistan Sign Language", speechLocale: "ur-PK" }),
-  bdsl: personalLanguage({ id: "bdsl", shortName: "BdSL", language: "Bangla Sign Language", speechLocale: "bn-BD" }),
+  bdsl: {
+    id: "bdsl", shortName: "BdSL", language: "Bangla Sign Language", speechLocale: "en-GB",
+    status: "experimental", modelFile: "BdSLW401 VideoMAE, verified weight-only int8 storage",
+    automaticVocabularyCount: 401, vocabulary: BDSL_LABELS,
+    inputFormat: "16 unmirrored RGB frames, full-frame bilinear antialias resize to 224×224",
+    sequenceLength: 16, confidenceThreshold: 0.85,
+    decoder: "401 original class IDs with 398 distinct source English glosses",
+    postProcessing: "Manual clip capture, static-scene and score rejection; no automatic speech or transcript insertion",
+    version: "bdsl401-videomae-weight-only-v1",
+    dataset: "BdSLW401. Model weights: CC-BY-NC-4.0. Original dataset terms: CC-BY-NC-ND-4.0. See attribution.",
+    summary: "401 trained sign classes / 398 English glosses. Experimental single-sign camera mode; 97 MB initial model load and slow inference.",
+  },
   vsl: personalLanguage({ id: "vsl", shortName: "VSL", language: "Vietnamese Sign Language", speechLocale: "vi-VN" }),
 };
 

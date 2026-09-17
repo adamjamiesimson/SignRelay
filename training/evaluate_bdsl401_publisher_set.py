@@ -45,7 +45,7 @@ def unpack(archive: Path, output: Path) -> list[Path]:
         return paths
 
 
-def evaluate(exported: Path, output: Path) -> dict:
+def evaluate(exported: Path, output: Path, variant: str = "float32") -> dict:
     import numpy as np
     import onnxruntime as ort
     import torch
@@ -53,9 +53,12 @@ def evaluate(exported: Path, output: Path) -> dict:
     if not output.resolve().is_relative_to(project / "work"):
         raise ValueError("Keep research inputs and outputs under work/")
     reference = json.loads((exported / "verification.json").read_text())
-    model = exported / "model.onnx"
-    if reference["sourceHashes"] != HASHES or digest(model) != reference["modelSha256"]:
-        raise ValueError("Expected the verified original checkpoint export")
+    model = exported / ("model.onnx" if variant == "float32" else "model.int8.onnx")
+    expected_hash = reference.get("modelSha256") if variant == "float32" else reference.get("variants", {}).get("int8", {}).get("modelSha256")
+    if variant not in ("float32", "weight-only") or (variant == "weight-only" and reference.get("mode") != "weight-only"):
+        raise ValueError("Expected original or verified weight-only export")
+    if reference["sourceHashes"] != HASHES or digest(model) != expected_hash:
+        raise ValueError("Expected the verified pinned checkpoint export")
     codes = json.loads((exported / "class-codes.json").read_text())
     if codes != [f"W{i:03}" for i in range(1, 402)]:
         raise ValueError("Unexpected model class order")
@@ -82,12 +85,18 @@ def evaluate(exported: Path, output: Path) -> dict:
                 if logits.shape != (1, 401) or not np.isfinite(logits).all():
                     raise ValueError("Invalid classifier output")
                 order = np.argsort(-logits[0], kind="stable")
+                probabilities = np.exp(logits[0] - logits[0].max())
+                probabilities /= probabilities.sum()
+                confidence = float(probabilities[order[0]])
+                margin = confidence - float(probabilities[order[1]])
                 top5 = [codes[index] for index in order[:5]]
                 entry.update({"expectedEnglish": words[codes.index(entry["expectedCode"])],
                     "sourceFrames": frames, "top5Codes": top5,
                     "top5English": [words[index] for index in order[:5]],
                     "top1Correct": top5[0] == entry["expectedCode"],
                     "top5Correct": entry["expectedCode"] in top5,
+                    "modelScore": confidence, "scoreMargin": margin,
+                    "passesScoreGate": confidence >= 0.85 and margin >= 0.25,
                     "nativeInferenceMs": round(elapsed)})
             except (ValueError, RuntimeError) as error:
                 entry.update({"error": str(error), "top1Correct": False, "top5Correct": False})
@@ -96,12 +105,16 @@ def evaluate(exported: Path, output: Path) -> dict:
             stream.flush()
             print(json.dumps(entry, ensure_ascii=False), flush=True)
     result = {"source": f"{SPACE}/tree/{SPACE_REVISION}", "archiveSha256": ARCHIVE_SHA256,
-        "modelSha256": reference["modelSha256"], "vocabularySha256": digest(VOCABULARY),
+        "modelSha256": expected_hash, "variant": variant, "vocabularySha256": digest(VOCABULARY),
         "selection": "All 401 clips from the pinned publisher archive; 400 represented class codes",
         "missingClassCodes": ["W111"], "repeatedClassCodes": {"W109": 2},
         "total": len(paths), "errors": sum("error" in row for row in results),
         "top1Count": sum(row["top1Correct"] for row in results),
         "top5Count": sum(row["top5Correct"] for row in results),
+        "scoreGate": {"confidence": 0.85, "margin": 0.25,
+            "accepted": sum(row.get("passesScoreGate", False) for row in results),
+            "acceptedCorrect": sum(row.get("passesScoreGate", False) and row["top1Correct"] for row in results),
+            "note": "Measured on publisher clips only; thresholds were set before this evaluation, and are not calibrated for live video or non-sign input."},
         "distinctEnglishLabels": len(set(words)), "clips": results,
         "medianNativeInferenceMs": statistics.median([r["nativeInferenceMs"] for r in results if "nativeInferenceMs" in r]) if any("nativeInferenceMs" in r for r in results) else None,
         "versions": {"numpy": np.__version__, "onnxruntime": ort.__version__, "torch": torch.__version__},
@@ -117,5 +130,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("exported", type=Path)
     parser.add_argument("--output", type=Path, default=Path("work/bdsl401-publisher-test"))
+    parser.add_argument("--variant", choices=("float32", "weight-only"), default="float32")
     args = parser.parse_args()
-    evaluate(args.exported, args.output)
+    evaluate(args.exported, args.output, args.variant)
