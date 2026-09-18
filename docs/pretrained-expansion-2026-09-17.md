@@ -40,7 +40,7 @@ and subsequent integration checks.
 
 The original float32 publisher-clip result was 275/401 top-1 and 348/401 top-five.
 That result must not be relabelled as a compact-model measurement. The compact
-checkpoint has a separate evaluation workflow and report. The publisher archive
+checkpoint has a separate evaluation workflow and report, completed below. The publisher archive
 contains 401 clips covering 400 class codes: W109 twice, W111 absent. This is not
 an independent benchmark. See the model's [attribution](../public/models/bdsl401-videomae/ATTRIBUTION.md)
 for the distinct model and dataset terms.
@@ -124,3 +124,25 @@ firebase deploy --only hosting --project signrelay-76f34
 The build verifies the exact Bangla and Spanish assets and installs/verifies the
 pinned Russian checkpoint. No account, API key or paid inference service is
 needed by the app. Firebase deployment was not run during this work.
+
+## Completed compact-model evaluation — collected 18 September
+
+[Run 35201243997](https://github.com/adamjamiesimson/SignRelay/actions/runs/35201243997)
+completed all 401 publisher clips with the exact installed compact checkpoint:
+274/401 first guesses (68.33%), 350/401 top-five (87.28%), and zero
+decode/inference errors. Median native CPU inference was 2,302 ms; this does
+not replace the slower browser WASM measurement.
+
+The preset confidence/margin gate accepted 298 clips, of which 244 were
+correct and 54 were incorrect. Scores are therefore not calibrated certainty.
+The source does not include independent signers, non-sign clips, or a
+representative live-camera test. No threshold was retuned on these results.
+
+[All per-clip results](verification/bdsl401-compact-publisher-clips.json) are
+preserved unchanged from the workflow artifact. Its legacy `installed:false`
+field means that the evaluator itself did not install a model; the evaluated
+weights were already installed in the feature branch.
+
+[Final integration run 35202065538](https://github.com/adamjamiesimson/SignRelay/actions/runs/35202065538)
+passed the build, all 202 tests, lint, both Chrome flows, and the security audit.
+The owner still controls Firebase deployment.
