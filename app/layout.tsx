@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./refinement.css";
+import "./figma-ui.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://signrelay.web.app"),
@@ -13,8 +14,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: {
     title: "SignRelay",
-    description: "Sign freely. Be understood.",
-    type: "website", url: "/", siteName: "SignRelay", images: [{ url: "/signrelay-social-v2.png", width: 1200, height: 630, alt: "SignRelay — private, on-device sign-language recognition" }],
+    description: "Sign freely. Connect naturally.",
+    type: "website", url: "/", siteName: "SignRelay", images: [{ url: "/signrelay-social-v2.png", width: 1200, height: 630, alt: "SignRelay, private on-device sign-language recognition" }],
   },
   twitter: {
     card: "summary_large_image",
