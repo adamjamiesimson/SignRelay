@@ -84,18 +84,32 @@ export function hasAsl100HandEvidence(sequence: VisionFrame[]) {
  * must also have settled before a prediction is trusted.
  */
 export function hasAsl100CompletedSignMotion(sequence: VisionFrame[]) {
+  return analyzeGenericSignMotion(sequence).ready;
+}
+
+export type GenericSignMotion = { ready: boolean; reason: "hands" | "moving" | "idle" | "ready" };
+
+/**
+ * Same gate as hasAsl100CompletedSignMotion, but reports why a prediction
+ * isn't trusted yet, so the worker can tell a signer using BSL, ISL, LSE or
+ * PSL what's happening - the same feedback ASL already gives via
+ * analyzeSignMotion, instead of leaving those languages silent.
+ */
+export function analyzeGenericSignMotion(sequence: VisionFrame[]): GenericSignMotion {
   const recent = sequence.slice(-24);
-  if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return false;
+  if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return { ready: false, reason: "hands" };
   const hands = dominantTrackedHands(recent);
-  if (hands.length < 15) return false;
+  if (hands.length < 15) return { ready: false, reason: "hands" };
   const wrists = hands.map((hand) => hand.landmarks[0]);
   const tail = wrists.slice(-7);
   const tailRange = Math.hypot(range(tail.map((point) => point.x)), range(tail.map((point) => point.y)));
   const pathLength = wrists.slice(1).reduce((total, point, index) => total + distance(point, wrists[index]), 0);
-  if (pathLength < 0.075 || tailRange > 0.06) return false;
+  if (pathLength < 0.075) return { ready: false, reason: "idle" };
+  if (tailRange > 0.06) return { ready: false, reason: "moving" };
   const tailHands = hands.slice(-7);
   const anchor = tailHands[0];
-  return tailHands.every((hand) => shapeDistance(anchor, hand) <= 0.14);
+  const settled = tailHands.every((hand) => shapeDistance(anchor, hand) <= 0.14);
+  return settled ? { ready: true, reason: "ready" } : { ready: false, reason: "moving" };
 }
 
 function shapeDistance(a: HandObservation, b: HandObservation) {

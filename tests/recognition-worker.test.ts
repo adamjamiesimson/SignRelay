@@ -10,7 +10,9 @@ vi.mock("../lib/bsl1064-runtime", () => ({ recognizeBsl1064: mocks.bsl }));
 vi.mock("../lib/isl263-runtime", () => ({ recognizeIsl263: mocks.isl }));
 vi.mock("../lib/lse300-runtime", () => ({ recognizeLse300: mocks.lse }));
 vi.mock("../lib/psl776-runtime", () => ({ recognizePsl776: mocks.psl }));
-vi.mock("../lib/asl100-runtime", () => ({ hasAsl100CompletedSignMotion: mocks.motion }));
+vi.mock("../lib/asl100-runtime", () => ({
+  analyzeGenericSignMotion: () => ({ ready: mocks.motion(), reason: mocks.motion() ? "ready" : "idle" }),
+}));
 vi.mock("../lib/sign-motion", () => ({ analyzeSignMotion: (sequence: VisionFrame[]) => ({ ready: mocks.motion(), sequence, reason: "idle" }) }));
 vi.mock("../lib/personalized-recognition", () => ({
   recognizePersonalTemplate: mocks.personal,
@@ -111,6 +113,14 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     mocks.motion.mockReturnValue(false);
     await frames(2);
     expect(confirmations()).toHaveLength(1);
+  });
+
+  it.each(["bsl", "isl", "lse", "psl"] as const)("gives %s the same ready-state feedback text ASL already gets, instead of none", async language => {
+    await worker.onmessage({ data: { type: "templates", language, templates: [] } });
+    mocks.motion.mockReturnValue(true);
+    await frames(1);
+    const last = worker.postMessage.mock.calls.at(-1)?.[0] as WorkerMessage;
+    expect(last).toMatchObject({ feedback: "Ready. Sign naturally, then pause briefly between words." });
   });
 
   it.each([NaN, Infinity, -Infinity])("rejects non-finite confidence %s", async confidence => {

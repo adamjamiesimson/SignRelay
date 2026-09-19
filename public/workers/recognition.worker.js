@@ -464,19 +464,21 @@ function hasAsl100HandEvidence(sequence) {
   const recent = sequence.slice(-24);
   return recent.filter((frame) => frame.hands.some((hand4) => hand4.landmarks.length >= 21)).length >= 12;
 }
-function hasAsl100CompletedSignMotion(sequence) {
+function analyzeGenericSignMotion(sequence) {
   const recent = sequence.slice(-24);
-  if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return false;
+  if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return { ready: false, reason: "hands" };
   const hands = dominantTrackedHands(recent);
-  if (hands.length < 15) return false;
+  if (hands.length < 15) return { ready: false, reason: "hands" };
   const wrists = hands.map((hand4) => hand4.landmarks[0]);
   const tail = wrists.slice(-7);
   const tailRange = Math.hypot(range(tail.map((point3) => point3.x)), range(tail.map((point3) => point3.y)));
   const pathLength = wrists.slice(1).reduce((total, point3, index) => total + distance3(point3, wrists[index]), 0);
-  if (pathLength < 0.075 || tailRange > 0.06) return false;
+  if (pathLength < 0.075) return { ready: false, reason: "idle" };
+  if (tailRange > 0.06) return { ready: false, reason: "moving" };
   const tailHands = hands.slice(-7);
   const anchor = tailHands[0];
-  return tailHands.every((hand4) => shapeDistance2(anchor, hand4) <= 0.14);
+  const settled = tailHands.every((hand4) => shapeDistance2(anchor, hand4) <= 0.14);
+  return settled ? { ready: true, reason: "ready" } : { ready: false, reason: "moving" };
 }
 function shapeDistance2(a, b) {
   const scales = [handScale(a), handScale(b)];
@@ -14979,11 +14981,7 @@ self.onmessage = async (event) => {
   const personal = recognizePersonalTemplate(frames, personalTemplates);
   const starter = activeLanguage === "asl" ? recognizeAslStarter(frames) : null;
   if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES" && starter?.label !== "YES") invalidatePrediction();
-  const motion = activeLanguage === "asl" ? analyzeSignMotion(frames) : {
-    ready: hasAsl100CompletedSignMotion(frames),
-    sequence: frames,
-    reason: "idle"
-  };
+  const motion = activeLanguage === "asl" ? analyzeSignMotion(frames) : { ...analyzeGenericSignMotion(frames), sequence: frames };
   if (!motion.ready) invalidatePrediction();
   else {
     if (latestPrediction && now - predictionTimestamp > MAX_PREDICTION_AGE_MS) invalidatePrediction();
@@ -15018,7 +15016,7 @@ self.onmessage = async (event) => {
   else if (now - starterSeenAt > 500) blockedStarter = null;
   const rawResult = direct?.label === blockedStarter ? null : direct ?? latestPrediction;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
-  const feedback = modelProblem ? activeLanguage === "asl" ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly\u2026" : "The research model could not run. Saved personal signs are still available. Retrying shortly\u2026" : activeLanguage !== "asl" ? void 0 : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically." : motion.reason === "moving" ? "Following your movement\u2026" : result ? "Checking your sign\u2026" : "Ready. Sign naturally, then pause briefly between words.";
+  const feedback = modelProblem ? activeLanguage === "asl" ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly\u2026" : "The research model could not run. Saved personal signs are still available. Retrying shortly\u2026" : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically." : motion.reason === "moving" ? "Following your movement\u2026" : result ? "Checking your sign\u2026" : "Ready. Sign naturally, then pause briefly between words.";
   self.postMessage({
     type: "analysis",
     session: event.data.session,

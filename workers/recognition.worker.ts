@@ -5,7 +5,7 @@ import { shouldConfirm } from "@/lib/decoder";
 import { recognizePersonalTemplate, templatesForLanguage } from "@/lib/personalized-recognition";
 import { recognizeAslStarter } from "@/lib/asl-starter-recognition";
 import { analyzeSignMotion } from "@/lib/sign-motion";
-import { hasAsl100CompletedSignMotion } from "@/lib/asl100-runtime";
+import { analyzeGenericSignMotion } from "@/lib/asl100-runtime";
 import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
 import { recognizeIsl263 } from "@/lib/isl263-runtime";
 import { recognizeBsl1064 } from "@/lib/bsl1064-runtime";
@@ -89,9 +89,8 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   // templates. Discard a rejected result so it cannot stall fresh inference.
   if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES"
     && starter?.label !== "YES") invalidatePrediction();
-  const motion = activeLanguage === "asl" ? analyzeSignMotion(frames) : {
-    ready: hasAsl100CompletedSignMotion(frames), sequence: frames, reason: "idle",
-  };
+  const motion = activeLanguage === "asl" ? analyzeSignMotion(frames)
+    : { ...analyzeGenericSignMotion(frames), sequence: frames };
 
   if (!motion.ready) invalidatePrediction();
   else {
@@ -135,10 +134,9 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     ? activeLanguage === "asl"
       ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly…"
       : "The research model could not run. Saved personal signs are still available. Retrying shortly…"
-    : activeLanguage !== "asl" ? undefined
-      : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically."
-        : motion.reason === "moving" ? "Following your movement…"
-          : result ? "Checking your sign…" : "Ready. Sign naturally, then pause briefly between words.";
+    : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically."
+      : motion.reason === "moving" ? "Following your movement…"
+        : result ? "Checking your sign…" : "Ready. Sign naturally, then pause briefly between words.";
   self.postMessage({ type: "analysis", session: event.data.session, frameId: event.data.frameId,
     state: frames.length < 6 ? "listening" : result ? "processing" : "uncertain",
     candidate: result?.label ?? null, confidence: result?.confidence ?? 0,
