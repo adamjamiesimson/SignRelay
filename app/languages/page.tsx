@@ -26,6 +26,7 @@ export default function LanguagesPage() {
           <p>Spanish uses a 300-class model trained on the released SWL-LSE health-domain landmarks. Released test-split top-1 was 60.5%; live-camera accuracy remains unmeasured.</p>
           <p>Bangla uses a separate VideoMAE clip model with 401 sign classes and 398 distinct English glosses. Its first load is 97 MB; results remain experimental and inference is slow.</p>
           <p>RSL uses the official Slovo video model: 967 word/phrase classes and 33 fingerspelling letters, without teaching. It has a separate manual single-sign camera mode, a 141 MB first download and slow inference; it is not real-time.</p>
+          <p>PSL is different from the other six: it is not a trained classifier. It matches against 775 official Pakistan Sign Language dictionary signs from Hamza Foundation Academy for the Deaf, each with exactly one official reference performance, using the same one-shot distance matching already used for a signer’s own personal templates. No accuracy evaluation exists for it.</p>
         </>,
       },
       {
