@@ -31,8 +31,9 @@ The [17 September handoff](docs/pretrained-expansion-2026-09-17.md) records the 
 | RSL | Experimental, slow clip mode | 967 pretrained word/phrase classes + 33 fingerspelling letters | Official Slovo MViTv2-small-32-2 RGB ONNX; no personal recordings required |
 | Bangla | Experimental, slow clip mode | 401 trained classes / 398 distinct English glosses | BdSLW401 VideoMAE with verified weight-only compression |
 | LSE | Experimental | 300 trained health-domain sign classes | SignRelay-trained SWL-LSE temporal landmark model; 60.5% released test-split top-1, live accuracy unmeasured |
+| PSL | Experimental | 775 official HFAD dictionary signs + unlimited signer-taught words | One-shot DTW match against a single official reference performance per sign; **not** a trained classifier, no accuracy evaluation exists |
 | Auslan | Model preparing | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates; no automatic output yet |
-| 33 personal workspaces | Signer-taught | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates |
+| 32 personal workspaces | Signer-taught | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates |
 
 ### Spanish installation and use
 
@@ -53,6 +54,10 @@ Choose **Russian Sign Language** (search for RSL), enter its workspace, start th
 See [Slovo attribution and licence](public/models/rsl1000-slovo/ATTRIBUTION.md). The source uses a custom attribution/share-alike licence, not the application-code licence. Its benchmark results are not SignRelay live-camera accuracy. RSL has not received independent native-signer evaluation. This addition meets 400+ pretrained word/phrase classes for RSL; it does **not** establish 400+ pretrained signs for every workspace.
 
 The 2,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL2000 OpenPose sequences. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. BSL and ISL likewise use their own official isolated-sign checkpoints. Typed custom words activate only after the signer records personal examples; they do not alter a shared model. The remaining languages never borrow, relabel or fabricate a checkpoint.
+
+### PSL installation and use
+
+The 775-sign HFAD dictionary bundle (`public/models/psl776-hfad/`) is checksum-verified during the Firebase build. Choose Pakistani Sign Language and sign naturally; recognition runs continuously like ASL/BSL/ISL/LSE, not as a slow single-capture mode. Unlike those four, PSL is **not a trained neural classifier** - each of the 775 signs has exactly one official reference performance from [HFAD, Lahore](https://github.com/sign-language-translator/sign-language-datasets) (CC BY 4.0), and recognition is one-shot dynamic-time-warping distance matching against that single reference, using the same matching code already used for a signer's own personal templates. No accuracy evaluation exists - not against held-out signers, not live-camera, not at all. See [PSL attribution and limitations](public/models/psl776-hfad/ATTRIBUTION.md).
 
 ## Architecture
 

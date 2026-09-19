@@ -1,6 +1,7 @@
 import WLASL2000_LABELS from "../public/models/asl2000-tgcn/labels.json";
 import RSL_LABELS from "../public/models/rsl1000-slovo/labels.json";
 import BDSL_LABELS from "../public/models/bdsl401-videomae/labels.json";
+import PSL_LABELS from "../public/models/psl776-hfad/labels.json";
 
 export const LANGUAGE_IDS = [
   "asl", "bsl", "isl", "lse", "auslan", "csl",
@@ -294,7 +295,18 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
   sgsl: personalLanguage({ id: "sgsl", shortName: "SgSL", language: "Singapore Sign Language", speechLocale: "en-SG" }),
   tsl: personalLanguage({ id: "tsl", shortName: "TSL", language: "Thai Sign Language", speechLocale: "th-TH" }),
   fsl: personalLanguage({ id: "fsl", shortName: "FSL", language: "Filipino Sign Language", speechLocale: "en-PH" }),
-  psl: personalLanguage({ id: "psl", shortName: "PSL", language: "Pakistan Sign Language", speechLocale: "ur-PK" }),
+  psl: {
+    id: "psl", shortName: "PSL", language: "Pakistan Sign Language", speechLocale: "ur-PK",
+    status: "experimental", modelFile: "775 official HFAD dictionary reference signs + on-device DTW matching",
+    automaticVocabularyCount: 775, vocabulary: PSL_LABELS,
+    inputFormat: "24 normalised hand and upper-body landmark samples, matched by dynamic time warping",
+    sequenceLength: 24, confidenceThreshold: 0.62,
+    decoder: "One-shot nearest-neighbour match against the official HFAD dictionary reference performance for each sign; personal templates take priority",
+    postProcessing: "Confidence gate, competing-sign margin, temporal consensus and duplicate suppression",
+    version: "psl776-hfad-dtw-v1",
+    dataset: "Hamza Foundation Academy for the Deaf (HFAD), Lahore, Pakistan, via the sign-language-translator project's dictionary release (CC BY 4.0). One official performance per sign; no accuracy evaluation exists yet.",
+    summary: "775 official Pakistan Sign Language dictionary signs matched by one-shot DTW comparison, not a trained classifier. No live-camera or held-out accuracy evaluation exists yet.",
+  },
   bdsl: {
     id: "bdsl", shortName: "BdSL", language: "Bangla Sign Language", speechLocale: "en-GB",
     status: "experimental", modelFile: "BdSLW401 VideoMAE, verified weight-only int8 storage",

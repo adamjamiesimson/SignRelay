@@ -467,16 +467,30 @@ function hasAsl100HandEvidence(sequence) {
 function hasAsl100CompletedSignMotion(sequence) {
   const recent = sequence.slice(-24);
   if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return false;
-  const wrists = dominantTrackedWrists(recent);
-  if (wrists.length < 15) return false;
+  const hands = dominantTrackedHands(recent);
+  if (hands.length < 15) return false;
+  const wrists = hands.map((hand4) => hand4.landmarks[0]);
   const tail = wrists.slice(-7);
   const tailRange = Math.hypot(range(tail.map((point3) => point3.x)), range(tail.map((point3) => point3.y)));
   const pathLength = wrists.slice(1).reduce((total, point3, index) => total + distance3(point3, wrists[index]), 0);
-  return pathLength >= 0.075 && tailRange <= 0.06;
+  if (pathLength < 0.075 || tailRange > 0.06) return false;
+  const tailHands = hands.slice(-7);
+  const anchor = tailHands[0];
+  return tailHands.every((hand4) => shapeDistance2(anchor, hand4) <= 0.14);
 }
-function dominantTrackedWrists(sequence) {
-  const left = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Left")?.landmarks[0]).filter((point3) => Boolean(point3));
-  const right = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Right")?.landmarks[0]).filter((point3) => Boolean(point3));
+function shapeDistance2(a, b) {
+  const scales = [handScale(a), handScale(b)];
+  return Math.max(...[4, 8, 12, 16, 20].map((index) => {
+    const ax = (a.landmarks[index].x - a.landmarks[0].x) / scales[0];
+    const ay = (a.landmarks[index].y - a.landmarks[0].y) / scales[0];
+    const bx = (b.landmarks[index].x - b.landmarks[0].x) / scales[1];
+    const by = (b.landmarks[index].y - b.landmarks[0].y) / scales[1];
+    return Math.hypot(ax - bx, ay - by);
+  }));
+}
+function dominantTrackedHands(sequence) {
+  const left = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Left")).filter((hand4) => Boolean(hand4 && hand4.landmarks.length >= 21));
+  const right = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Right")).filter((hand4) => Boolean(hand4 && hand4.landmarks.length >= 21));
   return right.length >= left.length ? right : left;
 }
 function distance3(a, b) {
@@ -11074,20 +11088,27 @@ var loadModel4 = createLandmarkModelLoader("/models/lse300-swl", 300);
 async function recognizeLse300(sequence) {
   if (sequence.length < 18) return null;
   const { session, labels } = await loadModel4();
-  const output = await session.run({ landmarks: new qe("float32", prepareLseInput(sequence), [1, FRAMES2, FEATURES]) });
-  const logits = output.logits?.data;
-  if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
-  const probabilities = softmax4(logits);
-  const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
-  const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
-  const confidence = probabilities[best];
-  const margin = confidence - probabilities[runnerUp];
-  const label = labels[best];
-  if (!label || confidence < MIN_CONFIDENCE3 || margin < MIN_MARGIN3) return null;
-  return { label, text: readable3(label), confidence, margin };
+  const input = new qe("float32", prepareLseInput(sequence), [1, FRAMES2, FEATURES]);
+  let output = {};
+  try {
+    output = await session.run({ landmarks: input });
+    const logits = output.logits?.data;
+    if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
+    const probabilities = softmax4(logits);
+    const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
+    const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
+    const confidence = probabilities[best];
+    const margin = confidence - probabilities[runnerUp];
+    const label = labels[best];
+    if (!label || confidence < MIN_CONFIDENCE3 || margin < MIN_MARGIN3) return null;
+    return { label, text: readable3(label), confidence, margin };
+  } finally {
+    input.dispose();
+    Object.values(output).forEach((tensor) => tensor.dispose());
+  }
 }
 function prepareLseInput(sequence) {
-  const source = sequence.slice(-FRAMES2).map(framePoints);
+  const source = sequence.map(framePoints);
   const samples = resample2(source, FRAMES2);
   const values = new Float32Array(FRAMES2 * FEATURES);
   samples.forEach((points, frameIndex) => {
@@ -11114,7 +11135,7 @@ function hand3(frame, handedness) {
   return Array.from({ length: 21 }, (_, index) => point2(landmarks?.[index]));
 }
 function point2(value) {
-  if (!value || !Number.isFinite(value.x) || !Number.isFinite(value.y) || !Number.isFinite(value.z)) return { x: 0, y: 0, z: 0, valid: false };
+  if (!value || !Number.isFinite(value.x) || !Number.isFinite(value.y) || !Number.isFinite(value.z) || value.x === 0 && value.y === 0 && value.z === 0) return { x: 0, y: 0, z: 0, valid: false };
   return { x: value.x, y: value.y, z: value.z, valid: true };
 }
 function midpoint4(a, b) {
@@ -11132,6 +11153,41 @@ function softmax4(logits) {
 }
 function readable3(label) {
   return label.toLocaleLowerCase("es-ES").replace(/[_.-]+/g, " ").replace(/\b\p{L}/gu, (character) => character.toLocaleUpperCase("es-ES"));
+}
+
+// lib/psl776-runtime.ts
+var REJECT_DISTANCE = 0.5;
+var REJECT_MARGIN = 0.06;
+var templatesPromise = null;
+function loadTemplates() {
+  templatesPromise ?? (templatesPromise = fetch("/models/psl776-hfad/templates.json.gz").then(async (response) => {
+    if (!response.ok) throw new Error("PSL template bundle could not load");
+    if (!("DecompressionStream" in globalThis)) throw new Error("This browser cannot unpack the PSL template bundle");
+    const stream = new Blob([await response.arrayBuffer()]).stream().pipeThrough(new DecompressionStream("gzip"));
+    return new Response(stream).json();
+  }));
+  return templatesPromise;
+}
+async function recognizePsl776(sequence) {
+  if (sequence.length < 8) return null;
+  const templates = await loadTemplates();
+  const candidate = prepareCalibrationSequence(sequence);
+  let best = null;
+  let rival = null;
+  for (const template of templates) {
+    const distance4 = sequenceDistance(candidate, template.frames);
+    if (!best || distance4 < best.distance) {
+      rival = best;
+      best = { template, distance: distance4 };
+    } else if (!rival || distance4 < rival.distance) rival = { template, distance: distance4 };
+  }
+  if (!best || best.distance > REJECT_DISTANCE || rival && rival.distance - best.distance < REJECT_MARGIN) return null;
+  const confidence = clamp2(0.9 - best.distance * 0.24, 0, 0.88);
+  const margin = rival ? rival.distance - best.distance : 1;
+  return { label: best.template.gloss, text: best.template.text, confidence, margin };
+}
+function clamp2(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 
 // public/models/asl2000-tgcn/labels.json
@@ -14143,6 +14199,414 @@ var labels_default2 = [
   "---"
 ];
 
+// public/models/bdsl401-videomae/labels.json
+var labels_default3 = [
+  "Father",
+  "Relatives",
+  "Brother",
+  "Sister",
+  "Wife",
+  "Paternal Uncle",
+  "Wife of Paternal Uncle",
+  "Grandfather/Maternal grandfather",
+  "Grandmother/Maternal Grandmother",
+  "Responsibility",
+  "Husband\u2019s Younger Brother (Brother-in-Law)",
+  "Sister\u2019s Husband",
+  "Wife",
+  "Husband of Paternal Aunt",
+  "Paternal Aunt",
+  "Husband",
+  "Maternal Aunt",
+  "Husband of Maternal Aunt",
+  "Daughter",
+  "Mother",
+  "Mother\u2019s Brother",
+  "Mother\u2019s Brother\u2019s Wife",
+  "Husband\u2019s Sister",
+  "Family",
+  "Son",
+  "Mother-in-Law",
+  "Father-in-Law",
+  "Women who have the same husband",
+  "Brother\u2019s Wife",
+  "Nephew (related to sister)",
+  "Niece (related to sister)",
+  "Wife\u2019s Sister\u2019s Husband",
+  "Good",
+  "Nephew (related to brother)",
+  "Niece (related to brother)",
+  "Husband\u2019s Elder Brother (Brother-in-Law)",
+  "Mango",
+  "Potato",
+  "Pineapple",
+  "Grape",
+  "Apple",
+  "Biscuit",
+  "Jujube/Chinese Date",
+  "Cake",
+  "Tea",
+  "Rice",
+  "Sugar",
+  "Chips",
+  "Chocolate",
+  "Lentil",
+  "Egg",
+  "Milk",
+  "Feeder",
+  "Fruit",
+  "Juice",
+  "Carrot",
+  "Unrefined Solid Brown Sugar",
+  "Ice Cream",
+  "Hot in Taste or Spicy",
+  "A unique Bangladeshi Sweet",
+  "Food",
+  "Date",
+  "Banana",
+  "Orange",
+  "Lemon",
+  "Lichi",
+  "Salt",
+  "Fish",
+  "Meat",
+  "Sweet Taste",
+  "Chilli Pepper",
+  "Betel Leaf",
+  "Guava",
+  "Rice cooked with oil",
+  "Flatbread",
+  "Vegetable",
+  "Betel Nut",
+  "Palmyra",
+  "Tamarind",
+  "Melon",
+  "Cooked Rice",
+  "Alah or Mahavar",
+  "Ring",
+  "A type of Perfume",
+  "Landlord",
+  "Belt",
+  "Bleed",
+  "Woman\u2019s Upper Garment",
+  "Friend",
+  "A Loose Garment Covering the Entire Body",
+  "Button",
+  "Cap",
+  "Shawl",
+  "Comb",
+  "Spectacles",
+  "Bangle",
+  "Clip",
+  "Cream",
+  "Data",
+  "Indebted",
+  "Adopted Son/Daughter",
+  "Ribbon",
+  "A type of Men\u2019s Upper Garment",
+  "T-shirt",
+  "Watch",
+  "Gloves",
+  "Necklace",
+  "Recipient",
+  "A Religious Leader or Teacher",
+  "Halfpant",
+  "Twin baby",
+  "Shoe",
+  "Kohl",
+  "Ear Ring",
+  "Lipstick",
+  "A long piece of cloth worn as a loincloth",
+  "Makeup",
+  "Owner",
+  "Henna",
+  "Guest",
+  "Socks",
+  "Nailpolish",
+  "Scarf",
+  "Guardian",
+  "Loose Fitting Trouser",
+  "A Loose Fitting Men\u2019s Upper Garment",
+  "Pant",
+  "Creditor",
+  "Skirt of slip worn under a dress",
+  "Perfume",
+  "Pocket",
+  "Powder",
+  "Lover (man)",
+  "Lover (woman)",
+  "Neighbor",
+  "Silver",
+  "Slipper",
+  "Shampoo",
+  "Vedic Women\u2019s Dress",
+  "Shave",
+  "Shirt",
+  "A Knee Length Coat Buttoning to the Neck",
+  "Disciple",
+  "Well-wisher",
+  "Colleague",
+  "Students who Study in the Same Class",
+  "Of the Same Age",
+  "Relation",
+  "Gold",
+  "Enemy",
+  "Sweater",
+  "Tie",
+  "Tip",
+  "Tenant",
+  "Extension to a Garment, specially Shari",
+  "Dress Hanger",
+  "Light",
+  "Bag",
+  "Pillow",
+  "Flute",
+  "Bathroom",
+  "Bowl",
+  "A type of Ornament",
+  "Bed",
+  "Box",
+  "Bracelet",
+  "Bulb",
+  "Chair",
+  "Spoon",
+  "Umbrella",
+  "Hair Band",
+  "Coat",
+  "Cup",
+  "A Loincloth",
+  "Door",
+  "Fan",
+  "Huk",
+  "Jacket",
+  "Window",
+  "Men\u2019s Undergarment",
+  "Jeans",
+  "Jersey",
+  "Basket",
+  "Scissors",
+  "A Long Tunic Worn in the Indian Subcontinent",
+  "Fork",
+  "Braid",
+  "Hairpin",
+  "A type of Slipper",
+  "Locket",
+  "Neck Scarf",
+  "Stool",
+  "Mosquito Net",
+  "Nose-pin",
+  "Nighty",
+  "Nose Ring",
+  "Anklet",
+  "Turban",
+  "Plate",
+  "Raincoat",
+  "Women\u2019s Trouser",
+  "Scarf",
+  "Women\u2019s Undergarment",
+  "Sunglasses",
+  "Thread",
+  "Table",
+  "Telephone",
+  "Tiepin",
+  "An ornament worn in the forehead",
+  "Toothbrush",
+  "Toothpaste",
+  "T-shirt",
+  "Tube Light",
+  "TV",
+  "AC",
+  "Apartment",
+  "Audio Cassette",
+  "Looking Mirror",
+  "Water Bucket",
+  "Sand",
+  "A type of Hut",
+  "Basin",
+  "Bed Sheet",
+  "Toilet Wash Jug",
+  "Bookshelf",
+  "Briefcase",
+  "Calling Bell",
+  "Cassette Player",
+  "Moon",
+  "Strainer",
+  "Cooker/Stove",
+  "Building",
+  "Wall",
+  "Brick",
+  "Haphazard",
+  "Fridge",
+  "Fry Pan",
+  "Flower Vase",
+  "Rug/Carpet",
+  "Towel",
+  "Iron",
+  "Broom",
+  "Jug",
+  "Decorated Bed Sheet",
+  "Kettle",
+  "Room",
+  "Well",
+  "Hut",
+  "A type of Blanket",
+  "Lift",
+  "House Made of Mud",
+  "Floor",
+  "Wax Candle",
+  "Mug",
+  "Tube Well",
+  "Water Tap",
+  "Curtain",
+  "Pressure Cooker",
+  "Pond",
+  "Radio",
+  "Handkerchief",
+  "Soap",
+  "Arrange/Furnish/Organize",
+  "Cement",
+  "Stairs",
+  "Sofa",
+  "Suitcase",
+  "Switch",
+  "Table Lamp",
+  "House with Roof of Iron Sheets",
+  "Torchlight",
+  "Ingredients",
+  "Veranda",
+  "Washing Machine",
+  "Ashtray",
+  "Blender Machine",
+  "A Long Curved Blade",
+  "Knife",
+  "Chimney",
+  "Tower Bolt for Door",
+  "Long Cutting Blade",
+  "Match Stick",
+  "Detergent Powder",
+  "Rope",
+  "Grill",
+  "Hanger",
+  "Oil Lantern",
+  "Blanket",
+  "Commode",
+  "Saw",
+  "Microwave Oven",
+  "Door Mat",
+  "Nail",
+  "A type of Long blade",
+  "Screw",
+  "Tank",
+  "Wire",
+  "Flower Tub",
+  "Toilet Tissue",
+  "Lawn",
+  "Tar",
+  "Bamboo",
+  "Roti Roller",
+  "Bottle",
+  "Jar",
+  "Shed",
+  "Walking Stick",
+  "Lime",
+  "A Cover",
+  "Cradle",
+  "Drum",
+  "Drawer",
+  "File",
+  "Flask",
+  "Foam",
+  "Folder",
+  "Big Bowl",
+  "Pillar",
+  "Sitting place",
+  "Cattle House",
+  "Pounder/Mortar",
+  "Cooking Pan",
+  "Hammer",
+  "Broom Stick",
+  "Shoe Rack",
+  "Sickle",
+  "Straw",
+  "Cooking Spud",
+  "Koyel",
+  "Kushon/Cushion",
+  "Lighter",
+  "Mat",
+  "Ladder",
+  "Weeder",
+  "Hand Fan",
+  "Pan",
+  "Punching Machine",
+  "Pin",
+  "Plastic",
+  "Plug",
+  "Castle",
+  "Lamp",
+  "Watering",
+  "Sewing Machine",
+  "Shower",
+  "Stapler",
+  "Needle",
+  "Tent",
+  "Rack",
+  "Tiffin Carrier",
+  "AIDS",
+  "Arthritis",
+  "Bandage",
+  "Capsule",
+  "Treatment",
+  "Conjunctivitis",
+  "Dengue",
+  "Doctor",
+  "Bite",
+  "Weak",
+  "Skin Infection or Abscess",
+  "Heat Rash",
+  "Goitre",
+  "Homeopathy",
+  "Hospital",
+  "Cardiac Disease",
+  "Injection",
+  "Germ",
+  "Tuberculosis",
+  "Jaundice",
+  "Fever",
+  "Cough",
+  "Injury",
+  "Worm",
+  "Mask",
+  "Headache",
+  "Malaria",
+  "Ointment",
+  "Heal",
+  "Nurse",
+  "Paralyzed",
+  "Senseless",
+  "Insomnia",
+  "Poor Nutrition",
+  "Lack of Appetite",
+  "Uncomfortable",
+  "Sick",
+  "Surgery",
+  "Medicine",
+  "Savlon",
+  "Healthy",
+  "Contagious",
+  "Cold",
+  "Stethoscope",
+  "Tablet",
+  "Thermometer",
+  "Cotton",
+  "Mad",
+  "Virus",
+  "Vitamin",
+  "X-Ray"
+];
+
+// public/models/psl776-hfad/labels.json
+var labels_default4 = ["1", "10", "100", "1000", "10000", "100000", "10000000", "4", "5", "500", "6", "7", "8", "9", "A(DOUBLE-HANDED-LETTER)", "A(SINGLE-HANDED-LETTER)", "ACCOUNTING", "ACHE", "ACHIEVEMENT", "ACT UPON", "ADAM(FIRST-MAN)", "ADDRESS(NOUN)", "ADMIRE", "ADVERTISEMENT", "AFGHANISTAN", "AGAIN", "AGE", "AIR", "AIRPLANE", "AIRPORT", "ALARM(CLOCK)", "ALAYHE ASSALLAM", "ALHAMRA", "ALL", "ALLAH", "ALLAMA IQBAL", "ALWAYS", "AM", "AMBULANCE", "AMERICA(COUNTRY)", "ANARKALI", "AND", "ANGEL", "ANGER", "ANGRY(DISPLEASED)", "ANTONYM", "ANXIOUS", "APOSTLE", "APPLE", "APPLICATION(REQUEST)", "APPROVAL", "APRICOT", "APRIL(MONTH)", "ARE", "ARROGANCE", "ART", "ASR", "ASSEMBLY(CONGREGATION)", "AUGUST(MONTH)", "AUNT(FATHER'S-SISTER-\u067E\u06BE\u0648\u067E\u06BE\u06CC)", "AUNT(FATHER'S-YOUNGER-BROTHER'S-WIFE-\u0686\u0686\u06CC)", "AUNT(MOTHER'S-BROTHER'S-WIFE-\u0645\u0645\u0627\u0646\u06CC)", "AUNT(MOTHER'S-SISTER-\u062E\u0627\u0644\u06C1)", "AUSTRALIA", "AUTUMN", "B(DOUBLE-HANDED-LETTER)", "B(SINGLE-HANDED-LETTER)", "BACKBITING", "BADSHAHI MOSQUE", "BAG(NOUN)", "BALL POINT", "BALOCHISTAN", "BANANA", "BANGLADESH", "BANK(INSTITUTION)", "BEAUTIFUL", "BEFORE", "BEG", "BEGGAR", "BELL", "BENEFICIAL", "BEVERAGE", "BIRTHDAY", "BISCUIT", "BLACK", "BLESSING", "BLUE", "BOOK", "BOOKSTORE", "BOTTLE(NOUN)", "BOY", "BREAD", "BREAK(PAUSE)", "BRIBERY", "BROTHER", "BROTHER'S DAUGHTER", "BROTHER'S SON", "BROTHER'S WIFE", "BROWN", "BUNNY", "BURGER", "BUS", "BUS STOP", "BUSY", "BUTTER", "BY(ACTIVE-VOICE-\u0646\u06D2)", "C(DOUBLE-HANDED-LETTER)", "C(SINGLE-HANDED-LETTER)", "CAKE", "CALCULATOR", "CALENDAR", "CALM", "CAME(\u0622\u0626\u06CC)", "CAME(\u0622\u0626\u06D2)", "CAME(\u0622\u06CC\u0627)", "CAMEL", "CAMERA", "CANAL", "CAR", "CARROT", "CARTOON", "CASTLE", "CAT", "CAULIFLOWER", "CELEBRATION", "CHAIR", "CHAIRMAN", "CHAKWAL", "CHANA CHAAT", "CHAUBURJI", "CHAUDHARY", "CHEIF", "CHICKEN", "CHICKEN MEAT", "CHINA", "CHINA CLAY", "CHIPS(FRIES)", "CHRISTIAN", "CITY", "CLASSROOM", "CLAY", "CLOSE(SHUT)", "CLOSET", "COAL", "COCONUT", "COFFEE", "COLD", "COLLECTION", "COLLEGE", "COLOR", "COME AND GO", "COME(\u0622\u0624)", "COME(\u0622\u0624\u06BA)", "COME(\u0622\u0626\u06CC\u06BA)", "COMPANY(CORPORATION)", "COMPETITION", "COMPLAINT", "COMPLETE", "CONCENTRATE(FOCUS)", "CONTINENT", "CONVERSATION", "CORIANDER", "COUNTRY(HOMELAND)", "COW", "COW MEAT", "CROCODILE", "CROW", "CROWD", "CRUELTY", "CUCUMBER", "CUNNING", "D(DOUBLE-HANDED-LETTER)", "D(SINGLE-HANDED-LETTER)", "DACOIT", "DAHI BHALLY", "DAMAGE", "DATE(CALENDAR)", "DAUGHTER", "DAY", "DAY AFTER TOMORROW", "DECEMBER", "DECENT", "DECORATED", "DEFAMATION", "DESERTED", "DESIRE", "DIARY", "DIFFICULT", "DISCIPLINE", "DO(\u06A9\u0631\u062A\u06D2)", "DO(\u06A9\u0631\u0648)", "DO(\u06A9\u0631\u0648\u06BA)", "DO(\u06A9\u0631\u06CC\u06BA)", "DO(\u06A9\u0631\u06D2)", "DOCTOR(PHYSICIAN)", "DOES(FEMININE-\u06A9\u0631\u062A\u06CC)", "DOES(MASCULINE-\u06A9\u0631\u062A\u0627)", "DOG", "DONKEY", "DONKEY CART", "DRAMA", "DREAM", "DUBAI", "DUCK", "DUPLICATE", "E(DOUBLE-HANDED-LETTER)", "E(SINGLE-HANDED-LETTER)", "EASY", "EGG", "EGGPLANT", "ELECTION", "ELEPHANT", "EMBARRASSED", "EMERGENCY", "ENEMY", "ENGLAND", "ENGLISH(LANGUAGE)", "ERASER", "ETHNICITY", "EVE(FIRST-WOMAN)", "EVENING", "EXAMINATION", "EXCUSE(JUSTIFICATION)", "EXERCISE", "EXHIBITION", "EXTRAVAGANT", "F(DOUBLE-HANDED-LETTER)", "F(SINGLE-HANDED-LETTER)", "FACTORY", "FAIL", "FAISAL MOSQUE", "FAISALABAD", "FAITH", "FAJR", "FAMILY", "FAMOUS", "FAR", "FARMER", "FASHION", "FASHIONABLE", "FASTING", "FATE", "FEARSOME", "FEAST", "FEBRUARY", "FEMININE", "FEW", "FIGHTER JET", "FIND", "FIRST", "FISH", "FIT", "FLOUR", "FLOWER", "FOOL", "FOR(\u0644\u0626\u06D2)", "FORGIVE", "FOUNDATION", "FOUNDER", "FRAUD", "FREE(AT-LIBERTY)", "FREEDOM", "FRIDAY", "FRIEND", "FROCK", "FROG", "FROM", "FRUIT", "FUN", "G(DOUBLE-HANDED-LETTER)", "G(SINGLE-HANDED-LETTER)", "GANGSTER", "GARDEN", "GARLIC", "GATE(NOUN)", "GINGER", "GIRAFFE", "GIRL", "GIVE", "GO(\u062C\u0627\u0624)", "GO(\u062C\u0627\u0624\u06BA)", "GO(\u062C\u0627\u0626\u06CC\u06BA)", "GO(\u062C\u0627\u0626\u06D2)", "GOAT", "GOAT MEAT", "GOLD", "GOOD", "GOVERNMENT", "GRANDFATHER(PATERNAL)", "GRANDMOTHER(PATERNAL)", "GRAPE", "GRAVE(BURIAL)", "GRAVEYARD", "GREED", "GREEN CHILLI", "GREY", "GROUND(LAND)", "GUARDIANSHIP", "GUAVA", "GUJARAT", "GUJRANWALA", "H(DOUBLE-HANDED-LETTER)", "H(SINGLE-HANDED-LETTER)", "HABIT", "HADITH", "HAILSTORM", "HAJJ", "HALF AN HOUR", "HAPPINESS", "HAPPY TALK", "HARD WORK", "HAS(FEMININE-\u0686\u06A9\u06CC)", "HAS(MASCULINE-\u0686\u06A9\u0627)", "HATE", "HAVE(\u0686\u06A9\u06D2)", "HAZRAT ABU BAKR", "HAZRAT ALI", "HAZRAT MOHAMMAD", "HAZRAT OMAR", "HAZRAT OSMAN", "HEART BROKEN", "HEAT(NOUN)", "HEAVEN", "HELL", "HELP", "HERE", "HINDU", "HOLIDAY", "HORSE", "HOSPITAL", "HOSTEL", "HOT", "HOTEL", "HOUSE", "HOW(FEMININE-\u06A9\u06CC\u0633\u06CC)", "HOW(MASCULINE-\u06A9\u06CC\u0633\u0627)", "HOW(\u06A9\u06CC\u0633\u06D2)", "HURRY", "HUSBAND", "I(DOUBLE-HANDED-LETTER)", "I(ME)", "I(SINGLE-HANDED-LETTER)", "ICECREAM", "IDENTITY CARD", "IGNORE", "ILL", "ILLITERACY", "IMAM", "IN", "INCLUDE", "INDEED", "INDIA", "INFIDEL", "INFLATION(ECONOMIC)", "INFORMATION", "ING(\u0631\u06C1\u0627)", "ING(\u0631\u06C1\u0648)", "ING(\u0631\u06C1\u06CC)", "ING(\u0631\u06C1\u06CC\u06BA)", "ING(\u0631\u06C1\u06D2)", "INK", "INTERESTING", "IRAN", "IRAQ", "IRON(METAL)", "IRRIGATION", "IS", "ISHA", "ISLAMABAD", "ISLAMIAT", "IT", "J(DOUBLE-HANDED-LETTER)", "J(SINGLE-HANDED-LETTER)", "JAMUN", "JANUARY", "JAPAN", "JEANS PANTS", "JHELUM", "JIHAD", "JOB", "JOKE", "JUDGE(NOUN)", "JUICE", "JULY", "JUNE", "JUNGLE", "K(DOUBLE-HANDED-LETTER)", "K(SINGLE-HANDED-LETTER)", "KALMA CHOWK", "KALMAH", "KAMEEZ", "KEBAB", "KHYBER PAKHTUNKHWA", "KUWAIT", "L(SINGLE-HANDED-LETTER)", "LABORER", "LAHORE", "LAST(FINAL)", "LAW", "LAWYER", "LAZY", "LEMON", "LENTIL", "LIBERTY(PLACE)", "LIBRARY", "LIE(UNTRUTH)", "LIMESTONE", "LION", "LOAN", "M(DOUBLE-HANDED-LETTER)", "M(SINGLE-HANDED-LETTER)", "MAGHRIB", "MAKE", "MAN(NOUN)", "MANGO", "MARCH(MONTH)", "MARKET", "MASCULINE", "MATERNAL GRANDFATHER", "MATERNAL GRANDMOTHER", "MAY(MONTH)", "ME", "MEDICINE(DRUG)", "MEETING(NOUN)", "MELON", "MERCY", "MIDDLE", "MILK", "MINAR E PAKISTAN", "MINE(FEMININE-\u0645\u06CC\u0631\u06CC)", "MINE(MASCULINE-\u0645\u06CC\u0631\u0627)", "MINE(\u0645\u06CC\u0631\u06D2)", "MINUTE(UNIT-OF-TIME)", "MISER", "MONITOR(PREFECT)", "MONKEY", "MONOTHEISM", "MONTH", "MOON", "MORNING", "MOSQUE", "MOTHER", "MOTORCYCLE", "MOUNTAIN", "MOVIE", "MULTAN", "MURREE", "MUSEUM", "MUSLIM", "N(DOUBLE-HANDED-LETTER)", "N(SINGLE-HANDED-LETTER)", "NAAN", "NAME", "NAWAB", "NEAR", "NECESSARY", "NEIGHBORS", "NEW", "NEWSPAPER", "NEXT", "NIGHT", "NO", "NOISE", "NONSENSE", "NOODLES", "NOON", "NOTEBOOK", "NOW(\u0627\u0628)", "O(SINGLE-HANDED-LETTER)", "OBEDIENCE", "OF(FEMININE-\u06A9\u06CC)", "OF(MASCULINE-\u06A9\u0627)", "OF(\u06A9\u06D2)", "OFFICE", "OKRA", "OLD MAN", "OLD WOMAN", "ON(AT)", "ONION", "ORANGE(COLOR)", "ORANGE(FRUIT)", "OUR(FEMININE-\u06C1\u0645\u0627\u0631\u06CC)", "OUR(MASCULINE-\u06C1\u0645\u0627\u0631\u0627)", "OUR(\u06C1\u0645\u0627\u0631\u06D2)", "OWL", "OWN(ADJECTIVE-\u0627\u067E\u0646\u0627)", "OWN(ADJECTIVE-\u0627\u067E\u0646\u06CC)", "OWN(ADJECTIVE-\u0627\u067E\u0646\u06D2)", "OWNER", "P(DOUBLE-HANDED-LETTER)", "P(SINGLE-HANDED-LETTER)", "PAK STUDY", "PANTS(TROUSERS)", "PAPA", "PARROT", "PASS(SUCCEED)", "PATIENT(SICK)", "PEACOCK", "PEN", "PENALTY", "PENCIL", "PEOPLE", "PERHAPS", "PESHAWAR", "PHOTO", "PIGEON", "PINEAPPLE", "PINK", "PLACE", "PLANTS", "PLAY(SPORTS)", "PLEASANT", "PLURAL", "POET", "POLICE MAN", "POMEGRANATE", "POPULATION", "POST OFFICE", "POTATO", "POVERTY", "PREACH", "PRIDE", "PRIME MINISTER", "PRINCIPAL", "PRINCIPLE", "PROCESSION", "PROGRAMME", "PROMISE", "PROPHET", "PROVINCE", "PUNCTUALITY", "PUNISH", "PUNJAB", "PURPLE", "PURPOSE", "Q(DOUBLE-HANDED-LETTER)", "Q(SINGLE-HANDED-LETTER)", "QUAID-E-AZAM", "QUICK", "QURAN", "R(DOUBLE-HANDED-LETTER)", "R(SINGLE-HANDED-LETTER)", "RADISH", "RAILWAY STATION", "RAIN", "RAINBOW", "RAT", "RAWALPINDI", "REBELLION", "RECONCILE", "RED", "RED CHILLI", "RELATIVE(FAMILY)", "RELAX", "RESPECT", "RESPONSIBLE", "RESTAURANT", "RESULT", "REWARD(SPIRITUAL)", "RICE", "RICKSHAW", "RIGHT NOW(\u0627\u0628\u06BE\u06CC)", "RIGHT(ENTITLEMENT)", "RIVER", "ROAD", "ROTI", "RUMOR", "S(DOUBLE-HANDED-LETTER)", "S(SINGLE-HANDED-LETTER)", "SAFE", "SAHIWAL", "SALAT", "SALT", "SAMOSA", "SARGODHA", "SATAN", "SATURDAY", "SAUDI ARABIA", "SCALE(RULER)", "SCARF", "SCHOOL", "SCHOOL CANTEEN", "SCIENCE", "SEA", "SEARCH", "SECOND(UNIT-OF-TIME)", "SECURITY GUARD", "SEE(\u062F\u06CC\u06A9\u06BE\u0648)", "SEE(\u062F\u06CC\u06A9\u06BE\u0648\u06BA)", "SEE(\u062F\u06CC\u06A9\u06BE\u06CC\u06BA)", "SEE(\u062F\u06CC\u06A9\u06BE\u06D2)", "SEEN(\u062F\u06CC\u06A9\u06BE\u0627)", "SEEN(\u062F\u06CC\u06A9\u06BE\u06CC)", "SELFISHNESS", "SERVANT", "SHADOW", "SHAME", "SHARPENER", "SHEIKHUPURA", "SHIP(BOAT)", "SHIRT", "SHOP", "SIALKOT", "SILVER", "SIN", "SINDH", "SINGULAR", "SISTER", "SISTER'S DAUGHTER", "SISTER'S SON", "SKY", "SLIPPERS", "SNATCH", "SOCIETY", "SOLIDER", "SON", "SOUP", "SPARROW", "SPECTACLE", "SPINACH", "SPOILED", "SPORTS", "SPRING(SEASON)", "SPRING(WATER-BASIN)", "SPY", "STADIUM", "STAFFROOM", "STAPLER", "STARS", "START", "STORM", "STORY", "STRAWBERRY", "STREETS", "STROLL", "STUBBORNNESS", "STUDENT", "SUDDEN", "SUGAR", "SUGARCANE", "SUGGESTION", "SUN", "SUNDAY", "SWEETS", "SYSTEM", "T(DOUBLE-HANDED-LETTER)", "T(SINGLE-HANDED-LETTER)", "TABLE(FURNITURE)", "TAX", "TEA", "TEACHER", "TELEVISION", "THAT", "THERE", "THIEF", "THIRST", "THURSDAY", "TILL(LIMIT)", "TIME", "TIMETABLE", "TO", "TODAY", "TOFFEE", "TOMATO", "TOMB", "TOMORROW", "TOOLS", "TORTOISE", "TRACTOR", "TRAIN(VEHICLE)", "TRANSFORM", "TREE", "TROUBLE", "TRUE", "TRY", "TURKEY(COUNTRY)", "U(DOUBLE-HANDED-LETTER)", "U(SINGLE-HANDED-LETTER)", "UNCLE(FATHER'S-SISTER'S-HUSBAND-\u067E\u06BE\u0648\u067E\u06BE\u0627)", "UNCLE(FATHER'S-YOUNGER-BROTHER-\u0686\u0686\u0627)", "UNCLE(MOTHER'S-BROTHER-\u0645\u0627\u0645\u0648\u06BA)", "UNCLE(MOTHER'S-SISTER'S-HUSBAND-\u062E\u0627\u0644\u0648)", "UNHAPPY", "UNIFORM(COSTUME)", "UNIVERSITY", "UNNECESSARY", "UNOCCUPIED", "UNWELL", "UPSET", "URDU", "US(WE)", "USE", "V(DOUBLE-HANDED-LETTER)", "V(SINGLE-HANDED-LETTER)", "VAN", "VARIOUS", "VEGETABLES", "VERSE(QURAN)", "VERY", "VILLAGE", "VOLCANO", "W(DOUBLE-HANDED-LETTER)", "W(SINGLE-HANDED-LETTER)", "WAIT", "WAKE", "WALK", "WAS(FEMININE-\u062A\u06BE\u06CC)", "WAS(MASCULINE-\u062A\u06BE\u0627)", "WASHROOM", "WATERMELON", "WE", "WEAK", "WEALTH", "WEATHER", "WEDDING", "WEEK", "WELCOME(RECEPTION)", "WENT(FEMININE-\u06AF\u064A\u0654\u06CC)", "WENT(MASCULINE-\u06AF\u06CC\u0627)", "WENT(\u06AF\u064A\u0654\u06D2)", "WERE(\u062A\u06BE\u06D2)", "WHAT", "WHEN", "WHITE", "WHO", "WHOM", "WIFE", "WILL(FEMININE-\u06AF\u06CC)", "WILL(MASCULINE-\u06AF\u0627)", "WILL(\u06AF\u06D2)", "WISE", "WITH", "WOMAN", "WORD", "WORK", "WORKSHY", "WORLD", "WORRY", "WRONG", "X(DOUBLE-HANDED-LETTER)", "X(SINGLE-HANDED-LETTER)", "Y(DOUBLE-HANDED-LETTER)", "Y(SINGLE-HANDED-LETTER)", "YEAR", "YELLOW", "YOGURT", "YOU(FORMAL-\u0622\u067E)", "YOU(\u062A\u0645)", "YOU(\u062A\u0645\u06C1\u06CC\u06BA)", "YOUR(\u062A\u0645\u06C1\u0627\u0631\u0627)", "YOUR(\u062A\u0645\u06C1\u0627\u0631\u06CC)", "YOUR(\u062A\u0645\u06C1\u0627\u0631\u06D2)", "Z(DOUBLE-HANDED-LETTER)", "Z(SINGLE-HANDED-LETTER)", "ZAKAT", "ZOO", "ZUHR", "\u0622", "\u062A", "\u062C", "\u0686", "\u062E", "\u0630", "\u0691", "\u0698", "\u0634", "\u0635", "\u0636", "\u0637", "\u0638", "\u0639", "\u063A", "\u06BA", "\u06BE", "\u06C1"];
+
 // lib/model-adapters.ts
 var LANGUAGE_IDS = [
   "asl",
@@ -14267,21 +14731,19 @@ var MODEL_ADAPTERS = {
     id: "lse",
     shortName: "LSE",
     language: "Spanish Sign Language",
-    // The installer workflow changes this to `experimental` only in the
-    // commit that contains its trained ONNX asset and labels.
-    status: "preparing",
-    modelFile: null,
-    automaticVocabularyCount: 0,
+    status: "experimental",
+    modelFile: "SWL-LSE temporal landmark model + on-device personal recognizer",
+    automaticVocabularyCount: 300,
     vocabulary: PERSONAL_STARTER_CONCEPTS,
     inputFormat: "64 body-and-hand landmark frames (19 pose points + two 21-point hands, x/y/z)",
     sequenceLength: 64,
     confidenceThreshold: 0.76,
-    decoder: "Official SWL-LSE MediaPipe landmark pipeline; browser model is being prepared from its real-signer training split",
-    postProcessing: "Will use confidence and margin gating plus temporal consensus when the model is installed",
-    version: "swl-lse300-browser-model-pending",
+    decoder: "Locally trained SWL-LSE temporal landmark classifier; personal templates take priority",
+    postProcessing: "Confidence and margin gating plus temporal consensus",
+    version: "swl-lse300-temporal-landmark-v1",
     dataset: "SWL-LSE (SignaMed), 8,000 real signer sequences across 300 Spanish Sign Language health-domain signs; open Zenodo release.",
     speechLocale: "es-ES",
-    summary: "A real 300-sign LSE browser model is being built from the open SWL-LSE landmark dataset. It is not marked installed until the trained model passes its build."
+    summary: "A local 300-sign Spanish health-domain research model. Held-out dataset results are recorded with the model; live-camera accuracy remains unmeasured."
   },
   auslan: {
     id: "auslan",
@@ -14403,8 +14865,42 @@ var MODEL_ADAPTERS = {
   sgsl: personalLanguage({ id: "sgsl", shortName: "SgSL", language: "Singapore Sign Language", speechLocale: "en-SG" }),
   tsl: personalLanguage({ id: "tsl", shortName: "TSL", language: "Thai Sign Language", speechLocale: "th-TH" }),
   fsl: personalLanguage({ id: "fsl", shortName: "FSL", language: "Filipino Sign Language", speechLocale: "en-PH" }),
-  psl: personalLanguage({ id: "psl", shortName: "PSL", language: "Pakistan Sign Language", speechLocale: "ur-PK" }),
-  bdsl: personalLanguage({ id: "bdsl", shortName: "BdSL", language: "Bangla Sign Language", speechLocale: "bn-BD" }),
+  psl: {
+    id: "psl",
+    shortName: "PSL",
+    language: "Pakistan Sign Language",
+    speechLocale: "ur-PK",
+    status: "experimental",
+    modelFile: "775 official HFAD dictionary reference signs + on-device DTW matching",
+    automaticVocabularyCount: 775,
+    vocabulary: labels_default4,
+    inputFormat: "24 normalised hand and upper-body landmark samples, matched by dynamic time warping",
+    sequenceLength: 24,
+    confidenceThreshold: 0.62,
+    decoder: "One-shot nearest-neighbour match against the official HFAD dictionary reference performance for each sign; personal templates take priority",
+    postProcessing: "Confidence gate, competing-sign margin, temporal consensus and duplicate suppression",
+    version: "psl776-hfad-dtw-v1",
+    dataset: "Hamza Foundation Academy for the Deaf (HFAD), Lahore, Pakistan, via the sign-language-translator project's dictionary release (CC BY 4.0). One official performance per sign; no accuracy evaluation exists yet.",
+    summary: "775 official Pakistan Sign Language dictionary signs matched by one-shot DTW comparison, not a trained classifier. No live-camera or held-out accuracy evaluation exists yet."
+  },
+  bdsl: {
+    id: "bdsl",
+    shortName: "BdSL",
+    language: "Bangla Sign Language",
+    speechLocale: "en-GB",
+    status: "experimental",
+    modelFile: "BdSLW401 VideoMAE, verified weight-only int8 storage",
+    automaticVocabularyCount: 401,
+    vocabulary: labels_default3,
+    inputFormat: "16 unmirrored RGB frames, full-frame bilinear antialias resize to 224\xD7224",
+    sequenceLength: 16,
+    confidenceThreshold: 0.85,
+    decoder: "401 original class IDs with 398 distinct source English glosses",
+    postProcessing: "Manual clip capture, static-scene and score rejection; no automatic speech or transcript insertion",
+    version: "bdsl401-videomae-weight-only-v1",
+    dataset: "BdSLW401. Model weights: CC-BY-NC-4.0. Original dataset terms: CC-BY-NC-ND-4.0. See attribution.",
+    summary: "401 trained sign classes / 398 English glosses. Experimental single-sign camera mode; 97 MB initial model load and slow inference."
+  },
   vsl: personalLanguage({ id: "vsl", shortName: "VSL", language: "Vietnamese Sign Language", speechLocale: "vi-VN" })
 };
 var LANGUAGE_LIST = LANGUAGE_IDS.map((id2) => MODEL_ADAPTERS[id2]);
@@ -14419,7 +14915,7 @@ var candidateIsModel = false;
 var lastConfirmation = { label: "", time: 0 };
 var personalTemplates = [];
 var activeLanguage = "asl";
-var classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
+var classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300, psl: recognizePsl776 };
 var pending = /* @__PURE__ */ new Map();
 var MAX_PREDICTION_AGE_MS = 2500;
 var latestPrediction = null;

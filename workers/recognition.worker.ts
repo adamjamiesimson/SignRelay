@@ -10,6 +10,7 @@ import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
 import { recognizeIsl263 } from "@/lib/isl263-runtime";
 import { recognizeBsl1064 } from "@/lib/bsl1064-runtime";
 import { recognizeLse300 } from "@/lib/lse300-runtime";
+import { recognizePsl776 } from "@/lib/psl776-runtime";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 
 const CONFIDENCE_THRESHOLD = 0.62;
@@ -21,7 +22,7 @@ let candidateIsModel = false;
 let lastConfirmation = { label: "", time: 0 };
 let personalTemplates: CalibrationTemplate[] = [];
 let activeLanguage: LanguageId = "asl";
-const classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
+const classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300, psl: recognizePsl776 };
 const pending = new Map<LanguageId, number>();
 const MAX_PREDICTION_AGE_MS = 2500;
 let latestPrediction: Awaited<ReturnType<typeof recognizeAsl1000>> = null;

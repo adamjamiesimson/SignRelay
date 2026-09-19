@@ -2,13 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-types";
 
 const mocks = vi.hoisted(() => ({
-  asl: vi.fn(), bsl: vi.fn(), isl: vi.fn(), lse: vi.fn(),
+  asl: vi.fn(), bsl: vi.fn(), isl: vi.fn(), lse: vi.fn(), psl: vi.fn(),
   motion: vi.fn(), personal: vi.fn(),
 }));
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.asl }));
 vi.mock("../lib/bsl1064-runtime", () => ({ recognizeBsl1064: mocks.bsl }));
 vi.mock("../lib/isl263-runtime", () => ({ recognizeIsl263: mocks.isl }));
 vi.mock("../lib/lse300-runtime", () => ({ recognizeLse300: mocks.lse }));
+vi.mock("../lib/psl776-runtime", () => ({ recognizePsl776: mocks.psl }));
 vi.mock("../lib/asl100-runtime", () => ({ hasAsl100CompletedSignMotion: mocks.motion }));
 vi.mock("../lib/sign-motion", () => ({ analyzeSignMotion: (sequence: VisionFrame[]) => ({ ready: mocks.motion(), sequence, reason: "idle" }) }));
 vi.mock("../lib/personalized-recognition", () => ({
@@ -34,7 +35,7 @@ beforeEach(async () => {
   vi.resetModules();
   vi.resetAllMocks();
   timestamp = 0;
-  for (const id of ["asl", "bsl", "isl", "lse"] as const) mocks[id].mockResolvedValue(null);
+  for (const id of ["asl", "bsl", "isl", "lse", "psl"] as const) mocks[id].mockResolvedValue(null);
   mocks.motion.mockReturnValue(true);
   mocks.personal.mockReturnValue(null);
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
@@ -43,7 +44,7 @@ beforeEach(async () => {
 });
 
 describe("live worker regression coverage (synthetic control inputs, not sign accuracy)", () => {
-  it.each(["asl", "bsl", "isl", "lse"] as const)("keeps %s inference running after the rolling buffer fills", async language => {
+  it.each(["asl", "bsl", "isl", "lse", "psl"] as const)("keeps %s inference running after the rolling buffer fills", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     await frames(90);
     const before = mocks[language].mock.calls.length;
@@ -51,14 +52,14 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(mocks[language].mock.calls.length).toBeGreaterThan(before);
   });
 
-  it.each(["asl", "bsl", "isl", "lse"] as const)("requires two independent %s predictions, not two reads of a cached result", async language => {
+  it.each(["asl", "bsl", "isl", "lse", "psl"] as const)("requires two independent %s predictions, not two reads of a cached result", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks[language].mockResolvedValueOnce(prediction).mockImplementation(() => new Promise(() => {}));
     await frames(40);
     expect(confirmations()).toHaveLength(0);
   });
 
-  it.each(["bsl", "isl", "lse"] as const)("rejects a pending %s result after motion stops", async language => {
+  it.each(["bsl", "isl", "lse", "psl"] as const)("rejects a pending %s result after motion stops", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     let finish!: (value: typeof prediction) => void;
     mocks[language].mockImplementation(() => new Promise(resolve => { finish = resolve; }));
@@ -75,7 +76,7 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
   it.each(["csl", "auslan", "uaesl", "vsl"] as const)("does not call another language's classifier for %s without installed assets", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     await frames(100);
-    for (const id of ["asl", "bsl", "isl", "lse"] as const) expect(mocks[id]).not.toHaveBeenCalled();
+    for (const id of ["asl", "bsl", "isl", "lse", "psl"] as const) expect(mocks[id]).not.toHaveBeenCalled();
     expect(confirmations()).toHaveLength(0);
   });
 
@@ -90,7 +91,7 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(confirmations()).toHaveLength(0);
   });
 
-  it.each(["asl", "bsl", "isl", "lse"] as const)("confirms two fresh matching %s predictions", async language => {
+  it.each(["asl", "bsl", "isl", "lse", "psl"] as const)("confirms two fresh matching %s predictions", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks[language].mockResolvedValue(prediction);
     await frames(language === "asl" ? 14 : 34);
@@ -103,7 +104,7 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(confirmations()).toHaveLength(1);
   });
 
-  it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "uaesl", "vsl"] as const)("preserves personal recognition for %s", async language => {
+  it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "psl", "uaesl", "vsl"] as const)("preserves personal recognition for %s", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks.personal.mockReturnValue(prediction);
     // Personal templates and static starter signs have their own evidence gate.

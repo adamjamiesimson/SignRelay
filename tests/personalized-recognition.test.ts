@@ -21,9 +21,9 @@ describe("ASL vocabulary", () => {
   it("exposes 40 independent sign-language recognition paths", () => {
     expect(LANGUAGE_LIST).toHaveLength(40);
     expect(LANGUAGE_LIST.slice(0, 6).map((language) => language.id)).toEqual(["asl", "bsl", "isl", "lse", "auslan", "csl"]);
-    expect(LANGUAGE_LIST.filter((language) => language.status === "experimental")).toHaveLength(6);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "experimental")).toHaveLength(7);
     expect(LANGUAGE_LIST.filter((language) => language.status === "preparing")).toHaveLength(1);
-    expect(LANGUAGE_LIST.filter((language) => language.status === "personal")).toHaveLength(33);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "personal")).toHaveLength(32);
     expect(MODEL_ADAPTERS.bsl.automaticVocabularyCount).toBe(1064);
     expect(MODEL_ADAPTERS.isl.automaticVocabularyCount).toBe(263);
     expect(MODEL_ADAPTERS.rsl.automaticVocabularyCount).toBe(1000);
@@ -33,12 +33,17 @@ describe("ASL vocabulary", () => {
     expect(MODEL_ADAPTERS.lse.status).toBe("experimental");
     expect(MODEL_ADAPTERS.lse.automaticVocabularyCount).toBe(300);
     expect(MODEL_ADAPTERS.auslan.status).toBe("preparing");
+    // Real, evaluated-source landmark data, but single-reference DTW
+    // matching rather than a trained classifier - see ATTRIBUTION.md.
+    expect(MODEL_ADAPTERS.psl.status).toBe("experimental");
+    expect(MODEL_ADAPTERS.psl.automaticVocabularyCount).toBe(775);
+    expect(new Set(MODEL_ADAPTERS.psl.vocabulary).size).toBe(775);
   });
 
   it("includes a 2,000-plus concept library for every teachable language", () => {
     expect(PERSONAL_STARTER_VOCABULARY.length).toBeGreaterThanOrEqual(2000);
     expect(new Set(PERSONAL_STARTER_VOCABULARY.map((word) => word.gloss)).size).toBe(PERSONAL_STARTER_VOCABULARY.length);
-    for (const language of LANGUAGE_LIST.filter((item) => item.id !== "asl" && item.id !== "rsl" && item.id !== "bdsl")) {
+    for (const language of LANGUAGE_LIST.filter((item) => !["asl", "rsl", "bdsl", "psl"].includes(item.id))) {
       expect(language.vocabulary.length).toBe(PERSONAL_STARTER_VOCABULARY.length);
     }
   });
