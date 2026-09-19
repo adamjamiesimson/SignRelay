@@ -103,3 +103,55 @@ No new language should be added to `lib/model-adapters.ts` as
 "experimental" until real pose/video data is in hand, trained, exported to
 ONNX, and evaluated — the same standard already applied to the six
 installed languages.
+
+## Update: PSL installed as the 7th language
+
+The `sign-language-translator/sign-language-datasets` GitHub Releases (the
+same host used by GKSL, above) turned out to have a genuinely usable
+isolated-sign dictionary after all: **Pakistan Sign Language, 775 signs,
+CC BY 4.0, MediaPipe-native landmarks, hosted as a downloadable GitHub
+Release asset** rather than gated behind OSF/Zenodo/HuggingFace. Verified
+by direct download and cross-checked against the source project's own
+`connections.py` landmark-index layout (not assumed). Full detail in
+`docs/pretrained-expansion-2026-09-19.md`. This is the first confirmation
+that the "host it directly on GitHub" pattern (as opposed to OSF/Zenodo/
+university sites, which this sandbox cannot reach) is a real, repeatable
+way to find usable candidates, not just true for one lucky dataset.
+
+## Second pass: searching for an 8th/9th/10th language via the same pattern
+
+Re-ran the search specifically for GitHub/GitLab-hosted (not OSF/Zenodo/
+university-site-hosted) isolated-sign datasets with 200+ classes:
+
+- **`sign-language-translator` project itself**: checked whether it has
+  released dictionaries for any other country beyond Pakistan (the naming
+  convention explicitly supports it: `country-organization-groupNumber`).
+  Its `asset_urls/archive-urls.json` "re-recordings" list is empty and its
+  four release tags (`v0.0.1`-`v0.0.4`) only ever reference `pk-hfad-1`.
+  No second country is available there yet.
+- **A curated 73-dataset, 26-language catalog**
+  (`github.com/rudra496/SignLanguage-Dataset-Hub`, CC BY 4.0 catalog itself)
+  was fetched and filtered programmatically for openly-licensed entries not
+  already installed. Every genuinely open, sufficiently large candidate it
+  lists resolves to a host this sandbox cannot reach (OSF, Zenodo, or a
+  university domain); every one hosted on GitHub was either already
+  installed (WLASL/ASL, an ISL landmark set) or under 200 classes.
+- **Turkish (AUTSL, 226 signs)**: the catalog lists its paper as CC BY 4.0,
+  but the actual video data still requires an institutional-use application
+  to `cvml.ankara.edu.tr` (unchanged from the first pass) - a paper's
+  licence does not carry over to the dataset's access terms.
+- **Brazilian (Libras)**: three separate isolated-sign corpora exist
+  (UFPR/lesoliveira, MINDS-Libras: 20 signs, LIBRAS-UFOP: 56 signs); the
+  larger UFPR one's host (`inf.ufpr.br`) and a fourth candidate
+  (`libras.cin.ufpe.br`) are both blocked by this sandbox's network policy,
+  and the two reachable ones are far under 200 classes.
+- **Filipino, Vietnamese**: only small (24-105 class), often unlicensed
+  hobbyist/student projects found; no dataset near 200 classes with a clear
+  open licence.
+
+**Conclusion of this pass**: no 8th language cleared every gate this time.
+NGT200 (documented above) remains the strongest lead, blocked only by this
+sandbox's inability to reach `osf.io`. Continuing to search without a way
+to reach OSF/Zenodo/most university hosts has hit real diminishing returns;
+the productive next step is resolving that network access, not more
+searching from inside this sandbox.
