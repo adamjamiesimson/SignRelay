@@ -534,7 +534,7 @@ export function TranslatorExperience() {
     captureFramesRef.current = [];
     captureStateRef.current = "recording";
     setCalibrationState("recording");
-    setCalibrationMessage(`Signing ${calibrationWord.text} — complete the full movement.`);
+    setCalibrationMessage(`Signing ${calibrationWord.text}. Complete the full movement.`);
     await wait(3000);
     if (!engineRef.current || captureGeneration !== captureGenerationRef.current) return;
 
@@ -578,7 +578,7 @@ export function TranslatorExperience() {
     const customWord = createCustomVocabularyEntry(customWordInput);
     if (!customWord) {
       setCalibrationState("error");
-      setCalibrationMessage("Type a word or short phrase first—letters, numbers, spaces, apostrophes and hyphens are supported.");
+      setCalibrationMessage("Type a word or short phrase first. Letters, numbers, spaces, apostrophes and hyphens are supported.");
       return;
     }
 
@@ -996,9 +996,9 @@ export function TranslatorExperience() {
             </div>
           </div>
           <div className="cinematic-copy">
-            <p className="cinematic-label">A little closer. A little clearer.</p>
+            <p className="cinematic-label">Sign language recognition in your browser</p>
             <h1 id="hero-title">Sign freely.<br />Connect naturally.</h1>
-            <p className="cinematic-description">Explore sign recognition in your browser.<br />Your camera stays yours.</p>
+            <p className="cinematic-description">SignRelay recognizes supported signs through your camera and turns confident matches into text.<br />Camera processing stays in your browser.</p>
           </div>
           <div className="cinematic-actions">
             <a className="button cinematic-cta" href="#choose-language">Start translating <ArrowRight size={17} aria-hidden="true" /></a>
@@ -1010,7 +1010,7 @@ export function TranslatorExperience() {
         <section className="language-section" id="choose-language" tabIndex={-1} aria-labelledby="language-title">
           <div className="section-heading" data-reveal>
             <h2 id="language-title">Your language.<br />Your conversation.</h2>
-            <p>{LANGUAGE_LIST.length} separate sign-language workspaces. {LANGUAGE_LIST.filter(language => language.status === "experimental").length} include pretrained research models; RSL and Bangla have slow single-sign camera modes. The other workspaces support private signs taught by their signer.</p>
+            <p>{LANGUAGE_LIST.length} separate sign-language workspaces. {LANGUAGE_LIST.filter(language => language.status === "experimental").length} currently include pretrained research models. Other workspaces let you teach private, signer-specific signs on your device.</p>
           </div>
           <div className="language-browser" data-reveal>
             <label className="language-search">
