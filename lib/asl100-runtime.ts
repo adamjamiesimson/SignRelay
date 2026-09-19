@@ -1,4 +1,5 @@
-import type { Point, VisionFrame } from "./vision-types";
+import type { HandObservation, Point, VisionFrame } from "./vision-types";
+import { handScale } from "./asl-starter-recognition";
 
 type QuantisedLayer = {
   input: number;
@@ -72,16 +73,40 @@ export function hasAsl100HandEvidence(sequence: VisionFrame[]) {
  * The generic model is only evaluated after deliberate movement settles. This
  * rejects an idle pose and continuous waving/shaking before the closed-set
  * classifier can force them into a word such as TABLE.
+ *
+ * Wrist position settling alone is not enough: a hand can pause mid-transition
+ * between two shapes (for example curling toward a fist while moving on to the
+ * next sign) while the wrist itself stays still. This is the same failure mode
+ * that produced a false ASL "YES" from fist preparation (see
+ * docs/asl-fist-discrimination.md), but this generic gate covers every
+ * non-ASL shared-model language (BSL, ISL, LSE), which had no equivalent
+ * protection. The tail window's finger shape, not just its wrist position,
+ * must also have settled before a prediction is trusted.
  */
 export function hasAsl100CompletedSignMotion(sequence: VisionFrame[]) {
   const recent = sequence.slice(-24);
   if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return false;
-  const wrists = dominantTrackedWrists(recent);
-  if (wrists.length < 15) return false;
+  const hands = dominantTrackedHands(recent);
+  if (hands.length < 15) return false;
+  const wrists = hands.map((hand) => hand.landmarks[0]);
   const tail = wrists.slice(-7);
   const tailRange = Math.hypot(range(tail.map((point) => point.x)), range(tail.map((point) => point.y)));
   const pathLength = wrists.slice(1).reduce((total, point, index) => total + distance(point, wrists[index]), 0);
-  return pathLength >= 0.075 && tailRange <= 0.06;
+  if (pathLength < 0.075 || tailRange > 0.06) return false;
+  const tailHands = hands.slice(-7);
+  const anchor = tailHands[0];
+  return tailHands.every((hand) => shapeDistance(anchor, hand) <= 0.14);
+}
+
+function shapeDistance(a: HandObservation, b: HandObservation) {
+  const scales = [handScale(a), handScale(b)];
+  return Math.max(...[4, 8, 12, 16, 20].map((index) => {
+    const ax = (a.landmarks[index].x - a.landmarks[0].x) / scales[0];
+    const ay = (a.landmarks[index].y - a.landmarks[0].y) / scales[0];
+    const bx = (b.landmarks[index].x - b.landmarks[0].x) / scales[1];
+    const by = (b.landmarks[index].y - b.landmarks[0].y) / scales[1];
+    return Math.hypot(ax - bx, ay - by);
+  }));
 }
 
 function prepare(sequence: VisionFrame[], model: Asl100Model) {
@@ -109,13 +134,13 @@ function handPoints(frame: VisionFrame, side: "Left" | "Right") {
   return order.map((index) => hand?.[index] ? { ...hand[index] } : zero());
 }
 
-function dominantTrackedWrists(sequence: VisionFrame[]) {
+function dominantTrackedHands(sequence: VisionFrame[]) {
   const left = sequence
-    .map((frame) => frame.hands.find((hand) => hand.handedness === "Left")?.landmarks[0])
-    .filter((point): point is Point => Boolean(point));
+    .map((frame) => frame.hands.find((hand) => hand.handedness === "Left"))
+    .filter((hand): hand is HandObservation => Boolean(hand && hand.landmarks.length >= 21));
   const right = sequence
-    .map((frame) => frame.hands.find((hand) => hand.handedness === "Right")?.landmarks[0])
-    .filter((point): point is Point => Boolean(point));
+    .map((frame) => frame.hands.find((hand) => hand.handedness === "Right"))
+    .filter((hand): hand is HandObservation => Boolean(hand && hand.landmarks.length >= 21));
   return right.length >= left.length ? right : left;
 }
 

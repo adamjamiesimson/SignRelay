@@ -72,6 +72,30 @@ describe("ASL vocabulary", () => {
     expect(hasAsl100CompletedSignMotion(naturalCompleted)).toBe(true);
   });
 
+  it("rejects a hand that keeps changing shape after the wrist stops moving", () => {
+    // The wrist follows the same settle pattern as `completed` above, but the
+    // fingers keep alternating between two shapes throughout the tail window
+    // (e.g. curling toward a fist while transitioning to the next sign). This
+    // is the BSL/ISL/LSE-shared gate, so it must not accept a still-changing
+    // handshape as a completed sign just because the wrist has stopped.
+    const shapeShifting = Array.from({ length: 24 }, (_, index) => {
+      const wristOffset = index < 15 ? index * 0.012 : 0.168;
+      const fingerToggle = index % 2 ? 0.05 : 0;
+      const hand = Array.from({ length: 21 }, (_, point) => ({
+        x: 0.45 + wristOffset + point * 0.001 + (point === 0 ? 0 : fingerToggle),
+        y: 0.55 - point * 0.002,
+        z: 0,
+      }));
+      return {
+        timestamp: index * 33,
+        hands: [{ landmarks: hand, handedness: "Right" as const, gesture: "None", gestureScore: 0 }],
+        face: [],
+        pose: [],
+      };
+    });
+    expect(hasAsl100CompletedSignMotion(shapeShifting)).toBe(false);
+  });
+
   it("maps live landmarks to the 55-node, 50-frame Pose-TGCN contract", () => {
     const prepared = prepareTgcnInput(Array.from({ length: 30 }, (_, index) => makeFrame(index / 100)));
     expect(prepared).toHaveLength(55 * 50 * 2);
