@@ -36,5 +36,9 @@ describe("installed ONNX assets (execution checks, not sign accuracy)", () => {
     } finally {
       await session.release();
     }
-  });
+  // The 44 MB BSL checkpoint's WASM session creation can exceed the default
+  // 5s timeout under CPU contention from the rest of the suite (observed
+  // flake, not a hang: it passes reliably in isolation). This is real ONNX
+  // execution time, not a slow assertion, so the fix is more time.
+  }, 20000);
 });
