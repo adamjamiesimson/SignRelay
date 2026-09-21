@@ -467,13 +467,14 @@ function hasAsl100HandEvidence(sequence) {
 var TAIL_WINDOW_MS = 230;
 var TAIL_MIN_SAMPLES = 4;
 function tailWindow(samples, windowMs, minSamples) {
-  const end = samples.at(-1);
+  const continuous = recentContinuousFrames(samples, 3600);
+  const end = continuous.at(-1);
   if (!end) return [];
-  let start = samples.length - 1;
-  while (start > 0 && (end.timestamp - samples[start - 1].timestamp <= windowMs || samples.length - start < minSamples)) {
+  let start = continuous.length - 1;
+  while (start > 0 && (end.timestamp - continuous[start - 1].timestamp <= windowMs || continuous.length - start < minSamples)) {
     start--;
   }
-  return samples.slice(start);
+  return continuous.slice(start);
 }
 function analyzeGenericSignMotion(sequence) {
   const recent = sequence.slice(-24);
@@ -484,6 +485,7 @@ function analyzeGenericSignMotion(sequence) {
   const pathLength = wrists.slice(1).reduce((total, point3, index) => total + distance3(point3, wrists[index]), 0);
   if (pathLength < 0.075) return { ready: false, reason: "idle" };
   const tail = tailWindow(samples, TAIL_WINDOW_MS, TAIL_MIN_SAMPLES);
+  if (tail.length < TAIL_MIN_SAMPLES) return { ready: false, reason: "moving" };
   const tailWrists = tail.map((sample) => sample.hand.landmarks[0]);
   const tailRange = Math.hypot(range(tailWrists.map((point3) => point3.x)), range(tailWrists.map((point3) => point3.y)));
   if (tailRange > 0.06) return { ready: false, reason: "moving" };
@@ -10972,30 +10974,36 @@ async function recognizeIsl263(sequence) {
   const prepared = prepareIncludeInput(sequence);
   if (prepared.visibleFrames < MIN_VISIBLE_FRAMES) return null;
   const { session, labels } = await loadModel2();
-  const output = await session.run({
-    landmarks: new qe("float32", prepared.values, [1, FRAME_COUNT, FEATURES_PER_FRAME])
-  });
-  const logits = output.logits?.data;
-  if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
-  const probabilities = softmax2(logits);
-  const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
-  const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
-  const confidence = probabilities[best];
-  const margin = confidence - probabilities[runnerUp];
-  const label = labels[best];
-  if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
-  return { label, text: readable(label), confidence, margin };
+  const input = new qe("float32", prepared.values, [1, FRAME_COUNT, FEATURES_PER_FRAME]);
+  let output = {};
+  try {
+    output = await session.run({ landmarks: input });
+    const logits = output.logits?.data;
+    if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
+    const probabilities = softmax2(logits);
+    const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
+    const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
+    const confidence = probabilities[best];
+    const margin = confidence - probabilities[runnerUp];
+    const label = labels[best];
+    if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
+    return { label, text: readable(label), confidence, margin };
+  } finally {
+    input.dispose();
+    Object.values(output).forEach((tensor) => tensor.dispose());
+  }
 }
 function prepareIncludeInput(sequence) {
   const recent = sequence.slice(-FRAME_COUNT);
   const frames2 = recent.map(frameFeatures);
+  const visibleFrames = frames2.filter((frame) => frame.some((point3) => point3.x !== 0 || point3.y !== 0)).length;
   const values = new Float32Array(FRAME_COUNT * FEATURES_PER_FRAME);
   for (let landmark = 0; landmark < FEATURES_PER_FRAME / 2; landmark += 1) {
     interpolateCoordinate(frames2, landmark, "x");
     interpolateCoordinate(frames2, landmark, "y");
   }
   frames2.forEach((frame, index) => values.set(frame.flatMap((point3) => [point3.x, point3.y]), index * FEATURES_PER_FRAME));
-  return { values, visibleFrames: frames2.filter((frame) => frame.some((point3) => point3.x !== 0 || point3.y !== 0)).length };
+  return { values, visibleFrames };
 }
 function frameFeatures(frame) {
   const pose = Array.from({ length: 25 }, (_, index) => toPixels(frame.pose[index]));
@@ -11042,17 +11050,24 @@ var loadModel3 = createLandmarkModelLoader("/models/bsl1064-pose2sign", 1064);
 async function recognizeBsl1064(sequence) {
   if (sequence.length < FRAMES) return null;
   const { session, labels } = await loadModel3();
-  const output = await session.run({ pose: new qe("float32", prepareBslInput(sequence), [1, 3, FRAMES, LANDMARKS]) });
-  const logits = output.logits?.data;
-  if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
-  const probabilities = softmax3(logits);
-  const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
-  const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
-  const confidence = probabilities[best];
-  const margin = confidence - probabilities[runnerUp];
-  const label = labels[best];
-  if (!label || confidence < MIN_CONFIDENCE2 || margin < MIN_MARGIN2) return null;
-  return { label, text: readable2(label), confidence, margin };
+  const input = new qe("float32", prepareBslInput(sequence), [1, 3, FRAMES, LANDMARKS]);
+  let output = {};
+  try {
+    output = await session.run({ pose: input });
+    const logits = output.logits?.data;
+    if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
+    const probabilities = softmax3(logits);
+    const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
+    const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
+    const confidence = probabilities[best];
+    const margin = confidence - probabilities[runnerUp];
+    const label = labels[best];
+    if (!label || confidence < MIN_CONFIDENCE2 || margin < MIN_MARGIN2) return null;
+    return { label, text: readable2(label), confidence, margin };
+  } finally {
+    input.dispose();
+    Object.values(output).forEach((tensor) => tensor.dispose());
+  }
 }
 function prepareBslInput(sequence) {
   const samples = sequence.slice(-FRAMES);
@@ -11182,6 +11197,9 @@ function loadTemplates() {
     if (!("DecompressionStream" in globalThis)) throw new Error("This browser cannot unpack the PSL template bundle");
     const stream = new Blob([await response.arrayBuffer()]).stream().pipeThrough(new DecompressionStream("gzip"));
     return new Response(stream).json();
+  }).catch((error) => {
+    templatesPromise = null;
+    throw error;
   }));
   return templatesPromise;
 }

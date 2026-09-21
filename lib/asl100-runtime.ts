@@ -1,5 +1,6 @@
 import type { HandObservation, Point, VisionFrame } from "./vision-types";
 import { handScale } from "./asl-starter-recognition";
+import { recentContinuousFrames } from "./frame-timing";
 
 type QuantisedLayer = {
   input: number;
@@ -97,17 +98,26 @@ export type GenericSignMotion = { ready: boolean; reason: "hands" | "moving" | "
 // gate already uses (lib/sign-motion.ts's "at least 100 ms" comparison),
 // with a sample floor since very slow capture can otherwise pack only one
 // or two points into the time window.
+//
+// The floor must not reach backward past a real tracking gap (the hand
+// briefly leaving frame, then returning) to make up the count: that would
+// compare fresh hand data against stale pre-gap data, exactly the
+// duration-dependent unreliability this gate exists to avoid. recentContinuousFrames
+// already solves this for ASL's own gate by stopping the window at an
+// adaptive per-cadence gap limit, so the floor is applied only inside that
+// already gap-safe run, never across it.
 const TAIL_WINDOW_MS = 230;
 const TAIL_MIN_SAMPLES = 4;
 
 function tailWindow<T extends { timestamp: number }>(samples: T[], windowMs: number, minSamples: number): T[] {
-  const end = samples.at(-1);
+  const continuous = recentContinuousFrames(samples, 3600);
+  const end = continuous.at(-1);
   if (!end) return [];
-  let start = samples.length - 1;
-  while (start > 0 && (end.timestamp - samples[start - 1].timestamp <= windowMs || samples.length - start < minSamples)) {
+  let start = continuous.length - 1;
+  while (start > 0 && (end.timestamp - continuous[start - 1].timestamp <= windowMs || continuous.length - start < minSamples)) {
     start--;
   }
-  return samples.slice(start);
+  return continuous.slice(start);
 }
 
 /**
@@ -125,6 +135,10 @@ export function analyzeGenericSignMotion(sequence: VisionFrame[]): GenericSignMo
   const pathLength = wrists.slice(1).reduce((total, point, index) => total + distance(point, wrists[index]), 0);
   if (pathLength < 0.075) return { ready: false, reason: "idle" };
   const tail = tailWindow(samples, TAIL_WINDOW_MS, TAIL_MIN_SAMPLES);
+  // A real tracking gap can leave fewer than the floor's worth of genuinely
+  // continuous evidence; that's reported as still-settling, not declared
+  // ready off too little data.
+  if (tail.length < TAIL_MIN_SAMPLES) return { ready: false, reason: "moving" };
   const tailWrists = tail.map((sample) => sample.hand.landmarks[0]);
   const tailRange = Math.hypot(range(tailWrists.map((point) => point.x)), range(tailWrists.map((point) => point.y)));
   if (tailRange > 0.06) return { ready: false, reason: "moving" };

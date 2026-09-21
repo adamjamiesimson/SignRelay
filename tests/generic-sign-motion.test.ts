@@ -39,6 +39,29 @@ function buildSequence(options: { intervalMs: number; movingFrames: number; shap
   return frames;
 }
 
+/**
+ * 24 synthetic frames where every frame keeps a valid hand (unlike a
+ * dropout), but the capture timeline itself jumps by `gapMs` right before
+ * `gapIndex` - modelling a stalled/backgrounded capture pipeline that
+ * resumes later, the same real-time discontinuity a large `frame.timestamp`
+ * jump represents. Wrist position and finger shape are held constant
+ * (0.2, 0.1) across the whole sequence, including across the gap, so
+ * nothing about the values themselves distinguishes stale from fresh
+ * evidence - only the timestamps do.
+ */
+function buildGapSequence(options: { intervalMs: number; gapIndex: number; gapMs: number }): VisionFrame[] {
+  const { intervalMs, gapIndex, gapMs } = options;
+  const frames: VisionFrame[] = [];
+  let timestamp = 0;
+  let x = 0;
+  for (let index = 0; index < 24; index++) {
+    if (index > 0) timestamp += index === gapIndex ? gapMs : intervalMs;
+    if (index > 0 && index <= 10) x += 0.02;
+    frames.push(frame(timestamp, x, 0.1));
+  }
+  return frames;
+}
+
 describe("analyzeGenericSignMotion", () => {
   it("rejects a fast-camera sign whose shape only just settled (under the ~230ms floor)", () => {
     // 15ms intervals (~67fps). Shape has only been stable for the last 9
@@ -71,5 +94,25 @@ describe("analyzeGenericSignMotion", () => {
     // earlier shape, so this is correctly not yet trusted.
     const sequence = buildSequence({ intervalMs: 200, movingFrames: 10, shapeChangeIndex: 21 });
     expect(analyzeGenericSignMotion(sequence)).toEqual({ ready: false, reason: "moving" });
+  });
+
+  it("does not reach back across a real tracking gap to pad the sample floor", () => {
+    // A 1000ms stall (e.g. a stuck capture pipeline resuming) lands right
+    // before frame 21, leaving only 3 genuinely continuous samples (21-23)
+    // since the resume - one short of the floor. Position and shape are
+    // identical before and after the gap, so nothing except the timestamps
+    // themselves marks the pre-gap samples as stale: a fix that reached
+    // backward across the gap to make up the floor would wrongly call this
+    // ready off only 3 fresh samples.
+    const sequence = buildGapSequence({ intervalMs: 33, gapIndex: 21, gapMs: 1000 });
+    expect(analyzeGenericSignMotion(sequence)).toEqual({ ready: false, reason: "moving" });
+  });
+
+  it("accepts once enough genuinely continuous evidence has accumulated after the same kind of gap", () => {
+    // Same 1000ms stall, but one frame earlier, so 4 continuous samples
+    // (20-23) exist since the resume - meeting the floor on fresh evidence
+    // alone, with no need to look back across the gap at all.
+    const sequence = buildGapSequence({ intervalMs: 33, gapIndex: 20, gapMs: 1000 });
+    expect(analyzeGenericSignMotion(sequence)).toEqual({ ready: true, reason: "ready" });
   });
 });

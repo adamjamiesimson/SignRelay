@@ -15,17 +15,24 @@ const loadModel = createLandmarkModelLoader("/models/bsl1064-pose2sign", 1064);
 export async function recognizeBsl1064(sequence: VisionFrame[]): Promise<Bsl1064Prediction | null> {
   if (sequence.length < FRAMES) return null;
   const { session, labels } = await loadModel();
-  const output = await session.run({ pose: new ort.Tensor("float32", prepareBslInput(sequence), [1, 3, FRAMES, LANDMARKS]) });
-  const logits = output.logits?.data;
-  if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
-  const probabilities = softmax(logits);
-  const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
-  const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
-  const confidence = probabilities[best];
-  const margin = confidence - probabilities[runnerUp];
-  const label = labels[best];
-  if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
-  return { label, text: readable(label), confidence, margin };
+  const input = new ort.Tensor("float32", prepareBslInput(sequence), [1, 3, FRAMES, LANDMARKS]);
+  let output: Record<string, ort.Tensor> = {};
+  try {
+    output = await session.run({ pose: input });
+    const logits = output.logits?.data;
+    if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
+    const probabilities = softmax(logits);
+    const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
+    const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
+    const confidence = probabilities[best];
+    const margin = confidence - probabilities[runnerUp];
+    const label = labels[best];
+    if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
+    return { label, text: readable(label), confidence, margin };
+  } finally {
+    input.dispose();
+    Object.values(output).forEach(tensor => tensor.dispose());
+  }
 }
 
 /**

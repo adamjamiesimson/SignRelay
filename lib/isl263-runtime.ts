@@ -17,19 +17,24 @@ export async function recognizeIsl263(sequence: VisionFrame[]): Promise<Isl263Pr
   const prepared = prepareIncludeInput(sequence);
   if (prepared.visibleFrames < MIN_VISIBLE_FRAMES) return null;
   const { session, labels } = await loadModel();
-  const output = await session.run({
-    landmarks: new ort.Tensor("float32", prepared.values, [1, FRAME_COUNT, FEATURES_PER_FRAME]),
-  });
-  const logits = output.logits?.data;
-  if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
-  const probabilities = softmax(logits);
-  const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
-  const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
-  const confidence = probabilities[best];
-  const margin = confidence - probabilities[runnerUp];
-  const label = labels[best];
-  if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
-  return { label, text: readable(label), confidence, margin };
+  const input = new ort.Tensor("float32", prepared.values, [1, FRAME_COUNT, FEATURES_PER_FRAME]);
+  let output: Record<string, ort.Tensor> = {};
+  try {
+    output = await session.run({ landmarks: input });
+    const logits = output.logits?.data;
+    if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
+    const probabilities = softmax(logits);
+    const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
+    const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
+    const confidence = probabilities[best];
+    const margin = confidence - probabilities[runnerUp];
+    const label = labels[best];
+    if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
+    return { label, text: readable(label), confidence, margin };
+  } finally {
+    input.dispose();
+    Object.values(output).forEach(tensor => tensor.dispose());
+  }
 }
 
 /**
@@ -40,13 +45,17 @@ export async function recognizeIsl263(sequence: VisionFrame[]): Promise<Isl263Pr
 export function prepareIncludeInput(sequence: VisionFrame[]) {
   const recent = sequence.slice(-FRAME_COUNT);
   const frames = recent.map(frameFeatures);
+  // Counted before interpolation backfills every zero coordinate: after that
+  // pass, a single tracked landmark anywhere in the window can make nearly
+  // every frame look "visible", defeating this gate entirely.
+  const visibleFrames = frames.filter(frame => frame.some(point => point.x !== 0 || point.y !== 0)).length;
   const values = new Float32Array(FRAME_COUNT * FEATURES_PER_FRAME);
   for (let landmark = 0; landmark < FEATURES_PER_FRAME / 2; landmark += 1) {
     interpolateCoordinate(frames, landmark, "x");
     interpolateCoordinate(frames, landmark, "y");
   }
   frames.forEach((frame, index) => values.set(frame.flatMap(point => [point.x, point.y]), index * FEATURES_PER_FRAME));
-  return { values, visibleFrames: frames.filter(frame => frame.some(point => point.x !== 0 || point.y !== 0)).length };
+  return { values, visibleFrames };
 }
 
 type Coordinates = { x: number; y: number };

@@ -12,12 +12,16 @@ const REJECT_MARGIN = 0.06;
 
 let templatesPromise: Promise<Psl776Template[]> | null = null;
 
+/** Cache a successful load, but allow the worker's backoff to retry failures. */
 function loadTemplates() {
   templatesPromise ??= fetch("/models/psl776-hfad/templates.json.gz").then(async (response) => {
     if (!response.ok) throw new Error("PSL template bundle could not load");
     if (!("DecompressionStream" in globalThis)) throw new Error("This browser cannot unpack the PSL template bundle");
     const stream = new Blob([await response.arrayBuffer()]).stream().pipeThrough(new DecompressionStream("gzip"));
     return new Response(stream).json() as Promise<Psl776Template[]>;
+  }).catch(error => {
+    templatesPromise = null;
+    throw error;
   });
   return templatesPromise;
 }
