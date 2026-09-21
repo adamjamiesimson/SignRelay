@@ -67,10 +67,17 @@ describe("ASL vocabulary", () => {
   });
 
   it("requires movement followed by a settled end pose before the generic model runs", () => {
-    const idle = Array.from({ length: 24 }, () => makeFrame(0));
-    const waving = Array.from({ length: 24 }, (_, index) => makeFrame(index % 2 ? 0.12 : -0.12));
-    const completed = Array.from({ length: 24 }, (_, index) => makeFrame(index < 15 ? index * 0.012 : 0.168));
-    const naturalCompleted = Array.from({ length: 24 }, (_, index) => makeFrame(index < 15 ? index * 0.008 : 0.12 + (index % 2 ? 0.018 : -0.018)));
+    // makeFrame's timestamp is derived from its position offset, which is
+    // convenient when offset ramps monotonically with frame index elsewhere
+    // in this file, but here the offset deliberately freezes once the sign
+    // "settles" - reusing it as the timestamp too would collapse every
+    // settled frame onto one instant instead of real, elapsed capture time.
+    // frameAt attaches an independent, realistic ~30fps timestamp instead.
+    const frameAt = (index: number, offset: number): VisionFrame => ({ ...makeFrame(offset), timestamp: index * 33 });
+    const idle = Array.from({ length: 24 }, (_, index) => frameAt(index, 0));
+    const waving = Array.from({ length: 24 }, (_, index) => frameAt(index, index % 2 ? 0.12 : -0.12));
+    const completed = Array.from({ length: 24 }, (_, index) => frameAt(index, index < 15 ? index * 0.012 : 0.168));
+    const naturalCompleted = Array.from({ length: 24 }, (_, index) => frameAt(index, index < 15 ? index * 0.008 : 0.12 + (index % 2 ? 0.018 : -0.018)));
     expect(hasAsl100CompletedSignMotion(idle)).toBe(false);
     expect(hasAsl100CompletedSignMotion(waving)).toBe(false);
     expect(hasAsl100CompletedSignMotion(completed)).toBe(true);

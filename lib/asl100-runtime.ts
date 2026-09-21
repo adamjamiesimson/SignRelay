@@ -89,6 +89,27 @@ export function hasAsl100CompletedSignMotion(sequence: VisionFrame[]) {
 
 export type GenericSignMotion = { ready: boolean; reason: "hands" | "moving" | "idle" | "ready" };
 
+// The settle check must cover a stretch of real time, not a fixed sample
+// count: at a high capture rate the last 7 samples could span well under
+// 100ms (too short to prove a shape has actually stopped moving), and at a
+// low capture rate they could span well over a second (forcing implausibly
+// long stillness). Mirrors the timestamp-based lookback ASL's own motion
+// gate already uses (lib/sign-motion.ts's "at least 100 ms" comparison),
+// with a sample floor since very slow capture can otherwise pack only one
+// or two points into the time window.
+const TAIL_WINDOW_MS = 230;
+const TAIL_MIN_SAMPLES = 4;
+
+function tailWindow<T extends { timestamp: number }>(samples: T[], windowMs: number, minSamples: number): T[] {
+  const end = samples.at(-1);
+  if (!end) return [];
+  let start = samples.length - 1;
+  while (start > 0 && (end.timestamp - samples[start - 1].timestamp <= windowMs || samples.length - start < minSamples)) {
+    start--;
+  }
+  return samples.slice(start);
+}
+
 /**
  * Same gate as hasAsl100CompletedSignMotion, but reports why a prediction
  * isn't trusted yet, so the worker can tell a signer using BSL, ISL, LSE or
@@ -98,17 +119,17 @@ export type GenericSignMotion = { ready: boolean; reason: "hands" | "moving" | "
 export function analyzeGenericSignMotion(sequence: VisionFrame[]): GenericSignMotion {
   const recent = sequence.slice(-24);
   if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return { ready: false, reason: "hands" };
-  const hands = dominantTrackedHands(recent);
-  if (hands.length < 15) return { ready: false, reason: "hands" };
-  const wrists = hands.map((hand) => hand.landmarks[0]);
-  const tail = wrists.slice(-7);
-  const tailRange = Math.hypot(range(tail.map((point) => point.x)), range(tail.map((point) => point.y)));
+  const samples = dominantTrackedHands(recent);
+  if (samples.length < 15) return { ready: false, reason: "hands" };
+  const wrists = samples.map((sample) => sample.hand.landmarks[0]);
   const pathLength = wrists.slice(1).reduce((total, point, index) => total + distance(point, wrists[index]), 0);
   if (pathLength < 0.075) return { ready: false, reason: "idle" };
+  const tail = tailWindow(samples, TAIL_WINDOW_MS, TAIL_MIN_SAMPLES);
+  const tailWrists = tail.map((sample) => sample.hand.landmarks[0]);
+  const tailRange = Math.hypot(range(tailWrists.map((point) => point.x)), range(tailWrists.map((point) => point.y)));
   if (tailRange > 0.06) return { ready: false, reason: "moving" };
-  const tailHands = hands.slice(-7);
-  const anchor = tailHands[0];
-  const settled = tailHands.every((hand) => shapeDistance(anchor, hand) <= 0.14);
+  const anchor = tail[0].hand;
+  const settled = tail.every((sample) => shapeDistance(anchor, sample.hand) <= 0.14);
   return settled ? { ready: true, reason: "ready" } : { ready: false, reason: "moving" };
 }
 
@@ -148,13 +169,15 @@ function handPoints(frame: VisionFrame, side: "Left" | "Right") {
   return order.map((index) => hand?.[index] ? { ...hand[index] } : zero());
 }
 
-function dominantTrackedHands(sequence: VisionFrame[]) {
-  const left = sequence
-    .map((frame) => frame.hands.find((hand) => hand.handedness === "Left"))
-    .filter((hand): hand is HandObservation => Boolean(hand && hand.landmarks.length >= 21));
-  const right = sequence
-    .map((frame) => frame.hands.find((hand) => hand.handedness === "Right"))
-    .filter((hand): hand is HandObservation => Boolean(hand && hand.landmarks.length >= 21));
+type TrackedHandSample = { hand: HandObservation; timestamp: number };
+
+function dominantTrackedHands(sequence: VisionFrame[]): TrackedHandSample[] {
+  const pick = (side: "Left" | "Right") => sequence.flatMap((frame) => {
+    const hand = frame.hands.find((candidate) => candidate.handedness === side);
+    return hand && hand.landmarks.length >= 21 ? [{ hand, timestamp: frame.timestamp }] : [];
+  });
+  const left = pick("Left");
+  const right = pick("Right");
   return right.length >= left.length ? right : left;
 }
 

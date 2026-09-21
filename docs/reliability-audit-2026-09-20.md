@@ -63,3 +63,40 @@ samples) to a timestamp-windowed selection (e.g. "samples within the last
 ~230ms"), mirroring `recentContinuousFrames`'s approach already used by
 `analyzeSignMotion`. Needs new synthetic-timestamp test fixtures at varied
 frame rates before shipping, the same rigor as the shape-gate fix.
+
+## Update (21 September 2026): the frame-rate gap above is fixed
+
+`analyzeGenericSignMotion` (`lib/asl100-runtime.ts`) now selects its tail
+by real elapsed time (`TAIL_WINDOW_MS = 230`) instead of a fixed sample
+count, with a floor of 4 samples so very slow capture doesn't shrink the
+window to one or two points. `dominantTrackedHands` was changed to carry
+each sample's originating frame timestamp alongside it (it previously
+returned bare `HandObservation`s, discarding timing), which the new
+`tailWindow` helper needs.
+
+New coverage in `tests/generic-sign-motion.test.ts` builds synthetic
+sequences at two capture rates (~67fps and 5fps) and checks: a fast-camera
+shape that only just settled (120ms) is still correctly rejected as
+"moving" (the old fixed-7-sample tail would have wrongly accepted it,
+since 7 samples at that rate sat entirely inside the settled stretch); a
+fast-camera shape genuinely stable across the window is accepted; a
+slow-camera sign is accepted via the sample floor rather than being forced
+to wait over a second; and a slow-camera shape change too recent for the
+floor to have seen it settle is still correctly rejected.
+
+This exposed a pre-existing test-fixture bug while fixing it:
+`tests/personalized-recognition.test.ts`'s `completed`/`naturalCompleted`
+fixtures derived each frame's timestamp from the same position offset used
+to encode "settled", so every settled frame collapsed onto one identical
+timestamp instead of representing real elapsed capture time. That was
+invisible to the old count-based tail but broke the new time-based one.
+Fixed by attaching an independent, realistic ~30fps timestamp per frame
+(`frameAt`), matching the pattern the adjacent `shapeShifting` test in the
+same file already used.
+
+Verified: `npm test -- --run` (23 test files, 221 tests, all green),
+`npm run lint` clean, `npx tsc --noEmit` clean, `npm run build:worker`
+rebuilds `recognition.worker.js` cleanly (652.1 KB), and the app was run
+in a browser (Playwright against the Next dev server) - home, `/languages`,
+`/models`, and the PSL/BSL/ISL/LSE workspaces all load and switch with no
+console errors.

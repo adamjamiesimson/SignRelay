@@ -464,20 +464,31 @@ function hasAsl100HandEvidence(sequence) {
   const recent = sequence.slice(-24);
   return recent.filter((frame) => frame.hands.some((hand4) => hand4.landmarks.length >= 21)).length >= 12;
 }
+var TAIL_WINDOW_MS = 230;
+var TAIL_MIN_SAMPLES = 4;
+function tailWindow(samples, windowMs, minSamples) {
+  const end = samples.at(-1);
+  if (!end) return [];
+  let start = samples.length - 1;
+  while (start > 0 && (end.timestamp - samples[start - 1].timestamp <= windowMs || samples.length - start < minSamples)) {
+    start--;
+  }
+  return samples.slice(start);
+}
 function analyzeGenericSignMotion(sequence) {
   const recent = sequence.slice(-24);
   if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return { ready: false, reason: "hands" };
-  const hands = dominantTrackedHands(recent);
-  if (hands.length < 15) return { ready: false, reason: "hands" };
-  const wrists = hands.map((hand4) => hand4.landmarks[0]);
-  const tail = wrists.slice(-7);
-  const tailRange = Math.hypot(range(tail.map((point3) => point3.x)), range(tail.map((point3) => point3.y)));
+  const samples = dominantTrackedHands(recent);
+  if (samples.length < 15) return { ready: false, reason: "hands" };
+  const wrists = samples.map((sample) => sample.hand.landmarks[0]);
   const pathLength = wrists.slice(1).reduce((total, point3, index) => total + distance3(point3, wrists[index]), 0);
   if (pathLength < 0.075) return { ready: false, reason: "idle" };
+  const tail = tailWindow(samples, TAIL_WINDOW_MS, TAIL_MIN_SAMPLES);
+  const tailWrists = tail.map((sample) => sample.hand.landmarks[0]);
+  const tailRange = Math.hypot(range(tailWrists.map((point3) => point3.x)), range(tailWrists.map((point3) => point3.y)));
   if (tailRange > 0.06) return { ready: false, reason: "moving" };
-  const tailHands = hands.slice(-7);
-  const anchor = tailHands[0];
-  const settled = tailHands.every((hand4) => shapeDistance2(anchor, hand4) <= 0.14);
+  const anchor = tail[0].hand;
+  const settled = tail.every((sample) => shapeDistance2(anchor, sample.hand) <= 0.14);
   return settled ? { ready: true, reason: "ready" } : { ready: false, reason: "moving" };
 }
 function shapeDistance2(a, b) {
@@ -491,8 +502,12 @@ function shapeDistance2(a, b) {
   }));
 }
 function dominantTrackedHands(sequence) {
-  const left = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Left")).filter((hand4) => Boolean(hand4 && hand4.landmarks.length >= 21));
-  const right = sequence.map((frame) => frame.hands.find((hand4) => hand4.handedness === "Right")).filter((hand4) => Boolean(hand4 && hand4.landmarks.length >= 21));
+  const pick = (side) => sequence.flatMap((frame) => {
+    const hand4 = frame.hands.find((candidate) => candidate.handedness === side);
+    return hand4 && hand4.landmarks.length >= 21 ? [{ hand: hand4, timestamp: frame.timestamp }] : [];
+  });
+  const left = pick("Left");
+  const right = pick("Right");
   return right.length >= left.length ? right : left;
 }
 function distance3(a, b) {
