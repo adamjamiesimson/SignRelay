@@ -17,6 +17,8 @@ export function SiteHeader() {
       <Brand />
       <nav className="site-nav" aria-label="Primary navigation">
         <Link href="/languages">Languages</Link>
+        <Link href="/how-it-works">How it works</Link>
+        <Link className="nav-cta" href="/#choose-language">Start translating</Link>
       </nav>
     </header>
   );
@@ -25,12 +27,13 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      <span>SignRelay · Private by default · Research preview</span>
+      <span>SignRelay · Free and open source · Research preview</span>
       <nav aria-label="Footer navigation">
         <Link href="/privacy">Privacy</Link>
         <Link href="/terms">Terms</Link>
         <Link href="/about">About</Link>
         <Link href="/roadmap">Roadmap</Link>
+        <a href="https://github.com/adamjamiesimson/SignRelay" target="_blank" rel="noreferrer">GitHub</a>
         <PrivacyChoices />
       </nav>
     </footer>
