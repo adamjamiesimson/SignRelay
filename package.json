@@ -17,7 +17,10 @@
     "test:rendered": "node --test tests/rendered-html.test.mjs",
     "audit:secrets": "node scripts/audit-secrets.mjs",
     "audit:security": "npm audit --audit-level=moderate && npm run audit:secrets && npm run test:rendered",
-    "lint": "eslint . --ignore-pattern .next --ignore-pattern out --ignore-pattern .sites-runtime"
+    "lint": "eslint . --ignore-pattern .next --ignore-pattern out --ignore-pattern .sites-runtime",
+    "typecheck": "tsc --noEmit",
+    "repo:guard": "node scripts/check-large-assets.mjs",
+    "eval:live": "node scripts/summarize-live-evaluation.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.22-rc.20250304",
