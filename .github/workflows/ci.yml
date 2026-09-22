@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/pretrained-language-expansion
-      - fix/consolidate-reliability-ci
   pull_request:
     branches:
       - main
