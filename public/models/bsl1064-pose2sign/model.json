@@ -1,0 +1,15 @@
+{
+  "format": "onnx",
+  "modelVersion": "bsl1k-pose2sign-bodyhands-v1",
+  "language": "BSL",
+  "classes": 1064,
+  "sequenceLength": 16,
+  "inputFeatures": 60,
+  "inputName": "pose",
+  "outputName": "logits",
+  "source": {
+    "dataset": "BSL-1K",
+    "architecture": "Pose2Sign ResNet-18",
+    "checkpoint": "bsl1k_pose2sign_m8_l24_kws8_ps_bodyhands"
+  }
+}

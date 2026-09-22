@@ -1,0 +1,33 @@
+name: Export official BSL-1064 browser model
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download and export the official BSL model
+        run: |
+          python -m pip install --disable-pip-version-check torch onnx
+          curl -fL --retry 3 -o /tmp/bsl1064.pth.tar 'https://www.robots.ox.ac.uk/~vgg/research/bsl1k/data/experiments/bsl1k_pose2sign_m8_l24_kws8_ps_bodyhands/model.pth.tar'
+          curl -fL --retry 3 -o /tmp/bsl1k_vocab.pkl 'https://raw.githubusercontent.com/gulvarol/bsl1k/master/misc/bsl1k/bsl1k_vocab.pkl'
+          python training/export_bsl1k_pose2sign_onnx.py /tmp/bsl1064.pth.tar /tmp/bsl1k_vocab.pkl
+          test -f public/models/bsl1064-pose2sign/model.onnx
+          test -f public/models/bsl1064-pose2sign/labels.json
+
+      - name: Upload model for explicit review
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsl1064-browser-model
+          path: public/models/bsl1064-pose2sign/
+          retention-days: 14

@@ -1,0 +1,57 @@
+{
+  "typescriptSha256": "0bf1b70c1e79835581b4624b4992a6177ac477ae8de598dcc587eece0181f1cb",
+  "reference": "Pinned publisher transform: RGB, every tenth frame, truncating temporal sampling, ImageNet normalization, bilinear antialias full-frame resize",
+  "rtol": 2e-05,
+  "atol": 2e-05,
+  "clips": [
+    {
+      "file": "W002S08F_03.mp4",
+      "clipSha256": "458f4e951650394059f29092340e26620825fc0fd52e1bbc691705482ddb4adf",
+      "frames": 9,
+      "values": 2408448,
+      "maxAbsError": 7.152557373046875e-07,
+      "passed": true
+    },
+    {
+      "file": "W003S08F_11.mp4",
+      "clipSha256": "62fb84edbe6ee196d1a4ce71c96836596431a6b7991767ef1034ffa6532703c6",
+      "frames": 12,
+      "values": 2408448,
+      "maxAbsError": 7.152557373046875e-07,
+      "passed": true
+    },
+    {
+      "file": "W205S08F_02.mp4",
+      "clipSha256": "aeab2353d5b69e797780ec1e1535d2b0d793e4fbdc0e18b73d07f5b1d0c248d9",
+      "frames": 7,
+      "values": 2408448,
+      "maxAbsError": 9.5367431640625e-07,
+      "passed": true
+    },
+    {
+      "file": "W211S04F_03.mp4",
+      "clipSha256": "57fafb651ac5d0216f1c1632e88658a7871e467abec112a0df85bb9721c2c779",
+      "frames": 8,
+      "values": 2408448,
+      "maxAbsError": 5.960464477539062e-07,
+      "passed": true
+    },
+    {
+      "file": "W389S08F_02.mp4",
+      "clipSha256": "97e715ef03b35cab865f4c0b2f945983b7b1817370e7749e2acf7ef7fcd84dfc",
+      "frames": 8,
+      "values": 2408448,
+      "maxAbsError": 9.5367431640625e-07,
+      "passed": true
+    },
+    {
+      "file": "W401S04F_06.mp4",
+      "clipSha256": "f2d27fe6031263d0007039d5b686876aeeb296a018eee8c18b2879c6ffba10e5",
+      "frames": 8,
+      "values": 2408448,
+      "maxAbsError": 5.960464477539062e-07,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

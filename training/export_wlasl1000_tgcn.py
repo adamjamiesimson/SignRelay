@@ -1,4 +1,4 @@
-"""Export the official WLASL Pose-TGCN checkpoint for local browser inference.
+"""Export an official WLASL Pose-TGCN checkpoint for local browser inference.
 
 The WLASL authors publish this checkpoint and its OpenPose training inputs under
 the WLASL C-UDA. This exporter deliberately uses a restricted legacy-checkpoint
@@ -261,19 +261,24 @@ def infer(state: dict[str, np.ndarray], x: np.ndarray, quantised: bool) -> np.nd
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Export official WLASL1000 Pose-TGCN weights for SignRelay")
+    parser = argparse.ArgumentParser(description="Export official WLASL Pose-TGCN weights for SignRelay")
     parser.add_argument("checkpoint", type=Path)
-    parser.add_argument("split", type=Path, help="Official WLASL asl1000.json split")
-    parser.add_argument("--output", type=Path, default=Path("public/models/asl1000-tgcn"))
+    parser.add_argument("split", type=Path, help="Official WLASL asl<classes>.json split")
+    parser.add_argument("--output", type=Path, help="Output directory (defaults to public/models/asl<classes>-tgcn)")
     parser.add_argument("--verify-random", type=int, default=3)
     parser.add_argument("--spotcheck-report", type=Path, help="Optional report from evaluate_wlasl1000_tgcn.py")
     args = parser.parse_args()
 
     state = read_legacy_state_dict(args.checkpoint)
+    classifier_classes = int(state["fc_out.weight"].shape[0])
     entries = json.loads(args.split.read_text(encoding="utf-8"))
     labels = sorted(str(entry["gloss"]).strip().upper() for entry in entries)
-    if len(labels) != 1000 or len(set(labels)) != 1000:
-        raise ValueError("Expected the official 1,000-class WLASL split")
+    if len(labels) != classifier_classes or len(set(labels)) != classifier_classes:
+        raise ValueError(
+            f"Checkpoint has {classifier_classes} classes but the official split has "
+            f"{len(labels)} unique labels"
+        )
+    output = args.output or Path(f"public/models/asl{classifier_classes}-tgcn")
 
     packer = BinaryPacker()
     layers = [export_graph_layer(state, "gc1", "bn1", packer, False)]
@@ -292,26 +297,26 @@ def main() -> None:
         "bias": packer.add(fc_bias.astype(np.float16), "float16"),
     }
 
-    args.output.mkdir(parents=True, exist_ok=True)
+    output.mkdir(parents=True, exist_ok=True)
     binary = bytes(packer.payload)
     compressed = gzip.compress(binary, compresslevel=9, mtime=0)
-    binary_path = args.output / "model.bin.gz"
+    binary_path = output / "model.bin.gz"
     if binary_path.exists():
         binary_path.unlink()
-    for stale_part in args.output.glob("model.part*.bin"):
+    for stale_part in output.glob("model.part*.bin"):
         stale_part.unlink()
     binary_parts: list[str] = []
     for index, offset in enumerate(range(0, len(compressed), MAX_BROWSER_PART_BYTES)):
         name = f"model.part{index:02d}.bin"
-        (args.output / name).write_bytes(compressed[offset:offset + MAX_BROWSER_PART_BYTES])
+        (output / name).write_bytes(compressed[offset:offset + MAX_BROWSER_PART_BYTES])
         binary_parts.append(name)
-    (args.output / "labels.json").write_text(json.dumps(labels, indent=2), encoding="utf-8")
+    (output / "labels.json").write_text(json.dumps(labels, indent=2), encoding="utf-8")
 
     manifest = {
         "format": "signrelay-tgcn-v1",
-        "modelVersion": "wlasl1000-pose-tgcn-official-quantised-v1",
+        "modelVersion": f"wlasl{classifier_classes}-pose-tgcn-official-quantised-v1",
         "language": "ASL",
-        "classes": 1000,
+        "classes": classifier_classes,
         "nodes": 55,
         "sequenceLength": 50,
         "inputFeatures": 100,
@@ -325,14 +330,14 @@ def main() -> None:
         "binarySha256": hashlib.sha256(binary).hexdigest(),
         "compressedSha256": hashlib.sha256(compressed).hexdigest(),
         "source": {
-            "dataset": "WLASL1000",
+            "dataset": f"WLASL{classifier_classes}",
             "architecture": "Pose-TGCN",
             "publisher": "Official WLASL authors",
             "usage": "Academic and computational use only; no commercial use",
         },
         "quantisation": "Per-output symmetric int8 graph/classifier weights; float16 fused batch normalisation",
     }
-    (args.output / "model.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    (output / "model.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
     rng = np.random.default_rng(20260825)
     agreements = 0
@@ -348,7 +353,7 @@ def main() -> None:
         "top1_agreement": agreements / max(args.verify_random, 1),
         "maximum_logit_error": max_logit_error,
     }
-    (args.output / "adapter.json").write_text(json.dumps({
+    (output / "adapter.json").write_text(json.dumps({
         "language": "ASL",
         "model": manifest["modelVersion"],
         "input": "50 frames x (13 OpenPose upper-body + 21 left-hand + 21 right-hand) x 2D",
@@ -380,14 +385,22 @@ def main() -> None:
             "quantisedTop1Agreement": spotcheck["quantised_top1_agreement"],
             "note": "Small deterministic audit sample; not a replacement for the published full-test benchmark.",
         }
-    (args.output / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
-    (args.output / "dataset-card.md").write_text(
-        "# WLASL1000 Pose-TGCN browser model\n\n"
-        "This is a quantised browser export of the official WLASL1000 Pose-TGCN checkpoint published by the WLASL authors. "
-        "It recognises isolated signs from 55 two-dimensional body-and-hand points across 50 temporal samples.\n\n"
+    if classifier_classes != 1000:
+        metrics["publishedHeldOutBenchmark"] = None
+        metrics["benchmarkNote"] = "No benchmark is copied into this export; evaluate this exact browser adapter separately."
+    (output / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+    benchmark_line = (
+        "- Published WLASL1000 Pose-TGCN benchmark: 34.86% top-1, 61.73% top-5, 71.91% top-10.\n"
+        if classifier_classes == 1000 else
+        "- No performance claim is made for this browser export until it has a signer-independent evaluation.\n"
+    )
+    (output / "dataset-card.md").write_text(
+        f"# WLASL{classifier_classes} Pose-TGCN browser model\n\n"
+        f"This is a quantised browser export of the official WLASL{classifier_classes} Pose-TGCN checkpoint published by the WLASL authors. "
+        f"It recognises {classifier_classes} isolated signs from 55 two-dimensional body-and-hand points across 50 temporal samples.\n\n"
         "- Dataset and checkpoint: https://github.com/dxli94/WLASL\n"
         "- Paper: https://arxiv.org/abs/1910.11006\n"
-        "- Published WLASL1000 Pose-TGCN benchmark: 34.86% top-1, 61.73% top-5, 71.91% top-10.\n"
+        + benchmark_line +
         "- Terms: academic and computational use only; commercial use is not allowed.\n"
         "- Privacy: raw WLASL videos and pose training samples are not included in the website. Live camera inference stays in the browser.\n\n"
         "The live adapter maps MediaPipe landmarks to the OpenPose training contract. That domain change, the closed-set rejection gate, "
@@ -395,8 +408,8 @@ def main() -> None:
         encoding="utf-8",
     )
     hash_files = [*binary_parts, "model.json", "labels.json", "adapter.json", "metrics.json", "dataset-card.md"]
-    (args.output / "sha256.txt").write_text("".join(
-        f"{hashlib.sha256((args.output / name).read_bytes()).hexdigest()}  {name}\n"
+    (output / "sha256.txt").write_text("".join(
+        f"{hashlib.sha256((output / name).read_bytes()).hexdigest()}  {name}\n"
         for name in hash_files
     ), encoding="utf-8")
     print(json.dumps({
@@ -406,7 +419,7 @@ def main() -> None:
         "compressed_bytes": len(compressed),
         "random_top1_agreement": quantisation_report["top1_agreement"],
         "max_random_logit_error": max_logit_error,
-        "output": str(args.output),
+        "output": str(output),
     }, indent=2))
 
 

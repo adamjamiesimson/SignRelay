@@ -1,0 +1,42 @@
+name: Export official WLASL2000 browser model
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download the official model and split manifest
+        run: |
+          python -m pip install --disable-pip-version-check numpy
+          curl -fL --retry 3 -o /tmp/archived.zip 'https://drive.usercontent.google.com/download?id=1dzvocsaylRsjqaY4r_lyRihPZn0I6AA_&export=download&confirm=t'
+          curl -fL --retry 3 -o /tmp/splits.zip 'https://drive.usercontent.google.com/download?id=16CWkbMLyEbdBkrxAPaxSXFP_aSxKzNN4&export=download&confirm=t'
+          unzip -q /tmp/archived.zip -d /tmp/wlasl-checkpoints
+          unzip -q /tmp/splits.zip -d /tmp/wlasl-splits
+
+      - name: Export the browser model
+        run: |
+          python training/export_wlasl1000_tgcn.py \
+            /tmp/wlasl-checkpoints/archived/asl2000/ckpt.pth \
+            /tmp/wlasl-splits/splits/asl2000.json \
+            --output public/models/asl2000-tgcn \
+            --verify-random 12
+          test -f public/models/asl2000-tgcn/model.json
+          test -f public/models/asl2000-tgcn/labels.json
+
+      - name: Upload model for explicit review
+        uses: actions/upload-artifact@v4
+        with:
+          name: wlasl2000-browser-model
+          path: public/models/asl2000-tgcn/
+          retention-days: 14

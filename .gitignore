@@ -33,14 +33,24 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
 
 # typescript
 next-env.d.ts
+*.tsbuildinfo
 /dist/
 /.wrangler/
 /.sites-runtime/
 /outputs/
 /work/
+
+# Copied from the locked ONNX Runtime package by build:worker.
+/public/workers/ort-wasm-*
+
+# Reproducibly installed and SHA-256 checked by install:rsl-model.
+/public/models/rsl1000-slovo/model.onnx
+/public/models/rsl1000-slovo/*.partial
+/public/workers/rsl.worker.js

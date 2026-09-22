@@ -1,0 +1,2515 @@
+{
+  "runUrl": "https://github.com/adamjamiesimson/SignRelay/actions/runs/34981403735",
+  "commit": "a59ab475f86f5e7b31f7ed13d5030ceedd5e945f",
+  "jobId": 104422359476,
+  "evidence": "Per-clip JSON records recovered from successful GitHub Actions job logs",
+  "datasetRevision": "5dc76d221db9b74cc719cbbfb7528c7b5ec6a56d",
+  "backend": "MediaPipe Tasks",
+  "total": 100,
+  "top1Count": 57,
+  "top5Count": 71,
+  "maxAbsLogitError": 0.000019073486328125,
+  "limitations": "Publisher-selected 100 clips, not signer-independent or live-camera validation; no app activation",
+  "clips": [
+    {
+      "expected": "간호사",
+      "extractionMs": 3823,
+      "file": "간호사.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 0.984375,
+        "leftHand": 0.953125,
+        "pose": 1,
+        "rightHand": 0.703125
+      },
+      "maxAbsLogitError": 0.0000133514404296875,
+      "nativeOnnxInferenceMs": 90,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "간호사",
+        "키다리",
+        "예술가",
+        "이심전심",
+        "취객"
+      ],
+      "top5Correct": true,
+      "videoSha256": "b73a2c8a9c833e0362d9854d793934093320476a216f173d5012b3749a70819e"
+    },
+    {
+      "expected": "갈등",
+      "extractionMs": 1016,
+      "file": "갈등.mp4",
+      "frames": 48,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9583333333333334,
+        "pose": 1,
+        "rightHand": 0.8125
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 95,
+      "targetRank": 2,
+      "top1Correct": false,
+      "top5": [
+        "이기주의",
+        "갈등",
+        "교제",
+        "맥없다",
+        "서구수어통역센터"
+      ],
+      "top5Correct": true,
+      "videoSha256": "1ab03144dfe6a4c377f4d915a39152579cfb637530e1c619127282081c5404ea"
+    },
+    {
+      "expected": "갈색",
+      "extractionMs": 935,
+      "file": "갈색.mp4",
+      "frames": 50,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.82,
+        "pose": 1,
+        "rightHand": 0.68
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 94,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "갈색",
+        "백삼십사",
+        "100만원",
+        "벌꿀",
+        "최소"
+      ],
+      "top5Correct": true,
+      "videoSha256": "6ae48f443aea052df8b5734f3145105641c77aac015a9baae93560c0c10aa313"
+    },
+    {
+      "expected": "감기",
+      "extractionMs": 892,
+      "file": "감기.mp4",
+      "frames": 48,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9166666666666666,
+        "pose": 1,
+        "rightHand": 0.6458333333333334
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 2501,
+      "top1Correct": false,
+      "top5": [
+        "수상",
+        "콧물",
+        "실토",
+        "졸리다",
+        "안산"
+      ],
+      "top5Correct": false,
+      "videoSha256": "a9984476dfb18de00250202e8791f9c4536a62da139b54291e0e3609fde95aa7"
+    },
+    {
+      "expected": "감동",
+      "extractionMs": 1035,
+      "file": "감동.mp4",
+      "frames": 56,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.8214285714285714,
+        "pose": 1,
+        "rightHand": 0.6428571428571429
+      },
+      "maxAbsLogitError": 0.00001239776611328125,
+      "nativeOnnxInferenceMs": 122,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "감동",
+        "중요",
+        "체감",
+        "새파래지다",
+        "8번째"
+      ],
+      "top5Correct": true,
+      "videoSha256": "60b433037bb9a366f43d1f27a93ed21a1c94d9793f90859833c93e6967360918"
+    },
+    {
+      "expected": "거북선",
+      "extractionMs": 1169,
+      "file": "거북선.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 0.984375,
+        "leftHand": 0.953125,
+        "pose": 1,
+        "rightHand": 0.9375
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 79,
+      "top1Correct": false,
+      "top5": [
+        "징검다리",
+        "수심",
+        "달빛",
+        "치료제",
+        "장애인등에대한특수교육법"
+      ],
+      "top5Correct": false,
+      "videoSha256": "8f683e3e294fd7b8358731d2b245bb48d689c5d82d2b401e7a12b3f673b75007"
+    },
+    {
+      "expected": "거지",
+      "extractionMs": 972,
+      "file": "거지.mp4",
+      "frames": 51,
+      "landmarkCoverage": {
+        "face": 0.9803921568627451,
+        "leftHand": 0.5490196078431373,
+        "pose": 1,
+        "rightHand": 0.6470588235294118
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "거지",
+        "통역사",
+        "공범",
+        "양다리",
+        "백이십오"
+      ],
+      "top5Correct": true,
+      "videoSha256": "b7ebb9a51b7e193e2a6a84205a1f45153ee08ac9f6b1cfb1f9f6f2b1a965b71d"
+    },
+    {
+      "expected": "검사",
+      "extractionMs": 1167,
+      "file": "검사.mp4",
+      "frames": 61,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.5573770491803278,
+        "pose": 1,
+        "rightHand": 0.5409836065573771
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 13,
+      "top1Correct": false,
+      "top5": [
+        "예식장",
+        "센티미터",
+        "술집",
+        "영월군주민지원센터",
+        "한국은행"
+      ],
+      "top5Correct": false,
+      "videoSha256": "af92a19b2393b3e3ca370f4dd2128657a5e4a54cc9b7c69a3aced671b3360899"
+    },
+    {
+      "expected": "결혼",
+      "extractionMs": 970,
+      "file": "결혼.mp4",
+      "frames": 54,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.5925925925925926,
+        "pose": 1,
+        "rightHand": 0.4444444444444444
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "결혼",
+        "직원",
+        "들키다",
+        "증원",
+        "취업"
+      ],
+      "top5Correct": true,
+      "videoSha256": "46e8850ee2d70eb56870d3f6f85434dc9210fda5c2ab8185e6177b5e41cd09fa"
+    },
+    {
+      "expected": "결혼식",
+      "extractionMs": 1019,
+      "file": "결혼식.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.5636363636363636,
+        "pose": 1,
+        "rightHand": 0.5272727272727272
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 2,
+      "top1Correct": false,
+      "top5": [
+        "재택근무",
+        "결혼식",
+        "어쩔 수 없다",
+        "결혼",
+        "휴학"
+      ],
+      "top5Correct": true,
+      "videoSha256": "e6b534c4578e9df9a7ba67a2f2071a6dff76051288325412989f7c97cc191052"
+    },
+    {
+      "expected": "경고",
+      "extractionMs": 1208,
+      "file": "경고.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.78125,
+        "pose": 1,
+        "rightHand": 0.625
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 89,
+      "targetRank": 451,
+      "top1Correct": false,
+      "top5": [
+        "식당",
+        "가짜",
+        "분필",
+        "견습소",
+        "과천시수어통역센터"
+      ],
+      "top5Correct": false,
+      "videoSha256": "b3a9854f72b165f612d164b2b591c5c1f2158a72e627c76c423ff9c844406728"
+    },
+    {
+      "expected": "경비실",
+      "extractionMs": 1213,
+      "file": "경비실.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.59375,
+        "pose": 1,
+        "rightHand": 0.75
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "경비실",
+        "신기2",
+        "검사",
+        "밀거래",
+        "영주시청"
+      ],
+      "top5Correct": true,
+      "videoSha256": "9ab124e9bcf5b7cd976a68c6ab6f96cd99532764fdb6ec9b5733b185d9d7bcbf"
+    },
+    {
+      "expected": "고모",
+      "extractionMs": 1180,
+      "file": "고모.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.90625,
+        "pose": 1,
+        "rightHand": 0.625
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 2751,
+      "top1Correct": false,
+      "top5": [
+        "작은엄마",
+        "외할머니",
+        "엄마",
+        "외동딸",
+        "훌륭"
+      ],
+      "top5Correct": false,
+      "videoSha256": "9c9f66551a0497ef47db66b4d7838a9ab67f219c1761e08ae48c6a1136b27639"
+    },
+    {
+      "expected": "고민",
+      "extractionMs": 1194,
+      "file": "고민.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.390625,
+        "pose": 1,
+        "rightHand": 0.578125
+      },
+      "maxAbsLogitError": 0.00001430511474609375,
+      "nativeOnnxInferenceMs": 90,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "고민",
+        "다섯번째",
+        "오래도록",
+        "졸리다",
+        "잔소리"
+      ],
+      "top5Correct": true,
+      "videoSha256": "78bbe10320a61f2c6a529e2ade6665edec461eac196490ec6e37b28c68f0c023"
+    },
+    {
+      "expected": "고아원",
+      "extractionMs": 948,
+      "file": "고아원.mp4",
+      "frames": 51,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.45098039215686275,
+        "pose": 1,
+        "rightHand": 0.5098039215686274
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "고아원",
+        "격노",
+        "처남",
+        "공식발표",
+        "여학교"
+      ],
+      "top5Correct": true,
+      "videoSha256": "d274ea50444b910c6a9e10c0d30c09717d81e097d446a6df3ca13648037d5403"
+    },
+    {
+      "expected": "고추",
+      "extractionMs": 911,
+      "file": "고추.mp4",
+      "frames": 47,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9574468085106383,
+        "pose": 1,
+        "rightHand": 0.5957446808510638
+      },
+      "maxAbsLogitError": 0.00000762939453125,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 2,
+      "top1Correct": false,
+      "top5": [
+        "가수",
+        "고추",
+        "불쌍",
+        "육만오천",
+        "퇴원"
+      ],
+      "top5Correct": true,
+      "videoSha256": "d826071bd7df76fc29a9f37a7c45584eb8dc307279475d79766b93b341921c18"
+    },
+    {
+      "expected": "골절",
+      "extractionMs": 1201,
+      "file": "골절.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.984375,
+        "pose": 1,
+        "rightHand": 0.984375
+      },
+      "maxAbsLogitError": 0.00000762939453125,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "골절",
+        "알아서",
+        "광양군수어통역센터",
+        "영암군수어통역센터",
+        "영광군수어통역센터"
+      ],
+      "top5Correct": true,
+      "videoSha256": "508c76467a66be1102bca45afdf14f0ce498058b76984c3dafb90357b982eae1"
+    },
+    {
+      "expected": "골짜기",
+      "extractionMs": 829,
+      "file": "골짜기.mp4",
+      "frames": 43,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9534883720930233,
+        "pose": 1,
+        "rightHand": 0.7209302325581395
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 95,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "골짜기",
+        "지름길",
+        "방법",
+        "팔십억",
+        "강물"
+      ],
+      "top5Correct": true,
+      "videoSha256": "c98cd22d0584195ad3f64620bb4d859b7c64ed928ce681e3068f5a45b608ea8b"
+    },
+    {
+      "expected": "공범",
+      "extractionMs": 1219,
+      "file": "공범.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.53125,
+        "pose": 1,
+        "rightHand": 0.59375
+      },
+      "maxAbsLogitError": 0.000019073486328125,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "공범",
+        "서울시청",
+        "백구십구",
+        "유조선",
+        "하남"
+      ],
+      "top5Correct": true,
+      "videoSha256": "58b5e2daf676025040fdfe386fa531d5618fcd846cfb2acccbf9e82f1f71c3ad"
+    },
+    {
+      "expected": "광주",
+      "extractionMs": 783,
+      "file": "광주.mp4",
+      "frames": 41,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9512195121951219,
+        "pose": 1,
+        "rightHand": 0.6097560975609756
+      },
+      "maxAbsLogitError": 0.0000171661376953125,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 122,
+      "top1Correct": false,
+      "top5": [
+        "삼",
+        "원주",
+        "포천",
+        "사",
+        "사십사"
+      ],
+      "top5Correct": false,
+      "videoSha256": "43084b40eb4cbbb646c917b91d66aaad48388d757d3edaf44ac9011a11bec0a2"
+    },
+    {
+      "expected": "교수",
+      "extractionMs": 1042,
+      "file": "교수.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.6545454545454545,
+        "pose": 1,
+        "rightHand": 0.509090909090909
+      },
+      "maxAbsLogitError": 0.000010013580322265625,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 4,
+      "top1Correct": false,
+      "top5": [
+        "구두",
+        "동대문구지부",
+        "증원",
+        "교수",
+        "고성지부"
+      ],
+      "top5Correct": true,
+      "videoSha256": "7a75af0d664059c26fb374f7b3984d1c1d8dfff31ff8cb4327159d96776c8b30"
+    },
+    {
+      "expected": "교제",
+      "extractionMs": 1114,
+      "file": "교제.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.55,
+        "pose": 1,
+        "rightHand": 0.55
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "교제",
+        "파헤치다",
+        "근무",
+        "야구부",
+        "회개"
+      ],
+      "top5Correct": true,
+      "videoSha256": "c10bfa33166dbac1831737411bf26ac2da49328bb802ff0387460bb9a2545785"
+    },
+    {
+      "expected": "구걸",
+      "extractionMs": 1249,
+      "file": "구걸.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.609375,
+        "pose": 1,
+        "rightHand": 0.578125
+      },
+      "maxAbsLogitError": 0.000014543533325195312,
+      "nativeOnnxInferenceMs": 89,
+      "targetRank": 2,
+      "top1Correct": false,
+      "top5": [
+        "고깃국",
+        "구걸",
+        "괴롭히다",
+        "교제",
+        "표리부동"
+      ],
+      "top5Correct": true,
+      "videoSha256": "0a935a782d31da51dd754ca3e43c0cbff02a2a5d95d61258893406f339687f11"
+    },
+    {
+      "expected": "구두",
+      "extractionMs": 1064,
+      "file": "구두.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.7272727272727273,
+        "pose": 1,
+        "rightHand": 0.5454545454545454
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 451,
+      "top1Correct": false,
+      "top5": [
+        "가죽신",
+        "평가",
+        "경찰서",
+        "육억",
+        "의혹"
+      ],
+      "top5Correct": false,
+      "videoSha256": "e2a057c2c3bdfd5b3726ef80b3402957c17519557504d306552e9c933d7816da"
+    },
+    {
+      "expected": "귀",
+      "extractionMs": 1160,
+      "file": "귀.mp4",
+      "frames": 59,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.01694915254237288,
+        "pose": 1,
+        "rightHand": 0.22033898305084745
+      },
+      "maxAbsLogitError": 0.000012874603271484375,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 458,
+      "top1Correct": false,
+      "top5": [
+        "재택근무",
+        "외아들",
+        "원활",
+        "전화번호",
+        "불량"
+      ],
+      "top5Correct": false,
+      "videoSha256": "3d5558ebd6f8e89c655b837cb43c8f9003723fe64de8a995bfd1ab27412a58c5"
+    },
+    {
+      "expected": "금연",
+      "extractionMs": 1063,
+      "file": "금연.mp4",
+      "frames": 56,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.2857142857142857,
+        "pose": 1,
+        "rightHand": 0.6071428571428571
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "금연",
+        "두번째",
+        "이십칠",
+        "영어",
+        "콩가루"
+      ],
+      "top5Correct": true,
+      "videoSha256": "e9897e9123461f22a8dc92261e53922f297d3efb647bc498225d55a5baaab981"
+    },
+    {
+      "expected": "급행",
+      "extractionMs": 858,
+      "file": "급행.mp4",
+      "frames": 46,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.2391304347826087,
+        "pose": 1,
+        "rightHand": 0.4782608695652174
+      },
+      "maxAbsLogitError": 0.00000762939453125,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 115,
+      "top1Correct": false,
+      "top5": [
+        "대출",
+        "빠르다",
+        "너",
+        "논란",
+        "전문"
+      ],
+      "top5Correct": false,
+      "videoSha256": "0f0eccf8e7d4d91a9732451a2afd3e4bf3f6686c95ddfb7ada6dac611d128f05"
+    },
+    {
+      "expected": "기린",
+      "extractionMs": 871,
+      "file": "기린.mp4",
+      "frames": 46,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 1,
+        "pose": 1,
+        "rightHand": 0.6739130434782609
+      },
+      "maxAbsLogitError": 0.000009059906005859375,
+      "nativeOnnxInferenceMs": 88,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "기린",
+        "가만히",
+        "잔소리",
+        "백이십일",
+        "이것"
+      ],
+      "top5Correct": true,
+      "videoSha256": "09e75bec142c691ad612aac99f62c62ef532171c452d2268ce8d30e3dc57098e"
+    },
+    {
+      "expected": "기분",
+      "extractionMs": 978,
+      "file": "기분.mp4",
+      "frames": 53,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.5849056603773585
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "기분",
+        "괴롭히다",
+        "역겹다",
+        "걱정",
+        "받다"
+      ],
+      "top5Correct": true,
+      "videoSha256": "9da41e448864b83571b4846f8f2644430341d7bb0159fbb1b969e4ef5809e501"
+    },
+    {
+      "expected": "기술자",
+      "extractionMs": 1196,
+      "file": "기술자.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.703125,
+        "pose": 1,
+        "rightHand": 0.9375
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 88,
+      "targetRank": 60,
+      "top1Correct": false,
+      "top5": [
+        "수집가",
+        "유권자",
+        "킬로미터",
+        "전기기술자",
+        "한약방"
+      ],
+      "top5Correct": false,
+      "videoSha256": "d710d12b4fc65ac706807a3852f4159ee6cd1028bbc7a919d07cafa1e28897a5"
+    },
+    {
+      "expected": "기차역",
+      "extractionMs": 1077,
+      "file": "기차역.mp4",
+      "frames": 57,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.5964912280701754,
+        "pose": 1,
+        "rightHand": 0.631578947368421
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 2,
+      "top1Correct": false,
+      "top5": [
+        "사업장",
+        "기차역",
+        "강진군주민지원센터",
+        "기피하다",
+        "주유소"
+      ],
+      "top5Correct": true,
+      "videoSha256": "e3233d220db04d80b2627c8f4cc63715452fd9b64c18cbb0abc6c723ed037012"
+    },
+    {
+      "expected": "까마귀",
+      "extractionMs": 1057,
+      "file": "까마귀.mp4",
+      "frames": 56,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.5714285714285714,
+        "pose": 1,
+        "rightHand": 0.5535714285714286
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "까마귀",
+        "새알",
+        "새똥",
+        "포항시수화통역센터",
+        "소식"
+      ],
+      "top5Correct": true,
+      "videoSha256": "1a62eabdb7b28278f133b1614e1e6394fdf1d041c129696a95b91f734d4cf040"
+    },
+    {
+      "expected": "깨끗하다",
+      "extractionMs": 1075,
+      "file": "꺠끗하다.mp4",
+      "frames": 56,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.23214285714285715,
+        "pose": 1,
+        "rightHand": 0.5714285714285714
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 87,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "깨끗하다",
+        "쑥쓰럽다",
+        "주다",
+        "노화",
+        "우울"
+      ],
+      "top5Correct": true,
+      "videoSha256": "11cb3cd851fd69baf66ed9826d77a4b21ff00c74ba5e35ebe82a5529b8ebc007"
+    },
+    {
+      "expected": "꼬마",
+      "extractionMs": 1121,
+      "file": "꼬마.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.5166666666666667,
+        "pose": 1,
+        "rightHand": 0.5166666666666667
+      },
+      "maxAbsLogitError": 0.000009059906005859375,
+      "nativeOnnxInferenceMs": 95,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "꼬마",
+        "무시하다",
+        "남양주",
+        "잘하다",
+        "뻔뻔"
+      ],
+      "top5Correct": true,
+      "videoSha256": "f2d7d3f37e8fb4714affc4293cfdb7532c7e5f75e578c412071c6923d8e54576"
+    },
+    {
+      "expected": "꿀벌",
+      "extractionMs": 1050,
+      "file": "꿀벌.mp4",
+      "frames": 54,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.6851851851851852,
+        "pose": 1,
+        "rightHand": 0.5370370370370371
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 101,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "꿀벌",
+        "무매력",
+        "달다",
+        "복습",
+        "순금"
+      ],
+      "top5Correct": true,
+      "videoSha256": "4bcc5a2f4b8af9fc92ee588fb3e348623e90cae1a5b135be275a8b2fa14afce2"
+    },
+    {
+      "expected": "나누다",
+      "extractionMs": 1089,
+      "file": "나누다.mp4",
+      "frames": 56,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.4642857142857143,
+        "pose": 1,
+        "rightHand": 0.5357142857142857
+      },
+      "maxAbsLogitError": 0.000010013580322265625,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "나누다",
+        "변덕",
+        "현충일",
+        "분당",
+        "고깃국"
+      ],
+      "top5Correct": true,
+      "videoSha256": "da6ab12746077fcb6c80b3879ac92568c65d4b43c3b2d5389bf7677377e029d2"
+    },
+    {
+      "expected": "나쁘다",
+      "extractionMs": 1142,
+      "file": "나쁘다.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.5
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 3,
+      "top1Correct": false,
+      "top5": [
+        "신부",
+        "갈색",
+        "나쁘다",
+        "가명",
+        "부럽다"
+      ],
+      "top5Correct": true,
+      "videoSha256": "89d3104926dfdc3adac725bd35e19f1333f5a3b5386e4c6f227434934281ce5e"
+    },
+    {
+      "expected": "낚시",
+      "extractionMs": 859,
+      "file": "낚시.mp4",
+      "frames": 45,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.7333333333333333,
+        "pose": 1,
+        "rightHand": 0.6444444444444445
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 2,
+      "top1Correct": false,
+      "top5": [
+        "놓치다",
+        "낚시",
+        "낚시터",
+        "싱가폴",
+        "습자"
+      ],
+      "top5Correct": true,
+      "videoSha256": "7c3af69565672e58b613b605361d22b1f5ab36df722ab445c2f341085b77495a"
+    },
+    {
+      "expected": "남녀",
+      "extractionMs": 1112,
+      "file": "남녀.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.65
+      },
+      "maxAbsLogitError": 0.000019073486328125,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "남녀",
+        "구십오만",
+        "눈",
+        "백삼십사",
+        "얼마"
+      ],
+      "top5Correct": true,
+      "videoSha256": "f186277a459617e7c14ebd5d9f54b077b4afbb6ad9a221430e464940bd961d06"
+    },
+    {
+      "expected": "남매",
+      "extractionMs": 976,
+      "file": "남매.mp4",
+      "frames": 52,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9423076923076923,
+        "pose": 1,
+        "rightHand": 0.6153846153846154
+      },
+      "maxAbsLogitError": 0.000010967254638671875,
+      "nativeOnnxInferenceMs": 96,
+      "targetRank": 2,
+      "top1Correct": false,
+      "top5": [
+        "남편",
+        "남매",
+        "오빠",
+        "열두번째",
+        "횡성군주민지원센터"
+      ],
+      "top5Correct": true,
+      "videoSha256": "8cce23650dbce50c3fd3d88ec00b4d5ed5d339489b8e50511e22f21760dc381e"
+    },
+    {
+      "expected": "남자",
+      "extractionMs": 1127,
+      "file": "남자.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.6,
+        "pose": 1,
+        "rightHand": 0.5833333333333334
+      },
+      "maxAbsLogitError": 0.000008106231689453125,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "남자",
+        "에어컨",
+        "실천",
+        "부여군지부",
+        "떨다"
+      ],
+      "top5Correct": true,
+      "videoSha256": "d0160ff52a0d20bc9e3ae4e8fc5b35c127f9518a2ea9d7d135e04287c62e7b65"
+    },
+    {
+      "expected": "네쌍둥이",
+      "extractionMs": 1199,
+      "file": "네쌍둥이.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.046875,
+        "pose": 1,
+        "rightHand": 0.8125
+      },
+      "maxAbsLogitError": 0.00000667572021484375,
+      "nativeOnnxInferenceMs": 95,
+      "targetRank": 192,
+      "top1Correct": false,
+      "top5": [
+        "결점",
+        "우유",
+        "찔리다",
+        "칠만오천",
+        "캄보디아"
+      ],
+      "top5Correct": false,
+      "videoSha256": "e98561dc43e81d7afc43d78fe5e8521504c32d6c68013688cf681cef15357f05"
+    },
+    {
+      "expected": "노래",
+      "extractionMs": 1038,
+      "file": "노래.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.5636363636363636
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 93,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "노래",
+        "콩기름",
+        "지름길",
+        "이백오십만",
+        "빈말"
+      ],
+      "top5Correct": true,
+      "videoSha256": "d28771b952b03a76270c9b09a69e598c8044bd5432ee5d21e2e1a487a71062a9"
+    },
+    {
+      "expected": "노르웨이",
+      "extractionMs": 784,
+      "file": "노르웨이.mp4",
+      "frames": 41,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.43902439024390244,
+        "pose": 1,
+        "rightHand": 0.4878048780487805
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 87,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "노르웨이",
+        "떨다",
+        "대출",
+        "불량",
+        "쌍둥이"
+      ],
+      "top5Correct": true,
+      "videoSha256": "31bb90e260f7d789932157d06ff1a0e6e402137a08252895b04285ba16c12c87"
+    },
+    {
+      "expected": "논의",
+      "extractionMs": 932,
+      "file": "논의.mp4",
+      "frames": 49,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 1,
+        "pose": 1,
+        "rightHand": 0.9183673469387755
+      },
+      "maxAbsLogitError": 0.000009775161743164062,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 2316,
+      "top1Correct": false,
+      "top5": [
+        "상담",
+        "마포",
+        "육십만",
+        "정밀검사",
+        "불쌍"
+      ],
+      "top5Correct": false,
+      "videoSha256": "9097c322e1dda624e23fca83a0ba1af22746cb89a5003b37e469c0829421f615"
+    },
+    {
+      "expected": "농부",
+      "extractionMs": 902,
+      "file": "농부.mp4",
+      "frames": 48,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 1,
+        "pose": 1,
+        "rightHand": 0.6666666666666666
+      },
+      "maxAbsLogitError": 0.00001239776611328125,
+      "nativeOnnxInferenceMs": 90,
+      "targetRank": 288,
+      "top1Correct": false,
+      "top5": [
+        "요리사",
+        "일반인",
+        "의자",
+        "유권자",
+        "양식"
+      ],
+      "top5Correct": false,
+      "videoSha256": "883acfda6cace2a6b5650c007d576615b04431d1b817deba234e5cff1e6fa6f5"
+    },
+    {
+      "expected": "누나",
+      "extractionMs": 821,
+      "file": "누나.mp4",
+      "frames": 44,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9772727272727273,
+        "pose": 1,
+        "rightHand": 0.9772727272727273
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "누나",
+        "처형",
+        "형",
+        "오빠",
+        "이억오천만"
+      ],
+      "top5Correct": true,
+      "videoSha256": "406c0526c63f4dbfa5b83dc835838b499b0429d6862df931af5755754eff4eda"
+    },
+    {
+      "expected": "뉴질랜드",
+      "extractionMs": 992,
+      "file": "뉴질랜드.mp4",
+      "frames": 53,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.8867924528301887,
+        "pose": 1,
+        "rightHand": 0.5283018867924528
+      },
+      "maxAbsLogitError": 0.0000133514404296875,
+      "nativeOnnxInferenceMs": 88,
+      "targetRank": 41,
+      "top1Correct": false,
+      "top5": [
+        "강진군주민지원센터",
+        "공주시청",
+        "기차",
+        "공식발표",
+        "한약방"
+      ],
+      "top5Correct": false,
+      "videoSha256": "9f79a1b1732f16f8b39ab0580b20f89b099bf71025b80dc18070579c2a0d57ab"
+    },
+    {
+      "expected": "당황",
+      "extractionMs": 919,
+      "file": "당황.mp4",
+      "frames": 48,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.7916666666666666,
+        "pose": 1,
+        "rightHand": 0.5416666666666666
+      },
+      "maxAbsLogitError": 0.000010013580322265625,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "당황",
+        "없다",
+        "결점",
+        "근근이",
+        "양산시지부"
+      ],
+      "top5Correct": true,
+      "videoSha256": "50595b75455878488588f047ee8f0e397b635ebfd3bc227a0c54979680cd4348"
+    },
+    {
+      "expected": "대기업",
+      "extractionMs": 1177,
+      "file": "대기업.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.453125,
+        "pose": 1,
+        "rightHand": 0.734375
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 91,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "대기업",
+        "희생",
+        "뽐내다",
+        "합심",
+        "방충"
+      ],
+      "top5Correct": true,
+      "videoSha256": "e9595f9a91d9a805ae228aeefcd8a7e227e4c08333e10336ad5add57e6f03bb9"
+    },
+    {
+      "expected": "망각",
+      "extractionMs": 976,
+      "file": "망각.mp4",
+      "frames": 52,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.5
+      },
+      "maxAbsLogitError": 0.00001621246337890625,
+      "nativeOnnxInferenceMs": 93,
+      "targetRank": 709,
+      "top1Correct": false,
+      "top5": [
+        "이상",
+        "당신",
+        "묻다",
+        "얼마",
+        "요리사"
+      ],
+      "top5Correct": false,
+      "videoSha256": "665fea741b263fe06e2236335c479502d0ba4ed6c1a8b2385a25227569430c1b"
+    },
+    {
+      "expected": "매력",
+      "extractionMs": 1047,
+      "file": "매력.mp4",
+      "frames": 52,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.8846153846153846,
+        "pose": 1,
+        "rightHand": 0.46153846153846156
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "매력",
+        "무매력",
+        "울산",
+        "강서구수어통역센터",
+        "전세"
+      ],
+      "top5Correct": true,
+      "videoSha256": "b87de4e43d7be6daae4b451e43aeab29a52dc315311ce9123051d83d6b92adb8"
+    },
+    {
+      "expected": "매표소",
+      "extractionMs": 1041,
+      "file": "매표소.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.4909090909090909,
+        "pose": 1,
+        "rightHand": 0.6
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 87,
+      "targetRank": 2,
+      "top1Correct": false,
+      "top5": [
+        "치료",
+        "매표소",
+        "중랑구주민지원센터",
+        "의혹",
+        "십억"
+      ],
+      "top5Correct": true,
+      "videoSha256": "9facf77d2b4bad7739ec2fbf69634f0253af5a1b291604ba3b34fab9f722e31c"
+    },
+    {
+      "expected": "매형",
+      "extractionMs": 894,
+      "file": "매형.mp4",
+      "frames": 47,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9574468085106383,
+        "pose": 1,
+        "rightHand": 0.5957446808510638
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 93,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "매형",
+        "제부",
+        "오빠",
+        "육십오억",
+        "수집가"
+      ],
+      "top5Correct": true,
+      "videoSha256": "14ed1d4470dc9da053489751a05fdb56ad1a0d5d4207795b1483fdf05c8e3852"
+    },
+    {
+      "expected": "맹세",
+      "extractionMs": 791,
+      "file": "맹세.mp4",
+      "frames": 40,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 1,
+        "pose": 1,
+        "rightHand": 0.95
+      },
+      "maxAbsLogitError": 0.00001239776611328125,
+      "nativeOnnxInferenceMs": 94,
+      "targetRank": 61,
+      "top1Correct": false,
+      "top5": [
+        "이",
+        "금산",
+        "이만",
+        "삼",
+        "한국농아인협회"
+      ],
+      "top5Correct": false,
+      "videoSha256": "c311ba132d8d211766fff04279585ef566863fcf58e96b60765ebc74d07b73a6"
+    },
+    {
+      "expected": "머리",
+      "extractionMs": 1245,
+      "file": "머리.mp4",
+      "frames": 63,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.5714285714285714
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 94,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "머리",
+        "머리카락",
+        "십이",
+        "천",
+        "육십일"
+      ],
+      "top5Correct": true,
+      "videoSha256": "004036e739d05d34825b1ded4750a69866e1d65539624e39d841e211191f0a08"
+    },
+    {
+      "expected": "머리카락",
+      "extractionMs": 1111,
+      "file": "머리카락.mp4",
+      "frames": 58,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.5344827586206896
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 88,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "머리카락",
+        "머리",
+        "육",
+        "십오",
+        "천"
+      ],
+      "top5Correct": true,
+      "videoSha256": "58085219b4a2449b763dd12f1b8139e16d80591d4dc0f93fbfaebe540eed0e8a"
+    },
+    {
+      "expected": "먹구름",
+      "extractionMs": 1172,
+      "file": "먹구름.mp4",
+      "frames": 61,
+      "landmarkCoverage": {
+        "face": 0.9672131147540983,
+        "leftHand": 0.9672131147540983,
+        "pose": 1,
+        "rightHand": 0.6721311475409836
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "먹구름",
+        "판박이",
+        "하늘",
+        "수심",
+        "깜빡하다"
+      ],
+      "top5Correct": true,
+      "videoSha256": "2657e8355f71cd2ae47d2f88460fdff7fadda3f4944b79c8f474179fb525a641"
+    },
+    {
+      "expected": "멀다",
+      "extractionMs": 918,
+      "file": "멀다.mp4",
+      "frames": 49,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.4897959183673469,
+        "pose": 1,
+        "rightHand": 0.5102040816326531
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 1541,
+      "top1Correct": false,
+      "top5": [
+        "얻어먹다",
+        "동거",
+        "열심",
+        "수성구지부",
+        "실천"
+      ],
+      "top5Correct": false,
+      "videoSha256": "ba4b4a443550258ba209883fd94ab46c616b13ec3173e58950ffd9a672715538"
+    },
+    {
+      "expected": "멍청하다",
+      "extractionMs": 884,
+      "file": "멍청하다.mp4",
+      "frames": 47,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9787234042553191,
+        "pose": 1,
+        "rightHand": 0.9574468085106383
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 87,
+      "targetRank": 185,
+      "top1Correct": false,
+      "top5": [
+        "무념무상",
+        "잠기다",
+        "수갑",
+        "비등하다",
+        "엉뚱"
+      ],
+      "top5Correct": false,
+      "videoSha256": "1e9d2c9f4ddf6db21a82867d2b200322b74460cc98477f257f1a2c528c149fac"
+    },
+    {
+      "expected": "며느리",
+      "extractionMs": 885,
+      "file": "며느리.mp4",
+      "frames": 46,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.6086956521739131,
+        "pose": 1,
+        "rightHand": 0.782608695652174
+      },
+      "maxAbsLogitError": 0.00000762939453125,
+      "nativeOnnxInferenceMs": 88,
+      "targetRank": 2,
+      "top1Correct": false,
+      "top5": [
+        "등지다",
+        "며느리",
+        "전염",
+        "이십억",
+        "사위"
+      ],
+      "top5Correct": true,
+      "videoSha256": "9a12e3657e1dc232b2979779ab2ba0a1a490633291e0bd93a653b7fca7084b86"
+    },
+    {
+      "expected": "면역",
+      "extractionMs": 1191,
+      "file": "면역.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.546875,
+        "pose": 1,
+        "rightHand": 0.734375
+      },
+      "maxAbsLogitError": 0.00001239776611328125,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "면역",
+        "병문안",
+        "공개",
+        "기차역",
+        "포항시청"
+      ],
+      "top5Correct": true,
+      "videoSha256": "3dae217832c84d63cbfe910c1e1a695ae6d78747ba8859dc715cc342cec505b9"
+    },
+    {
+      "expected": "명령",
+      "extractionMs": 1091,
+      "file": "명령.mp4",
+      "frames": 57,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.7543859649122807
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 1504,
+      "top1Correct": false,
+      "top5": [
+        "놀리다",
+        "과천시수어통역센터",
+        "병명",
+        "분필",
+        "육만오천"
+      ],
+      "top5Correct": false,
+      "videoSha256": "276931c3437f13bf56979714143247e45f0885dff63e2529ccf6d482a137e76b"
+    },
+    {
+      "expected": "명예",
+      "extractionMs": 1084,
+      "file": "명예.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.8363636363636363,
+        "pose": 1,
+        "rightHand": 0.6
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 87,
+      "targetRank": 3,
+      "top1Correct": false,
+      "top5": [
+        "성씨",
+        "출석",
+        "명예",
+        "교명",
+        "인색하다"
+      ],
+      "top5Correct": true,
+      "videoSha256": "d600906d733b082bff08ad978a1f085b0ffd66461dd0f6e09171267919cdcf63"
+    },
+    {
+      "expected": "모범생",
+      "extractionMs": 1130,
+      "file": "모범생.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.36666666666666664,
+        "pose": 1,
+        "rightHand": 0.6166666666666667
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "모범생",
+        "포항시수화통역센터",
+        "상상하다",
+        "진땀나다",
+        "백사십이"
+      ],
+      "top5Correct": true,
+      "videoSha256": "adee541095cb257cc730ce532f02e3b1c17ee9b118a04fed450c85a1e61d2783"
+    },
+    {
+      "expected": "몸무게",
+      "extractionMs": 954,
+      "file": "몸무게.mp4",
+      "frames": 51,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.8235294117647058,
+        "pose": 1,
+        "rightHand": 0.6078431372549019
+      },
+      "maxAbsLogitError": 0.000010013580322265625,
+      "nativeOnnxInferenceMs": 91,
+      "targetRank": 346,
+      "top1Correct": false,
+      "top5": [
+        "교제",
+        "몸",
+        "파헤치다",
+        "예습",
+        "회개"
+      ],
+      "top5Correct": false,
+      "videoSha256": "d5d9adb48549671df9b892eb54b9fb664ff12fd846cf663cf77d5539aca81a01"
+    },
+    {
+      "expected": "무궁화",
+      "extractionMs": 1139,
+      "file": "무궁화.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.3,
+        "pose": 1,
+        "rightHand": 0.5666666666666667
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "무궁화",
+        "백사십구",
+        "기지",
+        "후원",
+        "면역"
+      ],
+      "top5Correct": true,
+      "videoSha256": "2e2ad724f09b0c6efa48334694e718d3719dcea659129184841bb14ef921af58"
+    },
+    {
+      "expected": "무지개",
+      "extractionMs": 978,
+      "file": "무지개.mp4",
+      "frames": 52,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.6346153846153846,
+        "pose": 1,
+        "rightHand": 0.5
+      },
+      "maxAbsLogitError": 0.00001239776611328125,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "무지개",
+        "걷다",
+        "일산",
+        "감히",
+        "테니스"
+      ],
+      "top5Correct": true,
+      "videoSha256": "834e73f814d15a3d107b12bd1e78dd2950c6b0e7574e30f01854d0236fe2c47e"
+    },
+    {
+      "expected": "물약",
+      "extractionMs": 997,
+      "file": "물약.mp4",
+      "frames": 52,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.8076923076923077,
+        "pose": 1,
+        "rightHand": 0.7115384615384616
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "물약",
+        "사위",
+        "한약방",
+        "호수",
+        "수면제"
+      ],
+      "top5Correct": true,
+      "videoSha256": "22ac5b49057f0d2eb1f700b0803e8f6b0d593368b209e1868472d396604104b0"
+    },
+    {
+      "expected": "미군",
+      "extractionMs": 1136,
+      "file": "미군.mp4",
+      "frames": 59,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 1,
+        "pose": 1,
+        "rightHand": 0.6440677966101694
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "미군",
+        "성조기",
+        "군복",
+        "올림픽경기",
+        "십이"
+      ],
+      "top5Correct": true,
+      "videoSha256": "b0622fdc785f332d4d00897469d6c92c1d20a849415a57aaa6cabdabd88be977"
+    },
+    {
+      "expected": "미남",
+      "extractionMs": 1124,
+      "file": "미남.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.48333333333333334,
+        "pose": 1,
+        "rightHand": 0.48333333333333334
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 83,
+      "targetRank": 9,
+      "top1Correct": false,
+      "top5": [
+        "얻어먹다",
+        "전염",
+        "설거지",
+        "돕다",
+        "뻔뻔"
+      ],
+      "top5Correct": false,
+      "videoSha256": "ce5541a41f734b120e6dd54b3af5a30ece6d9fd22f68b3427c9bb660878c8d34"
+    },
+    {
+      "expected": "미녀",
+      "extractionMs": 848,
+      "file": "미녀.mp4",
+      "frames": 44,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.75,
+        "pose": 1,
+        "rightHand": 0.8181818181818182
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "미녀",
+        "아내",
+        "처남",
+        "김포시지부",
+        "신혼"
+      ],
+      "top5Correct": true,
+      "videoSha256": "292986fc2ceef13265fc420555c587f4878245e89c8ed73772488f4e2fcd9efc"
+    },
+    {
+      "expected": "미소",
+      "extractionMs": 858,
+      "file": "미소.mp4",
+      "frames": 46,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9347826086956522,
+        "pose": 1,
+        "rightHand": 0.6521739130434783
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 85,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "미소",
+        "다섯명",
+        "칼국수",
+        "밉다3",
+        "스웨덴"
+      ],
+      "top5Correct": true,
+      "videoSha256": "e93e7a79c017afd7948dbdd49ec6907a83c3bc7166ad192d58f6f10a53b6cd78"
+    },
+    {
+      "expected": "바다",
+      "extractionMs": 1209,
+      "file": "바다.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.484375,
+        "pose": 1,
+        "rightHand": 0.65625
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 84,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "바다",
+        "넘기다",
+        "동아리",
+        "기회주의",
+        "임시협약"
+      ],
+      "top5Correct": true,
+      "videoSha256": "31bf257802cf1ba77146e563b4dabc393c21be79eac6aed8414717360af293c2"
+    },
+    {
+      "expected": "바람",
+      "extractionMs": 1009,
+      "file": "바람.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.5818181818181818,
+        "pose": 1,
+        "rightHand": 0.5636363636363636
+      },
+      "maxAbsLogitError": 0.000012874603271484375,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "바람",
+        "전남",
+        "뚱뚱하다",
+        "십억",
+        "주목"
+      ],
+      "top5Correct": true,
+      "videoSha256": "0510c40086a1d02f4a967e91cba8d485e88b6173cce5cecf422798def4f67651"
+    },
+    {
+      "expected": "받다",
+      "extractionMs": 769,
+      "file": "받다.mp4",
+      "frames": 42,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.38095238095238093,
+        "pose": 1,
+        "rightHand": 0.5714285714285714
+      },
+      "maxAbsLogitError": 0.000008106231689453125,
+      "nativeOnnxInferenceMs": 131,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "받다",
+        "매력",
+        "8번째",
+        "화천군지부",
+        "역겹다"
+      ],
+      "top5Correct": true,
+      "videoSha256": "6bd33eeb22f7f8dc09115a3f07e71416ad06762d513abf2f8fa02fedf15e78a5"
+    },
+    {
+      "expected": "발각",
+      "extractionMs": 891,
+      "file": "발각.mp4",
+      "frames": 47,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.7446808510638298,
+        "pose": 1,
+        "rightHand": 0.5531914893617021
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 83,
+      "targetRank": 300,
+      "top1Correct": false,
+      "top5": [
+        "웃다",
+        "코코아",
+        "코",
+        "소주",
+        "당하다"
+      ],
+      "top5Correct": false,
+      "videoSha256": "da5aa1af91fcbff10451cbebce73d766c08041cd4f8068ef1eeaa45192416a15"
+    },
+    {
+      "expected": "발견",
+      "extractionMs": 854,
+      "file": "발견.mp4",
+      "frames": 45,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.6,
+        "pose": 1,
+        "rightHand": 0.5333333333333333
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "발견",
+        "유조선",
+        "홍천군수어통역센터",
+        "서점",
+        "한눈팔다"
+      ],
+      "top5Correct": true,
+      "videoSha256": "0b2edb0e53fee4fe6530b10dbbc975f2782d7b8d1d7faaeca3dee8cabd25254e"
+    },
+    {
+      "expected": "발인",
+      "extractionMs": 805,
+      "file": "발인.mp4",
+      "frames": 42,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.42857142857142855,
+        "pose": 1,
+        "rightHand": 0.38095238095238093
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 95,
+      "targetRank": 363,
+      "top1Correct": false,
+      "top5": [
+        "기혼",
+        "신기",
+        "청도군지부",
+        "결혼식",
+        "거북선"
+      ],
+      "top5Correct": false,
+      "videoSha256": "ba05d03840870e8b7995f9f040acb86e78617a638c508a69078f678c08dd39f2"
+    },
+    {
+      "expected": "밤샘",
+      "extractionMs": 1172,
+      "file": "밤샘.mp4",
+      "frames": 61,
+      "landmarkCoverage": {
+        "face": 0.9672131147540983,
+        "leftHand": 0.6557377049180327,
+        "pose": 1,
+        "rightHand": 0.6065573770491803
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 1829,
+      "top1Correct": false,
+      "top5": [
+        "조회",
+        "근무",
+        "대지",
+        "총회",
+        "달성"
+      ],
+      "top5Correct": false,
+      "videoSha256": "9549f349266bf023849cea3a5a11db73c1129b63b1bdba154798501164347585"
+    },
+    {
+      "expected": "방금",
+      "extractionMs": 1126,
+      "file": "방금.mp4",
+      "frames": 61,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.6229508196721312,
+        "pose": 1,
+        "rightHand": 0.5901639344262295
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "방금",
+        "개명",
+        "수상",
+        "결점",
+        "우습다"
+      ],
+      "top5Correct": true,
+      "videoSha256": "12bfe6fac28063f55dfba40f9cf0aa57fe990b333f42e1309b0be9fdfb322229"
+    },
+    {
+      "expected": "배부르다",
+      "extractionMs": 1026,
+      "file": "배부르다.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.4,
+        "pose": 1,
+        "rightHand": 0.4
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 97,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "배부르다",
+        "표리부동",
+        "망설이다",
+        "성급",
+        "낳다"
+      ],
+      "top5Correct": true,
+      "videoSha256": "0cdeb2b32a80409f2851a9a6a8ecb2ceddd1b8bcab6cf808d496be3272f2038a"
+    },
+    {
+      "expected": "백화점",
+      "extractionMs": 1081,
+      "file": "백화점.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.5272727272727272,
+        "pose": 1,
+        "rightHand": 0.45454545454545453
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 106,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "백화점",
+        "김해시청",
+        "사라지다",
+        "폐업",
+        "헛수고"
+      ],
+      "top5Correct": true,
+      "videoSha256": "35abd16cb4c45a96ba8be06f8a9065760a464fb1c648cbfa927feb330e9b1ab8"
+    },
+    {
+      "expected": "버릇",
+      "extractionMs": 1162,
+      "file": "버릇.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.4666666666666667,
+        "pose": 1,
+        "rightHand": 0.5166666666666667
+      },
+      "maxAbsLogitError": 0.000009059906005859375,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 2,
+      "top1Correct": false,
+      "top5": [
+        "외손녀",
+        "버릇",
+        "여행지",
+        "사골",
+        "개명"
+      ],
+      "top5Correct": true,
+      "videoSha256": "d6a50d5ea8c56e2d6315477f2be65746f8974894117ba565cf3abd3a07a8aea2"
+    },
+    {
+      "expected": "베트남",
+      "extractionMs": 644,
+      "file": "베트남.mp4",
+      "frames": 33,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.5757575757575758
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 88,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "베트남",
+        "시흥",
+        "군포",
+        "오천",
+        "이"
+      ],
+      "top5Correct": true,
+      "videoSha256": "ab87192af77315753a4236806b4afa3ccaa91dfb9461d17663f5ca78b22483c1"
+    },
+    {
+      "expected": "벨기에",
+      "extractionMs": 715,
+      "file": "벨기에.mp4",
+      "frames": 37,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.4864864864864865
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 93,
+      "targetRank": 9,
+      "top1Correct": false,
+      "top5": [
+        "삼십삼",
+        "사십사",
+        "의문",
+        "궁하다",
+        "사십삼"
+      ],
+      "top5Correct": false,
+      "videoSha256": "df1dbfe514ae0a9141e28edd36f563c5886762460bc4bd0f1cc407f511d0f561"
+    },
+    {
+      "expected": "변덕",
+      "extractionMs": 831,
+      "file": "변덕.mp4",
+      "frames": 44,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.9318181818181818,
+        "pose": 1,
+        "rightHand": 0.5227272727272727
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 87,
+      "targetRank": 4,
+      "top1Correct": false,
+      "top5": [
+        "떨다",
+        "오른쪽",
+        "짓밟다",
+        "변덕",
+        "원주"
+      ],
+      "top5Correct": true,
+      "videoSha256": "a29ddf338e5ffb2d1f6e49f8d9ac9a03929093d5d7f5cd5e554c492a88841f39"
+    },
+    {
+      "expected": "변비",
+      "extractionMs": 1187,
+      "file": "변비.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.640625,
+        "pose": 1,
+        "rightHand": 0.859375
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 87,
+      "targetRank": 316,
+      "top1Correct": false,
+      "top5": [
+        "강요",
+        "군마",
+        "보호",
+        "괴롭히다",
+        "치약"
+      ],
+      "top5Correct": false,
+      "videoSha256": "b002e49f8e9d4f11f34947329d85d11c63c8e483db7593504e35ede0ce13f377"
+    },
+    {
+      "expected": "별",
+      "extractionMs": 1110,
+      "file": "별.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.5333333333333333
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 83,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "별",
+        "꿈",
+        "양산시지부",
+        "할머니",
+        "추억"
+      ],
+      "top5Correct": true,
+      "videoSha256": "78607363bf3e17245f7b5d85e2d07a03730437836a4f41c54742eff52e7e468d"
+    },
+    {
+      "expected": "병가",
+      "extractionMs": 1135,
+      "file": "병가.mp4",
+      "frames": 61,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.3442622950819672,
+        "pose": 1,
+        "rightHand": 0.5737704918032787
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 83,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "병가",
+        "아르바이트",
+        "근무",
+        "돼지고기",
+        "일터"
+      ],
+      "top5Correct": true,
+      "videoSha256": "368f609c4e80ef038b29e2cd6c8881214fdcd1d7b70ace4a57801fbb9acbdfec"
+    },
+    {
+      "expected": "병문안",
+      "extractionMs": 1180,
+      "file": "병문안.mp4",
+      "frames": 64,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.953125,
+        "pose": 1,
+        "rightHand": 0.859375
+      },
+      "maxAbsLogitError": 0.0000133514404296875,
+      "nativeOnnxInferenceMs": 87,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "병문안",
+        "사십사",
+        "감염병",
+        "치료제",
+        "영양군지부"
+      ],
+      "top5Correct": true,
+      "videoSha256": "de600b088fce81ebbd99781f78548fd78228fdb2254cbb0af98787d71eca091c"
+    },
+    {
+      "expected": "분필",
+      "extractionMs": 1161,
+      "file": "분필.mp4",
+      "frames": 61,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.09836065573770492,
+        "pose": 1,
+        "rightHand": 0.5573770491803278
+      },
+      "maxAbsLogitError": 0.00000762939453125,
+      "nativeOnnxInferenceMs": 86,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "분필",
+        "개명",
+        "금욕",
+        "실명",
+        "원한"
+      ],
+      "top5Correct": true,
+      "videoSha256": "10bc49944746c046360e0230436855976fe1a673a1a012a176b9bdc799a42027"
+    },
+    {
+      "expected": "불안",
+      "extractionMs": 1017,
+      "file": "불안.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.509090909090909,
+        "pose": 1,
+        "rightHand": 0.509090909090909
+      },
+      "maxAbsLogitError": 0.00000858306884765625,
+      "nativeOnnxInferenceMs": 90,
+      "targetRank": 131,
+      "top1Correct": false,
+      "top5": [
+        "표리부동",
+        "금산군주민지원센터",
+        "얌전하다",
+        "차분",
+        "동해시청"
+      ],
+      "top5Correct": false,
+      "videoSha256": "beb855d622536ad5602af7b6f43aba5ae89604b8e8f29a8af7907532521fa794"
+    },
+    {
+      "expected": "불행",
+      "extractionMs": 1151,
+      "file": "불행.mp4",
+      "frames": 63,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.42857142857142855,
+        "pose": 1,
+        "rightHand": 0.6031746031746031
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 82,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "불행",
+        "검정머리",
+        "욕망",
+        "고추",
+        "징그럽다"
+      ],
+      "top5Correct": true,
+      "videoSha256": "fc895900569119655779f772c00a5d52a5335791392e25e58c90f6171aa5b5b7"
+    },
+    {
+      "expected": "붕대",
+      "extractionMs": 944,
+      "file": "붕대.mp4",
+      "frames": 50,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.92,
+        "pose": 1,
+        "rightHand": 0.54
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 135,
+      "targetRank": 174,
+      "top1Correct": false,
+      "top5": [
+        "바래다",
+        "금천구청",
+        "아까",
+        "이심전심",
+        "어색하다"
+      ],
+      "top5Correct": false,
+      "videoSha256": "709d25b7d82b2f615305097a20ecef3d206d570712d8f5b8bd5ad2283816c692"
+    },
+    {
+      "expected": "비",
+      "extractionMs": 1210,
+      "file": "비.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.35,
+        "pose": 1,
+        "rightHand": 0.5166666666666667
+      },
+      "maxAbsLogitError": 0.0000095367431640625,
+      "nativeOnnxInferenceMs": 93,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "비",
+        "불복종",
+        "염색",
+        "친부",
+        "새"
+      ],
+      "top5Correct": true,
+      "videoSha256": "4fb366c029381deb53471d37930044e031fa35054c3a07651569d4e7d3411744"
+    },
+    {
+      "expected": "비빔밥",
+      "extractionMs": 1101,
+      "file": "비빔밥.mp4",
+      "frames": 60,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.3333333333333333,
+        "pose": 1,
+        "rightHand": 0.55
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 92,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "비빔밥",
+        "백사십오",
+        "문경시수어통역센터",
+        "출석",
+        "수상"
+      ],
+      "top5Correct": true,
+      "videoSha256": "7b58979af1383c3771c9efbf92af6f41002ac9f1b5ab3c4d1055ca0a8e17fa6b"
+    },
+    {
+      "expected": "비율",
+      "extractionMs": 1039,
+      "file": "비율.mp4",
+      "frames": 53,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.6981132075471698,
+        "pose": 1,
+        "rightHand": 0.5849056603773585
+      },
+      "maxAbsLogitError": 0.000011444091796875,
+      "nativeOnnxInferenceMs": 94,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "비율",
+        "탁구공",
+        "반역",
+        "더디다",
+        "제사"
+      ],
+      "top5Correct": true,
+      "videoSha256": "f1c6429eea396e75571dcc563542442e8df665cf0d72790ada5e532d21f61a3c"
+    },
+    {
+      "expected": "빨강",
+      "extractionMs": 1097,
+      "file": "빨강.mp4",
+      "frames": 55,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0,
+        "pose": 1,
+        "rightHand": 0.509090909090909
+      },
+      "maxAbsLogitError": 0.00001049041748046875,
+      "nativeOnnxInferenceMs": 96,
+      "targetRank": 17,
+      "top1Correct": false,
+      "top5": [
+        "신부",
+        "거역",
+        "원하다",
+        "동메달",
+        "흠집"
+      ],
+      "top5Correct": false,
+      "videoSha256": "0433d9c5fe0087e6a837f2bd3fb21eb01c95fe05ae21468f63a4a617b18b1974"
+    },
+    {
+      "expected": "살인",
+      "extractionMs": 911,
+      "file": "살인.mp4",
+      "frames": 48,
+      "landmarkCoverage": {
+        "face": 1,
+        "leftHand": 0.8541666666666666,
+        "pose": 1,
+        "rightHand": 0.5625
+      },
+      "maxAbsLogitError": 0.0000133514404296875,
+      "nativeOnnxInferenceMs": 93,
+      "targetRank": 1,
+      "top1Correct": true,
+      "top5": [
+        "살인",
+        "살인2",
+        "살인1",
+        "부채질",
+        "복귀"
+      ],
+      "top5Correct": true,
+      "videoSha256": "78b9d1f5361d103be2aa4238ed41d8ecc13e205e98bdcb334215bdf105ea0ebe"
+    }
+  ]
+}

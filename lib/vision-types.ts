@@ -1,3 +1,5 @@
+import type { LanguageId } from "./model-adapters";
+
 export type Point = {
   x: number;
   y: number;
@@ -21,34 +23,42 @@ export type VisionFrame = {
 
 export type WorkerAnalysis = {
   type: "analysis";
+  session?: number;
+  frameId?: number;
   state: "listening" | "processing" | "uncertain";
   candidate: string | null;
   confidence: number;
   bufferSize: number;
+  feedback?: string;
 };
 
 export type WorkerConfirmation = {
   type: "confirmed";
+  session?: number;
   text: string;
   gloss: string;
   confidence: number;
   timestamp: number;
 };
 
-export type WorkerMessage = WorkerAnalysis | WorkerConfirmation;
+export type WorkerMessage = WorkerAnalysis | WorkerConfirmation
+  | { type: "fault"; session?: number; message: string };
 
 export type CalibrationTemplate = {
   id: string;
+  /** Older records without this field are treated as ASL for compatibility. */
+  language?: LanguageId;
   gloss: string;
   text: string;
   createdAt: number;
   frames: number[][];
 };
 
-export type WorkerInput =
+export type WorkerInput = (
   | { type: "frame"; frame: VisionFrame }
   | { type: "reset" }
-  | { type: "templates"; templates: CalibrationTemplate[] };
+  | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[] }
+) & { session?: number; frameId?: number };
 
 export type DetectionStatus = {
   person: boolean;

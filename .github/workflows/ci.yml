@@ -1,0 +1,56 @@
+name: Core CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: Typecheck, test, lint, worker, repo guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit and regression tests
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build recognition workers
+        run: npm run build:worker
+
+      - name: Check for accidental secrets
+        run: npm run audit:secrets
+
+      - name: Enforce repository asset policy
+        run: npm run repo:guard

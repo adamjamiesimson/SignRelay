@@ -1,0 +1,37 @@
+{
+  "purpose": "Controlled landmark preprocessing parity, not recognition accuracy",
+  "compared": "production prepareLseInput vs training sequence_from_release",
+  "fixtures": [
+    {
+      "fixture": "1-frames-missing-none",
+      "maxAbsoluteError": 2.384185791015625e-07,
+      "passed": true
+    },
+    {
+      "fixture": "30-frames-missing-left",
+      "maxAbsoluteError": 2.384185791015625e-07,
+      "passed": true
+    },
+    {
+      "fixture": "64-frames-missing-none",
+      "maxAbsoluteError": 2.384185791015625e-07,
+      "passed": true
+    },
+    {
+      "fixture": "80-frames-missing-none",
+      "maxAbsoluteError": 2.384185791015625e-07,
+      "passed": true
+    },
+    {
+      "fixture": "137-frames-missing-shoulders",
+      "maxAbsoluteError": 0.0,
+      "passed": true
+    },
+    {
+      "fixture": "24-frames-missing-all",
+      "maxAbsoluteError": 0.0,
+      "passed": true
+    }
+  ],
+  "allPassed": true
+}

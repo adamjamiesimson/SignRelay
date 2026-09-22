@@ -1,0 +1,11 @@
+{
+  "engine": "onnxruntime-web single-thread WASM in Node",
+  "modelSha256": "840f6862f3988616fda45ac06704ed4be1e0378e59460abd7b4ce18d3634ce73",
+  "clip": "W002S08F_03.mp4",
+  "maxAbsLogitError": 0.000007778406143188477,
+  "loadMs": 2914,
+  "inferenceMs": 13798,
+  "browserTested": false,
+  "liveCameraTested": false,
+  "installed": false
+}

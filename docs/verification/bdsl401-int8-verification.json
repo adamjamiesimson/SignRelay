@@ -1,0 +1,370 @@
+{
+  "source": "https://huggingface.co/Shawon16/VideoMAE_BdSLW401_20_epochs_p5_SR_10/tree/f03fdadb20d1c59989ee7b2bfa95a07459b7fb56",
+  "sourceHashes": {
+    "model.safetensors": "e8f0e51df603dc2969c2d602dc8b8ee8f2c0e615afdcf903287336012a03a112",
+    "config.json": "552490518ff3de4264fdda33f8b7081601fd46759e2aa64dcb317927cb54a96b",
+    "preprocessor_config.json": "4bc9b255ff212041bc28127d4fa0ae1630abca52bb2d882f3e4c0b9e5b763f06",
+    "README.md": "bc2e5d2801318bfa7f3af5321e33cb044f865e270d87c8f205244e4cb108ca7a"
+  },
+  "clipSource": "https://huggingface.co/spaces/Shawon16/BdSLW60/tree/50f72af4a9e00ca736d1b345f4d42a5e1740ca68",
+  "selection": "All six standalone demo MP4s; selected before inference; publisher-selected examples",
+  "method": "Dynamic MatMul constant weights only; per-channel signed int8 storage with reduced 7-bit range; uint8 activations; Conv and attention products remain float32",
+  "preprocessing": "Every tenth decoded RGB frame, uniform 16-frame selection with truncation, divide by 255, ImageNet normalization, bilinear square resize with antialiasing",
+  "input": [
+    1,
+    16,
+    3,
+    224,
+    224
+  ],
+  "output": [
+    1,
+    401
+  ],
+  "variants": {
+    "float32": {
+      "modelSha256": "840f6862f3988616fda45ac06704ed4be1e0378e59460abd7b4ce18d3634ce73",
+      "modelBytes": 351137555,
+      "top1Count": 4,
+      "top5Count": 6,
+      "nativeMedianInferenceMs": 2251.0
+    },
+    "int8": {
+      "modelSha256": "723758aabf0106f00443794b429ef3a1d6bb2bc9044e93b8b5dd34c0e1be84b9",
+      "modelBytes": 95983043,
+      "top1Count": 4,
+      "top5Count": 6,
+      "nativeMedianInferenceMs": 1100.0
+    }
+  },
+  "quantizedOperators": {
+    "Constant": 113,
+    "Transpose": 50,
+    "Conv": 1,
+    "Shape": 1,
+    "Slice": 1,
+    "Concat": 1,
+    "Reshape": 49,
+    "Add": 110,
+    "LayerNormalization": 25,
+    "DynamicQuantizeLinear": 49,
+    "Mul": 170,
+    "MatMulInteger": 73,
+    "Cast": 73,
+    "MatMul": 24,
+    "Div": 24,
+    "Softmax": 12,
+    "Erf": 12,
+    "ReduceMean": 1
+  },
+  "clips": [
+    {
+      "file": "W002S08F_03.mp4",
+      "sha256": "458f4e951650394059f29092340e26620825fc0fd52e1bbc691705482ddb4adf",
+      "expectedCode": "W002",
+      "sourceFrames": 88,
+      "variants": {
+        "float32": {
+          "top5": [
+            "W002",
+            "W375",
+            "W342",
+            "W276",
+            "W320"
+          ],
+          "top1Correct": true,
+          "top5Correct": true,
+          "nativeInferenceMs": 2201
+        },
+        "int8": {
+          "top5": [
+            "W002",
+            "W375",
+            "W342",
+            "W276",
+            "W320"
+          ],
+          "top1Correct": true,
+          "top5Correct": true,
+          "nativeInferenceMs": 1184
+        }
+      },
+      "fixtures": {
+        "input": {
+          "path": "fixtures/W002S08F_03-input.f32",
+          "sha256": "8a22fa2deebfb434eb857c511321ad32bf366a60683558d92e18b485ce2ccba3"
+        },
+        "float32": {
+          "path": "fixtures/W002S08F_03-float32.f32",
+          "sha256": "16ed3fa39819f52c401f77ffa5f3ce5256b86aed77a1912cf603aabdd22d95cf"
+        },
+        "int8": {
+          "path": "fixtures/W002S08F_03-int8.f32",
+          "sha256": "958db470bfc8a57aae9b0e353f2f1538ce88ac00da12dfb4c3ba862994843be0"
+        }
+      },
+      "top1Unchanged": true,
+      "maxAbsLogitChange": 0.29096221923828125,
+      "meanAbsLogitChange": 0.07115128636360168
+    },
+    {
+      "file": "W003S08F_11.mp4",
+      "sha256": "62fb84edbe6ee196d1a4ce71c96836596431a6b7991767ef1034ffa6532703c6",
+      "expectedCode": "W003",
+      "sourceFrames": 115,
+      "variants": {
+        "float32": {
+          "top5": [
+            "W003",
+            "W301",
+            "W396",
+            "W268",
+            "W335"
+          ],
+          "top1Correct": true,
+          "top5Correct": true,
+          "nativeInferenceMs": 2324
+        },
+        "int8": {
+          "top5": [
+            "W003",
+            "W301",
+            "W396",
+            "W268",
+            "W335"
+          ],
+          "top1Correct": true,
+          "top5Correct": true,
+          "nativeInferenceMs": 1262
+        }
+      },
+      "fixtures": {
+        "input": {
+          "path": "fixtures/W003S08F_11-input.f32",
+          "sha256": "9e4670665c570080a3da8cff440e898c288cd283f2e2bc25ab54a66202c347be"
+        },
+        "float32": {
+          "path": "fixtures/W003S08F_11-float32.f32",
+          "sha256": "8f96806f70df7e8f444b97d245f95cdec4fd9aa0235ba4ae087473bfd694f8e3"
+        },
+        "int8": {
+          "path": "fixtures/W003S08F_11-int8.f32",
+          "sha256": "38018b91348ea53eead530b96a8f2946542cdea5aa2d9ed727effffe4cfec32f"
+        }
+      },
+      "top1Unchanged": true,
+      "maxAbsLogitChange": 0.5495433807373047,
+      "meanAbsLogitChange": 0.06767413020133972
+    },
+    {
+      "file": "W205S08F_02.mp4",
+      "sha256": "aeab2353d5b69e797780ec1e1535d2b0d793e4fbdc0e18b73d07f5b1d0c248d9",
+      "expectedCode": "W205",
+      "sourceFrames": 62,
+      "variants": {
+        "float32": {
+          "top5": [
+            "W213",
+            "W102",
+            "W319",
+            "W205",
+            "W191"
+          ],
+          "top1Correct": false,
+          "top5Correct": true,
+          "nativeInferenceMs": 2593
+        },
+        "int8": {
+          "top5": [
+            "W213",
+            "W102",
+            "W319",
+            "W205",
+            "W280"
+          ],
+          "top1Correct": false,
+          "top5Correct": true,
+          "nativeInferenceMs": 1102
+        }
+      },
+      "fixtures": {
+        "input": {
+          "path": "fixtures/W205S08F_02-input.f32",
+          "sha256": "2427133f61d277aaa25b74501804aedeafd7fd4afe777f536efbd5e78c406533"
+        },
+        "float32": {
+          "path": "fixtures/W205S08F_02-float32.f32",
+          "sha256": "aeb6308b083b4540ffcca6819b312d38e3c3be64e8c32e51f4704aebcdfa5f19"
+        },
+        "int8": {
+          "path": "fixtures/W205S08F_02-int8.f32",
+          "sha256": "6a516219afad02dafc3f1b6b8e2f1e169ee8d9fa43fd9d61e29af1162df3c9b0"
+        }
+      },
+      "top1Unchanged": true,
+      "maxAbsLogitChange": 0.44722604751586914,
+      "meanAbsLogitChange": 0.10069192200899124
+    },
+    {
+      "file": "W211S04F_03.mp4",
+      "sha256": "57fafb651ac5d0216f1c1632e88658a7871e467abec112a0df85bb9721c2c779",
+      "expectedCode": "W211",
+      "sourceFrames": 73,
+      "variants": {
+        "float32": {
+          "top5": [
+            "W082",
+            "W211",
+            "W243",
+            "W074",
+            "W200"
+          ],
+          "top1Correct": false,
+          "top5Correct": true,
+          "nativeInferenceMs": 2109
+        },
+        "int8": {
+          "top5": [
+            "W082",
+            "W211",
+            "W243",
+            "W074",
+            "W200"
+          ],
+          "top1Correct": false,
+          "top5Correct": true,
+          "nativeInferenceMs": 1098
+        }
+      },
+      "fixtures": {
+        "input": {
+          "path": "fixtures/W211S04F_03-input.f32",
+          "sha256": "cfcaab4d1002b78d4f29f87df17ec930a952de5163b7557b4cd01589adce7e94"
+        },
+        "float32": {
+          "path": "fixtures/W211S04F_03-float32.f32",
+          "sha256": "66c5ea4774ef118bf308607e80c6d408850e2283c051ab25a98ba543036fc106"
+        },
+        "int8": {
+          "path": "fixtures/W211S04F_03-int8.f32",
+          "sha256": "9f8de7be5ca66e06408bc3abe24aff309339dc19f79b86b096ad660e13f9e4f6"
+        }
+      },
+      "top1Unchanged": true,
+      "maxAbsLogitChange": 0.6063380241394043,
+      "meanAbsLogitChange": 0.12371151894330978
+    },
+    {
+      "file": "W389S08F_02.mp4",
+      "sha256": "97e715ef03b35cab865f4c0b2f945983b7b1817370e7749e2acf7ef7fcd84dfc",
+      "expectedCode": "W389",
+      "sourceFrames": 71,
+      "variants": {
+        "float32": {
+          "top5": [
+            "W389",
+            "W395",
+            "W364",
+            "W228",
+            "W154"
+          ],
+          "top1Correct": true,
+          "top5Correct": true,
+          "nativeInferenceMs": 2301
+        },
+        "int8": {
+          "top5": [
+            "W389",
+            "W395",
+            "W364",
+            "W228",
+            "W154"
+          ],
+          "top1Correct": true,
+          "top5Correct": true,
+          "nativeInferenceMs": 1063
+        }
+      },
+      "fixtures": {
+        "input": {
+          "path": "fixtures/W389S08F_02-input.f32",
+          "sha256": "4615fc8e939d5826b79400ee7a17052edc2901e1ed5e86e17f57e2dd63f75d7c"
+        },
+        "float32": {
+          "path": "fixtures/W389S08F_02-float32.f32",
+          "sha256": "ef75a6fff17e8515428a232bcb8d11546d2e3c47a237569fcb3f8a925fd24e73"
+        },
+        "int8": {
+          "path": "fixtures/W389S08F_02-int8.f32",
+          "sha256": "ceb88fd073f8033a9900403fb6e517a95a36c9f697715dcf52498dbaca2597c8"
+        }
+      },
+      "top1Unchanged": true,
+      "maxAbsLogitChange": 0.39409637451171875,
+      "meanAbsLogitChange": 0.09035474061965942
+    },
+    {
+      "file": "W401S04F_06.mp4",
+      "sha256": "f2d27fe6031263d0007039d5b686876aeeb296a018eee8c18b2879c6ffba10e5",
+      "expectedCode": "W401",
+      "sourceFrames": 74,
+      "variants": {
+        "float32": {
+          "top5": [
+            "W401",
+            "W336",
+            "W311",
+            "W327",
+            "W313"
+          ],
+          "top1Correct": true,
+          "top5Correct": true,
+          "nativeInferenceMs": 2174
+        },
+        "int8": {
+          "top5": [
+            "W401",
+            "W336",
+            "W311",
+            "W313",
+            "W327"
+          ],
+          "top1Correct": true,
+          "top5Correct": true,
+          "nativeInferenceMs": 1066
+        }
+      },
+      "fixtures": {
+        "input": {
+          "path": "fixtures/W401S04F_06-input.f32",
+          "sha256": "4058ac9d28252353734319e73ce5c3bb7cdcdf81ab75d9b2466a5c9805a9c287"
+        },
+        "float32": {
+          "path": "fixtures/W401S04F_06-float32.f32",
+          "sha256": "7354bb4c71578d7f4d42dbbe55f72d8737c910f81544bc940fe912576e34bbef"
+        },
+        "int8": {
+          "path": "fixtures/W401S04F_06-int8.f32",
+          "sha256": "f67b68d7356f01ba32ec26049e9d59dac3829dfc03b0f6f9a626747a45fd34c3"
+        }
+      },
+      "top1Unchanged": true,
+      "maxAbsLogitChange": 0.4846186637878418,
+      "meanAbsLogitChange": 0.09668983519077301
+    }
+  ],
+  "total": 6,
+  "top1UnchangedCount": 6,
+  "sizeReductionPercent": 72.67,
+  "versions": {
+    "onnx": "1.17.0",
+    "onnxruntime": "1.20.1",
+    "torch": "2.6.0+cpu"
+  },
+  "timing": "Two native CPU threads; one untimed warm-up then one timed inference per clip and variant on the same host",
+  "installed": false,
+  "readableVocabularyVerified": false,
+  "browserTested": false,
+  "limitations": "Six publisher-selected coded examples; no independent accuracy estimate. Quantization changes logits. Native and WASM equivalence must use the matching variant reference. No activation or deployment.",
+  "mode": "dynamic"
+}

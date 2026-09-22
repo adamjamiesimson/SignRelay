@@ -1,0 +1,90 @@
+{
+  "workflowRun": "https://github.com/adamjamiesimson/SignRelay/actions/runs/34934013369",
+  "workflowCommit": "6b487ff9ef1f3e3ad91e3062302c785cfdaa7a98",
+  "jobId": 104267958099,
+  "artifactId": 10382362191,
+  "evidence": "Per-clip JSON emitted by evaluate_ksl_clips.py, copied verbatim from completed job logs; aggregate counts calculated from those records",
+  "extractorBackend": "MediaPipe 0.10.35 Tasks",
+  "modelSha256": "52961e41cc0f35e431d25a9e731044aa2ca01f00d67076f34a6b466c4e5db83d",
+  "clips": [
+    {
+      "file": "간호사.mp4",
+      "videoSha256": "b73a2c8a9c833e0362d9854d793934093320476a216f173d5012b3749a70819e",
+      "expected": "간호사",
+      "frames": 64,
+      "top5": [
+        "간호사",
+        "키다리",
+        "예술가",
+        "이심전심",
+        "취객"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "targetRank": 1,
+      "maxAbsLogitError": 0.0000095367431640625,
+      "extractionMs": 2039,
+      "nativeOnnxInferenceMs": 143,
+      "landmarkCoverage": {
+        "pose": 1,
+        "leftHand": 0.953125,
+        "rightHand": 0.703125,
+        "face": 0.984375
+      }
+    },
+    {
+      "file": "갈등.mp4",
+      "videoSha256": "1ab03144dfe6a4c377f4d915a39152579cfb637530e1c619127282081c5404ea",
+      "expected": "갈등",
+      "frames": 48,
+      "top5": [
+        "이기주의",
+        "갈등",
+        "교제",
+        "맥없다",
+        "서구수어통역센터"
+      ],
+      "top1Correct": false,
+      "top5Correct": true,
+      "targetRank": 2,
+      "maxAbsLogitError": 0.00000858306884765625,
+      "extractionMs": 1284,
+      "nativeOnnxInferenceMs": 131,
+      "landmarkCoverage": {
+        "pose": 1,
+        "leftHand": 0.9583333333333334,
+        "rightHand": 0.8125,
+        "face": 1
+      }
+    },
+    {
+      "file": "갈색.mp4",
+      "videoSha256": "6ae48f443aea052df8b5734f3145105641c77aac015a9baae93560c0c10aa313",
+      "expected": "갈색",
+      "frames": 50,
+      "top5": [
+        "갈색",
+        "백삼십사",
+        "100만원",
+        "벌꿀",
+        "최소"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "targetRank": 1,
+      "maxAbsLogitError": 0.0000095367431640625,
+      "extractionMs": 1354,
+      "nativeOnnxInferenceMs": 124,
+      "landmarkCoverage": {
+        "pose": 1,
+        "leftHand": 0.82,
+        "rightHand": 0.68,
+        "face": 1
+      }
+    }
+  ],
+  "top1Count": 2,
+  "top5Count": 3,
+  "total": 3,
+  "limitations": "Three fixed publisher clips; not a general accuracy estimate, live camera test or model activation"
+}

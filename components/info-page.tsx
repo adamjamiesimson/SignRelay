@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { SiteFooter, SiteHeader } from "./site-chrome";
+import { SurfaceMotion } from "./surface-motion";
 
 export type InfoSection = {
   title: string;
@@ -19,6 +20,7 @@ export function InfoPage({
 }) {
   return (
     <div className="app-shell">
+      <SurfaceMotion scene={title} />
       <SiteHeader />
       <main className="info-page">
         <header className="info-hero">
@@ -28,7 +30,7 @@ export function InfoPage({
         </header>
         <div className="info-sections">
           {sections.map((section, index) => (
-            <section className="info-section" key={section.title}>
+            <section className="info-section" key={section.title} data-reveal>
               <span>{String(index + 1).padStart(2, "0")}</span>
               <div>
                 <h2>{section.title}</h2>

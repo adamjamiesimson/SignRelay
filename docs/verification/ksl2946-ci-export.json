@@ -1,0 +1,45 @@
+{
+  "source": "https://huggingface.co/Seoyoung07/korean-sign-word-classifier-mediapipe/tree/214c0d87294695f4c79086440404bfb72fa7c5bc",
+  "checkpointSha256": "c1ee1138ac2f2cde81b9f1ce258f6f13d041f0c01050181c7a76e855f6ba9eb6",
+  "modelSha256": "52961e41cc0f35e431d25a9e731044aa2ca01f00d67076f34a6b466c4e5db83d",
+  "modelBytes": 22623947,
+  "classes": 2946,
+  "epoch": 41,
+  "publisherValidationAccuracy": 0.8962213765938981,
+  "input": {
+    "keypoints": [
+      1,
+      64,
+      115,
+      4
+    ],
+    "lengths": [
+      1
+    ]
+  },
+  "output": [
+    1,
+    2946
+  ],
+  "nativeParity": [
+    {
+      "length": 1,
+      "max_abs_error": 0.0000095367431640625
+    },
+    {
+      "length": 17,
+      "max_abs_error": 0.00001239776611328125
+    },
+    {
+      "length": 64,
+      "max_abs_error": 0.00001049041748046875
+    }
+  ],
+  "signAccuracyMeasuredHere": false,
+  "releaseStatus": "research-only; model/source reuse terms and signer evaluation unresolved",
+  "versions": {
+    "torch": "2.6.0+cpu",
+    "onnx": "1.17.0",
+    "onnxruntime": "1.20.1"
+  }
+}

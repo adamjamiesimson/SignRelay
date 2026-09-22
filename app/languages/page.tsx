@@ -1,13 +1,59 @@
 import type { Metadata } from "next";
 import { InfoPage } from "@/components/info-page";
-import { ASL_BUILT_IN_VOCABULARY } from "@/lib/model-adapters";
+import { ASL_BUILT_IN_VOCABULARY, LANGUAGE_LIST, PERSONAL_STARTER_VOCABULARY } from "@/lib/model-adapters";
 
-export const metadata: Metadata = { title: "Supported languages", description: "Honest language and vocabulary support for SignRelay." };
+export const metadata: Metadata = {
+  title: "Supported languages",
+  description: "Honest model and private-vocabulary support across SignRelay's sign-language workspaces.",
+  alternates: { canonical: "/languages" },
+};
 
 export default function LanguagesPage() {
-  return <InfoPage eyebrow="Language support" title="Three languages. Three separate model paths." intro="ASL, ISL and CSL are independent languages with different lexicons and grammar. SignRelay never shares a vocabulary by changing a label." sections={[
-    { title: "American Sign Language · experimental", body: <><p>The installed research adapter includes the official WLASL1000 Pose-TGCN checkpoint. Its published held-out benchmark is 34.86% top-1, 61.73% top-5 and 71.91% top-10. It is an isolated-sign research model, not full ASL translation, and the live MediaPipe-to-OpenPose adapter is still experimental.</p><p className="vocabulary-list"><strong>{ASL_BUILT_IN_VOCABULARY.length} built-in signs:</strong> {ASL_BUILT_IN_VOCABULARY.map((word) => word.gloss).join(" · ")}</p><p>Users can also type their own word or short phrase and record examples for a personal on-device recognizer. Those personal signs remain separate from the shared 1,000-word model.</p></> },
-    { title: "Indian Sign Language · model not installed", body: <><p>A real 100-label candidate vocabulary has been audited from the INCLUDE dataset (CC-BY-4.0), which publishes 4,292 videos across 263 ISL word signs. It is not shown as supported yet: there is no trained checkpoint, and the public metadata lacks signer IDs needed for SignRelay’s signer-aware evaluation.</p><a href="https://huggingface.co/datasets/ai4bharat/INCLUDE">Read the INCLUDE dataset card</a></> },
-    { title: "Chinese Sign Language · model not installed", body: <><p>No CSL word list or checkpoint has been added. The official SLR500 source has 500 isolated CSL signs, but it is research-only and its agreement must be signed by a full-time staff member—not a student. SignRelay will keep CSL unavailable until that permission or a suitable open dataset is secured.</p><a href="https://ustc-slr.github.io/datasets/2015_csl/">Read the SLR500 access requirements</a></> },
-  ]} />;
+  const automatic = LANGUAGE_LIST.filter((language) => language.status === "experimental");
+  const preparing = LANGUAGE_LIST.filter((language) => language.status === "preparing");
+  const personal = LANGUAGE_LIST.filter((language) => language.status === "personal");
+
+  return <InfoPage
+    eyebrow="Language support"
+    title={`${LANGUAGE_LIST.length} languages. Separate recognizers.`}
+    intro="Sign languages are independent languages, not signed versions of spoken languages. SignRelay keeps every personal vocabulary and recognition session inside its selected language."
+    sections={[
+      {
+        title: `Pretrained research models · ${automatic.length} ${automatic.length === 1 ? "language" : "languages"}`,
+        body: <>
+          <p>{automatic.map((language) => `${language.shortName} (${language.automaticVocabularyCount.toLocaleString()})`).join(" · ")} have separate, browser-loadable isolated-sign models. They run on-device and remain experimental until independent live-camera evaluation is complete.</p>
+          <p>ASL uses the official {ASL_BUILT_IN_VOCABULARY.length.toLocaleString()}-class WLASL Pose-TGCN checkpoint, BSL uses the 1,064-class BSL-1K Pose2Sign checkpoint, and ISL uses the 263-class AI4Bharat INCLUDE transformer. None is presented as continuous sentence interpretation.</p>
+          <p>Spanish uses a 300-class model trained on the released SWL-LSE health-domain landmarks. Released test-split top-1 was 60.5%; live-camera accuracy remains unmeasured.</p>
+          <p>Bangla uses a separate VideoMAE clip model with 401 sign classes and 398 distinct English glosses. Its first load is 97 MB; results remain experimental and inference is slow.</p>
+          <p>RSL uses the official Slovo video model: 967 word/phrase classes and 33 fingerspelling letters, without teaching. It has a separate manual single-sign camera mode, a 141 MB first download and slow inference; it is not real-time.</p>
+          <p>PSL is different from the other six: it is not a trained classifier. It matches against 775 official Pakistan Sign Language dictionary signs from Hamza Foundation Academy for the Deaf, each with exactly one official reference performance, using the same one-shot distance matching already used for a signer’s own personal templates. No accuracy evaluation exists for it.</p>
+        </>,
+      },
+      {
+        title: `Models in preparation · ${preparing.length} ${preparing.length === 1 ? "language" : "languages"}`,
+        body: <>
+          <p>{preparing.map((language) => language.language).join(" and ")} {preparing.length === 1 ? "has an independent model pipeline" : "have independent model pipelines"} in preparation. SignRelay does not request a missing checkpoint or show automatic output for those languages.</p>
+          <p>Their private signer-taught workspaces are available now, with the same language separation as every other workspace.</p>
+        </>,
+      },
+      {
+        title: `Signer-taught workspaces · ${personal.length} ${personal.length === 1 ? "language" : "languages"}`,
+        body: <>
+          <p>{personal.map((language) => `${language.language} (${language.shortName})`).join(" · ")}</p>
+          <p>These workspaces use only examples recorded by the signer on their device. They are functional personal recognizers, not claims of a signer-independent pretrained model.</p>
+        </>,
+      },
+      {
+        title: `${PERSONAL_STARTER_VOCABULARY.length.toLocaleString()} prompts, unlimited custom signs`,
+        body: <>
+          <p>Each landmark-based workspace includes {PERSONAL_STARTER_VOCABULARY.length.toLocaleString()} searchable concept prompts. A prompt becomes recognisable only after the signer records examples of the correct sign in that selected language.</p>
+          <p>Users can also type any word or short phrase, including text in their own writing system, and teach it privately. Prompt labels are organisational aids—not a claim that the same sign is shared between languages.</p>
+        </>,
+      },
+      {
+        title: "Privacy and language integrity",
+        body: <p>Personal examples store normalised hand, face and upper-body landmarks in the browser, never raw camera video. Switching languages resets the recognition session and cannot relabel, import or leak a template from another language.</p>,
+      },
+    ]}
+  />;
 }

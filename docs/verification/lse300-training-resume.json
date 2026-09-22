@@ -1,0 +1,8 @@
+{
+  "purpose": "Synthetic control data tests interruption recovery, not recognition accuracy",
+  "device": "cpu",
+  "resumedEpochs": 2,
+  "checkpointMatchesUninterruptedRun": true,
+  "failedValidationGatePreservesCheckpoint": true,
+  "failedValidationGateProducesNoModel": true
+}

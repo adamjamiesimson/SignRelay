@@ -1,0 +1,15 @@
+{
+  "format": "onnx",
+  "modelVersion": "include263-small-transformer-official-v1",
+  "language": "ISL",
+  "classes": 263,
+  "sequenceLength": 200,
+  "inputFeatures": 134,
+  "inputName": "landmarks",
+  "outputName": "logits",
+  "source": {
+    "dataset": "AI4Bharat INCLUDE",
+    "architecture": "Small landmark transformer",
+    "checkpoint": "include_no_cnn_transformer_small"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "BdSLW401 VideoMAE, weight-only int8 storage",
+  "bytes": 96764338,
+  "sha256": "600c7a8064e5b41f24d145165990493c996ab7cf4b3a554aa7b354f18bad40a6",
+  "labelsSha256": "31e115427f849fbe2f1f648e15203b1f801cfd94423b8b93f578af18e5b3732d",
+  "classes": 401,
+  "distinctEnglishGlosses": 398,
+  "input": "pixel_values",
+  "shape": [
+    1,
+    16,
+    3,
+    224,
+    224
+  ],
+  "output": "logits",
+  "source": "https://huggingface.co/Shawon16/VideoMAE_BdSLW401_20_epochs_p5_SR_10/tree/f03fdadb20d1c59989ee7b2bfa95a07459b7fb56",
+  "sourceCheckpointSha256": "e8f0e51df603dc2969c2d602dc8b8ee8f2c0e615afdcf903287336012a03a112",
+  "license": "CC-BY-NC-4.0 (model weights)",
+  "vocabularySource": "https://www.kaggle.com/datasets/hasanssl/bdslw401/versions/2",
+  "validation": "Native/WASM numerical and TypeScript/PyTorch input parity passed on six pinned clips; live signer accuracy unmeasured."
+}

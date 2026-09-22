@@ -6,11 +6,13 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 ## What works now
 
-- ASL, ISL and CSL have separate model adapter configurations.
+- Forty sign-language workspaces have separate identities; RSL and Bangla have separate pretrained clip-recognition modes.
 - Camera permission is requested only after language selection.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
-- A Web Worker maintains an ordered 32-frame temporal buffer.
-- The experimental ASL adapter includes the official local 1,000-sign WLASL Pose-TGCN isolated-sign model plus user-defined words or short phrases.
+- A Web Worker maintains an ordered temporal buffer for landmark recognition.
+- ASL, BSL and ISL include separate experimental browser models with 2,000, 1,064 and 263 isolated-sign outputs respectively.
+- RSL adds the official pretrained Slovo video model: 967 word/phrase classes plus 33 letters, with no personal teaching required. It is explicit single-sign capture, not real-time; 141 MB first load and approximately 19 seconds per inference in the development WASM test.
+- Non-ASL/RSL/Bangla workspaces include 2,000+ searchable concept prompts plus unlimited custom words or short phrases; prompts activate only after the signer records examples in that language.
 - Personal and user-defined words are learned from one to three signer examples and matched on-device with dynamic time warping.
 - Results are gated by confidence, temporal consensus and cooldown.
 - Confirmed text can be edited, removed, saved locally, cleared and spoken.
@@ -19,13 +21,43 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 ## Honest model status
 
+The [17 September handoff](docs/pretrained-expansion-2026-09-17.md) records the current installation, evaluation limits and Firebase update steps.
+
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
-| ASL | Experimental | 1,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL1000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
-| ISL | Model not installed | None | Separate inactive adapter |
-| CSL | Model not installed | None | Separate inactive adapter |
+| ASL | Experimental | 2,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL2000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
+| BSL | Experimental | 1,064 automatic BSL-1K signs + unlimited signer-taught words | Official BSL-1K Pose2Sign model + personal DTW templates |
+| ISL | Experimental | 263 automatic INCLUDE signs + unlimited signer-taught words | Official AI4Bharat INCLUDE transformer + personal DTW templates |
+| RSL | Experimental, slow clip mode | 967 pretrained word/phrase classes + 33 fingerspelling letters | Official Slovo MViTv2-small-32-2 RGB ONNX; no personal recordings required |
+| Bangla | Experimental, slow clip mode | 401 trained classes / 398 distinct English glosses | BdSLW401 VideoMAE with verified weight-only compression |
+| LSE | Experimental | 300 trained health-domain sign classes | SignRelay-trained SWL-LSE temporal landmark model; 60.5% released test-split top-1, live accuracy unmeasured |
+| PSL | Experimental | 775 official HFAD dictionary signs + unlimited signer-taught words | One-shot DTW match against a single official reference performance per sign; **not** a trained classifier, no accuracy evaluation exists |
+| Auslan | Model preparing | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates; no automatic output yet |
+| 32 personal workspaces | Signer-taught | 2,000+ teachable concepts + unlimited custom signs | Language-scoped personal DTW templates |
 
-The 1,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL1000 OpenPose sequences. Its published held-out benchmark is 34.86% top-1, 61.73% top-5 and 71.91% top-10. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. Typed custom words activate only after the signer records personal examples; they do not alter the shared model. There is no unrestricted ASL, ISL or CSL model in this repository.
+### Spanish installation and use
+
+The 3.5 MB Spanish model and 300 original labels are included and checksum-verified during the Firebase build. Choose Spanish Sign Language, start the camera, sign one word, then pause briefly. Personal examples retain priority. The model scored 706/1,052 on the released validation split and 363/600 on the released test split. These figures do not measure the live camera adapter. See [Spanish attribution and limitations](public/models/lse300-swl/ATTRIBUTION.md). The classes include health-domain sign variants and do not meet the 400-word target.
+
+### Bangla installation and use
+
+The compact model and its original class map are included in the feature branch; `build:firebase` verifies their checksums. Choose Bangla, start the camera, begin a capture, and choose **Finish sign** after one complete sign. Capture ends automatically after six seconds. The first model load is 97 MB; inference can take 15–60 seconds. Cancelling or leaving the tab discards frames and stops the camera and worker. Suggestions are not automatically spoken or inserted into a transcript.
+
+See [Bangla model attribution](public/models/bdsl401-videomae/ATTRIBUTION.md) for model and dataset terms. This is an isolated-sign research preview, with unmeasured independent live-camera accuracy. The overall 15-language target is still incomplete.
+
+### RSL installation and use
+
+`npm run build:firebase` installs the official Slovo checkpoint automatically and verifies its pinned SHA-256 before exporting. `npm run install:rsl-model` installs it separately for development. The 141 MB binary is not committed to Git; builds fail if it cannot be fetched or verified. No paid service is used.
+
+Choose **Russian Sign Language** (search for RSL), enter its workspace, start the camera, then choose **Recognize one sign**. After a 3-second countdown, sign for about 2 seconds. Inference runs in a separate worker; Stop/cancel, leaving the workspace or hiding the tab releases the camera and worker. Results are suggestions, not automatically spoken or added to a transcript. Frames stay only in device memory.
+
+See [Slovo attribution and licence](public/models/rsl1000-slovo/ATTRIBUTION.md). The source uses a custom attribution/share-alike licence, not the application-code licence. Its benchmark results are not SignRelay live-camera accuracy. RSL has not received independent native-signer evaluation. This addition meets 400+ pretrained word/phrase classes for RSL; it does **not** establish 400+ pretrained signs for every workspace.
+
+The 2,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL2000 OpenPose sequences. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. BSL and ISL likewise use their own official isolated-sign checkpoints. Typed custom words activate only after the signer records personal examples; they do not alter a shared model. The remaining languages never borrow, relabel or fabricate a checkpoint.
+
+### PSL installation and use
+
+The 775-sign HFAD dictionary bundle (`public/models/psl776-hfad/`) is checksum-verified during the Firebase build. Choose Pakistani Sign Language and sign naturally; recognition runs continuously like ASL/BSL/ISL/LSE, not as a slow single-capture mode. Unlike those four, PSL is **not a trained neural classifier** - each of the 775 signs has exactly one official reference performance from [HFAD, Lahore](https://github.com/sign-language-translator/sign-language-datasets) (CC BY 4.0), and recognition is one-shot dynamic-time-warping distance matching against that single reference, using the same matching code already used for a signer's own personal templates. No accuracy evaluation exists - not against held-out signers, not live-camera, not at all. See [PSL attribution and limitations](public/models/psl776-hfad/ATTRIBUTION.md).
 
 ## Architecture
 
@@ -44,8 +76,8 @@ Camera
 Important modules:
 
 - `lib/vision-engine.ts`: model loading and per-frame holistic tracking
-- `workers/recognition.worker.ts`: temporal buffer, segmentation and ASL starter inference
-- `lib/model-adapters.ts`: independent language model registry
+- `workers/recognition.worker.ts`: temporal buffer, segmentation, automatic model routing and personal inference
+- `lib/model-adapters.ts`: 40-language registry and independent model contracts
 - `lib/decoder.ts`: confidence gating and duplicate suppression
 - `components/translator-experience.tsx`: camera, transcript and speech experience
 - `lib/browser-storage.ts`: device-local settings and transcript sessions
@@ -67,6 +99,8 @@ The camera requires a secure origin in production. Localhost is treated as secur
 ## Environment variables
 
 No application secrets or paid API keys are required. Vision model assets are fetched from the official public MediaPipe model bucket and inference runs locally after loading.
+
+The only supported public variable is `NEXT_PUBLIC_GA_MEASUREMENT_ID` (see `.env.example`). Leave it empty to disable analytics. To enable GA4, configure your own measurement ID, turn off Enhanced Measurement in the Google Analytics data stream (to avoid automatic collection of form, search and navigation data), choose the appropriate retention settings, and rebuild. Visitors must opt in before any analytics script loads. Never put a secret in a `NEXT_PUBLIC_` variable or in `public/`; both are delivered to browsers.
 
 ## Training a larger model
 
@@ -104,16 +138,34 @@ Dataset names, vocabulary size and availability do not imply a licence suitable 
 ## Testing
 
 ```bash
+npm run typecheck
 npm test
 npm run lint
-npm run test:rendered
+npm run build:worker
+npm run repo:guard
+npm run build:firebase
+npm run audit:security
 ```
+
+Core CI runs typechecking, unit/regression tests, lint, worker compilation, secret checks and the repository asset policy on every pull request to `main`. The asset policy blocks new tracked files over 20 MiB; the two existing reviewed large ONNX files are explicit legacy exceptions and cannot grow without failing CI.
 
 The unit suite verifies low-confidence rejection, temporal consensus and duplicate suppression. The rendered test checks all public routes and production metadata.
 
+## Live-camera evaluation
+
+Training metrics and synthetic tests are not treated as live-camera accuracy. SignRelay now has a language-specific, signer-independent evaluation protocol in [`evaluation/README.md`](evaluation/README.md), plus a JSONL summariser:
+
+```bash
+npm run eval:live -- evaluation/results/<language>-<date>.jsonl
+```
+
+The report separates signed-trial accuracy, accepted-sign coverage, precision among accepted predictions, common confusions and no-sign false-accept rate. Raw participant video and identifying participant data must not be committed to this repository. Experimental model status should only change after documented live-camera evaluation against thresholds chosen before the final results are inspected.
+
 ## Deployment
 
-The application targets the Vinext/Cloudflare-compatible Sites runtime. The production build emits the worker and static assets used by the hosted site.
+The application is a Next.js static export hosted on Firebase. There are no deployed server API routes, admin pages, user accounts or cloud database. Run `npm ci`, then `npm run build:firebase`, then `firebase deploy --only hosting --project signrelay-76f34`. Deploy only `out/`, as configured in `firebase.json`. Build-generated HTML policies and Firebase response headers work together; do not skip the secure-export build step. `npm start` serves the export locally for verification.
+
+See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls, limitations and Firebase account settings that need owner verification. The Privacy Policy and Terms pages describe this research build; review them against your actual operator details and applicable requirements before public launch.
 
 ## Privacy
 
@@ -126,12 +178,12 @@ The application targets the Vinext/Cloudflare-compatible Sites runtime. The prod
 
 ## Known limitations
 
-- The installed shared checkpoint is the official experimental 1,000-sign WLASL Pose-TGCN model (published benchmark: 34.86% top-1, 61.73% top-5, 71.91% top-10). Its live MediaPipe input adapter and closed-set rejection gate must still be evaluated separately.
+- The installed ASL checkpoint is the official experimental 2,000-sign WLASL Pose-TGCN model. Its live MediaPipe input adapter and closed-set rejection gate must still be evaluated separately.
 - Personal template matching is signer-specific and is not a substitute for a signer-independent ASL benchmark.
 - Performance varies with viewpoint, signing speed, hand dominance, occlusion and lighting.
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.
 - No continuous unrestricted grammar decoder is installed.
-- ISL and CSL are unavailable until independently trained checkpoints pass evaluation.
+- BSL and ISL use their own official isolated-sign checkpoints (1,064 and 263 labels respectively), still marked experimental because browser-side signer-independent evaluation has not yet been completed. Spanish adds a 300-class landmark model; Bangla and RSL use separate video models. The remaining workspaces are signer-specific until compatible, language-specific models are available and evaluated.
 - The first model load requires internet access to download official MediaPipe assets.
 
 ## Roadmap
@@ -139,5 +191,5 @@ The application targets the Vinext/Cloudflare-compatible Sites runtime. The prod
 1. Create legally cleared, signer-independent ASL starter benchmarks.
 2. Train and export a compact temporal sequence model with a blank class.
 3. Add learned sign boundaries and continuous word error rate evaluation.
-4. Co-design ISL and CSL adapters with native signers and language experts.
+4. Co-design shared adapters with native signers and language experts, prioritising the existing 40 language communities by data readiness and contributor interest.
 5. Add language-specific gloss-to-text decoding without hiding uncertainty.

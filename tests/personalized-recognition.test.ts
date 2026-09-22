@@ -1,20 +1,63 @@
 import { describe, expect, it } from "vitest";
-import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
+import { ASL_BUILT_IN_VOCABULARY, ASL_VOCABULARY, LANGUAGE_LIST, MODEL_ADAPTERS, PERSONAL_STARTER_VOCABULARY, createCustomAslVocabularyEntry } from "../lib/model-adapters";
 import { hasAsl100CompletedSignMotion, hasAsl100HandEvidence } from "../lib/asl100-runtime";
 import { halfToFloat, prepareTgcnInput } from "../lib/asl1000-runtime";
-import { prepareCalibrationSequence, sequenceDistance } from "../lib/personalized-recognition";
+import { prepareLseInput } from "../lib/lse300-runtime";
+import { prepareCalibrationSequence, sequenceDistance, templatesForLanguage } from "../lib/personalized-recognition";
 import type { VisionFrame } from "../lib/vision-types";
 
 describe("ASL vocabulary", () => {
-  it("ships 1,000 distinct built-in WLASL signs without personal calibration", () => {
-    expect(ASL_BUILT_IN_VOCABULARY).toHaveLength(1000);
-    expect(new Set(ASL_BUILT_IN_VOCABULARY.map((word) => word.gloss)).size).toBe(1000);
-    expect(ASL_VOCABULARY).toHaveLength(1000);
+  it("ships 2,000 distinct built-in WLASL signs without personal calibration", () => {
+    expect(ASL_BUILT_IN_VOCABULARY).toHaveLength(2000);
+    expect(new Set(ASL_BUILT_IN_VOCABULARY.map((word) => word.gloss)).size).toBe(2000);
+    expect(ASL_VOCABULARY).toHaveLength(2000);
   });
 
   it("creates a safe personal vocabulary entry from a typed word or phrase", () => {
     expect(createCustomAslVocabularyEntry("  pizza   night! ")).toMatchObject({ gloss: "PIZZA NIGHT", text: "pizza night", category: "custom" });
     expect(createCustomAslVocabularyEntry("  !!! ")).toBeNull();
+  });
+
+  it("exposes 40 independent sign-language recognition paths", () => {
+    expect(LANGUAGE_LIST).toHaveLength(40);
+    expect(LANGUAGE_LIST.slice(0, 6).map((language) => language.id)).toEqual(["asl", "bsl", "isl", "lse", "auslan", "csl"]);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "experimental")).toHaveLength(7);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "preparing")).toHaveLength(1);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "personal")).toHaveLength(32);
+    expect(MODEL_ADAPTERS.bsl.automaticVocabularyCount).toBe(1064);
+    expect(MODEL_ADAPTERS.isl.automaticVocabularyCount).toBe(263);
+    expect(MODEL_ADAPTERS.rsl.automaticVocabularyCount).toBe(1000);
+    expect(MODEL_ADAPTERS.rsl.vocabulary).toHaveLength(1000);
+    expect(MODEL_ADAPTERS.bdsl.automaticVocabularyCount).toBe(401);
+    expect(new Set(MODEL_ADAPTERS.bdsl.vocabulary).size).toBe(398);
+    expect(MODEL_ADAPTERS.lse.status).toBe("experimental");
+    expect(MODEL_ADAPTERS.lse.automaticVocabularyCount).toBe(300);
+    expect(MODEL_ADAPTERS.auslan.status).toBe("preparing");
+    // Real, evaluated-source landmark data, but single-reference DTW
+    // matching rather than a trained classifier - see ATTRIBUTION.md.
+    expect(MODEL_ADAPTERS.psl.status).toBe("experimental");
+    expect(MODEL_ADAPTERS.psl.automaticVocabularyCount).toBe(775);
+    expect(new Set(MODEL_ADAPTERS.psl.vocabulary).size).toBe(775);
+  });
+
+  it("includes a 2,000-plus concept library for every teachable language", () => {
+    expect(PERSONAL_STARTER_VOCABULARY.length).toBeGreaterThanOrEqual(2000);
+    expect(new Set(PERSONAL_STARTER_VOCABULARY.map((word) => word.gloss)).size).toBe(PERSONAL_STARTER_VOCABULARY.length);
+    for (const language of LANGUAGE_LIST.filter((item) => !["asl", "rsl", "bdsl", "psl"].includes(item.id))) {
+      expect(language.vocabulary.length).toBe(PERSONAL_STARTER_VOCABULARY.length);
+    }
+  });
+
+  it("keeps personal sign templates inside their selected language", () => {
+    const templates = [
+      { id: "old-asl", gloss: "HELLO", text: "Hello", createdAt: 1, frames: [] },
+      { id: "bsl-hello", language: "bsl" as const, gloss: "HELLO", text: "Hello", createdAt: 2, frames: [] },
+      { id: "isl-help", language: "isl" as const, gloss: "HELP", text: "Help", createdAt: 3, frames: [] },
+    ];
+    expect(templatesForLanguage(templates, "asl").map((item) => item.id)).toEqual(["old-asl"]);
+    expect(templatesForLanguage(templates, "bsl").map((item) => item.id)).toEqual(["bsl-hello"]);
+    expect(templatesForLanguage(templates, "csl")).toEqual([]);
+    expect(templatesForLanguage(templates, "uaesl")).toEqual([]);
   });
 
   it("does not run the built-in ASL model without sustained hand tracking", () => {
@@ -24,14 +67,45 @@ describe("ASL vocabulary", () => {
   });
 
   it("requires movement followed by a settled end pose before the generic model runs", () => {
-    const idle = Array.from({ length: 24 }, () => makeFrame(0));
-    const waving = Array.from({ length: 24 }, (_, index) => makeFrame(index % 2 ? 0.12 : -0.12));
-    const completed = Array.from({ length: 24 }, (_, index) => makeFrame(index < 15 ? index * 0.012 : 0.168));
-    const naturalCompleted = Array.from({ length: 24 }, (_, index) => makeFrame(index < 15 ? index * 0.008 : 0.12 + (index % 2 ? 0.018 : -0.018)));
+    // makeFrame's timestamp is derived from its position offset, which is
+    // convenient when offset ramps monotonically with frame index elsewhere
+    // in this file, but here the offset deliberately freezes once the sign
+    // "settles" - reusing it as the timestamp too would collapse every
+    // settled frame onto one instant instead of real, elapsed capture time.
+    // frameAt attaches an independent, realistic ~30fps timestamp instead.
+    const frameAt = (index: number, offset: number): VisionFrame => ({ ...makeFrame(offset), timestamp: index * 33 });
+    const idle = Array.from({ length: 24 }, (_, index) => frameAt(index, 0));
+    const waving = Array.from({ length: 24 }, (_, index) => frameAt(index, index % 2 ? 0.12 : -0.12));
+    const completed = Array.from({ length: 24 }, (_, index) => frameAt(index, index < 15 ? index * 0.012 : 0.168));
+    const naturalCompleted = Array.from({ length: 24 }, (_, index) => frameAt(index, index < 15 ? index * 0.008 : 0.12 + (index % 2 ? 0.018 : -0.018)));
     expect(hasAsl100CompletedSignMotion(idle)).toBe(false);
     expect(hasAsl100CompletedSignMotion(waving)).toBe(false);
     expect(hasAsl100CompletedSignMotion(completed)).toBe(true);
     expect(hasAsl100CompletedSignMotion(naturalCompleted)).toBe(true);
+  });
+
+  it("rejects a hand that keeps changing shape after the wrist stops moving", () => {
+    // The wrist follows the same settle pattern as `completed` above, but the
+    // fingers keep alternating between two shapes throughout the tail window
+    // (e.g. curling toward a fist while transitioning to the next sign). This
+    // is the BSL/ISL/LSE-shared gate, so it must not accept a still-changing
+    // handshape as a completed sign just because the wrist has stopped.
+    const shapeShifting = Array.from({ length: 24 }, (_, index) => {
+      const wristOffset = index < 15 ? index * 0.012 : 0.168;
+      const fingerToggle = index % 2 ? 0.05 : 0;
+      const hand = Array.from({ length: 21 }, (_, point) => ({
+        x: 0.45 + wristOffset + point * 0.001 + (point === 0 ? 0 : fingerToggle),
+        y: 0.55 - point * 0.002,
+        z: 0,
+      }));
+      return {
+        timestamp: index * 33,
+        hands: [{ landmarks: hand, handedness: "Right" as const, gesture: "None", gestureScore: 0 }],
+        face: [],
+        pose: [],
+      };
+    });
+    expect(hasAsl100CompletedSignMotion(shapeShifting)).toBe(false);
   });
 
   it("maps live landmarks to the 55-node, 50-frame Pose-TGCN contract", () => {
@@ -40,6 +114,26 @@ describe("ASL vocabulary", () => {
     expect(Number.isFinite(prepared[0])).toBe(true);
     expect(halfToFloat(0x3c00)).toBe(1);
     expect(halfToFloat(0xc000)).toBe(-2);
+  });
+
+  it("maps live landmarks to the 61-node, 64-frame SWL-LSE contract", () => {
+    const prepared = prepareLseInput(Array.from({ length: 30 }, (_, index) => makeFrame(index / 100)));
+    expect(prepared).toHaveLength(64 * 61 * 3);
+    expect(Array.from(prepared).every(Number.isFinite)).toBe(true);
+  });
+
+  it("preserves both ends of Spanish signs longer than the model input", () => {
+    const frames = Array.from({ length: 80 }, (_, index) => makeFrame(index / 100));
+    const prepared = prepareLseInput(frames);
+    expect(Array.from(prepared.slice(0, 183))).toEqual(Array.from(prepareLseInput([frames[0]]).slice(0, 183)));
+    expect(Array.from(prepared.slice(-183))).toEqual(Array.from(prepareLseInput([frames[79]]).slice(-183)));
+  });
+
+  it("keeps absent Spanish landmark sentinels at zero", () => {
+    const frame = makeFrame(0);
+    frame.pose = frame.pose.map(() => ({ x: 0, y: 0, z: 0 }));
+    frame.hands = [];
+    expect(prepareLseInput([frame]).every(value => value === 0)).toBe(true);
   });
 
   it("normalizes recordings to the fixed temporal contract", () => {

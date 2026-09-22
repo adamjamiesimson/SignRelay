@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "export",
+  productionBrowserSourceMaps: false,
+  poweredByHeader: false,
+  compress: true,
+  devIndicators: false,
+  allowedDevOrigins: ["terminal.local"],
 };
 
 export default nextConfig;

@@ -1,0 +1,11 @@
+{
+  "publishedHeldOutBenchmark": null,
+  "exportVerification": {
+    "random_inputs": 12,
+    "top1_agreement": 1.0,
+    "maximum_logit_error": 0.24387741088867188
+  },
+  "liveMediaPipeAccuracy": null,
+  "warning": "The live MediaPipe-to-OpenPose adapter is a domain change and needs a separate signer-independent benchmark.",
+  "benchmarkNote": "No benchmark is copied into this export; evaluate this exact browser adapter separately."
+}

@@ -1,0 +1,158 @@
+{
+  "variant": "float32",
+  "engine": "onnxruntime-web single-thread WASM in Node",
+  "nodeVersion": "v24.19.0",
+  "ortVersions": {
+    "common": "1.23.2",
+    "web": "1.23.2"
+  },
+  "host": {
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpus": 9
+  },
+  "modelSha256": "840f6862f3988616fda45ac06704ed4be1e0378e59460abd7b4ce18d3634ce73",
+  "modelBytes": 351137555,
+  "reference": "Native ONNX Runtime 1.20.1, same float32 model",
+  "timing": "Fresh process per variant; one untimed warm-up; one timed inference for each of six clips",
+  "loadMs": 2563,
+  "medianInferenceMs": 14257,
+  "peakProcessRssKiB": 1393480,
+  "memoryScope": "Peak resident memory of the whole Node process, including model buffers, fixtures and WASM; not browser memory",
+  "clips": [
+    {
+      "file": "W002S08F_03.mp4",
+      "sha256": "458f4e951650394059f29092340e26620825fc0fd52e1bbc691705482ddb4adf",
+      "expectedCode": "W002",
+      "top5": [
+        "W002",
+        "W375",
+        "W342",
+        "W276",
+        "W320"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "inferenceMs": 14060,
+      "maxAbsLogitError": 0.00000762939453125,
+      "toleranceFailureCount": 0,
+      "numericalParityPassed": true,
+      "top1MatchesNative": true,
+      "top5MatchesNative": true
+    },
+    {
+      "file": "W003S08F_11.mp4",
+      "sha256": "62fb84edbe6ee196d1a4ce71c96836596431a6b7991767ef1034ffa6532703c6",
+      "expectedCode": "W003",
+      "top5": [
+        "W003",
+        "W301",
+        "W396",
+        "W268",
+        "W335"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "inferenceMs": 14358,
+      "maxAbsLogitError": 0.000004291534423828125,
+      "toleranceFailureCount": 0,
+      "numericalParityPassed": true,
+      "top1MatchesNative": true,
+      "top5MatchesNative": true
+    },
+    {
+      "file": "W205S08F_02.mp4",
+      "sha256": "aeab2353d5b69e797780ec1e1535d2b0d793e4fbdc0e18b73d07f5b1d0c248d9",
+      "expectedCode": "W205",
+      "top5": [
+        "W213",
+        "W102",
+        "W319",
+        "W205",
+        "W191"
+      ],
+      "top1Correct": false,
+      "top5Correct": true,
+      "inferenceMs": 14572,
+      "maxAbsLogitError": 0.00000858306884765625,
+      "toleranceFailureCount": 0,
+      "numericalParityPassed": true,
+      "top1MatchesNative": true,
+      "top5MatchesNative": true
+    },
+    {
+      "file": "W211S04F_03.mp4",
+      "sha256": "57fafb651ac5d0216f1c1632e88658a7871e467abec112a0df85bb9721c2c779",
+      "expectedCode": "W211",
+      "top5": [
+        "W082",
+        "W211",
+        "W243",
+        "W074",
+        "W200"
+      ],
+      "top1Correct": false,
+      "top5Correct": true,
+      "inferenceMs": 13950,
+      "maxAbsLogitError": 0.000005245208740234375,
+      "toleranceFailureCount": 0,
+      "numericalParityPassed": true,
+      "top1MatchesNative": true,
+      "top5MatchesNative": true
+    },
+    {
+      "file": "W389S08F_02.mp4",
+      "sha256": "97e715ef03b35cab865f4c0b2f945983b7b1817370e7749e2acf7ef7fcd84dfc",
+      "expectedCode": "W389",
+      "top5": [
+        "W389",
+        "W395",
+        "W364",
+        "W228",
+        "W154"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "inferenceMs": 14156,
+      "maxAbsLogitError": 0.00001430511474609375,
+      "toleranceFailureCount": 0,
+      "numericalParityPassed": true,
+      "top1MatchesNative": true,
+      "top5MatchesNative": true
+    },
+    {
+      "file": "W401S04F_06.mp4",
+      "sha256": "f2d27fe6031263d0007039d5b686876aeeb296a018eee8c18b2879c6ffba10e5",
+      "expectedCode": "W401",
+      "top5": [
+        "W401",
+        "W336",
+        "W311",
+        "W327",
+        "W313"
+      ],
+      "top1Correct": true,
+      "top5Correct": true,
+      "inferenceMs": 14499,
+      "maxAbsLogitError": 0.0000057220458984375,
+      "toleranceFailureCount": 0,
+      "numericalParityPassed": true,
+      "top1MatchesNative": true,
+      "top5MatchesNative": true
+    }
+  ],
+  "top1Count": 4,
+  "top5Count": 6,
+  "total": 6,
+  "parityTolerance": {
+    "absolute": 0.0002,
+    "relative": 0.0002
+  },
+  "numericalParityPassed": true,
+  "top1MatchesNativeCount": 6,
+  "top5MatchesNativeCount": 6,
+  "browserTested": false,
+  "liveCameraTested": false,
+  "installed": false
+}

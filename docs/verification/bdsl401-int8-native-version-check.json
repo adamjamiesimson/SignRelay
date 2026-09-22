@@ -1,0 +1,8 @@
+{
+  "onnxruntime": "1.23.2",
+  "modelSha256": "723758aabf0106f00443794b429ef3a1d6bb2bc9044e93b8b5dd34c0e1be84b9",
+  "clip": "W002S08F_03.mp4",
+  "reference": "Native ONNX Runtime 1.20.1, same int8 model",
+  "maxAbsLogitError": 0.0,
+  "numericalParityPassed": true
+}

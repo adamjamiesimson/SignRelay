@@ -13,7 +13,7 @@ export function shouldConfirm({
   elapsedSinceLast: number;
   cooldown: number;
 }) {
-  if (confidence < threshold || streak < 2) return false;
+  if (!Number.isFinite(confidence) || confidence < threshold || streak < 2) return false;
   return !sameLabel || elapsedSinceLast > cooldown;
 }
 

@@ -1,4 +1,6 @@
-import type { Point, VisionFrame } from "./vision-types";
+import type { HandObservation, Point, VisionFrame } from "./vision-types";
+import { handScale } from "./asl-starter-recognition";
+import { recentContinuousFrames } from "./frame-timing";
 
 type QuantisedLayer = {
   input: number;
@@ -72,16 +74,88 @@ export function hasAsl100HandEvidence(sequence: VisionFrame[]) {
  * The generic model is only evaluated after deliberate movement settles. This
  * rejects an idle pose and continuous waving/shaking before the closed-set
  * classifier can force them into a word such as TABLE.
+ *
+ * Wrist position settling alone is not enough: a hand can pause mid-transition
+ * between two shapes (for example curling toward a fist while moving on to the
+ * next sign) while the wrist itself stays still. This is the same failure mode
+ * that produced a false ASL "YES" from fist preparation (see
+ * docs/asl-fist-discrimination.md), but this generic gate covers every
+ * non-ASL shared-model language (BSL, ISL, LSE), which had no equivalent
+ * protection. The tail window's finger shape, not just its wrist position,
+ * must also have settled before a prediction is trusted.
  */
 export function hasAsl100CompletedSignMotion(sequence: VisionFrame[]) {
+  return analyzeGenericSignMotion(sequence).ready;
+}
+
+export type GenericSignMotion = { ready: boolean; reason: "hands" | "moving" | "idle" | "ready" };
+
+// The settle check must cover a stretch of real time, not a fixed sample
+// count: at a high capture rate the last 7 samples could span well under
+// 100ms (too short to prove a shape has actually stopped moving), and at a
+// low capture rate they could span well over a second (forcing implausibly
+// long stillness). Mirrors the timestamp-based lookback ASL's own motion
+// gate already uses (lib/sign-motion.ts's "at least 100 ms" comparison),
+// with a sample floor since very slow capture can otherwise pack only one
+// or two points into the time window.
+//
+// The floor must not reach backward past a real tracking gap (the hand
+// briefly leaving frame, then returning) to make up the count: that would
+// compare fresh hand data against stale pre-gap data, exactly the
+// duration-dependent unreliability this gate exists to avoid. recentContinuousFrames
+// already solves this for ASL's own gate by stopping the window at an
+// adaptive per-cadence gap limit, so the floor is applied only inside that
+// already gap-safe run, never across it.
+const TAIL_WINDOW_MS = 230;
+const TAIL_MIN_SAMPLES = 4;
+
+function tailWindow<T extends { timestamp: number }>(samples: T[], windowMs: number, minSamples: number): T[] {
+  const continuous = recentContinuousFrames(samples, 3600);
+  const end = continuous.at(-1);
+  if (!end) return [];
+  let start = continuous.length - 1;
+  while (start > 0 && (end.timestamp - continuous[start - 1].timestamp <= windowMs || continuous.length - start < minSamples)) {
+    start--;
+  }
+  return continuous.slice(start);
+}
+
+/**
+ * Same gate as hasAsl100CompletedSignMotion, but reports why a prediction
+ * isn't trusted yet, so the worker can tell a signer using BSL, ISL, LSE or
+ * PSL what's happening - the same feedback ASL already gives via
+ * analyzeSignMotion, instead of leaving those languages silent.
+ */
+export function analyzeGenericSignMotion(sequence: VisionFrame[]): GenericSignMotion {
   const recent = sequence.slice(-24);
-  if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return false;
-  const wrists = dominantTrackedWrists(recent);
-  if (wrists.length < 15) return false;
-  const tail = wrists.slice(-7);
-  const tailRange = Math.hypot(range(tail.map((point) => point.x)), range(tail.map((point) => point.y)));
+  if (recent.length < 24 || !hasAsl100HandEvidence(recent)) return { ready: false, reason: "hands" };
+  const samples = dominantTrackedHands(recent);
+  if (samples.length < 15) return { ready: false, reason: "hands" };
+  const wrists = samples.map((sample) => sample.hand.landmarks[0]);
   const pathLength = wrists.slice(1).reduce((total, point, index) => total + distance(point, wrists[index]), 0);
-  return pathLength >= 0.075 && tailRange <= 0.06;
+  if (pathLength < 0.075) return { ready: false, reason: "idle" };
+  const tail = tailWindow(samples, TAIL_WINDOW_MS, TAIL_MIN_SAMPLES);
+  // A real tracking gap can leave fewer than the floor's worth of genuinely
+  // continuous evidence; that's reported as still-settling, not declared
+  // ready off too little data.
+  if (tail.length < TAIL_MIN_SAMPLES) return { ready: false, reason: "moving" };
+  const tailWrists = tail.map((sample) => sample.hand.landmarks[0]);
+  const tailRange = Math.hypot(range(tailWrists.map((point) => point.x)), range(tailWrists.map((point) => point.y)));
+  if (tailRange > 0.06) return { ready: false, reason: "moving" };
+  const anchor = tail[0].hand;
+  const settled = tail.every((sample) => shapeDistance(anchor, sample.hand) <= 0.14);
+  return settled ? { ready: true, reason: "ready" } : { ready: false, reason: "moving" };
+}
+
+function shapeDistance(a: HandObservation, b: HandObservation) {
+  const scales = [handScale(a), handScale(b)];
+  return Math.max(...[4, 8, 12, 16, 20].map((index) => {
+    const ax = (a.landmarks[index].x - a.landmarks[0].x) / scales[0];
+    const ay = (a.landmarks[index].y - a.landmarks[0].y) / scales[0];
+    const bx = (b.landmarks[index].x - b.landmarks[0].x) / scales[1];
+    const by = (b.landmarks[index].y - b.landmarks[0].y) / scales[1];
+    return Math.hypot(ax - bx, ay - by);
+  }));
 }
 
 function prepare(sequence: VisionFrame[], model: Asl100Model) {
@@ -109,13 +183,15 @@ function handPoints(frame: VisionFrame, side: "Left" | "Right") {
   return order.map((index) => hand?.[index] ? { ...hand[index] } : zero());
 }
 
-function dominantTrackedWrists(sequence: VisionFrame[]) {
-  const left = sequence
-    .map((frame) => frame.hands.find((hand) => hand.handedness === "Left")?.landmarks[0])
-    .filter((point): point is Point => Boolean(point));
-  const right = sequence
-    .map((frame) => frame.hands.find((hand) => hand.handedness === "Right")?.landmarks[0])
-    .filter((point): point is Point => Boolean(point));
+type TrackedHandSample = { hand: HandObservation; timestamp: number };
+
+function dominantTrackedHands(sequence: VisionFrame[]): TrackedHandSample[] {
+  const pick = (side: "Left" | "Right") => sequence.flatMap((frame) => {
+    const hand = frame.hands.find((candidate) => candidate.handedness === side);
+    return hand && hand.landmarks.length >= 21 ? [{ hand, timestamp: frame.timestamp }] : [];
+  });
+  const left = pick("Left");
+  const right = pick("Right");
   return right.length >= left.length ? right : left;
 }
 

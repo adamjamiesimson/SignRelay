@@ -1,13 +1,28 @@
-import WLASL1000_LABELS from "../public/models/asl1000-tgcn/labels.json";
+import WLASL2000_LABELS from "../public/models/asl2000-tgcn/labels.json";
+import RSL_LABELS from "../public/models/rsl1000-slovo/labels.json";
+import BDSL_LABELS from "../public/models/bdsl401-videomae/labels.json";
+import PSL_LABELS from "../public/models/psl776-hfad/labels.json";
 
-export type LanguageId = "asl" | "isl" | "csl";
+export const LANGUAGE_IDS = [
+  "asl", "bsl", "isl", "lse", "auslan", "csl",
+  "lsf", "dgs", "libras", "lsa", "nzsl", "jsl", "ksl", "tid",
+  "uaesl", "ssl", "egysl", "lis", "lgp", "ngt", "vgt", "dsgs",
+  "irsl", "pjm", "usl", "rsl", "lsm", "lsc", "lsch", "lsp",
+  "sasl", "ksl_ke", "bisindo", "bim", "sgsl", "tsl", "fsl", "psl",
+  "bdsl", "vsl",
+] as const;
+
+export type LanguageId = typeof LANGUAGE_IDS[number];
 
 export type ModelAdapter = {
   id: LanguageId;
   shortName: string;
   language: string;
-  status: "experimental" | "not-installed";
+  /** `experimental` means a browser-loadable shared model is installed. */
+  status: "experimental" | "personal" | "preparing";
   modelFile: string | null;
+  /** Number of shared model labels that run without a personal recording. */
+  automaticVocabularyCount: number;
   vocabulary: string[];
   inputFormat: string;
   sequenceLength: number;
@@ -16,6 +31,7 @@ export type ModelAdapter = {
   postProcessing: string;
   version: string;
   dataset: string;
+  speechLocale: string;
   summary: string;
 };
 
@@ -30,22 +46,90 @@ export const WLASL100_GLOSSES = [
   "BOOK", "DRINK", "COMPUTER", "BEFORE", "CHAIR", "GO", "CLOTHES", "WHO", "CANDY", "COUSIN", "DEAF", "FINE", "HELP", "NO", "THIN", "WALK", "YEAR", "YES", "ALL", "BLACK", "COOL", "FINISH", "HOT", "LIKE", "MANY", "MOTHER", "NOW", "ORANGE", "TABLE", "THANKSGIVING", "WHAT", "WOMAN", "BED", "BLUE", "BOWLING", "CAN", "DOG", "FAMILY", "FISH", "GRADUATE", "HAT", "HEARING", "KISS", "LANGUAGE", "LATER", "MAN", "SHIRT", "STUDY", "TALL", "WHITE", "WRONG", "ACCIDENT", "APPLE", "BIRD", "CHANGE", "COLOR", "CORN", "COW", "DANCE", "DARK", "DOCTOR", "EAT", "ENJOY", "FORGET", "GIVE", "LAST", "MEET", "PINK", "PIZZA", "PLAY", "SCHOOL", "SECRETARY", "SHORT", "TIME", "WANT", "WORK", "AFRICA", "BASKETBALL", "BIRTHDAY", "BROWN", "BUT", "CHEAT", "CITY", "COOK", "DECIDE", "FULL", "HOW", "JACKET", "LETTER", "MEDICINE", "NEED", "PAINT", "PAPER", "PULL", "PURPLE", "RIGHT", "SAME", "SON", "TELL", "THURSDAY",
 ] as const;
 
-export const WLASL1000_GLOSSES = WLASL1000_LABELS as string[];
+export const WLASL2000_GLOSSES = WLASL2000_LABELS as string[];
 
 const title = (value: string) => value.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-export const ASL_BUILT_IN_VOCABULARY: AslVocabularyEntry[] = WLASL1000_GLOSSES.map((gloss) => ({
+export const ASL_BUILT_IN_VOCABULARY: AslVocabularyEntry[] = WLASL2000_GLOSSES.map((gloss) => ({
   gloss, text: title(gloss), category: "learning", recognition: "built-in",
 }));
 
 
 export const ASL_VOCABULARY = ASL_BUILT_IN_VOCABULARY;
 
-export function createCustomAslVocabularyEntry(value: string): AslVocabularyEntry | null {
+/**
+ * These are intentionally language-neutral *labels*, not claims that a
+ * single sign form is shared by BSL, CSL or ISL. They make a substantial
+ * starter dictionary available to teach in each language without inventing
+ * an unvalidated shared checkpoint.
+ */
+export const PERSONAL_STARTER_GLOSSES = [
+  ["HELLO", "GOODBYE", "PLEASE", "THANK YOU", "SORRY", "EXCUSE ME", "YES", "NO", "MAYBE", "OKAY", "HELP", "STOP", "WAIT", "AGAIN", "UNDERSTAND", "DON'T UNDERSTAND", "NICE", "WELCOME", "READY", "FINISH"],
+  ["PERSON", "MAN", "WOMAN", "CHILD", "BABY", "FRIEND", "NEIGHBOUR", "TEACHER", "STUDENT", "DOCTOR", "NURSE", "DRIVER", "CUSTOMER", "VISITOR", "MOTHER", "FATHER", "SISTER", "BROTHER", "GRANDMOTHER", "GRANDFATHER"],
+  ["FAMILY", "PARENT", "SON", "DAUGHTER", "HUSBAND", "WIFE", "PARTNER", "AUNT", "UNCLE", "COUSIN", "RELATIVE", "MARRIED", "SINGLE", "LOVE", "MISS", "MEET", "CALL", "INVITE", "CELEBRATE", "TOGETHER"],
+  ["GO", "COME", "LEAVE", "ARRIVE", "WALK", "RUN", "SIT", "STAND", "OPEN", "CLOSE", "GIVE", "TAKE", "PUT", "FIND", "LOSE", "BUY", "SELL", "PAY", "CHOOSE", "CHANGE"],
+  ["WAKE UP", "SLEEP", "SHOWER", "WASH", "DRESS", "COOK", "CLEAN", "EAT", "DRINK", "REST", "PLAY", "WATCH", "LISTEN", "READ", "WRITE", "SIGN", "TALK", "THINK", "REMEMBER", "FORGET"],
+  ["FOOD", "BREAD", "RICE", "NOODLES", "PASTA", "SOUP", "SALAD", "CHICKEN", "FISH", "MEAT", "EGG", "CHEESE", "FRUIT", "APPLE", "BANANA", "ORANGE", "VEGETABLE", "PIZZA", "CAKE", "SWEET"],
+  ["WATER", "TEA", "COFFEE", "JUICE", "MILK", "HOT", "COLD", "HUNGRY", "THIRSTY", "BREAKFAST", "LUNCH", "DINNER", "SNACK", "RESTAURANT", "MENU", "BILL", "DELICIOUS", "SPICY", "SUGAR", "SALT"],
+  ["HAPPY", "SAD", "ANGRY", "WORRIED", "SCARED", "TIRED", "EXCITED", "SURPRISED", "BORED", "CONFUSED", "PROUD", "SHY", "CALM", "STRESSED", "SICK", "BETTER", "WORSE", "BUSY", "FREE", "LUCKY"],
+  ["HOME", "SCHOOL", "UNIVERSITY", "OFFICE", "SHOP", "MARKET", "HOSPITAL", "PHARMACY", "BANK", "HOTEL", "AIRPORT", "STATION", "PARK", "BEACH", "MOSQUE", "CHURCH", "TOILET", "KITCHEN", "BEDROOM", "BATHROOM"],
+  ["TODAY", "TOMORROW", "YESTERDAY", "NOW", "LATER", "EARLY", "LATE", "MORNING", "AFTERNOON", "EVENING", "NIGHT", "WEEK", "MONTH", "YEAR", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "WEEKEND"],
+  ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE", "TWENTY", "FIFTY", "HUNDRED", "THOUSAND", "FIRST", "LAST", "MORE", "LESS"],
+  ["BLACK", "WHITE", "RED", "BLUE", "GREEN", "YELLOW", "ORANGE COLOUR", "PURPLE", "PINK", "BROWN", "GREY", "GOLD", "SILVER", "LIGHT", "DARK", "BRIGHT", "COLOUR", "SAME", "DIFFERENT", "BEAUTIFUL"],
+  ["SUN", "RAIN", "WIND", "CLOUD", "STORM", "HOT WEATHER", "COLD WEATHER", "WEATHER", "UMBRELLA", "SUMMER", "WINTER", "SPRING", "AUTUMN", "DAY", "TEMPERATURE", "WET", "DRY", "DUST", "FLOOD", "SUNNY"],
+  ["LEARN", "STUDY", "CLASS", "COURSE", "BOOK", "PAPER", "PEN", "COMPUTER", "EXAM", "QUESTION", "ANSWER", "EXPLAIN", "PRACTICE", "CORRECT", "WRONG", "EASY", "DIFFICULT", "IDEA", "PROJECT", "HOMEWORK"],
+  ["PHONE", "MOBILE", "INTERNET", "EMAIL", "MESSAGE", "VIDEO", "PHOTO", "CAMERA", "CHARGER", "BATTERY", "SCREEN", "KEYBOARD", "PASSWORD", "WEBSITE", "DOWNLOAD", "UPLOAD", "ONLINE", "OFFLINE", "MACHINE", "ROBOT"],
+  ["PAIN", "HEADACHE", "MEDICINE", "APPOINTMENT", "EMERGENCY", "ALLERGY", "INJURY", "BLOOD", "HEART", "BREATHE", "DIZZY", "FEVER", "COUGH", "MASK", "HEALTHY", "EXERCISE", "GYM", "SWIM", "SLEEPY", "RECOVER"],
+  ["DANGER", "SAFE", "POLICE", "FIRE", "ACCIDENT", "LOST", "ADDRESS", "NAME", "PHONE NUMBER", "CONTACT", "NEED ASSISTANCE", "CALL POLICE", "CALL AMBULANCE", "EXIT", "ENTRANCE", "LOCK", "UNLOCK", "CAREFUL", "WARNING", "PROBLEM"],
+  ["CAR", "BUS", "TAXI", "TRAIN", "METRO", "PLANE", "BOAT", "BICYCLE", "ROAD", "TRAFFIC", "TICKET", "MAP", "DIRECTION", "LEFT", "RIGHT", "STRAIGHT", "NEAR", "FAR", "FAST", "SLOW"],
+  ["DOOR", "WINDOW", "TABLE", "CHAIR", "BED", "SOFA", "LIGHT SWITCH", "FAN", "AIR CONDITIONING", "FRIDGE", "OVEN", "CUP", "PLATE", "BOWL", "SPOON", "FORK", "KNIFE", "KEY", "BAG", "CLOTHES"],
+  ["WORK", "JOB", "MEETING", "MANAGER", "TEAM", "CLIENT", "MONEY", "PRICE", "CHEAP", "EXPENSIVE", "RECEIPT", "CASH", "CARD", "DELIVERY", "ORDER", "RETURN", "DISCOUNT", "OPEN NOW", "CLOSED", "AVAILABLE"],
+  ["WHO", "WHAT", "WHERE", "WHEN", "WHY", "HOW", "WHICH", "HOW MANY", "HOW MUCH", "CAN", "CAN'T", "WANT", "NEED", "LIKE", "DON'T LIKE", "KNOW", "NOT KNOW", "HAVE", "DON'T HAVE", "SHOULD"],
+  ["GOOD", "BAD", "BIG", "SMALL", "LONG", "SHORT", "NEW", "OLD", "YOUNG", "FULL", "EMPTY", "POLITE", "DIRTY", "STRONG", "WEAK", "QUIET", "LOUD", "TRUE", "FALSE", "IMPORTANT"],
+] as const satisfies readonly (readonly string[])[];
+
+export const PERSONAL_STARTER_CONCEPTS = Array.from(new Set([
+  ...WLASL2000_GLOSSES,
+  ...PERSONAL_STARTER_GLOSSES.flat(),
+]));
+
+export const PERSONAL_STARTER_VOCABULARY: AslVocabularyEntry[] = PERSONAL_STARTER_CONCEPTS
+  .map((gloss) => ({ gloss, text: title(gloss), category: "learning", recognition: "personal-calibration" }));
+
+type PersonalLanguageDefinition = {
+  id: LanguageId;
+  shortName: string;
+  language: string;
+  speechLocale: string;
+};
+
+function personalLanguage({ id, shortName, language, speechLocale }: PersonalLanguageDefinition): ModelAdapter {
+  return {
+    id,
+    shortName,
+    language,
+    status: "personal",
+    modelFile: "On-device signer-taught landmark recognizer",
+    automaticVocabularyCount: 0,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
+    sequenceLength: 24,
+    confidenceThreshold: 0.76,
+    decoder: "Language-scoped, signer-specific dynamic-time-warping templates stored only on this device",
+    postProcessing: "Confidence gate, competing-sign margin, temporal consensus and duplicate suppression",
+    version: "personal-dtw-v2",
+    dataset: "No third-party training dataset is bundled; recognition uses only landmark examples recorded by the signer.",
+    speechLocale,
+    summary: `${PERSONAL_STARTER_CONCEPTS.length.toLocaleString()} concept prompts and unlimited custom signs, ready to teach privately on this device.`,
+  };
+}
+
+export function createCustomVocabularyEntry(value: string): AslVocabularyEntry | null {
+  if (typeof value !== "string" || value.length > 48) return null;
   const text = value
     .trim()
     .replace(/\s+/g, " ")
-    .replace(/[^a-zA-Z0-9 '\-]/g, "")
+    .replace(/[^\p{L}\p{N} '\-]/gu, "")
     .trim();
   if (!text) return null;
 
@@ -57,55 +141,189 @@ export function createCustomAslVocabularyEntry(value: string): AslVocabularyEntr
   };
 }
 
+/** @deprecated Use createCustomVocabularyEntry for every language. */
+export const createCustomAslVocabularyEntry = createCustomVocabularyEntry;
+
 export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
   asl: {
     id: "asl",
     shortName: "ASL",
     language: "American Sign Language",
     status: "experimental",
-    modelFile: "Official WLASL1000 Pose-TGCN + MediaPipe vision + personal-DTW-v1",
+    modelFile: "Official WLASL2000 Pose-TGCN + MediaPipe vision + personal-DTW-v1",
+    automaticVocabularyCount: 2000,
     vocabulary: ASL_VOCABULARY.map((entry) => entry.gloss),
     inputFormat: "50 samples × 55 two-dimensional upper-body and hand landmarks",
     sequenceLength: 50,
     confidenceThreshold: 0.62,
-    decoder: "Quantised on-device WLASL1000 Pose-TGCN; personal templates and four starter rules take priority",
+    decoder: "Quantised on-device WLASL2000 Pose-TGCN; personal templates and seven common-sign rules take priority",
     postProcessing: "Cooldown, consensus smoothing and duplicate suppression",
-    version: "0.5.0-wlasl1000-pose-tgcn",
-    dataset: "Official WLASL1000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
-    summary: "A genuine local 1,000-sign ASL isolated-sign model. The published held-out Pose-TGCN benchmark is 34.86% top-1, 61.73% top-5 and 71.91% top-10; the live MediaPipe adapter remains experimental and is not unrestricted ASL translation.",
+    version: "0.6.0-wlasl2000-pose-tgcn",
+    dataset: "Official WLASL2000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
+    speechLocale: "en-US",
+    summary: "A genuine local 2,000-sign ASL isolated-sign model. The live MediaPipe adapter remains experimental and is not unrestricted ASL translation.",
+  },
+  lse: {
+    id: "lse",
+    shortName: "LSE",
+    language: "Spanish Sign Language",
+    status: "experimental",
+    modelFile: "SWL-LSE temporal landmark model + on-device personal recognizer",
+    automaticVocabularyCount: 300,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "64 body-and-hand landmark frames (19 pose points + two 21-point hands, x/y/z)",
+    sequenceLength: 64,
+    confidenceThreshold: 0.76,
+    decoder: "Locally trained SWL-LSE temporal landmark classifier; personal templates take priority",
+    postProcessing: "Confidence and margin gating plus temporal consensus",
+    version: "swl-lse300-temporal-landmark-v1",
+    dataset: "SWL-LSE (SignaMed), 8,000 real signer sequences across 300 Spanish Sign Language health-domain signs; open Zenodo release.",
+    speechLocale: "es-ES",
+    summary: "A local 300-sign Spanish health-domain research model. Held-out dataset results are recorded with the model; live-camera accuracy remains unmeasured.",
+  },
+  auslan: {
+    id: "auslan",
+    shortName: "AUSLAN",
+    language: "Australian Sign Language",
+    status: "preparing",
+    modelFile: null,
+    automaticVocabularyCount: 0,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "Planned: video/pose sequence model using the official MM-WLAuslan data contract",
+    sequenceLength: 0,
+    confidenceThreshold: 0,
+    decoder: "No browser checkpoint is installed yet",
+    postProcessing: "No automatic output until an evaluated Auslan model is installed",
+    version: "mm-wlauslan-model-pending",
+    dataset: "MM-WLAuslan: 282,000+ videos, 3,215 Auslan glosses and 73 signers (CC BY-NC-SA 4.0).",
+    speechLocale: "en-AU",
+    summary: "Official MM-WLAuslan data is mapped for a future 3,215-gloss model. No automatic Auslan translation is claimed until that model exists.",
+  },
+  bsl: {
+    id: "bsl",
+    shortName: "BSL",
+    language: "British Sign Language",
+    status: "experimental",
+    modelFile: "Official BSL-1K Pose2Sign body-and-hands model + on-device personal recognizer",
+    automaticVocabularyCount: 1064,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "16 body-and-hand pose frames (OpenPose COCO-18 + two 21-point hands); private examples use 24 samples",
+    sequenceLength: 16,
+    confidenceThreshold: 0.82,
+    decoder: "Official BSL-1K Pose2Sign browser model with WebGPU/WASM inference; personal templates take priority",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "bsl1k-pose2sign-bodyhands-v1 + personal-dtw-v2",
+    dataset: "Official BSL-1K body-and-hands Pose2Sign checkpoint. The live MediaPipe-to-OpenPose adapter is experimental.",
+    speechLocale: "en-GB",
+    summary: "A genuine local 1,064-sign BSL isolated-sign model, plus a separate private vocabulary you can teach.",
   },
   isl: {
     id: "isl",
     shortName: "ISL",
     language: "Indian Sign Language",
-    status: "not-installed",
-    modelFile: null,
-    vocabulary: [],
-    inputFormat: "Planned holistic landmark sequence",
-    sequenceLength: 48,
-    confidenceThreshold: 0.85,
-    decoder: "Not installed",
-    postProcessing: "Language-specific decoder required",
-    version: "unavailable",
-    dataset: "INCLUDE (CC-BY-4.0): a 100-label candidate vocabulary is audited, but no trained checkpoint is installed",
-    summary: "The adapter is separate. A real 100-label ISL vocabulary manifest is ready for signer-aware training, but no ISL recognition checkpoint is installed.",
+    status: "experimental",
+    modelFile: "Official AI4Bharat INCLUDE-263 landmark transformer + on-device personal recognizer",
+    automaticVocabularyCount: 263,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "Up to 200 MediaPipe body and hand frames (134 x/y landmark features); private examples use 24 samples",
+    sequenceLength: 200,
+    confidenceThreshold: 0.78,
+    decoder: "Official INCLUDE-263 browser transformer with WebGPU/WASM inference; personal templates take priority",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "include263-small-transformer-v1 + personal-dtw-v2",
+    dataset: "Official AI4Bharat INCLUDE-263 landmark model (CC-BY-4.0); the live MediaPipe adapter is experimental. Personal examples require no uploaded video.",
+    speechLocale: "en-IN",
+    summary: "A genuine local 263-sign ISL isolated-sign model, plus a separate private vocabulary you can teach.",
   },
   csl: {
     id: "csl",
     shortName: "CSL",
     language: "Chinese Sign Language",
-    status: "not-installed",
-    modelFile: null,
-    vocabulary: [],
-    inputFormat: "Planned holistic landmark sequence",
-    sequenceLength: 64,
-    confidenceThreshold: 0.86,
-    decoder: "Not installed",
-    postProcessing: "CSL gloss-to-Chinese decoder required",
-    version: "unavailable",
-    dataset: "SLR500 and CSL-Daily require an institutional research-access agreement signed by full-time staff",
-    summary: "The adapter is separate, but no CSL recognition checkpoint or unlicensed vocabulary list is installed.",
+    status: "personal",
+    modelFile: "On-device personal landmark recognizer",
+    automaticVocabularyCount: 0,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded example",
+    sequenceLength: 24,
+    confidenceThreshold: 0.76,
+    decoder: "Signer-specific dynamic-time-warping templates, stored only on this device",
+    postProcessing: "Confidence gate, temporal consensus and duplicate suppression",
+    version: "personal-dtw-v2",
+    dataset: "SLR500 and CSL-Daily remain future shared-model sources; personal examples do not use or redistribute those datasets.",
+    speechLocale: "zh-CN",
+    summary: "2,000+ built-in CSL starter concepts, ready to teach privately on this device.",
   },
+  lsf: personalLanguage({ id: "lsf", shortName: "LSF", language: "French Sign Language", speechLocale: "fr-FR" }),
+  dgs: personalLanguage({ id: "dgs", shortName: "DGS", language: "German Sign Language", speechLocale: "de-DE" }),
+  libras: personalLanguage({ id: "libras", shortName: "LIBRAS", language: "Brazilian Sign Language", speechLocale: "pt-BR" }),
+  lsa: personalLanguage({ id: "lsa", shortName: "LSA", language: "Argentine Sign Language", speechLocale: "es-AR" }),
+  nzsl: personalLanguage({ id: "nzsl", shortName: "NZSL", language: "New Zealand Sign Language", speechLocale: "en-NZ" }),
+  jsl: personalLanguage({ id: "jsl", shortName: "JSL", language: "Japanese Sign Language", speechLocale: "ja-JP" }),
+  ksl: personalLanguage({ id: "ksl", shortName: "KSL", language: "Korean Sign Language", speechLocale: "ko-KR" }),
+  tid: personalLanguage({ id: "tid", shortName: "TİD", language: "Turkish Sign Language", speechLocale: "tr-TR" }),
+  uaesl: personalLanguage({ id: "uaesl", shortName: "UAE SL", language: "Emirati Sign Language", speechLocale: "ar-AE" }),
+  ssl: personalLanguage({ id: "ssl", shortName: "Saudi SL", language: "Saudi Sign Language", speechLocale: "ar-SA" }),
+  egysl: personalLanguage({ id: "egysl", shortName: "Egyptian SL", language: "Egyptian Sign Language", speechLocale: "ar-EG" }),
+  lis: personalLanguage({ id: "lis", shortName: "LIS", language: "Italian Sign Language", speechLocale: "it-IT" }),
+  lgp: personalLanguage({ id: "lgp", shortName: "LGP", language: "Portuguese Sign Language", speechLocale: "pt-PT" }),
+  ngt: personalLanguage({ id: "ngt", shortName: "NGT", language: "Sign Language of the Netherlands", speechLocale: "nl-NL" }),
+  vgt: personalLanguage({ id: "vgt", shortName: "VGT", language: "Flemish Sign Language", speechLocale: "nl-BE" }),
+  dsgs: personalLanguage({ id: "dsgs", shortName: "DSGS", language: "Swiss German Sign Language", speechLocale: "de-CH" }),
+  irsl: personalLanguage({ id: "irsl", shortName: "Irish SL", language: "Irish Sign Language", speechLocale: "en-IE" }),
+  pjm: personalLanguage({ id: "pjm", shortName: "PJM", language: "Polish Sign Language", speechLocale: "pl-PL" }),
+  usl: personalLanguage({ id: "usl", shortName: "USL", language: "Ukrainian Sign Language", speechLocale: "uk-UA" }),
+  rsl: {
+    id: "rsl", shortName: "RSL", language: "Russian Sign Language", speechLocale: "ru-RU",
+    status: "experimental", modelFile: "Official Slovo MViTv2-small-32-2 ONNX",
+    automaticVocabularyCount: 1000, vocabulary: RSL_LABELS.slice(0, 1000),
+    inputFormat: "32 unmirrored RGB frames, letterboxed to 224×224, sampled at about 15 fps",
+    sequenceLength: 32, confidenceThreshold: 0.85,
+    decoder: "Pretrained probabilities; background rejection and competing-class margin",
+    postProcessing: "Manual clip capture, idle guard; no automatic speech or transcript insertion",
+    version: "slovo-mvit32-2-v1",
+    dataset: "Official Slovo checkpoint and label order. Custom attribution/share-alike public licence; see the model attribution. Live-camera accuracy unmeasured.",
+    summary: "967 pretrained word/phrase classes + 33 letters. No teaching required. Slow single-sign camera mode; 141 MB first load, not real-time translation.",
+  },
+  lsm: personalLanguage({ id: "lsm", shortName: "LSM", language: "Mexican Sign Language", speechLocale: "es-MX" }),
+  lsc: personalLanguage({ id: "lsc", shortName: "LSC", language: "Colombian Sign Language", speechLocale: "es-CO" }),
+  lsch: personalLanguage({ id: "lsch", shortName: "LSCh", language: "Chilean Sign Language", speechLocale: "es-CL" }),
+  lsp: personalLanguage({ id: "lsp", shortName: "LSP", language: "Peruvian Sign Language", speechLocale: "es-PE" }),
+  sasl: personalLanguage({ id: "sasl", shortName: "SASL", language: "South African Sign Language", speechLocale: "en-ZA" }),
+  ksl_ke: personalLanguage({ id: "ksl_ke", shortName: "KSL · Kenya", language: "Kenyan Sign Language", speechLocale: "en-KE" }),
+  bisindo: personalLanguage({ id: "bisindo", shortName: "BISINDO", language: "Indonesian Sign Language", speechLocale: "id-ID" }),
+  bim: personalLanguage({ id: "bim", shortName: "BIM", language: "Malaysian Sign Language", speechLocale: "ms-MY" }),
+  sgsl: personalLanguage({ id: "sgsl", shortName: "SgSL", language: "Singapore Sign Language", speechLocale: "en-SG" }),
+  tsl: personalLanguage({ id: "tsl", shortName: "TSL", language: "Thai Sign Language", speechLocale: "th-TH" }),
+  fsl: personalLanguage({ id: "fsl", shortName: "FSL", language: "Filipino Sign Language", speechLocale: "en-PH" }),
+  psl: {
+    id: "psl", shortName: "PSL", language: "Pakistan Sign Language", speechLocale: "ur-PK",
+    status: "experimental", modelFile: "775 official HFAD dictionary reference signs + on-device DTW matching",
+    automaticVocabularyCount: 775, vocabulary: PSL_LABELS,
+    inputFormat: "24 normalised hand and upper-body landmark samples, matched by dynamic time warping",
+    sequenceLength: 24, confidenceThreshold: 0.62,
+    decoder: "One-shot nearest-neighbour match against the official HFAD dictionary reference performance for each sign; personal templates take priority",
+    postProcessing: "Confidence gate, competing-sign margin, temporal consensus and duplicate suppression",
+    version: "psl776-hfad-dtw-v1",
+    dataset: "Hamza Foundation Academy for the Deaf (HFAD), Lahore, Pakistan, via the sign-language-translator project's dictionary release (CC BY 4.0). One official performance per sign; no accuracy evaluation exists yet.",
+    summary: "775 official Pakistan Sign Language dictionary signs matched by one-shot DTW comparison, not a trained classifier. No live-camera or held-out accuracy evaluation exists yet.",
+  },
+  bdsl: {
+    id: "bdsl", shortName: "BdSL", language: "Bangla Sign Language", speechLocale: "en-GB",
+    status: "experimental", modelFile: "BdSLW401 VideoMAE, verified weight-only int8 storage",
+    automaticVocabularyCount: 401, vocabulary: BDSL_LABELS,
+    inputFormat: "16 unmirrored RGB frames, full-frame bilinear antialias resize to 224×224",
+    sequenceLength: 16, confidenceThreshold: 0.85,
+    decoder: "401 original class IDs with 398 distinct source English glosses",
+    postProcessing: "Manual clip capture, static-scene and score rejection; no automatic speech or transcript insertion",
+    version: "bdsl401-videomae-weight-only-v1",
+    dataset: "BdSLW401. Model weights: CC-BY-NC-4.0. Original dataset terms: CC-BY-NC-ND-4.0. See attribution.",
+    summary: "401 trained sign classes / 398 English glosses. Experimental single-sign camera mode; 97 MB initial model load and slow inference.",
+  },
+  vsl: personalLanguage({ id: "vsl", shortName: "VSL", language: "Vietnamese Sign Language", speechLocale: "vi-VN" }),
 };
 
-export const LANGUAGE_LIST = Object.values(MODEL_ADAPTERS);
+export const LANGUAGE_LIST = LANGUAGE_IDS.map((id) => MODEL_ADAPTERS[id]);
+
+export function isLanguageId(value: unknown): value is LanguageId {
+  return typeof value === "string" && (LANGUAGE_IDS as readonly string[]).includes(value);
+}

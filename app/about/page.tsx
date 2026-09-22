@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { InfoPage } from "@/components/info-page";
 
-export const metadata: Metadata = { title: "About", description: "Why SignRelay exists and the principles behind it." };
+export const metadata: Metadata = { title: "About", description: "Why SignRelay exists and the principles behind it.", alternates: { canonical: "/about" } };
 
 export default function AboutPage() {
   return <InfoPage eyebrow="About SignRelay" title="A serious foundation for visible communication." intro="SignRelay is an open engineering project exploring real-time, privacy-first sign-language recognition for Deaf and hearing communication." sections={[
