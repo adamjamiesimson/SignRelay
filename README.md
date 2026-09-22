@@ -138,13 +138,28 @@ Dataset names, vocabulary size and availability do not imply a licence suitable 
 ## Testing
 
 ```bash
+npm run typecheck
 npm test
 npm run lint
+npm run build:worker
+npm run repo:guard
 npm run build:firebase
 npm run audit:security
 ```
 
+Core CI runs typechecking, unit/regression tests, lint, worker compilation, secret checks and the repository asset policy on every pull request to `main`. The asset policy blocks new tracked files over 20 MiB; the two existing reviewed large ONNX files are explicit legacy exceptions and cannot grow without failing CI.
+
 The unit suite verifies low-confidence rejection, temporal consensus and duplicate suppression. The rendered test checks all public routes and production metadata.
+
+## Live-camera evaluation
+
+Training metrics and synthetic tests are not treated as live-camera accuracy. SignRelay now has a language-specific, signer-independent evaluation protocol in [`evaluation/README.md`](evaluation/README.md), plus a JSONL summariser:
+
+```bash
+npm run eval:live -- evaluation/results/<language>-<date>.jsonl
+```
+
+The report separates signed-trial accuracy, accepted-sign coverage, precision among accepted predictions, common confusions and no-sign false-accept rate. Raw participant video and identifying participant data must not be committed to this repository. Experimental model status should only change after documented live-camera evaluation against thresholds chosen before the final results are inspected.
 
 ## Deployment
 
