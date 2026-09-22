@@ -1,23 +1,17 @@
-name: Install official WLASL2000 browser model
+name: Export official WLASL2000 browser model
 
 on:
   workflow_dispatch:
-  push:
-    branches: [firebase-hosting]
-    paths: [.github/workflows/install-wlasl2000.yml]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   export:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: firebase-hosting
-          persist-credentials: true
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -30,16 +24,19 @@ jobs:
           unzip -q /tmp/archived.zip -d /tmp/wlasl-checkpoints
           unzip -q /tmp/splits.zip -d /tmp/wlasl-splits
 
-      - name: Export and commit the browser model
+      - name: Export the browser model
         run: |
           python training/export_wlasl1000_tgcn.py \
             /tmp/wlasl-checkpoints/archived/asl2000/ckpt.pth \
             /tmp/wlasl-splits/splits/asl2000.json \
             --output public/models/asl2000-tgcn \
             --verify-random 12
-          git add public/models/asl2000-tgcn
-          git diff --cached --quiet && exit 0
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'assets: install official WLASL2000 browser model'
-          git push
+          test -f public/models/asl2000-tgcn/model.json
+          test -f public/models/asl2000-tgcn/labels.json
+
+      - name: Upload model for explicit review
+        uses: actions/upload-artifact@v4
+        with:
+          name: wlasl2000-browser-model
+          path: public/models/asl2000-tgcn/
+          retention-days: 14
