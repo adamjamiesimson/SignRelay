@@ -3,7 +3,7 @@ name: Bangla installed model verification
 on:
   workflow_dispatch:
   push:
-    branches: [feature/pretrained-language-expansion]
+    branches: [main]
     paths:
       - .github/workflows/bdsl401-research-check.yml
       - training/export_bdsl401_onnx.py
