@@ -3,7 +3,7 @@ name: Korean research model verification
 on:
   workflow_dispatch:
   push:
-    branches: [feature/pretrained-language-expansion]
+    branches: [main]
     paths:
       - .github/workflows/ksl-research-check.yml
       - training/export_ksl_onnx.py
