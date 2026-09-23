@@ -54,3 +54,7 @@ next-env.d.ts
 /public/models/rsl1000-slovo/model.onnx
 /public/models/rsl1000-slovo/*.partial
 /public/workers/rsl.worker.js
+
+# Local live-camera evaluation captures. Never commit participant media.
+/evaluation/raw/
+/evaluation/videos/
