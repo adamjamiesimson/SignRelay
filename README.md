@@ -161,6 +161,27 @@ npm run eval:live -- evaluation/results/<language>-<date>.jsonl
 
 The report separates signed-trial accuracy, accepted-sign coverage, precision among accepted predictions, common confusions and no-sign false-accept rate. Raw participant video and identifying participant data must not be committed to this repository. Experimental model status should only change after documented live-camera evaluation against thresholds chosen before the final results are inspected.
 
+## Development workflow
+
+`main` is the single authoritative, deployable branch. The older `feature/pretrained-language-expansion` and `claude/eager-fermi-mbevgh` names are historical compatibility refs only and should not be used for new work.
+
+For future changes:
+
+1. branch from the current `main`;
+2. open a pull request back to `main`;
+3. require **Core CI** and **Firebase Static Build Check** to pass before merging;
+4. deploy Firebase only from the merged `main` commit.
+
+Before opening a pull request, run:
+
+```bash
+npm run typecheck
+npm test
+npm run lint
+npm run build:worker
+npm run repo:guard
+```
+
 ## Deployment
 
 The application is a Next.js static export hosted on Firebase. There are no deployed server API routes, admin pages, user accounts or cloud database. Run `npm ci`, then `npm run build:firebase`, then `firebase deploy --only hosting --project signrelay-76f34`. Deploy only `out/`, as configured in `firebase.json`. Build-generated HTML policies and Firebase response headers work together; do not skip the secure-export build step. `npm start` serves the export locally for verification.
