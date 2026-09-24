@@ -17,6 +17,11 @@ import {
 const AUTOMATIC_IDS: LanguageId[] = ["asl", "bsl", "isl", "lse", "rsl", "bdsl", "psl"];
 const automaticLanguages = AUTOMATIC_IDS.map((id) => MODEL_ADAPTERS[id]);
 
+function capabilityWidth(language: (typeof automaticLanguages)[number]) {
+  const count = language.automaticVocabularyCount || 0;
+  return `${Math.max(28, Math.min(100, Math.round((count / 2000) * 100)))}%`;
+}
+
 type Props = {
   selected: LanguageId;
   onSelect: (language: LanguageId) => void;
@@ -126,11 +131,11 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
             >
               <div>
                 <strong>{language.shortName}</strong>
-                <span>LIVE</span>
+                <span>AUTO</span>
               </div>
               <small>{language.language}</small>
-              <div className="figma-language-meter">
-                <i style={{ width: language.id === "asl" ? "94%" : language.id === "bsl" ? "88%" : language.id === "isl" ? "82%" : language.id === "lse" ? "72%" : language.id === "rsl" ? "78%" : language.id === "bdsl" ? "70%" : "68%" }} />
+              <div className="figma-language-meter" title="Relative automatic vocabulary size, not accuracy">
+                <i style={{ width: capabilityWidth(language) }} />
               </div>
               <em>{language.id === "rsl" ? "1,000 classes" : language.id === "bdsl" ? "401 classes" : language.id === "psl" ? "775 signs" : language.automaticVocabularyCount.toLocaleString() + " classes"}</em>
             </button>
