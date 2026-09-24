@@ -71,12 +71,13 @@ body::before {
   grid-template-areas:
     "copy preview"
     "actions preview"
+    "metrics preview"
     "foot preview";
   align-items: center;
   column-gap: clamp(52px, 7vw, 92px);
   row-gap: 0;
   max-width: 1248px;
-  min-height: 720px;
+  min-height: 760px;
   margin: 0 auto;
   padding: 82px 24px 76px;
   background: transparent;
@@ -158,6 +159,46 @@ body::before {
   text-decoration: none;
 }
 .cinematic-learn:hover { color: white; border-color: rgba(255,255,255,.2); }
+
+.hero-metrics {
+  grid-area: metrics;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: min(100%, 620px);
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255,255,255,.16);
+}
+.hero-metrics > div {
+  min-width: 0;
+  padding: 0 22px;
+  border-left: 1px solid rgba(255,255,255,.16);
+}
+.hero-metrics > div:first-child { padding-left: 0; border-left: 0; }
+.hero-metrics strong {
+  display: block;
+  color: #f4f7f8;
+  font-size: 1.28rem;
+  line-height: 1;
+  letter-spacing: -.03em;
+  font-weight: 690;
+}
+.hero-metrics span {
+  display: block;
+  margin-top: 8px;
+  color: #c9d1d7;
+  font-size: .76rem;
+  font-weight: 560;
+}
+.hero-metrics small {
+  display: block;
+  margin-top: 3px;
+  color: #64707d;
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  line-height: 1.45;
+}
+
 .cinematic-footnote {
   grid-area: foot;
   align-self: start;
@@ -238,11 +279,30 @@ body::before {
   padding: 96px 24px 112px;
   background: transparent;
 }
-.section-heading { align-items: flex-end; margin-bottom: 36px; }
+.section-heading { align-items: flex-end; margin-bottom: 30px; gap: 56px; }
+
+.section-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  color: #6f7b87;
+  font-family: var(--font-mono);
+  font-size: .64rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.section-kicker::before {
+  content: "";
+  width: 16px;
+  height: 1px;
+  background: var(--brand);
+}
+
 .section-heading h2 {
   max-width: 630px;
   color: #eef2f5;
-  font-size: clamp(2.5rem, 4.4vw, 4.4rem);
+  font-size: clamp(2.35rem, 4vw, 3.9rem);
   line-height: 1.04;
   letter-spacing: -.055em;
   font-weight: 690;
@@ -268,8 +328,8 @@ body::before {
 .language-card:nth-child(3n),
 .language-card:nth-child(2n),
 .language-card.selected {
-  min-height: 224px;
-  padding: 22px;
+  min-height: 206px;
+  padding: 20px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #0d1016;
@@ -290,8 +350,8 @@ body::before {
   font-size: .66rem;
   letter-spacing: .06em;
 }
-.language-card h3 { margin: 22px 0 8px; color: #edf1f4; font-size: 1.03rem; font-weight: 620; }
-.language-card p { color: #858f9b; font-size: .83rem; line-height: 1.6; }
+.language-card h3 { margin: 18px 0 7px; color: #edf1f4; font-size: 1rem; font-weight: 620; }
+.language-card p { color: #858f9b; font-size: .79rem; line-height: 1.58; }
 .model-pill { margin-top: auto; padding-top: 18px; color: #7d8994; font-family: var(--font-mono); font-size: .65rem; font-weight: 450; }
 .model-pill.available { color: #59dce9; }
 .model-pill.preparing { color: #e2aa55; }
@@ -366,6 +426,11 @@ body::before {
 .site-footer a:hover,
 .privacy-settings-link:hover { color: #cdd5db; }
 
+
+@media (max-width: 1080px) and (min-width: 921px) {
+  .language-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 @media (max-width: 920px) {
   .cinematic-hero {
     grid-template-columns: 1fr;
@@ -376,6 +441,7 @@ body::before {
   .product-preview { justify-self: start; width: min(100%, 560px); margin-top: 52px; }
   .cinematic-copy h1 { font-size: clamp(3.4rem, 10vw, 5.8rem); }
   .language-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero-metrics { width: 100%; max-width: 620px; }
   .translator-grid { grid-template-columns: 1fr; }
 }
 
@@ -387,6 +453,9 @@ body::before {
   .cinematic-copy h1 { font-size: clamp(3rem, 14vw, 4.5rem); }
   .cinematic-description br { display: none; }
   .cinematic-actions { flex-wrap: wrap; }
+  .hero-metrics { grid-template-columns: 1fr; gap: 0; margin-top: 28px; }
+  .hero-metrics > div { padding: 12px 0; border-left: 0; border-top: 1px solid rgba(255,255,255,.09); }
+  .hero-metrics > div:first-child { border-top: 0; padding-top: 0; }
   .product-preview { margin-top: 42px; border-radius: 10px; }
   .preview-surface { min-height: 230px; }
   .preview-camera img { width: 104px; height: 104px; }
