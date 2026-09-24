@@ -86,6 +86,9 @@ const EMPTY_DETECTION: DetectionStatus = {
   pose: false,
 };
 
+const AUTOMATIC_LANGUAGE_IDS: LanguageId[] = ["asl", "bsl", "isl", "lse", "rsl", "bdsl", "psl"];
+const AUTOMATIC_LANGUAGE_LIST = AUTOMATIC_LANGUAGE_IDS.map((id) => MODEL_ADAPTERS[id]);
+
 export function TranslatorExperience() {
   const [step, setStep] = useState<Step>("welcome");
   const [selected, setSelected] = useState<LanguageId>("asl");
@@ -142,12 +145,13 @@ export function TranslatorExperience() {
 
   const visibleLanguages = useMemo(() => {
     const query = languageSearch.trim().toLocaleLowerCase();
+    const source = showAllLanguages ? LANGUAGE_LIST : AUTOMATIC_LANGUAGE_LIST;
     if (query) {
-      return LANGUAGE_LIST.filter((language) =>
+      return source.filter((language) =>
         `${language.shortName} ${language.language}`.toLocaleLowerCase().includes(query),
       );
     }
-    return showAllLanguages ? LANGUAGE_LIST : LANGUAGE_LIST.slice(0, 6);
+    return source;
   }, [languageSearch, showAllLanguages]);
 
   const calibrationCounts = useMemo(() => {
@@ -998,19 +1002,27 @@ export function TranslatorExperience() {
           <div className="cinematic-copy">
             <p className="cinematic-label">Sign language recognition in your browser</p>
             <h1 id="hero-title">Sign freely.<br />Connect naturally.</h1>
-            <p className="cinematic-description">SignRelay recognizes supported signs through your camera and turns confident matches into text.<br />Camera processing stays in your browser.</p>
+            <p className="cinematic-description">SignRelay recognizes supported signs through your camera and turns confident matches into text. Seven sign languages currently include automatic research recognition.<br />Camera processing stays in your browser.</p>
           </div>
           <div className="cinematic-actions">
             <a className="button cinematic-cta" href="#choose-language">Start translating <ArrowRight size={17} aria-hidden="true" /></a>
-            <a className="cinematic-learn" href="/how-it-works">How it works</a>
+            <a className="cinematic-learn" href="/languages">Explore languages</a>
           </div>
-          <p className="cinematic-footnote">Private by default <span aria-hidden="true">/</span> Research preview</p>
+          <div className="hero-metrics" aria-label="SignRelay at a glance">
+            <div><strong>7</strong><span>Automatic languages</span><small>Experimental research recognition</small></div>
+            <div><strong>40</strong><span>Language workspaces</span><small>Separate, language-scoped spaces</small></div>
+            <div><strong>Local</strong><span>Camera processing</span><small>Raw video is not uploaded</small></div>
+          </div>
+          <p className="cinematic-footnote">Private by default <span aria-hidden="true">/</span> Open source <span aria-hidden="true">/</span> Research preview</p>
         </section>
 
         <section className="language-section" id="choose-language" tabIndex={-1} aria-labelledby="language-title">
           <div className="section-heading" data-reveal>
-            <h2 id="language-title">Your language.<br />Your conversation.</h2>
-            <p>{LANGUAGE_LIST.length} separate sign-language workspaces. {LANGUAGE_LIST.filter(language => language.status === "experimental").length} currently include pretrained research models. Other workspaces let you teach private, signer-specific signs on your device.</p>
+            <div>
+              <span className="section-kicker">Automatic recognition</span>
+              <h2 id="language-title">Seven languages.<br />Ready to try.</h2>
+            </div>
+            <p>ASL, BSL, ISL, Spanish Sign Language, Russian Sign Language, Bangla Sign Language and Pakistan Sign Language currently include automatic research recognition. The other {LANGUAGE_LIST.length - AUTOMATIC_LANGUAGE_LIST.length} workspaces remain available for private signer-taught vocabulary.</p>
           </div>
           <div className="language-browser" data-reveal>
             <label className="language-search">
@@ -1020,7 +1032,7 @@ export function TranslatorExperience() {
                 type="search"
                 value={languageSearch}
                 onChange={(event) => setLanguageSearch(event.target.value)}
-                placeholder={`Search ${LANGUAGE_LIST.length} sign languages`}
+                placeholder={showAllLanguages ? `Search all ${LANGUAGE_LIST.length} workspaces` : "Search 7 automatic languages"}
               />
             </label>
             <button
@@ -1032,7 +1044,7 @@ export function TranslatorExperience() {
                 if (showAllLanguages) setLanguageSearch("");
               }}
             >
-              {showAllLanguages ? "Show core six" : `Browse all ${LANGUAGE_LIST.length}`}
+              {showAllLanguages ? "Show 7 automatic" : `Browse all ${LANGUAGE_LIST.length} workspaces`}
             </button>
           </div>
           <div className="language-grid" role="radiogroup" aria-label="Sign language">
@@ -1060,7 +1072,7 @@ export function TranslatorExperience() {
                 <p>{language.summary}</p>
                 <span className={`model-pill ${language.status === "experimental" ? "available" : language.status === "preparing" ? "preparing" : "personal"}`}>
                   <span className="mini-dot" aria-hidden="true" />
-                  {language.id === "rsl" ? "1,000 pretrained classes · slow clip mode" : language.id === "bdsl" && language.status === "experimental" ? "401 trained classes · slow clip mode" : language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()}-sign research model + personal vocabulary` : language.status === "preparing" ? `${language.vocabulary.length.toLocaleString()} teachable concepts · model preparing` : `${language.vocabulary.length.toLocaleString()} concept prompts + custom signs`}
+                  {language.id === "rsl" ? "1,000 pretrained classes · slow clip mode" : language.id === "bdsl" && language.status === "experimental" ? "401 trained classes · slow clip mode" : language.id === "psl" ? "775 dictionary signs · one-shot DTW matching" : language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()} automatic classes + personal vocabulary` : language.status === "preparing" ? `${language.vocabulary.length.toLocaleString()} teachable concepts · model preparing` : `${language.vocabulary.length.toLocaleString()} concept prompts + custom signs`}
                 </span>
               </button>
             ))}
@@ -1069,8 +1081,8 @@ export function TranslatorExperience() {
             )}
           </div>
           <div className="language-continue" aria-live="polite" data-reveal>
-            <p>{model.id === "rsl" ? "Selected: Russian Sign Language · 967 pretrained word/phrase classes + 33 letters · slow single-sign camera mode" : model.id === "bdsl" && model.status === "experimental" ? "Selected: Bangla Sign Language · 401 trained classes, 398 English glosses · slow single-sign camera mode" : model.status === "experimental"
-              ? `Selected: ${model.language} · ${model.automaticVocabularyCount.toLocaleString()} automatic research signs + your own personal signs`
+            <p>{model.id === "rsl" ? "Selected: Russian Sign Language · 967 pretrained word/phrase classes + 33 letters · slow single-sign camera mode" : model.id === "bdsl" && model.status === "experimental" ? "Selected: Bangla Sign Language · 401 trained classes, 398 English glosses · slow single-sign camera mode" : model.id === "psl" ? "Selected: Pakistan Sign Language · 775 official dictionary signs · one-shot DTW matching" : model.status === "experimental"
+              ? `Selected: ${model.language} · ${model.automaticVocabularyCount.toLocaleString()} automatic research classes + your own personal signs`
               : model.status === "preparing"
                 ? `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} teachable concepts + your own private signs; shared model preparing`
                 : `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} starter labels + unlimited private vocabulary`}</p>
