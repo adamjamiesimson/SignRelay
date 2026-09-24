@@ -306,6 +306,23 @@ export function TranslatorExperience() {
     setCalibrationState("idle");
   }, []);
 
+  const changeWorkspaceLanguage = (language: LanguageId) => {
+    if (language === selected) return;
+    const enteringSpecialRecognizer = language === "rsl" || language === "bdsl";
+    const leavingSharedRecognizer = selected !== "rsl" && selected !== "bdsl";
+
+    if (enteringSpecialRecognizer && leavingSharedRecognizer) stopCamera();
+
+    workerRef.current?.postMessage({ type: "reset" });
+    setCandidate(null);
+    setConfidence(0);
+    setBufferSize(0);
+    setRecognitionFeedback("");
+    setRecognitionUnavailable(false);
+    setRecognitionState("listening");
+    selectLanguage(language);
+  };
+
   useEffect(() => () => {
     cameraGenerationRef.current++;
     captureGenerationRef.current++;
@@ -615,10 +632,30 @@ export function TranslatorExperience() {
   };
 
   if (step === "workspace" && selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental") {
-    return <div className="app-shell"><SiteHeader /><main><BdslRecognizer onBack={returnHome} /></main></div>;
+    return (
+      <div className="app-shell">
+        <SiteHeader />
+        <main>
+          <div className="special-workspace-language-bar">
+            <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
+          </div>
+          <BdslRecognizer onBack={returnHome} />
+        </main>
+      </div>
+    );
   }
   if (step === "workspace" && selected === "rsl") {
-    return <div className="app-shell"><SiteHeader /><main><RslRecognizer onBack={returnHome} /></main></div>;
+    return (
+      <div className="app-shell">
+        <SiteHeader />
+        <main>
+          <div className="special-workspace-language-bar">
+            <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
+          </div>
+          <RslRecognizer onBack={returnHome} />
+        </main>
+      </div>
+    );
   }
 
   if (step === "workspace") {
@@ -638,7 +675,10 @@ export function TranslatorExperience() {
                 <p>{model.language}</p>
               </div>
             </div>
-            <span className="local-badge"><ShieldCheck size={16} /> On-device processing</span>
+            <div className="workspace-topbar-actions">
+              <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
+              <span className="local-badge"><ShieldCheck size={16} /> On-device processing</span>
+            </div>
           </div>
 
           <div className="honesty-banner" role="note">
@@ -971,6 +1011,46 @@ export function TranslatorExperience() {
       </main>
       <SiteFooter />
     </div>
+  );
+}
+
+function WorkspaceLanguageSwitcher({
+  selected,
+  onChange,
+}: {
+  selected: LanguageId;
+  onChange: (language: LanguageId) => void;
+}) {
+  const automatic = LANGUAGE_LIST.filter((language) => language.status === "experimental");
+  const development = LANGUAGE_LIST.filter((language) => language.status !== "experimental");
+
+  return (
+    <label className="workspace-language-switcher">
+      <span>Language</span>
+      <div className="workspace-language-select">
+        <select
+          value={selected}
+          onChange={(event) => onChange(event.target.value as LanguageId)}
+          aria-label="Change sign language"
+        >
+          <optgroup label="Automatic recognition">
+            {automatic.map((language) => (
+              <option key={language.id} value={language.id}>
+                {language.shortName} · {language.language}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="Models in development">
+            {development.map((language) => (
+              <option key={language.id} value={language.id}>
+                {language.shortName} · {language.language}
+              </option>
+            ))}
+          </optgroup>
+        </select>
+        <ChevronDown size={14} aria-hidden="true" />
+      </div>
+    </label>
   );
 }
 

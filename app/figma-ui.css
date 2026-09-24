@@ -1129,3 +1129,116 @@ body::before {
     animation: none !important;
   }
 }
+
+
+/* Translator language switcher */
+.workspace-topbar-actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.workspace-language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #65717e;
+  font-size: .65rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.workspace-language-switcher > span {
+  font-family: var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.workspace-language-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.workspace-language-select select {
+  min-width: 232px;
+  height: 38px;
+  appearance: none;
+  padding: 0 34px 0 12px;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 8px;
+  outline: none;
+  color: #e3e8eb;
+  background: #0f1117;
+  font: 600 .72rem/1 var(--font-sans);
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+.workspace-language-select select:hover {
+  border-color: rgba(34,211,238,.28);
+  background: #111620;
+}
+.workspace-language-select select:focus-visible {
+  border-color: rgba(34,211,238,.55);
+  box-shadow: 0 0 0 3px rgba(34,211,238,.09);
+}
+.workspace-language-select svg {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: #687482;
+}
+.workspace-language-select option,
+.workspace-language-select optgroup {
+  color: #e3e8eb;
+  background: #0f1117;
+}
+.special-workspace-language-bar {
+  width: min(900px, calc(100% - 48px));
+  margin: 24px auto 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 980px) {
+  .workspace-topbar {
+    grid-template-columns: auto 1fr;
+  }
+  .workspace-topbar-actions {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    justify-content: space-between;
+  }
+}
+@media (max-width: 700px) {
+  .workspace-topbar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .workspace-title,
+  .workspace-topbar-actions {
+    grid-column: 1;
+  }
+  .workspace-topbar-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .workspace-language-switcher {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .workspace-language-select,
+  .workspace-language-select select {
+    width: 100%;
+  }
+  .local-badge {
+    align-self: flex-start;
+  }
+  .special-workspace-language-bar {
+    width: min(100% - 36px, 900px);
+    justify-content: stretch;
+  }
+  .special-workspace-language-bar .workspace-language-switcher,
+  .special-workspace-language-bar .workspace-language-select,
+  .special-workspace-language-bar select {
+    width: 100%;
+  }
+}
