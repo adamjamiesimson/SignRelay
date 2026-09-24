@@ -17,10 +17,8 @@ export function SiteHeader() {
       <div className="site-header-inner">
         <Brand />
         <nav className="site-nav" aria-label="Primary navigation">
-          <Link href="/#choose-language">Translate</Link>
           <Link href="/languages">Languages</Link>
           <Link href="/#how-it-works">How it works</Link>
-          <Link className="nav-cta" href="/#choose-language">Start translating</Link>
         </nav>
       </div>
     </header>
