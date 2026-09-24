@@ -15,8 +15,8 @@ export default function LanguagesPage() {
 
   return <InfoPage
     eyebrow="Language support"
-    title={`${LANGUAGE_LIST.length} languages. Separate recognizers.`}
-    intro="Sign languages are independent languages, not signed versions of spoken languages. SignRelay keeps every personal vocabulary and recognition session inside its selected language."
+    title={`${automatic.length} automatic languages. ${LANGUAGE_LIST.length} separate workspaces.`}
+    intro="Seven sign languages currently include automatic research recognition. Every workspace remains language-scoped, and signer-taught vocabulary stays separate inside the selected language."
     sections={[
       {
         title: `Pretrained research models · ${automatic.length} ${automatic.length === 1 ? "language" : "languages"}`,
