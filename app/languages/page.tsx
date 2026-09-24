@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { InfoPage } from "@/components/info-page";
-import { ASL_BUILT_IN_VOCABULARY, LANGUAGE_LIST, PERSONAL_STARTER_VOCABULARY } from "@/lib/model-adapters";
+import Link from "next/link";
+import { LANGUAGE_LIST } from "@/lib/model-adapters";
+import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 
 export const metadata: Metadata = {
   title: "Supported languages",
-  description: "Honest model and private-vocabulary support across SignRelay's sign-language workspaces.",
+  description: "Automatic research recognizers and private signer-taught workspaces in SignRelay.",
   alternates: { canonical: "/languages" },
 };
 
@@ -13,47 +14,101 @@ export default function LanguagesPage() {
   const preparing = LANGUAGE_LIST.filter((language) => language.status === "preparing");
   const personal = LANGUAGE_LIST.filter((language) => language.status === "personal");
 
-  return <InfoPage
-    eyebrow="Language support"
-    title={`${automatic.length} automatic languages. ${LANGUAGE_LIST.length} separate workspaces.`}
-    intro="Seven sign languages currently include automatic research recognition. Every workspace remains language-scoped, and signer-taught vocabulary stays separate inside the selected language."
-    sections={[
-      {
-        title: `Pretrained research models · ${automatic.length} ${automatic.length === 1 ? "language" : "languages"}`,
-        body: <>
-          <p>{automatic.map((language) => `${language.shortName} (${language.automaticVocabularyCount.toLocaleString()})`).join(" · ")} have separate, browser-loadable isolated-sign models. They run on-device and remain experimental until independent live-camera evaluation is complete.</p>
-          <p>ASL uses the official {ASL_BUILT_IN_VOCABULARY.length.toLocaleString()}-class WLASL Pose-TGCN checkpoint, BSL uses the 1,064-class BSL-1K Pose2Sign checkpoint, and ISL uses the 263-class AI4Bharat INCLUDE transformer. None is presented as continuous sentence interpretation.</p>
-          <p>Spanish uses a 300-class model trained on the released SWL-LSE health-domain landmarks. Released test-split top-1 was 60.5%; live-camera accuracy remains unmeasured.</p>
-          <p>Bangla uses a separate VideoMAE clip model with 401 sign classes and 398 distinct English glosses. Its first load is 97 MB; results remain experimental and inference is slow.</p>
-          <p>RSL uses the official Slovo video model: 967 word/phrase classes and 33 fingerspelling letters, without teaching. It has a separate manual single-sign camera mode, a 141 MB first download and slow inference; it is not real-time.</p>
-          <p>PSL is different from the other six: it is not a trained classifier. It matches against 775 official Pakistan Sign Language dictionary signs from Hamza Foundation Academy for the Deaf, each with exactly one official reference performance, using the same one-shot distance matching already used for a signer’s own personal templates. No accuracy evaluation exists for it.</p>
-        </>,
-      },
-      {
-        title: `Models in preparation · ${preparing.length} ${preparing.length === 1 ? "language" : "languages"}`,
-        body: <>
-          <p>{preparing.map((language) => language.language).join(" and ")} {preparing.length === 1 ? "has an independent model pipeline" : "have independent model pipelines"} in preparation. SignRelay does not request a missing checkpoint or show automatic output for those languages.</p>
-          <p>Their private signer-taught workspaces are available now, with the same language separation as every other workspace.</p>
-        </>,
-      },
-      {
-        title: `Signer-taught workspaces · ${personal.length} ${personal.length === 1 ? "language" : "languages"}`,
-        body: <>
-          <p>{personal.map((language) => `${language.language} (${language.shortName})`).join(" · ")}</p>
-          <p>These workspaces use only examples recorded by the signer on their device. They are functional personal recognizers, not claims of a signer-independent pretrained model.</p>
-        </>,
-      },
-      {
-        title: `${PERSONAL_STARTER_VOCABULARY.length.toLocaleString()} prompts, unlimited custom signs`,
-        body: <>
-          <p>Each landmark-based workspace includes {PERSONAL_STARTER_VOCABULARY.length.toLocaleString()} searchable concept prompts. A prompt becomes recognisable only after the signer records examples of the correct sign in that selected language.</p>
-          <p>Users can also type any word or short phrase, including text in their own writing system, and teach it privately. Prompt labels are organisational aids—not a claim that the same sign is shared between languages.</p>
-        </>,
-      },
-      {
-        title: "Privacy and language integrity",
-        body: <p>Personal examples store normalised hand, face and upper-body landmarks in the browser, never raw camera video. Switching languages resets the recognition session and cannot relabel, import or leak a template from another language.</p>,
-      },
-    ]}
-  />;
+  return (
+    <div className="app-shell figma-app">
+      <SiteHeader />
+      <main className="figma-language-page">
+        <section className="figma-language-page-hero">
+          <div className="figma-section-inner">
+            <span className="figma-eyebrow">Language support</span>
+            <h1>Supported sign languages</h1>
+            <p>Seven language workspaces currently include automatic research recognition. The remaining workspaces support private signer-taught recognition on your device.</p>
+            <div className="figma-language-summary" aria-label="Language support summary">
+              <div><strong>{automatic.length}</strong><span>Automatic</span></div>
+              <div><strong>{personal.length}</strong><span>Signer-taught</span></div>
+              <div><strong>{preparing.length}</strong><span>Preparing</span></div>
+              <div><strong>{LANGUAGE_LIST.length}</strong><span>Total workspaces</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section className="figma-language-page-section">
+          <div className="figma-section-inner">
+            <div className="figma-language-page-heading">
+              <div><i className="automatic" /><h2>Automatic research recognition</h2><span>({automatic.length})</span></div>
+              <p>Separate, language-specific recognition pipelines. These are research previews, not unrestricted continuous interpretation.</p>
+            </div>
+            <div className="figma-language-page-grid">
+              {automatic.map((language) => (
+                <article className="figma-language-page-card automatic" key={language.id}>
+                  <div className="figma-language-page-card-head">
+                    <div><strong>{language.shortName}</strong><span>{language.language}</span></div>
+                    <em>AUTO</em>
+                  </div>
+                  <p>{language.summary}</p>
+                  <div className="figma-language-page-meta">
+                    <span>{language.id === "rsl" ? "967 words/phrases + 33 letters" : language.id === "psl" ? "775 dictionary signs" : `${language.automaticVocabularyCount.toLocaleString()} automatic classes`}</span>
+                    <span>{language.version}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {preparing.length > 0 && (
+          <section className="figma-language-page-section">
+            <div className="figma-section-inner">
+              <div className="figma-language-page-heading">
+                <div><i className="preparing" /><h2>Models in preparation</h2><span>({preparing.length})</span></div>
+                <p>The workspace is usable for personal signer-taught signs while the shared automatic model is still being prepared.</p>
+              </div>
+              <div className="figma-language-page-grid">
+                {preparing.map((language) => (
+                  <article className="figma-language-page-card preparing" key={language.id}>
+                    <div className="figma-language-page-card-head">
+                      <div><strong>{language.shortName}</strong><span>{language.language}</span></div>
+                      <em>PREPARING</em>
+                    </div>
+                    <p>{language.summary}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="figma-language-page-section">
+          <div className="figma-section-inner">
+            <div className="figma-language-page-heading">
+              <div><i className="personal" /><h2>Signer-taught workspaces</h2><span>({personal.length})</span></div>
+              <p>These workspaces recognize only the examples the signer records locally. They are not presented as pretrained language models.</p>
+            </div>
+            <div className="figma-language-page-grid personal-grid">
+              {personal.map((language) => (
+                <article className="figma-language-page-card personal" key={language.id}>
+                  <div className="figma-language-page-card-head">
+                    <div><strong>{language.shortName}</strong><span>{language.language}</span></div>
+                    <em>PERSONAL</em>
+                  </div>
+                  <p>{language.summary}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="figma-language-page-cta">
+          <div className="figma-section-inner">
+            <div className="figma-final-card">
+              <h2>Choose a language and start signing.</h2>
+              <p>Open the translator, select a workspace, and keep your camera processing in the browser.</p>
+              <div><Link className="figma-primary" href="/#choose-language">Start translating</Link></div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
+  );
 }
