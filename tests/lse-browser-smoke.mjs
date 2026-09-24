@@ -81,7 +81,7 @@ try {
   await until(() => evaluate("document.querySelectorAll('.figma-language-row [role=radio]').length === 7"), "Automatic language row missing");
   await until(async () => {
     await click("Spanish Sign Language");
-    return await evaluate("!!document.querySelector('.figma-language-row [role=radio][aria-checked=true]')");
+    return await evaluate("Array.from(document.querySelectorAll('.figma-language-row [role=radio]')).some(b => b.textContent.includes('Spanish Sign Language') && b.getAttribute('aria-checked') === 'true')");
   }, "Spanish language choice did not hydrate");
   await click("Start translating");
   await until(() => evaluate("document.querySelector('.workspace-title p')?.textContent === 'Spanish Sign Language'"), "Spanish workspace missing");
