@@ -24,7 +24,6 @@ import {
   Pause,
   Play,
   RefreshCw,
-  Search,
   ShieldCheck,
   Sparkles,
   Trash2,
@@ -86,9 +85,6 @@ const EMPTY_DETECTION: DetectionStatus = {
   pose: false,
 };
 
-const AUTOMATIC_LANGUAGE_IDS: LanguageId[] = ["asl", "bsl", "isl", "lse", "rsl", "bdsl", "psl"];
-const AUTOMATIC_LANGUAGE_LIST = AUTOMATIC_LANGUAGE_IDS.map((id) => MODEL_ADAPTERS[id]);
-
 export function TranslatorExperience() {
   const [step, setStep] = useState<Step>("welcome");
   const [selected, setSelected] = useState<LanguageId>("asl");
@@ -111,8 +107,6 @@ export function TranslatorExperience() {
   const [calibrationWord, setCalibrationWord] = useState<AslVocabularyEntry>(() => createCustomVocabularyEntry("Personal sign")!);
   const [customWordInput, setCustomWordInput] = useState("");
   const [vocabularySearch, setVocabularySearch] = useState("");
-  const [languageSearch, setLanguageSearch] = useState("");
-  const [showAllLanguages, setShowAllLanguages] = useState(false);
   const [calibrationState, setCalibrationState] = useState<CalibrationState>("idle");
   const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
   const [countdown, setCountdown] = useState(3);
@@ -142,17 +136,6 @@ export function TranslatorExperience() {
     () => LANGUAGE_LIST.find((item) => item.id === selected)!,
     [selected],
   );
-
-  const visibleLanguages = useMemo(() => {
-    const query = languageSearch.trim().toLocaleLowerCase();
-    const source = showAllLanguages ? LANGUAGE_LIST : AUTOMATIC_LANGUAGE_LIST;
-    if (query) {
-      return source.filter((language) =>
-        `${language.shortName} ${language.language}`.toLocaleLowerCase().includes(query),
-      );
-    }
-    return source;
-  }, [languageSearch, showAllLanguages]);
 
   const calibrationCounts = useMemo(() => {
     const counts = new Map<string, number>();
