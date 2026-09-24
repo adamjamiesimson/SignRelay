@@ -5,7 +5,7 @@ import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 
 export const metadata: Metadata = {
   title: "Supported languages",
-  description: "Automatic research recognizers and private signer-taught workspaces in SignRelay.",
+  description: "Automatic research recognizers and sign-language models in development in SignRelay.",
   alternates: { canonical: "/languages" },
 };
 
@@ -22,10 +22,10 @@ export default function LanguagesPage() {
           <div className="figma-section-inner">
             <span className="figma-eyebrow">Language support</span>
             <h1>Supported sign languages</h1>
-            <p>Seven language workspaces currently include automatic research recognition. The remaining workspaces support private signer-taught recognition on your device.</p>
+            <p>Seven language workspaces currently include automatic research recognition. The remaining language models are in development, with private signer-taught recognition available in those workspaces in the meantime.</p>
             <div className="figma-language-summary" aria-label="Language support summary">
               <div><strong>{automatic.length}</strong><span>Automatic</span></div>
-              <div><strong>{personal.length}</strong><span>Signer-taught</span></div>
+              <div><strong>{personal.length}</strong><span>In development</span></div>
               <div><strong>{preparing.length}</strong><span>Preparing</span></div>
               <div><strong>{LANGUAGE_LIST.length}</strong><span>Total workspaces</span></div>
             </div>
@@ -81,15 +81,15 @@ export default function LanguagesPage() {
         <section className="figma-language-page-section">
           <div className="figma-section-inner">
             <div className="figma-language-page-heading">
-              <div><i className="personal" /><h2>Signer-taught workspaces</h2><span>({personal.length})</span></div>
-              <p>These workspaces recognize only the examples the signer records locally. They are not presented as pretrained language models.</p>
+              <div><i className="personal" /><h2>Models in development</h2><span>({personal.length})</span></div>
+              <p>These shared automatic models are still in development. Until they are ready, the workspaces can use private signer-taught recognition on the device.</p>
             </div>
             <div className="figma-language-page-grid personal-grid">
               {personal.map((language) => (
                 <article className="figma-language-page-card personal" key={language.id}>
                   <div className="figma-language-page-card-head">
                     <div><strong>{language.shortName}</strong><span>{language.language}</span></div>
-                    <em>PERSONAL</em>
+                    <em className="beta-badge"><span aria-hidden="true">β</span>BETA</em>
                   </div>
                   <p>{language.summary}</p>
                 </article>
