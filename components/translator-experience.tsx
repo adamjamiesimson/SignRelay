@@ -666,7 +666,7 @@ export function TranslatorExperience() {
         <main className="workspace-page">
           <div className="workspace-topbar">
             <button className="back-link" onClick={returnHome}>
-              <ArrowLeft size={18} aria-hidden="true" /> Home
+              <ArrowLeft size={18} aria-hidden="true" /> Change language
             </button>
             <div className="workspace-title">
               <span className="language-code compact">{model.shortName}</span>
