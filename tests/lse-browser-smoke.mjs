@@ -78,20 +78,12 @@ try {
   await send("Runtime.enable"); await send("Network.enable");
   await send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
   await send("Page.navigate", { url: origin });
-  await until(() => evaluate("!!document.querySelector('.language-search input')"), "Language browser missing");
-  // SSR renders the button before React attaches its event handler. Retry the
-  // idempotent expand action until hydration makes it interactive.
+  await until(() => evaluate("document.querySelectorAll('.figma-language-row [role=radio]').length === 7"), "Automatic language row missing");
   await until(async () => {
-    if (await evaluate("document.querySelectorAll('[role=radio]').length === 40")) return true;
-    await click("Browse all 40");
-    return false;
-  }, "Language browser did not hydrate");
-  await evaluate("document.querySelector('.language-search input').focus()");
-  await send("Input.insertText", { text: "Spanish" });
-  await until(() => evaluate("document.querySelectorAll('[role=radio]').length === 1"), "Language search failed");
-  assert.equal(await evaluate("document.querySelector('[role=radio]').tabIndex"), 0, "Filtered choice must remain keyboard focusable");
-  await evaluate("document.querySelector('[role=radio]').click()");
-  await click("Continue to camera");
+    await click("Spanish Sign Language");
+    return await evaluate("Array.from(document.querySelectorAll('.figma-language-row [role=radio]')).some(b => b.textContent.includes('Spanish Sign Language') && b.getAttribute('aria-checked') === 'true')");
+  }, "Spanish language choice did not hydrate");
+  await click("Start translating");
   await until(() => evaluate("document.querySelector('.workspace-title p')?.textContent === 'Spanish Sign Language'"), "Spanish workspace missing");
   assert.match(await evaluate("document.querySelector('.honesty-banner')?.textContent"), /300 isolated signs/);
   assert.equal(requests.filter(request => request.url.endsWith("model.onnx")).length, 0, "Weights must load only after signing");
@@ -132,7 +124,7 @@ try {
   assert.equal(requests.filter(request => request.method === "POST").length, 0, "No camera upload expected");
   await writeFile("outputs/lse-desktop.png", Buffer.from((await send("Page.captureScreenshot", { format: "png" })).data, "base64"));
   await click("Change language");
-  await until(() => evaluate("!!document.querySelector('.language-search input')"), "Back navigation failed");
+  await until(() => evaluate("!!document.querySelector('.figma-language-row')"), "Back navigation failed");
   assert.equal(errors.length, 0, JSON.stringify(errors));
   console.log("Three real Spanish model inferences, camera release, navigation and no-upload checks passed. No uncaught page errors.");
 

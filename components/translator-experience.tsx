@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import dynamic from "next/dynamic";
 import {
   useCallback,
@@ -25,7 +24,6 @@ import {
   Pause,
   Play,
   RefreshCw,
-  Search,
   ShieldCheck,
   Sparkles,
   Trash2,
@@ -72,6 +70,7 @@ import type {
   WorkerMessage,
 } from "@/lib/vision-types";
 import { SiteFooter, SiteHeader } from "./site-chrome";
+import { FigmaMakeLanding } from "./figma-make-landing";
 import { SurfaceMotion } from "./surface-motion";
 
 type Step = "welcome" | "workspace";
@@ -85,9 +84,6 @@ const EMPTY_DETECTION: DetectionStatus = {
   face: false,
   pose: false,
 };
-
-const AUTOMATIC_LANGUAGE_IDS: LanguageId[] = ["asl", "bsl", "isl", "lse", "rsl", "bdsl", "psl"];
-const AUTOMATIC_LANGUAGE_LIST = AUTOMATIC_LANGUAGE_IDS.map((id) => MODEL_ADAPTERS[id]);
 
 export function TranslatorExperience() {
   const [step, setStep] = useState<Step>("welcome");
@@ -111,8 +107,6 @@ export function TranslatorExperience() {
   const [calibrationWord, setCalibrationWord] = useState<AslVocabularyEntry>(() => createCustomVocabularyEntry("Personal sign")!);
   const [customWordInput, setCustomWordInput] = useState("");
   const [vocabularySearch, setVocabularySearch] = useState("");
-  const [languageSearch, setLanguageSearch] = useState("");
-  const [showAllLanguages, setShowAllLanguages] = useState(false);
   const [calibrationState, setCalibrationState] = useState<CalibrationState>("idle");
   const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
   const [countdown, setCountdown] = useState(3);
@@ -142,17 +136,6 @@ export function TranslatorExperience() {
     () => LANGUAGE_LIST.find((item) => item.id === selected)!,
     [selected],
   );
-
-  const visibleLanguages = useMemo(() => {
-    const query = languageSearch.trim().toLocaleLowerCase();
-    const source = showAllLanguages ? LANGUAGE_LIST : AUTOMATIC_LANGUAGE_LIST;
-    if (query) {
-      return source.filter((language) =>
-        `${language.shortName} ${language.language}`.toLocaleLowerCase().includes(query),
-      );
-    }
-    return source;
-  }, [languageSearch, showAllLanguages]);
 
   const calibrationCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -978,119 +961,13 @@ export function TranslatorExperience() {
 
   return (
     <div className="app-shell">
-      <SurfaceMotion scene="welcome" />
       <SiteHeader />
       <main>
-        <section className="cinematic-hero" aria-labelledby="hero-title">
-          <div className="product-preview" role="img" aria-label="Illustrative SignRelay interface preview. Camera is off. Example transcript: Hello. Nice to meet you.">
-            <div className="preview-toolbar" aria-hidden="true">
-              <span>SignRelay</span><span>Interface preview</span>
-            </div>
-            <div className="preview-surface" aria-hidden="true">
-              <div className="preview-camera">
-                <span className="preview-label"><CameraOff size={14} /> Camera off</span>
-                <Image src="/signrelay-mark.webp" width={220} height={220} alt="" priority unoptimized />
-                <span className="preview-camera-note">Your space to sign.</span>
-              </div>
-              <div className="preview-transcript">
-                <span className="preview-label">Example transcript</span>
-                <p>Hello.<br /><span>Nice to meet you.</span></p>
-                <span className="preview-privacy"><ShieldCheck size={15} /> On your device</span>
-              </div>
-            </div>
-          </div>
-          <div className="cinematic-copy">
-            <p className="cinematic-label">Sign language recognition in your browser</p>
-            <h1 id="hero-title">Sign freely.<br />Connect naturally.</h1>
-            <p className="cinematic-description">SignRelay recognizes supported signs through your camera and turns confident matches into text. Seven sign languages currently include automatic research recognition.<br />Camera processing stays in your browser.</p>
-          </div>
-          <div className="cinematic-actions">
-            <a className="button cinematic-cta" href="#choose-language">Start translating <ArrowRight size={17} aria-hidden="true" /></a>
-            <a className="cinematic-learn" href="/languages">Explore languages</a>
-          </div>
-          <div className="hero-metrics" aria-label="SignRelay at a glance">
-            <div><strong>7</strong><span>Automatic languages</span><small>Experimental research recognition</small></div>
-            <div><strong>40</strong><span>Language workspaces</span><small>Separate, language-scoped spaces</small></div>
-            <div><strong>Local</strong><span>Camera processing</span><small>Raw video is not uploaded</small></div>
-          </div>
-          <p className="cinematic-footnote">Private by default <span aria-hidden="true">/</span> Open source <span aria-hidden="true">/</span> Research preview</p>
-        </section>
-
-        <section className="language-section" id="choose-language" tabIndex={-1} aria-labelledby="language-title">
-          <div className="section-heading" data-reveal>
-            <div>
-              <span className="section-kicker">Automatic recognition</span>
-              <h2 id="language-title">Seven languages.<br />Ready to try.</h2>
-            </div>
-            <p>ASL, BSL, ISL, Spanish Sign Language, Russian Sign Language, Bangla Sign Language and Pakistan Sign Language currently include automatic research recognition. The other {LANGUAGE_LIST.length - AUTOMATIC_LANGUAGE_LIST.length} workspaces remain available for private signer-taught vocabulary.</p>
-          </div>
-          <div className="language-browser" data-reveal>
-            <label className="language-search">
-              <Search size={17} aria-hidden="true" />
-              <span className="sr-only">Search sign languages</span>
-              <input
-                type="search"
-                value={languageSearch}
-                onChange={(event) => setLanguageSearch(event.target.value)}
-                placeholder={showAllLanguages ? `Search all ${LANGUAGE_LIST.length} workspaces` : "Search 7 automatic languages"}
-              />
-            </label>
-            <button
-              className="button ghost small"
-              type="button"
-              aria-expanded={showAllLanguages}
-              onClick={() => {
-                setShowAllLanguages((current) => !current);
-                if (showAllLanguages) setLanguageSearch("");
-              }}
-            >
-              {showAllLanguages ? "Show 7 automatic" : `Browse all ${LANGUAGE_LIST.length} workspaces`}
-            </button>
-          </div>
-          <div className="language-grid" role="radiogroup" aria-label="Sign language">
-            {visibleLanguages.map((language, index) => (
-              <button
-                key={language.id}
-                data-reveal
-                className={`language-card ${language.status} ${selected === language.id ? "selected" : ""}`}
-                onClick={() => selectLanguage(language.id)}
-                role="radio"
-                aria-checked={selected === language.id}
-                tabIndex={selected === language.id || (!visibleLanguages.some(item => item.id === selected) && index === 0) ? 0 : -1}
-                onKeyDown={(event) => {
-                  const direction = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
-                  if (direction === undefined && event.key !== "Home" && event.key !== "End") return;
-                  event.preventDefault();
-                  const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? visibleLanguages.length - 1
-                    : (index + direction! + visibleLanguages.length) % visibleLanguages.length;
-                  selectLanguage(visibleLanguages[nextIndex].id);
-                  event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[nextIndex]?.focus();
-                }}
-              >
-                <span className="language-code">{language.shortName}</span>
-                <h3>{language.language}</h3>
-                <p>{language.summary}</p>
-                <span className={`model-pill ${language.status === "experimental" ? "available" : language.status === "preparing" ? "preparing" : "personal"}`}>
-                  <span className="mini-dot" aria-hidden="true" />
-                  {language.id === "rsl" ? "1,000 pretrained classes · slow clip mode" : language.id === "bdsl" && language.status === "experimental" ? "401 trained classes · slow clip mode" : language.id === "psl" ? "775 dictionary signs · one-shot DTW matching" : language.status === "experimental" ? `${language.automaticVocabularyCount.toLocaleString()} automatic classes + personal vocabulary` : language.status === "preparing" ? `${language.vocabulary.length.toLocaleString()} teachable concepts · model preparing` : `${language.vocabulary.length.toLocaleString()} concept prompts + custom signs`}
-                </span>
-              </button>
-            ))}
-            {!visibleLanguages.length && (
-              <p className="language-empty">No language matches “{languageSearch}”. You can still type any word or phrase inside a language workspace.</p>
-            )}
-          </div>
-          <div className="language-continue" aria-live="polite" data-reveal>
-            <p>{model.id === "rsl" ? "Selected: Russian Sign Language · 967 pretrained word/phrase classes + 33 letters · slow single-sign camera mode" : model.id === "bdsl" && model.status === "experimental" ? "Selected: Bangla Sign Language · 401 trained classes, 398 English glosses · slow single-sign camera mode" : model.id === "psl" ? "Selected: Pakistan Sign Language · 775 official dictionary signs · one-shot DTW matching" : model.status === "experimental"
-              ? `Selected: ${model.language} · ${model.automaticVocabularyCount.toLocaleString()} automatic research classes + your own personal signs`
-              : model.status === "preparing"
-                ? `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} teachable concepts + your own private signs; shared model preparing`
-                : `Selected: ${model.language} · ${model.vocabulary.length.toLocaleString()} starter labels + unlimited private vocabulary`}</p>
-            <button className="button primary" onClick={beginTranslation}>
-              Continue to camera <ArrowRight size={18} aria-hidden="true" />
-            </button>
-          </div>
-        </section>
+        <FigmaMakeLanding
+          selected={selected}
+          onSelect={selectLanguage}
+          onStart={beginTranslation}
+        />
       </main>
       <SiteFooter />
     </div>
