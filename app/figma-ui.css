@@ -938,3 +938,176 @@ body::before {
   .figma-language-page-grid,
   .figma-language-page-grid.personal-grid { grid-template-columns: 1fr; }
 }
+
+
+/* Figma Make hero demo animation */
+@keyframes figma-preview-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes figma-scan-sweep {
+  0% { transform: translateY(-170px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(185px); opacity: 0; }
+}
+@keyframes figma-demo-pulse {
+  0%, 100% { opacity: .95; transform: scale(1); }
+  50% { opacity: .55; transform: scale(.82); }
+}
+@keyframes figma-live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .45; transform: scale(.72); }
+}
+@keyframes figma-cursor-blink {
+  0%, 48%, 100% { opacity: 1; }
+  49%, 99% { opacity: 0; }
+}
+
+.figma-preview-floating {
+  animation: figma-preview-float 4s ease-in-out infinite;
+}
+.figma-preview-mesh-wrap {
+  position: absolute;
+  inset: 5px 0 0;
+  display: grid;
+  place-items: center;
+  transition: opacity .28s ease, transform .28s ease;
+}
+.figma-preview-mesh-wrap.fade {
+  opacity: .28;
+  transform: scale(.985);
+}
+.figma-demo-mesh {
+  width: 160px;
+  height: 210px;
+  overflow: visible;
+  filter: drop-shadow(0 0 9px rgba(34,211,238,.08));
+}
+.figma-demo-face {
+  fill: none;
+  stroke: rgba(250,200,80,.22);
+  stroke-width: .9;
+}
+.figma-demo-face circle {
+  fill: rgba(250,200,80,.9);
+  stroke: none;
+  animation: figma-demo-pulse 2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.figma-demo-shoulders {
+  fill: none;
+  stroke: rgba(160,130,255,.28);
+  stroke-width: 1;
+}
+.figma-demo-shoulders circle {
+  fill: rgba(160,130,255,.9);
+  stroke: none;
+  animation: figma-demo-pulse 2.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.figma-demo-hand {
+  fill: none;
+  stroke: rgba(34,211,238,.26);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.figma-demo-hand .arm {
+  stroke-dasharray: 3 3;
+  opacity: .7;
+}
+.figma-demo-hand circle {
+  fill: rgba(34,211,238,.92);
+  stroke: none;
+  animation: figma-demo-pulse 1.85s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+  filter: drop-shadow(0 0 3px rgba(34,211,238,.8));
+}
+.figma-demo-scan-line {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(34,211,238,.62), transparent);
+  box-shadow: 0 0 10px rgba(34,211,238,.18);
+  animation: figma-scan-sweep 2.5s cubic-bezier(.45,0,.55,1) infinite;
+}
+.figma-preview-hud i {
+  animation: figma-live-pulse 2s ease infinite;
+}
+.figma-sign-chip,
+.figma-preview-confidence,
+.figma-preview-output h3 {
+  transition: opacity .25s ease, transform .25s ease;
+}
+.figma-sign-chip.fade,
+.figma-preview-confidence.fade,
+.figma-preview-output h3.fade {
+  opacity: 0;
+  transform: translateY(3px);
+}
+.figma-sign-chip.show,
+.figma-preview-confidence.show,
+.figma-preview-output h3.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.figma-confidence-track span {
+  transition: width .5s ease;
+}
+.figma-tracking-row span {
+  opacity: .5;
+  transition: color .4s ease, border-color .4s ease, background .4s ease, opacity .4s ease;
+}
+.figma-tracking-row span.active {
+  opacity: 1;
+}
+.figma-tracking-row span.active.face {
+  color: rgba(250,200,80,.9);
+  border-color: rgba(250,200,80,.25);
+  background: rgba(250,200,80,.08);
+}
+.figma-tracking-row span.active.shoulder {
+  color: rgba(160,130,255,.9);
+  border-color: rgba(160,130,255,.25);
+  background: rgba(160,130,255,.08);
+}
+.figma-tracking-row span.active.hands {
+  color: rgba(34,211,238,.9);
+  border-color: rgba(34,211,238,.25);
+  background: rgba(34,211,238,.08);
+}
+.figma-sentence-preview {
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.figma-sentence-preview > span {
+  color: #65717e;
+  transition: color .3s ease, opacity .3s ease;
+}
+.figma-sentence-preview > span.current {
+  color: #dfe5e9;
+  font-weight: 600;
+}
+.figma-sentence-preview > i {
+  animation: figma-cursor-blink 1.1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .figma-preview-floating,
+  .figma-demo-scan-line,
+  .figma-preview-hud i,
+  .figma-demo-face circle,
+  .figma-demo-shoulders circle,
+  .figma-demo-hand circle,
+  .figma-sentence-preview > i {
+    animation: none !important;
+  }
+}

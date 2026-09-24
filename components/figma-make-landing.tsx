@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -28,34 +29,146 @@ type Props = {
   onStart: () => void;
 };
 
-function HeroPreview() {
+const DEMO_SEQUENCE = [
+  { sign: "HELLO", translation: "Hello", confidence: 96 },
+  { sign: "HOW", translation: "How", confidence: 93 },
+  { sign: "ARE", translation: "are", confidence: 91 },
+  { sign: "YOU", translation: "you", confidence: 97 },
+  { sign: "THANK YOU", translation: "Thank you", confidence: 94 },
+  { sign: "PLEASE", translation: "Please", confidence: 90 },
+  { sign: "UNDERSTAND", translation: "Understand", confidence: 88 },
+];
+
+type DemoTracking = {
+  face: boolean;
+  shoulders: boolean;
+  hands: boolean;
+  handCount: number;
+};
+
+function DemoTrackingOverlay({ tracking }: { tracking: DemoTracking }) {
+  const faceDots = [
+    [80, 26], [63, 35], [97, 35], [56, 48], [68, 50], [92, 50], [104, 48],
+    [54, 62], [74, 62], [80, 61], [86, 62], [106, 62], [65, 78], [72, 79],
+    [80, 82], [88, 79], [95, 78], [80, 92],
+  ];
+  const rightHand = [[122,186],[110,172],[103,162],[97,153],[92,146],[118,162],[116,149],[114,138],[113,128],[124,161],[124,148],[124,136],[124,126],[130,163],[131,150],[132,138],[133,128],[136,168],[138,157],[140,148],[141,140]];
+  const leftHand = rightHand.map(([x,y]) => [160-x,y]);
+
+  const handPaths = (points: number[][]) => (
+    <>
+      <path d={`M${points[0][0]} ${points[0][1]} L${points[1][0]} ${points[1][1]} L${points[2][0]} ${points[2][1]} L${points[3][0]} ${points[3][1]} L${points[4][0]} ${points[4][1]}`} />
+      <path d={`M${points[0][0]} ${points[0][1]} L${points[5][0]} ${points[5][1]} L${points[6][0]} ${points[6][1]} L${points[7][0]} ${points[7][1]} L${points[8][0]} ${points[8][1]}`} />
+      <path d={`M${points[0][0]} ${points[0][1]} L${points[9][0]} ${points[9][1]} L${points[10][0]} ${points[10][1]} L${points[11][0]} ${points[11][1]} L${points[12][0]} ${points[12][1]}`} />
+      <path d={`M${points[0][0]} ${points[0][1]} L${points[13][0]} ${points[13][1]} L${points[14][0]} ${points[14][1]} L${points[15][0]} ${points[15][1]} L${points[16][0]} ${points[16][1]}`} />
+      <path d={`M${points[0][0]} ${points[0][1]} L${points[17][0]} ${points[17][1]} L${points[18][0]} ${points[18][1]} L${points[19][0]} ${points[19][1]} L${points[20][0]} ${points[20][1]}`} />
+      <path d={`M${points[1][0]} ${points[1][1]} L${points[5][0]} ${points[5][1]} L${points[9][0]} ${points[9][1]} L${points[13][0]} ${points[13][1]} L${points[17][0]} ${points[17][1]}`} />
+    </>
+  );
+
   return (
-    <div className="figma-preview-card" aria-hidden="true">
+    <svg className="figma-demo-mesh" viewBox="0 0 160 220" aria-hidden="true">
+      {tracking.shoulders && (
+        <g className="figma-demo-shoulders">
+          <path d="M32 116 L80 102 L128 116 M80 102 L80 135" />
+          {[[32,116],[80,102],[128,116]].map(([x,y],i)=><circle key={i} cx={x} cy={y} r="2.7" />)}
+        </g>
+      )}
+      {tracking.face && (
+        <g className="figma-demo-face">
+          <ellipse cx="80" cy="59" rx="31" ry="37" />
+          <path d="M61 43 Q68 40 75 42 M85 42 Q92 40 99 43 M62 50 Q68 47 74 50 M86 50 Q92 47 98 50 M80 44 L78 56 L74 65 L80 61 M72 79 Q80 84 88 79" />
+          {faceDots.map(([x,y],i)=><circle key={i} cx={x} cy={y} r="1.55" style={{animationDelay:`${i*45}ms`}} />)}
+        </g>
+      )}
+      {tracking.hands && tracking.handCount >= 1 && (
+        <g className="figma-demo-hand right">
+          <path d="M128 116 L122 186" className="arm" />
+          {handPaths(rightHand)}
+          {rightHand.map(([x,y],i)=><circle key={i} cx={x} cy={y} r={i===0?2.4:1.55} style={{animationDelay:`${i*35}ms`}} />)}
+        </g>
+      )}
+      {tracking.hands && tracking.handCount >= 2 && (
+        <g className="figma-demo-hand left">
+          <path d="M32 116 L38 186" className="arm" />
+          {handPaths(leftHand)}
+          {leftHand.map(([x,y],i)=><circle key={i} cx={x} cy={y} r={i===0?2.4:1.55} style={{animationDelay:`${(i+4)*35}ms`}} />)}
+        </g>
+      )}
+    </svg>
+  );
+}
+
+function HeroPreview() {
+  const [idx, setIdx] = useState(0);
+  const [phase, setPhase] = useState<"show" | "fade">("show");
+  const [sentence, setSentence] = useState<string[]>(["Hello"]);
+  const [tracking, setTracking] = useState<DemoTracking>({ face: false, shoulders: false, hands: false, handCount: 0 });
+  const item = DEMO_SEQUENCE[idx];
+
+  useEffect(() => {
+    const t1 = window.setTimeout(() => setTracking((t) => ({ ...t, face: true, shoulders: true })), 800);
+    const t2 = window.setTimeout(() => setTracking((t) => ({ ...t, hands: true, handCount: 1 })), 1300);
+    const t3 = window.setTimeout(() => setTracking((t) => ({ ...t, handCount: 2 })), 1800);
+    return () => { window.clearTimeout(t1); window.clearTimeout(t2); window.clearTimeout(t3); };
+  }, []);
+
+  useEffect(() => {
+    let inner: number | undefined;
+    const timer = window.setInterval(() => {
+      setPhase("fade");
+      inner = window.setTimeout(() => {
+        setIdx((current) => {
+          const next = (current + 1) % DEMO_SEQUENCE.length;
+          setSentence((previous) => [...previous, DEMO_SEQUENCE[next].translation].slice(-5));
+          setTracking((currentTracking) => ({
+            ...currentTracking,
+            handCount: next === 1 || next === 5 ? 1 : 2,
+          }));
+          return next;
+        });
+        setPhase("show");
+      }, 280);
+    }, 2600);
+    return () => { window.clearInterval(timer); if (inner) window.clearTimeout(inner); };
+  }, []);
+
+  return (
+    <div className="figma-preview-card figma-preview-floating" aria-label="Animated illustrative SignRelay recognition demo">
       <div className="figma-preview-camera">
         <div className="figma-preview-hud">
           <span><i /> LIVE · ASL</span>
           <strong>RECOGNIZING</strong>
         </div>
+        <div className={`figma-preview-mesh-wrap ${phase}`}>
+          <DemoTrackingOverlay tracking={tracking} />
+        </div>
+        <div className="figma-demo-scan-line" />
         <div className="figma-corner figma-corner-tl" />
         <div className="figma-corner figma-corner-tr" />
         <div className="figma-corner figma-corner-bl" />
         <div className="figma-corner figma-corner-br" />
-        <span className="figma-sign-chip">HELLO</span>
-        <span className="figma-preview-confidence">96%</span>
+        <span className={`figma-sign-chip ${phase}`}>{item.sign}</span>
+        <span className={`figma-preview-confidence ${phase}`}>{item.confidence}%</span>
       </div>
       <div className="figma-tracking-row">
-        <span><i className="face" /> Face</span>
-        <span><i className="shoulder" /> Shoulders</span>
-        <span><i className="hands" /> Hands (2)</span>
+        <span className={tracking.face ? "active face" : ""}><i className="face" /> Face</span>
+        <span className={tracking.shoulders ? "active shoulder" : ""}><i className="shoulder" /> Shoulders</span>
+        <span className={tracking.hands ? "active hands" : ""}><i className="hands" /> Hands ({tracking.handCount})</span>
       </div>
       <div className="figma-preview-output">
         <div className="figma-preview-output-label">
           <span>Translation</span>
-          <strong>96% confidence</strong>
+          <strong>{item.confidence}% confidence</strong>
         </div>
-        <h3>Hello</h3>
-        <div className="figma-confidence-track"><span /></div>
-        <div className="figma-sentence-preview">Hello <i /></div>
+        <h3 className={phase}>{item.translation}</h3>
+        <div className="figma-confidence-track"><span style={{ width: `${item.confidence}%` }} /></div>
+        <div className="figma-sentence-preview">
+          {sentence.map((word, index) => (
+            <span key={`${index}-${word}`} className={index === sentence.length - 1 ? "current" : ""}>{word}</span>
+          ))}
+          <i />
+        </div>
       </div>
     </div>
   );
