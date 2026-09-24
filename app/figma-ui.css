@@ -907,7 +907,21 @@ body::before {
   letter-spacing: .06em;
 }
 .figma-language-page-card.preparing .figma-language-page-card-head em { color: #f59e0b; border-color: rgba(245,158,11,.2); background: rgba(245,158,11,.07); }
-.figma-language-page-card.personal .figma-language-page-card-head em { color: #808997; border-color: rgba(128,137,151,.18); background: rgba(128,137,151,.06); }
+.figma-language-page-card.personal .figma-language-page-card-head em {
+  color: #f5b642;
+  border-color: rgba(245,182,66,.22);
+  background: rgba(245,182,66,.07);
+}
+.figma-language-page-card-head em.beta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.figma-language-page-card-head em.beta-badge span {
+  font-size: .62rem;
+  line-height: 1;
+  font-weight: 700;
+}
 .figma-language-page-card > p { margin: 18px 0 0; color: #687482; font-size: .76rem; line-height: 1.65; }
 .figma-language-page-meta {
   display: flex;
