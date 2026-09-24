@@ -174,7 +174,7 @@ function HeroPreview() {
   );
 }
 
-function HowItWorks({ onStart }: { onStart: () => void }) {
+function HowItWorks() {
   const steps = [
     {
       num: "01",
@@ -186,7 +186,7 @@ function HowItWorks({ onStart }: { onStart: () => void }) {
       num: "02",
       icon: <Cpu size={18} />,
       title: "Select your sign language",
-      body: "Choose from seven automatic research recognizers, with additional language workspaces available for private signer-taught vocabulary.",
+      body: "Choose from seven automatic research recognizers, with additional language workspaces available while more models are in development.",
     },
     {
       num: "03",
@@ -198,14 +198,8 @@ function HowItWorks({ onStart }: { onStart: () => void }) {
 
   return (
     <section className="figma-how-section" id="how-it-works">
-      <div className="figma-section-inner figma-how-grid">
-        <div className="figma-how-copy">
-          <span className="figma-eyebrow">How it works</span>
-          <h2>Recognition built<br />for real conversations</h2>
-          <p>Computer vision meets local model inference, with the camera remaining on your device.</p>
-          <button className="figma-text-link" onClick={onStart}>Try the translator <ArrowRight size={13} /></button>
-        </div>
-        <div className="figma-step-list">
+      <div className="figma-section-inner">
+        <div className="figma-step-list figma-step-list-centered">
           {steps.map((step) => (
             <article className="figma-step" key={step.num}>
               <div className="figma-step-icon">{step.icon}</div>
@@ -293,7 +287,6 @@ export function FigmaMakeLanding({ selected, onSelect, onStart }: Props) {
             </div>
             <div className="figma-hero-stats">
               <div><strong>7</strong><span>Automatic languages</span><small>Research recognition</small></div>
-              <div><strong>40</strong><span>Workspaces</span><small>Language-scoped</small></div>
               <div><strong>Local</strong><span>Processing</span><small>Camera stays on-device</small></div>
             </div>
           </div>
@@ -301,7 +294,7 @@ export function FigmaMakeLanding({ selected, onSelect, onStart }: Props) {
         </div>
       </section>
 
-      <HowItWorks onStart={onStart} />
+      <HowItWorks />
       <Languages selected={selected} onSelect={onSelect} />
       <Philosophy />
 
