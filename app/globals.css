@@ -605,3 +605,96 @@ body, .app-shell { background: #030708; }
   .hero-visual { opacity: .65; }
   .hero-signal-card { display: none; }
 }
+
+
+.workspace-topbar-actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.workspace-language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9ba4ac;
+  font-size: .72rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.workspace-language-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.workspace-language-select select {
+  width: min(270px, 24vw);
+  min-width: 205px;
+  height: 40px;
+  appearance: none;
+  padding: 0 34px 0 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  outline: none;
+  color: var(--ink);
+  background: #11151b;
+  font: 600 .78rem/1 var(--font-sans);
+  cursor: pointer;
+}
+.workspace-language-select select:hover {
+  border-color: rgba(82,226,197,.42);
+}
+.workspace-language-select select:focus-visible {
+  border-color: rgba(82,226,197,.65);
+  box-shadow: 0 0 0 3px rgba(82,226,197,.1);
+}
+.workspace-language-select svg {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: #9ba4ac;
+}
+.workspace-language-select option,
+.workspace-language-select optgroup {
+  color: var(--ink);
+  background: #11151b;
+}
+
+@media (max-width: 850px) {
+  .workspace-topbar-actions {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+  .workspace-language-select select {
+    width: min(245px, 34vw);
+    min-width: 185px;
+  }
+}
+
+@media (max-width: 560px) {
+  .workspace-topbar {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+  }
+  .workspace-title,
+  .workspace-topbar-actions {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .workspace-topbar-actions {
+    justify-self: stretch;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .workspace-language-switcher {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .workspace-language-select,
+  .workspace-language-select select {
+    width: 100%;
+  }
+}
