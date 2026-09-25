@@ -2,14 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  ArrowRight,
-  Check,
-  Cpu,
-  Hand,
-  ShieldCheck,
-  UserRound,
-} from "lucide-react";
-import {
   LANGUAGE_LIST,
   MODEL_ADAPTERS,
   type LanguageId,
@@ -178,19 +170,16 @@ function HowItWorks() {
   const steps = [
     {
       num: "01",
-      icon: <UserRound size={18} />,
       title: "Allow camera access",
       body: "SignRelay uses your device camera to observe signing. Camera frames are analysed locally in your browser and are not uploaded.",
     },
     {
       num: "02",
-      icon: <Cpu size={18} />,
       title: "Select your sign language",
       body: "Choose from seven automatic research recognizers, with additional language workspaces available while more models are in development.",
     },
     {
       num: "03",
-      icon: <Check size={18} />,
       title: "Sign naturally",
       body: "The recognition pipeline tracks hands, face and upper-body landmarks and returns isolated-sign predictions when confidence is high enough.",
     },
@@ -202,9 +191,8 @@ function HowItWorks() {
         <div className="figma-step-list figma-step-list-centered">
           {steps.map((step) => (
             <article className="figma-step" key={step.num}>
-              <div className="figma-step-icon">{step.icon}</div>
               <div>
-                <span>{step.num}</span>
+                <span className="figma-step-number">{step.num}</span>
                 <h3>{step.title}</h3>
                 <p>{step.body}</p>
               </div>
@@ -225,7 +213,7 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
             <h2>Supported languages</h2>
             <p>7 automatic research recognizers · {LANGUAGE_LIST.length} total workspaces</p>
           </div>
-          <a href="/languages">View all <ArrowRight size={13} /></a>
+          <a href="/languages">View all languages</a>
         </div>
         <div className="figma-language-row" role="radiogroup" aria-label="Automatic sign languages">
           {automaticLanguages.map((language) => (
@@ -258,12 +246,12 @@ function Philosophy() {
     <section className="figma-philosophy-section">
       <div className="figma-section-inner figma-philosophy-grid">
         <article>
-          <div className="figma-philosophy-icon"><ShieldCheck size={18} /></div>
+          <span className="figma-philosophy-label">Your device</span>
           <h3>Privacy first</h3>
           <p>Recognition runs locally in your browser. Camera frames never leave your device and raw video is not stored by SignRelay.</p>
         </article>
         <article>
-          <div className="figma-philosophy-icon"><Hand size={18} /></div>
+          <span className="figma-philosophy-label">Our approach</span>
           <h3>Open source</h3>
           <p>SignRelay is open source and its recognition approach, model status and language limitations are documented publicly.</p>
         </article>
@@ -282,7 +270,7 @@ export function FigmaMakeLanding({ selected, onSelect, onStart }: Props) {
             <h1>Sign freely.<br /><span>Connect<br />naturally.</span></h1>
             <p>SignRelay recognizes supported sign language through your camera. Seven sign languages currently include automatic research recognition, with processing kept in your browser.</p>
             <div className="figma-hero-actions">
-              <button className="figma-primary" onClick={onStart}>Start translating <ArrowRight size={15} /></button>
+              <button className="figma-primary" onClick={onStart}>Start translating</button>
               <a className="figma-secondary" href="#languages">Explore languages</a>
             </div>
             <div className="figma-hero-stats">
@@ -304,7 +292,7 @@ export function FigmaMakeLanding({ selected, onSelect, onStart }: Props) {
             <h2>Communication without<br />barriers.</h2>
             <p>SignRelay is free and open source. No account required. Start recognizing supported signs from your camera in seconds.</p>
             <div>
-              <button className="figma-primary" onClick={onStart}>Start translating <ArrowRight size={15} /></button>
+              <button className="figma-primary" onClick={onStart}>Start translating</button>
               <a className="figma-secondary" href="/languages">Explore languages</a>
             </div>
             <small>Open source · No account required · Research preview</small>

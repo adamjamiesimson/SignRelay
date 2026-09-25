@@ -9,30 +9,6 @@ import {
   useState,
 } from "react";
 import {
-  ArrowLeft,
-  ArrowRight,
-  Camera,
-  CameraOff,
-  Check,
-  ChevronDown,
-  Clock3,
-  Edit3,
-  Eye,
-  Hand,
-  History,
-  Mic2,
-  Pause,
-  Play,
-  RefreshCw,
-  ShieldCheck,
-  Sparkles,
-  Trash2,
-  UserRound,
-  Volume2,
-  VolumeX,
-  X,
-} from "lucide-react";
-import {
   DEFAULT_SETTINGS,
   clearLocalSignRelayData,
   loadHistory,
@@ -666,7 +642,7 @@ export function TranslatorExperience() {
         <main className="workspace-page">
           <div className="workspace-topbar">
             <button className="back-link" onClick={returnHome}>
-              <ArrowLeft size={18} aria-hidden="true" /> Change language
+              Change language
             </button>
             <div className="workspace-title">
               <span className="language-code compact">{model.shortName}</span>
@@ -677,12 +653,12 @@ export function TranslatorExperience() {
             </div>
             <div className="workspace-topbar-actions">
               <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
-              <span className="local-badge"><ShieldCheck size={16} /> On-device processing</span>
+              <span className="local-badge">On-device processing</span>
             </div>
           </div>
 
           <div className="honesty-banner" role="note">
-            <Sparkles size={18} aria-hidden="true" />
+            <span className="honesty-label">Model status</span>
             <p>{model.status === "experimental" ? <><strong>Research preview.</strong> {model.automaticVocabularyCount.toLocaleString()} isolated signs. Check translations before relying on them.</> : model.status === "preparing" ? <><strong>Personal signs only.</strong> The shared model is not installed. Teach a sign to get started.</> : <><strong>Personal signs only.</strong> Record examples to activate your {model.shortName} vocabulary.</>}</p>
             <button className="text-action" onClick={() => {
               const panel = vocabularyRef.current;
@@ -707,18 +683,12 @@ export function TranslatorExperience() {
                 <canvas ref={canvasRef} aria-hidden="true" />
                 {cameraState !== "active" && (
                   <div className="camera-placeholder">
-                    {cameraState === "requesting" || cameraState === "loading" ? (
-                      <RefreshCw className="spin" size={34} aria-hidden="true" />
-                    ) : cameraState === "denied" ? (
-                      <CameraOff size={38} aria-hidden="true" />
-                    ) : (
-                      <Camera size={38} aria-hidden="true" />
-                    )}
+                    <span className={`camera-placeholder-label ${cameraState === "loading" || cameraState === "requesting" ? "loading" : ""}`}>Camera</span>
                     <h3>{cameraState === "loading" ? "Preparing your camera" : cameraState === "requesting" ? "Allow camera access" : cameraState === "idle" ? "Ready when you are" : "Camera unavailable"}</h3>
                     <p>{cameraMessage}</p>
                     {(cameraState === "denied" || cameraState === "error" || cameraState === "idle") && (
                       <button className="button secondary small" onClick={requestCamera}>
-                        {cameraState === "idle" ? <><Play size={16} aria-hidden="true" /> Start camera</> : <><RefreshCw size={16} aria-hidden="true" /> Retry camera</>}
+                        {cameraState === "idle" ? "Start camera" : "Retry camera"}
                       </button>
                     )}
                   </div>
@@ -735,13 +705,13 @@ export function TranslatorExperience() {
               </div>
 
               <details className="workspace-disclosure camera-options">
-                <summary>Camera options <ChevronDown size={16} aria-hidden="true" /></summary>
+                <summary>Camera options</summary>
               <div className="detection-grid" aria-label="Vision detection status">
-                <DetectionItem icon={<Camera size={16} />} label="Camera" active={cameraState === "active"} />
-                <DetectionItem icon={<UserRound size={16} />} label="Person" active={detection.person} />
-                <DetectionItem icon={<Hand size={16} />} label="Hands" active={detection.hands} />
-                <DetectionItem icon={<Eye size={16} />} label="Face" active={detection.face} />
-                <DetectionItem icon={<UserRound size={16} />} label="Upper body" active={detection.pose} />
+                <DetectionItem label="Camera" active={cameraState === "active"} />
+                <DetectionItem label="Person" active={detection.person} />
+                <DetectionItem label="Hands" active={detection.hands} />
+                <DetectionItem label="Face" active={detection.face} />
+                <DetectionItem label="Upper body" active={detection.pose} />
               </div>
 
               <div className="camera-actions">
@@ -758,7 +728,7 @@ export function TranslatorExperience() {
               <div className="camera-session-actions">
                 <span>{cameraState === "active" ? "Camera on · video stays private" : "Video stays on this device"}</span>
                 <button className="button ghost small" onClick={cameraState === "active" ? stopCamera : requestCamera}>
-                  {cameraState === "active" ? <><Pause size={16} /> Pause</> : <><Play size={16} /> Start camera</>}
+                  {cameraState === "active" ? "Pause camera" : "Start camera"}
                 </button>
               </div>
             </section>
@@ -786,13 +756,12 @@ export function TranslatorExperience() {
               {recognitionFeedback && <p className="calibration-message" role="status">{recognitionFeedback}</p>}
               {recognitionUnavailable && (
                 <button className="button secondary small" onClick={() => workerRef.current?.restart()}>
-                  <RefreshCw size={16} /> Restart recognition
+                  Restart recognition
                 </button>
               )}
               <div className="transcript-body" aria-live="polite" aria-label="Confirmed translation">
                 {!entries.length ? (
                   <div className="transcript-empty">
-                    <Mic2 size={28} aria-hidden="true" />
                     <h3>Your words, here.</h3>
                     <p>Complete each sign. Confident matches appear here.</p>
                   </div>
@@ -801,7 +770,7 @@ export function TranslatorExperience() {
                     {entries.map((entry) => (
                       <article className="transcript-entry" key={entry.id}>
                         <div className="entry-time">
-                          <Check size={14} /> {new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          {new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </div>
                         {editingId === entry.id ? (
                           <input
@@ -819,8 +788,8 @@ export function TranslatorExperience() {
                         )}
                         <div className="entry-actions">
                           <span>{Math.round(entry.confidence * 100)}% · {entry.gloss}</span>
-                          <button onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`}><Edit3 size={15} /></button>
-                          <button onClick={() => setEntries((current) => current.filter((item) => item.id !== entry.id))} aria-label={`Remove ${entry.text}`}><X size={16} /></button>
+                          <button onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`}>Edit</button>
+                          <button onClick={() => setEntries((current) => current.filter((item) => item.id !== entry.id))} aria-label={`Remove ${entry.text}`}>Remove</button>
                         </div>
                       </article>
                     ))}
@@ -839,15 +808,15 @@ export function TranslatorExperience() {
                 </label>
                 <div className="speech-buttons">
                   <button className="button secondary small" disabled={!entries.length} onClick={() => speak(entries.map((entry) => entry.text).join(" "))}>
-                    <Volume2 size={16} /> Speak
+                    Speak
                   </button>
                   <button className="button ghost small" onClick={() => window.speechSynthesis?.cancel()}>
-                    <VolumeX size={16} /> Stop
+                    Stop
                   </button>
                 </div>
               </div>
               <details className="workspace-disclosure voice-options">
-                <summary>Voice settings <ChevronDown size={16} aria-hidden="true" /></summary>
+                <summary>Voice settings</summary>
                 <div className="voice-ranges">
                 <label className="range-control">
                   <span>Volume <strong>{Math.round(settings.volume * 100)}%</strong></span>
@@ -862,20 +831,20 @@ export function TranslatorExperience() {
 
               <div className="transcript-actions">
                 <button className="button ghost small" onClick={() => setShowHistory((current) => !current)}>
-                  <History size={16} /> History ({history.length})
+                  History ({history.length})
                 </button>
                 <button className="button danger small" disabled={!entries.length} onClick={clearTranscript}>
-                  <Trash2 size={16} /> Save & clear
+                  Save & clear
                 </button>
               </div>
 
               {storageMessage && <p className="calibration-message" role="status">{storageMessage}</p>}
               {showHistory && (
                 <div className="history-drawer">
-                  <div className="history-heading"><strong>Local history</strong><button onClick={() => setShowHistory(false)} aria-label="Close history"><X size={17} /></button></div>
+                  <div className="history-heading"><strong>Local history</strong><button onClick={() => setShowHistory(false)} aria-label="Close history">Close</button></div>
                   {!history.length ? <p>No saved sessions on this device.</p> : history.map((session) => (
                     <div className="history-session" key={session.id}>
-                      <span><Clock3 size={14} /> {new Date(session.createdAt).toLocaleString()}</span>
+                      <span>{new Date(session.createdAt).toLocaleString()}</span>
                       <p>{session.entries.map((entry) => entry.text).join(" ")}</p>
                     </div>
                   ))}
@@ -885,7 +854,7 @@ export function TranslatorExperience() {
           </div>
 
           <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef}>
-            <summary><span>Personal vocabulary <small>{activeCustomCount} signs taught</small></span><ChevronDown size={18} aria-hidden="true" /></summary>
+            <summary><span>Personal vocabulary <small>{activeCustomCount} signs taught</small></span></summary>
             <div className="calibration-heading">
               <div>
                 <h2 id="calibration-title">Teach a {model.shortName} sign</h2>
@@ -905,11 +874,11 @@ export function TranslatorExperience() {
                 </div>
                 <div className="selected-word-actions">
                   <button className="button primary small" onClick={() => void recordCalibration()} disabled={calibrationState === "countdown" || calibrationState === "recording" || calibrationState === "saving"}>
-                    <Camera size={16} /> {cameraState === "active" ? "Record example" : "Start camera & record"}
+                    {cameraState === "active" ? "Record example" : "Start camera & record"}
                   </button>
                   {trainedGlosses.has(calibrationWord.gloss) && (
                     <button className="button ghost small" onClick={() => void removeCalibration(calibrationWord.gloss)}>
-                      <Trash2 size={15} /> Remove
+                      Remove
                     </button>
                   )}
                 </div>
@@ -931,7 +900,7 @@ export function TranslatorExperience() {
                   aria-label="Word or short phrase to teach"
                 />
                 <button className="button secondary small" onClick={selectCustomWord} disabled={!customWordInput.trim()}>
-                  <ArrowRight size={16} /> Select word
+                  Select word
                 </button>
               </div>
             </div>
@@ -971,7 +940,7 @@ export function TranslatorExperience() {
                   >
                     <span>{word.text}</span>
                     <small>{exampleCount ? `${exampleCount} example${exampleCount === 1 ? "" : "s"}` : word.category}</small>
-                    {exampleCount > 0 && <Check size={14} aria-hidden="true" />}
+                    {exampleCount > 0 && <span className="vocabulary-trained-label">Taught</span>}
                   </button>
                 );
               })}
@@ -982,10 +951,9 @@ export function TranslatorExperience() {
           </details>
 
           <details className="workspace-disclosure privacy-disclosure">
-            <summary>Privacy &amp; model details <ChevronDown size={18} aria-hidden="true" /></summary>
+            <summary>Privacy &amp; model details</summary>
             <p className="model-detail-copy">{model.status === "experimental" ? `${model.automaticVocabularyCount.toLocaleString()} automatic ${model.shortName} test signs · ${model.version}. This is an isolated-sign research model, not a validated continuous sign-language interpreter.` : model.status === "preparing" ? `No shared automatic ${model.shortName} model is installed. Recognition uses only the private signs you teach.` : `${model.vocabulary.length.toLocaleString()} ${model.shortName} starter labels are available to teach. Labels are not pre-trained translations.`} Personal examples store normalised landmarks, never camera video.</p>
           <section className="privacy-strip" aria-labelledby="privacy-heading">
-            <ShieldCheck size={25} aria-hidden="true" />
             <div>
               <h2 id="privacy-heading">Your camera stays private</h2>
               <p>Frames are analysed in this browser. Raw video is not uploaded or stored. Settings and saved transcripts stay in local browser storage.</p>
@@ -1048,7 +1016,6 @@ function WorkspaceLanguageSwitcher({
             ))}
           </optgroup>
         </select>
-        <ChevronDown size={14} aria-hidden="true" />
       </div>
     </label>
   );
@@ -1058,8 +1025,8 @@ function StatusBadge({ active, label }: { active: boolean; label: string }) {
   return <span className={`status-badge ${active ? "active" : ""}`} title={label}><span />{active ? "Active" : label}</span>;
 }
 
-function DetectionItem({ icon, label, active }: { icon: React.ReactNode; label: string; active: boolean }) {
-  return <div className={`detection-item ${active ? "active" : ""}`}>{icon}<span>{label}</span><strong>{active ? "Detected" : "Waiting"}</strong></div>;
+function DetectionItem({ label, active }: { label: string; active: boolean }) {
+  return <div className={`detection-item ${active ? "active" : ""}`}><span>{label}</span><strong>{active ? "Detected" : "Waiting"}</strong></div>;
 }
 
 function wait(milliseconds: number) {

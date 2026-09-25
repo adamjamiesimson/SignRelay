@@ -1191,6 +1191,72 @@ body::before {
   color: #e3e8eb;
   background: #0f1117;
 }
+
+/* Plain labels carry actions; small marks are reserved for real state. */
+.figma-step { display: block; }
+.figma-step .figma-step-number,
+.figma-philosophy-label {
+  display: block;
+  margin-bottom: 20px;
+  color: var(--fig-cyan);
+  font: 600 .68rem/1 var(--font-mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.figma-step h3 { margin-top: 0; }
+.figma-philosophy-label { margin-bottom: 26px; }
+.local-badge::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: #60bdad;
+  vertical-align: 2px;
+}
+.honesty-label {
+  flex: none;
+  color: var(--brand);
+  font: 600 .64rem/1.4 var(--font-mono);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+.camera-placeholder-label {
+  display: block;
+  padding-bottom: 10px;
+  color: #69c8d6;
+  border-bottom: 1px solid rgba(34,211,238,.4);
+  font: 600 .66rem/1 var(--font-mono);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.camera-placeholder-label.loading { animation: pulse 1.1s ease-in-out infinite; }
+.detection-item { grid-template-columns: 1fr; }
+.detection-item strong { grid-column: 1; }
+.entry-actions button,
+.history-heading button { width: auto; min-width: 48px; height: 30px; padding: 0 9px; font: 600 .68rem/1 var(--font-sans); }
+.vocabulary-trained-label { position: absolute; top: 8px; right: 8px; color: var(--brand); font: 600 .56rem/1 var(--font-mono); }
+.vocabulary-grid button.trained > span:first-child { padding-right: 32px; }
+.privacy-strip { grid-template-columns: 1fr auto; }
+.workspace-disclosure > summary::after,
+.workspace-language-select::after {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform .2s ease;
+}
+.workspace-disclosure[open] > summary::after { transform: rotate(225deg); }
+.workspace-language-select::after { position: absolute; right: 13px; pointer-events: none; color: #8895a1; }
+@media (max-width: 560px) {
+  .honesty-banner p { flex-basis: calc(100% - 78px); }
+  .honesty-banner .text-action { margin-left: 0; }
+  .privacy-strip { grid-template-columns: 1fr; }
+}
 .special-workspace-language-bar {
   width: min(900px, calc(100% - 48px));
   margin: 24px auto 0;
