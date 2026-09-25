@@ -227,23 +227,6 @@ export function TranslatorExperience() {
     setCalibrationMessage(`Type a ${language.toUpperCase()} word or short phrase, then record two or three examples.`);
   }
 
-  const changeWorkspaceLanguage = (language: LanguageId) => {
-    if (language === selected) return;
-    const enteringSpecialRecognizer = language === "rsl" || language === "bdsl";
-    const leavingSharedRecognizer = selected !== "rsl" && selected !== "bdsl";
-
-    if (enteringSpecialRecognizer && leavingSharedRecognizer) stopCamera();
-
-    workerRef.current?.postMessage({ type: "reset" });
-    setCandidate(null);
-    setConfidence(0);
-    setBufferSize(0);
-    setRecognitionFeedback("");
-    setRecognitionUnavailable(false);
-    setRecognitionState("listening");
-    selectLanguage(language);
-  };
-
   useEffect(() => {
     settingsRef.current = settings;
     if (typeof window !== "undefined") saveSettings(settings);
@@ -335,6 +318,23 @@ export function TranslatorExperience() {
     captureFramesRef.current = [];
     setCalibrationState("idle");
   }, []);
+
+  const changeWorkspaceLanguage = (language: LanguageId) => {
+    if (language === selected) return;
+    const enteringSpecialRecognizer = language === "rsl" || language === "bdsl";
+    const leavingSharedRecognizer = selected !== "rsl" && selected !== "bdsl";
+
+    if (enteringSpecialRecognizer && leavingSharedRecognizer) stopCamera();
+
+    workerRef.current?.postMessage({ type: "reset" });
+    setCandidate(null);
+    setConfidence(0);
+    setBufferSize(0);
+    setRecognitionFeedback("");
+    setRecognitionUnavailable(false);
+    setRecognitionState("listening");
+    selectLanguage(language);
+  };
 
   useEffect(() => () => {
     cameraGenerationRef.current++;
