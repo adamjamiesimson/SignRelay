@@ -18,6 +18,7 @@ export function SiteHeader() {
       <nav className="site-nav" aria-label="Primary navigation">
         <Link href="/languages">Languages</Link>
         <Link href="/how-it-works">How it works</Link>
+        <Link href="/#choose-language">Choose language</Link>
         <Link className="nav-cta" href="/#choose-language">Start translating</Link>
       </nav>
     </header>
