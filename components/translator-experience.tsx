@@ -645,10 +645,30 @@ export function TranslatorExperience() {
   };
 
   if (step === "workspace" && selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental") {
-    return <div className="app-shell"><SiteHeader /><main><BdslRecognizer onBack={returnHome} /></main></div>;
+    return (
+      <div className="app-shell">
+        <SiteHeader />
+        <main>
+          <div className="special-workspace-language-bar">
+            <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
+          </div>
+          <BdslRecognizer onBack={returnHome} />
+        </main>
+      </div>
+    );
   }
   if (step === "workspace" && selected === "rsl") {
-    return <div className="app-shell"><SiteHeader /><main><RslRecognizer onBack={returnHome} /></main></div>;
+    return (
+      <div className="app-shell">
+        <SiteHeader />
+        <main>
+          <div className="special-workspace-language-bar">
+            <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
+          </div>
+          <RslRecognizer onBack={returnHome} />
+        </main>
+      </div>
+    );
   }
 
   if (step === "workspace") {
