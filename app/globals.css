@@ -698,3 +698,21 @@ body, .app-shell { background: #030708; }
     width: 100%;
   }
 }
+
+.special-workspace-language-bar {
+  width: min(900px, calc(100% - 48px));
+  margin: 18px auto 0;
+  display: flex;
+  justify-content: flex-end;
+}
+@media (max-width: 560px) {
+  .special-workspace-language-bar {
+    width: calc(100% - 36px);
+    justify-content: stretch;
+  }
+  .special-workspace-language-bar .workspace-language-switcher,
+  .special-workspace-language-bar .workspace-language-select,
+  .special-workspace-language-bar select {
+    width: 100%;
+  }
+}
