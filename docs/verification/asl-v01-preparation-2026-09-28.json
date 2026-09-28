@@ -1,0 +1,72 @@
+{
+  "source": "Kibalama/poseformer-sign-language",
+  "revision": "42072d9dedcfc7133a4d63715b68abb0f6db33eb",
+  "source_rows": 11980,
+  "samples": 233,
+  "shape": [
+    233,
+    96,
+    76,
+    3
+  ],
+  "labels": [
+    "drink",
+    "go",
+    "computer",
+    "help",
+    "who",
+    "cold",
+    "what",
+    "yes",
+    "brother",
+    "family",
+    "mother",
+    "no",
+    "why",
+    "bad",
+    "doctor",
+    "good",
+    "hot",
+    "wait",
+    "work",
+    "yesterday"
+  ],
+  "class_counts": {
+    "bad": 10,
+    "brother": 11,
+    "cold": 12,
+    "computer": 14,
+    "doctor": 10,
+    "drink": 15,
+    "family": 11,
+    "go": 15,
+    "good": 10,
+    "help": 14,
+    "hot": 10,
+    "mother": 11,
+    "no": 11,
+    "wait": 10,
+    "what": 12,
+    "who": 14,
+    "why": 11,
+    "work": 10,
+    "yes": 12,
+    "yesterday": 10
+  },
+  "original_frames": {
+    "min": 20,
+    "max": 150,
+    "mean": 63.66952789699571
+  },
+  "rejected": [],
+  "exact_duplicate_sequences": 3,
+  "archive_sha256": "9daaf9eaafda4a832439defdf54f245e96b551644b364456d97d511389813071",
+  "license": "WLASL C-UDA; academic/non-commercial computational use",
+  "activation_ready": false,
+  "blockers": [
+    "No signer IDs or source-video IDs in this derivative",
+    "Exact 76-joint ordering not documented by the dataset publisher",
+    "No official validation/test assignment retained",
+    "No consented NO_SIGN examples or real camera evaluation"
+  ]
+}

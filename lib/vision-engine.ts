@@ -1,10 +1,10 @@
 import type { FaceLandmarker, GestureRecognizer, PoseLandmarker } from "@mediapipe/tasks-vision";
 import type { Point, VisionFrame } from "./vision-types";
 
-const WASM_PATH = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm";
-const GESTURE_MODEL = "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task";
-const FACE_MODEL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
-const POSE_MODEL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+const WASM_PATH = "/vision/wasm";
+const GESTURE_MODEL = "/vision/gesture_recognizer.task";
+const FACE_MODEL = "/vision/face_landmarker.task";
+const POSE_MODEL = "/vision/pose_landmarker_lite.task";
 
 const FACE_CUE_INDICES = [
   0, 4, 10, 13, 14, 17, 33, 61, 70, 105, 133, 145, 159, 263, 291, 300,

@@ -3,8 +3,26 @@ import test from "node:test";
 import { readFile, stat, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 
 const routes = ["index", "how-it-works", "languages", "models", "privacy", "terms", "about", "roadmap", "404"];
+test("export serves the locked MediaPipe runtime and checksum-verified tracking models locally", async () => {
+  const distribution = dirname(createRequire(import.meta.url).resolve("@mediapipe/tasks-vision"));
+  const digest = bytes => createHash("sha256").update(bytes).digest("hex");
+  for (const file of await readdir(join(distribution, "wasm"))) {
+    if (/^vision_wasm_\w+\.(js|wasm)$/.test(file)) {
+      assert.equal(digest(await readFile(`out/vision/wasm/${file}`)), digest(await readFile(join(distribution, "wasm", file))));
+    }
+  }
+  const manifest = JSON.parse(await readFile("scripts/vision-assets.json", "utf8"));
+  for (const asset of manifest.assets) {
+    const bytes = await readFile(`out/vision/${asset.name}`);
+    assert.equal(bytes.length, asset.bytes);
+    assert.equal(digest(bytes), asset.sha256);
+  }
+  assert.doesNotMatch(await readFile("out/index.html", "utf8"), /cdn\.jsdelivr\.net|storage\.googleapis\.com/);
+});
 test("public pages contain metadata, working internal links, image alternatives and script protection", async () => {
   for (const route of routes) {
     const html = await readFile(`out/${route}.html`, "utf8");

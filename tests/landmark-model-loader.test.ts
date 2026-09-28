@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createLandmarkModelLoader } from "../lib/landmark-model-loader";
 
 const { create } = vi.hoisted(() => ({ create: vi.fn() }));
-vi.mock("onnxruntime-web", () => ({ InferenceSession: { create } }));
+vi.mock("onnxruntime-web", () => ({ env: { wasm: {} }, InferenceSession: { create } }));
 const labels = ["HELLO", "THANK YOU"];
 const response = (data: unknown = labels) => ({ ok: true, json: async () => data });
 beforeEach(() => create.mockReset());
@@ -20,6 +20,7 @@ describe("landmark model loading", () => {
     expect(await load()).toBe(a);
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(create).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledWith("/models/example/model.onnx", { executionProviders: ["wasm"] });
     expect(a).toEqual({ session, labels });
   });
 

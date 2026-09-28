@@ -97,6 +97,18 @@ try {
   await pause(2000);
   assert.equal(await evaluate("document.querySelectorAll('.transcript-entry').length"), 0, "Fake empty camera must not create words");
   console.log("Spanish selection, mobile layout and fake camera tracking passed.");
+  // Switching away must release the actual MediaStreamTrack, not merely hide
+  // the video. Returning must wait for a deliberate camera restart.
+  await evaluate("window.__qaTrack = document.querySelector('video').srcObject.getVideoTracks()[0]");
+  const away = await send("Target.createTarget", { url: "about:blank" });
+  await send("Target.activateTarget", { targetId: away.targetId });
+  await until(() => evaluate("document.hidden && window.__qaTrack.readyState === 'ended' && document.querySelector('video').srcObject === null"), "Leaving the tab did not stop the camera");
+  await send("Target.activateTarget", { targetId: page.id });
+  await send("Target.closeTarget", { targetId: away.targetId });
+  assert.equal(await evaluate("document.querySelector('video').srcObject"), null);
+  await click("Start camera");
+  await until(() => evaluate("!!document.querySelector('video')?.srcObject && !!document.querySelector('.camera-guidance')"), "Camera failed to restart after returning", 90000);
+  assert.equal(requests.filter(request => /^https?:/.test(request.url) && !request.url.startsWith(origin + "/")).length, 0, "Tracking must not depend on any external CDN");
   await click("Pause");
   await until(() => evaluate("document.querySelector('video')?.srcObject === null"), "Pause failed to release camera");
   // Exercise the production runtime on controlled landmarks. This checks actual

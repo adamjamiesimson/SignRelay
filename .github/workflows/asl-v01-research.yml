@@ -1,0 +1,36 @@
+name: ASL v0.1 research experiment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install CPU-only research dependencies
+        run: |
+          python -m pip install --no-cache-dir numpy==2.2.6 pyarrow==21.0.0
+          python -m pip install --no-cache-dir torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+      - name: Verify split and missing-landmark handling
+        run: python -m unittest discover -s training -p test_asl_v01.py
+      - name: Download pinned data and reproduce the 20-class preparation
+        run: python -u training/prepare_asl_v01.py
+      - name: Train and evaluate the experimental candidate
+        run: python -u training/train_asl_v01.py --exploratory
+      - name: Preserve reports only (no data, weights, or deployment)
+        uses: actions/upload-artifact@v4
+        with:
+          name: asl-v01-research-reports
+          path: |
+            work/asl-v01/data/preparation.json
+            work/asl-v01/experiment/evaluation.json
+          retention-days: 30
+          if-no-files-found: error

@@ -12,6 +12,7 @@ import { recognizeBsl1064 } from "@/lib/bsl1064-runtime";
 import { recognizeLse300 } from "@/lib/lse300-runtime";
 import { recognizePsl776 } from "@/lib/psl776-runtime";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
+import { trackingGapLimit } from "@/lib/frame-timing";
 
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
@@ -71,6 +72,19 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "reset") { resetSession(); return; }
 
   const now = event.data.frame.timestamp;
+  const previous = frames.at(-1)?.timestamp;
+  // A resumed camera must not combine old model consensus or landmarks with a
+  // new sign. Per-adapter motion checks alone don't clear the worker's state.
+  if (previous !== undefined && (now <= previous || now - previous > trackingGapLimit([...frames, event.data.frame]))) {
+    frames.length = 0;
+    receivedFrames = 0;
+    invalidatePrediction();
+    candidateLabel = null;
+    candidateStreak = 0;
+    candidateIsModel = false;
+    blockedStarter = null;
+    lastInferenceAt = -Infinity;
+  }
   if ([...pending.values()].some(started => now - started >= 20000)) {
     invalidatePrediction();
     pending.clear();
@@ -164,7 +178,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
       confidence: result.confidence, timestamp: Date.now(),
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
-    if (activeLanguage === "asl" && !candidateIsModel) {
+    if (!candidateIsModel) {
       blockedStarter = result.label;
       starterSeenAt = now;
     }

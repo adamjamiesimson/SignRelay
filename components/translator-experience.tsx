@@ -107,6 +107,7 @@ export function TranslatorExperience() {
   const templatesRef = useRef<CalibrationTemplate[]>([]);
   const captureFramesRef = useRef<VisionFrame[]>([]);
   const captureStateRef = useRef<CalibrationState>("idle");
+  const lastSpokenEntryRef = useRef<TranscriptEntry | undefined>(undefined);
 
   const model = useMemo(
     () => LANGUAGE_LIST.find((item) => item.id === selected)!,
@@ -229,7 +230,10 @@ export function TranslatorExperience() {
       if (isRecentDuplicate(previous, entry)) return current;
       return [...current, entry];
     });
-    if (settingsRef.current.autoSpeak) speak(message.text);
+    if (settingsRef.current.autoSpeak && !isRecentDuplicate(lastSpokenEntryRef.current, entry)) {
+      lastSpokenEntryRef.current = entry;
+      speak(message.text);
+    }
   }, [speak]);
 
   useEffect(() => {
@@ -280,6 +284,9 @@ export function TranslatorExperience() {
     captureStateRef.current = "idle";
     captureFramesRef.current = [];
     setCalibrationState("idle");
+    window.speechSynthesis?.cancel();
+    const canvas = canvasRef.current;
+    canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
   }, []);
 
   const changeWorkspaceLanguage = (language: LanguageId) => {
@@ -401,7 +408,7 @@ export function TranslatorExperience() {
   }, [runFrameLoop]);
 
   const requestCamera = useCallback(async () => {
-    if (cameraPendingRef.current || engineRef.current) return;
+    if (cameraPendingRef.current || engineRef.current || document.hidden) return;
     if (!navigator.mediaDevices?.getUserMedia) {
       setCameraState("error");
       setCameraMessage("This browser does not expose camera access.");
@@ -467,21 +474,18 @@ export function TranslatorExperience() {
   }, [stopCamera]);
 
   useEffect(() => {
-    const resume = () => {
-      workerRef.current?.postMessage({ type: "reset" });
-      cameraProgressRef.current = performance.now();
-      const video = videoRef.current;
-      if (document.hidden || !engineRef.current || !video?.paused) return;
-      const generation = cameraGenerationRef.current;
-      void video.play().catch(() => {
-        if (generation !== cameraGenerationRef.current) return;
-        stopCamera();
-        setCameraState("error");
-        setCameraMessage("Camera playback was interrupted. Start the camera again to resume.");
-      });
+    const pause = () => {
+      if (!streamRef.current && !cameraPendingRef.current) return;
+      stopCamera();
+      setCameraMessage("Camera paused while you were away. Start the camera to resume.");
     };
-    document.addEventListener("visibilitychange", resume);
-    return () => document.removeEventListener("visibilitychange", resume);
+    const onVisibility = () => { if (document.hidden) pause(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", pause);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", pause);
+    };
   }, [stopCamera]);
 
   const beginTranslation = () => {

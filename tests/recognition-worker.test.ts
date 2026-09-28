@@ -46,6 +46,31 @@ beforeEach(async () => {
 });
 
 describe("live worker regression coverage (synthetic control inputs, not sign accuracy)", () => {
+  it.each(["bsl", "isl", "lse", "psl", "auslan"] as const)("does not repeat a held %s personal sign after cooldown", async language => {
+    await worker.onmessage({ data: { type: "templates", language, templates: [] } });
+    mocks.personal.mockReturnValue(prediction);
+    mocks.motion.mockReturnValue(false);
+    await frames(90);
+    expect(confirmations()).toHaveLength(1);
+    mocks.personal.mockReturnValue(null);
+    await frames(8);
+    mocks.personal.mockReturnValue(prediction);
+    await frames(3);
+    expect(confirmations()).toHaveLength(2);
+  });
+
+  it("requires new model consensus after a camera timestamp gap", async () => {
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [] } });
+    mocks.bsl.mockResolvedValue(prediction);
+    await frames(25);
+    expect(confirmations()).toHaveLength(0);
+    timestamp += 1500;
+    await frames(24);
+    expect(confirmations()).toHaveLength(0);
+    await frames(8);
+    expect(confirmations()).toHaveLength(1);
+  });
+
   it.each(["asl", "bsl", "isl", "lse", "psl"] as const)("keeps %s inference running after the rolling buffer fills", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     await frames(90);
