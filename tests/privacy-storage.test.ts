@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_SETTINGS, loadHistory, loadSettings, saveSession, saveSettings } from "../lib/browser-storage";
+import { clearLocalSignRelayData, DEFAULT_SETTINGS, loadHistory, loadSettings, saveSession, saveSettings } from "../lib/browser-storage";
 import { CONSENT_KEY, CONSENT_MAX_AGE, readConsent, startAnalytics } from "../lib/analytics-consent";
 import { createCustomVocabularyEntry } from "../lib/model-adapters";
 import { validCalibrationTemplate } from "../lib/calibration-storage";
@@ -37,6 +37,27 @@ describe("untrusted and unavailable browser storage", () => {
     const frames = Array.from({ length: 24 }, () => Array(240).fill(0));
     expect(validCalibrationTemplate({ id: "uae", language: "uaesl", gloss: "HELP", text: "Help", createdAt: 1, frames })).toBe(true);
     expect(validCalibrationTemplate({ id: "bad", language: "made-up", gloss: "HELP", text: "Help", createdAt: 1, frames })).toBe(false);
+  });
+  it("updates the same saved session without evicting other history", () => {
+    const values: Record<string, string> = {};
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => values[key] ?? null,
+      setItem: (key: string, value: string) => { values[key] = value; },
+    });
+    const session = { id: "same", language: "asl" as const, createdAt: 1, entries: [{ id: "1", text: "Hello", gloss: "HELLO", timestamp: 1, confidence: 0.9 }] };
+    expect(saveSession(session)).toBe(true);
+    expect(saveSession({ ...session, entries: [{ ...session.entries[0], text: "Edited" }] })).toBe(true);
+    expect(loadHistory()).toHaveLength(1);
+    expect(loadHistory()[0].entries[0].text).toBe("Edited");
+  });
+  it("reports partial clearing and still attempts to remove the other data", () => {
+    const removeItem = vi.fn((key: string) => {
+      if (key.includes("settings")) throw new Error("denied");
+    });
+    vi.stubGlobal("localStorage", { removeItem });
+    expect(clearLocalSignRelayData()).toBe(false);
+    expect(removeItem).toHaveBeenCalledWith("signrelay.history.v1");
   });
 });
 describe("privacy defaults", () => {

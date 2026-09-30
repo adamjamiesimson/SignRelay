@@ -34,6 +34,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify types, asset policy, and safe model downloads
+        run: |
+          npm run typecheck
+          npm run repo:guard
+          npm run test:assets
+
       - name: Recover the reviewed Spanish training artifact when weights are absent
         if: hashFiles('public/models/lse300-swl/model.onnx') == ''
         uses: actions/download-artifact@v4
@@ -83,6 +89,9 @@ jobs:
 
       - name: Lint application source
         run: npm run lint
+
+      - name: Verify workspace persistence and personal vocabulary in headless Chrome
+        run: node tests/workspace-browser-smoke.mjs "$(command -v google-chrome)"
 
       - name: Verify Bangla camera flow in headless Chrome
         run: node tests/bdsl-browser-smoke.mjs "$(command -v google-chrome)"

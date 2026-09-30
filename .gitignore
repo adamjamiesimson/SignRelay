@@ -47,6 +47,14 @@ next-env.d.ts
 /outputs/
 /work/
 
+# Reproducible tracking runtime and model downloads (never commit binaries).
+/public/vision/
+.firebase/
+/ml/.venv/
+/ml/**/data/
+/ml/**/models/
+/ml/**/checkpoints/
+
 # Copied from the locked ONNX Runtime package by build:worker.
 /public/workers/ort-wasm-*
 

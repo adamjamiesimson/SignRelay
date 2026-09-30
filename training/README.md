@@ -157,3 +157,47 @@ python training/evaluate_bdsl401_publisher_set.py work/bdsl401-export
 The extraction uses printed row codes instead of table borders: ordinary table extraction drops the first row on nine pages. English labels avoid the PDF's broken Bangla text encoding; no Bangla spelling corrections are guessed. The optional audit script detects the incomplete 392-entry community CSV and does not approve it for activation.
 
 The 401-clip evaluator downloads the publisher's hash-pinned 167 MB archive, verifies its exact coverage (400 class codes, W109 twice, W111 absent), retains all predictions and errors, and records class-code accuracy separately from display glosses. It never relabels a duplicate clip to fill the gap. These are publisher-selected examples, not a representative held-out evaluation. `.github/workflows/bdsl401-research-check.yml` reproduces the original checkpoint export and this larger check with read-only repository permissions; it uploads reports only.
+
+
+## ASL v0.1 CPU experiment (28 September 2026)
+
+The Cloud Shell preparation has been reproduced without Cloud Shell. The pinned
+Kibalama derivative has 11,980 landmark sequences; the original 20 target labels
+yield 233 examples with shape `[233, 96, 76, 3]`. Three exact duplicates were
+found. The trainer groups duplicates before splitting, fits normalization only
+on training rows, chooses the checkpoint by validation loss, and evaluates the
+test partition once. It never activates a browser model.
+
+Use the **ASL v0.1 research experiment** manual GitHub Actions workflow to run
+without filling Cloud Shell's home directory. The workflow has read-only access
+and retains preparation/evaluation JSON reports, with no deployment step.
+For a local run, use a directory with at least 3 GB free space:
+
+```bash
+python3 -m venv /tmp/signrelay-asl-venv
+source /tmp/signrelay-asl-venv/bin/activate
+python -m pip install --no-cache-dir numpy==2.2.6 pyarrow==21.0.0
+python -m pip install --no-cache-dir torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+python -m unittest discover -s training -p test_asl_v01.py
+python training/prepare_asl_v01.py
+python training/train_asl_v01.py --exploratory
+```
+
+Raw shards, arrays, and the candidate checkpoint stay in ignored `work/asl-v01/`.
+Existing `ml/` files from Cloud Shell are not overwritten. The preparation script
+checks source revision, byte counts and SHA-256, retries failed downloads, and
+reuses complete verified shards. `--offline` requires all four verified shards.
+
+**This is an exploratory experiment, not a deployable accuracy result.** The
+source has no signer IDs, source video IDs, publisher split assignments or exact
+76-joint specification. The fixed-seed run used 142 training, 45 validation and
+46 test examples; test top-1 was 15/46 (32.6%). Signer leakage cannot be ruled out.
+No NO_SIGN or out-of-vocabulary behavior has been evaluated. The candidate stays
+out of `public/`; all seven existing automatic language choices remain intact.
+Before live integration, obtain a traceable extraction contract and signer-aware
+splits, collect consented negatives, verify browser preprocessing parity and
+measure real camera performance. Full predictions and per-class results are in
+`docs/verification/asl-v01-exploratory-2026-09-28.json`.
+
+Source: https://huggingface.co/datasets/Kibalama/poseformer-sign-language/tree/42072d9dedcfc7133a4d63715b68abb0f6db33eb
+WLASL terms: https://github.com/dxli94/WLASL

@@ -37,6 +37,7 @@ import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
+import { transcriptDocument, transcriptText, updateTranscript, type TranscriptWorkspaces } from "@/lib/transcript-session";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
 import type {
@@ -73,7 +74,12 @@ export function TranslatorExperience() {
   const [bufferSize, setBufferSize] = useState(0);
   const [recognitionFeedback, setRecognitionFeedback] = useState("");
   const [recognitionUnavailable, setRecognitionUnavailable] = useState(false);
-  const [entries, setEntries] = useState<TranscriptEntry[]>([]);
+  const [transcripts, setTranscripts] = useState<TranscriptWorkspaces>({});
+  const currentTranscript = transcripts[selected];
+  const entries = currentTranscript?.entries ?? [];
+  const setEntries = useCallback((update: (current: TranscriptEntry[]) => TranscriptEntry[]) => {
+    setTranscripts(current => updateTranscript(current, selected, update));
+  }, [selected]);
   const [storageMessage, setStorageMessage] = useState("");
   const [history, setHistory] = useState<TranscriptSession[]>([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -86,6 +92,7 @@ export function TranslatorExperience() {
   const [calibrationState, setCalibrationState] = useState<CalibrationState>("idle");
   const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
   const [countdown, setCountdown] = useState(3);
+  const [clearingLocalData, setClearingLocalData] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const vocabularyRef = useRef<HTMLDetailsElement>(null);
@@ -103,10 +110,12 @@ export function TranslatorExperience() {
   const captureGenerationRef = useRef(0);
   const frameLoopRef = useRef<() => void>(() => {});
   const settingsRef = useRef(settings);
-  const sessionStartedRef = useRef(0);
+  const clearingLocalDataRef = useRef(false);
+  const vocabularyGenerationRef = useRef(0);
   const templatesRef = useRef<CalibrationTemplate[]>([]);
   const captureFramesRef = useRef<VisionFrame[]>([]);
   const captureStateRef = useRef<CalibrationState>("idle");
+  const lastSpokenEntryRef = useRef<TranscriptEntry | undefined>(undefined);
 
   const model = useMemo(
     () => LANGUAGE_LIST.find((item) => item.id === selected)!,
@@ -160,16 +169,25 @@ export function TranslatorExperience() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setSettings(loadSettings());
+      const loaded = loadSettings();
+      settingsRef.current = loaded;
+      setSettings(loaded);
       setHistory(loadHistory());
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
+    let active = true;
+    const generation = vocabularyGenerationRef.current;
     void loadCalibrationTemplates()
-      .then(setCalibrationTemplates)
-      .catch(() => setCalibrationMessage("Personal vocabulary storage is unavailable in this browser."));
+      .then(templates => {
+        if (active && generation === vocabularyGenerationRef.current) setCalibrationTemplates(templates);
+      })
+      .catch(() => {
+        if (active && generation === vocabularyGenerationRef.current) setCalibrationMessage("Personal vocabulary storage is unavailable in this browser.");
+      });
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -178,8 +196,13 @@ export function TranslatorExperience() {
   }, [calibrationTemplates, selected]);
 
   function selectLanguage(language: LanguageId) {
-    if (language === selected) return;
+    if (clearingLocalDataRef.current || language === selected) return;
     captureGenerationRef.current++;
+    captureFramesRef.current = [];
+    window.speechSynthesis?.cancel();
+    lastSpokenEntryRef.current = undefined;
+    setEditingId(null);
+    setStorageMessage("");
     setSelected(language);
     const personalSign = createCustomVocabularyEntry("Personal sign")!;
     setCalibrationWord(personalSign);
@@ -190,10 +213,15 @@ export function TranslatorExperience() {
     setCalibrationMessage(`Type a ${language.toUpperCase()} word or short phrase, then record two or three examples.`);
   }
 
-  useEffect(() => {
-    settingsRef.current = settings;
-    if (typeof window !== "undefined") saveSettings(settings);
-  }, [settings]);
+  // Persist user changes only. Writing defaults on mount races the saved read.
+  const updateSettings = (patch: Partial<SpeechSettings>) => {
+    if (clearingLocalDataRef.current) return;
+    const next = { ...settingsRef.current, ...patch };
+    settingsRef.current = next;
+    setSettings(next);
+    if (!next.autoSpeak) window.speechSynthesis?.cancel();
+    if (!saveSettings(next)) setStorageMessage("Settings work for this visit, but this browser could not save them.");
+  };
 
   const speak = useCallback((text: string) => {
     if (!text || typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -218,7 +246,7 @@ export function TranslatorExperience() {
     if (message.type !== "confirmed") return;
 
     const entry: TranscriptEntry = {
-      id: `${message.timestamp}-${message.gloss}`,
+      id: crypto.randomUUID(),
       text: message.text,
       gloss: message.gloss,
       confidence: message.confidence,
@@ -229,8 +257,11 @@ export function TranslatorExperience() {
       if (isRecentDuplicate(previous, entry)) return current;
       return [...current, entry];
     });
-    if (settingsRef.current.autoSpeak) speak(message.text);
-  }, [speak]);
+    if (settingsRef.current.autoSpeak && !isRecentDuplicate(lastSpokenEntryRef.current, entry)) {
+      lastSpokenEntryRef.current = entry;
+      speak(message.text);
+    }
+  }, [setEntries, speak]);
 
   useEffect(() => {
     if (step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
@@ -274,16 +305,20 @@ export function TranslatorExperience() {
     setCandidate(null);
     setConfidence(0);
     setBufferSize(0);
+    setRecognitionState("listening");
     setRecognitionFeedback("");
     lastVideoTimeRef.current = -1;
     frameErrorsRef.current = 0;
     captureStateRef.current = "idle";
     captureFramesRef.current = [];
     setCalibrationState("idle");
+    window.speechSynthesis?.cancel();
+    const canvas = canvasRef.current;
+    canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
   }, []);
 
   const changeWorkspaceLanguage = (language: LanguageId) => {
-    if (language === selected) return;
+    if (clearingLocalDataRef.current || language === selected) return;
     const enteringSpecialRecognizer = language === "rsl" || language === "bdsl";
     const leavingSharedRecognizer = selected !== "rsl" && selected !== "bdsl";
 
@@ -401,7 +436,7 @@ export function TranslatorExperience() {
   }, [runFrameLoop]);
 
   const requestCamera = useCallback(async () => {
-    if (cameraPendingRef.current || engineRef.current) return;
+    if (clearingLocalDataRef.current || cameraPendingRef.current || engineRef.current || document.hidden) return;
     if (!navigator.mediaDevices?.getUserMedia) {
       setCameraState("error");
       setCameraMessage("This browser does not expose camera access.");
@@ -467,33 +502,31 @@ export function TranslatorExperience() {
   }, [stopCamera]);
 
   useEffect(() => {
-    const resume = () => {
-      workerRef.current?.postMessage({ type: "reset" });
-      cameraProgressRef.current = performance.now();
-      const video = videoRef.current;
-      if (document.hidden || !engineRef.current || !video?.paused) return;
-      const generation = cameraGenerationRef.current;
-      void video.play().catch(() => {
-        if (generation !== cameraGenerationRef.current) return;
-        stopCamera();
-        setCameraState("error");
-        setCameraMessage("Camera playback was interrupted. Start the camera again to resume.");
-      });
+    const pause = () => {
+      if (!streamRef.current && !cameraPendingRef.current) return;
+      stopCamera();
+      setCameraMessage("Camera paused while you were away. Start the camera to resume.");
     };
-    document.addEventListener("visibilitychange", resume);
-    return () => document.removeEventListener("visibilitychange", resume);
+    const onVisibility = () => { if (document.hidden) pause(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", pause);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", pause);
+    };
   }, [stopCamera]);
 
   const beginTranslation = () => {
-    sessionStartedRef.current = Date.now();
     setStep("workspace");
     window.scrollTo({ top: 0, behavior: "smooth" });
     window.setTimeout(() => void requestCamera(), 0);
   };
 
   const recordCalibration = useCallback(async () => {
+    if (clearingLocalDataRef.current) return;
     if (captureStateRef.current !== "idle" && captureStateRef.current !== "saved" && captureStateRef.current !== "error") return;
     const captureGeneration = ++captureGenerationRef.current;
+    const vocabularyGeneration = vocabularyGenerationRef.current;
     if (!engineRef.current) await requestCamera();
     if (captureGeneration !== captureGenerationRef.current) return;
     if (!engineRef.current) {
@@ -541,7 +574,7 @@ export function TranslatorExperience() {
     try {
       await saveCalibrationTemplate(template);
       const updated = await loadCalibrationTemplates();
-      setCalibrationTemplates(updated);
+      if (vocabularyGeneration === vocabularyGenerationRef.current) setCalibrationTemplates(updated);
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "saved";
       setCalibrationState("saved");
@@ -571,40 +604,90 @@ export function TranslatorExperience() {
   };
 
   const removeCalibration = useCallback(async (gloss: string) => {
+    if (clearingLocalDataRef.current) return;
     captureGenerationRef.current++;
-    await deleteCalibrationGloss(gloss, selected);
-    setCalibrationTemplates(await loadCalibrationTemplates());
+    const generation = ++vocabularyGenerationRef.current;
+    captureFramesRef.current = [];
     captureStateRef.current = "idle";
     setCalibrationState("idle");
-    setCalibrationMessage("Personal examples removed for this word.");
+    try {
+      await deleteCalibrationGloss(gloss, selected);
+      const updated = await loadCalibrationTemplates();
+      if (generation !== vocabularyGenerationRef.current) return;
+      setCalibrationTemplates(updated);
+      setCalibrationMessage("Personal examples removed for this word.");
+    } catch {
+      if (generation !== vocabularyGenerationRef.current) return;
+      setCalibrationState("error");
+      setCalibrationMessage("The examples could not be removed. Check your browser storage settings and try again.");
+    }
   }, [selected]);
 
   const returnHome = () => {
+    if (clearingLocalDataRef.current) return;
     stopCamera();
     setStep("welcome");
   };
 
   const clearTranscript = () => {
-    const saved = saveSession({
-      id: String(sessionStartedRef.current),
-      language: selected,
-      createdAt: sessionStartedRef.current,
-      entries,
-    });
+    if (!currentTranscript) return;
+    const saved = saveSession(currentTranscript);
     if (!saved) { setStorageMessage("Could not save on this device. Your transcript has been kept here."); return; }
     setStorageMessage("");
-    setEntries([]);
-    sessionStartedRef.current = Date.now();
+    setEntries(() => []);
+    setEditingId(null);
     setHistory(loadHistory());
   };
 
+  const copyTranscript = async () => {
+    if (!currentTranscript) return;
+    try {
+      await navigator.clipboard.writeText(transcriptText(currentTranscript));
+      setStorageMessage("Transcript copied.");
+    } catch {
+      setStorageMessage("Copy is unavailable in this browser. Use Download to keep your transcript.");
+    }
+  };
+
+  const downloadTranscript = (session: TranscriptSession) => {
+    const url = URL.createObjectURL(new Blob([transcriptDocument(session)], { type: "text/plain;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `signrelay-${session.language}-${new Date(session.createdAt).toISOString().replaceAll(":", "-")}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   const clearAllLocalData = async () => {
-    clearLocalSignRelayData();
-    await clearCalibrationTemplates();
-    setEntries([]);
-    setHistory([]);
-    setCalibrationTemplates([]);
+    if (clearingLocalDataRef.current) return;
+    clearingLocalDataRef.current = true;
+    setClearingLocalData(true);
+    vocabularyGenerationRef.current++;
+    stopCamera();
+    const localCleared = clearLocalSignRelayData();
+    let vocabularyCleared = false;
+    try {
+      await clearCalibrationTemplates();
+      vocabularyCleared = true;
+      templatesRef.current = [];
+      setCalibrationTemplates([]);
+      workerRef.current?.postMessage({ type: "templates", language: selected, templates: [] });
+    } catch { /* Report partial clearing; keep examples available for a retry. */ }
+    setTranscripts({});
+    setEditingId(null);
+    setCustomWordInput("");
+    setVocabularySearch("");
+    setCalibrationWord(createCustomVocabularyEntry("Personal sign")!);
+    setHistory(loadHistory());
+    lastSpokenEntryRef.current = undefined;
+    settingsRef.current = DEFAULT_SETTINGS;
     setSettings(DEFAULT_SETTINGS);
+    setCalibrationMessage(vocabularyCleared ? "Personal vocabulary cleared. Record a new example to get started." : "Personal vocabulary could not be cleared. Retry or clear site data in your browser settings.");
+    setStorageMessage(localCleared && vocabularyCleared ? "Local data cleared. Camera stopped." : "Some saved data could not be cleared. Retry or clear SignRelay site data in your browser settings.");
+    clearingLocalDataRef.current = false;
+    setClearingLocalData(false);
   };
 
   if (step === "workspace" && selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental") {
@@ -687,7 +770,7 @@ export function TranslatorExperience() {
                     <h3>{cameraState === "loading" ? "Preparing your camera" : cameraState === "requesting" ? "Allow camera access" : cameraState === "idle" ? "Ready when you are" : "Camera unavailable"}</h3>
                     <p>{cameraMessage}</p>
                     {(cameraState === "denied" || cameraState === "error" || cameraState === "idle") && (
-                      <button className="button secondary small" onClick={requestCamera}>
+                      <button className="button secondary small" onClick={requestCamera} disabled={clearingLocalData}>
                         {cameraState === "idle" ? "Start camera" : "Retry camera"}
                       </button>
                     )}
@@ -719,7 +802,7 @@ export function TranslatorExperience() {
                   <input
                     type="checkbox"
                     checked={settings.showOverlay}
-                    onChange={(event) => setSettings((current) => ({ ...current, showOverlay: event.target.checked }))}
+                    onChange={(event) => updateSettings({ showOverlay: event.target.checked })}
                   />
                   <span>Show landmarks</span>
                 </label>
@@ -727,8 +810,8 @@ export function TranslatorExperience() {
               </details>
               <div className="camera-session-actions">
                 <span>{cameraState === "active" ? "Camera on · video stays private" : "Video stays on this device"}</span>
-                <button className="button ghost small" onClick={cameraState === "active" ? stopCamera : requestCamera}>
-                  {cameraState === "active" ? "Pause camera" : "Start camera"}
+                <button className="button ghost small" disabled={clearingLocalData} onClick={["active", "loading", "requesting"].includes(cameraState) ? stopCamera : requestCamera}>
+                  {cameraState === "active" ? "Pause camera" : cameraState === "loading" || cameraState === "requesting" ? "Cancel camera" : "Start camera"}
                 </button>
               </div>
             </section>
@@ -746,7 +829,7 @@ export function TranslatorExperience() {
               <div className="candidate-bar" aria-live="polite">
                 <div>
                   <span className="candidate-label">Current sequence</span>
-                  <strong>{candidate ? candidate : bufferSize < 10 ? "Building movement context…" : "No confident match"}</strong>
+                  <strong>{cameraState !== "active" ? "Start the camera to recognize a sign" : candidate ? candidate : bufferSize < 10 ? "Building movement context…" : "No confident match"}</strong>
                 </div>
                 <div className="confidence-ring" title="Match score, not a measured probability of correct translation" style={{ "--confidence": `${Math.round(confidence * 100)}%` } as React.CSSProperties}>
                   <span>{Math.round(confidence * 100)}%</span>
@@ -802,7 +885,7 @@ export function TranslatorExperience() {
                   <input
                     type="checkbox"
                     checked={settings.autoSpeak}
-                    onChange={(event) => setSettings((current) => ({ ...current, autoSpeak: event.target.checked }))}
+                    onChange={(event) => updateSettings({ autoSpeak: event.target.checked })}
                   />
                   <span><strong>Auto speak</strong></span>
                 </label>
@@ -820,16 +903,18 @@ export function TranslatorExperience() {
                 <div className="voice-ranges">
                 <label className="range-control">
                   <span>Volume <strong>{Math.round(settings.volume * 100)}%</strong></span>
-                  <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => setSettings((current) => ({ ...current, volume: Number(event.target.value) }))} />
+                  <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => updateSettings({ volume: Number(event.target.value) })} />
                 </label>
                 <label className="range-control">
                   <span>Rate <strong>{settings.rate.toFixed(2)}×</strong></span>
-                  <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => setSettings((current) => ({ ...current, rate: Number(event.target.value) }))} />
+                  <input type="range" min="0.5" max="2" step="0.05" value={settings.rate} onChange={(event) => updateSettings({ rate: Number(event.target.value) })} />
                 </label>
                 </div>
               </details>
 
               <div className="transcript-actions">
+                <button className="button ghost small" disabled={!entries.length} onClick={copyTranscript}>Copy</button>
+                <button className="button ghost small" disabled={!currentTranscript} onClick={() => currentTranscript && downloadTranscript(currentTranscript)}>Download</button>
                 <button className="button ghost small" onClick={() => setShowHistory((current) => !current)}>
                   History ({history.length})
                 </button>
@@ -844,8 +929,9 @@ export function TranslatorExperience() {
                   <div className="history-heading"><strong>Local history</strong><button onClick={() => setShowHistory(false)} aria-label="Close history">Close</button></div>
                   {!history.length ? <p>No saved sessions on this device.</p> : history.map((session) => (
                     <div className="history-session" key={session.id}>
-                      <span>{new Date(session.createdAt).toLocaleString()}</span>
+                      <span>{MODEL_ADAPTERS[session.language].shortName} · {new Date(session.createdAt).toLocaleString()}</span>
                       <p>{session.entries.map((entry) => entry.text).join(" ")}</p>
+                      <button className="text-action" onClick={() => downloadTranscript(session)}>Download saved transcript</button>
                     </div>
                   ))}
                 </div>
@@ -873,7 +959,7 @@ export function TranslatorExperience() {
                   <small>{calibrationCounts.get(calibrationWord.gloss) ?? 0} of 3 examples recorded</small>
                 </div>
                 <div className="selected-word-actions">
-                  <button className="button primary small" onClick={() => void recordCalibration()} disabled={calibrationState === "countdown" || calibrationState === "recording" || calibrationState === "saving"}>
+                  <button className="button primary small" onClick={() => void recordCalibration()} disabled={clearingLocalData || calibrationState === "countdown" || calibrationState === "recording" || calibrationState === "saving"}>
                     {cameraState === "active" ? "Record example" : "Start camera & record"}
                   </button>
                   {trainedGlosses.has(calibrationWord.gloss) && (
@@ -958,7 +1044,7 @@ export function TranslatorExperience() {
               <h2 id="privacy-heading">Your camera stays private</h2>
               <p>Frames are analysed in this browser. Raw video is not uploaded or stored. Settings and saved transcripts stay in local browser storage.</p>
             </div>
-            <button className="button ghost small" onClick={clearAllLocalData}>Clear local data</button>
+            <button className="button ghost small" onClick={clearAllLocalData} disabled={clearingLocalData}>{clearingLocalData ? "Clearing…" : "Clear local data"}</button>
           </section>
           </details>
         </main>

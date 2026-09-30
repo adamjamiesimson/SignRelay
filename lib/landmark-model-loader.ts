@@ -1,5 +1,10 @@
 import * as ort from "onnxruntime-web";
 
+// Firebase Hosting is not cross-origin isolated. Use the same single-threaded,
+// locally hosted WASM runtime as the clip recognizers, including in workers.
+ort.env.wasm.numThreads = 1;
+ort.env.wasm.wasmPaths = "/workers/";
+
 /** Cache a successful load, but allow the worker's backoff to retry failures. */
 export function createLandmarkModelLoader(directory: string, classes: number) {
   let pending: Promise<{ session: ort.InferenceSession; labels: string[] }> | null = null;
@@ -16,7 +21,7 @@ export function createLandmarkModelLoader(directory: string, classes: number) {
         throw new Error(`Expected ${classes} distinct, nonempty model labels`);
       }
       const session = await ort.InferenceSession.create(`${directory}/model.onnx`, {
-        executionProviders: ["webgpu", "wasm"],
+        executionProviders: ["wasm"],
       });
       return { session, labels: labels as string[] };
     })().catch(error => {

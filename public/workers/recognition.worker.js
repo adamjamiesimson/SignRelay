@@ -10941,6 +10941,8 @@ var Sa = "1.23.2";
 Object.defineProperty(we.versions, "web", { value: Sa, enumerable: true });
 
 // lib/landmark-model-loader.ts
+we.wasm.numThreads = 1;
+we.wasm.wasmPaths = "/workers/";
 function createLandmarkModelLoader(directory, classes) {
   let pending2 = null;
   return function loadModel5() {
@@ -10952,7 +10954,7 @@ function createLandmarkModelLoader(directory, classes) {
         throw new Error(`Expected ${classes} distinct, nonempty model labels`);
       }
       const session = await Kp.create(`${directory}/model.onnx`, {
-        executionProviders: ["webgpu", "wasm"]
+        executionProviders: ["wasm"]
       });
       return { session, labels };
     })().catch((error) => {
@@ -14998,6 +15000,17 @@ self.onmessage = async (event) => {
     return;
   }
   const now = event.data.frame.timestamp;
+  const previous = frames.at(-1)?.timestamp;
+  if (previous !== void 0 && (now <= previous || now - previous > trackingGapLimit([...frames, event.data.frame]))) {
+    frames.length = 0;
+    receivedFrames = 0;
+    invalidatePrediction();
+    candidateLabel = null;
+    candidateStreak = 0;
+    candidateIsModel = false;
+    blockedStarter = null;
+    lastInferenceAt = -Infinity;
+  }
   if ([...pending.values()].some((started) => now - started >= 2e4)) {
     invalidatePrediction();
     pending.clear();
@@ -15092,7 +15105,7 @@ self.onmessage = async (event) => {
       timestamp: Date.now()
     });
     lastConfirmation = { label: result.label, time: now };
-    if (activeLanguage === "asl" && !candidateIsModel) {
+    if (!candidateIsModel) {
       blockedStarter = result.label;
       starterSeenAt = now;
     }

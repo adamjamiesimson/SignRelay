@@ -8,7 +8,8 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 - Forty sign-language workspaces have separate identities; RSL and Bangla have separate pretrained clip-recognition modes.
 - Camera permission is requested only after language selection.
-- MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
+- MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU. Tracking models and the matching locked WASM runtime are served by SignRelay, without a separate CDN connection.
+- Leaving the tab stops the camera; returning requires an explicit restart.
 - A Web Worker maintains an ordered temporal buffer for landmark recognition.
 - ASL, BSL and ISL include separate experimental browser models with 2,000, 1,064 and 263 isolated-sign outputs respectively.
 - RSL adds the official pretrained Slovo video model: 967 word/phrase classes plus 33 letters, with no personal teaching required. It is explicit single-sign capture, not real-time; 141 MB first load and approximately 19 seconds per inference in the development WASM test.
@@ -47,7 +48,7 @@ See [Bangla model attribution](public/models/bdsl401-videomae/ATTRIBUTION.md) fo
 
 ### RSL installation and use
 
-`npm run build:firebase` installs the official Slovo checkpoint automatically and verifies its pinned SHA-256 before exporting. `npm run install:rsl-model` installs it separately for development. The 141 MB binary is not committed to Git; builds fail if it cannot be fetched or verified. No paid service is used.
+`npm run build:firebase` installs and verifies local tracking assets, then installs the official Slovo checkpoint automatically and verifies its pinned SHA-256 before exporting. `npm run install:rsl-model` installs it separately for development. The 141 MB binary is not committed to Git; builds fail if it cannot be fetched or verified. No paid service is used.
 
 Choose **Russian Sign Language** (search for RSL), enter its workspace, start the camera, then choose **Recognize one sign**. After a 3-second countdown, sign for about 2 seconds. Inference runs in a separate worker; Stop/cancel, leaving the workspace or hiding the tab releases the camera and worker. Results are suggestions, not automatically spoken or added to a transcript. Frames stay only in device memory.
 
@@ -137,9 +138,14 @@ Dataset names, vocabulary size and availability do not imply a licence suitable 
 
 ## Testing
 
+The September 30 update adds language-specific transcript drafts, text export,
+saved-preference recovery and atomic personal-vocabulary storage. See the
+[workspace reliability notes and Cloud Shell handoff](docs/workspace-reliability-2026-09-30.md).
+
 ```bash
 npm run typecheck
 npm test
+npm run test:assets
 npm run lint
 npm run build:worker
 npm run repo:guard
@@ -177,6 +183,7 @@ Before opening a pull request, run:
 ```bash
 npm run typecheck
 npm test
+npm run test:assets
 npm run lint
 npm run build:worker
 npm run repo:guard
@@ -214,3 +221,12 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 3. Add learned sign boundaries and continuous word error rate evaluation.
 4. Co-design shared adapters with native signers and language experts, prioritising the existing 40 language communities by data readiness and contributor interest.
 5. Add language-specific gloss-to-text decoding without hiding uncertainty.
+
+
+### September 28 reliability and ASL research update
+
+The [handoff](docs/reliability-2026-09-28.md) records the tracking-runtime fix,
+privacy and recognition recovery changes, validation evidence, and the CPU-only
+20-sign ASL experiment. The new candidate is not active: its small experimental
+holdout is insufficient for a release. Run the manual ASL research workflow on
+GitHub to reproduce it without Cloud Shell.
