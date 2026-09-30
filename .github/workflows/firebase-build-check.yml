@@ -90,6 +90,9 @@ jobs:
       - name: Lint application source
         run: npm run lint
 
+      - name: Verify workspace persistence and personal vocabulary in headless Chrome
+        run: node tests/workspace-browser-smoke.mjs "$(command -v google-chrome)"
+
       - name: Verify Bangla camera flow in headless Chrome
         run: node tests/bdsl-browser-smoke.mjs "$(command -v google-chrome)"
 

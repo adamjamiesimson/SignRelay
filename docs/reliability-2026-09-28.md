@@ -60,6 +60,11 @@ requiring Cloud Shell; they leave existing untracked `ml/` work untouched.
   process socket. Browser tests are therefore run in GitHub Actions; their result
   is recorded below after that run finishes. No local browser pass is claimed.
 
+Follow-up: GitHub Actions run `36397056614` passed the production build,
+Bangla browser camera flow, Spanish browser camera/model flow, and security
+audit for `1c06b71`. The workspace follow-up is documented in
+[`workspace-reliability-2026-09-30.md`](workspace-reliability-2026-09-30.md).
+
 ## Delivery
 
 GitHub Actions builds the ready-to-deploy `signrelay-firebase-out` artifact.

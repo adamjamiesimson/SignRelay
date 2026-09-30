@@ -17,63 +17,100 @@ export function validCalibrationTemplate(value: unknown): value is CalibrationTe
     && t.frames.every(row => Array.isArray(row) && [208, 240].includes(row.length) && row.every(Number.isFinite));
 }
 
+// Serialize writes requested in this tab so Clear cannot be overtaken by a
+// recording that is still opening its database. IndexedDB transactions provide
+// the cross-tab isolation; the queue also survives rejected operations.
+let pendingWrite: Promise<unknown> = Promise.resolve();
+function enqueueWrite<T>(operation: () => Promise<T>): Promise<T> {
+  const result = pendingWrite.then(operation);
+  pendingWrite = result.catch(() => undefined);
+  return result;
+}
+
 export async function loadCalibrationTemplates(): Promise<CalibrationTemplate[]> {
-  const database = await openDatabase();
-  return new Promise((resolve, reject) => {
-    const request = database.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll();
-    request.onsuccess = () => { database.close(); resolve(request.result.filter(validCalibrationTemplate).sort((a: CalibrationTemplate, b: CalibrationTemplate) => b.createdAt - a.createdAt)); };
-    request.onerror = () => reject(request.error);
+  await pendingWrite;
+  return transaction<CalibrationTemplate[]>("readonly", (store, complete) => {
+    const request = store.getAll();
+    request.onsuccess = () => complete(request.result.filter(validCalibrationTemplate)
+      .sort((a: CalibrationTemplate, b: CalibrationTemplate) => b.createdAt - a.createdAt));
   });
 }
 
-export async function saveCalibrationTemplate(template: CalibrationTemplate) {
-  if (!validCalibrationTemplate(template)) throw new Error("Invalid personal sign example");
-  const existing = (await loadCalibrationTemplates())
-    .filter((item) => item.gloss === template.gloss && (item.language ?? "asl") === (template.language ?? "asl"))
-    .sort((a, b) => b.createdAt - a.createdAt);
-  const database = await openDatabase();
-
-  await new Promise<void>((resolve, reject) => {
-    const transaction = database.transaction(STORE_NAME, "readwrite");
-    const store = transaction.objectStore(STORE_NAME);
+export function saveCalibrationTemplate(template: CalibrationTemplate) {
+  if (!validCalibrationTemplate(template)) return Promise.reject(new Error("Invalid personal sign example"));
+  return enqueueWrite(() => transaction<void>("readwrite", store => {
     store.put(template);
-    existing.slice(MAX_EXAMPLES_PER_GLOSS - 1).forEach((item) => store.delete(item.id));
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(transaction.error);
-  });
+    const request = store.getAll();
+    request.onsuccess = () => {
+      const examples: CalibrationTemplate[] = request.result.filter(validCalibrationTemplate)
+        .filter((item: CalibrationTemplate) => item.gloss === template.gloss
+          && (item.language ?? "asl") === (template.language ?? "asl"))
+        .sort((a: CalibrationTemplate, b: CalibrationTemplate) => b.createdAt - a.createdAt);
+      examples.slice(MAX_EXAMPLES_PER_GLOSS).forEach(item => store.delete(item.id));
+    };
+  }));
 }
 
-export async function deleteCalibrationGloss(gloss: string, language: NonNullable<CalibrationTemplate["language"]>) {
-  const matching = (await loadCalibrationTemplates()).filter((item) => item.gloss === gloss && (item.language ?? "asl") === language);
-  const database = await openDatabase();
-  await new Promise<void>((resolve, reject) => {
-    const transaction = database.transaction(STORE_NAME, "readwrite");
-    const store = transaction.objectStore(STORE_NAME);
-    matching.forEach((item) => store.delete(item.id));
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(transaction.error);
-  });
+export function deleteCalibrationGloss(gloss: string, language: NonNullable<CalibrationTemplate["language"]>) {
+  return enqueueWrite(() => transaction<void>("readwrite", store => {
+    const request = store.getAll();
+    request.onsuccess = () => {
+      const matching: CalibrationTemplate[] = request.result.filter(validCalibrationTemplate)
+        .filter((item: CalibrationTemplate) => item.gloss === gloss && (item.language ?? "asl") === language);
+      matching.forEach(item => store.delete(item.id));
+    };
+  }));
 }
 
-export async function clearCalibrationTemplates() {
+export function clearCalibrationTemplates() {
+  return enqueueWrite(() => transaction<void>("readwrite", store => { store.clear(); }));
+}
+
+async function transaction<T>(
+  mode: IDBTransactionMode,
+  operation: (store: IDBObjectStore, result: (value: T) => void) => void,
+): Promise<T> {
   const database = await openDatabase();
-  await new Promise<void>((resolve, reject) => {
-    const request = database.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear();
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
+  try {
+    return await new Promise<T>((resolve, reject) => {
+      const tx = database.transaction(STORE_NAME, mode);
+      let result: T;
+      // A request's success is not a commit: a later abort must still reject.
+      tx.oncomplete = () => resolve(result);
+      tx.onabort = () => reject(tx.error ?? new Error("Personal vocabulary transaction was aborted"));
+      tx.onerror = () => reject(tx.error ?? new Error("Personal vocabulary storage failed"));
+      try {
+        operation(tx.objectStore(STORE_NAME), value => { result = value; });
+      } catch (error) {
+        tx.abort();
+        reject(error);
+      }
+    });
+  } finally {
+    database.close();
+  }
 }
 
 function openDatabase() {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
+    let blocked = false;
     request.onupgradeneeded = () => {
       const database = request.result;
       if (!database.objectStoreNames.contains(STORE_NAME)) {
         database.createObjectStore(STORE_NAME, { keyPath: "id" });
       }
     };
-    request.onsuccess = () => resolve(request.result);
+    request.onblocked = () => {
+      blocked = true;
+      reject(new Error("Personal vocabulary storage is blocked. Close other SignRelay tabs and retry."));
+    };
+    request.onsuccess = () => {
+      const database = request.result;
+      if (blocked) { database.close(); return; }
+      database.onversionchange = () => database.close();
+      resolve(database);
+    };
     request.onerror = () => reject(request.error);
   });
 }

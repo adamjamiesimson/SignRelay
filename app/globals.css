@@ -208,7 +208,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .range-control { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font-size: .69rem; font-weight: 700; }
 .range-control span { display: flex; justify-content: space-between; }
 .range-control input { width: 100%; accent-color: var(--brand); }
-.transcript-actions { display: flex; justify-content: space-between; gap: 10px; padding: 13px 19px 17px; background: #fbfcfb; }
+.transcript-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; padding: 13px 19px 17px; background: #fbfcfb; }
 .history-drawer { position: absolute; inset: 84px 0 0; z-index: 4; padding: 18px; background: rgba(255,255,255,.98); backdrop-filter: blur(14px); overflow-y: auto; }
 .history-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .history-drawer > p { color: var(--muted); font-size: .84rem; }

@@ -48,7 +48,10 @@ export function loadSettings(): SpeechSettings {
 }
 
 export function saveSettings(settings: SpeechSettings) {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch { /* Device storage may be unavailable. */ }
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    return true;
+  } catch { return false; }
 }
 
 export function loadHistory(): TranscriptSession[] {
@@ -65,7 +68,7 @@ export function saveSession(session: TranscriptSession) {
   if (!validSession(session) || !session.entries.length) return false;
   const history = loadHistory();
   try {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify([session, ...history].slice(0, 8)));
+    localStorage.setItem(HISTORY_KEY, JSON.stringify([session, ...history.filter(item => item.id !== session.id)].slice(0, 8)));
     return true;
   } catch { return false; }
 }
@@ -81,8 +84,9 @@ function validSession(value: unknown): value is TranscriptSession {
 }
 
 export function clearLocalSignRelayData() {
-  try {
-    localStorage.removeItem(SETTINGS_KEY);
-    localStorage.removeItem(HISTORY_KEY);
-  } catch { /* Clearing site data through the browser remains available. */ }
+  let cleared = true;
+  for (const key of [SETTINGS_KEY, HISTORY_KEY]) {
+    try { localStorage.removeItem(key); } catch { cleared = false; }
+  }
+  return cleared;
 }

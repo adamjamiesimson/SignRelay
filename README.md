@@ -138,6 +138,10 @@ Dataset names, vocabulary size and availability do not imply a licence suitable 
 
 ## Testing
 
+The September 30 update adds language-specific transcript drafts, text export,
+saved-preference recovery and atomic personal-vocabulary storage. See the
+[workspace reliability notes and Cloud Shell handoff](docs/workspace-reliability-2026-09-30.md).
+
 ```bash
 npm run typecheck
 npm test
