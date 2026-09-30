@@ -58,3 +58,4 @@ next-env.d.ts
 # Local live-camera evaluation captures. Never commit participant media.
 /evaluation/raw/
 /evaluation/videos/
+/evaluation/video-manifest.local.jsonl
