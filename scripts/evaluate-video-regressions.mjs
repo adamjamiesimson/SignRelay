@@ -406,9 +406,15 @@ async function pauseCamera(cdp) {
 }
 
 async function clearTranscript(cdp) {
-  await cdp.evaluate(`(() => {
-    for (const button of document.querySelectorAll('.transcript-entry button[aria-label^="Remove "]')) button.click();
-  })()`);
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const remaining = await cdp.evaluate(`(() => {
+      const button = document.querySelector('.transcript-entry button[aria-label^="Remove "]');
+      button?.click();
+      return document.querySelectorAll('.transcript-entry').length;
+    })()`);
+    if (!remaining) break;
+    await pause(25);
+  }
   await waitUntil(() => cdp.evaluate("document.querySelectorAll('.transcript-entry').length === 0"), "Transcript did not clear", 5_000);
 }
 
@@ -485,7 +491,8 @@ async function runTrial(cdp, trial, options, coldStart) {
   let outcome;
   if (trial.trialType === "no_sign") outcome = accepted ? "false_accept" : "correct_reject";
   else if (!accepted) outcome = "rejected";
-  else outcome = predictedGloss === trial.expectedGloss ? "correct" : "wrong";
+  else if (predictedGloss !== trial.expectedGloss) outcome = "wrong";
+  else outcome = latest.entries.length === 1 ? "correct" : "extra_prediction";
   return {
     session_id: options.sessionId,
     participant_id: trial.signerId ?? "fixture",
