@@ -70,7 +70,7 @@ By default the evaluator writes:
 - `work/video-evaluation/results.jsonl` — one metadata row per fixture;
 - `work/video-evaluation/report.md` — per-language accuracy, coverage, accepted precision, no-sign false-accept rate, tracking coverage, failures, and common confusions.
 
-Useful options include `--language asl`, `--limit 20`, `--tail 5000`, and `--strict`. With `--strict`, a wrong sign, rejection, or no-sign false accept produces a non-zero exit code, which makes the runner usable as a regression gate once a trusted fixture set exists.
+Useful options include `--language asl`, `--limit 20`, `--tail 5000`, and `--strict`. With `--strict`, a wrong sign, rejection, extra accepted word, or no-sign false accept produces a non-zero exit code, which makes the runner usable as a regression gate once a trusted fixture set exists.
 
 The first trial after loading each language is labelled **cold**; later trials are **warm** so model-startup effects are visible rather than mixed together.
 
