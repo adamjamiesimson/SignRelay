@@ -28,11 +28,11 @@ beforeEach(async () => {
 });
 
 describe("ASL worker with real temporal and confirmation code (synthetic input)", () => {
-  it.each(["HELLO", "NO", "YES", "SORRY"] as const)("confirms validated starter %s once without another label", async sign => {
+  it.each(["NO", "YES", "SORRY"] as const)("confirms validated starter %s once without another label", async sign => {
     await feed(makeSign(sign));
     expect(confirmations().map(result => result.gloss)).toEqual([sign]);
   });
-  it.each(["PLEASE", "THANK YOU"] as const)("withholds unvalidated starter %s from the transcript", async sign => {
+  it.each(["HELLO", "PLEASE", "THANK YOU"] as const)("withholds unvalidated starter %s from the transcript", async sign => {
     await feed(makeSign(sign));
     expect(confirmations()).toHaveLength(0);
   });
@@ -99,7 +99,7 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     }
   });
   it("keeps recognizing separated successive signs throughout a long session", async () => {
-    const signs = ["NO", "HELLO", "YES", "SORRY"] as const;
+    const signs = ["NO", "YES", "SORRY"] as const;
     const expected: string[] = [];
     let previousEnd = 0;
     for (let repetition = 0; repetition < 60; repetition++) {
