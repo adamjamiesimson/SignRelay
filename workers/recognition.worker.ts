@@ -3,7 +3,6 @@
 import type { CalibrationTemplate, VisionFrame, WorkerInput, WorkerMessage } from "@/lib/vision-types";
 import { shouldConfirm } from "@/lib/decoder";
 import { recognizePersonalTemplate, templatesForLanguage } from "@/lib/personalized-recognition";
-import { recognizeAslStarter } from "@/lib/asl-starter-recognition";
 import { analyzeSignMotion } from "@/lib/sign-motion";
 import { analyzeGenericSignMotion } from "@/lib/asl100-runtime";
 import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
@@ -35,8 +34,6 @@ let lastInferenceAt = -Infinity;
 let modelGeneration = 0;
 let modelProblem = false;
 let retryAfter = 0;
-let blockedStarter: string | null = null;
-let starterSeenAt = 0;
 const interSignGate = new InterSignGate(260);
 
 function invalidatePrediction() {
@@ -57,8 +54,6 @@ function resetSession() {
   candidateLabel = null;
   candidateStreak = 0;
   candidateIsModel = false;
-  blockedStarter = null;
-  starterSeenAt = 0;
   modelProblem = false;
   retryAfter = 0;
   interSignGate.reset();
@@ -86,12 +81,6 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   frames.push(event.data.frame);
   while (frames.length > (activeLanguage === "asl" ? 120 : 80)) frames.shift();
   const personal = recognizePersonalTemplate(frames, personalTemplates);
-  const starter = activeLanguage === "asl" ? recognizeAslStarter(frames) : null;
-  // The closed-set model can also label fist preparation YES. Require the
-  // same completed wrist nod for automatic YES, while preserving personal
-  // templates. Discard a rejected result so it cannot stall fresh inference.
-  if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES"
-    && starter?.label !== "YES") invalidatePrediction();
   const motion = activeLanguage === "asl" ? analyzeSignMotion(frames)
     : { ...analyzeGenericSignMotion(frames), sequence: frames };
   const armedForNextSign = interSignGate.update(now, motion.reason);
@@ -129,26 +118,24 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     }
   }
 
-  // Rule-based starter recognition is intentionally an emergency fallback.
-  // Cross-dataset video evaluation showed that these broad kinematic rules can
-  // confidently fire on unrelated ASL signs (for example BEE -> HELLO and
-  // KING -> SORRY). When the research model is healthy, silence is safer than
-  // letting an uncalibrated rule override or replace its decision.
-  const starterFallback = activeLanguage === "asl" && modelProblem ? starter : null;
-  const direct = personal ?? latestPrediction ?? starterFallback;
-  const directIsStarter = Boolean(starterFallback && direct === starterFallback);
-  if (directIsStarter && direct?.label === blockedStarter) starterSeenAt = now;
-  else if (now - starterSeenAt > 500) blockedStarter = null;
-  const rawResult = !armedForNextSign || (directIsStarter && direct?.label === blockedStarter) ? null : direct;
+  // Only an evaluated shared model or an explicitly saved personal template may
+  // enter the transcript. The former ASL starter rules remain unit-testable
+  // research code, but external video evaluation showed unsafe false accepts,
+  // so they are never used as a live transcript fallback.
+  const direct = personal ?? latestPrediction;
+  const rawResult = armedForNextSign ? direct : null;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
+  const aslSafeMode = activeLanguage === "asl" && MODEL_ADAPTERS.asl.status !== "experimental";
   const feedback = modelProblem
-    ? activeLanguage === "asl"
-      ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly…"
-      : "The research model could not run. Saved personal signs are still available. Retrying shortly…"
+    ? "The research model could not run. Saved personal signs are still available. Retrying shortly…"
     : !armedForNextSign ? "Pause briefly before the next sign."
-      : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically."
-      : motion.reason === "moving" ? "Following your movement…"
-        : result ? "Checking your sign…" : "Ready. Sign naturally, then pause briefly between words.";
+      : aslSafeMode && !personalTemplates.length
+        ? "Shared ASL recognition is paused after evaluation. Teach a sign on this device to translate it."
+        : aslSafeMode
+          ? "Ready for your saved personal ASL signs."
+          : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically."
+          : motion.reason === "moving" ? "Following your movement…"
+            : result ? "Checking your sign…" : "Ready. Sign naturally, then pause briefly between words.";
   self.postMessage({ type: "analysis", session: event.data.session, frameId: event.data.frameId,
     state: frames.length < 6 ? "listening" : result ? "processing" : "uncertain",
     candidate: result?.label ?? null, confidence: result?.confidence ?? 0,
@@ -177,10 +164,6 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
     interSignGate.lock();
-    if (activeLanguage === "asl" && starterFallback && result === starterFallback) {
-      blockedStarter = result.label;
-      starterSeenAt = now;
-    }
     invalidatePrediction();
     candidateStreak = 0;
     if (activeLanguage === "asl") frames.length = 0;
