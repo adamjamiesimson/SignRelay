@@ -20,7 +20,7 @@ jobs:
       - name: Install export dependencies
         run: |
           pip install --quiet torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
-          pip install --quiet onnx==1.17.0 onnxruntime==1.20.1 remotezip
+          pip install --quiet numpy==1.26.4 onnx==1.17.0 onnxruntime==1.20.1 remotezip mediapipe==0.10.21 opencv-python-headless==4.11.0.86
       - name: Fetch official checkpoint
         run: |
           curl -L --fail --retry 3 -o /tmp/aslcitizen-weights.zip https://github.com/microsoft/ASL-citizen-code/releases/download/checkpoints_v1/ASL_citizen_stgcn_weights.zip
@@ -39,8 +39,20 @@ jobs:
         run: |
           python training/export_asl_citizen_stgcn.py /tmp/aslcitizen-weights/ASL_citizen_stgcn_weights.pt /tmp/aslcitizen-train.csv --output /tmp/aslcitizen-export
           cat /tmp/aslcitizen-export/export-report.json
+      - name: Fetch frozen ASLLVD fixtures
+        run: node scripts/fetch-asllvd-benchmark.mjs
+      - name: Run ASL Citizen model on frozen ASLLVD clips
+        run: |
+          python training/evaluate_asl_citizen_asllvd.py \
+            /tmp/aslcitizen-weights/ASL_citizen_stgcn_weights.pt \
+            /tmp/aslcitizen-train.csv \
+            evaluation/asllvd-v1.local.jsonl \
+            --output /tmp/aslcitizen-asllvd.json
+          cat /tmp/aslcitizen-asllvd.json
       - uses: actions/upload-artifact@v4
         with:
-          name: asl-citizen-stgcn-export-report
-          path: /tmp/aslcitizen-export/export-report.json
+          name: asl-citizen-stgcn-research-report
+          path: |
+            /tmp/aslcitizen-export/export-report.json
+            /tmp/aslcitizen-asllvd.json
           if-no-files-found: error
