@@ -128,6 +128,8 @@ def main() -> None:
     parser.add_argument("train_csv", type=Path)
     parser.add_argument("manifest", type=Path)
     parser.add_argument("--output", type=Path, default=Path("work/asl-citizen-asllvd.json"))
+    parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--note", default="Cross-dataset ASLLVD research diagnostic; not an ASL Citizen signer-independent benchmark.")
     args = parser.parse_args()
 
     labels = load_labels(args.train_csv)
@@ -184,11 +186,12 @@ def main() -> None:
                 "tracker": tracker,
             }
             records.append(record)
-            print(
-                f"{record['fixture_id']}: {expected} -> {record['top1']} "
-                f"rank={rank} conf={record['top1_confidence']:.4f} "
-                f"hands={tracker['hand_coverage']:.1%}"
-            )
+            if not args.quiet:
+                print(
+                    f"{record['fixture_id']}: {expected} -> {record['top1']} "
+                    f"rank={rank} conf={record['top1_confidence']:.4f} "
+                    f"hands={tracker['hand_coverage']:.1%}"
+                )
 
     evaluable = [record for record in records if record["expected_in_vocabulary"]]
     summary = {
@@ -199,7 +202,7 @@ def main() -> None:
         "top20": sum(r["correct_top20"] for r in evaluable) / max(len(evaluable), 1),
         "median_expected_rank": float(np.median([r["expected_rank"] for r in evaluable if r["expected_rank"] is not None])) if evaluable else None,
         "mean_hand_coverage": float(np.mean([r["tracker"]["hand_coverage"] for r in records])) if records else None,
-        "note": "Cross-dataset ASLLVD research diagnostic; not an ASL Citizen signer-independent benchmark.",
+        "note": args.note,
     }
     report = {"summary": summary, "records": records}
     args.output.parent.mkdir(parents=True, exist_ok=True)
