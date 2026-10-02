@@ -185,7 +185,10 @@ class STGCN(nn.Module):
         x = x.view(n, v, c, t).permute(0, 2, 3, 1).contiguous()
         for block, importance in zip(self.st_gcn_networks, self.edge_importance):
             x, _ = block(x, self.A * importance)
-        x = F.avg_pool2d(x, x.shape[2:])
+        # Global average pooling is mathematically identical to upstream
+        # avg_pool2d(x, x.size()[2:]) but exports cleanly to ONNX because the
+        # reduction axes are static rather than a runtime-derived kernel size.
+        x = x.mean(dim=(2, 3))
         return x.view(n, -1)
 
 
