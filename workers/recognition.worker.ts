@@ -43,6 +43,8 @@ const STARTER_VALIDATED_ASL_LABELS = new Set([
 // while I LOVE YOU requires MediaPipe's dedicated hand gesture consistently
 // across the held sign. They remain usable without a model decision.
 const DIRECT_SAFE_STARTER_LABELS = new Set(["YES", "I LOVE YOU"]);
+let blockedDirectStarter: string | null = null;
+let directStarterSeenAt = 0;
 const interSignGate = new InterSignGate(260);
 
 function invalidatePrediction() {
@@ -63,6 +65,8 @@ function resetSession() {
   candidateLabel = null;
   candidateStreak = 0;
   candidateIsModel = false;
+  blockedDirectStarter = null;
+  directStarterSeenAt = 0;
   modelProblem = false;
   retryAfter = 0;
   interSignGate.reset();
@@ -142,7 +146,12 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   // high-specificity direct rules above remain available without a model.
   const directSafeStarter = starter && DIRECT_SAFE_STARTER_LABELS.has(starter.label)
     ? starter : null;
-  const rawResult = !armedForNextSign ? null : personal ?? latestPrediction ?? directSafeStarter;
+  if (directSafeStarter?.label === blockedDirectStarter) directStarterSeenAt = now;
+  else if (now - directStarterSeenAt > 500) blockedDirectStarter = null;
+  const unblockedDirectStarter = directSafeStarter?.label === blockedDirectStarter
+    ? null : directSafeStarter;
+  const rawResult = !armedForNextSign ? null
+    : personal ?? latestPrediction ?? unblockedDirectStarter;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
   const feedback = modelProblem
     ? activeLanguage === "asl"
@@ -189,6 +198,10 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
     interSignGate.lock();
+    if (result === directSafeStarter) {
+      blockedDirectStarter = result.label;
+      directStarterSeenAt = now;
+    }
     invalidatePrediction();
     candidateStreak = 0;
     if (activeLanguage === "asl") frames.length = 0;
