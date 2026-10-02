@@ -492,11 +492,20 @@ async function runTrial(cdp, trial, options, coldStart) {
   let firstAcceptedAt = null;
   let timedOut = false;
   let latest = await browserState(cdp);
+  const candidateSamples = new Map();
   const detectionCounts = { samples: 0, person: 0, hands: 0, face: 0, "upper body": 0 };
   while (Date.now() - startedAt < deadlineMs) {
     latest = await browserState(cdp);
     if (latest.harness?.error) throw new Error(latest.harness.error);
     if (latest.entries.length && firstAcceptedAt === null) firstAcceptedAt = Date.now();
+    if (latest.candidate) {
+      const gloss = normalizeGloss(latest.candidate);
+      const confidence = Number.isFinite(latest.candidateConfidence) ? latest.candidateConfidence : 0;
+      const previous = candidateSamples.get(gloss) ?? { gloss, samples: 0, max_confidence: 0 };
+      previous.samples += 1;
+      previous.max_confidence = Math.max(previous.max_confidence, confidence);
+      candidateSamples.set(gloss, previous);
+    }
     if (!latest.harness?.ended) {
       detectionCounts.samples += 1;
       for (const key of ["person", "hands", "face", "upper body"]) detectionCounts[key] += latest.detection?.[key] ? 1 : 0;
@@ -508,6 +517,9 @@ async function runTrial(cdp, trial, options, coldStart) {
   const first = latest.entries[0] ?? null;
   const predictedGloss = first?.gloss ? normalizeGloss(first.gloss) : null;
   const accepted = Boolean(predictedGloss);
+  const candidateHistory = [...candidateSamples.values()]
+    .sort((a, b) => b.max_confidence - a.max_confidence || b.samples - a.samples || a.gloss.localeCompare(b.gloss));
+  const expectedCandidate = trial.expectedGloss ? candidateSamples.get(trial.expectedGloss) ?? null : null;
   let outcome;
   if (trial.trialType === "no_sign") outcome = accepted ? "false_accept" : "correct_reject";
   else if (!accepted) outcome = "rejected";
@@ -539,6 +551,9 @@ async function runTrial(cdp, trial, options, coldStart) {
     },
     final_candidate: latest.candidate,
     final_candidate_confidence: latest.candidateConfidence,
+    expected_candidate_seen: Boolean(expectedCandidate),
+    expected_candidate_max_confidence: expectedCandidate?.max_confidence ?? null,
+    candidate_history: candidateHistory,
     predictions: latest.entries.map(entry => ({
       gloss: entry.gloss ? normalizeGloss(entry.gloss) : null,
       text: entry.text,
@@ -616,9 +631,9 @@ function markdownReport(records, summary, meta) {
   lines.push("", "## Failures", "");
   if (!failures.length) lines.push("No recognition failures were recorded in this fixture set.");
   else {
-    lines.push("| Fixture | Language | Expected | Predicted | Outcome | Confidence | Hand coverage | Latency | Startup |", "| --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |");
+    lines.push("| Fixture | Language | Expected | Predicted | Outcome | Confidence | Expected candidate peak | Hand coverage | Latency | Startup |", "| --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- |");
     for (const row of failures) {
-      lines.push(`| ${row.fixture_id} | ${row.language.toUpperCase()} | ${row.expected_gloss ?? "NO_SIGN"} | ${row.predicted_gloss ?? "—"} | ${row.outcome} | ${pct(row.confidence)} | ${pct(row.tracker?.hand_coverage)} | ${row.latency_ms == null ? "—" : `${row.latency_ms} ms`} | ${row.cold_start ? "cold" : "warm"} |`);
+      lines.push(`| ${row.fixture_id} | ${row.language.toUpperCase()} | ${row.expected_gloss ?? "NO_SIGN"} | ${row.predicted_gloss ?? "—"} | ${row.outcome} | ${pct(row.confidence)} | ${row.expected_candidate_max_confidence == null ? "—" : pct(row.expected_candidate_max_confidence)} | ${pct(row.tracker?.hand_coverage)} | ${row.latency_ms == null ? "—" : `${row.latency_ms} ms`} | ${row.cold_start ? "cold" : "warm"} |`);
     }
   }
   const confusions = summary.languages.flatMap(item => item.confusions.map(entry => ({ language: item.language, ...entry })));
@@ -628,9 +643,9 @@ function markdownReport(records, summary, meta) {
     lines.push("| Language | Confusion | Count |", "| --- | --- | ---: |");
     for (const item of confusions.sort((a, b) => b.count - a.count).slice(0, 25)) lines.push(`| ${item.language.toUpperCase()} | ${item.pair} | ${item.count} |`);
   }
-  lines.push("", "## Trial details", "", "| Fixture | Expected | First accepted | Outcome | Confidence | Hands | Person | Face | Pose | Candidate at end |", "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |");
+  lines.push("", "## Trial details", "", "| Fixture | Expected | First accepted | Outcome | Confidence | Expected candidate peak | Hands | Person | Face | Pose | Candidate at end |", "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |");
   for (const row of records) {
-    lines.push(`| ${row.fixture_id} | ${row.expected_gloss ?? "NO_SIGN"} | ${row.predicted_gloss ?? "—"} | ${row.outcome} | ${pct(row.confidence)} | ${pct(row.tracker?.hand_coverage)} | ${pct(row.tracker?.person_coverage)} | ${pct(row.tracker?.face_coverage)} | ${pct(row.tracker?.pose_coverage)} | ${String(row.final_candidate ?? "—").replaceAll("|", "\\|")} |`);
+    lines.push(`| ${row.fixture_id} | ${row.expected_gloss ?? "NO_SIGN"} | ${row.predicted_gloss ?? "—"} | ${row.outcome} | ${pct(row.confidence)} | ${row.expected_candidate_max_confidence == null ? "—" : pct(row.expected_candidate_max_confidence)} | ${pct(row.tracker?.hand_coverage)} | ${pct(row.tracker?.person_coverage)} | ${pct(row.tracker?.face_coverage)} | ${pct(row.tracker?.pose_coverage)} | ${String(row.final_candidate ?? "—").replaceAll("|", "\\|")} |`);
   }
   lines.push("", "Only metadata is written to this report. Source video remains local and is not uploaded by the evaluator.", "");
   return lines.join("\n");
@@ -745,6 +760,9 @@ async function main() {
             tracker: { samples: 0, person_coverage: 0, hand_coverage: 0, face_coverage: 0, pose_coverage: 0 },
             final_candidate: null,
             final_candidate_confidence: null,
+            expected_candidate_seen: false,
+            expected_candidate_max_confidence: null,
+            candidate_history: [],
             predictions: [],
             source_file: trial.sourceBasename,
             source_sha256: trial.videoSha256,
