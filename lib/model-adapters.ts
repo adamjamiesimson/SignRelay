@@ -149,19 +149,24 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
     id: "asl",
     shortName: "ASL",
     language: "American Sign Language",
-    status: "experimental",
-    modelFile: "Official WLASL2000 Pose-TGCN + MediaPipe vision + personal-DTW-v1",
-    automaticVocabularyCount: 2000,
-    vocabulary: ASL_VOCABULARY.map((entry) => entry.gloss),
-    inputFormat: "50 samples × 55 two-dimensional upper-body and hand landmarks",
-    sequenceLength: 50,
-    confidenceThreshold: 0.62,
-    decoder: "Quantised on-device WLASL2000 Pose-TGCN; personal templates and seven common-sign rules take priority",
-    postProcessing: "Cooldown, consensus smoothing and duplicate suppression",
-    version: "0.6.0-wlasl2000-pose-tgcn",
-    dataset: "Official WLASL2000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
+    // The installed WLASL/OpenPose research checkpoint remains in the repo for
+    // reproducibility, but automatic browser output is intentionally disabled.
+    // A frozen ASLLVD cross-dataset benchmark scored 0% top-1 even with
+    // rejection gates removed, so exposing its 2,000 labels as usable live
+    // recognition would be misleading. Personal on-device calibration remains.
+    status: "personal",
+    modelFile: "Automatic shared ASL model disabled; on-device personal landmark recognizer available",
+    automaticVocabularyCount: 0,
+    vocabulary: PERSONAL_STARTER_CONCEPTS,
+    inputFormat: "24 normalised hand, face and upper-body landmark samples per recorded personal example",
+    sequenceLength: 24,
+    confidenceThreshold: 0.76,
+    decoder: "Signer-specific dynamic-time-warping templates stored only on this device",
+    postProcessing: "Confidence gate, competing-sign margin, temporal consensus and duplicate suppression",
+    version: "personal-dtw-v2-asl-safe-mode",
+    dataset: "No shared ASL model is active. The WLASL2000 research checkpoint is retained only for reproducibility after failing the frozen live-domain cross-dataset gate.",
     speechLocale: "en-US",
-    summary: "A genuine local 2,000-sign ASL isolated-sign model. The live MediaPipe adapter remains experimental and is not unrestricted ASL translation.",
+    summary: "Shared automatic ASL recognition is temporarily disabled after external video evaluation exposed unsafe cross-domain errors. You can still teach signs privately on this device.",
   },
   lse: {
     id: "lse",
