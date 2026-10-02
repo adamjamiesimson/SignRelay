@@ -3,12 +3,10 @@
 import { useEffect, useState } from "react";
 import {
   LANGUAGE_LIST,
-  MODEL_ADAPTERS,
   type LanguageId,
 } from "@/lib/model-adapters";
 
-const AUTOMATIC_IDS: LanguageId[] = ["asl", "bsl", "isl", "lse", "rsl", "bdsl", "psl"];
-const automaticLanguages = AUTOMATIC_IDS.map((id) => MODEL_ADAPTERS[id]);
+const automaticLanguages = LANGUAGE_LIST.filter((language) => language.status === "experimental");
 
 function capabilityWidth(language: (typeof automaticLanguages)[number]) {
   const count = language.automaticVocabularyCount || 0;
@@ -129,8 +127,8 @@ function HeroPreview() {
     <div className="figma-preview-card figma-preview-floating" aria-label="Animated illustrative SignRelay recognition demo">
       <div className="figma-preview-camera">
         <div className="figma-preview-hud">
-          <span><i /> LIVE · ASL</span>
-          <strong>RECOGNIZING</strong>
+          <span><i /> ILLUSTRATIVE DEMO</span>
+          <strong>SAMPLE UI</strong>
         </div>
         <div className={`figma-preview-mesh-wrap ${phase}`}>
           <DemoTrackingOverlay tracking={tracking} />
@@ -176,7 +174,7 @@ function HowItWorks() {
     {
       num: "02",
       title: "Select your sign language",
-      body: "Choose from seven automatic research recognizers, with additional language workspaces available while more models are in development.",
+      body: `Choose from ${automaticLanguages.length} automatic research recognizers, with additional language workspaces available while more models are in development.`,
     },
     {
       num: "03",
@@ -211,7 +209,7 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
         <div className="figma-language-heading">
           <div>
             <h2>Supported languages</h2>
-            <p>7 automatic research recognizers · {LANGUAGE_LIST.length} total workspaces</p>
+            <p>{automaticLanguages.length} automatic research recognizers · {LANGUAGE_LIST.length} total workspaces</p>
           </div>
           <a href="/languages">View all languages</a>
         </div>
@@ -268,13 +266,13 @@ export function FigmaMakeLanding({ selected, onSelect, onStart }: Props) {
         <div className="figma-hero-inner">
           <div className="figma-hero-copy">
             <h1>Sign freely.<br /><span>Connect<br />naturally.</span></h1>
-            <p>SignRelay recognizes supported sign language through your camera. Seven sign languages currently include automatic research recognition, with processing kept in your browser.</p>
+            <p>SignRelay recognizes supported sign language through your camera. {automaticLanguages.length} sign languages currently include automatic research recognition, with processing kept in your browser.</p>
             <div className="figma-hero-actions">
               <button className="figma-primary" onClick={onStart}>Start translating</button>
               <a className="figma-secondary" href="#languages">Explore languages</a>
             </div>
             <div className="figma-hero-stats">
-              <div><strong>7</strong><span>Automatic languages</span><small>Research recognition</small></div>
+              <div><strong>{automaticLanguages.length}</strong><span>Automatic languages</span><small>Research recognition</small></div>
               <div><strong>Local</strong><span>Processing</span><small>Camera stays on-device</small></div>
             </div>
           </div>
