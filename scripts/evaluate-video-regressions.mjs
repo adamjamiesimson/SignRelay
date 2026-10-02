@@ -492,11 +492,28 @@ async function runTrial(cdp, trial, options, coldStart) {
   let firstAcceptedAt = null;
   let timedOut = false;
   let latest = await browserState(cdp);
+  const candidate_timeline = [];
+  const feedback_timeline = [];
+  let previousCandidateKey = "";
+  let previousFeedback = "";
   const detectionCounts = { samples: 0, person: 0, hands: 0, face: 0, "upper body": 0 };
   while (Date.now() - startedAt < deadlineMs) {
     latest = await browserState(cdp);
     if (latest.harness?.error) throw new Error(latest.harness.error);
     if (latest.entries.length && firstAcceptedAt === null) firstAcceptedAt = Date.now();
+    const candidateKey = `${latest.candidate ?? ""}|${latest.candidateConfidence ?? ""}`;
+    if (candidateKey !== previousCandidateKey) {
+      previousCandidateKey = candidateKey;
+      candidate_timeline.push({
+        at_ms: Date.now() - startedAt,
+        candidate: latest.candidate,
+        confidence: latest.candidateConfidence,
+      });
+    }
+    if (latest.feedback && latest.feedback !== previousFeedback) {
+      previousFeedback = latest.feedback;
+      feedback_timeline.push({ at_ms: Date.now() - startedAt, feedback: latest.feedback });
+    }
     if (!latest.harness?.ended) {
       detectionCounts.samples += 1;
       for (const key of ["person", "hands", "face", "upper body"]) detectionCounts[key] += latest.detection?.[key] ? 1 : 0;
@@ -539,6 +556,8 @@ async function runTrial(cdp, trial, options, coldStart) {
     },
     final_candidate: latest.candidate,
     final_candidate_confidence: latest.candidateConfidence,
+    candidate_timeline,
+    feedback_timeline,
     predictions: latest.entries.map(entry => ({
       gloss: entry.gloss ? normalizeGloss(entry.gloss) : null,
       text: entry.text,
