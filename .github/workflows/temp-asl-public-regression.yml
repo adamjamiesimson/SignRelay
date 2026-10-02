@@ -31,8 +31,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
+          python -m pip install --disable-pip-version-check yt-dlp
           google-chrome --version || chromium --version
           ffmpeg -version | head -1
+          yt-dlp --version
 
       - name: Fetch uncommitted public regression clips
         run: node scripts/fetch-asl-public-regression.mjs
