@@ -11,9 +11,17 @@ vi.mock("../lib/isl263-runtime", () => ({ recognizeIsl263: mocks.isl }));
 vi.mock("../lib/lse300-runtime", () => ({ recognizeLse300: mocks.lse }));
 vi.mock("../lib/psl776-runtime", () => ({ recognizePsl776: mocks.psl }));
 vi.mock("../lib/asl100-runtime", () => ({
-  analyzeGenericSignMotion: () => ({ ready: mocks.motion(), reason: mocks.motion() ? "ready" : "idle" }),
+  analyzeGenericSignMotion: () => {
+    const ready = mocks.motion();
+    return { ready, reason: ready ? "ready" : "idle" };
+  },
 }));
-vi.mock("../lib/sign-motion", () => ({ analyzeSignMotion: (sequence: VisionFrame[]) => ({ ready: mocks.motion(), sequence, reason: "idle" }) }));
+vi.mock("../lib/sign-motion", () => ({
+  analyzeSignMotion: (sequence: VisionFrame[]) => {
+    const ready = mocks.motion();
+    return { ready, sequence, reason: ready ? "ready" : "idle" };
+  },
+}));
 vi.mock("../lib/personalized-recognition", () => ({
   recognizePersonalTemplate: mocks.personal,
   templatesForLanguage: (templates: unknown[]) => templates,
@@ -104,6 +112,23 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     mocks[language].mockImplementation(() => new Promise(() => {}));
     await frames(50);
     expect(confirmations()).toHaveLength(1);
+  });
+
+  it("requires an idle separator before a different ASL prediction can become a second word", async () => {
+    await worker.onmessage({ data: { type: "templates", language: "asl", templates: [] } });
+    mocks.asl.mockResolvedValue(prediction);
+    await frames(14);
+    expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+
+    mocks.asl.mockResolvedValue({ ...prediction, label: "CHAIR", text: "Chair" });
+    await frames(20);
+    expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+
+    mocks.motion.mockReturnValue(false);
+    await frames(4);
+    mocks.motion.mockReturnValue(true);
+    await frames(14);
+    expect(confirmations().map(result => result.gloss)).toEqual(["BOOK", "CHAIR"]);
   });
 
   it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "psl", "uaesl", "vsl"] as const)("preserves personal recognition for %s", async language => {

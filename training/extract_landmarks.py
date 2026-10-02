@@ -40,10 +40,13 @@ def flatten(points, indices: list[int] | None = None, include_visibility: bool =
 
 def extract_video(video_path: Path, hand, face, pose, sample_fps: float) -> tuple[np.ndarray, np.ndarray]:
     capture = cv2.VideoCapture(str(video_path))
+    if not capture.isOpened():
+        raise RuntimeError(f"Could not open video: {video_path}")
     source_fps = capture.get(cv2.CAP_PROP_FPS) or 30.0
     stride = max(1, round(source_fps / sample_fps))
     frames, mask = [], []
     frame_index = 0
+    last_timestamp = -1
     while True:
         ok, bgr = capture.read()
         if not ok:
@@ -53,7 +56,9 @@ def extract_video(video_path: Path, hand, face, pose, sample_fps: float) -> tupl
             continue
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
         image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-        timestamp = int(capture.get(cv2.CAP_PROP_POS_MSEC))
+        raw_timestamp = int(capture.get(cv2.CAP_PROP_POS_MSEC))
+        timestamp = max(raw_timestamp, last_timestamp + 1)
+        last_timestamp = timestamp
         hand_result = hand.detect_for_video(image, timestamp)
         face_result = face.detect_for_video(image, timestamp)
         pose_result = pose.detect_for_video(image, timestamp)
@@ -73,6 +78,8 @@ def extract_video(video_path: Path, hand, face, pose, sample_fps: float) -> tupl
         mask.append(1.0)
         frame_index += 1
     capture.release()
+    if not frames:
+        raise RuntimeError(f"No sampled frames were extracted from video: {video_path}")
     return np.asarray(frames, dtype=np.float32), np.asarray(mask, dtype=np.float32)
 
 
@@ -85,6 +92,8 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("artifacts/features"))
     parser.add_argument("--sample-fps", type=float, default=12.0)
     args = parser.parse_args()
+    if not np.isfinite(args.sample_fps) or args.sample_fps <= 0:
+        raise ValueError("--sample-fps must be a positive finite number")
     args.output.mkdir(parents=True, exist_ok=True)
 
     base = mp.tasks.BaseOptions

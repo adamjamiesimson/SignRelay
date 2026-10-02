@@ -12,6 +12,7 @@ import { recognizeBsl1064 } from "@/lib/bsl1064-runtime";
 import { recognizeLse300 } from "@/lib/lse300-runtime";
 import { recognizePsl776 } from "@/lib/psl776-runtime";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
+import { InterSignGate } from "@/lib/inter-sign-gate";
 
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
@@ -36,6 +37,7 @@ let modelProblem = false;
 let retryAfter = 0;
 let blockedStarter: string | null = null;
 let starterSeenAt = 0;
+const interSignGate = new InterSignGate(260);
 
 function invalidatePrediction() {
   latestPrediction = null;
@@ -59,6 +61,7 @@ function resetSession() {
   starterSeenAt = 0;
   modelProblem = false;
   retryAfter = 0;
+  interSignGate.reset();
 }
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
@@ -91,8 +94,9 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     && starter?.label !== "YES") invalidatePrediction();
   const motion = activeLanguage === "asl" ? analyzeSignMotion(frames)
     : { ...analyzeGenericSignMotion(frames), sequence: frames };
+  const armedForNextSign = interSignGate.update(now, motion.reason);
 
-  if (!motion.ready) invalidatePrediction();
+  if (!armedForNextSign || !motion.ready) invalidatePrediction();
   else {
     if (latestPrediction && now - predictionTimestamp > MAX_PREDICTION_AGE_MS) invalidatePrediction();
     const language = activeLanguage;
@@ -128,13 +132,14 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   const direct = personal ?? starter;
   if (direct?.label === blockedStarter) starterSeenAt = now;
   else if (now - starterSeenAt > 500) blockedStarter = null;
-  const rawResult = direct?.label === blockedStarter ? null : direct ?? latestPrediction;
+  const rawResult = !armedForNextSign || direct?.label === blockedStarter ? null : direct ?? latestPrediction;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
   const feedback = modelProblem
     ? activeLanguage === "asl"
       ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly…"
       : "The research model could not run. Saved personal signs are still available. Retrying shortly…"
-    : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically."
+    : !armedForNextSign ? "Pause briefly before the next sign."
+      : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically."
       : motion.reason === "moving" ? "Following your movement…"
         : result ? "Checking your sign…" : "Ready. Sign naturally, then pause briefly between words.";
   self.postMessage({ type: "analysis", session: event.data.session, frameId: event.data.frameId,
@@ -164,6 +169,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
       confidence: result.confidence, timestamp: Date.now(),
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
+    interSignGate.lock();
     if (activeLanguage === "asl" && !candidateIsModel) {
       blockedStarter = result.label;
       starterSeenAt = now;

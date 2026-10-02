@@ -56,7 +56,9 @@ cp evaluation/video-manifest.example.jsonl evaluation/video-manifest.local.jsonl
 # Put labelled clips under evaluation/videos/ and edit the manifest paths/glosses.
 ```
 
-Each sign clip should appear once per trial with its expected gloss. Add explicit no-sign/background clips too; do not loop or retry a clip until SignRelay produces the expected answer.
+Each sign clip should appear once per trial with its expected gloss. Add explicit no-sign/background clips too; do not loop or retry a clip until SignRelay produces the expected answer. Use stable pseudonymous `signer_id` values, mark genuinely held-out fixtures with `"split":"test"`, and record a short provenance label in `source`.
+
+The evaluator computes a SHA-256 for every local clip, rejects duplicate fixture IDs and duplicate video bytes, and fingerprints the full fixture set in the generated report. This makes benchmark changes explicit instead of letting the same easy clip silently count more than once.
 
 ### Run it
 
@@ -67,11 +69,24 @@ npm run eval:video -- evaluation/video-manifest.local.jsonl
 
 By default the evaluator writes:
 
-- `work/video-evaluation/results.jsonl` — one metadata row per fixture;
-- `work/video-evaluation/report.md` — per-language accuracy, coverage, accepted precision, no-sign false-accept rate, tracking coverage, failures, and common confusions.
+- `work/video-evaluation/results.jsonl` — one metadata row per fixture, including the source clip SHA-256, declared evaluation split, and provenance label;
+- `work/video-evaluation/report.md` — fixture-set SHA-256 plus per-language accuracy, coverage, accepted precision, no-sign false-accept rate, tracking coverage, failures, and common confusions.
 
 Useful options include `--language asl`, `--limit 20`, `--tail 5000`, and `--strict`. With `--strict`, a wrong sign, rejection, extra accepted word, or no-sign false accept produces a non-zero exit code, which makes the runner usable as a regression gate once a trusted fixture set exists.
 
 The first trial after loading each language is labelled **cold**; later trials are **warm** so model-startup effects are visible rather than mixed together.
 
 Automated replay is not a substitute for the signer-independent live-camera protocol above. A fixed clip set is excellent for detecting regressions, but it does not measure how well SignRelay generalises to new people, cameras, signing styles, backgrounds, or real interaction timing.
+
+## Practical ASL release gate
+
+Before describing the ASL browser recognizer as anything stronger than experimental, freeze a held-out evaluation set **before** tuning on its results. A practical first gate for the current prototype is:
+
+1. Evaluate the seven explicit common-sign fallbacks (HELLO, NO, YES, PLEASE, SORRY, THANK YOU, I LOVE YOU) with at least four consenting held-out signers and multiple repetitions.
+2. Add ordinary non-sign hand activity: resting, typing, pointing, adjusting clothing/hair, entering/leaving frame, and conversational gestures. Do not manufacture the no-sign class by chopping up sign clips.
+3. Include at least two lighting/background conditions and more than one camera/device where possible.
+4. Keep one frozen regression subset that is never used to tune thresholds or rules. New failure clips may be added to a separate development set, but the frozen set must stay unchanged so before/after results remain comparable.
+5. Choose the pass/fail thresholds before the final run. For an assistive prototype, prioritize **accepted precision and no-sign false-accept rate** over forcing high coverage: a rejection is visible and recoverable, while a confident wrong word can silently alter meaning.
+6. Report the exact number of signers, trials, covered glosses, device/condition breakdown, fixture-set hash, accepted precision, coverage, signed-trial accuracy, and no-sign false-accept rate. Do not extrapolate a small targeted benchmark into a claimed accuracy for all 2,000 ASL classes.
+
+The 2,000-class WLASL-derived model and the seven rule-based fallbacks should be reported separately where possible. Passing the common-sign gate establishes reliability for those tested interactions only; it does not validate unrestricted ASL translation.

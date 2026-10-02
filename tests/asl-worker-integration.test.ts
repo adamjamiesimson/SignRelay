@@ -12,6 +12,13 @@ async function feed(frames: VisionFrame[]) {
     await Promise.resolve();
   }
 }
+function quietSeparator(start: number, duration = 300, count = 7) {
+  return makeSign("IDLE", { duration, count }).map(frame => ({
+    ...frame,
+    timestamp: start + frame.timestamp - 1000,
+    hands: [],
+  }));
+}
 beforeEach(async () => {
   vi.resetModules();
   mocks.model.mockReset().mockResolvedValue(null);
@@ -25,9 +32,10 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     await feed(makeSign(sign));
     expect(confirmations().map(result => result.gloss)).toEqual([sign]);
   });
-  it("recognizes successive different signs after consuming the first movement", async () => {
+  it("recognizes successive different signs after a brief real separator", async () => {
     await feed(makeSign("NO"));
-    await feed(makeSign("HELLO").map(frame => ({ ...frame, timestamp: frame.timestamp + 950 })));
+    await feed(quietSeparator(1950));
+    await feed(makeSign("HELLO").map(frame => ({ ...frame, timestamp: frame.timestamp + 1350 })));
     expect(confirmations().map(result => result.gloss)).toEqual(["NO", "HELLO"]);
   });
   it("does not repeatedly speak a held I LOVE YOU", async () => {
@@ -86,13 +94,17 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
       vi.useRealTimers();
     }
   });
-  it("keeps recognizing successive signs throughout a long session", async () => {
+  it("keeps recognizing separated successive signs throughout a long session", async () => {
     const signs = ["NO", "HELLO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const;
     const expected: string[] = [];
+    let previousEnd = 0;
     for (let repetition = 0; repetition < 60; repetition++) {
       const sign = signs[repetition % signs.length];
       expected.push(sign);
-      await feed(makeSign(sign).map(frame => ({ ...frame, timestamp: frame.timestamp + repetition * 1600 })));
+      const signFrames = makeSign(sign).map(frame => ({ ...frame, timestamp: frame.timestamp + repetition * 1600 }));
+      if (previousEnd) await feed(quietSeparator(previousEnd + 50));
+      await feed(signFrames);
+      previousEnd = signFrames.at(-1)!.timestamp;
     }
     expect(confirmations().map(result => result.gloss)).toEqual(expected);
   });

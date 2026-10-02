@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { createReadStream, existsSync } from "node:fs";
 import { copyFile, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, extname, join, resolve } from "node:path";
@@ -77,9 +78,17 @@ function normalizeGloss(value) {
   return String(value ?? "").trim().replace(/\s+/g, " ").toUpperCase();
 }
 
+async function fileSha256(path) {
+  const hash = createHash("sha256");
+  for await (const chunk of createReadStream(path)) hash.update(chunk);
+  return hash.digest("hex");
+}
+
 async function readManifest(path, options) {
   const text = await readFile(path, "utf8");
   const rows = [];
+  const seenIds = new Set();
+  const seenVideoHashes = new Map();
   for (const [zeroIndex, rawLine] of text.split(/\r?\n/).entries()) {
     const line = rawLine.trim();
     if (!line || line.startsWith("#")) continue;
@@ -118,6 +127,14 @@ async function readManifest(path, options) {
     }
     const id = String(raw.id ?? `${language}-${zeroIndex + 1}`).trim();
     if (!id) throw new Error(`Manifest line ${zeroIndex + 1}: id cannot be empty`);
+    if (seenIds.has(id)) throw new Error(`Manifest line ${zeroIndex + 1}: duplicate fixture id ${JSON.stringify(id)}`);
+    seenIds.add(id);
+    const videoSha256 = await fileSha256(videoPath);
+    const duplicateFixture = seenVideoHashes.get(videoSha256);
+    if (duplicateFixture) {
+      throw new Error(`Manifest line ${zeroIndex + 1}: video duplicates fixture ${JSON.stringify(duplicateFixture)} (sha256 ${videoSha256})`);
+    }
+    seenVideoHashes.set(videoSha256, id);
     rows.push({
       manifestIndex: zeroIndex,
       id,
@@ -126,9 +143,12 @@ async function readManifest(path, options) {
       expectedGloss,
       videoPath,
       sourceBasename: basename(videoPath),
+      videoSha256,
       condition: String(raw.condition ?? "unspecified"),
       device: String(raw.device ?? "browser-video-fixture"),
       signerId: raw.signer_id == null ? null : String(raw.signer_id),
+      evaluationSplit: String(raw.split ?? raw.dataset_split ?? "unspecified"),
+      source: raw.source == null ? null : String(raw.source),
       notes: raw.notes == null ? null : String(raw.notes),
     });
   }
@@ -525,6 +545,9 @@ async function runTrial(cdp, trial, options, coldStart) {
       confidence: entry.confidence,
     })),
     source_file: trial.sourceBasename,
+    source_sha256: trial.videoSha256,
+    evaluation_split: trial.evaluationSplit,
+    source: trial.source,
     notes: trial.notes,
   };
 }
@@ -576,6 +599,7 @@ function markdownReport(records, summary, meta) {
     "",
     `Generated: ${new Date().toISOString()}`,
     `Manifest: \`${meta.manifestBasename}\``,
+    `Fixture set SHA-256: \`${meta.fixtureSetSha256}\``,
     "",
     "> This is a deterministic replay regression check through the real browser camera/MediaPipe/recognition path. It is not a substitute for signer-independent live-camera evaluation.",
     "",
@@ -639,6 +663,9 @@ async function main() {
   if (options.language && !SUPPORTED_LANGUAGES.has(options.language)) usage(`--language must be one of: ${[...SUPPORTED_LANGUAGES.keys()].join(", ")}`);
   const manifestPath = resolve(args._[0]);
   const manifest = await readManifest(manifestPath, options);
+  const fixtureSetSha256 = createHash("sha256").update(manifest.map(trial =>
+    [trial.id, trial.language, trial.trialType, trial.expectedGloss ?? "NO_SIGN", trial.videoSha256].join("\t")
+  ).join("\n")).digest("hex");
   const chromePath = detectChrome(options.chrome);
   if (!chromePath) throw new Error("Chrome/Chromium was not found. Install Chrome/Chromium or pass --chrome /path/to/executable.");
   const exportIndex = resolve("out/index.html");
@@ -720,6 +747,9 @@ async function main() {
             final_candidate_confidence: null,
             predictions: [],
             source_file: trial.sourceBasename,
+            source_sha256: trial.videoSha256,
+            evaluation_split: trial.evaluationSplit,
+            source: trial.source,
             notes: trial.notes,
             error: message,
           };
@@ -738,7 +768,10 @@ async function main() {
     await mkdir(dirname(options.output), { recursive: true });
     await mkdir(dirname(options.report), { recursive: true });
     await writeFile(options.output, records.map(row => JSON.stringify(row)).join("\n") + "\n", "utf8");
-    await writeFile(options.report, markdownReport(records, summary, { manifestBasename: basename(manifestPath) }), "utf8");
+    await writeFile(options.report, markdownReport(records, summary, {
+      manifestBasename: basename(manifestPath),
+      fixtureSetSha256,
+    }), "utf8");
 
     console.log("\nSummary");
     for (const item of summary.languages) {
