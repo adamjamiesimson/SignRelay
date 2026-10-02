@@ -138,8 +138,12 @@ function loadModel() {
 export async function recognizeAsl1000(sequence: VisionFrame[]): Promise<Asl1000Prediction | null> {
   if (sequence.length < 6) return null;
   const model = await loadModel();
-  const input = prepareTgcnInput(sequence, model.manifest.sequenceLength);
-  const logits = await runMaterialisedTgcnCooperatively(model, input);
+  const inputs = prepareTgcnInputs(sequence, model.manifest.sequenceLength);
+  const logits = new Float32Array(model.manifest.classes);
+  for (const input of inputs) {
+    const view = await runMaterialisedTgcnCooperatively(model, input);
+    for (let index = 0; index < logits.length; index += 1) logits[index] += view[index] / inputs.length;
+  }
   const probabilities = softmax(logits);
   const [best, runnerUp] = topTwo(probabilities);
   const confidence = probabilities[best];
@@ -149,18 +153,75 @@ export async function recognizeAsl1000(sequence: VisionFrame[]): Promise<Asl1000
   return { label, text: title(label), confidence, margin };
 }
 
+/**
+ * Reconstruct a sparse live-camera sequence at approximately the 25 fps cadence
+ * used by the WLASL source videos before applying the checkpoint's published
+ * temporal crop/pad convention. This preserves sign duration instead of
+ * stretching every movement to exactly 50 samples.
+ */
+export function resampleTgcnTimeline(sequence: VisionFrame[], fps = 25) {
+  if (sequence.length <= 1 || !Number.isFinite(fps) || fps <= 0) return [...sequence];
+  const frames = sequence.filter((frame, index, all) => Number.isFinite(frame.timestamp)
+    && (index === 0 || frame.timestamp > all[index - 1].timestamp));
+  if (frames.length <= 1) return [...sequence];
+  const start = frames[0].timestamp;
+  const end = frames.at(-1)!.timestamp;
+  const span = end - start;
+  if (!(span > 0)) return frames;
+  const count = Math.min(200, Math.max(2, Math.round(span / (1000 / fps)) + 1));
+  const result: VisionFrame[] = [];
+  let source = 0;
+  for (let index = 0; index < count; index += 1) {
+    const target = count === 1 ? end : start + span * index / (count - 1);
+    while (source + 1 < frames.length
+      && Math.abs(frames[source + 1].timestamp - target) <= Math.abs(frames[source].timestamp - target)) source += 1;
+    result.push(frames[source]);
+  }
+  return result;
+}
+
+/** Match WLASL's official test-time 50-frame pad/crop views. */
+export function tgcnTemporalFrameIndices(frameCount: number, sequenceLength = 50) {
+  if (frameCount <= 0 || sequenceLength <= 0) return [] as number[][];
+  if (frameCount <= sequenceLength) {
+    const indices = Array.from({ length: frameCount }, (_, index) => index);
+    while (indices.length < sequenceLength) indices.push(frameCount - 1);
+    return [indices];
+  }
+  const copies = 4;
+  if (sequenceLength * copies < frameCount) {
+    const middle = Math.floor((frameCount - 1) / 2);
+    const start = Math.max(0, middle - Math.floor(sequenceLength * copies / 2));
+    return Array.from({ length: copies }, (_, copy) =>
+      Array.from({ length: sequenceLength }, (_, index) => start + copy * sequenceLength + index));
+  }
+  const stride = Math.floor((frameCount - sequenceLength) / (copies - 1));
+  return Array.from({ length: copies }, (_, copy) =>
+    Array.from({ length: sequenceLength }, (_, index) => copy * stride + index));
+}
+
+export function prepareTgcnInputs(sequence: VisionFrame[], sequenceLength = 50) {
+  if (!sequence.length) {
+    const empty = new Float32Array(55 * sequenceLength * 2);
+    empty.fill(-1);
+    return [empty];
+  }
+  const canonical = resampleTgcnTimeline(sequence);
+  const views = tgcnTemporalFrameIndices(canonical.length, sequenceLength);
+  return views.map(indices => packTgcnFrames(indices.map(index => canonical[index]), sequenceLength));
+}
+
+/** Backwards-compatible first-view helper used by low-level tests/tools. */
 export function prepareTgcnInput(sequence: VisionFrame[], sequenceLength = 50) {
+  return prepareTgcnInputs(sequence, sequenceLength)[0];
+}
+
+function packTgcnFrames(sequence: VisionFrame[], sequenceLength: number) {
   const inputFeatures = sequenceLength * 2;
   const result = new Float32Array(55 * inputFeatures);
-  if (!sequence.length) {
-    result.fill(-1);
-    return result;
-  }
   for (let targetFrame = 0; targetFrame < sequenceLength; targetFrame += 1) {
-    const sourceIndex = sequenceLength === 1
-      ? sequence.length - 1
-      : Math.round(targetFrame * (sequence.length - 1) / (sequenceLength - 1));
-    const points = openPosePoints(sequence[sourceIndex]);
+    const frame = sequence[Math.min(targetFrame, sequence.length - 1)];
+    const points = openPosePoints(frame);
     for (let node = 0; node < points.length; node += 1) {
       const point = points[node];
       const offset = node * inputFeatures + targetFrame * 2;
