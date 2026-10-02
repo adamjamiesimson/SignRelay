@@ -30,6 +30,10 @@ describe("common ASL temporal rules (synthetic regressions, not measured accurac
     expect(recognizeAslStarter(makeSign("IDLE"))).toBeNull();
     expect(recognizeAslStarter(makeSign("IDLE", { jitter: 0.003 }))).toBeNull();
   });
+  it("does not call a low lateral open-hand movement HELLO", () => {
+    const frames = makeSign("HELLO", { shiftY: 0.45 });
+    expect(recognizeAslStarter(frames)?.label).not.toBe("HELLO");
+  });
   it("does not replay a wave after the hand disappears", () => {
     const frames = makeSign("HELLO"); frames.at(-1)!.hands = [];
     expect(recognizeAslStarter(frames)).toBeNull();
