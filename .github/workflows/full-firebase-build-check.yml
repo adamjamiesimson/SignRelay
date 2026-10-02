@@ -1,0 +1,31 @@
+name: Full Firebase build check
+
+on:
+  push:
+    branches:
+      - feature/pretrained-language-expansion
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-firebase-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run build:firebase
+      - run: test -f out/index.html
+      - name: Record export summary
+        run: |
+          du -sh out
+          find out -type f | wc -l
