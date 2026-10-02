@@ -34,6 +34,14 @@ describe("common ASL temporal rules (synthetic regressions, not measured accurac
     const frames = makeSign("HELLO", { shiftY: 0.45 });
     expect(recognizeAslStarter(frames)?.label).not.toBe("HELLO");
   });
+  it("does not call a curved one-way hand movement THANK YOU", () => {
+    const frames = makeSign("THANK YOU");
+    for (const frame of frames) {
+      const hand = frame.hands[0];
+      hand.landmarks[20] = { ...hand.landmarks[18], y: hand.landmarks[18].y + 0.01 };
+    }
+    expect(recognizeAslStarter(frames)?.label).not.toBe("THANK YOU");
+  });
   it("does not replay a wave after the hand disappears", () => {
     const frames = makeSign("HELLO"); frames.at(-1)!.hands = [];
     expect(recognizeAslStarter(frames)).toBeNull();
