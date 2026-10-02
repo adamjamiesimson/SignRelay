@@ -56,7 +56,7 @@ def fetch_text(url: str) -> str:
 
 
 def rows_from_csv(text: str) -> list[dict[str, str]]:
-    return [dict(row) for row in csv.DictReader(io.StringIO(text))]
+    return [dict(row) for row in csv.DictReader(io.StringIO(text, newline=""))]
 
 
 def canonical_gloss(value: str) -> str:
