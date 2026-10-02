@@ -38,7 +38,8 @@ describe("fist motion discrimination (synthetic regressions)", () => {
     { radiusX: 0.02, radiusY: 0.07, startAngle: Math.PI / 2, clockwise: false },
     { radiusX: 0.03, radiusY: 0.07, side: "Left" as const, scale: 0.65, jitter: 0.001 },
     { radiusX: 0.025, radiusY: 0.06, duration: 2400, count: 9 },
-  ])("recognizes an uneven chest circle without prematurely saying YES: %j", async options => {
+  ])("validates model SORRY from an uneven chest circle without prematurely saying YES: %j", async options => {
+    mocks.model.mockResolvedValue({ label: "SORRY", text: "Sorry", confidence: 0.94, margin: 0.5 });
     const frames = makeFistMotion("sorry", options);
     for (let end = 1; end <= frames.length; end++) {
       expect(recognizeAslStarter(frames.slice(0, end))?.label, `frame ${end}`).not.toBe("YES");
@@ -52,7 +53,8 @@ describe("fist motion discrimination (synthetic regressions)", () => {
     { side: "Left" as const, scale: 0.65, jitter: 0.001, pitchChange: 0.55 },
     { duration: 450, count: 13 },
     { duration: 2400, count: 9 },
-  ])("recognizes a completed wrist nod even when the wrist stays in place: %j", async options => {
+  ])("validates model YES from a completed wrist nod even when the wrist stays in place: %j", async options => {
+    mocks.model.mockResolvedValue({ label: "YES", text: "Yes", confidence: 0.94, margin: 0.5 });
     const frames = makeFistMotion("nod", options);
     expect(recognizeAslStarter(frames)?.label).toBe("YES");
     await feed(frames);
@@ -81,9 +83,10 @@ describe("fist motion discrimination (synthetic regressions)", () => {
     await feed(frames);
     expect(confirmations()).toEqual([]);
   });
-  it("recognizes a later nod after rejecting fist preparation", async () => {
+  it("recognizes a later validated model nod after rejecting fist preparation", async () => {
     await feed(makeFistMotion("close"));
     expect(confirmations()).toEqual([]);
+    mocks.model.mockResolvedValue({ label: "YES", text: "Yes", confidence: 0.94, margin: 0.5 });
     await feed(makeFistMotion("nod").map(frame => ({ ...frame, timestamp: frame.timestamp + 1650 })));
     expect(confirmations()).toEqual(["YES"]);
   });
