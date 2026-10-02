@@ -14,10 +14,13 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import io
 import json
 import random
 import shutil
+import urllib.request
 import zipfile
+from collections import OrderedDict
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
@@ -61,6 +64,92 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+class HTTPRangeFile(io.RawIOBase):
+    """Small seekable HTTP reader for ZIP central-directory/random access."""
+
+    def __init__(self, url: str, block_size: int = 1024 * 1024, cache_blocks: int = 32):
+        self.url = url
+        self.block_size = block_size
+        self.cache_blocks = cache_blocks
+        request = urllib.request.Request(url, method="HEAD")
+        with urllib.request.urlopen(request, timeout=60) as response:
+            length = response.headers.get("Content-Length")
+            accept_ranges = response.headers.get("Accept-Ranges", "")
+            self.etag = response.headers.get("ETag")
+        if not length:
+            raise RuntimeError("Remote archive did not provide Content-Length")
+        if "bytes" not in accept_ranges.lower():
+            raise RuntimeError("Remote archive does not advertise byte-range support")
+        self.length = int(length)
+        self.position = 0
+        self.cache: OrderedDict[int, bytes] = OrderedDict()
+
+    def readable(self) -> bool:
+        return True
+
+    def seekable(self) -> bool:
+        return True
+
+    def tell(self) -> int:
+        return self.position
+
+    def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
+        if whence == io.SEEK_SET:
+            target = offset
+        elif whence == io.SEEK_CUR:
+            target = self.position + offset
+        elif whence == io.SEEK_END:
+            target = self.length + offset
+        else:
+            raise ValueError(f"Unsupported whence: {whence}")
+        if target < 0:
+            raise OSError("Negative seek position")
+        self.position = min(target, self.length)
+        return self.position
+
+    def _block(self, index: int) -> bytes:
+        if index in self.cache:
+            value = self.cache.pop(index)
+            self.cache[index] = value
+            return value
+        start = index * self.block_size
+        if start >= self.length:
+            return b""
+        end = min(self.length - 1, start + self.block_size - 1)
+        request = urllib.request.Request(self.url, headers={"Range": f"bytes={start}-{end}"})
+        with urllib.request.urlopen(request, timeout=120) as response:
+            if response.status != 206:
+                raise RuntimeError(f"Expected HTTP 206 for range request, got {response.status}")
+            value = response.read()
+            content_range = response.headers.get("Content-Range", "")
+            if not content_range.startswith(f"bytes {start}-"):
+                raise RuntimeError(f"Unexpected Content-Range: {content_range!r}")
+        self.cache[index] = value
+        while len(self.cache) > self.cache_blocks:
+            self.cache.popitem(last=False)
+        return value
+
+    def read(self, size: int = -1) -> bytes:
+        if self.position >= self.length:
+            return b""
+        if size is None or size < 0:
+            size = self.length - self.position
+        size = min(size, self.length - self.position)
+        chunks = []
+        remaining = size
+        while remaining:
+            block_index = self.position // self.block_size
+            block_offset = self.position % self.block_size
+            block = self._block(block_index)
+            take = min(remaining, len(block) - block_offset)
+            if take <= 0:
+                break
+            chunks.append(block[block_offset:block_offset + take])
+            self.position += take
+            remaining -= take
+        return b"".join(chunks)
 
 
 def find_test_csv_in_zip(archive: zipfile.ZipFile) -> tuple[str, list[Row]]:
@@ -180,6 +269,7 @@ def main() -> None:
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--zip", type=Path, help="Official ASL_Citizen.zip")
     source.add_argument("--root", type=Path, help="Extracted ASL Citizen directory")
+    source.add_argument("--url", help="Official ASL Citizen ZIP URL; fetched lazily with HTTP range requests")
     parser.add_argument("--output-dir", type=Path, default=Path("evaluation/videos/asl-citizen"))
     parser.add_argument("--manifest", type=Path, default=Path("evaluation/asl-citizen-test.local.jsonl"))
     parser.add_argument("--per-gloss", type=int, default=4)
@@ -193,8 +283,10 @@ def main() -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
 
-    if args.zip:
-        with zipfile.ZipFile(args.zip) as archive:
+    if args.zip or args.url:
+        remote = HTTPRangeFile(args.url) if args.url else None
+        archive_source = remote if remote is not None else args.zip
+        with zipfile.ZipFile(archive_source) as archive:
             csv_path, rows = find_test_csv_in_zip(archive)
             chosen = select(rows, requested, args.per_gloss, args.seed)
             prepared = []
