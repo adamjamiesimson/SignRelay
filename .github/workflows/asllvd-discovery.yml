@@ -63,3 +63,19 @@ jobs:
             html=$(curl -fsSL --retry 2 "$base" || true)
             echo "$html" | grep -Eo 'href="[^"]+"' | sed 's/^href="//;s/"$//' | grep -E '(7912|7913|7914|8973|8974|4844|4845|203|6887|6890)' | head -80 || true
           done
+
+      - name: Exact-match missing IDs in signer-separated index
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import re, urllib.request
+          from html import unescape
+          url='https://dai.cs.rutgers.edu/asllvd/signs_mov_separ_signers/'
+          html=urllib.request.urlopen(url, timeout=30).read().decode('utf-8','replace')
+          hrefs=[unescape(x) for x in re.findall(r'href="([^"]+)"', html)]
+          ids=['7912','7913','7914','8973','8974','4844','4845','203','6887','6890','4670']
+          for vid in ids:
+              matches=[h for h in hrefs if re.search(rf'(?:^|_){re.escape(vid)}\.(?:mp4|webm)$', h)]
+              print('EXACT', vid, matches)
+          PY
