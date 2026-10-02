@@ -6,6 +6,12 @@ const mocks = vi.hoisted(() => ({ model: vi.fn() }));
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.model }));
 let worker: { onmessage: (event: { data: WorkerInput }) => Promise<void>; postMessage: ReturnType<typeof vi.fn> };
 const confirmations = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "confirmed");
+const modelPrediction = (label: string) => ({
+  label,
+  text: label.toLowerCase().replace(/\b\w/g, char => char.toUpperCase()),
+  confidence: 0.94,
+  margin: 0.5,
+});
 async function feed(frames: VisionFrame[]) {
   for (const frame of frames) {
     await worker.onmessage({ data: { type: "frame", frame } });
@@ -28,20 +34,21 @@ beforeEach(async () => {
 });
 
 describe("ASL worker with real temporal and confirmation code (synthetic input)", () => {
-  it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("uses the temporal %s fallback when the shared model fails", async sign => {
-    mocks.model.mockRejectedValue(new Error("model unavailable"));
+  it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("confirms model %s only with matching temporal evidence", async sign => {
+    mocks.model.mockResolvedValue(modelPrediction(sign));
     await feed(makeSign(sign));
     expect(confirmations().map(result => result.gloss)).toEqual([sign]);
   });
-  it("keeps degraded-mode temporal fallbacks working across separated signs", async () => {
-    mocks.model.mockRejectedValue(new Error("model unavailable"));
+  it("recognizes successive validated model signs after a brief real separator", async () => {
+    mocks.model.mockResolvedValue(modelPrediction("NO"));
     await feed(makeSign("NO"));
     await feed(quietSeparator(1950));
+    mocks.model.mockResolvedValue(modelPrediction("HELLO"));
     await feed(makeSign("HELLO").map(frame => ({ ...frame, timestamp: frame.timestamp + 1350 })));
     expect(confirmations().map(result => result.gloss)).toEqual(["NO", "HELLO"]);
   });
-  it("does not repeatedly speak a held I LOVE YOU in degraded mode", async () => {
-    mocks.model.mockRejectedValue(new Error("model unavailable"));
+  it("does not repeatedly speak a held validated I LOVE YOU", async () => {
+    mocks.model.mockResolvedValue(modelPrediction("I LOVE YOU"));
     const held = makeSign("IDLE", { duration: 8000, count: 161 });
     for (const frame of held) { frame.hands[0].gesture = "ILoveYou"; frame.hands[0].gestureScore = 0.95; }
     await feed(held);
@@ -68,11 +75,12 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
     expect(mocks.model.mock.calls[0][0].length).toBeLessThan(24);
   });
-  it("recovers degraded-mode fallback after lost tracking without replaying an old sign", async () => {
-    mocks.model.mockRejectedValue(new Error("model unavailable"));
+  it("recovers validated model recognition after lost tracking without replaying an old sign", async () => {
+    mocks.model.mockResolvedValue(modelPrediction("HELLO"));
     await feed(makeSign("HELLO").slice(0, 4));
     await feed(makeSign("IDLE").map(frame => ({ ...frame, timestamp: frame.timestamp + 200, hands: [] })));
     expect(confirmations()).toHaveLength(0);
+    mocks.model.mockResolvedValue(modelPrediction("NO"));
     await feed(makeSign("NO").map(frame => ({ ...frame, timestamp: frame.timestamp + 1150 })));
     expect(confirmations().map(result => result.gloss)).toEqual(["NO"]);
   });
@@ -98,14 +106,14 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
       vi.useRealTimers();
     }
   });
-  it("keeps degraded-mode fallbacks recognizing separated signs throughout a long session", async () => {
-    mocks.model.mockRejectedValue(new Error("model unavailable"));
+  it("keeps validated model signs working throughout a long separated session", async () => {
     const signs = ["NO", "HELLO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const;
     const expected: string[] = [];
     let previousEnd = 0;
     for (let repetition = 0; repetition < 60; repetition++) {
       const sign = signs[repetition % signs.length];
       expected.push(sign);
+      mocks.model.mockResolvedValue(modelPrediction(sign));
       const signFrames = makeSign(sign).map(frame => ({ ...frame, timestamp: frame.timestamp + repetition * 1600 }));
       if (previousEnd) await feed(quietSeparator(previousEnd + 50));
       await feed(signFrames);
