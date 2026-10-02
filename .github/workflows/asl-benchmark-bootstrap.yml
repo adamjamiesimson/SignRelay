@@ -1,0 +1,32 @@
+name: ASL benchmark bootstrap
+
+on:
+  push:
+    branches:
+      - feature/asl-heldout-benchmark-2026-10-02
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - name: Production Firebase build
+        run: npm run build:firebase
+      - name: Probe ASL Citizen archive range support
+        shell: bash
+        run: |
+          set -euxo pipefail
+          URL='https://download.microsoft.com/download/b/8/8/b88c0bae-e6c1-43e1-8726-98cf5af36ca4/ASL_Citizen.zip'
+          curl -fsSIL "$URL" | tee /tmp/asl-citizen-head.txt
+          curl -fsSL -r 0-1023 "$URL" -o /tmp/asl-citizen-first.bin
+          test "$(wc -c </tmp/asl-citizen-first.bin)" -le 2048
+          xxd -l 16 /tmp/asl-citizen-first.bin
