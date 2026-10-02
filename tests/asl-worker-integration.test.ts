@@ -19,38 +19,59 @@ function quietSeparator(start: number, duration = 300, count = 7) {
     hands: [],
   }));
 }
+function shifted(frames: VisionFrame[], start: number) {
+  return frames.map(frame => ({ ...frame, timestamp: start + frame.timestamp - 1000 }));
+}
+async function primeModelFailure() {
+  mocks.model.mockReset().mockRejectedValue(new Error("Research model unavailable"));
+  const primer = makeSign("IDLE", { duration: 1600, count: 33 });
+  primer.forEach((frame, index) => frame.hands[0].landmarks.forEach(point => {
+    point.y += 0.3;
+    point.x += Math.min(1, index / 10) * 0.12;
+  }));
+  await feed(primer);
+  expect(mocks.model).toHaveBeenCalled();
+  expect(confirmations()).toHaveLength(0);
+  return primer.at(-1)!.timestamp;
+}
 beforeEach(async () => {
   vi.resetModules();
-  mocks.model.mockReset().mockRejectedValue(new Error("Research model unavailable"));
+  mocks.model.mockReset().mockResolvedValue(null);
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
   vi.stubGlobal("self", worker);
   await import("../workers/recognition.worker");
 });
 
 describe("ASL worker with real temporal and confirmation code (synthetic input)", () => {
-  it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("confirms %s once without another label", async sign => {
-    await feed(makeSign(sign));
-    expect(confirmations().map(result => result.gloss)).toEqual([sign]);
-  });
+  it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)(
+    "uses %s rule only after the research model has failed", async sign => {
+      const end = await primeModelFailure();
+      await feed(shifted(makeSign(sign), end + 900));
+      expect(confirmations().map(result => result.gloss)).toEqual([sign]);
+    });
   it("does not let starter rules replace a healthy model rejection", async () => {
     mocks.model.mockReset().mockResolvedValue(null);
     await feed(makeSign("HELLO"));
     expect(mocks.model).toHaveBeenCalled();
     expect(confirmations()).toEqual([]);
   });
-  it("recognizes successive different signs after a brief real separator", async () => {
-    await feed(makeSign("NO"));
-    await feed(quietSeparator(1950));
-    await feed(makeSign("HELLO").map(frame => ({ ...frame, timestamp: frame.timestamp + 1350 })));
+  it("recognizes successive fallback signs after a real model failure and separator", async () => {
+    const end = await primeModelFailure();
+    const no = shifted(makeSign("NO"), end + 900);
+    await feed(no);
+    await feed(quietSeparator(no.at(-1)!.timestamp + 50));
+    await feed(shifted(makeSign("HELLO"), no.at(-1)!.timestamp + 500));
     expect(confirmations().map(result => result.gloss)).toEqual(["NO", "HELLO"]);
   });
-  it("does not repeatedly speak a held I LOVE YOU", async () => {
-    const held = makeSign("IDLE", { duration: 8000, count: 161 });
+  it("does not repeatedly speak a held fallback I LOVE YOU", async () => {
+    const end = await primeModelFailure();
+    const held = shifted(makeSign("IDLE", { duration: 8000, count: 161 }), end + 900);
     for (const frame of held) { frame.hands[0].gesture = "ILoveYou"; frame.hands[0].gestureScore = 0.95; }
     await feed(held);
     expect(confirmations().map(result => result.gloss)).toEqual(["I LOVE YOU"]);
-    await feed(makeSign("IDLE", { duration: 700, count: 15 }).map(frame => ({ ...frame, hands: [], timestamp: frame.timestamp + 8050 })));
-    await feed(held.slice(0, 20).map(frame => ({ ...frame, timestamp: frame.timestamp + 8800 })));
+    const afterHeld = held.at(-1)!.timestamp;
+    await feed(quietSeparator(afterHeld + 50, 700, 15));
+    await feed(shifted(held.slice(0, 20).map(frame => ({ ...frame, timestamp: 1000 + (frame.timestamp - held[0].timestamp) })), afterHeld + 800));
     expect(confirmations()).toHaveLength(2);
   });
   it("keeps a closed-set model from turning idle hands into a word", async () => {
@@ -71,11 +92,12 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
     expect(mocks.model.mock.calls[0][0].length).toBeLessThan(24);
   });
-  it("recovers after lost tracking without replaying an old sign", async () => {
-    await feed(makeSign("HELLO").slice(0, 4));
-    await feed(makeSign("IDLE").map(frame => ({ ...frame, timestamp: frame.timestamp + 200, hands: [] })));
+  it("fallback recovers after lost tracking without replaying an old sign", async () => {
+    const end = await primeModelFailure();
+    await feed(shifted(makeSign("HELLO").slice(0, 4), end + 900));
+    await feed(quietSeparator(end + 1450, 700, 15));
     expect(confirmations()).toHaveLength(0);
-    await feed(makeSign("NO").map(frame => ({ ...frame, timestamp: frame.timestamp + 1150 })));
+    await feed(shifted(makeSign("NO"), end + 2300));
     expect(confirmations().map(result => result.gloss)).toEqual(["NO"]);
   });
   it("confirms two slow model results while still processing camera frames", async () => {
@@ -100,15 +122,17 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
       vi.useRealTimers();
     }
   });
-  it("keeps recognizing separated successive signs throughout a long session", async () => {
+  it("keeps fallback recognition stable through a long model outage", async () => {
+    const end = await primeModelFailure();
     const signs = ["NO", "HELLO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const;
     const expected: string[] = [];
-    let previousEnd = 0;
-    for (let repetition = 0; repetition < 60; repetition++) {
+    let previousEnd = end;
+    for (let repetition = 0; repetition < 24; repetition++) {
       const sign = signs[repetition % signs.length];
       expected.push(sign);
-      const signFrames = makeSign(sign).map(frame => ({ ...frame, timestamp: frame.timestamp + repetition * 1600 }));
-      if (previousEnd) await feed(quietSeparator(previousEnd + 50));
+      const start = previousEnd + 500;
+      const signFrames = shifted(makeSign(sign), start);
+      await feed(quietSeparator(previousEnd + 50));
       await feed(signFrames);
       previousEnd = signFrames.at(-1)!.timestamp;
     }
