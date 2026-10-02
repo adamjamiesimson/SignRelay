@@ -1,0 +1,31 @@
+name: Temporary HaGRID negative discovery
+
+on:
+  push:
+    branches:
+      - feature/asl-negative-benchmark
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect Hugging Face dataset server
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://datasets-server.huggingface.co/first-rows?dataset=cj-mills%2Fhagrid-classification-512p-no-gesture-150k&config=default&split=train'
+          curl -fsSL --retry 3 "$url" -o /tmp/rows.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/rows.json'))
+          print('FEATURES', json.dumps(d.get('features')))
+          rows=d.get('rows',[])
+          print('ROW_COUNT',len(rows))
+          for row in rows[:10]:
+              print('ROW',json.dumps(row)[:3000])
+          PY
