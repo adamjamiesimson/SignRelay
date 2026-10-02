@@ -129,10 +129,17 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     }
   }
 
-  const direct = personal ?? starter;
-  if (direct?.label === blockedStarter) starterSeenAt = now;
+  // Rule-based starter recognition is intentionally an emergency fallback.
+  // Cross-dataset video evaluation showed that these broad kinematic rules can
+  // confidently fire on unrelated ASL signs (for example BEE -> HELLO and
+  // KING -> SORRY). When the research model is healthy, silence is safer than
+  // letting an uncalibrated rule override or replace its decision.
+  const starterFallback = activeLanguage === "asl" && modelProblem ? starter : null;
+  const direct = personal ?? latestPrediction ?? starterFallback;
+  const directIsStarter = Boolean(starterFallback && direct === starterFallback);
+  if (directIsStarter && direct?.label === blockedStarter) starterSeenAt = now;
   else if (now - starterSeenAt > 500) blockedStarter = null;
-  const rawResult = !armedForNextSign || direct?.label === blockedStarter ? null : direct ?? latestPrediction;
+  const rawResult = !armedForNextSign || (directIsStarter && direct?.label === blockedStarter) ? null : direct;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
   const feedback = modelProblem
     ? activeLanguage === "asl"
@@ -170,7 +177,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
     interSignGate.lock();
-    if (activeLanguage === "asl" && !candidateIsModel) {
+    if (activeLanguage === "asl" && starterFallback && result === starterFallback) {
       blockedStarter = result.label;
       starterSeenAt = now;
     }
