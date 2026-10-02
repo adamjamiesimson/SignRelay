@@ -31,6 +31,11 @@ jobs:
       - name: Install app dependencies
         run: npm ci
 
+      - name: Typecheck and unit/regression tests
+        run: |
+          npm run typecheck
+          npm test
+
       - name: Prepare ephemeral benchmark clips
         run: python scripts/prepare_external_asl_benchmark.py --per-gloss 2 --negatives 6
 
