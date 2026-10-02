@@ -20,7 +20,7 @@ const ASL_MODEL_CONFIRM_THRESHOLD = 0.90;
 // starter rules accepting unrelated signs. Keep them available to the rule
 // unit tests/research code, but do not insert them into live transcripts until
 // they pass an external held-out benchmark.
-const AUTOMATIC_ASL_STARTER_LABELS = new Set(["HELLO", "NO", "YES", "SORRY", "I LOVE YOU"]);
+const AUTOMATIC_ASL_STARTER_LABELS = new Set(["NO", "YES", "SORRY", "I LOVE YOU"]);
 const COOLDOWN_MS = 2600;
 const frames: VisionFrame[] = [];
 let candidateLabel: string | null = null;
