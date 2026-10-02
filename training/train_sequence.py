@@ -120,6 +120,10 @@ def main() -> None:
             best_state = {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
 
     model.load_state_dict(best_state); model.to(device)
+    # Thresholds must be calibrated against the same checkpoint that is
+    # evaluated and exported. validation_logits above belong to the final
+    # training epoch, which may not be the best validation checkpoint.
+    validation_logits, validation_targets = evaluate(model, loaders["validation"], device)
     test_logits, test_targets = evaluate(model, loaders["test"], device)
     probabilities = torch.softmax(torch.tensor(test_logits), dim=-1).numpy()
     validation_probabilities = torch.softmax(torch.tensor(validation_logits), dim=-1).numpy()
