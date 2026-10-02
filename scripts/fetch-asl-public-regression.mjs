@@ -23,6 +23,21 @@ async function download(url, path) {
   return bytes.byteLength;
 }
 
+async function downloadWithYtDlp(url, path) {
+  await run("yt-dlp", [
+    "--no-playlist",
+    "--quiet",
+    "--no-warnings",
+    "--merge-output-format", "mp4",
+    "-f", "bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+    "-o", path,
+    url,
+  ]);
+  const bytes = (await readFile(path)).byteLength;
+  if (bytes < 10_000) throw new Error(`yt-dlp fixture is unexpectedly small (${bytes} bytes): ${url}`);
+  return bytes;
+}
+
 function run(command, args) {
   return new Promise((resolvePromise, rejectPromise) => {
     const child = spawn(command, args, { stdio: "inherit" });
@@ -38,7 +53,9 @@ for (const fixture of config.sign_fixtures) {
   const extension = extname(new URL(fixture.url).pathname) || ".mp4";
   const file = join(outputDir, `${fixture.id}${extension}`);
   try {
-    const bytes = await download(fixture.url, file);
+    const bytes = fixture.download_method === "yt-dlp"
+      ? await downloadWithYtDlp(fixture.url, file)
+      : await download(fixture.url, file);
     rows.push({
       id: fixture.id,
       language: "asl",
