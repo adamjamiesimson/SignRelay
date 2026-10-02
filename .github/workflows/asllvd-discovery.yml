@@ -53,3 +53,13 @@ jobs:
             code=$(curl -L -s -o /dev/null -w '%{http_code}' --retry 2 "https://dai.cs.rutgers.edu/asllvd/signs_mov/$id.mp4")
             echo "CLIP $id HTTP $code"
           done
+
+      - name: Inspect ASLLVD public indexes for missing IDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for base in             https://dai.cs.rutgers.edu/asllvd/signbank/asllvd/             https://dai.cs.rutgers.edu/asllvd/signbank/asllvd/signs/             https://dai.cs.rutgers.edu/asllvd/signbank/asllvd/test/             https://dai.cs.rutgers.edu/asllvd/signs_mov_separ_signers/; do
+            echo "INDEX $base"
+            html=$(curl -fsSL --retry 2 "$base" || true)
+            echo "$html" | grep -Eo 'href="[^"]+"' | sed 's/^href="//;s/"$//' | grep -E '(7912|7913|7914|8973|8974|4844|4845|203|6887|6890)' | head -80 || true
+          done
