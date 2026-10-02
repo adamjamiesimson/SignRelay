@@ -1,0 +1,59 @@
+name: Inspect official ASL Citizen ST-GCN checkpoint
+
+on:
+  push:
+    branches:
+      - research/asl-citizen-stgcn
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download official Microsoft release asset
+        run: |
+          curl -L --fail --retry 3 -o /tmp/asl-citizen-stgcn.zip https://github.com/microsoft/ASL-citizen-code/releases/download/checkpoints_v1/ASL_citizen_stgcn_weights.zip
+          sha256sum /tmp/asl-citizen-stgcn.zip
+          unzip -l /tmp/asl-citizen-stgcn.zip
+      - name: Install CPU PyTorch
+        run: pip install --quiet torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+      - name: Inspect checkpoint tensors safely
+        run: |
+          rm -rf /tmp/aslcitizen-weights
+          mkdir -p /tmp/aslcitizen-weights
+          unzip -q /tmp/asl-citizen-stgcn.zip -d /tmp/aslcitizen-weights
+          python - <<'PY'
+          from pathlib import Path
+          import json, torch
+          roots = sorted(p for p in Path('/tmp/aslcitizen-weights').rglob('*') if p.is_file())
+          report = {'files': []}
+          for p in roots:
+              item = {'name': str(p.relative_to('/tmp/aslcitizen-weights')), 'bytes': p.stat().st_size}
+              if p.suffix in {'.pt', '.pth'}:
+                  try:
+                      obj = torch.load(p, map_location='cpu', weights_only=True)
+                      state = obj.get('state_dict', obj) if isinstance(obj, dict) else obj
+                      if isinstance(state, dict):
+                          tensors = []
+                          for k, v in state.items():
+                              if hasattr(v, 'shape'): tensors.append({'key': k, 'shape': list(v.shape), 'dtype': str(v.dtype)})
+                          item['tensor_count'] = len(tensors)
+                          item['tensors'] = tensors
+                  except Exception as e:
+                      item['load_error'] = f'{type(e).__name__}: {e}'
+              report['files'].append(item)
+          Path('/tmp/aslcitizen-checkpoint-report.json').write_text(json.dumps(report, indent=2))
+          print(json.dumps(report, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: asl-citizen-stgcn-checkpoint-metadata
+          path: /tmp/aslcitizen-checkpoint-report.json
+          if-no-files-found: error
