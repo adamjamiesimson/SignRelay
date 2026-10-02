@@ -114,6 +114,17 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(confirmations()).toHaveLength(1);
   });
 
+  it("requires 90% confidence for automatic ASL model transcript insertion", async () => {
+    await worker.onmessage({ data: { type: "templates", language: "asl", templates: [] } });
+    mocks.asl.mockResolvedValue({ ...prediction, confidence: 0.89 });
+    await frames(24);
+    expect(confirmations()).toHaveLength(0);
+
+    mocks.asl.mockResolvedValue({ ...prediction, confidence: 0.91 });
+    await frames(12);
+    expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+  });
+
   it("requires an idle separator before a different ASL prediction can become a second word", async () => {
     await worker.onmessage({ data: { type: "templates", language: "asl", templates: [] } });
     mocks.asl.mockResolvedValue(prediction);
