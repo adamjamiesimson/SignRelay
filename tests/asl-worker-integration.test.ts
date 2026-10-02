@@ -28,17 +28,20 @@ beforeEach(async () => {
 });
 
 describe("ASL worker with real temporal and confirmation code (synthetic input)", () => {
-  it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("confirms %s once without another label", async sign => {
+  it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("uses the temporal %s fallback when the shared model fails", async sign => {
+    mocks.model.mockRejectedValue(new Error("model unavailable"));
     await feed(makeSign(sign));
     expect(confirmations().map(result => result.gloss)).toEqual([sign]);
   });
-  it("recognizes successive different signs after a brief real separator", async () => {
+  it("keeps degraded-mode temporal fallbacks working across separated signs", async () => {
+    mocks.model.mockRejectedValue(new Error("model unavailable"));
     await feed(makeSign("NO"));
     await feed(quietSeparator(1950));
     await feed(makeSign("HELLO").map(frame => ({ ...frame, timestamp: frame.timestamp + 1350 })));
     expect(confirmations().map(result => result.gloss)).toEqual(["NO", "HELLO"]);
   });
-  it("does not repeatedly speak a held I LOVE YOU", async () => {
+  it("does not repeatedly speak a held I LOVE YOU in degraded mode", async () => {
+    mocks.model.mockRejectedValue(new Error("model unavailable"));
     const held = makeSign("IDLE", { duration: 8000, count: 161 });
     for (const frame of held) { frame.hands[0].gesture = "ILoveYou"; frame.hands[0].gestureScore = 0.95; }
     await feed(held);
@@ -65,7 +68,8 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
     expect(mocks.model.mock.calls[0][0].length).toBeLessThan(24);
   });
-  it("recovers after lost tracking without replaying an old sign", async () => {
+  it("recovers degraded-mode fallback after lost tracking without replaying an old sign", async () => {
+    mocks.model.mockRejectedValue(new Error("model unavailable"));
     await feed(makeSign("HELLO").slice(0, 4));
     await feed(makeSign("IDLE").map(frame => ({ ...frame, timestamp: frame.timestamp + 200, hands: [] })));
     expect(confirmations()).toHaveLength(0);
@@ -94,7 +98,8 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
       vi.useRealTimers();
     }
   });
-  it("keeps recognizing separated successive signs throughout a long session", async () => {
+  it("keeps degraded-mode fallbacks recognizing separated signs throughout a long session", async () => {
+    mocks.model.mockRejectedValue(new Error("model unavailable"));
     const signs = ["NO", "HELLO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const;
     const expected: string[] = [];
     let previousEnd = 0;
