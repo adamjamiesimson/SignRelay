@@ -9,6 +9,12 @@ const mocks = vi.hoisted(() => ({ model: vi.fn() }));
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.model }));
 let worker: { onmessage: (event: { data: WorkerInput }) => Promise<void>; postMessage: ReturnType<typeof vi.fn> };
 const confirmations = () => worker.postMessage.mock.calls.map(([message]) => message as WorkerMessage).filter(message => message.type === "confirmed");
+const modelPrediction = (label: string) => ({
+  label,
+  text: label.toLowerCase().replace(/\b\w/g, char => char.toUpperCase()),
+  confidence: 0.94,
+  margin: 0.5,
+});
 async function feed(frames: VisionFrame[]) {
   for (const frame of frames) {
     await worker.onmessage({ data: { type: "frame", frame } });
@@ -26,7 +32,8 @@ beforeEach(async () => {
 });
 
 describe("recognition with slow and uneven camera delivery", () => {
-  it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("confirms %s at 3.3 frames per second", async sign => {
+  it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("confirms validated model %s at 3.3 frames per second", async sign => {
+    mocks.model.mockResolvedValue(modelPrediction(sign));
     const frames = makeSign(sign, { duration: 2400, count: 9 });
     expect(recognizeAslStarter(frames)?.label).toBe(sign);
     await feed(frames);
@@ -65,7 +72,8 @@ describe("recognition with slow and uneven camera delivery", () => {
     await feed(movement(2400, 9));
     expect(confirmations().map(message => message.gloss)).toEqual(["MY WORD"]);
   });
-  it("recovers when one camera delivery is delayed", async () => {
+  it("recovers validated model recognition when one camera delivery is delayed", async () => {
+    mocks.model.mockResolvedValue(modelPrediction("NO"));
     const frames = makeSign("NO", { duration: 2400, count: 9 });
     frames.forEach((frame, index) => { if (index >= 3) frame.timestamp += 180; });
     await feed(frames);
