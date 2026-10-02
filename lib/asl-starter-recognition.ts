@@ -123,10 +123,18 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
     return prediction("NO", "No");
   }
 
-  const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
+  const mouthDistances = samples.map(sample =>
+    sample.mouth ? distance2(sample.tip, sample.mouth) : Number.POSITIVE_INFINITY);
+  const openingCount = Math.max(2, Math.ceil(samples.length * 0.35));
+  const startsAtMouth = mouthDistances.slice(0, openingCount).filter(distance => distance < 0.45).length
+    / openingCount >= 0.6;
   const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
-  if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12
-    && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth!) > 0.25) {
+  const outwardProgress = mouthDistances.slice(1).filter((distance, index) =>
+    Number.isFinite(distance) && Number.isFinite(mouthDistances[index])
+    && distance >= mouthDistances[index] - 0.03).length / Math.max(1, mouthDistances.length - 1);
+  if (flatOpen && startsAtMouth && outward && outwardProgress >= 0.7
+    && last.tip.y - first.tip.y > 0.12 && last.mouth
+    && distance2(last.tip, last.mouth) - mouthDistances[0] > 0.25) {
     return prediction("THANK YOU", "Thank you");
   }
 
