@@ -21,7 +21,7 @@ function quietSeparator(start: number, duration = 300, count = 7) {
 }
 beforeEach(async () => {
   vi.resetModules();
-  mocks.model.mockReset().mockResolvedValue(null);
+  mocks.model.mockReset().mockRejectedValue(new Error("Research model unavailable"));
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
   vi.stubGlobal("self", worker);
   await import("../workers/recognition.worker");
@@ -31,6 +31,12 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
   it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("confirms %s once without another label", async sign => {
     await feed(makeSign(sign));
     expect(confirmations().map(result => result.gloss)).toEqual([sign]);
+  });
+  it("does not let starter rules replace a healthy model rejection", async () => {
+    mocks.model.mockReset().mockResolvedValue(null);
+    await feed(makeSign("HELLO"));
+    expect(mocks.model).toHaveBeenCalled();
+    expect(confirmations()).toEqual([]);
   });
   it("recognizes successive different signs after a brief real separator", async () => {
     await feed(makeSign("NO"));
