@@ -43,3 +43,30 @@ jobs:
           print('OFFSET',off,'LABELS',labels)
           PY
           done
+
+      - name: Freeze spaced no_gesture source images
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://datasets-server.huggingface.co/rows?dataset=cj-mills%2Fhagrid-classification-512p-no-gesture-150k&config=default&split=train'
+          mkdir -p /tmp/hagrid-neg
+          for offset in 45000 50000 55000 60000 65000; do
+            curl -fsSL --retry 3 "$base&offset=$offset&length=1" -o "/tmp/hagrid-neg/row-$offset.json"
+            src=$(python - "$offset" "/tmp/hagrid-neg/row-$offset.json" <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[2])); row=d['rows'][0]
+          assert row['row']['label']==6, (sys.argv[1],row['row']['label'])
+          print(row['row']['image']['src'])
+          PY
+            )
+            curl -fsSL --retry 3 "$src" -o "/tmp/hagrid-neg/$offset.jpg"
+            bytes=$(wc -c < "/tmp/hagrid-neg/$offset.jpg" | tr -d ' ')
+            sha=$(sha256sum "/tmp/hagrid-neg/$offset.jpg" | awk '{print $1}')
+            dims=$(python - "$offset" "/tmp/hagrid-neg/row-$offset.json" <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[2])); image=d['rows'][0]['row']['image']
+          print(f"{image['width']}x{image['height']}")
+          PY
+            )
+            echo "HAGRID_NEG offset=$offset bytes=$bytes sha256=$sha dims=$dims src=$src"
+          done
