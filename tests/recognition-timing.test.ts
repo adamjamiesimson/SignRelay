@@ -26,11 +26,17 @@ beforeEach(async () => {
 });
 
 describe("recognition with slow and uneven camera delivery", () => {
-  it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("confirms %s at 3.3 frames per second", async sign => {
+  it.each(["HELLO", "NO", "YES", "SORRY"] as const)("confirms validated starter %s at 3.3 frames per second", async sign => {
     const frames = makeSign(sign, { duration: 2400, count: 9 });
     expect(recognizeAslStarter(frames)?.label).toBe(sign);
     await feed(frames);
     expect(confirmations().map(message => message.gloss)).toEqual([sign]);
+  });
+  it.each(["PLEASE", "THANK YOU"] as const)("detects %s at slow cadence but withholds it from automatic transcript", async sign => {
+    const frames = makeSign(sign, { duration: 2400, count: 9 });
+    expect(recognizeAslStarter(frames)?.label).toBe(sign);
+    await feed(frames);
+    expect(confirmations()).toHaveLength(0);
   });
   it("admits completed finger movement without requiring a fast camera", () => {
     expect(analyzeSignMotion(makeSign("NO", { duration: 2400, count: 9 })).ready).toBe(true);
