@@ -1,0 +1,41 @@
+name: Temporary ASL cross-dataset verification
+
+on:
+  push:
+    branches:
+      - feature/pretrained-language-expansion
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run lint
+      - run: npm run eval:fetch-asllvd
+      - run: npm run build:firebase
+      - name: Run frozen browser benchmark
+        run: npm run eval:video -- evaluation/asllvd-v1.local.jsonl --tail 3000 --trial-timeout 30000
+      - name: Print benchmark report
+        if: always()
+        run: test ! -f work/video-evaluation/report.md || cat work/video-evaluation/report.md
+      - name: Upload metadata-only report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asllvd-v1-model-first-report
+          path: |
+            work/video-evaluation/results.jsonl
+            work/video-evaluation/report.md
+          if-no-files-found: warn
+          retention-days: 14
