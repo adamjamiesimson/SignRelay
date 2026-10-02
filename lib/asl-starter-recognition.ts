@@ -104,6 +104,7 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
   const first = samples[0];
   const last = samples.at(-1)!;
   const mostlyOpen = ratio(samples, sample => sample.open >= 3) >= 0.75;
+  const flatOpen = ratio(samples, sample => sample.open === 4) >= 0.8;
   const mostlyFist = ratio(samples, sample => sample.open <= 1) >= 0.8;
   const xs = samples.map(sample => sample.wrist.x);
   const ys = samples.map(sample => sample.wrist.y);
@@ -137,7 +138,9 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
   const atChest = ratio(samples, sample => sample.wrist.y > -0.1 && sample.wrist.y < 1.05
     && Math.abs(sample.wrist.x) < 0.8) >= 0.8;
   if (atChest && xRange > 0.1 && yRange > 0.1 && circularMotion(xs, ys)) {
-    if (mostlyOpen) return prediction("PLEASE", "Please");
+    // PLEASE uses a flat open hand. A generic "mostly open" gate can confuse
+    // curved/C-hand circular signs (for example COMPUTER) with PLEASE.
+    if (flatOpen) return prediction("PLEASE", "Please");
     if (mostlyFist) return prediction("SORRY", "Sorry");
   }
 
