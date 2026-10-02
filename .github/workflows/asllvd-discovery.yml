@@ -79,3 +79,13 @@ jobs:
               matches=[h for h in hrefs if re.search(rf'(?:^|_){re.escape(vid)}\.(?:mp4|webm)$', h)]
               print('EXACT', vid, matches)
           PY
+
+      - name: Probe every target token URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          for id in 4668 4669 4670 4671 4672 4673 4674 4675 4676 4844 4845 4846 7912 7913 7914 8973 8974 201 202 203 204 205 207767 6887 6888 6889 6890 6891 6892; do
+            code=$(curl -L -s -o /dev/null -w '%{http_code}' --retry 2 "https://dai.cs.rutgers.edu/asllvd/signs_mov/$id.mp4")
+            size=$(curl -L -sI "https://dai.cs.rutgers.edu/asllvd/signs_mov/$id.mp4" | tr -d '\r' | awk 'tolower($1)=="content-length:"{print $2}' | tail -1)
+            echo "TARGET $id HTTP $code SIZE ${size:-unknown}"
+          done
