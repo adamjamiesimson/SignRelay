@@ -34,6 +34,22 @@ sample_id,video_path,gloss,signer_id,language,source,license_id,split
 7. `export`: export ONNX with dynamic batch size and a fixed sequence/feature contract.
 8. `benchmark`: measure WebAssembly latency, memory and frames per second on CPU.
 
+### Integrity gates
+
+`pipeline.py` now treats the signer split as an auditable artifact rather than a convenience. It rejects duplicate sample IDs/video paths, missing provenance metadata, missing files, unapproved licence IDs, and datasets that cannot support three signer-independent splits. The emitted CSV uses a deterministic column order and the audit report records per-split samples, signers, class counts, class gaps and signer leakage.
+
+For a trainable benchmark, require every class to survive signer grouping into all three splits:
+
+```bash
+python training/pipeline.py /private/data/manifest.csv \
+  --approved-license VERIFIED-LICENSE-ID \
+  --require-class-coverage \
+  --output artifacts/split-manifest.csv
+```
+
+The trainer independently rechecks signer leakage and full class coverage from the extracted feature index, so bypassing the split command cannot silently weaken evaluation integrity. Open-set rejection thresholds are calibrated on validation outputs from the same best checkpoint that is later tested and exported.
+
+
 ## Rebuild the historical WLASL1000 browser package
 
 After accepting WLASL's C-UDA, download the official Pose-TGCN `archived.zip`, `splits.zip` and `pose_per_individual_videos.zip` files linked by the WLASL authors. Keep the raw keypoints and checkpoint outside the public application directory. Export with:
