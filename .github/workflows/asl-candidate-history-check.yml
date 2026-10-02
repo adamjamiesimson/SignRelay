@@ -1,0 +1,37 @@
+name: Temporary ASL candidate-history benchmark
+
+on:
+  push:
+    branches:
+      - feature/pretrained-language-expansion
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - run: node --check scripts/evaluate-video-regressions.mjs
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run eval:fetch-asllvd
+      - run: npm run build:firebase
+      - name: Run diagnostic benchmark
+        run: npm run eval:video -- evaluation/asllvd-v1.local.jsonl --output work/asllvd-history/results.jsonl --report work/asllvd-history/report.md
+      - name: Print report
+        run: cat work/asllvd-history/report.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: asllvd-candidate-history
+          path: |
+            work/asllvd-history/results.jsonl
+            work/asllvd-history/report.md
+          if-no-files-found: error
