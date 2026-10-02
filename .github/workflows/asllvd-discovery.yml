@@ -157,3 +157,15 @@ jobs:
           for item in selected:
               print('BENCH', json.dumps(item, sort_keys=True))
           PY
+
+      - name: Hash starter-rule benchmark clips
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/asllvd-starter
+          for id in 4668 4671 4673 4674 201 204; do
+            curl -fsSL --retry 3 "https://dai.cs.rutgers.edu/asllvd/signs_mov/$id.mp4" -o "/tmp/asllvd-starter/$id.mp4"
+            bytes=$(wc -c < "/tmp/asllvd-starter/$id.mp4" | tr -d ' ')
+            sha=$(sha256sum "/tmp/asllvd-starter/$id.mp4" | awk '{print $1}')
+            echo "STARTER $id BYTES $bytes SHA256 $sha"
+          done
