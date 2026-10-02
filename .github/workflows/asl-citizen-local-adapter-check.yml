@@ -1,0 +1,65 @@
+name: Local ASL Citizen adapter check
+
+on:
+  push:
+    branches:
+      - research/asl-citizen-local-benchmark-2026-10-02
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile adapter
+        run: python -m py_compile scripts/prepare_asl_citizen_local_benchmark.py
+      - name: Exercise archive discovery and pseudonymisation on synthetic fixture
+        run: |
+          python - <<'PY'
+          import csv, io, zipfile
+          from pathlib import Path
+
+          archive = Path("/tmp/asl-citizen-synthetic.zip")
+          rows = {
+              "train.csv": [["user","filename","gloss"],["P01","videos/t1.mp4","HELLO"]],
+              "val.csv": [["user","filename","gloss"],["P02","videos/v1.mp4","HELLO"]],
+              "test.csv": [
+                  ["user","filename","gloss"],
+                  ["P03","videos/a.mp4","HELLO"],
+                  ["P04","videos/b.mp4","HELLO"],
+                  ["P03","videos/c.mp4","YES"],
+                  ["P04","videos/d.mp4","YES"],
+              ],
+          }
+          with zipfile.ZipFile(archive, "w") as z:
+              for name, values in rows.items():
+                  sio = io.StringIO(newline="")
+                  writer = csv.writer(sio)
+                  writer.writerows(values)
+                  z.writestr("ASL_Citizen/splits/" + name, sio.getvalue())
+              for filename in ["t1.mp4","v1.mp4","a.mp4","b.mp4","c.mp4","d.mp4"]:
+                  z.writestr("ASL_Citizen/videos/" + filename, b"x" * 4096)
+
+          print(archive)
+          PY
+          python scripts/prepare_asl_citizen_local_benchmark.py /tmp/asl-citizen-synthetic.zip             --output work/asl-citizen-adapter-test --per-gloss 2 --gloss HELLO --gloss YES --replace-output
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path("work/asl-citizen-adapter-test")
+          rows = [json.loads(line) for line in (root / "manifest.jsonl").read_text().splitlines()]
+          assert len(rows) == 4, rows
+          assert {row["expected_gloss"] for row in rows} == {"HELLO", "YES"}
+          assert all(row["split"] == "test" for row in rows)
+          assert all(row["signer_id"].startswith("AC-") for row in rows)
+          inventory = json.loads((root / "inventory.json").read_text())
+          assert inventory["split_integrity"]["cross_split_user_overlap"] == {}
+          assert all("P03" not in json.dumps(row) and "P04" not in json.dumps(row) for row in rows)
+          print("adapter synthetic check passed")
+          PY
