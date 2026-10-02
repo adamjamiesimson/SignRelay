@@ -36,11 +36,11 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     await feed(makeSign(sign));
     expect(confirmations()).toHaveLength(0);
   });
-  it("recognizes successive different signs after a brief real separator", async () => {
+  it("recognizes successive different validated signs after a brief real separator", async () => {
     await feed(makeSign("NO"));
     await feed(quietSeparator(1950));
-    await feed(makeSign("HELLO").map(frame => ({ ...frame, timestamp: frame.timestamp + 1350 })));
-    expect(confirmations().map(result => result.gloss)).toEqual(["NO", "HELLO"]);
+    await feed(makeSign("YES").map(frame => ({ ...frame, timestamp: frame.timestamp + 1350 })));
+    expect(confirmations().map(result => result.gloss)).toEqual(["NO", "YES"]);
   });
   it("does not repeatedly speak a held I LOVE YOU", async () => {
     const held = makeSign("IDLE", { duration: 8000, count: 161 });
