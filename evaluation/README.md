@@ -90,3 +90,25 @@ Before describing the ASL browser recognizer as anything stronger than experimen
 6. Report the exact number of signers, trials, covered glosses, device/condition breakdown, fixture-set hash, accepted precision, coverage, signed-trial accuracy, and no-sign false-accept rate. Do not extrapolate a small targeted benchmark into a claimed accuracy for all 2,000 ASL classes.
 
 The 2,000-class WLASL-derived model and the seven rule-based fallbacks should be reported separately where possible. Passing the common-sign gate establishes reliability for those tested interactions only; it does not validate unrestricted ASL translation.
+
+
+## Frozen external ASL cross-dataset benchmark
+
+`evaluation/asllvd-v1.sources.jsonl` freezes a metadata-only set of 36 public ASLLVD citation-form clips by source URL, byte count and SHA-256. Thirty fixtures are deterministic exact-label overlaps with the installed 2,000-class ASL vocabulary; six additional fixtures stress the explicit HELLO and THANK YOU paths. Raw ASLLVD videos are never committed.
+
+Prepare the local clips and manifest:
+
+```bash
+npm run eval:fetch-asllvd
+```
+
+Then, after the Firebase export exists:
+
+```bash
+npm run build:firebase
+npm run eval:video -- evaluation/asllvd-v1.local.jsonl
+```
+
+This is an **external cross-dataset regression benchmark**, not a claim of unrestricted ASL accuracy. ASLLVD citation-form performances differ from the WLASL source domain and are intentionally useful for exposing domain-adapter failures. The public metadata does not give SignRelay a reliable signer identity for every numeric clip, so this set must not be described as a signer-independent accuracy estimate unless signer provenance is separately verified.
+
+The benchmark currently contains sign-positive trials only. Realistic no-sign hand activity remains a separate release gate; do not manufacture that result by relabelling sign clips as negatives. Synthetic no-hand tests may be used as pipeline sanity checks but must be reported separately.
