@@ -1,0 +1,31 @@
+name: Inspect ASLLVD benchmark metadata
+
+on:
+  push:
+    branches:
+      - research/asllvd-browser-benchmark-2026-10-02
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch ASLLVD metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work/asllvd-meta
+          curl -fsSL https://dai.cs.rutgers.edu/asllvd/signbank/asllvd_signs_2024_06_27.csv -o work/asllvd-meta/asllvd.csv
+          curl -fsSL https://dai.cs.rutgers.edu/asllvd/signbank/wlasl_asllvd_split.csv -o work/asllvd-meta/wlasl-asllvd.csv
+          echo '=== ASLLVD header ==='
+          head -n 3 work/asllvd-meta/asllvd.csv
+          echo '=== WLASL-ASLLVD header ==='
+          head -n 3 work/asllvd-meta/wlasl-asllvd.csv
+          echo '=== target ASLLVD rows ==='
+          grep -Ei '(^|,)(hello|no|yes|please|sorry|thank|love)(,|$)' work/asllvd-meta/asllvd.csv | head -n 80 || true
+          echo '=== target overlap rows ==='
+          grep -Ei '(^|,)(hello|no|yes|please|sorry|thank|love)(,|$)' work/asllvd-meta/wlasl-asllvd.csv | head -n 80 || true
