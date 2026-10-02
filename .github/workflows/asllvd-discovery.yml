@@ -1,0 +1,36 @@
+name: Temporary ASLLVD benchmark discovery
+
+on:
+  push:
+    branches:
+      - feature/pretrained-language-expansion
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect public ASLLVD metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 https://dai.cs.rutgers.edu/asllvd/signbank/asllvd_signs_2024_06_27.csv -o /tmp/asllvd.csv
+          python - <<'PY'
+          import csv, json
+          p='/tmp/asllvd.csv'
+          with open(p, newline='', encoding='utf-8-sig') as f:
+              r=csv.DictReader(f)
+              print('FIELDS', json.dumps(r.fieldnames))
+              rows=list(r)
+          print('ROWS', len(rows))
+          targets={'HELLO','NO','YES','PLEASE','SORRY','THANK YOU','THANK-YOU','I LOVE YOU','LOVE'}
+          def norm(x): return ' '.join(str(x or '').upper().replace('_',' ').replace('-',' ').split())
+          for row in rows:
+              vals={k:norm(v) for k,v in row.items()}
+              if any(v in {norm(t) for t in targets} for v in vals.values()):
+                  print('MATCH', json.dumps(row, ensure_ascii=False))
+          PY
