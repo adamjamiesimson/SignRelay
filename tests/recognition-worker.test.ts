@@ -3,9 +3,10 @@ import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-type
 
 const mocks = vi.hoisted(() => ({
   asl: vi.fn(), bsl: vi.fn(), isl: vi.fn(), lse: vi.fn(), psl: vi.fn(),
-  motion: vi.fn(), personal: vi.fn(),
+  motion: vi.fn(), personal: vi.fn(), starter: vi.fn(),
 }));
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.asl }));
+vi.mock("../lib/asl-starter-recognition", () => ({ recognizeAslStarter: mocks.starter }));
 vi.mock("../lib/bsl1064-runtime", () => ({ recognizeBsl1064: mocks.bsl }));
 vi.mock("../lib/isl263-runtime", () => ({ recognizeIsl263: mocks.isl }));
 vi.mock("../lib/lse300-runtime", () => ({ recognizeLse300: mocks.lse }));
@@ -48,6 +49,7 @@ beforeEach(async () => {
   for (const id of ["asl", "bsl", "isl", "lse", "psl"] as const) mocks[id].mockResolvedValue(null);
   mocks.motion.mockReturnValue(true);
   mocks.personal.mockReturnValue(null);
+  mocks.starter.mockReturnValue(null);
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
   vi.stubGlobal("self", worker);
   await import("../workers/recognition.worker");
@@ -129,6 +131,22 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     mocks.motion.mockReturnValue(true);
     await frames(14);
     expect(confirmations().map(result => result.gloss)).toEqual(["BOOK", "CHAIR"]);
+  });
+
+  it("does not let a healthy ASL starter rule preempt the installed model", async () => {
+    await worker.onmessage({ data: { type: "templates", language: "asl", templates: [] } });
+    mocks.starter.mockReturnValue({ label: "HELLO", text: "Hello", confidence: 0.86 });
+    mocks.asl.mockResolvedValue(prediction);
+    await frames(14);
+    expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+  });
+
+  it("does not emit a starter-only ASL guess when the healthy model abstains", async () => {
+    await worker.onmessage({ data: { type: "templates", language: "asl", templates: [] } });
+    mocks.starter.mockReturnValue({ label: "HELLO", text: "Hello", confidence: 0.86 });
+    mocks.asl.mockResolvedValue(null);
+    await frames(30);
+    expect(confirmations()).toHaveLength(0);
   });
 
   it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "psl", "uaesl", "vsl"] as const)("preserves personal recognition for %s", async language => {
