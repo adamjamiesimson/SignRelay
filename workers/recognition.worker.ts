@@ -35,8 +35,9 @@ let lastInferenceAt = -Infinity;
 let modelGeneration = 0;
 let modelProblem = false;
 let retryAfter = 0;
-let blockedStarter: string | null = null;
-let starterSeenAt = 0;
+const STARTER_VALIDATED_ASL_LABELS = new Set([
+  "HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU", "I LOVE YOU",
+]);
 const interSignGate = new InterSignGate(260);
 
 function invalidatePrediction() {
@@ -57,8 +58,6 @@ function resetSession() {
   candidateLabel = null;
   candidateStreak = 0;
   candidateIsModel = false;
-  blockedStarter = null;
-  starterSeenAt = 0;
   modelProblem = false;
   retryAfter = 0;
   interSignGate.reset();
@@ -87,11 +86,15 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   while (frames.length > (activeLanguage === "asl" ? 120 : 80)) frames.shift();
   const personal = recognizePersonalTemplate(frames, personalTemplates);
   const starter = activeLanguage === "asl" ? recognizeAslStarter(frames) : null;
-  // The closed-set model can also label fist preparation YES. Require the
-  // same completed wrist nod for automatic YES, while preserving personal
-  // templates. Discard a rejected result so it cannot stall fresh inference.
-  if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES"
-    && starter?.label !== "YES") invalidatePrediction();
+  // The closed-set model can force arbitrary movement into one of its labels.
+  // For the seven common motion-sensitive signs where SignRelay has an
+  // explicit temporal rule, require model + temporal-rule agreement. The
+  // heuristic rule is a validator only; it never emits a transcript word by
+  // itself. This prevents open-hand waves or unrelated circular movements
+  // from becoming confident HELLO/PLEASE/SORRY/etc. outputs.
+  const modelGloss = latestPrediction?.label.trim().toUpperCase();
+  if (activeLanguage === "asl" && modelGloss && STARTER_VALIDATED_ASL_LABELS.has(modelGloss)
+    && starter?.label !== modelGloss) invalidatePrediction();
   const motion = activeLanguage === "asl" ? analyzeSignMotion(frames)
     : { ...analyzeGenericSignMotion(frames), sequence: frames };
   const armedForNextSign = interSignGate.update(now, motion.reason);
@@ -129,27 +132,14 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     }
   }
 
-  // When the installed ASL-2000 model is healthy, starter rules are
-  // validators/safety gates rather than a competing classifier. Giving a
-  // heuristic rule immediate priority caused ordinary signs such as FATHER,
-  // FAMILY, HOSPITAL, WHY and TOMORROW to be emitted as HELLO/PLEASE/
-  // THANK YOU/NO before the research model could finish.
-  //
-  // Keep personal templates highest priority. Use starter recognition as a
-  // degraded-mode fallback only when the shared model has actually failed to
-  // run; automatic YES remains separately protected above by the completed
-  // wrist-nod requirement.
-  const starterFallback = activeLanguage === "asl" && modelProblem ? starter : null;
-  if (starterFallback?.label === blockedStarter) starterSeenAt = now;
-  else if (now - starterSeenAt > 500) blockedStarter = null;
-  const automatic = latestPrediction ?? starterFallback;
-  const rawResult = !armedForNextSign
-    || (!latestPrediction && starterFallback?.label === blockedStarter)
-    ? null : personal ?? automatic;
+  // Personal, signer-taught templates stay independent and highest priority.
+  // Automatic ASL output comes only from the installed model; starter rules
+  // above can veto sensitive labels but cannot create words on their own.
+  const rawResult = !armedForNextSign ? null : personal ?? latestPrediction;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
   const feedback = modelProblem
     ? activeLanguage === "asl"
-      ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly…"
+      ? "The research model could not run. Saved personal signs are still available. Retrying shortly…"
       : "The research model could not run. Saved personal signs are still available. Retrying shortly…"
     : !armedForNextSign ? "Pause briefly before the next sign."
       : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically."
@@ -183,10 +173,6 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
     interSignGate.lock();
-    if (activeLanguage === "asl" && !candidateIsModel) {
-      blockedStarter = result.label;
-      starterSeenAt = now;
-    }
     invalidatePrediction();
     candidateStreak = 0;
     if (activeLanguage === "asl") frames.length = 0;
