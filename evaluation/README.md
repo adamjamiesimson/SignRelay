@@ -112,3 +112,21 @@ npm run eval:video -- evaluation/asllvd-v1.local.jsonl
 This is an **external cross-dataset regression benchmark**, not a claim of unrestricted ASL accuracy. ASLLVD citation-form performances differ from the WLASL source domain and are intentionally useful for exposing domain-adapter failures. The public metadata does not give SignRelay a reliable signer identity for every numeric clip, so this set must not be described as a signer-independent accuracy estimate unless signer provenance is separately verified.
 
 The benchmark currently contains sign-positive trials only. Realistic no-sign hand activity remains a separate release gate; do not manufacture that result by relabelling sign clips as negatives. Synthetic no-hand tests may be used as pipeline sanity checks but must be reported separately.
+
+
+## Natural-hand no-sign rejection set
+
+`evaluation/hagrid-no-gesture-v1.sources.jsonl` freezes five spaced rows from the CC-BY-SA-4.0 HaGRID `no_gesture` class by dataset revision-facing row offset, byte count and SHA-256. These are natural hand postures, not relabelled ASL clips.
+
+Prepare ten local negative videos:
+
+```bash
+npm run eval:fetch-hagrid-negatives
+```
+
+Each source image produces two metadata-distinct trials:
+
+- **static framing** — tests whether an idle natural hand is forced into a sign;
+- **synthetic camera pan** — moves the framing while keeping the handshape unchanged, testing sensitivity to camera/global motion.
+
+The camera-pan variant is **not** evidence about real temporal hand gestures and must not be described that way. It is a reproducible rejection stress test derived from real no-gesture imagery. `ffmpeg` is required locally to build these ignored video fixtures.
