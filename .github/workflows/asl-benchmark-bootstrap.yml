@@ -31,6 +31,8 @@ jobs:
       - run: |
           python -m py_compile training/prepare_popsign_eval.py
           node --check scripts/evaluate-video-regressions.mjs
+      - name: Unit and regression tests
+        run: npm test
 
       - name: Production Firebase build
         run: npm run build:firebase
