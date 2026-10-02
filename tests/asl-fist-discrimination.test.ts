@@ -62,10 +62,10 @@ describe("fist motion discrimination (synthetic regressions)", () => {
     await feed(frames);
     expect(confirmations()).toEqual([]);
   });
-  it.each(["close", "bob"] as const)("does not let a confident model bypass missing YES motion for %s", async kind => {
+  it.each(["close", "bob"] as const)("does not invoke the disabled shared model for %s fist motion", async kind => {
     mocks.model.mockResolvedValue({ label: "YES", text: "Yes", confidence: 0.99, margin: 0.9 });
     await feed(makeFistMotion(kind, { duration: 2600, count: 53 }));
-    expect(mocks.model).toHaveBeenCalled();
+    expect(mocks.model).not.toHaveBeenCalled();
     expect(confirmations()).toEqual([]);
   });
   it("ignores an isolated depth-tracking spike", async () => {
@@ -83,14 +83,13 @@ describe("fist motion discrimination (synthetic regressions)", () => {
     expect(recognizeAslStarter(close)).toBeNull();
     expect(recognizeAslStarter([...close, ...nod])?.label).toBe("YES");
   });
-  it("keeps inference running after rejecting a model YES", async () => {
-    mocks.model.mockResolvedValue({ label: "YES", text: "Yes", confidence: 0.99, margin: 0.9 });
+  it("never falls through to another dormant shared ASL class after rejecting fist motion", async () => {
+    mocks.model.mockResolvedValue({ label: "BOOK", text: "Book", confidence: 0.99, margin: 0.9 });
     await feed(makeFistMotion("bob", { duration: 2600, count: 53 }));
-    expect(confirmations()).toEqual([]);
-    mocks.model.mockResolvedValue({ label: "BOOK", text: "Book", confidence: 0.94, margin: 0.5 });
     await feed(makeFistMotion("bob", { duration: 2600, count: 53 })
       .map(frame => ({ ...frame, timestamp: frame.timestamp + 2650 })));
-    expect(confirmations()).toEqual(["BOOK"]);
+    expect(mocks.model).not.toHaveBeenCalled();
+    expect(confirmations()).toEqual([]);
   });
   it("preserves an explicitly saved personal YES gesture", async () => {
     const frames = makeFistMotion("bob");
