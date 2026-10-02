@@ -1,4 +1,4 @@
-name: ASL benchmark tooling check
+name: PopSign ASL held-out benchmark
 
 on:
   push:
@@ -14,9 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
+  benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,12 +26,45 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - run: npm ci
-      - run: python -m py_compile training/prepare_asl_citizen_eval.py
+      - run: |
+          python -m py_compile training/prepare_popsign_eval.py
+          node --check scripts/evaluate-video-regressions.mjs
+
       - name: Production Firebase build
         run: npm run build:firebase
-      - name: Confirm evaluator tooling
+
+      - name: Prepare PopSign user-separated test clips
         run: |
-          node --check scripts/evaluate-video-regressions.mjs
-          python training/prepare_asl_citizen_eval.py --help
-          echo "Licensed ASL Citizen video is intentionally not fetched on GitHub-hosted infrastructure."
+          python training/prepare_popsign_eval.py             --dataset popsign_v1_0             --category game             --split test             --per-sign 3             --output-dir evaluation/videos/popsign             --manifest evaluation/popsign-test.local.jsonl
+          echo "Prepared rows:"
+          wc -l evaluation/popsign-test.local.jsonl
+          du -sh evaluation/videos/popsign
+
+      - name: Replay real videos through SignRelay
+        run: |
+          npm run eval:video -- evaluation/popsign-test.local.jsonl             --language asl             --tail 2500             --trial-timeout 25000             --output work/popsign/results.jsonl             --report work/popsign/report.md
+
+      - name: Preserve benchmark metadata only
+        if: always()
+        run: |
+          rm -rf evaluation/videos/popsign out/__eval__
+          mkdir -p work/popsign
+          cp evaluation/popsign-test.local.jsonl work/popsign/manifest.jsonl 2>/dev/null || true
+          cat > work/popsign/SOURCE.txt <<'EOF'
+          PopSign ASL v1.0
+          Georgia Tech Contextual Computing Group
+          License: CC BY 4.0
+          Source: https://signdata.cc.gatech.edu/view/datasets/popsign_v1_0/
+          Raw videos intentionally omitted from this artifact.
+          EOF
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signrelay-popsign-asl-benchmark
+          path: work/popsign/
+          retention-days: 14
+          if-no-files-found: warn
