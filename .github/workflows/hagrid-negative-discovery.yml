@@ -29,18 +29,17 @@ jobs:
           for row in rows[:3]:
               print('ROW',json.dumps(row)[:3000])
           PY
-      - name: Fetch explicit no_gesture rows
+      - name: Locate no_gesture block by indexed rows
         shell: bash
         run: |
           set -euo pipefail
-          url='https://datasets-server.huggingface.co/filter?dataset=cj-mills%2Fhagrid-classification-512p-no-gesture-150k&config=default&split=train&where=%22label%22%3D6&offset=0&length=12'
-          curl -fsSL --retry 3 "$url" -o /tmp/no-gesture.json
-          python - <<'PY'
-          import json
-          d=json.load(open('/tmp/no-gesture.json'))
-          print('FILTER_KEYS',sorted(d))
-          rows=d.get('rows',[])
-          print('NEG_COUNT',len(rows))
-          for row in rows:
-              print('NEG_ROW',json.dumps(row)[:3500])
+          base='https://datasets-server.huggingface.co/rows?dataset=cj-mills%2Fhagrid-classification-512p-no-gesture-150k&config=default&split=train'
+          for offset in 35000 40000 45000 50000 55000 60000 65000; do
+            curl -fsSL --retry 3 "$base&offset=$offset&length=3" -o "/tmp/rows-$offset.json"
+            python - "$offset" "/tmp/rows-$offset.json" <<'PY'
+          import json,sys
+          off=int(sys.argv[1]); d=json.load(open(sys.argv[2]))
+          labels=[r.get('row',{}).get('label') for r in d.get('rows',[])]
+          print('OFFSET',off,'LABELS',labels)
           PY
+          done
