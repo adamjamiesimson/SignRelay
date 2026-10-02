@@ -38,6 +38,11 @@ let retryAfter = 0;
 const STARTER_VALIDATED_ASL_LABELS = new Set([
   "HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU", "I LOVE YOU",
 ]);
+// These two rules have substantially stronger evidence than the geometric
+// common-sign heuristics: YES requires a completed out-and-back wrist nod,
+// while I LOVE YOU requires MediaPipe's dedicated hand gesture consistently
+// across the held sign. They remain usable without a model decision.
+const DIRECT_SAFE_STARTER_LABELS = new Set(["YES", "I LOVE YOU"]);
 const interSignGate = new InterSignGate(260);
 
 function invalidatePrediction() {
@@ -133,9 +138,11 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   }
 
   // Personal, signer-taught templates stay independent and highest priority.
-  // Automatic ASL output comes only from the installed model; starter rules
-  // above can veto sensitive labels but cannot create words on their own.
-  const rawResult = !armedForNextSign ? null : personal ?? latestPrediction;
+  // Geometric starter rules cannot create words on their own. Only the two
+  // high-specificity direct rules above remain available without a model.
+  const directSafeStarter = starter && DIRECT_SAFE_STARTER_LABELS.has(starter.label)
+    ? starter : null;
+  const rawResult = !armedForNextSign ? null : personal ?? latestPrediction ?? directSafeStarter;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
   const feedback = modelProblem
     ? activeLanguage === "asl"
