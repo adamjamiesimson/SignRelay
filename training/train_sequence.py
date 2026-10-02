@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -86,16 +87,41 @@ def main() -> None:
     args = parser.parse_args(); args.output.mkdir(parents=True, exist_ok=True)
 
     torch.manual_seed(42); np.random.seed(42)
-    rows = json.loads(args.index.read_text(encoding="utf-8"))
+    index_bytes = args.index.read_bytes()
+    rows = json.loads(index_bytes.decode("utf-8"))
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("Feature index must contain at least one row")
+    required_row_fields = {"feature_path", "gloss", "signer_id", "split"}
+    for index, row in enumerate(rows):
+        missing = sorted(field for field in required_row_fields if not str(row.get(field, "")).strip())
+        if missing:
+            raise ValueError(f"Feature index row {index + 1} is missing required fields: {missing}")
+        if row["split"] not in {"train", "validation", "test"}:
+            raise ValueError(f"Feature index row {index + 1} has invalid split {row['split']!r}")
+
+    signer_splits: dict[str, set[str]] = {}
+    for row in rows:
+        signer_splits.setdefault(row["signer_id"], set()).add(row["split"])
+    leaked_signers = {signer: sorted(splits) for signer, splits in signer_splits.items() if len(splits) > 1}
+    if leaked_signers:
+        raise ValueError(f"Signer leakage detected in feature index: {leaked_signers}")
+
     glosses = sorted({row["gloss"] for row in rows})
     vocabulary = {gloss: index for index, gloss in enumerate(glosses)}
     if args.unknown_gloss not in vocabulary:
         raise ValueError(f"Missing required open-set class {args.unknown_gloss!r}. Collect it with explicit consent; do not relabel a sign video.")
     if len(glosses) != args.expected_known_classes + 1:
         raise ValueError(f"Expected {args.expected_known_classes} sign classes plus {args.unknown_gloss}, found {len(glosses)} labels")
-    datasets = {split: SequenceDataset([row for row in rows if row["split"] == split], vocabulary, args.sequence_length) for split in ["train", "validation", "test"]}
+    split_names = ["train", "validation", "test"]
+    datasets = {split: SequenceDataset([row for row in rows if row["split"] == split], vocabulary, args.sequence_length) for split in split_names}
     if any(not len(dataset) for dataset in datasets.values()):
         raise ValueError("Train, validation and test splits must all contain examples")
+    missing_classes = {
+        split: sorted(set(glosses) - {row["gloss"] for row in rows if row["split"] == split})
+        for split in split_names
+    }
+    if any(missing_classes.values()):
+        raise ValueError(f"Every evaluated class must appear in every split: {missing_classes}")
     unknown_index = vocabulary[args.unknown_gloss]
     if any(not any(row["gloss"] == args.unknown_gloss for row in rows if row["split"] == split) for split in datasets):
         raise ValueError(f"{args.unknown_gloss} must have examples in train, validation and test")
@@ -149,7 +175,17 @@ def main() -> None:
             "test_unknown_support": int(unknown_support[0]),
             "test_false_accept_rate": float((predictions[unknown_mask] != unknown_index).mean()) if unknown_mask.any() else None,
         },
-        "signer_independent": "verify from the prepared manifest report before publishing",
+        "data_integrity": {
+            "feature_index_sha256": hashlib.sha256(index_bytes).hexdigest(),
+            "split_samples": {split: len(datasets[split]) for split in split_names},
+            "split_signers": {
+                split: len({row["signer_id"] for row in rows if row["split"] == split})
+                for split in split_names
+            },
+            "signer_leakage": False,
+            "full_class_coverage": True,
+        },
+        "signer_independent": "verified from signer IDs in the supplied feature index",
     }
     (args.output / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     (args.output / "vocabulary.json").write_text(json.dumps(vocabulary, indent=2), encoding="utf-8")
