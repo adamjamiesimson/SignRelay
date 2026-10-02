@@ -77,8 +77,8 @@ def overlap_key(video_id: str) -> str | None:
 def metadata_key(row: dict[str, str]) -> str:
     return "|".join([
         row.get("full video file", ""),
-        row.get("start frame of video clip containing the sign (relative to full videos)", ""),
-        row.get("end frame of video clip containing the sign (relative to full videos)", ""),
+        row.get("start frame of the sign (relative to full videos)", ""),
+        row.get("end frame of the sign (relative to full videos)", ""),
     ])
 
 
