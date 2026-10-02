@@ -7,10 +7,12 @@ import { prepareCalibrationSequence, sequenceDistance, templatesForLanguage } fr
 import type { VisionFrame } from "../lib/vision-types";
 
 describe("ASL vocabulary", () => {
-  it("ships 2,000 distinct built-in WLASL signs without personal calibration", () => {
+  it("retains the 2,000-label WLASL research vocabulary without exposing it as active shared ASL recognition", () => {
     expect(ASL_BUILT_IN_VOCABULARY).toHaveLength(2000);
     expect(new Set(ASL_BUILT_IN_VOCABULARY.map((word) => word.gloss)).size).toBe(2000);
     expect(ASL_VOCABULARY).toHaveLength(2000);
+    expect(MODEL_ADAPTERS.asl.status).toBe("personal");
+    expect(MODEL_ADAPTERS.asl.automaticVocabularyCount).toBe(0);
   });
 
   it("creates a safe personal vocabulary entry from a typed word or phrase", () => {
@@ -21,9 +23,9 @@ describe("ASL vocabulary", () => {
   it("exposes 40 independent sign-language recognition paths", () => {
     expect(LANGUAGE_LIST).toHaveLength(40);
     expect(LANGUAGE_LIST.slice(0, 6).map((language) => language.id)).toEqual(["asl", "bsl", "isl", "lse", "auslan", "csl"]);
-    expect(LANGUAGE_LIST.filter((language) => language.status === "experimental")).toHaveLength(7);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "experimental")).toHaveLength(6);
     expect(LANGUAGE_LIST.filter((language) => language.status === "preparing")).toHaveLength(1);
-    expect(LANGUAGE_LIST.filter((language) => language.status === "personal")).toHaveLength(32);
+    expect(LANGUAGE_LIST.filter((language) => language.status === "personal")).toHaveLength(33);
     expect(MODEL_ADAPTERS.bsl.automaticVocabularyCount).toBe(1064);
     expect(MODEL_ADAPTERS.isl.automaticVocabularyCount).toBe(263);
     expect(MODEL_ADAPTERS.rsl.automaticVocabularyCount).toBe(1000);
