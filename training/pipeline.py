@@ -17,7 +17,7 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 
 
-REQUIRED_COLUMNS = {
+REQUIRED_COLUMNS = (
     "sample_id",
     "video_path",
     "gloss",
@@ -26,7 +26,7 @@ REQUIRED_COLUMNS = {
     "source",
     "license_id",
     "split",
-}
+)
 
 
 @dataclass(frozen=True)
@@ -44,7 +44,7 @@ class Sample:
 def read_manifest(path: Path) -> list[Sample]:
     with path.open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
-        missing = REQUIRED_COLUMNS.difference(reader.fieldnames or [])
+        missing = set(REQUIRED_COLUMNS).difference(reader.fieldnames or [])
         if missing:
             raise ValueError(f"Manifest is missing columns: {sorted(missing)}")
         samples = [Sample(**{key: (row.get(key) or "").strip() for key in REQUIRED_COLUMNS}) for row in reader]
