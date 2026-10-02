@@ -26,6 +26,21 @@ jobs:
           print('FEATURES', json.dumps(d.get('features')))
           rows=d.get('rows',[])
           print('ROW_COUNT',len(rows))
-          for row in rows[:10]:
+          for row in rows[:3]:
               print('ROW',json.dumps(row)[:3000])
+          PY
+      - name: Fetch explicit no_gesture rows
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://datasets-server.huggingface.co/filter?dataset=cj-mills%2Fhagrid-classification-512p-no-gesture-150k&config=default&split=train&where=%22label%22%3D6&offset=0&length=12'
+          curl -fsSL --retry 3 "$url" -o /tmp/no-gesture.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/no-gesture.json'))
+          print('FILTER_KEYS',sorted(d))
+          rows=d.get('rows',[])
+          print('NEG_COUNT',len(rows))
+          for row in rows:
+              print('NEG_ROW',json.dumps(row)[:3500])
           PY
