@@ -1,0 +1,79 @@
+name: External ASL browser benchmark
+
+on:
+  push:
+    branches:
+      - research/asllvd-browser-benchmark-2026-10-02
+
+permissions:
+  contents: read
+
+concurrency:
+  group: external-asl-benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Prepare ephemeral benchmark clips
+        run: python scripts/prepare_external_asl_benchmark.py --per-gloss 2 --negatives 6
+
+      - name: Show fixture inventory summary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path("work/external-asl-benchmark/inventory.json").read_text())
+          fixtures = data["fixtures"]
+          print("fixtures", len(fixtures))
+          print("sign fixtures", sum(item["gloss"] is not None for item in fixtures))
+          print("no-sign fixtures", sum(item["gloss"] is None for item in fixtures))
+          print("missing glosses", data["missing_glosses"])
+          print("bytes", sum(item["bytes"] for item in fixtures))
+          PY
+
+      - name: Build full Firebase export
+        run: npm run build:firebase
+
+      - name: Replay benchmark through browser pipeline
+        run: npm run eval:video -- work/external-asl-benchmark/manifest.jsonl --language asl --tail 3500
+
+      - name: Print benchmark report
+        if: always()
+        run: |
+          if [ -f work/video-evaluation/report.md ]; then
+            cat work/video-evaluation/report.md
+          fi
+
+      - name: Remove source video before artifact upload
+        if: always()
+        run: rm -rf work/external-asl-benchmark/videos out/__eval__
+
+      - name: Upload metadata-only benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-asl-browser-benchmark
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            work/external-asl-benchmark/manifest.jsonl
+            work/external-asl-benchmark/inventory.json
+            work/video-evaluation/results.jsonl
+            work/video-evaluation/report.md
