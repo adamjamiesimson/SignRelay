@@ -46,6 +46,16 @@ describe("common ASL temporal rules (synthetic regressions, not measured accurac
     for (const frame of frames) frame.hands[0].landmarks[12] = { ...middle };
     expect(recognizeAslStarter(frames)?.label).not.toBe("NO");
   });
+  it("does not call a curved/partially open chest circle PLEASE", () => {
+    const frames = makeSign("PLEASE");
+    for (const frame of frames) {
+      const hand = frame.hands[0];
+      // Fold the pinky enough to leave a three-finger open shape. This keeps
+      // the circular wrist path but removes the flat-open PLEASE handshape.
+      hand.landmarks[20] = { ...hand.landmarks[18], y: hand.landmarks[18].y + 0.01 };
+    }
+    expect(recognizeAslStarter(frames)?.label).not.toBe("PLEASE");
+  });
 });
 
 describe("movement segmentation", () => {
