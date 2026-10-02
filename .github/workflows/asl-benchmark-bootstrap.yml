@@ -1,32 +1,66 @@
-name: ASL benchmark bootstrap
+name: ASL held-out benchmark
 
 on:
   push:
     branches:
       - feature/asl-heldout-benchmark-2026-10-02
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: asl-heldout-benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  bootstrap:
+  benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22.13.0'
           cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - run: npm ci
+      - run: python -m py_compile training/prepare_asl_citizen_eval.py
+
       - name: Production Firebase build
         run: npm run build:firebase
-      - name: Probe ASL Citizen archive range support
-        shell: bash
+
+      - name: Prepare signer-independent ASL Citizen test slice
+        env:
+          ASL_CITIZEN_URL: https://download.microsoft.com/download/b/8/8/b88c0bae-e6c1-43e1-8726-98cf5af36ca4/ASL_Citizen.zip
         run: |
-          set -euxo pipefail
-          URL='https://download.microsoft.com/download/b/8/8/b88c0bae-e6c1-43e1-8726-98cf5af36ca4/ASL_Citizen.zip'
-          curl -fsSIL "$URL" | tee /tmp/asl-citizen-head.txt
-          curl -fsSL -r 0-1023 "$URL" -o /tmp/asl-citizen-first.bin
-          test "$(wc -c </tmp/asl-citizen-first.bin)" -le 2048
-          xxd -l 16 /tmp/asl-citizen-first.bin
+          python training/prepare_asl_citizen_eval.py             --url "$ASL_CITIZEN_URL"             --per-gloss 3             --output-dir evaluation/videos/asl-citizen             --manifest evaluation/asl-citizen-test.local.jsonl
+          echo "Prepared rows:"
+          wc -l evaluation/asl-citizen-test.local.jsonl
+          du -sh evaluation/videos/asl-citizen
+
+      - name: Replay through SignRelay browser pipeline
+        run: |
+          npm run eval:video -- evaluation/asl-citizen-test.local.jsonl             --language asl             --tail 2500             --trial-timeout 25000             --output work/asl-citizen/results.jsonl             --report work/asl-citizen/report.md
+
+      - name: Preserve metadata only
+        if: always()
+        run: |
+          rm -rf evaluation/videos/asl-citizen out/__eval__
+          mkdir -p work/asl-citizen
+          cp evaluation/asl-citizen-test.local.jsonl work/asl-citizen/manifest.jsonl 2>/dev/null || true
+          printf '%s\n'             'ASL Citizen source videos are intentionally excluded from artifacts.'             'Dataset licence is research/non-commercial and prohibits redistribution.'             > work/asl-citizen/VIDEO_NOT_INCLUDED.txt
+
+      - name: Upload benchmark metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asl-citizen-signrelay-benchmark
+          path: work/asl-citizen/
+          if-no-files-found: warn
+          retention-days: 14
