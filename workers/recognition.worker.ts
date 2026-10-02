@@ -15,6 +15,12 @@ import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 import { InterSignGate } from "@/lib/inter-sign-gate";
 
 const CONFIDENCE_THRESHOLD = 0.62;
+const ASL_MODEL_CONFIRM_THRESHOLD = 0.90;
+// Real unseen-signer PopSign evaluation showed the broad PLEASE and THANK YOU
+// starter rules accepting unrelated signs. Keep them available to the rule
+// unit tests/research code, but do not insert them into live transcripts until
+// they pass an external held-out benchmark.
+const AUTOMATIC_ASL_STARTER_LABELS = new Set(["HELLO", "NO", "YES", "SORRY", "I LOVE YOU"]);
 const COOLDOWN_MS = 2600;
 const frames: VisionFrame[] = [];
 let candidateLabel: string | null = null;
@@ -105,8 +111,9 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     // Frame-count scheduling can skip the entire completion window on a slow
     // device. ASL needs fresh results while that movement is still available.
     const inferenceDue = language === "asl" ? now - lastInferenceAt >= 250 : receivedFrames % cadence === 0;
+    const modelThreshold = language === "asl" ? ASL_MODEL_CONFIRM_THRESHOLD : CONFIDENCE_THRESHOLD;
     const freshResult = latestPrediction && Number.isFinite(latestPrediction.confidence)
-      && latestPrediction.confidence >= CONFIDENCE_THRESHOLD && consumedPredictionVersion !== predictionVersion;
+      && latestPrediction.confidence >= modelThreshold && consumedPredictionVersion !== predictionVersion;
     if (classifier && MODEL_ADAPTERS[language].status === "experimental"
       && frames.length >= (language === "asl" ? 6 : 24) && inferenceDue
       && !freshResult && !pending.has(language) && now >= retryAfter) {
@@ -129,11 +136,16 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     }
   }
 
-  const direct = personal ?? starter;
+  const automaticStarter = starter && AUTOMATIC_ASL_STARTER_LABELS.has(starter.label.trim().toUpperCase())
+    ? starter : null;
+  const direct = personal ?? automaticStarter;
   if (direct?.label === blockedStarter) starterSeenAt = now;
   else if (now - starterSeenAt > 500) blockedStarter = null;
   const rawResult = !armedForNextSign || direct?.label === blockedStarter ? null : direct ?? latestPrediction;
-  const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
+  const requiredConfidence = rawResult === latestPrediction && activeLanguage === "asl"
+    ? ASL_MODEL_CONFIRM_THRESHOLD : CONFIDENCE_THRESHOLD;
+  const result = rawResult && Number.isFinite(rawResult.confidence)
+    && rawResult.confidence >= requiredConfidence ? rawResult : null;
   const feedback = modelProblem
     ? activeLanguage === "asl"
       ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly…"
@@ -148,7 +160,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     bufferSize: frames.length, feedback,
   } satisfies WorkerMessage);
 
-  if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
+  if (!result) {
     candidateLabel = null;
     candidateStreak = 0;
     return;
@@ -161,7 +173,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (candidateLabel === result.label) candidateStreak += 1;
   else { candidateLabel = result.label; candidateStreak = 1; }
 
-  if (shouldConfirm({ confidence: result.confidence, threshold: CONFIDENCE_THRESHOLD,
+  if (shouldConfirm({ confidence: result.confidence, threshold: requiredConfidence,
     streak: candidateStreak, sameLabel: lastConfirmation.label === result.label,
     elapsedSinceLast: now - lastConfirmation.time, cooldown: COOLDOWN_MS,
   })) {
