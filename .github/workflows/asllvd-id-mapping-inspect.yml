@@ -1,0 +1,31 @@
+name: Inspect ASLLVD legacy ID mapping
+
+on:
+  push:
+    branches:
+      - research/asllvd-id-mapping-inspect-2026-10-02
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect legacy metadata variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/asllvd-map
+          for file in asllvd_signs.csv asllvd_signs_2022_11_29.csv asllvd_signs_2023_07_02.csv; do
+            curl -fsSL "https://dai.cs.rutgers.edu/asllvd/signbank/$file" -o "/tmp/asllvd-map/$file"
+            echo "=== $file header ==="
+            head -n 2 "/tmp/asllvd-map/$file"
+            echo "=== $file HELLO/SORRY/YES/NOW ==="
+            grep -Ei ',(HELLO|SORRY|YES|NOW)(,|$)' "/tmp/asllvd-map/$file" | head -n 40 || true
+          done
+          echo "=== directory candidate ids around known gloss class IDs ==="
+          curl -fsSL https://dai.cs.rutgers.edu/asllvd/signs_mov_separ_signers/ -o /tmp/asllvd-map/index.html
+          grep -Eo '(Brady|Liz|Lana|Dana|Naomi|Tyler)_[0-9]+\.mp4' /tmp/asllvd-map/index.html | head -n 50
