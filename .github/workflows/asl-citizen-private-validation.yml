@@ -1,0 +1,114 @@
+name: Validate ASL Citizen research model
+
+on:
+  push:
+    branches:
+      - research/asl-citizen-stgcn
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npx vitest run tests/asl-citizen-input.test.ts
+      - name: Install research dependencies
+        run: |
+          pip install --quiet torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install --quiet numpy==1.26.4 onnx==1.17.0 onnxruntime==1.20.1 remotezip mediapipe==0.10.21 opencv-python-headless==4.11.0.86
+      - name: Fetch official checkpoint
+        run: |
+          curl -L --fail --retry 3 -o /tmp/aslcitizen-weights.zip https://github.com/microsoft/ASL-citizen-code/releases/download/checkpoints_v1/ASL_citizen_stgcn_weights.zip
+          mkdir -p /tmp/aslcitizen-weights
+          unzip -q /tmp/aslcitizen-weights.zip -d /tmp/aslcitizen-weights
+          test -f /tmp/aslcitizen-weights/ASL_citizen_stgcn_weights.pt
+      - name: Range-fetch metadata and deterministic private test subset
+        run: |
+          python - <<'PY'
+          from remotezip import RemoteZip
+          from pathlib import Path
+          import csv, io, json, random, hashlib, os
+
+          url='https://download.microsoft.com/download/b/8/8/b88c0bae-e6c1-43e1-8726-98cf5af36ca4/ASL_Citizen.zip'
+          out=Path('/tmp/aslcitizen-private-test')
+          out.mkdir(parents=True, exist_ok=True)
+          with RemoteZip(url) as rz:
+              names=[i.filename for i in rz.infolist()]
+              name_set=set(names)
+              basename_map={Path(name).name:name for name in names if name.lower().endswith(('.mp4','.mov','.webm'))}
+              train=rz.read('ASL_Citizen/splits/train.csv')
+              Path('/tmp/aslcitizen-train.csv').write_bytes(train)
+              test_text=rz.read('ASL_Citizen/splits/test.csv').decode('utf-8-sig')
+              rows=list(csv.DictReader(io.StringIO(test_text)))
+              random.Random(20261002).shuffle(rows)
+              selected=[]; seen=set()
+              for row in rows:
+                  gloss=row['Gloss'].strip()
+                  if not gloss or gloss in seen: continue
+                  video=row['Video file'].strip().replace('\\\\','/')
+                  candidates=[video, f'ASL_Citizen/{video}', f'ASL_Citizen/videos/{video}', f'ASL_Citizen/videos/{Path(video).name}']
+                  archive_name=next((c for c in candidates if c in name_set), None) or basename_map.get(Path(video).name)
+                  if not archive_name: continue
+                  selected.append((row, archive_name)); seen.add(gloss)
+                  if len(selected)>=60: break
+              if len(selected)<60: raise SystemExit(f'Only resolved {len(selected)} unique-gloss test clips')
+              manifest=[]; selection=[]
+              for index,(row,archive_name) in enumerate(selected):
+                  suffix=Path(archive_name).suffix or '.mp4'
+                  local=out/f'{index:03d}{suffix}'
+                  local.write_bytes(rz.read(archive_name))
+                  manifest.append({'id':f'private-{index:03d}','trial_type':'sign','expected_gloss':row['Gloss'].strip(),'video':local.name})
+                  selection.append(f"{row['Video file']}\t{row['Gloss'].strip()}")
+              (out/'manifest.jsonl').write_text('\n'.join(json.dumps(x) for x in manifest)+'\n')
+              Path('/tmp/aslcitizen-selection-hash.txt').write_text(hashlib.sha256('\n'.join(selection).encode()).hexdigest())
+              print('selected clips:', len(selected))
+              print('selection sha256:', Path('/tmp/aslcitizen-selection-hash.txt').read_text())
+          PY
+      - name: Export ONNX and verify numerical parity
+        run: |
+          python training/export_asl_citizen_stgcn.py /tmp/aslcitizen-weights/ASL_citizen_stgcn_weights.pt /tmp/aslcitizen-train.csv --output /tmp/aslcitizen-export
+      - name: Evaluate official signer-independent test subset privately
+        run: |
+          python training/evaluate_asl_citizen_asllvd.py \
+            /tmp/aslcitizen-weights/ASL_citizen_stgcn_weights.pt \
+            /tmp/aslcitizen-train.csv \
+            /tmp/aslcitizen-private-test/manifest.jsonl \
+            --output /tmp/aslcitizen-private-full.json \
+            --quiet \
+            --note 'Deterministic 60-clip sample from official signer-independent ASL Citizen test split.'
+          python - <<'PY'
+          import json, pathlib
+          full=json.load(open('/tmp/aslcitizen-private-full.json'))
+          export=json.load(open('/tmp/aslcitizen-export/export-report.json'))
+          summary={
+            'selection_sha256': pathlib.Path('/tmp/aslcitizen-selection-hash.txt').read_text().strip(),
+            'benchmark': full['summary'],
+            'checkpoint_sha256': export['checkpoint_sha256'],
+            'labels_sha256': export['labels_sha256'],
+            'onnx_bytes': export['onnx_bytes'],
+            'onnx_sha256': export['onnx_sha256'],
+            'float64_to_float32': export['float64_to_float32'],
+            'pytorch_to_onnxruntime': export['pytorch_to_onnxruntime'],
+            'privacy': 'Only aggregate metrics and hashes are uploaded; Microsoft dataset videos/rows remain ephemeral.',
+          }
+          pathlib.Path('/tmp/aslcitizen-validation-summary.json').write_text(json.dumps(summary,indent=2))
+          print(json.dumps(summary,indent=2))
+          PY
+          rm -rf /tmp/aslcitizen-private-test /tmp/aslcitizen-private-full.json /tmp/aslcitizen-train.csv /tmp/aslcitizen-weights /tmp/aslcitizen-weights.zip /tmp/aslcitizen-export/model.onnx /tmp/aslcitizen-export/labels.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: asl-citizen-private-validation-summary
+          path: /tmp/aslcitizen-validation-summary.json
+          if-no-files-found: error
