@@ -17,7 +17,7 @@ async function feed(frames: VisionFrame[]) {
 }
 beforeEach(async () => {
   vi.resetModules();
-  mocks.model.mockReset().mockResolvedValue(null);
+  mocks.model.mockReset().mockRejectedValue(new Error("Research model unavailable"));
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
   vi.stubGlobal("self", worker);
   await import("../workers/recognition.worker");
