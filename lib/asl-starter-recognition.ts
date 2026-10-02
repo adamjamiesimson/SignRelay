@@ -132,8 +132,12 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
 
   const raised = ratio(samples, sample => !!sample.nose && sample.wrist.y < sample.nose.y + 0.55) >= 0.7;
   const startsNearHead = first.nose && distance2(first.tip, first.nose) < 0.8;
-  if (mostlyOpen && raised && xRange > 0.25 && yRange < Math.max(0.35, xRange * 0.75)
-    && (directionChanges(xs, 0.025) >= 1 || startsNearHead)) return prediction("HELLO", "Hello");
+  // HELLO is a near-head wave. Repetitive lateral hand motion elsewhere in
+  // the frame (typing, desk gestures, etc.) must not become HELLO merely
+  // because it changes direction.
+  if (mostlyOpen && raised && startsNearHead && xRange > 0.25
+    && yRange < Math.max(0.35, xRange * 0.75)
+    && directionChanges(xs, 0.025) >= 1) return prediction("HELLO", "Hello");
 
   const atChest = ratio(samples, sample => sample.wrist.y > -0.1 && sample.wrist.y < 1.05
     && Math.abs(sample.wrist.x) < 0.8) >= 0.8;
