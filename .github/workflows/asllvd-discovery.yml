@@ -27,10 +27,15 @@ jobs:
               print('FIELDS', json.dumps(r.fieldnames))
               rows=list(r)
           print('ROWS', len(rows))
-          targets={'HELLO','NO','YES','PLEASE','SORRY','THANK YOU','THANK-YOU','I LOVE YOU','LOVE'}
-          def norm(x): return ' '.join(str(x or '').upper().replace('_',' ').replace('-',' ').split())
+          needles=('HELLO','YES','SORRY','I-LOVE-YOU','PLEASE','THANK','NO')
           for row in rows:
-              vals={k:norm(v) for k,v in row.items()}
-              if any(v in {norm(t) for t in targets} for v in vals.values()):
+              gloss=(row.get('main entry gloss label') or '').upper()
+              variant=(row.get('entry/variant gloss label') or '').upper()
+              klass=(row.get('Class Label') or '').upper()
+              if any(n == gloss or n == variant or n == klass or (n in {'PLEASE','THANK'} and (n in gloss or n in variant or n in klass)) for n in needles):
                   print('MATCH', json.dumps(row, ensure_ascii=False))
+          print('LABELS_CONTAINING_NO')
+          for label in sorted({(row.get('main entry gloss label') or '').upper() for row in rows}):
+              if label == 'NO' or label.startswith('NO_') or label.startswith('NO-') or label in {'NOT','NONE'}:
+                  print('LABEL', label)
           PY
