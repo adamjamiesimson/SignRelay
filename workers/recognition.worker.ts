@@ -161,8 +161,17 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     consumedPredictionVersion = predictionVersion;
   }
   candidateIsModel = result === latestPrediction;
+  const temporalValidatedModel = activeLanguage === "asl" && candidateIsModel
+    && STARTER_VALIDATED_ASL_LABELS.has(result.label.trim().toUpperCase())
+    && starter?.label === result.label.trim().toUpperCase();
   if (candidateLabel === result.label) candidateStreak += 1;
-  else { candidateLabel = result.label; candidateStreak = 1; }
+  else {
+    candidateLabel = result.label;
+    // A fresh model result plus an independently computed temporal-rule match
+    // provides two distinct pieces of evidence. Ordinary model words still
+    // need two fresh model predictions.
+    candidateStreak = temporalValidatedModel ? 2 : 1;
+  }
 
   if (shouldConfirm({ confidence: result.confidence, threshold: CONFIDENCE_THRESHOLD,
     streak: candidateStreak, sameLabel: lastConfirmation.label === result.label,
