@@ -129,10 +129,23 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     }
   }
 
-  const direct = personal ?? starter;
-  if (direct?.label === blockedStarter) starterSeenAt = now;
+  // When the installed ASL-2000 model is healthy, starter rules are
+  // validators/safety gates rather than a competing classifier. Giving a
+  // heuristic rule immediate priority caused ordinary signs such as FATHER,
+  // FAMILY, HOSPITAL, WHY and TOMORROW to be emitted as HELLO/PLEASE/
+  // THANK YOU/NO before the research model could finish.
+  //
+  // Keep personal templates highest priority. Use starter recognition as a
+  // degraded-mode fallback only when the shared model has actually failed to
+  // run; automatic YES remains separately protected above by the completed
+  // wrist-nod requirement.
+  const starterFallback = activeLanguage === "asl" && modelProblem ? starter : null;
+  if (starterFallback?.label === blockedStarter) starterSeenAt = now;
   else if (now - starterSeenAt > 500) blockedStarter = null;
-  const rawResult = !armedForNextSign || direct?.label === blockedStarter ? null : direct ?? latestPrediction;
+  const automatic = latestPrediction ?? starterFallback;
+  const rawResult = !armedForNextSign
+    || (!latestPrediction && starterFallback?.label === blockedStarter)
+    ? null : personal ?? automatic;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
   const feedback = modelProblem
     ? activeLanguage === "asl"
