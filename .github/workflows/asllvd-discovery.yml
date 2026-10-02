@@ -169,3 +169,17 @@ jobs:
             sha=$(sha256sum "/tmp/asllvd-starter/$id.mp4" | awk '{print $1}')
             echo "STARTER $id BYTES $bytes SHA256 $sha"
           done
+
+      - name: Hash Apache-2.0 non-ASL gesture images
+        shell: bash
+        run: |
+          set -euo pipefail
+          rev=b453bf83fed4eb220051b3d45bf0b54cadbb7910
+          mkdir -p /tmp/gesture-negatives
+          for name in fist pointing_up thumb_up right_hands victory; do
+            url="https://raw.githubusercontent.com/google-ai-edge/mediapipe/$rev/mediapipe/tasks/testdata/vision/$name.jpg"
+            curl -fsSL --retry 3 "$url" -o "/tmp/gesture-negatives/$name.jpg"
+            bytes=$(wc -c < "/tmp/gesture-negatives/$name.jpg" | tr -d ' ')
+            sha=$(sha256sum "/tmp/gesture-negatives/$name.jpg" | awk '{print $1}')
+            echo "NEGATIVE_IMAGE $name BYTES $bytes SHA256 $sha"
+          done
