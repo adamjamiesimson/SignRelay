@@ -32,6 +32,22 @@ describe("common ASL temporal rules (synthetic regressions, not measured accurac
       expect(recognizeAslStarter(frames)?.label).toBe("THANK YOU");
     }
   });
+  it("rejects THANK YOU from a nose-level rather than chin-level starting point", () => {
+    const frames = makeSign("THANK YOU");
+    // The same outward/downward motion does not constitute THANK YOU if
+    // the starting hand is nearer the nose than the chin.
+    for (const frame of frames) {
+      const progress = (frame.timestamp - frames[0].timestamp) / (frames.at(-1)!.timestamp - frames[0].timestamp);
+      const lift = 0.10 * (1 - progress);
+      for (const point of frame.hands[0].landmarks) point.y -= lift;
+    }
+    expect(recognizeAslStarter(frames)?.label).not.toBe("THANK YOU");
+  });
+  it("requires an actual chest-level start for PLEASE or SORRY", () => {
+    const frames = makeSign("PLEASE");
+    for (const point of frames[0].hands[0].landmarks) point.y -= 0.34;
+    expect(recognizeAslStarter(frames)?.label).not.toBe("PLEASE");
+  });
   it("does not translate a static open hand or an idle jittering hand", () => {
     expect(recognizeAslStarter(makeSign("IDLE"))).toBeNull();
     expect(recognizeAslStarter(makeSign("IDLE", { jitter: 0.003 }))).toBeNull();
