@@ -58,6 +58,14 @@ cp evaluation/video-manifest.example.jsonl evaluation/video-manifest.local.jsonl
 
 Each sign clip should appear once per trial with its expected gloss. Add explicit no-sign/background clips too; do not loop or retry a clip until SignRelay produces the expected answer.
 
+### Validate the fixture list first
+
+```bash
+npm run eval:video -- evaluation/video-manifest.local.jsonl --preflight
+```
+
+Preflight checks that every selected row is a well-formed, uniquely identified trial with an existing local video file. It works without a built app or Chrome and does **not** decode the clips or measure recognition accuracy. Include no-sign clips and consenting signers where feasible. Always follow preflight with full video replay for actual regression results.
+
 ### Run it
 
 ```bash
