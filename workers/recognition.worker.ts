@@ -148,6 +148,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
       modelPending: pending.has(activeLanguage),
       modelProblem,
       frameHasHands: event.data.frame.hands.length > 0,
+      ...(result === starter && starter?.evidence ? { starterEvidence: starter.evidence } : {}),
     },
   } satisfies WorkerMessage);
 
