@@ -653,7 +653,7 @@ async function main() {
     const sign = manifest.filter(trial => trial.trialType === "sign").length;
     const noSign = manifest.length - sign;
     const languages = [...new Set(manifest.map(trial => trial.language))].sort().join(", ");
-    console.log(`PASS: ${manifest.length} unique, readable local video fixtures (${sign} sign, ${noSign} no-sign; languages: ${languages}).`);
+    console.log(`PASS: ${manifest.length} unique, existing local video fixtures (${sign} sign, ${noSign} no-sign; languages: ${languages}).`);
     console.log("Manifest preflight does not run recognition or establish accuracy.");
     return;
   }
