@@ -5,7 +5,6 @@ import { shouldConfirm } from "@/lib/decoder";
 import { recognizePersonalTemplate, templatesForLanguage } from "@/lib/personalized-recognition";
 import { recognizeAslStarter } from "@/lib/asl-starter-recognition";
 import { analyzeSignMotion } from "@/lib/sign-motion";
-import { retainAslPredictionAcrossMotionGap } from "@/lib/model-prediction-window";
 import { analyzeGenericSignMotion } from "@/lib/asl100-runtime";
 import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
 import { recognizeIsl263 } from "@/lib/isl263-runtime";
@@ -37,7 +36,6 @@ let modelProblem = false;
 let retryAfter = 0;
 let blockedStarter: string | null = null;
 let starterSeenAt = 0;
-let lastModelReadyAt = -Infinity;
 
 function invalidatePrediction() {
   latestPrediction = null;
@@ -52,7 +50,6 @@ function resetSession() {
   frames.length = 0;
   receivedFrames = 0;
   lastInferenceAt = -Infinity;
-  lastModelReadyAt = -Infinity;
   lastConfirmation = { label: "", time: 0 };
   invalidatePrediction();
   candidateLabel = null;
@@ -95,14 +92,8 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   const motion = activeLanguage === "asl" ? analyzeSignMotion(frames)
     : { ...analyzeGenericSignMotion(frames), sequence: frames };
 
-  if (motion.ready) lastModelReadyAt = now;
-  else if (activeLanguage !== "asl"
-    || !retainAslPredictionAcrossMotionGap(motion.reason, now - lastModelReadyAt)) {
-    // A brief motion/idle transition should not discard an in-flight model
-    // response, but hand loss or a long gap must invalidate stale evidence.
-    invalidatePrediction();
-  }
-  if (motion.ready) {
+  if (!motion.ready) invalidatePrediction();
+  else {
     if (latestPrediction && now - predictionTimestamp > MAX_PREDICTION_AGE_MS) invalidatePrediction();
     const language = activeLanguage;
     const classifier = language in classifiers ? classifiers[language as keyof typeof classifiers] : null;
@@ -137,9 +128,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   const direct = personal ?? starter;
   if (direct?.label === blockedStarter) starterSeenAt = now;
   else if (now - starterSeenAt > 500) blockedStarter = null;
-  // Never emit model-only candidates until the hand has settled again;
-  // direct personal/starter rules retain their existing motion requirements.
-  const rawResult = direct?.label === blockedStarter ? null : direct ?? (motion.ready ? latestPrediction : null);
+  const rawResult = direct?.label === blockedStarter ? null : direct ?? latestPrediction;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
   const feedback = modelProblem
     ? activeLanguage === "asl"
