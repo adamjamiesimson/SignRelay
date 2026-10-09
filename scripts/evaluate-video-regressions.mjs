@@ -285,7 +285,7 @@ const HARNESS_SCRIPT = String.raw`(() => {
       const stream = canvas.captureStream(20);
       const current = {
         url, objectUrl, source, canvas, context, stream,
-        raf: 0, paintTick: 0, startedAt: 0, endedAt: 0, ended: false,
+        raf: 0, lastPaintedTime: null, startedAt: 0, endedAt: 0, ended: false,
       };
       state.current = current;
       source.addEventListener("ended", () => {
@@ -294,23 +294,23 @@ const HARNESS_SCRIPT = String.raw`(() => {
       });
       const paint = () => {
         if (state.current !== current) return;
-        const { context: ctx, canvas: cvs } = current;
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, cvs.width, cvs.height);
-        if (current.startedAt && source.readyState >= 2) {
-          if (state.trace && source.currentTime > state.trace.lastSourceTime) {
-            state.trace.lastSourceTime = source.currentTime;
-            state.trace.sourceFrameAdvances += 1;
-          }
+        // Only paint decoded source progress. The old harness toggled a 1px
+        // pixel on EVERY animation frame, synthesizing dozens of duplicate
+        // "camera frames" after the clip ended. Those duplicate frames could
+        // change motion-settling windows, consensus and model scheduling.
+        if (current.startedAt && source.readyState >= 2 &&
+            (current.lastPaintedTime === null || source.currentTime !== current.lastPaintedTime)) {
+          const { context: ctx, canvas: cvs } = current;
+          ctx.fillStyle = "black";
+          ctx.fillRect(0, 0, cvs.width, cvs.height);
           const sw = source.videoWidth || cvs.width;
           const sh = source.videoHeight || cvs.height;
           const ratio = Math.min(cvs.width / sw, cvs.height / sh);
           const dw = sw * ratio, dh = sh * ratio;
           ctx.drawImage(source, (cvs.width - dw) / 2, (cvs.height - dh) / 2, dw, dh);
+          current.lastPaintedTime = source.currentTime;
+          if (state.trace) state.trace.sourceFrameAdvances += 1;
         }
-        current.paintTick += 1;
-        ctx.fillStyle = current.paintTick % 2 ? "rgb(0,0,0)" : "rgb(1,1,1)";
-        ctx.fillRect(0, 0, 1, 1);
         current.raf = requestAnimationFrame(paint);
       };
       current.raf = requestAnimationFrame(paint);
@@ -333,6 +333,7 @@ const HARNESS_SCRIPT = String.raw`(() => {
       current.ended = false;
       current.endedAt = 0;
       current.startedAt = performance.now();
+      current.lastPaintedTime = null;
       state.trace = newTrace();
       current.source.currentTime = 0;
       await current.source.play();
