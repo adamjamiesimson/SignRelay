@@ -164,7 +164,73 @@ function detectChrome(explicit) {
 }
 
 const HARNESS_SCRIPT = String.raw`(() => {
-  const state = { nextUrl: null, current: null, lastError: null };
+  const state = { nextUrl: null, current: null, lastError: null, trace: null };
+  const newTrace = () => ({
+    workerFrames: 0, workerHandFrames: 0, workerFaceFrames: 0,
+    workerFrameGapOver250: 0, maxWorkerFrameGapMs: 0, lastFrameTimestamp: null,
+    analysisMessages: 0, confirmations: {}, candidates: {},
+    motionReasons: {}, candidateSources: {}, stateCounts: {},
+    pendingAnalyses: 0, modelProblemAnalyses: 0,
+    faults: 0, workerCreated: 0, sourceFrameAdvances: 0,
+    lastSourceTime: -1, transitions: [], lastTransition: "",
+  });
+  const increment = (record, key) => { record[key] = (record[key] || 0) + 1; };
+  const realWorker = window.Worker;
+  window.Worker = class EvalObservedWorker extends realWorker {
+    constructor(...args) {
+      super(...args);
+      if (!String(args[0] || "").includes("recognition.worker")) return;
+      this.__srEvalRecognition = true;
+      if (state.trace && state.current?.startedAt) state.trace.workerCreated += 1;
+      this.addEventListener("message", event => {
+        const d = event.data, t = state.trace;
+        if (!t || !state.current?.startedAt || !d || typeof d !== "object") return;
+        if (d.type === "fault") { t.faults += 1; return; }
+        if (d.type === "confirmed") {
+          increment(t.confirmations, String(d.gloss || "unknown"));
+          return;
+        }
+        if (d.type !== "analysis") return;
+        t.analysisMessages += 1;
+        increment(t.stateCounts, String(d.state || "unknown"));
+        if (d.candidate) increment(t.candidates, String(d.candidate));
+        const diag = d.diagnostic;
+        if (diag) {
+          increment(t.motionReasons, String(diag.motionReason || "unknown"));
+          increment(t.candidateSources, String(diag.candidateSource || "unknown"));
+          if (diag.modelPending) t.pendingAnalyses += 1;
+          if (diag.modelProblem) t.modelProblemAnalyses += 1;
+        }
+        const stage = [diag?.motionReason || "unspecified", diag?.candidateSource || "none", String(d.candidate || "")].join(":");
+        if (stage !== t.lastTransition && t.transitions.length < 120) {
+          t.transitions.push({
+            ms: Math.round(performance.now() - state.current.startedAt),
+            gate: diag?.motionReason || "unavailable", source: diag?.candidateSource || "unavailable",
+            candidate: d.candidate || null,
+          });
+          t.lastTransition = stage;
+        }
+      });
+    }
+    postMessage(...args) {
+      const msg = args[0], t = state.trace;
+      if (this.__srEvalRecognition && t && state.current?.startedAt && msg?.type === "frame") {
+        t.workerFrames += 1;
+        if (msg.frame?.hands?.length) t.workerHandFrames += 1;
+        if (msg.frame?.face?.length) t.workerFaceFrames += 1;
+        const now = msg.frame?.timestamp;
+        if (Number.isFinite(now)) {
+          if (t.lastFrameTimestamp !== null) {
+            const gap = now - t.lastFrameTimestamp;
+            if (gap > 250) t.workerFrameGapOver250 += 1;
+            t.maxWorkerFrameGapMs = Math.max(t.maxWorkerFrameGapMs, gap);
+          }
+          t.lastFrameTimestamp = now;
+        }
+      }
+      return super.postMessage(...args);
+    }
+  };
   const mime = (url) => {
     const clean = String(url || "").split("?")[0].toLowerCase();
     if (clean.endsWith(".webm")) return "video/webm";
@@ -232,6 +298,10 @@ const HARNESS_SCRIPT = String.raw`(() => {
         ctx.fillStyle = "black";
         ctx.fillRect(0, 0, cvs.width, cvs.height);
         if (current.startedAt && source.readyState >= 2) {
+          if (state.trace && source.currentTime > state.trace.lastSourceTime) {
+            state.trace.lastSourceTime = source.currentTime;
+            state.trace.sourceFrameAdvances += 1;
+          }
           const sw = source.videoWidth || cvs.width;
           const sh = source.videoHeight || cvs.height;
           const ratio = Math.min(cvs.width / sw, cvs.height / sh);
@@ -263,6 +333,7 @@ const HARNESS_SCRIPT = String.raw`(() => {
       current.ended = false;
       current.endedAt = 0;
       current.startedAt = performance.now();
+      state.trace = newTrace();
       current.source.currentTime = 0;
       await current.source.play();
       return {
@@ -273,6 +344,11 @@ const HARNESS_SCRIPT = String.raw`(() => {
     },
     snapshot() {
       const current = state.current;
+      const t = state.trace;
+      const trace = t ? (() => {
+        const { lastFrameTimestamp, lastSourceTime, lastTransition, ...publicTrace } = t;
+        return publicTrace;
+      })() : null;
       return {
         configuredUrl: state.nextUrl,
         error: state.lastError,
@@ -283,6 +359,7 @@ const HARNESS_SCRIPT = String.raw`(() => {
         currentTime: current?.source.currentTime ?? null,
         duration: current && Number.isFinite(current.source.duration) ? current.source.duration : null,
         readyState: current?.source.readyState ?? null,
+        trace,
       };
     },
     stop() { stopCurrent(); return true; },
@@ -519,6 +596,7 @@ async function runTrial(cdp, trial, options, coldStart) {
     latency_ms: firstAcceptedAt === null ? null : firstAcceptedAt - startedAt,
     source_duration_ms: sourceDurationMs || null,
     timed_out: timedOut,
+    pipeline: latest.harness?.trace ?? null,
     tracker: {
       samples: detectionCounts.samples,
       person_coverage: ratio(detectionCounts.person, detectionCounts.samples),
@@ -612,6 +690,18 @@ function markdownReport(records, summary, meta) {
   else {
     lines.push("| Language | Confusion | Count |", "| --- | --- | ---: |");
     for (const item of confusions.sort((a, b) => b.count - a.count).slice(0, 25)) lines.push(`| ${item.language.toUpperCase()} | ${item.pair} | ${item.count} |`);
+  }
+  lines.push("", "## Pipeline stages", "", "Counts are worker frame/analysis observations, not fixed frame-rate measurements. Movement and candidate counts use the worker's own diagnostic reasons. Video and landmarks are never included.", "",
+    "| Fixture | Source advances | Frames to worker | Hand frames | Frame gaps >250 ms | Analysis replies | Gate reasons | Candidate sources | Candidates | Faults |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | ---: |");
+  const formatCount = values => Object.entries(values || {}).map(([key, count]) => key + ": " + count).join("; ") || "—";
+  for (const row of records) {
+    const trace = row.pipeline;
+    lines.push("| " + row.fixture_id + " | " + (trace?.sourceFrameAdvances ?? "—") + " | " +
+      (trace?.workerFrames ?? "—") + " | " + (trace?.workerHandFrames ?? "—") + " | " +
+      (trace?.workerFrameGapOver250 ?? "—") + " | " + (trace?.analysisMessages ?? "—") + " | " +
+      formatCount(trace?.motionReasons) + " | " + formatCount(trace?.candidateSources) + " | " +
+      formatCount(trace?.candidates) + " | " + (trace?.faults ?? "—") + " |");
   }
   lines.push("", "## Trial details", "", "| Fixture | Expected | First accepted | Outcome | Confidence | Hands | Person | Face | Pose | Candidate at end |", "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |");
   for (const row of records) {
@@ -734,6 +824,7 @@ async function main() {
             source_duration_ms: null,
             timed_out: false,
             tracker: { samples: 0, person_coverage: 0, hand_coverage: 0, face_coverage: 0, pose_coverage: 0 },
+            pipeline: null,
             final_candidate: null,
             final_candidate_confidence: null,
             predictions: [],
