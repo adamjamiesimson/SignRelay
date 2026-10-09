@@ -28,6 +28,25 @@
 - **No real-world no-sign/background trials were included**; false accept rate cannot be estimated.
 - No evaluator infrastructure errors/timeouts were reported. Core CI tests passed. A successful GitHub Actions job does **not** mean recognition quality passed.
 
+## Repeatability check: identical videos, different outputs
+
+A second CI run, [#37917036143](https://github.com/adamjamiesimson/SignRelay/actions/runs/37917036143), replayed **the same eight clip IDs with matching SHA-256 checksums for all eight video files**. The browser recognition outputs differed:
+
+| Metric | First run (#37916495841) | Repeat (#37917036143) |
+| --- | ---: | ---: |
+| Correct accepted | 2 / 8 | 0 / 8 |
+| Rejected | 6 | 7 |
+| Wrongly accepted | 0 | 1 (PLEASE → STAR) |
+| Accepted coverage | 25.0% | 12.5% |
+| Mean hand coverage | 42.6% | 43.3% |
+| Non-sign false-accept rate | unmeasured | unmeasured |
+
+The repeat did not recognize NO or PLEASE correctly. One PLEASE clip produced **STAR** at 74% interface confidence, when the same clip had correctly produced PLEASE at 86% in the first run.
+
+**Critical limitation:** the evaluator currently has fixed source-video bytes but does *not* guarantee deterministic playback cadence, MediaPipe tracking or async inference timing. These runs establish **end-to-end recognition/replay instability**, not whether the underlying classifier, the browser harness, or both are responsible.
+
+**Immediate implication:** prioritize timestamped pipeline event traces, clip frame delivery counters, and repeated-same-clip trials in a controlled browser environment **before** comparing recognition-model changes or setting an accuracy baseline. Do not treat either run's 25% or 0% as a stable model-quality estimate.
+
 ## What the failure pattern suggests
 
 1. **Low hand tracking coverage is a strong suspect**, especially the rejected NO clip (9.1%) and one HELLO clip (25.0%). The full upper-body/person tracker was active during most of those trials, indicating a more selective issue with hand localization, occlusion, framing, landmark thresholds, or timing.
