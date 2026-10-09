@@ -470,14 +470,30 @@ async function selectLanguageAndStart(cdp, language, fixtureUrl, cameraTimeout) 
   })()`);
   if (!selected) throw new Error(`Could not select ${languageName}`);
   await waitUntil(() => cdp.evaluate(`Array.from(document.querySelectorAll('.figma-language-row [role=radio]')).some(item => item.textContent.includes(${JSON.stringify(languageName)}) && item.getAttribute('aria-checked') === 'true')`), `${languageName} did not become selected`);
-  const started = await cdp.evaluate(`(() => {
-    const button = Array.from(document.querySelectorAll('button')).find(item => item.textContent.trim() === 'Start translating');
-    if (!button) return false;
-    button.click();
-    return true;
-  })()`);
-  if (!started) throw new Error("Start translating button was not found");
-  await waitUntil(() => cdp.evaluate("!!document.querySelector('#camera-title')"), "Translation workspace did not render", 30_000);
+  // React hydration and cold model initialization can delay navigation.
+  // The first click may occur before its handler is attached. Retry once
+  // rather than classifying the first fixture as a recognition failure.
+  let workspaceReady = false;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (await cdp.evaluate("!!document.querySelector('#camera-title')")) {
+      workspaceReady = true; break;
+    }
+    const clicked = await cdp.evaluate(`(() => {
+      const button = Array.from(document.querySelectorAll('button')).find(item => item.textContent.trim() === 'Start translating');
+      if (!button) return false;
+      button.click();
+      return true;
+    })()`);
+    if (!clicked) throw new Error("Start translating button was not found");
+    try {
+      await waitUntil(() => cdp.evaluate("!!document.querySelector('#camera-title')"),
+        "Translation workspace did not render", attempt ? 30_000 : 15_000);
+      workspaceReady = true; break;
+    } catch (error) {
+      if (attempt) throw error;
+    }
+  }
+  if (!workspaceReady) throw new Error("Translation workspace did not render after retry");
   await waitForCamera(cdp, cameraTimeout);
 }
 
