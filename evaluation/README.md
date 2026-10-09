@@ -43,7 +43,7 @@ A model should not be promoted from experimental status on vocabulary size alone
 
 ## Automated labelled-video regression
 
-For repeatable development checks, SignRelay can replay labelled local video clips through the browser's real camera-facing pipeline. The evaluator replaces `getUserMedia()` with a local video-backed `MediaStream`, then lets the normal MediaPipe and recognition workers process those frames. This is useful for finding regressions, recurring sign confusions, rejections, false accepts, and tracking failures without manually signing every test case.
+For repeated development comparisons, SignRelay can replay fixed labelled local video clips through the browser's real camera-facing pipeline. **Fixed video files are not guaranteed to produce deterministic outputs**: playback cadence, landmark tracking and asynchronous inference can differ between runs. The first eight-clip PopSign study on 9 October 2026 produced different predictions across two executions of identical video bytes; see [the diagnostic](../docs/evaluation/popsign-asl-first-browser-smoke-2026-10-09.md). The evaluator replaces `getUserMedia()` with a local video-backed `MediaStream`, then lets the normal MediaPipe and recognition workers process those frames. This is useful for finding regressions, recurring sign confusions, rejections, false accepts, and tracking failures without manually signing every test case.
 
 It currently covers the languages that share the standard translator camera/worker flow: **ASL, BSL, ISL, LSE, and PSL**. RSL and BdSL use separate recognizer flows and keep their specialised evaluation scripts/tests.
 
