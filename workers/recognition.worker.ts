@@ -141,6 +141,14 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     state: frames.length < 6 ? "listening" : result ? "processing" : "uncertain",
     candidate: result?.label ?? null, confidence: result?.confidence ?? 0,
     bufferSize: frames.length, feedback,
+    diagnostic: {
+      motionReason: motion.reason,
+      candidateSource: !result ? "none" : result === personal ? "personal"
+        : result === starter ? "starter" : "model",
+      modelPending: pending.has(activeLanguage),
+      modelProblem,
+      frameHasHands: event.data.frame.hands.length > 0,
+    },
   } satisfies WorkerMessage);
 
   if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
