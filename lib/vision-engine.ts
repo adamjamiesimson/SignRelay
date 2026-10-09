@@ -43,9 +43,11 @@ export class VisionEngine {
         baseOptions: { modelAssetPath: GESTURE_MODEL, delegate: "CPU" },
         runningMode: "VIDEO",
         numHands: 2,
-        minHandDetectionConfidence: 0.55,
-        minHandPresenceConfidence: 0.55,
-        minTrackingConfidence: 0.55,
+        // Experimental sensitivity trial: improve recall when hands are small or partially occluded.
+        // Kept isolated in this draft branch until the fixed-video negative controls are reviewed.
+        minHandDetectionConfidence: 0.45,
+        minHandPresenceConfidence: 0.45,
+        minTrackingConfidence: 0.5,
         cannedGesturesClassifierOptions: { scoreThreshold: 0.55 },
       }),
       vision.FaceLandmarker.createFromOptions(files, {
