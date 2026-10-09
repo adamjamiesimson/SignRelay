@@ -35,7 +35,7 @@ Options:
   --trial-timeout <ms>     Minimum per-video timeout (default: ${DEFAULT_TRIAL_TIMEOUT_MS})
   --tail <ms>              Hold the final frame after video end (default: ${DEFAULT_TAIL_MS})
   --preflight               Validate the labelled fixture manifest without building or starting Chrome
-  --source-frames-only      Deliver exactly one simulated camera frame per decoded source-video frame
+  --source-frames-only      Request canvas frames only on source progress (display stream may repeat frames)
   --strict                  Exit non-zero on any recognition mismatch/rejection/false accept
   --keep-fixtures           Keep temporary staged videos under out/__eval__ for debugging
   --help                    Show this help
@@ -674,7 +674,7 @@ function markdownReport(records, summary, meta) {
     "",
     `Generated: ${new Date().toISOString()}`,
     `Manifest: \`${meta.manifestBasename}\``,
-    `Camera frame mode: \`${meta.sourceFramesOnly ? "source-frames-only" : "continuous-camera-hold"}\``,
+    `Canvas frame request mode: \`${meta.sourceFramesOnly ? "manual-on-source-progress (display can repeat)" : "continuous-camera-hold"}\``,
     "",
     "> These are fixed-source video clips replayed through the real browser camera/MediaPipe/recognition path. Browser frame delivery and inference timing can differ between runs: compare repeated trials before drawing quality conclusions. This is not a substitute for signer-independent live-camera evaluation.",
     "",
