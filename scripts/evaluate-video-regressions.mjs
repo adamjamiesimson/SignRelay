@@ -5,6 +5,7 @@ import { existsSync } from "node:fs";
 import { copyFile, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, extname, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const SUPPORTED_LANGUAGES = new Map([
   ["asl", "American Sign Language"],
@@ -33,6 +34,7 @@ Options:
   --camera-timeout <ms>    Camera + MediaPipe startup timeout (default: ${DEFAULT_CAMERA_TIMEOUT_MS})
   --trial-timeout <ms>     Minimum per-video timeout (default: ${DEFAULT_TRIAL_TIMEOUT_MS})
   --tail <ms>              Hold the final frame after video end (default: ${DEFAULT_TAIL_MS})
+  --preflight               Validate the labelled fixture manifest without building or starting Chrome
   --strict                  Exit non-zero on any recognition mismatch/rejection/false accept
   --keep-fixtures           Keep temporary staged videos under out/__eval__ for debugging
   --help                    Show this help
@@ -54,7 +56,7 @@ function parseArgs(argv) {
       continue;
     }
     const key = arg.slice(2);
-    if (["strict", "keep-fixtures", "help"].includes(key)) {
+    if (["strict", "preflight", "keep-fixtures", "help"].includes(key)) {
       result[key] = true;
       continue;
     }
@@ -80,6 +82,7 @@ function normalizeGloss(value) {
 async function readManifest(path, options) {
   const text = await readFile(path, "utf8");
   const rows = [];
+  const seenIds = new Set();
   for (const [zeroIndex, rawLine] of text.split(/\r?\n/).entries()) {
     const line = rawLine.trim();
     if (!line || line.startsWith("#")) continue;
@@ -88,6 +91,9 @@ async function readManifest(path, options) {
       raw = JSON.parse(line);
     } catch (error) {
       throw new Error(`Manifest line ${zeroIndex + 1} is not valid JSON: ${error instanceof Error ? error.message : error}`);
+    }
+    if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+      throw new Error(`Manifest line ${zeroIndex + 1}: each row must be a JSON object`);
     }
     const language = String(raw.language ?? "").toLowerCase();
     if (!SUPPORTED_LANGUAGES.has(language)) {
@@ -118,6 +124,8 @@ async function readManifest(path, options) {
     }
     const id = String(raw.id ?? `${language}-${zeroIndex + 1}`).trim();
     if (!id) throw new Error(`Manifest line ${zeroIndex + 1}: id cannot be empty`);
+    if (seenIds.has(id)) throw new Error(`Manifest line ${zeroIndex + 1}: duplicate fixture id ${JSON.stringify(id)}`);
+    seenIds.add(id);
     rows.push({
       manifestIndex: zeroIndex,
       id,
@@ -489,7 +497,8 @@ async function runTrial(cdp, trial, options, coldStart) {
   const predictedGloss = first?.gloss ? normalizeGloss(first.gloss) : null;
   const accepted = Boolean(predictedGloss);
   let outcome;
-  if (trial.trialType === "no_sign") outcome = accepted ? "false_accept" : "correct_reject";
+  if (timedOut) outcome = "timeout";
+  else if (trial.trialType === "no_sign") outcome = accepted ? "false_accept" : "correct_reject";
   else if (!accepted) outcome = "rejected";
   else if (predictedGloss !== trial.expectedGloss) outcome = "wrong";
   else outcome = latest.entries.length === 1 ? "correct" : "extra_prediction";
@@ -633,12 +642,21 @@ async function main() {
     trialTimeout: positiveInteger(args["trial-timeout"], DEFAULT_TRIAL_TIMEOUT_MS, "--trial-timeout"),
     tail: positiveInteger(args.tail, DEFAULT_TAIL_MS, "--tail"),
     strict: Boolean(args.strict),
+    preflight: Boolean(args.preflight),
     keepFixtures: Boolean(args["keep-fixtures"]),
     sessionId: `AUTOMATED-${new Date().toISOString().replace(/[:.]/g, "-")}`,
   };
   if (options.language && !SUPPORTED_LANGUAGES.has(options.language)) usage(`--language must be one of: ${[...SUPPORTED_LANGUAGES.keys()].join(", ")}`);
   const manifestPath = resolve(args._[0]);
   const manifest = await readManifest(manifestPath, options);
+  if (options.preflight) {
+    const sign = manifest.filter(trial => trial.trialType === "sign").length;
+    const noSign = manifest.length - sign;
+    const languages = [...new Set(manifest.map(trial => trial.language))].sort().join(", ");
+    console.log(`PASS: ${manifest.length} unique, readable local video fixtures (${sign} sign, ${noSign} no-sign; languages: ${languages}).`);
+    console.log("Manifest preflight does not run recognition or establish accuracy.");
+    return;
+  }
   const chromePath = detectChrome(options.chrome);
   if (!chromePath) throw new Error("Chrome/Chromium was not found. Install Chrome/Chromium or pass --chrome /path/to/executable.");
   const exportIndex = resolve("out/index.html");
@@ -760,7 +778,11 @@ async function main() {
   }
 }
 
-main().catch(error => {
-  console.error(`\nVideo evaluation failed: ${error instanceof Error ? error.message : error}`);
-  process.exitCode = 1;
-});
+export { readManifest, summarize, markdownReport };
+
+if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
+  main().catch(error => {
+    console.error(`\nVideo evaluation failed: ${error instanceof Error ? error.message : error}`);
+    process.exitCode = 1;
+  });
+}
