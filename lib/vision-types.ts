@@ -37,6 +37,8 @@ export type WorkerAnalysis = {
     modelPending: boolean;
     modelProblem: boolean;
     frameHasHands: boolean;
+    starterEvidence?: { mouthDistance: number; noseDistance: number; dx: number; dy: number;
+      wristDx: number; wristDy: number; outwardMouthGrowth: number; };
   };
 };
 
