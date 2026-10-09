@@ -586,7 +586,7 @@ function markdownReport(records, summary, meta) {
     `Generated: ${new Date().toISOString()}`,
     `Manifest: \`${meta.manifestBasename}\``,
     "",
-    "> This is a deterministic replay regression check through the real browser camera/MediaPipe/recognition path. It is not a substitute for signer-independent live-camera evaluation.",
+    "> These are fixed-source video clips replayed through the real browser camera/MediaPipe/recognition path. Browser frame delivery and inference timing can differ between runs: compare repeated trials before drawing quality conclusions. This is not a substitute for signer-independent live-camera evaluation.",
     "",
     "## Summary",
     "",
