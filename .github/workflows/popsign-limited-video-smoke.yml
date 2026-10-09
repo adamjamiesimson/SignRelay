@@ -69,7 +69,7 @@ jobs:
       - name: Validate local fixture list
         run: npm run eval:video -- evaluation/popsign-test.local.jsonl --preflight
 
-      - name: Run actual browser recognition replay
+      - name: Replay first pass through real browser
         run: |
           npm run eval:video -- evaluation/popsign-test.local.jsonl \
             --language asl \
@@ -77,8 +77,22 @@ jobs:
             --trial-timeout 25000 \
             --camera-timeout 120000 \
             --tail 3500 \
-            --output work/popsign/results.jsonl \
-            --report work/popsign/report.md
+            --output work/popsign/pass-a/results.jsonl \
+            --report work/popsign/pass-a/report.md
+
+      - name: Replay identical video fixtures a second time
+        run: |
+          npm run eval:video -- evaluation/popsign-test.local.jsonl \
+            --language asl \
+            --source-frames-only \
+            --trial-timeout 25000 \
+            --camera-timeout 120000 \
+            --tail 3500 \
+            --output work/popsign/pass-b/results.jsonl \
+            --report work/popsign/pass-b/report.md
+
+      - name: Compare frame counts and recognition consistency
+        run: node scripts/compare-video-runs.mjs work/popsign/pass-a/results.jsonl work/popsign/pass-b/results.jsonl work/popsign/repeatability.md
 
       - name: Preserve evaluation-only provenance and reports
         if: always()
