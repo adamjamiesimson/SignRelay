@@ -63,3 +63,36 @@ The repeat did not recognize NO or PLEASE correctly. One PLEASE clip produced **
 5. Seek native-signing expertise for assessing sign variants and interpretation; this benchmark measures isolated label recognition, not full translation.
 
 **Interpretation:** The first real browser/video regression pipeline runs successfully, but it exposes serious gaps in recall for this tiny test set. Do not market it as 25% universal ASL accuracy or declare the model reliable; retain experimental status.
+
+## Follow-up: stage tracing and real-world non-sign activity (9 October)
+
+The trace-enabled browser runner was tested against **eight PopSign ASL sign clips** and **two licensed Commons non-sign-intent clips**. Both Commons files downloaded and passed browser replay:
+
+- `HandWaveExample.webm`, by **NMu11er**, CC BY-SA 4.0. Ordinary waving may visually overlap with a sign: this is a *non-sign-intent control*, not unambiguous evidence that all wave-like output is incorrect.
+- `Fish on hand.webm`, by **KEmel49**, CC BY-SA 4.0. Ordinary human hand activity, not ASL instruction.
+
+| Experiment (Actions) | Source-video policy | Signs correct / 8 | Incorrectly accepted signs | Non-sign accepted / 2 |
+| --- | --- | ---: | --- | ---: |
+| [#37920067474](https://github.com/adamjamiesimson/SignRelay/actions/runs/37920067474) | Continuous stream with repeated held image frames | 0 | HELLO → THANK YOU | 0 |
+| [#37920542110](https://github.com/adamjamiesimson/SignRelay/actions/runs/37920542110) | Canvas redraws only when source video progresses; stream is still clocked | 1 | HELLO → THANK YOU | 0 |
+| [#37921013789](https://github.com/adamjamiesimson/SignRelay/actions/runs/37921013789) | `captureStream(0)` and explicit `requestFrame` upon source progress | 0 | HELLO → THANK YOU | 0 |
+
+**Important repeatability finding:** Source-frame-only *canvas requests do not guarantee source-frame-only processing*. In run #37921013789, the first HELLO clip showed **22 source-image advances versus 70 worker frames**; the first PLEASE clip showed **18 versus 54**. The HTML video element displaying the captured stream can continue advancing its playback timestamp while reusing images. The production capture loop uses changes in `video.currentTime` as evidence of new frames, which may fail to distinguish a genuine newly decoded camera frame from a repeated held image. This is a hypothesis about the mechanism, not yet a proven live-camera defect.
+
+### Pipeline-stage observations (run #37921013789)
+
+- HELLO clip `...8037` was rejected: **2/70** worker frames had detected hands, and **67/70** motion-gate observations reported missing hands. Upstream hand detection is the immediate bottleneck for that clip.
+- HELLO clip `...8032` was incorrectly confirmed as **THANK YOU**, despite hands detected in **52/53** worker frames. The worker emitted three THANK YOU candidates. This is a genuine recognition/heuristic confusion, not simply missing hands.
+- NO clip `...8035` had hands in **3/61** worker frames and no candidates.
+- PLEASE clip `...8038` had hands in **53/54** worker frames, **22 ready-gate events**, **22 pending-model analyses**, but no confirmation. Trace stages expose a possible inference/segmentation-timing problem that requires further inspection.
+- Wave and fish clips were both rejected, but **0/2 negative accepts is insufficient to establish a general false-positive rate**. The waving clip actually reached the motion-ready gate and pending model stage, making it a useful challenging control.
+
+### Engineering priorities based on evidence
+
+1. **Frame identity:** Instrument `requestVideoFrameCallback`/presented-frame changes in the browser capture loop rather than assuming `video.currentTime` proves a new source image. Protect against repeated source images without losing genuine held-sign temporal context.
+2. **Hand-tracking failure:** Inspect PopSign framing and MediaPipe hand landmark coverage for clips with 2–4 detected-hand frames. Do not reduce confidence thresholds to compensate for absent landmarks.
+3. **Candidate confusion:** Reproduce HELLO → THANK YOU (high hand coverage) against signer/pose geometry; add a fixed negative test before modifying the starter rules.
+4. **Classifier scheduling:** Inspect READY + model-PENDING without confirmations on PLEASE; record start/completion/invalidation of model inference before deciding how to tune.
+5. **Broader evaluation:** Add more signers and ordinary background/no-sign clips to estimate reliability and false accepts with meaningful confidence.
+
+All three workflows completed and published **metadata-only** artifacts. No raw PopSign or Commons videos are checked into the repository. The live Firebase site is unchanged.
