@@ -30,6 +30,14 @@ export type WorkerAnalysis = {
   confidence: number;
   bufferSize: number;
   feedback?: string;
+  /** Aggregate-only diagnostics for offline regression tools; never contains media or landmarks. */
+  diagnostic?: {
+    motionReason: "hands" | "moving" | "idle" | "ready";
+    candidateSource: "personal" | "starter" | "model" | "none";
+    modelPending: boolean;
+    modelProblem: boolean;
+    frameHasHands: boolean;
+  };
 };
 
 export type WorkerConfirmation = {
