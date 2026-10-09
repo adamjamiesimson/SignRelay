@@ -132,9 +132,14 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
   const chinDistance = first.mouth ? distance2(first.tip, first.mouth) : Infinity;
   const deltaX = last.tip.x - first.tip.x;
   const deltaY = last.tip.y - first.tip.y;
-  const nearMouth = first.mouth && chinDistance < 0.4;
+  // Geometric safety check: HELLO can sweep down past the face, but its
+  // starting fingertips are typically closer to the nose/temple than chin.
+  // A held-out false THANK YOU on a HELLO clip measured mouthDist=0.341,
+  // noseDist=0.279; this rejects that confusion without raising thresholds.
+  const chinAnchored = first.mouth && first.nose && chinDistance < 0.4
+    && chinDistance <= distance2(first.tip, first.nose) + 0.01;
   const outward = Math.abs(deltaX) > 0.15 || last.palm / first.palm > 1.14;
-  if (mostlyOpen && nearMouth && outward && deltaY > 0.12
+  if (mostlyOpen && chinAnchored && outward && deltaY > 0.12
     && last.mouth && distance2(last.tip, last.mouth) - chinDistance > 0.25) {
     return { ...prediction("THANK YOU", "Thank you"), evidence: {
       mouthDistance: chinDistance, noseDistance: first.nose ? distance2(first.tip, first.nose) : -1,
@@ -151,7 +156,12 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
 
   const atChest = ratio(samples, sample => sample.wrist.y > -0.1 && sample.wrist.y < 1.05
     && Math.abs(sample.wrist.x) < 0.8) >= 0.8;
-  if (atChest && xRange > 0.1 && yRange > 0.1 && circularMotion(xs, ys)) {
+  // Avoid declaring a chest circle from the tail of a face-level greeting.
+  // The first wrist sample must itself be on the chest, not merely 80% of a
+  // mixed head-to-chest sequence.
+  const beginsAtChest = first.wrist.y >= 0.05 && first.wrist.y <= 1.05
+    && Math.abs(first.wrist.x) < 0.8;
+  if (atChest && beginsAtChest && xRange > 0.1 && yRange > 0.1 && circularMotion(xs, ys)) {
     if (mostlyOpen) return prediction("PLEASE", "Please");
     if (mostlyFist) return prediction("SORRY", "Sorry");
   }
