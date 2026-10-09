@@ -4,6 +4,10 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'scripts/evaluate-video-regressions.mjs'
+      - 'training/prepare_popsign_eval.py'
+      - '.github/workflows/popsign-limited-video-smoke.yml'
 
 permissions:
   contents: read
