@@ -38,8 +38,10 @@ jobs:
       - name: Build the actual Firebase export for replay
         run: npm run build:firebase
 
-      - name: Verify browser and media tools
+      - name: Install ffmpeg and verify browser
         run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
           google-chrome --version || chromium --version
           ffmpeg -version | head -1
 
