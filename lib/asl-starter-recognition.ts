@@ -126,22 +126,18 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
     return prediction("NO", "No");
   }
 
-  // THANK YOU starts at the chin and travels outward/downward; a sideways
-  // HELLO sweep can also end further from the mouth. Require a chin anchor
-  // (closer to mouth than nose) and meaningful downward direction so that
-  // lateral greeting motion alone cannot satisfy this heuristic.
+  // Baseline recognition rule retained: the restrictive chin-anchor trial
+  // reduced recall on held-out clips without resolving sign confusion.
+  // Its derived trajectory evidence is kept for offline diagnostic analysis.
   const chinDistance = first.mouth ? distance2(first.tip, first.mouth) : Infinity;
-  const startsAtChin = first.mouth && first.nose && chinDistance < 0.4
-    && chinDistance <= distance2(first.tip, first.nose) + 0.01
-    && first.tip.y >= first.mouth.y - 0.12;
   const deltaX = last.tip.x - first.tip.x;
   const deltaY = last.tip.y - first.tip.y;
+  const nearMouth = first.mouth && chinDistance < 0.4;
   const outward = Math.abs(deltaX) > 0.15 || last.palm / first.palm > 1.14;
-  if (mostlyOpen && startsAtChin && outward && deltaY > 0.12
-    && deltaY >= Math.abs(deltaX) * 0.6
+  if (mostlyOpen && nearMouth && outward && deltaY > 0.12
     && last.mouth && distance2(last.tip, last.mouth) - chinDistance > 0.25) {
     return { ...prediction("THANK YOU", "Thank you"), evidence: {
-      mouthDistance: chinDistance, noseDistance: distance2(first.tip, first.nose!),
+      mouthDistance: chinDistance, noseDistance: first.nose ? distance2(first.tip, first.nose) : -1,
       dx: deltaX, dy: deltaY, wristDx: last.wrist.x - first.wrist.x,
       wristDy: last.wrist.y - first.wrist.y,
       outwardMouthGrowth: distance2(last.tip, last.mouth!) - chinDistance,
