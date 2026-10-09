@@ -43,11 +43,9 @@ export class VisionEngine {
         baseOptions: { modelAssetPath: GESTURE_MODEL, delegate: "CPU" },
         runningMode: "VIDEO",
         numHands: 2,
-        // Stage-2 research trial: recover partially framed/occluded hands.
-        // Do not change the independent 0.62 sign acceptance threshold here.
-        minHandDetectionConfidence: 0.45,
-        minHandPresenceConfidence: 0.50,
-        minTrackingConfidence: 0.50,
+        minHandDetectionConfidence: 0.55,
+        minHandPresenceConfidence: 0.55,
+        minTrackingConfidence: 0.55,
         cannedGesturesClassifierOptions: { scoreThreshold: 0.55 },
       }),
       vision.FaceLandmarker.createFromOptions(files, {
