@@ -36,16 +36,19 @@ describe("common ASL temporal rules (synthetic regressions, not measured accurac
     const frames = makeSign("THANK YOU");
     // The same outward/downward motion does not constitute THANK YOU if
     // the starting hand is nearer the nose than the chin.
+    // Keep the whole trajectory near the nose; shorter recognition windows
+    // must not recover a false chin start merely by excluding frame zero.
     for (const frame of frames) {
-      const progress = (frame.timestamp - frames[0].timestamp) / (frames.at(-1)!.timestamp - frames[0].timestamp);
-      const lift = 0.10 * (1 - progress);
-      for (const point of frame.hands[0].landmarks) point.y -= lift;
+      for (const point of frame.hands[0].landmarks) point.y -= 0.12;
     }
     expect(recognizeAslStarter(frames)?.label).not.toBe("THANK YOU");
   });
   it("requires an actual chest-level start for PLEASE or SORRY", () => {
     const frames = makeSign("PLEASE");
-    for (const point of frames[0].hands[0].landmarks) point.y -= 0.34;
+    // Move the entire circle above the chest, including every short suffix.
+    for (const frame of frames) {
+      for (const point of frame.hands[0].landmarks) point.y -= 0.34;
+    }
     expect(recognizeAslStarter(frames)?.label).not.toBe("PLEASE");
   });
   it("does not translate a static open hand or an idle jittering hand", () => {
