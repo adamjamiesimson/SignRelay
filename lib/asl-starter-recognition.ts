@@ -122,10 +122,20 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
     return prediction("NO", "No");
   }
 
-  const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
-  const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
-  if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12
-    && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth!) > 0.25) {
+  // THANK YOU starts at the chin and travels outward/downward; a sideways
+  // HELLO sweep can also end further from the mouth. Require a chin anchor
+  // (closer to mouth than nose) and meaningful downward direction so that
+  // lateral greeting motion alone cannot satisfy this heuristic.
+  const chinDistance = first.mouth ? distance2(first.tip, first.mouth) : Infinity;
+  const startsAtChin = first.mouth && first.nose && chinDistance < 0.4
+    && chinDistance <= distance2(first.tip, first.nose) + 0.01
+    && first.tip.y >= first.mouth.y - 0.12;
+  const deltaX = last.tip.x - first.tip.x;
+  const deltaY = last.tip.y - first.tip.y;
+  const outward = Math.abs(deltaX) > 0.15 || last.palm / first.palm > 1.14;
+  if (mostlyOpen && startsAtChin && outward && deltaY > 0.12
+    && deltaY >= Math.abs(deltaX) * 0.6
+    && last.mouth && distance2(last.tip, last.mouth) - chinDistance > 0.25) {
     return prediction("THANK YOU", "Thank you");
   }
 
