@@ -37,6 +37,7 @@ import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
+import { VideoFrameGate } from "@/lib/video-frame-gate";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
 import type {
@@ -94,7 +95,9 @@ export function TranslatorExperience() {
   const engineRef = useRef<VisionEngine | null>(null);
   const workerRef = useRef<RecognitionSession | null>(null);
   const animationRef = useRef<number | null>(null);
-  const lastFrameRef = useRef(0);
+  const videoFrameGateRef = useRef(new VideoFrameGate());
+  const videoFrameRequestRef = useRef<number | null>(null);
+  const usePresentedFramesRef = useRef(false);
   const lastVideoTimeRef = useRef(-1);
   const frameErrorsRef = useRef(0);
   const cameraProgressRef = useRef(0);
@@ -262,6 +265,12 @@ export function TranslatorExperience() {
     cameraPendingRef.current = false;
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     animationRef.current = null;
+    if (videoFrameRequestRef.current !== null && videoRef.current?.cancelVideoFrameCallback) {
+      videoRef.current.cancelVideoFrameCallback(videoFrameRequestRef.current);
+    }
+    videoFrameRequestRef.current = null;
+    usePresentedFramesRef.current = false;
+    videoFrameGateRef.current.reset();
     engineRef.current?.close();
     engineRef.current = null;
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -276,6 +285,7 @@ export function TranslatorExperience() {
     setBufferSize(0);
     setRecognitionFeedback("");
     lastVideoTimeRef.current = -1;
+    cameraProgressRef.current = 0;
     frameErrorsRef.current = 0;
     captureStateRef.current = "idle";
     captureFramesRef.current = [];
@@ -303,6 +313,10 @@ export function TranslatorExperience() {
     cameraGenerationRef.current++;
     captureGenerationRef.current++;
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    if (videoFrameRequestRef.current !== null && videoRef.current?.cancelVideoFrameCallback) {
+      videoRef.current.cancelVideoFrameCallback(videoFrameRequestRef.current);
+    }
+    videoFrameRequestRef.current = null;
     engineRef.current?.close();
     streamRef.current?.getTracks().forEach((track) => track.stop());
     window.speechSynthesis?.cancel();
@@ -349,12 +363,39 @@ export function TranslatorExperience() {
     drawPoints(frame.pose, "rgba(190, 220, 255, .9)", 3.2);
   }, []);
 
+  const processTrackedFrame = useCallback((video: HTMLVideoElement, engine: VisionEngine, now: number) => {
+    try {
+      const frame = engine.process(video, now);
+      const nextDetection = {
+        person: frame.face.length > 0 || frame.pose.length > 0,
+        hands: frame.hands.length > 0,
+        face: frame.face.length > 0,
+        pose: frame.pose.length > 0,
+      };
+      setDetection(nextDetection);
+      drawOverlay(frame);
+      if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
+      else workerRef.current?.postMessage({ type: "frame", frame });
+      frameErrorsRef.current = 0;
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") console.warn("A video frame could not be processed", error);
+      if (++frameErrorsRef.current >= 5) {
+        stopCamera();
+        setCameraState("error");
+        setCameraMessage("Hand tracking stopped. Start the camera again to reload tracking.");
+      }
+    }
+  }, [drawOverlay, stopCamera]);
+
+  // requestVideoFrameCallback drives frame processing in modern browsers.
+  // This RAF remains a stall watchdog and a fallback for older browsers.
   const runFrameLoop = useCallback(() => {
     const video = videoRef.current;
     const engine = engineRef.current;
     const now = performance.now();
     if (video && engine && !document.hidden) {
-      if (video.readyState >= 2 && video.currentTime !== lastVideoTimeRef.current) cameraProgressRef.current = now;
+      if (!usePresentedFramesRef.current && video.readyState >= 2
+        && video.currentTime !== lastVideoTimeRef.current) cameraProgressRef.current = now;
       if (now - cameraProgressRef.current >= 8000) {
         stopCamera();
         setCameraState("error");
@@ -362,39 +403,14 @@ export function TranslatorExperience() {
         return;
       }
     }
-    if (!video || !engine || video.readyState < 2 || document.hidden) {
-      animationRef.current = requestAnimationFrame(frameLoopRef.current);
-      return;
-    }
-
-    if (now - lastFrameRef.current >= 50 && video.currentTime !== lastVideoTimeRef.current) {
-      lastFrameRef.current = now;
+    if (video && engine && video.readyState >= 2 && !document.hidden
+      && !usePresentedFramesRef.current
+      && videoFrameGateRef.current.takeFallback(video.currentTime, now)) {
       lastVideoTimeRef.current = video.currentTime;
-      try {
-        const frame = engine.process(video, now);
-        const nextDetection = {
-          person: frame.face.length > 0 || frame.pose.length > 0,
-          hands: frame.hands.length > 0,
-          face: frame.face.length > 0,
-          pose: frame.pose.length > 0,
-        };
-        setDetection(nextDetection);
-        drawOverlay(frame);
-        if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
-        else workerRef.current?.postMessage({ type: "frame", frame });
-        frameErrorsRef.current = 0;
-      } catch (error) {
-        if (process.env.NODE_ENV === "development") console.warn("A video frame could not be processed", error);
-        if (++frameErrorsRef.current >= 5) {
-          stopCamera();
-          setCameraState("error");
-          setCameraMessage("Hand tracking stopped. Start the camera again to reload tracking.");
-          return;
-        }
-      }
+      processTrackedFrame(video, engine, now);
     }
-    animationRef.current = requestAnimationFrame(frameLoopRef.current);
-  }, [drawOverlay, stopCamera]);
+    if (engineRef.current) animationRef.current = requestAnimationFrame(frameLoopRef.current);
+  }, [processTrackedFrame, stopCamera]);
 
   useEffect(() => {
     frameLoopRef.current = runFrameLoop;
@@ -440,7 +456,31 @@ export function TranslatorExperience() {
       });
       if (generation !== cameraGenerationRef.current) { engine.close(); return; }
       engineRef.current = engine;
+      videoFrameGateRef.current.reset();
+      lastVideoTimeRef.current = -1;
       cameraProgressRef.current = performance.now();
+      const video = videoRef.current;
+      // presentedFrames comes from decoded/presented frame callbacks; unlike
+      // video.currentTime, it gives each browser-presented frame an identity.
+      usePresentedFramesRef.current = typeof video?.requestVideoFrameCallback === "function";
+      if (usePresentedFramesRef.current && video) {
+        const subscribe = () => {
+          if (generation !== cameraGenerationRef.current || engineRef.current !== engine) return;
+          videoFrameRequestRef.current = video.requestVideoFrameCallback((_time, metadata) => {
+            videoFrameRequestRef.current = null;
+            if (generation !== cameraGenerationRef.current || engineRef.current !== engine) return;
+            const now = performance.now();
+            const observed = videoFrameGateRef.current.observePresented(metadata.presentedFrames);
+            if (observed) cameraProgressRef.current = now;
+            if (observed && video.readyState >= 2 && !document.hidden
+              && videoFrameGateRef.current.takePresented(now)) {
+              processTrackedFrame(video, engine, now);
+            }
+            subscribe();
+          });
+        };
+        subscribe();
+      }
       setCameraState("active");
       setCameraMessage("Camera and vision models active");
       animationRef.current = requestAnimationFrame(frameLoopRef.current);
@@ -464,7 +504,7 @@ export function TranslatorExperience() {
     } finally {
       if (generation === cameraGenerationRef.current) cameraPendingRef.current = false;
     }
-  }, [stopCamera]);
+  }, [processTrackedFrame, stopCamera]);
 
   useEffect(() => {
     const resume = () => {
