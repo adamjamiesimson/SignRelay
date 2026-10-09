@@ -174,6 +174,7 @@ const HARNESS_SCRIPT = String.raw`(() => {
     motionReasons: {}, candidateSources: {}, stateCounts: {},
     pendingAnalyses: 0, modelProblemAnalyses: 0,
     faults: 0, workerCreated: 0, sourceFrameAdvances: 0,
+    starterEvidence: [],
     lastSourceTime: -1, transitions: [], lastTransition: "",
   });
   const increment = (record, key) => { record[key] = (record[key] || 0) + 1; };
@@ -202,6 +203,9 @@ const HARNESS_SCRIPT = String.raw`(() => {
           increment(t.candidateSources, String(diag.candidateSource || "unknown"));
           if (diag.modelPending) t.pendingAnalyses += 1;
           if (diag.modelProblem) t.modelProblemAnalyses += 1;
+          if (diag.starterEvidence && t.starterEvidence.length < 20) {
+            t.starterEvidence.push({ label: d.candidate, ...diag.starterEvidence });
+          }
         }
         const stage = [diag?.motionReason || "unspecified", diag?.candidateSource || "none", String(d.candidate || "")].join(":");
         if (stage !== t.lastTransition && t.transitions.length < 120) {
