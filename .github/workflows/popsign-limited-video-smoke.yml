@@ -1,0 +1,105 @@
+name: PopSign ASL limited real-video smoke benchmark
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: popsign-asl-limited-smoke
+  cancel-in-progress: true
+
+jobs:
+  limited-video-benchmark:
+    if: github.head_ref == 'feature/video-eval-quality-gates-2026-10-09'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout test branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test evaluator and Python fixture preparation
+        run: |
+          npm run test:video-evaluator
+          python3 -m py_compile training/prepare_popsign_eval.py
+
+      - name: Build the actual Firebase export for replay
+        run: npm run build:firebase
+
+      - name: Verify browser and media tools
+        run: |
+          google-chrome --version || chromium --version
+          ffmpeg -version | head -1
+
+      - name: Fetch small held-out PopSign ASL sample
+        run: |
+          python3 training/prepare_popsign_eval.py \
+            --dataset popsign_v1_0 \
+            --category game \
+            --split test \
+            --per-sign 2 \
+            --target hello=HELLO \
+            --target no=NO \
+            --target yes=YES \
+            --target please=PLEASE \
+            --output-dir evaluation/videos/popsign \
+            --manifest evaluation/popsign-test.local.jsonl
+          wc -l evaluation/popsign-test.local.jsonl
+
+      - name: Add synthetic no-hands negative control (not real signer data)
+        run: |
+          ffmpeg -hide_banner -loglevel error -f lavfi -i "color=c=black:s=640x480:r=20" \
+            -t 4 -an -c:v libx264 -pix_fmt yuv420p -y evaluation/videos/popsign/no-hands-control.mp4
+          echo '{"id":"no-hands-black-control","language":"asl","trial_type":"no_sign","expected_gloss":null,"video":"videos/popsign/no-hands-control.mp4","condition":"synthetic-black-no-hands","device":"synthetic-control","notes":"Generated blank negative control, not representative of real-world non-sign activity"}' >> evaluation/popsign-test.local.jsonl
+
+      - name: Validate local fixture list
+        run: npm run eval:video -- evaluation/popsign-test.local.jsonl --preflight
+
+      - name: Run actual browser recognition replay
+        run: |
+          npm run eval:video -- evaluation/popsign-test.local.jsonl \
+            --language asl \
+            --trial-timeout 25000 \
+            --camera-timeout 120000 \
+            --tail 3500 \
+            --output work/popsign/results.jsonl \
+            --report work/popsign/report.md
+
+      - name: Preserve evaluation-only provenance and reports
+        if: always()
+        run: |
+          mkdir -p work/popsign
+          cat > work/popsign/SOURCE.txt <<'EOF'
+          PopSign ASL v1.0, test split, "game" category; CC BY 4.0.
+          Georgia Tech Contextual Computing Group and Deaf Professional Arts Network.
+          https://signdata.cc.gatech.edu/view/datasets/popsign_v1_0/
+          Four predetermined target signs, up to two signer-distinct clips each.
+          One synthetic blank/no-hands negative control (not real-world behavior).
+          Preliminary software regression smoke test; not a representative accuracy estimate.
+          Raw video/landmarks not included in artifact.
+          EOF
+          if [ -f evaluation/popsign-test.local.jsonl ]; then
+            cp evaluation/popsign-test.local.jsonl work/popsign/manifest.jsonl
+          fi
+          rm -rf evaluation/videos/popsign out/__eval__
+
+      - name: Upload metadata only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: popsign-asl-limited-video-report
+          path: work/popsign/
+          retention-days: 14
+          if-no-files-found: warn
