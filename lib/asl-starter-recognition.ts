@@ -1,7 +1,11 @@
 import type { HandObservation, Point, VisionFrame } from "./vision-types";
 import { recentContinuousFrames } from "./frame-timing";
 
-export type StarterPrediction = { label: string; text: string; confidence: number };
+export type StarterPrediction = { label: string; text: string; confidence: number;
+  /** Debug-only derived motion distances; no landmarks or position sequences. */
+  evidence?: { mouthDistance: number; noseDistance: number; dx: number; dy: number;
+    wristDx: number; wristDy: number; outwardMouthGrowth: number; };
+};
 
 export function validHand(hand: HandObservation | undefined): hand is HandObservation {
   return !!hand && hand.landmarks.length === 21
@@ -136,7 +140,12 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
   if (mostlyOpen && startsAtChin && outward && deltaY > 0.12
     && deltaY >= Math.abs(deltaX) * 0.6
     && last.mouth && distance2(last.tip, last.mouth) - chinDistance > 0.25) {
-    return prediction("THANK YOU", "Thank you");
+    return { ...prediction("THANK YOU", "Thank you"), evidence: {
+      mouthDistance: chinDistance, noseDistance: distance2(first.tip, first.nose!),
+      dx: deltaX, dy: deltaY, wristDx: last.wrist.x - first.wrist.x,
+      wristDy: last.wrist.y - first.wrist.y,
+      outwardMouthGrowth: distance2(last.tip, last.mouth!) - chinDistance,
+    } };
   }
 
   const raised = ratio(samples, sample => !!sample.nose && sample.wrist.y < sample.nose.y + 0.55) >= 0.7;
