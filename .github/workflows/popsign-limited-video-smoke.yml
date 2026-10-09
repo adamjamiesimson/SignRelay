@@ -73,6 +73,7 @@ jobs:
         run: |
           npm run eval:video -- evaluation/popsign-test.local.jsonl \
             --language asl \
+            --source-frames-only \
             --trial-timeout 25000 \
             --camera-timeout 120000 \
             --tail 3500 \
@@ -93,6 +94,7 @@ jobs:
           https://commons.wikimedia.org/wiki/File:HandWaveExample.webm
           https://commons.wikimedia.org/wiki/File:Fish_on_hand.webm
           Some ordinary waving overlaps visually with signed HELLO; interpret cautiously.
+          Frame mode for this run: source-frames-only (one requestFrame per source advancement).
           Preliminary software regression smoke test; not a representative accuracy estimate.
           Raw video/landmarks not included in artifact.
           EOF
