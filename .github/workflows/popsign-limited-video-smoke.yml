@@ -38,12 +38,8 @@ jobs:
       - name: Build the actual Firebase export for replay
         run: npm run build:firebase
 
-      - name: Install ffmpeg and verify browser
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y ffmpeg
-          google-chrome --version || chromium --version
-          ffmpeg -version | head -1
+      - name: Verify headless Chrome
+        run: google-chrome --version || chromium --version
 
       - name: Fetch small held-out PopSign ASL sample
         run: |
@@ -59,12 +55,6 @@ jobs:
             --output-dir evaluation/videos/popsign \
             --manifest evaluation/popsign-test.local.jsonl
           wc -l evaluation/popsign-test.local.jsonl
-
-      - name: Add synthetic no-hands negative control (not real signer data)
-        run: |
-          ffmpeg -hide_banner -loglevel error -f lavfi -i "color=c=black:s=640x480:r=20" \
-            -t 4 -an -c:v libx264 -pix_fmt yuv420p -y evaluation/videos/popsign/no-hands-control.mp4
-          echo '{"id":"no-hands-black-control","language":"asl","trial_type":"no_sign","expected_gloss":null,"video":"videos/popsign/no-hands-control.mp4","condition":"synthetic-black-no-hands","device":"synthetic-control","notes":"Generated blank negative control, not representative of real-world non-sign activity"}' >> evaluation/popsign-test.local.jsonl
 
       - name: Validate local fixture list
         run: npm run eval:video -- evaluation/popsign-test.local.jsonl --preflight
@@ -88,7 +78,7 @@ jobs:
           Georgia Tech Contextual Computing Group and Deaf Professional Arts Network.
           https://signdata.cc.gatech.edu/view/datasets/popsign_v1_0/
           Four predetermined target signs, up to two signer-distinct clips each.
-          One synthetic blank/no-hands negative control (not real-world behavior).
+          No non-sign clips included in this initial run; false-accept rate is unmeasured.
           Preliminary software regression smoke test; not a representative accuracy estimate.
           Raw video/landmarks not included in artifact.
           EOF
