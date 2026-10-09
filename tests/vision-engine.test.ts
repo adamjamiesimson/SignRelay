@@ -8,6 +8,21 @@ vi.mock("@mediapipe/tasks-vision", () => ({
 }));
 beforeEach(() => vi.resetAllMocks());
 describe("vision resources and capture cadence", () => {
+  it("uses explicit hand-tracking sensitivity without relaxing sign acceptance", async () => {
+    const gesture = { close: vi.fn(), recognizeForVideo: vi.fn().mockReturnValue({ landmarks: [], handedness: [], gestures: [] }) };
+    const face = { close: vi.fn(), detectForVideo: vi.fn().mockReturnValue({ faceLandmarks: [] }) };
+    const pose = { close: vi.fn(), detectForVideo: vi.fn().mockReturnValue({ landmarks: [] }) };
+    mocks.gesture.mockResolvedValue(gesture); mocks.face.mockResolvedValue(face); mocks.pose.mockResolvedValue(pose);
+    const { VisionEngine } = await import("../lib/vision-engine");
+    const engine = await VisionEngine.create();
+    expect(mocks.gesture).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      numHands: 2,
+      minHandDetectionConfidence: 0.45,
+      minHandPresenceConfidence: 0.50,
+      minTrackingConfidence: 0.50,
+    }));
+    engine.close();
+  });
   it("releases models that loaded when another model fails to start", async () => {
     const gesture = { close: vi.fn() }, pose = { close: vi.fn() };
     mocks.gesture.mockResolvedValue(gesture);
