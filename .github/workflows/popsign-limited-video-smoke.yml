@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - 'scripts/evaluate-video-regressions.mjs'
+      - 'scripts/fetch-commons-negative-fixtures.mjs'
+      - 'workers/recognition.worker.ts'
+      - 'lib/vision-types.ts'
       - 'training/prepare_popsign_eval.py'
       - '.github/workflows/popsign-limited-video-smoke.yml'
 
@@ -60,6 +63,9 @@ jobs:
             --manifest evaluation/popsign-test.local.jsonl
           wc -l evaluation/popsign-test.local.jsonl
 
+      - name: Add licensed real-world non-sign gesture controls
+        run: node scripts/fetch-commons-negative-fixtures.mjs evaluation/popsign-test.local.jsonl
+
       - name: Validate local fixture list
         run: npm run eval:video -- evaluation/popsign-test.local.jsonl --preflight
 
@@ -82,14 +88,18 @@ jobs:
           Georgia Tech Contextual Computing Group and Deaf Professional Arts Network.
           https://signdata.cc.gatech.edu/view/datasets/popsign_v1_0/
           Four predetermined target signs, up to two signer-distinct clips each.
-          No non-sign clips included in this initial run; false-accept rate is unmeasured.
+          Non-sign-intent controls from Wikimedia Commons: HandWaveExample.webm
+          NMu11er, CC BY-SA 4.0; Fish on hand.webm, KEmel49, CC BY-SA 4.0.
+          https://commons.wikimedia.org/wiki/File:HandWaveExample.webm
+          https://commons.wikimedia.org/wiki/File:Fish_on_hand.webm
+          Some ordinary waving overlaps visually with signed HELLO; interpret cautiously.
           Preliminary software regression smoke test; not a representative accuracy estimate.
           Raw video/landmarks not included in artifact.
           EOF
           if [ -f evaluation/popsign-test.local.jsonl ]; then
             cp evaluation/popsign-test.local.jsonl work/popsign/manifest.jsonl
           fi
-          rm -rf evaluation/videos/popsign out/__eval__
+          rm -rf evaluation/videos/popsign evaluation/videos/commons-negatives out/__eval__
 
       - name: Upload metadata only
         if: always()
