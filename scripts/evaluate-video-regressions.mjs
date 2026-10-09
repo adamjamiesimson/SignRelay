@@ -35,6 +35,7 @@ Options:
   --trial-timeout <ms>     Minimum per-video timeout (default: ${DEFAULT_TRIAL_TIMEOUT_MS})
   --tail <ms>              Hold the final frame after video end (default: ${DEFAULT_TAIL_MS})
   --preflight               Validate the labelled fixture manifest without building or starting Chrome
+  --source-frames-only      Deliver exactly one simulated camera frame per decoded source-video frame
   --strict                  Exit non-zero on any recognition mismatch/rejection/false accept
   --keep-fixtures           Keep temporary staged videos under out/__eval__ for debugging
   --help                    Show this help
@@ -56,7 +57,7 @@ function parseArgs(argv) {
       continue;
     }
     const key = arg.slice(2);
-    if (["strict", "preflight", "keep-fixtures", "help"].includes(key)) {
+    if (["strict", "preflight", "source-frames-only", "keep-fixtures", "help"].includes(key)) {
       result[key] = true;
       continue;
     }
@@ -165,6 +166,7 @@ function detectChrome(explicit) {
 
 const HARNESS_SCRIPT = String.raw`(() => {
   const state = { nextUrl: null, current: null, lastError: null, trace: null };
+  const sourceFramesOnly = new URL(location.href).searchParams.has("__eval_source_frames");
   const newTrace = () => ({
     workerFrames: 0, workerHandFrames: 0, workerFaceFrames: 0,
     workerFrameGapOver250: 0, maxWorkerFrameGapMs: 0, lastFrameTimestamp: null,
@@ -282,10 +284,15 @@ const HARNESS_SCRIPT = String.raw`(() => {
       if (!context || typeof canvas.captureStream !== "function") throw new Error("Canvas video capture is unavailable in this Chrome build");
       context.fillStyle = "black";
       context.fillRect(0, 0, canvas.width, canvas.height);
-      const stream = canvas.captureStream(20);
+      const stream = canvas.captureStream(sourceFramesOnly ? 0 : 20);
+      const captureTrack = stream.getVideoTracks()[0];
+      if (sourceFramesOnly && typeof captureTrack?.requestFrame !== "function") {
+        throw new Error("source-frames-only requires CanvasCaptureMediaStreamTrack.requestFrame");
+      }
+      if (sourceFramesOnly) captureTrack.requestFrame(); // bootstrap black frame for camera startup
       const current = {
         url, objectUrl, source, canvas, context, stream,
-        raf: 0, lastPaintedTime: null, startedAt: 0, endedAt: 0, ended: false,
+        raf: 0, captureTrack, lastPaintedTime: null, startedAt: 0, endedAt: 0, ended: false,
       };
       state.current = current;
       source.addEventListener("ended", () => {
@@ -308,6 +315,7 @@ const HARNESS_SCRIPT = String.raw`(() => {
           const ratio = Math.min(cvs.width / sw, cvs.height / sh);
           const dw = sw * ratio, dh = sh * ratio;
           ctx.drawImage(source, (cvs.width - dw) / 2, (cvs.height - dh) / 2, dw, dh);
+          if (sourceFramesOnly) current.captureTrack.requestFrame();
           current.lastPaintedTime = source.currentTime;
           if (state.trace) state.trace.sourceFrameAdvances += 1;
         }
@@ -360,6 +368,7 @@ const HARNESS_SCRIPT = String.raw`(() => {
         currentTime: current?.source.currentTime ?? null,
         duration: current && Number.isFinite(current.source.duration) ? current.source.duration : null,
         readyState: current?.source.readyState ?? null,
+        frameMode: sourceFramesOnly ? "source-frames-only" : "continuous-camera-hold",
         trace,
       };
     },
@@ -441,8 +450,8 @@ async function waitForServer(origin, server) {
   }, "Static export server did not start", 15_000, 150);
 }
 
-async function navigateToLanding(cdp, origin) {
-  await cdp.send("Page.navigate", { url: origin });
+async function navigateToLanding(cdp, origin, sourceFramesOnly = false) {
+  await cdp.send("Page.navigate", { url: sourceFramesOnly ? origin + "/?__eval_source_frames=1" : origin });
   await waitUntil(() => cdp.evaluate("document.querySelectorAll('.figma-language-row [role=radio]').length >= 5"), "SignRelay landing page did not render", 30_000);
 }
 
@@ -598,6 +607,7 @@ async function runTrial(cdp, trial, options, coldStart) {
     source_duration_ms: sourceDurationMs || null,
     timed_out: timedOut,
     pipeline: latest.harness?.trace ?? null,
+    frame_mode: latest.harness?.frameMode ?? null,
     tracker: {
       samples: detectionCounts.samples,
       person_coverage: ratio(detectionCounts.person, detectionCounts.samples),
@@ -664,6 +674,7 @@ function markdownReport(records, summary, meta) {
     "",
     `Generated: ${new Date().toISOString()}`,
     `Manifest: \`${meta.manifestBasename}\``,
+    `Camera frame mode: \`${meta.sourceFramesOnly ? "source-frames-only" : "continuous-camera-hold"}\``,
     "",
     "> These are fixed-source video clips replayed through the real browser camera/MediaPipe/recognition path. Browser frame delivery and inference timing can differ between runs: compare repeated trials before drawing quality conclusions. This is not a substitute for signer-independent live-camera evaluation.",
     "",
@@ -734,6 +745,7 @@ async function main() {
     tail: positiveInteger(args.tail, DEFAULT_TAIL_MS, "--tail"),
     strict: Boolean(args.strict),
     preflight: Boolean(args.preflight),
+    sourceFramesOnly: Boolean(args["source-frames-only"]),
     keepFixtures: Boolean(args["keep-fixtures"]),
     sessionId: `AUTOMATED-${new Date().toISOString().replace(/[:.]/g, "-")}`,
   };
@@ -785,7 +797,7 @@ async function main() {
 
     for (const [language, trials] of byLanguage) {
       console.log(`\n${language.toUpperCase()} — ${trials.length} video trial${trials.length === 1 ? "" : "s"}`);
-      await navigateToLanding(cdp, origin);
+      await navigateToLanding(cdp, origin, options.sourceFramesOnly);
       let first = true;
       for (const [trialIndex, trial] of trials.entries()) {
         const safeId = trial.id.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80) || `trial-${trial.manifestIndex + 1}`;
@@ -848,7 +860,7 @@ async function main() {
     await mkdir(dirname(options.output), { recursive: true });
     await mkdir(dirname(options.report), { recursive: true });
     await writeFile(options.output, records.map(row => JSON.stringify(row)).join("\n") + "\n", "utf8");
-    await writeFile(options.report, markdownReport(records, summary, { manifestBasename: basename(manifestPath) }), "utf8");
+    await writeFile(options.report, markdownReport(records, summary, { manifestBasename: basename(manifestPath), sourceFramesOnly: options.sourceFramesOnly }), "utf8");
 
     console.log("\nSummary");
     for (const item of summary.languages) {
