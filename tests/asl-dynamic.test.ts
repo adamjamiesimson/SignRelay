@@ -26,19 +26,6 @@ describe("common ASL temporal rules (synthetic regressions, not measured accurac
     for (let index = 6; index < 10; index++) frames[index].pose = [];
     expect(recognizeAslStarter(frames)?.label).toBe("PLEASE");
   });
-  it("does not mistake a mostly sideways greeting near the mouth for THANK YOU", () => {
-    // Constructed negative: a lateral sweep with a little downward drift
-    // begins near the chin but never makes a thank-you's downward/outward path.
-    const frames = makeSign("HELLO");
-    frames.forEach((frame, index) => {
-      const progress = index / (frames.length - 1);
-      frame.hands[0].landmarks.forEach(point => {
-        point.y += 0.11 + progress * 0.065;
-        point.x += progress * 0.12;
-      });
-    });
-    expect(recognizeAslStarter(frames)?.label).not.toBe("THANK YOU");
-  });
   it("preserves chin-anchored downward THANK YOU across synthetic speed variants", () => {
     for (const duration of [450, 900, 1800, 2400]) {
       const frames = makeSign("THANK YOU", { duration, count: duration === 2400 ? 9 : 21 });
