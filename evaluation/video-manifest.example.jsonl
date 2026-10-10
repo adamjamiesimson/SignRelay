@@ -1,0 +1,4 @@
+# Copy this file to evaluation/video-manifest.local.jsonl and point each row at a local clip under evaluation/videos/.
+# Paths are resolved relative to this manifest file.
+{"id":"asl-hello-01","language":"asl","trial_type":"sign","expected_gloss":"HELLO","video":"videos/asl/hello-01.mp4","condition":"bright-front","signer_id":"S01"}
+{"id":"asl-no-sign-01","language":"asl","trial_type":"no_sign","expected_gloss":null,"video":"videos/asl/no-sign-01.mp4","condition":"bright-front","signer_id":"S01"}

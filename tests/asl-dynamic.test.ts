@@ -26,6 +26,12 @@ describe("common ASL temporal rules (synthetic regressions, not measured accurac
     for (let index = 6; index < 10; index++) frames[index].pose = [];
     expect(recognizeAslStarter(frames)?.label).toBe("PLEASE");
   });
+  it("preserves chin-anchored downward THANK YOU across synthetic speed variants", () => {
+    for (const duration of [450, 900, 1800, 2400]) {
+      const frames = makeSign("THANK YOU", { duration, count: duration === 2400 ? 9 : 21 });
+      expect(recognizeAslStarter(frames)?.label).toBe("THANK YOU");
+    }
+  });
   it("does not translate a static open hand or an idle jittering hand", () => {
     expect(recognizeAslStarter(makeSign("IDLE"))).toBeNull();
     expect(recognizeAslStarter(makeSign("IDLE", { jitter: 0.003 }))).toBeNull();

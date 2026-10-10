@@ -1,7 +1,11 @@
 import type { HandObservation, Point, VisionFrame } from "./vision-types";
 import { recentContinuousFrames } from "./frame-timing";
 
-export type StarterPrediction = { label: string; text: string; confidence: number };
+export type StarterPrediction = { label: string; text: string; confidence: number;
+  /** Debug-only derived motion distances; no landmarks or position sequences. */
+  evidence?: { mouthDistance: number; noseDistance: number; dx: number; dy: number;
+    wristDx: number; wristDy: number; outwardMouthGrowth: number; };
+};
 
 export function validHand(hand: HandObservation | undefined): hand is HandObservation {
   return !!hand && hand.landmarks.length === 21
@@ -122,11 +126,26 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
     return prediction("NO", "No");
   }
 
-  const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
-  const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
-  if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12
-    && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth!) > 0.25) {
-    return prediction("THANK YOU", "Thank you");
+  // A downward wave near the upper face can resemble an outward THANK YOU
+  // when only mouth proximity is checked. Prefer *relative* anatomical anchor:
+  // the starting fingertips should be closer to the mouth than the nose,
+  // allowing normal differences in framing, scaling and camera distance.
+  // If nose tracking is unavailable, retain the prior mouth-only rule.
+  const chinDistance = first.mouth ? distance2(first.tip, first.mouth) : Infinity;
+  const noseDistance = first.nose ? distance2(first.tip, first.nose) : Infinity;
+  const startsAtChinNotNose = !first.nose || chinDistance + 0.025 < noseDistance;
+  const deltaX = last.tip.x - first.tip.x;
+  const deltaY = last.tip.y - first.tip.y;
+  const nearMouth = first.mouth && chinDistance < 0.4;
+  const outward = Math.abs(deltaX) > 0.15 || last.palm / first.palm > 1.14;
+  if (mostlyOpen && nearMouth && startsAtChinNotNose && outward && deltaY > 0.12
+    && last.mouth && distance2(last.tip, last.mouth) - chinDistance > 0.25) {
+    return { ...prediction("THANK YOU", "Thank you"), evidence: {
+      mouthDistance: chinDistance, noseDistance: first.nose ? noseDistance : -1,
+      dx: deltaX, dy: deltaY, wristDx: last.wrist.x - first.wrist.x,
+      wristDy: last.wrist.y - first.wrist.y,
+      outwardMouthGrowth: distance2(last.tip, last.mouth!) - chinDistance,
+    } };
   }
 
   const raised = ratio(samples, sample => !!sample.nose && sample.wrist.y < sample.nose.y + 0.55) >= 0.7;
