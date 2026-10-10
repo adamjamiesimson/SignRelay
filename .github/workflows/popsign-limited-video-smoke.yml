@@ -8,6 +8,7 @@ on:
       - 'scripts/evaluate-video-regressions.mjs'
       - 'scripts/fetch-commons-negative-fixtures.mjs'
       - 'workers/recognition.worker.ts'
+      - 'lib/asl-starter-recognition.ts'
       - 'lib/vision-types.ts'
       - 'training/prepare_popsign_eval.py'
       - '.github/workflows/popsign-limited-video-smoke.yml'
