@@ -56,6 +56,7 @@ jobs:
             --split test \
             --per-sign 2 \
             --target hello=HELLO \
+            --target thankyou='THANK YOU' \
             --target no=NO \
             --target yes=YES \
             --target please=PLEASE \
@@ -102,7 +103,7 @@ jobs:
           PopSign ASL v1.0, test split, "game" category; CC BY 4.0.
           Georgia Tech Contextual Computing Group and Deaf Professional Arts Network.
           https://signdata.cc.gatech.edu/view/datasets/popsign_v1_0/
-          Four predetermined target signs, up to two signer-distinct clips each.
+          Five predetermined target signs, up to two signer-distinct clips each.
           Non-sign-intent controls from Wikimedia Commons: HandWaveExample.webm
           NMu11er, CC BY-SA 4.0; Fish on hand.webm, KEmel49, CC BY-SA 4.0.
           https://commons.wikimedia.org/wiki/File:HandWaveExample.webm
