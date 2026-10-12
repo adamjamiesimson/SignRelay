@@ -91,7 +91,7 @@ describe("read-only paired ASL tracking triage", () => {
       const markdown = readFileSync(out, "utf8");
       expect(markdown).toContain("wrong-PLEASE");
       expect(markdown).toContain("HELLO");
-      expect(markdown).not.toContain("landmark coordinates");
+      expect(markdown).not.toContain('"x":');
       expect(markdown).not.toContain("<video");
     } finally {
       rmSync(dir, { recursive: true, force: true });
