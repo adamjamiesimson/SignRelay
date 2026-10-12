@@ -50,8 +50,8 @@ describe("read-only paired ASL tracking triage", () => {
     expect(markdown).toContain("starter: 3");
   });
   it("attributes wrong PLEASE to the worker-confirmed origin instead of candidate counters", () => {
-    const left = fixture(7, "THANK YOU", "PLEASE", 8);
-    left.pipeline.confirmedEvents = [{ gloss: "PLEASE", source: "starter", ms: 420 }];
+    const base = fixture(7, "THANK YOU", "PLEASE", 8);
+    const left = { ...base, pipeline: { ...base.pipeline, confirmedEvents: [{ gloss: "PLEASE", source: "starter", ms: 420 }] } };
     const right = { ...left, pipeline: { ...left.pipeline, confirmedEvents: [{ gloss: "PLEASE", source: "model", ms: 480 }] } };
     const result = diagnosePairs([left], [right]);
     expect(result.rows[0].confirmedSources).toEqual({ a: "starter", b: "model" });
