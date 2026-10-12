@@ -24,6 +24,7 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
   it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("confirms %s once without another label", async sign => {
     await feed(makeSign(sign));
     expect(confirmations().map(result => result.gloss)).toEqual([sign]);
+    expect(confirmations().map(result => result.type === "confirmed" ? result.source : null)).toEqual(["starter"]);
   });
   it("recognizes successive different signs after consuming the first movement", async () => {
     await feed(makeSign("NO"));
@@ -55,6 +56,7 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     await feed(frames);
     expect(mocks.model.mock.calls.length).toBeGreaterThanOrEqual(2);
     expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+    expect(confirmations()[0]?.type === "confirmed" ? confirmations()[0].source : null).toBe("model");
     expect(mocks.model.mock.calls[0][0].length).toBeLessThan(24);
   });
   it("recovers after lost tracking without replaying an old sign", async () => {
