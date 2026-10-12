@@ -111,7 +111,7 @@ export async function preparePilot(inputFile, outputFile = DEFAULT_OUTPUT, { str
       expected_gloss: trialType === "sign" ? gloss : null,
       signer_id: signerId,
       video: relative(dirname(output), videoPath).replaceAll("\\", "/"),
-      device: typeof row.device === "string" ? row.device.slice(0, 40) : "pilot-recording",
+      device: ["phone", "webcam", "tablet"].includes(row.device) ? row.device : "other",
       condition: ["bright-front", "dim-front", "side-view", "other"].includes(row.condition)
         ? row.condition : "other",
       split: "pilot-review-unverified",
