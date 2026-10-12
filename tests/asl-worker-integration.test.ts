@@ -56,7 +56,7 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     await feed(frames);
     expect(mocks.model.mock.calls.length).toBeGreaterThanOrEqual(2);
     expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
-    expect(confirmations()[0]?.type === "confirmed" ? confirmations()[0].source : null).toBe("model");
+    expect(confirmations().map(result => result.type === "confirmed" ? result.source : null)).toEqual(["model"]);
     expect(mocks.model.mock.calls[0][0].length).toBeLessThan(24);
   });
   it("recovers after lost tracking without replaying an old sign", async () => {
