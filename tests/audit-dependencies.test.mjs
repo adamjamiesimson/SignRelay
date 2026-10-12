@@ -1,5 +1,9 @@
-import assert from "node:assert/strict";
-import { test } from "node:test";
+import { expect, test } from "vitest";
+
+const assert = {
+  deepEqual(actual, expected) { expect(actual).toEqual(expected); },
+  equal(actual, expected) { expect(actual).toBe(expected); },
+};
 import { assessAudit } from "../scripts/audit-dependencies.mjs";
 
 const advisory = "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm";
