@@ -9,6 +9,7 @@ on:
       - 'scripts/report-asl-confusions.mjs'
       - 'scripts/diagnose-asl-tracking.mjs'
       - 'tests/asl-tracking-diagnostics.test.ts'
+      - 'tests/asl-worker-integration.test.ts'
       - 'tests/asl-paired-confusions.test.ts'
       - 'docs/evaluation/asl-paired-confusion-report-2026-10-12.md'
       - 'scripts/fetch-commons-negative-fixtures.mjs'
