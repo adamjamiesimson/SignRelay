@@ -70,8 +70,8 @@ describe("paired ASL confusion diagnostics",()=>{
       const a = join(dir, "a.jsonl"), b = join(dir, "b.jsonl"), output = join(dir, "report.md");
       const trialA = [sign(1, "HELLO", "THANK YOU", "wrong"), negative(2)];
       const trialB = [sign(1, "HELLO", null, "rejected"), negative(2)];
-      writeFileSync(a, trialA.map(row => JSON.stringify(row)).join("\\n") + "\\n");
-      writeFileSync(b, trialB.map(row => JSON.stringify(row)).join("\\n") + "\\n");
+      writeFileSync(a, trialA.map(row => JSON.stringify(row)).join("\n") + "\n");
+      writeFileSync(b, trialB.map(row => JSON.stringify(row)).join("\n") + "\n");
       const runner = fileURLToPath(new URL("../scripts/report-asl-confusions.mjs", import.meta.url));
       const success = spawnSync(process.execPath, [runner, a, b, output], { encoding: "utf8" });
       expect(success.status).toBe(0);
@@ -81,7 +81,7 @@ describe("paired ASL confusion diagnostics",()=>{
       expect(markdown).toContain("fixture-1");
       expect(markdown).toContain("NOT independent-signer accuracy");
 
-      writeFileSync(b, JSON.stringify(trialB[0]) + "\\n");
+      writeFileSync(b, JSON.stringify(trialB[0]) + "\n");
       const mismatch = spawnSync(process.execPath, [runner, a, b, output], { encoding: "utf8" });
       expect(mismatch.status).not.toBe(0);
       expect(mismatch.stderr).toContain("same fixture IDs");
