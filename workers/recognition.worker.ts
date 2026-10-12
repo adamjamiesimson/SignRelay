@@ -171,6 +171,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   })) {
     self.postMessage({ type: "confirmed", session: event.data.session, text: result.text, gloss: result.label,
       confidence: result.confidence, timestamp: Date.now(),
+      source: result === personal ? "personal" : result === starter ? "starter" : "model",
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
     if (activeLanguage === "asl" && !candidateIsModel) {
