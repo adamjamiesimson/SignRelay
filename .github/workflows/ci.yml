@@ -43,6 +43,9 @@ jobs:
       - name: Unit and regression tests
         run: npm test
 
+      - name: Video evaluator preflight tests
+        run: npm run test:video-evaluator
+
       - name: Lint
         run: npm run lint
 

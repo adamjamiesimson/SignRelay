@@ -20,7 +20,9 @@
     "lint": "eslint . --ignore-pattern .next --ignore-pattern out --ignore-pattern .sites-runtime",
     "typecheck": "tsc --noEmit",
     "repo:guard": "node scripts/check-large-assets.mjs",
-    "eval:live": "node scripts/summarize-live-evaluation.mjs"
+    "eval:live": "node scripts/summarize-live-evaluation.mjs",
+    "eval:video": "node scripts/evaluate-video-regressions.mjs",
+    "test:video-evaluator": "node --test tests/video-evaluator.nodecheck.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.22-rc.20250304",

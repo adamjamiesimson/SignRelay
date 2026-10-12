@@ -141,6 +141,15 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     state: frames.length < 6 ? "listening" : result ? "processing" : "uncertain",
     candidate: result?.label ?? null, confidence: result?.confidence ?? 0,
     bufferSize: frames.length, feedback,
+    diagnostic: {
+      motionReason: motion.reason,
+      candidateSource: !result ? "none" : result === personal ? "personal"
+        : result === starter ? "starter" : "model",
+      modelPending: pending.has(activeLanguage),
+      modelProblem,
+      frameHasHands: event.data.frame.hands.length > 0,
+      ...(result === starter && starter?.evidence ? { starterEvidence: starter.evidence } : {}),
+    },
   } satisfies WorkerMessage);
 
   if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
@@ -162,6 +171,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   })) {
     self.postMessage({ type: "confirmed", session: event.data.session, text: result.text, gloss: result.label,
       confidence: result.confidence, timestamp: Date.now(),
+      source: result === personal ? "personal" : result === starter ? "starter" : "model",
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
     if (activeLanguage === "asl" && !candidateIsModel) {
