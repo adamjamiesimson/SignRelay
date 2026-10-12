@@ -49,6 +49,8 @@ export type WorkerConfirmation = {
   gloss: string;
   confidence: number;
   timestamp: number;
+  /** Label origin only (no camera frames or landmarks); useful for diagnostic attribution. */
+  source?: "personal" | "starter" | "model";
 };
 
 export type WorkerMessage = WorkerAnalysis | WorkerConfirmation
