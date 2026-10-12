@@ -49,6 +49,16 @@ describe("read-only paired ASL tracking triage", () => {
     expect(markdown).toContain("candidate-source counter");
     expect(markdown).toContain("starter: 3");
   });
+  it("attributes wrong PLEASE to the worker-confirmed origin instead of candidate counters", () => {
+    const left = fixture(7, "THANK YOU", "PLEASE", 8);
+    left.pipeline.confirmedEvents = [{ gloss: "PLEASE", source: "starter", ms: 420 }];
+    const right = { ...left, pipeline: { ...left.pipeline, confirmedEvents: [{ gloss: "PLEASE", source: "model", ms: 480 }] } };
+    const result = diagnosePairs([left], [right]);
+    expect(result.rows[0].confirmedSources).toEqual({ a: "starter", b: "model" });
+    expect(renderTrackingTriage(result)).toContain("starter / model");
+    const mismatched = { ...left, pipeline: { ...left.pipeline, confirmedEvents: [{ gloss: "HELLO", source: "starter", ms: 420 }] } };
+    expect(diagnosePairs([mismatched], [right]).rows[0].confirmedSources.a).toBe("unknown");
+  });
   it("does not label valid PLEASE or no-sign controls as false PLEASE", () => {
     const please = fixture(1, "PLEASE", "PLEASE", 9);
     const idle = fixture(2, null, null, 6);
