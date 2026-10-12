@@ -170,7 +170,7 @@ const HARNESS_SCRIPT = String.raw`(() => {
   const newTrace = () => ({
     workerFrames: 0, workerHandFrames: 0, workerFaceFrames: 0,
     workerFrameGapOver250: 0, maxWorkerFrameGapMs: 0, lastFrameTimestamp: null,
-    analysisMessages: 0, confirmations: {}, candidates: {},
+    analysisMessages: 0, confirmations: {}, confirmationSources: {}, confirmedEvents: [], candidates: {},
     motionReasons: {}, candidateSources: {}, stateCounts: {},
     pendingAnalyses: 0, modelProblemAnalyses: 0,
     faults: 0, workerCreated: 0, sourceFrameAdvances: 0,
@@ -190,7 +190,13 @@ const HARNESS_SCRIPT = String.raw`(() => {
         if (!t || !state.current?.startedAt || !d || typeof d !== "object") return;
         if (d.type === "fault") { t.faults += 1; return; }
         if (d.type === "confirmed") {
+          const source = ["personal", "starter", "model"].includes(d.source) ? d.source : "unknown";
           increment(t.confirmations, String(d.gloss || "unknown"));
+          increment(t.confirmationSources, source);
+          if (t.confirmedEvents.length < 20) t.confirmedEvents.push({
+            gloss: String(d.gloss || "unknown"), source,
+            ms: Math.round(performance.now() - state.current.startedAt),
+          });
           return;
         }
         if (d.type !== "analysis") return;
@@ -722,6 +728,17 @@ function markdownReport(records, summary, meta) {
   else {
     lines.push("| Language | Confusion | Count |", "| --- | --- | ---: |");
     for (const item of confusions.sort((a, b) => b.count - a.count).slice(0, 25)) lines.push(`| ${item.language.toUpperCase()} | ${item.pair} | ${item.count} |`);
+  }
+  lines.push("", "## Confirmed gloss origins", "",
+    "Source is provided by the worker at confirmation, not inferred from nearby analyses. Legacy traces can show unknown. Provenance does not establish correctness.", "",
+    "| Fixture | First transcript gloss | Confirmed source | Additional confirmations |",
+    "| --- | --- | --- | --- |");
+  for (const row of records) {
+    const events = row.pipeline?.confirmedEvents ?? [];
+    const first = events[0]?.gloss === row.predicted_gloss ? events[0] : null;
+    lines.push("| " + row.fixture_id + " | " + (row.predicted_gloss ?? "REJECT") + " | " +
+      (first?.source ?? "unknown") + " | " +
+      (events.slice(1).map(event => event.gloss + ": " + event.source).join("; ") || "—") + " |");
   }
   lines.push("", "## Pipeline stages", "", "Counts are worker frame/analysis observations, not fixed frame-rate measurements. Movement and candidate counts use the worker's own diagnostic reasons. Video and landmarks are never included.", "",
     "| Fixture | Source advances | Frames to worker | Hand frames | Frame gaps >250 ms | Analysis replies | Gate reasons | Candidate sources | Candidates | Faults |",
