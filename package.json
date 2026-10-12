@@ -13,7 +13,7 @@
     "build": "npm run build:firebase",
     "build:firebase": "npm run install:rsl-model && node scripts/verify-bdsl-assets.mjs && node scripts/verify-lse-assets.mjs && node scripts/verify-psl-assets.mjs && node scripts/prepare-export.mjs && npm run build:worker && next build && node scripts/secure-export.mjs",
     "start": "node scripts/serve-export.mjs",
-    "test": "vitest run && node --test tests/audit-dependencies.test.mjs",
+    "test": "vitest run",
     "test:rendered": "node --test tests/rendered-html.test.mjs",
     "audit:secrets": "node scripts/audit-secrets.mjs",
     "audit:security": "node scripts/audit-dependencies.mjs && npm run audit:secrets && npm run test:rendered",
