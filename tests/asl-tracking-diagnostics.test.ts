@@ -46,7 +46,7 @@ describe("read-only paired ASL tracking triage", () => {
     expect(report.rows[0].observations).toContain("wrong-PLEASE");
     const markdown = renderTrackingTriage(report);
     expect(markdown).toContain("THANK YOU");
-    expect(markdown).toContain("candidate-source counter");
+    expect(markdown).toContain("Candidate-source counts are aggregate");
     expect(markdown).toContain("starter: 3");
   });
   it("attributes wrong PLEASE to the worker-confirmed origin instead of candidate counters", () => {
