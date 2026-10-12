@@ -36,6 +36,12 @@ export function diagnosePairs(first, second) {
   // Reuse fingerprint, signer, fixture-ID and outcome-integrity checks.
   const result = analyzePair(first, second);
   const rows = result.paired.map(pair => {
+    const sourceOfFirst = item => {
+      const first = item.pipeline?.confirmedEvents?.[0];
+      if (!first || first.gloss !== item.predicted_gloss) return "unknown";
+      return ["starter", "model", "personal"].includes(first.source) ? first.source : "unknown";
+    };
+    const confirmedSources = { a: sourceOfFirst(pair.left), b: sourceOfFirst(pair.right) };
     const a = coverage(pair.left);
     const b = coverage(pair.right);
     const observations = [];
@@ -63,7 +69,7 @@ export function diagnosePairs(first, second) {
     }
     const priority = wrongPlease || observations.includes("worker-or-model-problem") ? 1 :
       observations.includes("low-worker-hand-coverage") || !pair.stable ? 2 : 3;
-    return { pair, a, b, observations, priority };
+    return { pair, a, b, confirmedSources, observations, priority };
   }).sort((a, b) => a.priority - b.priority || a.pair.id.localeCompare(b.pair.id));
   return {
     rows, total: rows.length,
@@ -88,8 +94,8 @@ export function renderTrackingTriage(report) {
     "",
     "## Highest-priority clips",
     "",
-    "| Fixture | Expected | A → B | Worker hands A/B | UI hands A/B | Observations | Worker candidate sources A/B |",
-    "| --- | --- | --- | ---: | ---: | --- | --- |",
+    "| Fixture | Expected | A → B | Confirmed origin A/B | Worker hands A/B | UI hands A/B | Observations | Analysis candidate counts A/B |",
+    "| --- | --- | --- | --- | ---: | ---: | --- | --- |",
   ];
   for (const row of report.rows) {
     const { left, right, id } = row.pair;
@@ -97,6 +103,7 @@ export function renderTrackingTriage(report) {
     lines.push("| " + [
       id, left.expected_gloss ?? "NO_SIGN",
       prediction(left) + " → " + prediction(right),
+      row.confirmedSources.a + " / " + row.confirmedSources.b,
       pct(row.a.worker) + " / " + pct(row.b.worker),
       pct(row.a.ui) + " / " + pct(row.b.ui),
       row.observations.length ? row.observations.join("; ") : "none",
@@ -107,7 +114,7 @@ export function renderTrackingTriage(report) {
     "## What to investigate next",
     "",
     "1. For low-worker-hand-coverage clips, inspect source framing, visibility, clipping, MediaPipe hand availability and frame scheduling before modifying recognition thresholds.",
-    "2. For wrong-PLEASE predictions, compare confirmed output, candidate-source counts, motion gates and the actual labeled sign. A candidate-source counter is **not proof** that a particular rule caused the final transcript word.",
+    "2. For wrong-PLEASE predictions, inspect the worker-confirmed origin (starter, model, personal, unknown), then examine that pipeline separately. Candidate-source counts are aggregate analysis observations, not proof of what was confirmed.",
     "3. For errors despite hands being observed, review temporal segmentation and asynchronous model decision timing; do not assume hand presence means high landmark quality.",
     "4. Repeat on previously unseen, signer-confirmed, licensed or consented recordings. These reused PopSign clips cannot demonstrate signer-independent accuracy.",
     "",
