@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { analyzePair, renderReport } from "../scripts/report-asl-confusions.mjs";
 
-const hash = id => String(id).padStart(64,"0");
-function sign(id, gloss, predicted=gloss, outcome="correct") {
+const hash = (id: number) => String(id).padStart(64,"0");
+function sign(id: number, gloss: string, predicted: string | null = gloss, outcome = "correct") {
   return {
     fixture_id:"fixture-"+id, language:"asl", trial_type:"sign",
     expected_gloss:gloss, predicted_gloss:predicted, accepted:predicted!==null, outcome,
@@ -11,7 +11,7 @@ function sign(id, gloss, predicted=gloss, outcome="correct") {
     frame_mode:"source-frames-only", tracker:{hand_coverage:0.7},
   };
 }
-function negative(id, accepted=false) {
+function negative(id: number, accepted=false) {
   return {
     ...sign(id,"NO_SIGN",accepted?"HELLO":null,accepted?"false_accept":"correct_reject"),
     trial_type:"no_sign", expected_gloss:null,
