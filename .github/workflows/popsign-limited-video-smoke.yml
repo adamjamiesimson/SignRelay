@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - 'scripts/evaluate-video-regressions.mjs'
+      - 'scripts/report-asl-confusions.mjs'
+      - 'tests/asl-paired-confusions.test.ts'
+      - 'docs/evaluation/asl-paired-confusion-report-2026-10-12.md'
       - 'scripts/fetch-commons-negative-fixtures.mjs'
       - 'workers/recognition.worker.ts'
       - 'lib/asl-starter-recognition.ts'
@@ -41,6 +44,7 @@ jobs:
       - name: Test evaluator and Python fixture preparation
         run: |
           npm run test:video-evaluator
+          npm test -- tests/asl-paired-confusions.test.ts
           python3 -m py_compile training/prepare_popsign_eval.py
 
       - name: Build the actual Firebase export for replay
@@ -95,6 +99,13 @@ jobs:
 
       - name: Compare frame counts and recognition consistency
         run: node scripts/compare-video-runs.mjs work/popsign/pass-a/results.jsonl work/popsign/pass-b/results.jsonl work/popsign/repeatability.md
+
+      - name: Report matched ASL sign confusions and replay instability
+        run: |
+          node scripts/report-asl-confusions.mjs \
+            work/popsign/pass-a/results.jsonl \
+            work/popsign/pass-b/results.jsonl \
+            work/popsign/confusions.md
 
       - name: Preserve evaluation-only provenance and reports
         if: always()
