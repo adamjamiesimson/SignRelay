@@ -64,4 +64,14 @@ describe("bounded template matching lane", () => {
     const create = vi.fn(); const client = new TemplateMatchingClient("personal", vi.fn(), vi.fn(), create);
     client.submit(makeSign("HELLO")); expect(create).not.toHaveBeenCalled(); client.terminate();
   });
+  it("gives loading a longer deadline and starts a fresh matching deadline after download", async () => {
+    vi.useFakeTimers(); const h = harness(); h.client.submit(h.frames(0)); const request = h.requests()[0];
+    const phase = (value: "loading" | "matching") => h.ports[0].onmessage?.({ data: {
+      id: request.id, generation: request.generation, prediction: null, phase: value,
+    } } as MessageEvent<MatchOutput>);
+    phase("loading"); await vi.advanceTimersByTimeAsync(180000);
+    expect(h.error).not.toHaveBeenCalled();
+    phase("matching"); await vi.advanceTimersByTimeAsync(20001);
+    expect(h.error).toHaveBeenCalledOnce(); h.client.terminate();
+  });
 });

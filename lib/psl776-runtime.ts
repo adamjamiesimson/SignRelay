@@ -1,5 +1,6 @@
 import { prepareCalibrationSequence, compileDistanceSequence, cachedTemplateSequence, compiledSequenceDistance, type MatchOptions } from "./personalized-recognition";
 import type { VisionFrame } from "./vision-types";
+import { downloadModelBytes } from "./model-download";
 
 export type Psl776Prediction = { label: string; text: string; confidence: number; margin: number };
 export type Psl776Template = { gloss: string; text: string; frames: number[][] };
@@ -10,20 +11,39 @@ export type Psl776Template = { gloss: string; text: string; frames: number[][] }
 const REJECT_DISTANCE = 0.5;
 const REJECT_MARGIN = 0.06;
 
-let templatesPromise: Promise<Psl776Template[]> | null = null;
+let templatesPromise: { promise: Promise<Psl776Template[]>; controller: AbortController } | null = null;
+let readyTemplates: Psl776Template[] | null = null;
 
 /** Cache a successful load, but allow the worker's backoff to retry failures. */
-function loadTemplates() {
-  templatesPromise ??= fetch("/models/psl776-hfad/templates.json.gz").then(async (response) => {
-    if (!response.ok) throw new Error("PSL template bundle could not load");
+function loadTemplates(signal?: AbortSignal) {
+  signal?.throwIfAborted();
+  if (readyTemplates) return Promise.resolve(readyTemplates);
+  if (templatesPromise?.controller.signal.aborted) templatesPromise = null;
+  if (!templatesPromise) {
+    const controller = new AbortController();
+    const attempt = { controller, promise: null! as Promise<Psl776Template[]> };
+    templatesPromise = attempt;
+    attempt.promise = downloadModelBytes("/models/psl776-hfad/templates.json.gz", { signal: controller.signal }).then(async bytes => {
     if (!("DecompressionStream" in globalThis)) throw new Error("This browser cannot unpack the PSL template bundle");
-    const stream = new Blob([await response.arrayBuffer()]).stream().pipeThrough(new DecompressionStream("gzip"));
-    return new Response(stream).json() as Promise<Psl776Template[]>;
+    const stream = new Blob([bytes as BlobPart]).stream().pipeThrough(new DecompressionStream("gzip"));
+    const templates: Psl776Template[] = await new Response(stream).json();
+    controller.signal.throwIfAborted();
+    if (!Array.isArray(templates) || templates.length !== 775 || new Set(templates.map(t => t.gloss)).size !== 775
+      || templates.some(t => !t.gloss || !t.text || !Array.isArray(t.frames) || t.frames.length !== 24
+        || !cachedTemplateSequence(t.frames).valid || cachedTemplateSequence(t.frames).length !== 240)) {
+      throw new Error("Invalid PSL reference bundle");
+    }
+    readyTemplates = templates;
+    return templates;
   }).catch(error => {
-    templatesPromise = null;
+    if (templatesPromise === attempt) templatesPromise = null;
     throw error;
   });
-  return templatesPromise;
+  }
+  const attempt = templatesPromise;
+  const abort = () => attempt.controller.abort(signal?.reason);
+  signal?.addEventListener("abort", abort, { once: true });
+  return attempt.promise.finally(() => signal?.removeEventListener("abort", abort));
 }
 
 /**
@@ -39,8 +59,10 @@ function loadTemplates() {
  */
 export async function recognizePsl776(sequence: VisionFrame[], options: MatchOptions = {}): Promise<Psl776Prediction | null> {
   if (sequence.length < 8) return null;
-  const templates = await loadTemplates();
+  options.onPhase?.("loading");
+  const templates = await loadTemplates(options.signal);
   options.signal?.throwIfAborted();
+  options.onPhase?.("matching");
   return matchPslTemplates(sequence, templates, options);
 }
 

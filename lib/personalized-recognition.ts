@@ -39,7 +39,7 @@ export function recognizePersonalTemplate(
   return finishPersonalMatch(personalDistances(frames, templates));
 }
 
-export type MatchOptions = { signal?: AbortSignal; sliceMs?: number };
+export type MatchOptions = { signal?: AbortSignal; sliceMs?: number; onPhase?: (phase: "loading" | "matching") => void };
 
 /** Same windows, distance cutoff and ambiguity veto as the synchronous matcher.
  * Run only in the dedicated matcher worker. Yielding lets reset/cancel messages

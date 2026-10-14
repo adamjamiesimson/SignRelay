@@ -18,7 +18,10 @@ self.onmessage = async ({ data }: MessageEvent<MatchInput>) => {
   const scan = new AbortController();
   controller = scan;
   try {
-    const options = { signal: scan.signal };
+    const options = { signal: scan.signal, onPhase: (phase: "loading" | "matching") => {
+      self.postMessage({ id: data.id, generation: data.generation, prediction: null, phase } satisfies MatchOutput);
+    } };
+    if (kind === "personal") options.onPhase("matching");
     const prediction = kind === "personal"
       ? await recognizePersonalTemplateAsync(data.frames, templates, options)
       : await recognizePsl776(data.frames, options);

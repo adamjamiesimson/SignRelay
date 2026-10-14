@@ -4,7 +4,7 @@ export type TemplatePrediction = { label: string; text: string; confidence: numb
 export type MatchRequest = { type: "match"; id: number; generation: number; frames: VisionFrame[] };
 export type MatchInput = MatchRequest | { type: "configure"; kind: "personal" | "psl"; templates: CalibrationTemplate[] }
   | { type: "cancel" };
-export type MatchOutput = { id: number; generation: number; prediction: TemplatePrediction | null; error?: string };
+export type MatchOutput = { id: number; generation: number; prediction: TemplatePrediction | null; error?: string; phase?: "loading" | "matching" };
 type Port = Pick<Worker, "postMessage" | "terminate" | "onmessage" | "onerror" | "onmessageerror">;
 
 /** A separate CPU lane: one active scan plus one replaceable latest snapshot.
@@ -33,7 +33,8 @@ export class TemplateMatchingClient {
   configure(templates: CalibrationTemplate[] = []) {
     this.reset();
     this.templates = templates;
-    this.worker?.postMessage({ type: "configure", kind: this.kind, templates } satisfies MatchInput);
+    try { this.worker?.postMessage({ type: "configure", kind: this.kind, templates } satisfies MatchInput); }
+    catch { this.fail("Saved signs could not be sent to the matcher. Retrying shortly…"); }
   }
 
   submit(frames: VisionFrame[]) {
@@ -49,7 +50,8 @@ export class TemplateMatchingClient {
     this.newestTimestamp = -Infinity;
     // Keep the in-flight slot until it acknowledges cancellation. Otherwise
     // a reset could post a second scan while the first is still unwinding.
-    this.worker?.postMessage({ type: "cancel" } satisfies MatchInput);
+    try { this.worker?.postMessage({ type: "cancel" } satisfies MatchInput); }
+    catch { this.fail("Template matching was interrupted. Retrying shortly…"); }
   }
 
   terminate() { this.closed = true; this.queued = null; this.dispose(); }
@@ -62,6 +64,10 @@ export class TemplateMatchingClient {
         this.worker = worker;
         worker.onmessage = ({ data }: MessageEvent<MatchOutput>) => {
           if (worker !== this.worker || data.id !== this.active?.id) return;
+          if (data.phase) {
+            if (data.generation === this.generation) this.armTimeout(data.phase === "loading" ? 400000 : 20000);
+            return;
+          }
           const request = this.active;
           this.clearTimer();
           this.active = null;
@@ -82,7 +88,7 @@ export class TemplateMatchingClient {
       this.queued = null;
       this.worker.postMessage(this.active);
       // Includes first PSL download; never restarts the camera/model worker.
-      this.timer = setTimeout(() => this.fail("Template matching timed out. Retrying shortly…"), 120000);
+      this.armTimeout(120000);
     } catch { this.fail("Template matching could not start. Retrying shortly…"); }
   }
 
@@ -92,6 +98,10 @@ export class TemplateMatchingClient {
     this.onError(message);
   }
   private clearTimer() { if (this.timer) clearTimeout(this.timer); this.timer = null; }
+  private armTimeout(ms: number) {
+    this.clearTimer();
+    this.timer = setTimeout(() => this.fail("Template matching timed out. Retrying shortly…"), ms);
+  }
   private dispose() {
     this.clearTimer();
     if (this.worker) {
