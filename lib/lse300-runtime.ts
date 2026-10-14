@@ -108,7 +108,7 @@ function softmax(logits: Float32Array) {
 export function readable(label: string) {
   const words = label.split("^").map(part => part
     .replace(/\([^)]*\)/g, "")
-    .replace(/\d+$/g, "")
+    .replace(/\d+(?=[_.-]|$)/g, "")
     .replace(/[_.-]+/g, " ")
     .trim()).filter(Boolean).join(" ");
   return words.toLocaleLowerCase("es-ES").replace(/(^|\s)(\p{L})/gu,
