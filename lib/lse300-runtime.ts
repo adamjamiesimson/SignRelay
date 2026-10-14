@@ -102,6 +102,15 @@ function softmax(logits: Float32Array) {
   return values.map(value => value / total);
 }
 
-function readable(label: string) {
-  return label.toLocaleLowerCase("es-ES").replace(/[_.-]+/g, " ").replace(/\b\p{L}/gu, character => character.toLocaleUpperCase("es-ES"));
+/** Separate model class IDs from words shown/spoken to users.
+ * Dataset variant codes remain intact in the gloss but are not speech text.
+ */
+export function readable(label: string) {
+  const words = label.split("^").map(part => part
+    .replace(/\([^)]*\)/g, "")
+    .replace(/\d+$/g, "")
+    .replace(/[_.-]+/g, " ")
+    .trim()).filter(Boolean).join(" ");
+  return words.toLocaleLowerCase("es-ES").replace(/(^|\s)(\p{L})/gu,
+    (_, boundary: string, letter: string) => boundary + letter.toLocaleUpperCase("es-ES"));
 }
