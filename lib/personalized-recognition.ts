@@ -48,7 +48,10 @@ export function recognizePersonalTemplate(
     const candidate = prepareCalibrationSequence(recent);
     for (const template of templates) {
       if (template.frames.length !== CALIBRATION_SEQUENCE_LENGTH) continue;
-      const distance = sequenceDistance(candidate, template.frames);
+      // A personal match must be at most 0.5 away; a competing gloss closer
+      // than 0.06 can still veto it. Distances above 0.56 cannot affect either gate.
+      const distance = sequenceDistance(candidate, template.frames, 0.56);
+      if (!Number.isFinite(distance)) continue;
       if (distance < (matches.get(template.gloss)?.distance ?? Infinity)) matches.set(template.gloss, { template, distance });
     }
   }
@@ -63,7 +66,13 @@ export function recognizePersonalTemplate(
   };
 }
 
-export function sequenceDistance(a: number[][], b: number[][]) {
+/**
+ * Exact DTW with rolling rows and an optional upper bound. Every DTW path
+ * passes through a cell in each row and costs are nonnegative, so a row whose
+ * cheapest path already exceeds the bound can be abandoned safely.
+ * Without a bound this returns the same distance as the original full matrix.
+ */
+export function sequenceDistance(a: number[][], b: number[][], maxDistance = Infinity) {
   if (!a.length || !b.length) return Number.POSITIVE_INFINITY;
   // Previous versions used 17 pose points (208 features). Keep those saved examples readable.
   const canonical = (sequence: number[][]) => sequence.map(row => row.length === 208 ? [...row, ...new Array(32).fill(0)] : row);
@@ -71,19 +80,26 @@ export function sequenceDistance(a: number[][], b: number[][]) {
   b = canonical(b);
   const length = a[0].length;
   if (!length || [...a, ...b].some(row => row.length !== length || row.some(value => !Number.isFinite(value)))) return Infinity;
-  const rows = a.length + 1;
-  const cols = b.length + 1;
-  const matrix = Array.from({ length: rows }, () => new Float64Array(cols).fill(Number.POSITIVE_INFINITY));
-  matrix[0][0] = 0;
 
-  for (let i = 1; i < rows; i += 1) {
-    for (let j = 1; j < cols; j += 1) {
+  const divisor = Math.max(a.length, b.length);
+  const cutoff = Number.isFinite(maxDistance) ? maxDistance * divisor : Infinity;
+  let previous = new Float64Array(b.length + 1).fill(Infinity);
+  let current = new Float64Array(b.length + 1).fill(Infinity);
+  previous[0] = 0;
+
+  for (let i = 1; i <= a.length; i++) {
+    current[0] = Infinity;
+    let minimumInRow = Infinity;
+    for (let j = 1; j <= b.length; j++) {
       const cost = featureDistance(a[i - 1], b[j - 1]);
-      matrix[i][j] = cost + Math.min(matrix[i - 1][j], matrix[i][j - 1], matrix[i - 1][j - 1]);
+      const value = cost + Math.min(previous[j], current[j - 1], previous[j - 1]);
+      current[j] = value;
+      if (value < minimumInRow) minimumInRow = value;
     }
+    if (minimumInRow > cutoff) return Infinity;
+    [previous, current] = [current, previous];
   }
-
-  return matrix[a.length][b.length] / Math.max(a.length, b.length);
+  return previous[b.length] / divisor;
 }
 
 function frameToFeatures(frame: VisionFrame) {
