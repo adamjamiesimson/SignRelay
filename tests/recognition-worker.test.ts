@@ -160,6 +160,27 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     await frames(20);
     expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
   });
+  it.each(["bsl", "isl"] as const)("allows a slow initial %s model download beyond 20 seconds", async language => {
+    mocks[language].mockImplementation(() => new Promise(() => {}));
+    await worker.onmessage({ data: { type: "templates", language, templates: [] } });
+    await frames(270);
+    const faults = worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage)
+      .filter(message => message.type === "fault");
+    expect(mocks[language]).toHaveBeenCalled();
+    expect(faults).toHaveLength(0);
+  });
+
+  it("does not allow a previous language's pending download to restart the current session", async () => {
+    mocks.bsl.mockImplementation(() => new Promise(() => {}));
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [] } });
+    await frames(28);
+    await worker.onmessage({ data: { type: "templates", language: "csl", templates: [] } });
+    await frames(250);
+    const faults = worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage)
+      .filter(message => message.type === "fault");
+    expect(faults).toHaveLength(0);
+  });
+
   it("requests recovery if a model never resolves, instead of leaving it permanently pending", async () => {
     mocks.asl.mockImplementation(() => new Promise(() => {}));
     await frames(200);
