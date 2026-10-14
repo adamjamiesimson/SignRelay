@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+      - 'fix/**'
   workflow_dispatch:
 
 permissions:
@@ -48,6 +49,14 @@ jobs:
 
       - name: Build recognition workers
         run: npm run build:worker
+
+      - name: Compare pre-optimization and bounded DTW (synthetic CPU baseline)
+        run: |
+          npx esbuild scripts/benchmarks/personal-dtw.ts --bundle --platform=node --format=esm --outfile=/tmp/signrelay-personal-benchmark.mjs
+          node /tmp/signrelay-personal-benchmark.mjs
+
+      - name: Benchmark matching isolation and actual PSL references
+        run: node scripts/benchmarks/matching-isolation.mjs
 
       - name: Check for accidental secrets
         run: npm run audit:secrets

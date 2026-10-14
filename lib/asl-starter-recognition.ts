@@ -77,9 +77,19 @@ function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"]):
  * See docs/asl-dynamic-recognition.md for references and evaluation limitations.
  */
 export function recognizeAslStarter(sequence: VisionFrame[]): StarterPrediction | null {
+  return analyzeAslStarter(sequence).prediction;
+}
+
+/** Conflicting temporal windows are evidence to abstain, not a reason to pick
+ * whichever open-palm rule happened to run first. Personal examples keep their
+ * independent matcher and are not subject to this fallback-only veto.
+ */
+export function analyzeAslStarter(sequence: VisionFrame[]) {
   const now = sequence.at(-1)?.timestamp;
-  if (now === undefined) return null;
+  if (now === undefined) return { prediction: null, ambiguousOpenPalm: false, labels: [] as string[] };
   let yes: StarterPrediction | null = null;
+  let preferred: StarterPrediction | null = null;
+  const labels = new Set<string>();
   for (const duration of [650, 1100, 1700, 2600]) {
     for (const side of ["Right", "Left", "Unknown"] as const) {
       const recent = recentContinuousFrames(sequence, duration,
@@ -87,13 +97,15 @@ export function recognizeAslStarter(sequence: VisionFrame[]): StarterPrediction 
       const samples = samplesFor(recent, side);
       if (!samples.length) continue;
       const result = recognizeSamples(samples);
+      if (result) labels.add(result.label);
       // A short suffix must not override a chest circle visible in a longer
       // window. Keep the whole movement available to distinguish SORRY.
       if (result?.label === "YES") yes = result;
-      else if (result) return result;
+      else if (result && !preferred) preferred = result;
     }
   }
-  return yes;
+  const ambiguousOpenPalm = ["HELLO", "PLEASE", "THANK YOU"].filter(label => labels.has(label)).length > 1;
+  return { prediction: ambiguousOpenPalm ? null : preferred ?? yes, ambiguousOpenPalm, labels: [...labels] };
 }
 
 const span = (values: number[]) => Math.max(...values) - Math.min(...values);

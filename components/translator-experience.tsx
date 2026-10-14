@@ -178,7 +178,23 @@ export function TranslatorExperience() {
   }, [calibrationTemplates, selected]);
 
   function selectLanguage(language: LanguageId) {
-    if (language === selected) return;
+    if (language === selected) return true;
+    // All entry points share this boundary, including returning home before
+    // selecting another language. Keep the original transcript on save failure.
+    if (entries.length) {
+      const saved = saveSession({ id: String(sessionStartedRef.current), language: selected,
+        createdAt: sessionStartedRef.current, entries });
+      if (!saved) {
+        setStorageMessage("Couldn't save this transcript. It has been kept here. Free browser storage before changing languages.");
+        return false;
+      }
+      setHistory(loadHistory());
+    }
+    setEntries([]);
+    setEditingId(null);
+    setStorageMessage("");
+    sessionStartedRef.current = Date.now();
+    workerRef.current?.postMessage({ type: "reset" });
     captureGenerationRef.current++;
     setSelected(language);
     const personalSign = createCustomVocabularyEntry("Personal sign")!;
@@ -188,6 +204,7 @@ export function TranslatorExperience() {
     captureStateRef.current = "idle";
     setCalibrationState("idle");
     setCalibrationMessage(`Type a ${language.toUpperCase()} word or short phrase, then record two or three examples.`);
+    return true;
   }
 
   useEffect(() => {
@@ -223,6 +240,7 @@ export function TranslatorExperience() {
       gloss: message.gloss,
       confidence: message.confidence,
       timestamp: message.timestamp,
+      source: message.source,
     };
     setEntries((current) => {
       const previous = current[current.length - 1];
@@ -284,9 +302,11 @@ export function TranslatorExperience() {
 
   const changeWorkspaceLanguage = (language: LanguageId) => {
     if (language === selected) return;
+
+    if (!selectLanguage(language)) return;
+
     const enteringSpecialRecognizer = language === "rsl" || language === "bdsl";
     const leavingSharedRecognizer = selected !== "rsl" && selected !== "bdsl";
-
     if (enteringSpecialRecognizer && leavingSharedRecognizer) stopCamera();
 
     workerRef.current?.postMessage({ type: "reset" });
@@ -296,7 +316,6 @@ export function TranslatorExperience() {
     setRecognitionFeedback("");
     setRecognitionUnavailable(false);
     setRecognitionState("listening");
-    selectLanguage(language);
   };
 
   useEffect(() => () => {
@@ -485,10 +504,16 @@ export function TranslatorExperience() {
   }, [stopCamera]);
 
   const beginTranslation = () => {
-    sessionStartedRef.current = Date.now();
+    if (!entries.length) sessionStartedRef.current = Date.now();
+    const generation = ++cameraGenerationRef.current;
     setStep("workspace");
     window.scrollTo({ top: 0, behavior: "smooth" });
-    window.setTimeout(() => void requestCamera(), 0);
+    // RSL and Bangla use their own clip-capture components and cameras.
+    if (selected !== "rsl" && selected !== "bdsl") {
+      window.setTimeout(() => {
+        if (generation === cameraGenerationRef.current) void requestCamera();
+      }, 0);
+    }
   };
 
   const recordCalibration = useCallback(async () => {
@@ -749,10 +774,11 @@ export function TranslatorExperience() {
                   <strong>{candidate ? candidate : bufferSize < 10 ? "Building movement context…" : "No confident match"}</strong>
                 </div>
                 <div className="confidence-ring" title="Match score, not a measured probability of correct translation" style={{ "--confidence": `${Math.round(confidence * 100)}%` } as React.CSSProperties}>
-                  <span>{Math.round(confidence * 100)}%</span>
+                  <span aria-label={`Match score ${Math.round(confidence * 100)} out of 100`}>{Math.round(confidence * 100)}</span>
                 </div>
               </div>
 
+              <p className="calibration-message">Match score out of 100. It is not measured translation accuracy.</p>
               {recognitionFeedback && <p className="calibration-message" role="status">{recognitionFeedback}</p>}
               {recognitionUnavailable && (
                 <button className="button secondary small" onClick={() => workerRef.current?.restart()}>
@@ -787,7 +813,7 @@ export function TranslatorExperience() {
                           <p>{entry.text}</p>
                         )}
                         <div className="entry-actions">
-                          <span>{Math.round(entry.confidence * 100)}% · {entry.gloss}</span>
+                          <span>{Math.round(entry.confidence * 100)}/100 {entry.source === "starter" ? "rule match" : entry.source === "personal" ? "template match" : "match score"} · {entry.gloss}</span>
                           <button onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`}>Edit</button>
                           <button onClick={() => setEntries((current) => current.filter((item) => item.id !== entry.id))} aria-label={`Remove ${entry.text}`}>Remove</button>
                         </div>
@@ -971,6 +997,7 @@ export function TranslatorExperience() {
     <div className="app-shell">
       <SiteHeader />
       <main>
+        {storageMessage && <p className="calibration-message" role="alert">{storageMessage}</p>}
         <FigmaMakeLanding
           selected={selected}
           onSelect={selectLanguage}

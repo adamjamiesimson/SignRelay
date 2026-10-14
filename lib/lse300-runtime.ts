@@ -1,5 +1,5 @@
 import * as ort from "onnxruntime-web";
-import { createLandmarkModelLoader } from "./landmark-model-loader";
+import { createLandmarkModelLoader, type InferenceOptions } from "./landmark-model-loader";
 import type { Point, VisionFrame } from "./vision-types";
 
 export type Lse300Prediction = { label: string; text: string; confidence: number; margin: number };
@@ -14,9 +14,12 @@ const POSE_INDICES = [0, 2, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
 const loadModel = createLandmarkModelLoader("/models/lse300-swl", 300);
 
 /** Run SignRelay's SWL-LSE model trained on the released real-signer landmarks. */
-export async function recognizeLse300(sequence: VisionFrame[]): Promise<Lse300Prediction | null> {
+export async function recognizeLse300(sequence: VisionFrame[], options: InferenceOptions = {}): Promise<Lse300Prediction | null> {
   if (sequence.length < 18) return null;
-  const { session, labels } = await loadModel();
+  options.onPhase?.("loading");
+  const { session, labels } = await loadModel(options.signal);
+  options.signal?.throwIfAborted();
+  options.onPhase?.("inference");
   const input = new ort.Tensor("float32", prepareLseInput(sequence), [1, FRAMES, FEATURES]);
   let output: Record<string, ort.Tensor> = {};
   try {
@@ -102,6 +105,15 @@ function softmax(logits: Float32Array) {
   return values.map(value => value / total);
 }
 
-function readable(label: string) {
-  return label.toLocaleLowerCase("es-ES").replace(/[_.-]+/g, " ").replace(/\b\p{L}/gu, character => character.toLocaleUpperCase("es-ES"));
+/** Separate model class IDs from words shown/spoken to users.
+ * Dataset variant codes remain intact in the gloss but are not speech text.
+ */
+export function readable(label: string) {
+  const words = label.split("^").map(part => part
+    .replace(/\([^)]*\)/g, "")
+    .replace(/\d+(?=[_.-]|$)/g, "")
+    .replace(/[_.-]+/g, " ")
+    .trim()).filter(Boolean).join(" ");
+  return words.toLocaleLowerCase("es-ES").replace(/(^|\s)(\p{L})/gu,
+    (_, boundary: string, letter: string) => boundary + letter.toLocaleUpperCase("es-ES"));
 }
