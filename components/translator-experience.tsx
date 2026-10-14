@@ -284,9 +284,29 @@ export function TranslatorExperience() {
 
   const changeWorkspaceLanguage = (language: LanguageId) => {
     if (language === selected) return;
+
+    // Never mix transcripts from different sign languages. Preserve the
+    // outgoing session under its actual language before starting a new one.
+    if (entries.length) {
+      const saved = saveSession({
+        id: String(sessionStartedRef.current),
+        language: selected,
+        createdAt: sessionStartedRef.current,
+        entries,
+      });
+      if (!saved) {
+        setStorageMessage("Couldn't save this transcript. Clear or save it before changing languages.");
+        return;
+      }
+      setHistory(loadHistory());
+    }
+    setEntries([]);
+    setEditingId(null);
+    setStorageMessage("");
+    sessionStartedRef.current = Date.now();
+
     const enteringSpecialRecognizer = language === "rsl" || language === "bdsl";
     const leavingSharedRecognizer = selected !== "rsl" && selected !== "bdsl";
-
     if (enteringSpecialRecognizer && leavingSharedRecognizer) stopCamera();
 
     workerRef.current?.postMessage({ type: "reset" });
@@ -488,7 +508,10 @@ export function TranslatorExperience() {
     sessionStartedRef.current = Date.now();
     setStep("workspace");
     window.scrollTo({ top: 0, behavior: "smooth" });
-    window.setTimeout(() => void requestCamera(), 0);
+    // RSL and Bangla use their own clip-capture components and cameras.
+    if (selected !== "rsl" && selected !== "bdsl") {
+      window.setTimeout(() => void requestCamera(), 0);
+    }
   };
 
   const recordCalibration = useCallback(async () => {
