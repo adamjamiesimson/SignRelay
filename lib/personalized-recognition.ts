@@ -66,6 +66,53 @@ export function recognizePersonalTemplate(
   };
 }
 
+// Cache only immutable recorded-template envelopes, keyed by the existing
+// frame-array identity. A global (unrestricted-warp) envelope is conservative:
+ // every DTW path visits every query frame, and no frame can be cheaper than
+// its minimum possible distance to the template feature ranges.
+const distanceEnvelopes = new WeakMap<number[][], {
+  min: Float64Array; max: Float64Array; alwaysPresent: boolean[];
+}>();
+const FEATURE_GROUPS = [[0, 66], [66, 132], [132, 173], [173, 240]] as const;
+
+function envelopeLowerBound(query: number[][], template: number[][]) {
+  let envelope = distanceEnvelopes.get(template);
+  if (!envelope) {
+    const min = new Float64Array(240).fill(Infinity);
+    const max = new Float64Array(240).fill(-Infinity);
+    const alwaysPresent = FEATURE_GROUPS.map(([start]) =>
+      template.every(row => Boolean(row[start])));
+    for (const row of template) {
+      for (let k = 0; k < 240; k++) {
+        if (row[k] < min[k]) min[k] = row[k];
+        if (row[k] > max[k]) max[k] = row[k];
+      }
+    }
+    envelope = { min, max, alwaysPresent };
+    distanceEnvelopes.set(template, envelope);
+  }
+
+  let bound = 0;
+  for (const row of query) {
+    let minimumSquareSum = 0;
+    FEATURE_GROUPS.forEach(([start, end], group) => {
+      // MediaPipe hand features skip only when both hands are absent;
+      // face/pose features skip when either side is absent.
+      // An entire group is included only when every template frame
+      // guarantees it is compared for this query row.
+      if (!envelope!.alwaysPresent[group] || (group >= 2 && !row[start])) return;
+      for (let k = start; k < end; k++) {
+        const delta = Math.max(0, envelope!.min[k] - row[k], row[k] - envelope!.max[k]);
+        minimumSquareSum += Math.min(delta * delta, 4);
+      }
+    });
+    // Actual featureDistance divides by the *number of compared features*
+    // (<=240), so using 240 gives a guaranteed underestimate.
+    bound += Math.sqrt(minimumSquareSum / 240);
+  }
+  return bound / Math.max(query.length, template.length);
+}
+
 /**
  * Exact DTW with rolling rows and an optional upper bound. Every DTW path
  * passes through a cell in each row and costs are nonnegative, so a row whose
@@ -75,13 +122,20 @@ export function recognizePersonalTemplate(
 export function sequenceDistance(a: number[][], b: number[][], maxDistance = Infinity) {
   if (!a.length || !b.length) return Number.POSITIVE_INFINITY;
   // Previous versions used 17 pose points (208 features). Keep those saved examples readable.
-  const canonical = (sequence: number[][]) => sequence.map(row => row.length === 208 ? [...row, ...new Array(32).fill(0)] : row);
+  const canonical = (sequence: number[][]) => sequence.some(row => row.length === 208)
+    ? sequence.map(row => row.length === 208 ? [...row, ...new Array(32).fill(0)] : row)
+    : sequence;
   a = canonical(a);
   b = canonical(b);
   const length = a[0].length;
   if (!length || [...a, ...b].some(row => row.length !== length || row.some(value => !Number.isFinite(value)))) return Infinity;
 
   const divisor = Math.max(a.length, b.length);
+  // The envelope bound is always <= exact DTW; only prune when mathematically
+  // unable to reach the acceptance/margin cutoff. Tolerance protects borders
+  // from floating-point rounding.
+  if (length === 240 && Number.isFinite(maxDistance)
+    && envelopeLowerBound(a, b) > maxDistance + 1e-9) return Infinity;
   const cutoff = Number.isFinite(maxDistance) ? maxDistance * divisor : Infinity;
   let previous = new Float64Array(b.length + 1).fill(Infinity);
   let current = new Float64Array(b.length + 1).fill(Infinity);
