@@ -32,7 +32,7 @@ export function SiteFooter() {
         <div className="footer-brand"><strong>SignRelay</strong><span>Open source</span></div>
         <nav aria-label="Footer navigation">
           <Link href="/languages">Languages</Link>
-          <Link href="/#choose-language">Translate</Link>
+          <Link href="/#languages">Translate</Link>
           <Link href="/#how-it-works">How it works</Link>
           <Link href="/privacy">Privacy</Link>
           <a href="https://github.com/adamjamiesimson/SignRelay" target="_blank" rel="noreferrer">GitHub</a>
