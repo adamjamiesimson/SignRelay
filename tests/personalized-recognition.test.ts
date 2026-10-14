@@ -18,6 +18,15 @@ describe("ASL vocabulary", () => {
     expect(createCustomAslVocabularyEntry("  !!! ")).toBeNull();
   });
 
+  it("preserves Indic and Thai vowel signs, combining marks and joiners in custom vocabulary", () => {
+    for (const word of ["नमस्ते", "धन्यवाद", "ধন্যবাদ", "สวัสดี", "کیا", "água"]) {
+      expect(createCustomAslVocabularyEntry(word)?.text).toBe(word.normalize("NFC"));
+    }
+    expect(createCustomAslVocabularyEntry("क्‍ष")?.text).toBe("क्‍ष");
+    expect(createCustomAslVocabularyEntry("  !!!  ")).toBeNull();
+    expect(createCustomAslVocabularyEntry("\\u200D")?.text).toBeUndefined();
+  });
+
   it("exposes 40 independent sign-language recognition paths", () => {
     expect(LANGUAGE_LIST).toHaveLength(40);
     expect(LANGUAGE_LIST.slice(0, 6).map((language) => language.id)).toEqual(["asl", "bsl", "isl", "lse", "auslan", "csl"]);
