@@ -6,6 +6,7 @@ export type TranscriptEntry = {
   gloss: string;
   confidence: number;
   timestamp: number;
+  source?: "personal" | "starter" | "model";
 };
 
 export type TranscriptSession = {

@@ -127,11 +127,14 @@ function personalLanguage({ id, shortName, language, speechLocale }: PersonalLan
 export function createCustomVocabularyEntry(value: string): AslVocabularyEntry | null {
   if (typeof value !== "string" || value.length > 48) return null;
   const text = value
+    .normalize("NFC")
     .trim()
     .replace(/\s+/g, " ")
-    .replace(/[^\p{L}\p{N} '\-]/gu, "")
+    // Retain vowel signs/combining marks and script joiners. Removing them
+    // changes the meaning of Hindi, Bengali, Thai and other custom words.
+    .replace(/[^\p{L}\p{M}\p{N} '\-\u200c\u200d]/gu, "")
     .trim();
-  if (!text) return null;
+  if (!/[\p{L}\p{N}]/u.test(text)) return null;
 
   return {
     gloss: text.toUpperCase(),

@@ -36,6 +36,7 @@ export function createLandmarkModelLoader(directory: string, classes: number) {
           throw new Error(`Expected ${classes} distinct, nonempty model labels`);
         }
         const bytes = await downloadModelBytes(`${directory}/model.onnx`, { signal: controller.signal });
+        controller.signal.throwIfAborted();
         // ORT's URL loader cannot be cancelled. Own the download and bound the
         // remaining compilation separately; release any late-created session.
         const compilation = new AbortController();

@@ -58,7 +58,7 @@ export async function startChrome(executable, { forwardAssets = false } = {}) {
       }
       if (message.method === "Network.requestWillBeSent") requestUrls.set(message.params.requestId, message.params.request.url);
       if (message.method === "Network.loadingFailed") errors.push({ error: message.params.errorText, url: requestUrls.get(message.params.requestId) });
-      if (message.method === "Runtime.exceptionThrown") errors.push(message.params.exceptionDetails.text);
+      if (message.method === "Runtime.exceptionThrown") errors.push(message.params.exceptionDetails.exception?.description ?? message.params.exceptionDetails.text);
     };
     const send = (method, params = {}) => new Promise((resolve, reject) => {
       const key = ++id; const timer = setTimeout(() => { pending.delete(key); reject(new Error(`${method} timed out`)); }, 180000);
@@ -69,6 +69,7 @@ export async function startChrome(executable, { forwardAssets = false } = {}) {
       if (value.exceptionDetails) throw new Error(value.exceptionDetails.exception?.description ?? value.exceptionDetails.text);
       return value.result?.value;
     };
+    await send("Page.enable");
     await send("Runtime.enable");
     await send("Network.enable");
     if (forwardAssets) await send("Fetch.enable", { patterns: [
