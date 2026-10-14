@@ -1,3 +1,4 @@
+import { installTemplateWorker } from "./helpers/template-worker";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-types";
 
@@ -16,6 +17,7 @@ vi.mock("../lib/asl100-runtime", () => ({
 vi.mock("../lib/sign-motion", () => ({ analyzeSignMotion: (sequence: VisionFrame[]) => ({ ready: mocks.motion(), sequence, reason: "idle" }) }));
 vi.mock("../lib/personalized-recognition", () => ({
   recognizePersonalTemplate: mocks.personal,
+  recognizePersonalTemplateAsync: mocks.personal,
   templatesForLanguage: (templates: unknown[]) => templates,
 }));
 
@@ -26,7 +28,7 @@ const prediction = { label: "BOOK", text: "Book", confidence: 0.94, margin: 0.5 
 async function frames(count: number) {
   for (let i = 0; i < count; i++) {
     timestamp += 105;
-    const frame: VisionFrame = { timestamp, hands: [], face: [], pose: [] };
+    const frame: VisionFrame = { timestamp, hands: [{ handedness: "Right", gesture: "None", gestureScore: 0, landmarks: Array.from({ length: 21 }, () => ({ x: 0.5, y: 0.5, z: 0 })) }], face: [], pose: [] };
     await worker.onmessage({ data: { type: "frame", frame } });
     await Promise.resolve();
   }
@@ -42,6 +44,7 @@ beforeEach(async () => {
   mocks.personal.mockReturnValue(null);
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
   vi.stubGlobal("self", worker);
+  installTemplateWorker();
   await import("../workers/recognition.worker");
 });
 
@@ -109,9 +112,10 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
   it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "psl", "uaesl", "vsl"] as const)("preserves personal recognition for %s", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks.personal.mockReturnValue(prediction);
+    await worker.onmessage({ data: { type: "templates", language, templates: [{ id: "saved", gloss: "BOOK", text: "Book", createdAt: 1, frames: [] }] } });
     // Personal templates and static starter signs have their own evidence gate.
     mocks.motion.mockReturnValue(false);
-    await frames(2);
+    await frames(4);
     expect(confirmations()).toHaveLength(1);
   });
 

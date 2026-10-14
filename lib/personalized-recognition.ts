@@ -36,34 +36,77 @@ export function recognizePersonalTemplate(
   frames: VisionFrame[],
   templates: CalibrationTemplate[],
 ) {
-  const now = frames.at(-1)?.timestamp;
-  if (!templates.length || frames.length < 8 || now === undefined || !frames.at(-1)?.hands.some(validHand)) return null;
+  return finishPersonalMatch(personalDistances(frames, templates));
+}
+
+export type MatchOptions = { signal?: AbortSignal; sliceMs?: number };
+
+/** Same windows, distance cutoff and ambiguity veto as the synchronous matcher.
+ * Run only in the dedicated matcher worker. Yielding lets reset/cancel messages
+ * interrupt a scan; no work is silently skipped when a slice expires.
+ */
+export async function recognizePersonalTemplateAsync(
+  frames: VisionFrame[], templates: CalibrationTemplate[], options: MatchOptions = {},
+) {
   const matches = new Map<string, { template: CalibrationTemplate; distance: number }>();
+  let yielded = performance.now();
+  for (const [template, distance] of personalDistances(frames, templates)) {
+    options.signal?.throwIfAborted();
+    if (distance < (matches.get(template.gloss)?.distance ?? Infinity)) matches.set(template.gloss, { template, distance });
+    if (performance.now() - yielded >= (options.sliceMs ?? 6)) {
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
+      options.signal?.throwIfAborted();
+      yielded = performance.now();
+    }
+  }
+  options.signal?.throwIfAborted();
+  return finishPersonalMatch([...matches.values()].map(({ template, distance }) => [template, distance] as const));
+}
+
+function* personalDistances(frames: VisionFrame[], templates: CalibrationTemplate[]) {
+  if (!templates.length || frames.length < 8 || !frames.at(-1)?.hands.some(validHand)) return;
   let previousLength = 0;
   for (const duration of [650, 1200, 2000, 3000, 4200]) {
     const recent = recentContinuousFrames(frames, duration, frame => frame.hands.some(validHand));
     if (recent.length === previousLength) continue;
     previousLength = recent.length;
     if (recent.length < 8 || recent.filter(frame => frame.hands.some(validHand)).length / recent.length < 0.7) continue;
-    const candidate = prepareCalibrationSequence(recent);
+    const candidate = compileDistanceSequence(prepareCalibrationSequence(recent));
     for (const template of templates) {
       if (template.frames.length !== CALIBRATION_SEQUENCE_LENGTH) continue;
-      // A personal match must be at most 0.5 away; a competing gloss closer
-      // than 0.06 can still veto it. Distances above 0.56 cannot affect either gate.
-      const distance = sequenceDistance(candidate, template.frames, 0.56);
-      if (!Number.isFinite(distance)) continue;
-      if (distance < (matches.get(template.gloss)?.distance ?? Infinity)) matches.set(template.gloss, { template, distance });
+      const distance = compiledSequenceDistance(candidate, cachedTemplateSequence(template.frames), 0.56);
+      yield [template, distance] as const;
+    }
+  }
+}
+
+function finishPersonalMatch(distances: Iterable<readonly [CalibrationTemplate, number]>) {
+  const matches = new Map<string, { template: CalibrationTemplate; distance: number }>();
+  for (const [template, distance] of distances) {
+    if (Number.isFinite(distance) && distance < (matches.get(template.gloss)?.distance ?? Infinity)) {
+      matches.set(template.gloss, { template, distance });
     }
   }
   const [best, rival] = [...matches.values()].sort((a, b) => a.distance - b.distance);
-  // Ambiguous recordings of different words must not turn into an arbitrary winner.
   if (!best || best.distance > 0.5 || (rival && rival.distance - best.distance < 0.06)) return null;
-  const confidence = clamp(0.965 - best.distance * 0.24, 0, 0.96);
-  return {
-    label: best.template.gloss,
-    text: best.template.text,
-    confidence,
-  };
+  return { label: best.template.gloss, text: best.template.text,
+    confidence: clamp(0.965 - best.distance * 0.24, 0, 0.96) };
+}
+
+// Only immutable template arrays are cached; live candidates are compiled once
+// per window. Canonicalisation/validation is never repeated in the inner scan.
+export type DistanceSequence = { rows: number[][]; length: number; valid: boolean };
+const compiledTemplates = new WeakMap<number[][], DistanceSequence>();
+export function cachedTemplateSequence(rows: number[][]) {
+  let compiled = compiledTemplates.get(rows);
+  if (!compiled) { compiled = compileDistanceSequence(rows); compiledTemplates.set(rows, compiled); }
+  return compiled;
+}
+export function compileDistanceSequence(rows: number[][]): DistanceSequence {
+  const canonical = rows.map(row => row.length === 208 ? [...row, ...new Array(32).fill(0)] : row);
+  const length = canonical[0]?.length ?? 0;
+  return { rows: canonical, length, valid: length > 0 && canonical.every(row =>
+    row.length === length && row.every(Number.isFinite)) };
 }
 
 // Cache only immutable recorded-template envelopes, keyed by the existing
@@ -120,16 +163,12 @@ function envelopeLowerBound(query: number[][], template: number[][]) {
  * Without a bound this returns the same distance as the original full matrix.
  */
 export function sequenceDistance(a: number[][], b: number[][], maxDistance = Infinity) {
-  if (!a.length || !b.length) return Number.POSITIVE_INFINITY;
-  // Previous versions used 17 pose points (208 features). Keep those saved examples readable.
-  const canonical = (sequence: number[][]) => sequence.some(row => row.length === 208)
-    ? sequence.map(row => row.length === 208 ? [...row, ...new Array(32).fill(0)] : row)
-    : sequence;
-  a = canonical(a);
-  b = canonical(b);
-  const length = a[0].length;
-  if (!length || [...a, ...b].some(row => row.length !== length || row.some(value => !Number.isFinite(value)))) return Infinity;
+  return compiledSequenceDistance(compileDistanceSequence(a), compileDistanceSequence(b), maxDistance);
+}
 
+export function compiledSequenceDistance(query: DistanceSequence, template: DistanceSequence, maxDistance = Infinity) {
+  if (!query.valid || !template.valid || query.length !== template.length) return Infinity;
+  const a = query.rows, b = template.rows, length = query.length;
   const divisor = Math.max(a.length, b.length);
   // The envelope bound is always <= exact DTW; only prune when mathematically
   // unable to reach the acceptance/margin cutoff. Tolerance protects borders
@@ -215,14 +254,15 @@ function featureDistance(a: number[], b: number[]) {
   if (!length) return Number.POSITIVE_INFINITY;
   let total = 0;
   let compared = 0;
-  for (let index = 0; index < length; index += 1) {
-    if (length === 240) {
-      const group = index < 66 ? 0 : index < 132 ? 66 : index < 173 ? 132 : 173;
-      if (group >= 132 ? (!a[group] || !b[group]) : (!a[group] && !b[group])) continue;
+  // Decide missing-landmark masks once per group, not 240 times per cell.
+  const groups: ReadonlyArray<readonly [number, number]> = length === 240 ? FEATURE_GROUPS : [[0, length]];
+  for (const [start, end] of groups) {
+    if (length === 240 && (start >= 132 ? (!a[start] || !b[start]) : (!a[start] && !b[start]))) continue;
+    for (let index = start; index < end; index++) {
+      const delta = a[index] - b[index];
+      total += Math.min(delta * delta, 4);
     }
-    const delta = a[index] - b[index];
-    total += Math.min(delta * delta, 4);
-    compared++;
+    compared += end - start;
   }
   return compared ? Math.sqrt(total / compared) : Infinity;
 }

@@ -1,4 +1,4 @@
-import { prepareCalibrationSequence, sequenceDistance } from "./personalized-recognition";
+import { prepareCalibrationSequence, compileDistanceSequence, cachedTemplateSequence, compiledSequenceDistance, type MatchOptions } from "./personalized-recognition";
 import type { VisionFrame } from "./vision-types";
 
 export type Psl776Prediction = { label: string; text: string; confidence: number; margin: number };
@@ -37,10 +37,15 @@ function loadTemplates() {
  * matching against a single well-performed personal recording, which
  * means real sensitivity to signing speed, style and camera framing.
  */
-export async function recognizePsl776(sequence: VisionFrame[]): Promise<Psl776Prediction | null> {
+export async function recognizePsl776(sequence: VisionFrame[], options: MatchOptions = {}): Promise<Psl776Prediction | null> {
   if (sequence.length < 8) return null;
   const templates = await loadTemplates();
-  const candidate = prepareCalibrationSequence(sequence);
+  options.signal?.throwIfAborted();
+  return matchPslTemplates(sequence, templates, options);
+}
+
+export async function matchPslTemplates(sequence: VisionFrame[], templates: Psl776Template[], options: MatchOptions = {}): Promise<Psl776Prediction | null> {
+  const candidate = compileDistanceSequence(prepareCalibrationSequence(sequence));
   let best: { template: Psl776Template; distance: number } | null = null;
   let rival: { template: Psl776Template; distance: number } | null = null;
   // The acceptance gate requires a distance <= 0.5 and rejects a
@@ -49,16 +54,19 @@ export async function recognizePsl776(sequence: VisionFrame[]): Promise<Psl776Pr
   // acknowledgements can still be processed in this same Web Worker.
   let lastYield = performance.now();
   for (const template of templates) {
-    const distance = sequenceDistance(candidate, template.frames, REJECT_DISTANCE + REJECT_MARGIN);
+    options.signal?.throwIfAborted();
+    const distance = compiledSequenceDistance(candidate, cachedTemplateSequence(template.frames), REJECT_DISTANCE + REJECT_MARGIN);
     if (Number.isFinite(distance)) {
       if (!best || distance < best.distance) { rival = best; best = { template, distance }; }
       else if (!rival || distance < rival.distance) rival = { template, distance };
     }
-    if (performance.now() - lastYield >= 12) {
+    if (performance.now() - lastYield >= (options.sliceMs ?? 6)) {
       await new Promise<void>(resolve => setTimeout(resolve, 0));
+      options.signal?.throwIfAborted();
       lastYield = performance.now();
     }
   }
+  options.signal?.throwIfAborted();
   if (!best || best.distance > REJECT_DISTANCE || (rival && rival.distance - best.distance < REJECT_MARGIN)) return null;
   const confidence = clamp(0.9 - best.distance * 0.24, 0, 0.88);
   const margin = rival ? rival.distance - best.distance : 1;
