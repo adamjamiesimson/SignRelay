@@ -24,7 +24,7 @@ describe("ASL vocabulary", () => {
     }
     expect(createCustomAslVocabularyEntry("क्‍ष")?.text).toBe("क्‍ष");
     expect(createCustomAslVocabularyEntry("  !!!  ")).toBeNull();
-    expect(createCustomAslVocabularyEntry("\\u200D")?.text).toBeUndefined();
+    expect(createCustomAslVocabularyEntry("\u200D")?.text).toBeUndefined();
   });
 
   it("exposes 40 independent sign-language recognition paths", () => {
