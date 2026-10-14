@@ -24,11 +24,9 @@ let lastConfirmation = { label: "", time: 0 };
 let personalTemplates: CalibrationTemplate[] = [];
 let activeLanguage: LanguageId = "asl";
 const classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
-const pending = new Map<LanguageId, number>();
-const FIRST_LARGE_MODEL_LOAD_TIMEOUT_MS = 120000;
+const pending = new Map<LanguageId, { started: number; phase: "loading" | "inference"; controller: AbortController }>();
+const MODEL_LOAD_TIMEOUT_MS = 400000;
 const NORMAL_INFERENCE_TIMEOUT_MS = 20000;
-// A successful non-null result proves the BSL/ISL model completed loading.
-const provenReadyModels = new Set<LanguageId>();
 const MAX_PREDICTION_AGE_MS = 2500;
 let latestPrediction: Awaited<ReturnType<typeof recognizeAsl1000>> = null;
 let predictionTimestamp = 0;
@@ -47,11 +45,13 @@ let personalTimestamp = 0;
 let personalVersion = 0;
 let consumedPersonalVersion = 0;
 let hadPersonalTracking = false;
+let personalProblem = false;
 const personalMatcher = new TemplateMatchingClient("personal", (prediction, timestamp) => {
   latestPersonal = prediction;
   personalTimestamp = timestamp;
   personalVersion++;
-});
+  personalProblem = false;
+}, () => { personalProblem = true; });
 const pslMatcher = new TemplateMatchingClient("psl", (prediction, timestamp) => {
   if (activeLanguage !== "psl") return;
   latestPrediction = prediction as typeof latestPrediction;
@@ -78,6 +78,7 @@ function invalidatePrediction() {
 function resetSession() {
   // In-flight requests from old sessions are invalidated by modelGeneration;
   // do not let their timers restart a newly selected language.
+  for (const request of pending.values()) request.controller.abort();
   pending.clear();
   invalidatePersonal();
   frames.length = 0;
@@ -92,6 +93,7 @@ function resetSession() {
   starterSeenAt = 0;
   modelProblem = false;
   retryAfter = 0;
+  personalProblem = false;
 }
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
@@ -105,17 +107,19 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "reset") { resetSession(); return; }
 
   const now = event.data.frame.timestamp;
-  if ([...pending].some(([language, started]) => {
-    const firstLargeLoad = (language === "bsl" || language === "isl") && !provenReadyModels.has(language);
-    const deadline = firstLargeLoad ? FIRST_LARGE_MODEL_LOAD_TIMEOUT_MS : NORMAL_INFERENCE_TIMEOUT_MS;
-    return now - started >= deadline;
-  })) {
-    invalidatePrediction();
-    pending.clear();
-    self.postMessage({ type: "fault", session: event.data.session,
-      message: "The research model stopped responding. Restarting recognition…",
-    } satisfies WorkerMessage);
-    return;
+  for (const [language, request] of pending) {
+    const deadline = request.phase === "loading" ? MODEL_LOAD_TIMEOUT_MS : NORMAL_INFERENCE_TIMEOUT_MS;
+    if (now - request.started < deadline) continue;
+    if (request.phase === "loading") {
+      request.controller.abort(); pending.delete(language);
+      modelProblem = true; retryAfter = now + 30000;
+    } else {
+      invalidatePrediction(); pending.clear();
+      self.postMessage({ type: "fault", session: event.data.session,
+        message: "The research model stopped responding. Restarting recognition…",
+      } satisfies WorkerMessage);
+      return;
+    }
   }
   receivedFrames += 1;
   frames.push(event.data.frame);
@@ -150,23 +154,27 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     if (classifier && MODEL_ADAPTERS[language].status === "experimental"
       && frames.length >= (language === "asl" ? 6 : 24) && inferenceDue
       && !freshResult && !pending.has(language) && now >= retryAfter) {
-      pending.set(language, now);
+      const request = { started: now, phase: (language === "asl" ? "inference" : "loading") as "loading" | "inference", controller: new AbortController() };
+      pending.set(language, request);
       lastInferenceAt = now;
       const generation = modelGeneration;
-      classifier([...motion.sequence]).then((prediction) => {
-        if (prediction) provenReadyModels.add(language);
-        if (generation !== modelGeneration) return;
+      classifier([...motion.sequence], { signal: request.controller.signal, onPhase: phase => {
+        if (pending.get(language) !== request) return;
+        request.phase = phase;
+        request.started = frames.at(-1)?.timestamp ?? now;
+      } }).then((prediction) => {
+        if (generation !== modelGeneration || request.controller.signal.aborted) return;
         if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS) return;
         latestPrediction = prediction;
         predictionTimestamp = now;
         predictionVersion += 1;
         modelProblem = false;
       }).catch(() => {
-        if (generation !== modelGeneration) return;
+        if (generation !== modelGeneration || request.controller.signal.aborted) return;
         invalidatePrediction();
         modelProblem = true;
-        retryAfter = now + 5000;
-      }).finally(() => { if (pending.get(language) === now) pending.delete(language); });
+        retryAfter = (frames.at(-1)?.timestamp ?? now) + 5000;
+      }).finally(() => { if (pending.get(language) === request) pending.delete(language); });
     }
   }
 
@@ -175,7 +183,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   else if (now - starterSeenAt > 500) blockedStarter = null;
   const rawResult = direct?.label === blockedStarter ? null : direct ?? latestPrediction;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
-  const feedback = modelProblem
+  const feedback = personalProblem ? "Saved signs could not be checked. Retrying shortly…" : modelProblem
     ? activeLanguage === "asl"
       ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly…"
       : "The research model could not run. Saved personal signs are still available. Retrying shortly…"

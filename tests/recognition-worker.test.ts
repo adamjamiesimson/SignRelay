@@ -193,4 +193,36 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(faults[0]).toMatchObject({ message: expect.stringContaining("stopped responding") });
     expect(confirmations()).toHaveLength(0);
   });
+
+  it.each(["bsl", "isl"] as const)("keeps %s downloads distinct from the inference watchdog, including abstentions", async language => {
+    let download!: () => void;
+    mocks[language].mockImplementationOnce(async (_frames, options) => {
+      options.onPhase("loading"); await new Promise<void>(resolve => { download = resolve; });
+      options.onPhase("inference"); return null;
+    });
+    await worker.onmessage({ data: { type: "templates", language, templates: [] } });
+    await frames(500); // 52.5s of arriving frames while the download progresses
+    expect(worker.postMessage.mock.calls.some(([m]) => m.type === "fault")).toBe(false);
+    download(); await Promise.resolve(); await Promise.resolve();
+    mocks[language].mockImplementation((_frames, options) => {
+      options.onPhase("inference"); return new Promise(() => {});
+    });
+    await frames(210);
+    expect(worker.postMessage.mock.calls.filter(([m]) => m.type === "fault")).toHaveLength(1);
+  });
+
+  it.each(["reset", "templates"] as const)("aborts an old BSL download on %s and ignores its rejection", async type => {
+    let signal!: AbortSignal, fail!: (error: Error) => void;
+    mocks.bsl.mockImplementation((_frames, options) => {
+      signal = options.signal; options.onPhase("loading");
+      return new Promise((_resolve, reject) => { fail = reject; });
+    });
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [] } });
+    await frames(24);
+    await worker.onmessage({ data: type === "reset" ? { type } : { type, language: "csl", templates: [] } });
+    expect(signal.aborted).toBe(true); fail(new Error("cancelled old download"));
+    await frames(2);
+    expect(worker.postMessage.mock.calls.at(-1)?.[0].feedback).not.toContain("could not run");
+    expect(confirmations()).toHaveLength(0);
+  });
 });

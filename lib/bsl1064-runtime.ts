@@ -1,5 +1,5 @@
 import * as ort from "onnxruntime-web";
-import { createLandmarkModelLoader } from "./landmark-model-loader";
+import { createLandmarkModelLoader, type InferenceOptions } from "./landmark-model-loader";
 import type { Point, VisionFrame } from "./vision-types";
 
 export type Bsl1064Prediction = { label: string; text: string; confidence: number; margin: number };
@@ -12,9 +12,12 @@ const MIN_MARGIN = 0.14;
 const loadModel = createLandmarkModelLoader("/models/bsl1064-pose2sign", 1064);
 
 /** Run the official BSL-1K body-and-hands Pose2Sign model in the worker. */
-export async function recognizeBsl1064(sequence: VisionFrame[]): Promise<Bsl1064Prediction | null> {
+export async function recognizeBsl1064(sequence: VisionFrame[], options: InferenceOptions = {}): Promise<Bsl1064Prediction | null> {
   if (sequence.length < FRAMES) return null;
-  const { session, labels } = await loadModel();
+  options.onPhase?.("loading");
+  const { session, labels } = await loadModel(options.signal);
+  options.signal?.throwIfAborted();
+  options.onPhase?.("inference");
   const input = new ort.Tensor("float32", prepareBslInput(sequence), [1, 3, FRAMES, LANDMARKS]);
   let output: Record<string, ort.Tensor> = {};
   try {
