@@ -58,6 +58,24 @@ describe("bounded rolling DTW preserves recognition decisions", () => {
       else expect(bounded).toBeCloseTo(expected, 12);
     }
   });
+  it("does not reject borderline matches with fully and partially tracked landmarks", () => {
+    for (const intermittent of [false, true]) {
+      for (const shift of [0, 0.2, 0.4, 0.52, 0.559, 0.56, 0.561, 0.8]) {
+        const a = Array.from({ length: 24 }, (_, frame) =>
+          Array.from({ length: 240 }, (_, feature) =>
+            [0, 66, 132, 173].includes(feature)
+              ? (intermittent && frame % 4 === 0 ? 0 : 1)
+              : 0.1));
+        const b = a.map(row => row.map((value, index) =>
+          [0, 66, 132, 173].includes(index) ? value : value + shift));
+        const exact = reference(a, b);
+        const bounded = sequenceDistance(a, b, 0.56);
+        if (exact > 0.56) expect(bounded).toBe(Infinity);
+        else expect(bounded).toBeCloseTo(exact, 10);
+      }
+    }
+  });
+
   it("prunes candidates too distant to win or veto a valid recognition", () => {
     const a = Array.from({ length: 24 }, () => new Array(240).fill(1));
     const near = a.map(row => [...row]);
