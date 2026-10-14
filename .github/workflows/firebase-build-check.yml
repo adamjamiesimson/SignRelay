@@ -87,6 +87,9 @@ jobs:
       - name: Verify workspace switching, storage failures and delayed camera grants
         run: node tests/workspace-browser-smoke.mjs "$(command -v google-chrome)"
 
+      - name: Verify cancelled model runs and cached session reuse in Chrome
+        run: node tests/landmark-lifecycle-browser-smoke.mjs "$(command -v google-chrome)"
+
       - name: Verify Bangla camera flow in headless Chrome
         run: node tests/bdsl-browser-smoke.mjs "$(command -v google-chrome)"
 

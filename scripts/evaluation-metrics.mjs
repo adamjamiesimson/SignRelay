@@ -1,4 +1,5 @@
 const gloss = value => typeof value === "string" ? value.normalize("NFC").trim().replace(/\s+/g, " ").toUpperCase() : null;
+const failed = row => row.status === "error" || (Array.isArray(row.errors) && row.errors.length > 0);
 
 export function validateTrials(rows) {
   if (!Array.isArray(rows) || !rows.length) throw new Error("No evaluation trials found");
@@ -47,13 +48,18 @@ export function summarizeTrials(input) {
     const signed = trials.filter(r => r.trial_type === "sign");
     // Any extra wrong word makes the trial wrong, even if another output was
     // correct. Never cherry-pick the first/correct confirmation.
-    const correct = signed.filter(r => r.status !== "error" && r.accepted_glosses.length && r.accepted_glosses.every(g => g === r.expected_gloss));
+    const correct = signed.filter(r => !failed(r) && r.accepted_glosses.length && r.accepted_glosses.every(g => g === r.expected_gloss));
     const wrong = signed.filter(r => r.accepted_glosses.some(g => g !== r.expected_gloss));
     const accepted = signed.filter(r => r.accepted);
     const negatives = kind => {
       const rows = trials.filter(r => r.trial_type === kind);
       const falseAccepts = rows.filter(r => r.accepted).length;
-      return { trials: rows.length, false_accepts: falseAccepts, rate: rows.length ? falseAccepts / rows.length : null };
+      const errors = rows.filter(failed).length;
+      // An interrupted/failed trial cannot establish a correct rejection.
+      // Preserve every observed false accept, but withhold a rate until the
+      // whole negative cohort completed without runtime errors.
+      return { trials: rows.length, completed_trials: rows.length - errors, errors,
+        false_accepts: falseAccepts, rate: rows.length && !errors ? falseAccepts / rows.length : null };
     };
     const confusions = {};
     for (const row of wrong) for (const predicted of new Set(row.accepted_glosses)) {
@@ -66,7 +72,7 @@ export function summarizeTrials(input) {
       precision_when_accepted: accepted.length ? correct.length / accepted.length : null,
       wrong_accepted_trials: wrong.length, abstentions: signed.length - accepted.length,
       no_sign: negatives("no_sign"), unknown_sign: negatives("unknown_sign"),
-      errors: trials.filter(r => r.status === "error").length, confusions,
+      errors: trials.filter(failed).length, confusions,
       holdout_verified: false,
     };
   });

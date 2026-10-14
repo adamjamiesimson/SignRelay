@@ -22,6 +22,17 @@ describe("accuracy evidence counts failures instead of hiding them", () => {
     expect(summary.correct).toBe(0); expect(summary.errors).toBe(1);
     expect(summary.no_sign.rate).toBeNull(); expect(summary.holdout_verified).toBe(false);
   });
+  it.each(["no_sign", "unknown_sign"] as const)("does not report failed %s trials as successful rejections", trial_type => {
+    const negative = { ...trial, trial_type, expected_gloss: null, predicted_gloss: null, accepted: false };
+    const [failed] = summarizeTrials([{ ...negative, status: "error" }]);
+    expect(failed[trial_type]).toMatchObject({ trials: 1, completed_trials: 0, errors: 1, false_accepts: 0, rate: null });
+    const [partial] = summarizeTrials([negative, { ...negative, status: "error", predicted_gloss: "PLEASE", accepted: true }]);
+    expect(partial[trial_type]).toMatchObject({ trials: 2, completed_trials: 1, errors: 1, false_accepts: 1, rate: null });
+  });
+  it("treats recorded runtime errors as failures even if status was accidentally omitted", () => {
+    const [summary] = summarizeTrials([{ ...trial, errors: ["Model could not load"] }]);
+    expect(summary.correct).toBe(0); expect(summary.errors).toBe(1);
+  });
   it("rejects inconsistent outputs, duplicate recordings and contaminated splits", () => {
     expect(() => validateTrials([{ ...trial, accepted_glosses: [] }])).toThrow("disagrees");
     expect(() => validateTrials([{ ...trial, trial_type: "no_sign" }])).toThrow("negative");

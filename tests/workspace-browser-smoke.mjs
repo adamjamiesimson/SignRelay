@@ -40,12 +40,21 @@ try {
   await browser.send("Page.navigate", { url: origin });
   const evaluate = browser.evaluate;
   const click = text => evaluate(`(() => { const button=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)}); if(!button)throw new Error('Missing button');button.click(); })()`);
+  const chooseWelcome = text => evaluate(`(() => {const button=[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes(${JSON.stringify(text)}));if(!button)throw new Error('Missing language');button.click();})()`);
   const select = language => evaluate(`(() => { const select=document.querySelector('select[aria-label="Change sign language"]');select.value=${JSON.stringify(language)};select.dispatchEvent(new Event('change',{bubbles:true})); })()`);
   const history = () => evaluate("JSON.parse(localStorage.getItem('signrelay.history.v1')||'[]')");
   const emit = gloss => evaluate(`window.__qaEmit(${JSON.stringify(gloss)})`);
   const language = () => evaluate("document.querySelector('select[aria-label=\"Change sign language\"]')?.value");
   const transcript = () => evaluate("document.querySelector('.transcript-body')?.textContent");
-  await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Welcome screen did not hydrate");
+  await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Welcome screen missing");
+  // The static export already contains the radios before React attaches its
+  // handlers. Prove a real state change before issuing the one-shot Start click.
+  await until(async () => {
+    await chooseWelcome("British");
+    return evaluate("document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes('British')");
+  }, "Welcome screen did not hydrate");
+  await chooseWelcome("American");
+  await until(() => evaluate("document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes('American')"), "Initial ASL selection failed");
   assert.equal(await evaluate("[...document.querySelectorAll('footer a')].find(a=>a.textContent==='Translate')?.getAttribute('href')"), "/#languages");
   await click("Start translating"); await until(async () => await language() === "asl", "ASL workspace missing");
   await until(() => evaluate("window.__qaCameraRequests===1"), "Automatic camera request missing");
@@ -60,7 +69,6 @@ try {
   await emit("CAR"); await until(async () => (await transcript())?.includes("CAR"), "BSL word missing");
   await click("Change language");
   await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Back navigation failed");
-  const chooseWelcome = text => evaluate(`(() => {const button=[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes(${JSON.stringify(text)}));if(!button)throw new Error('Missing language');button.click();})()`);
   await chooseWelcome("Indian"); await until(async () => (await history())[0]?.language === "bsl", "Welcome language switch did not archive outgoing BSL");
   await click("Start translating"); await until(async () => await language() === "isl", "Indian workspace missing");
   assert.doesNotMatch(await transcript(), /CAR/);

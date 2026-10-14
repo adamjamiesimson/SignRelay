@@ -74,4 +74,17 @@ describe("bounded template matching lane", () => {
     phase("matching"); await vi.advanceTimersByTimeAsync(20001);
     expect(h.error).toHaveBeenCalledOnce(); h.client.terminate();
   });
+  it("rejects a delayed result even when no newer camera timestamp has arrived", async () => {
+    vi.useFakeTimers(); const h = harness(); h.client.submit(h.frames(0));
+    await vi.advanceTimersByTimeAsync(2501); h.finish();
+    expect(h.result).not.toHaveBeenCalled(); h.client.terminate();
+  });
+  it("drops an expired queued snapshot instead of scanning it after a slow load", async () => {
+    vi.useFakeTimers(); const h = harness(); h.client.submit(h.frames(0));
+    h.client.submit(h.frames(50));
+    await vi.advanceTimersByTimeAsync(2501); h.finish();
+    expect(h.requests()).toHaveLength(1); expect(h.result).not.toHaveBeenCalled();
+    h.client.submit(h.frames(3000)); expect(h.requests()).toHaveLength(2);
+    h.finish(); expect(h.result).toHaveBeenCalledOnce(); h.client.terminate();
+  });
 });
