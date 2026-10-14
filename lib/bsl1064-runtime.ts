@@ -1,5 +1,6 @@
 import * as ort from "onnxruntime-web";
 import { createLandmarkModelLoader, type InferenceOptions } from "./landmark-model-loader";
+import { withLandmarkInference } from "./landmark-inference";
 import type { Point, VisionFrame } from "./vision-types";
 
 export type Bsl1064Prediction = { label: string; text: string; confidence: number; margin: number };
@@ -17,25 +18,26 @@ export async function recognizeBsl1064(sequence: VisionFrame[], options: Inferen
   options.onPhase?.("loading");
   const { session, labels } = await loadModel(options.signal);
   options.signal?.throwIfAborted();
-  options.onPhase?.("inference");
-  const input = new ort.Tensor("float32", prepareBslInput(sequence), [1, 3, FRAMES, LANDMARKS]);
-  let output: Record<string, ort.Tensor> = {};
-  try {
-    output = await session.run({ pose: input });
-    const logits = output.logits?.data;
-    if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
-    const probabilities = softmax(logits);
-    const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
-    const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
-    const confidence = probabilities[best];
-    const margin = confidence - probabilities[runnerUp];
-    const label = labels[best];
-    if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
-    return { label, text: readable(label), confidence, margin };
-  } finally {
-    input.dispose();
-    Object.values(output).forEach(tensor => tensor.dispose());
-  }
+  return withLandmarkInference(session, options, async () => {
+    const input = new ort.Tensor("float32", prepareBslInput(sequence), [1, 3, FRAMES, LANDMARKS]);
+    let output: Record<string, ort.Tensor> = {};
+    try {
+      output = await session.run({ pose: input });
+      const logits = output.logits?.data;
+      if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
+      const probabilities = softmax(logits);
+      const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
+      const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
+      const confidence = probabilities[best];
+      const margin = confidence - probabilities[runnerUp];
+      const label = labels[best];
+      if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
+      return { label, text: readable(label), confidence, margin };
+    } finally {
+      input.dispose();
+      Object.values(output).forEach(tensor => tensor.dispose());
+    }
+  });
 }
 
 /**

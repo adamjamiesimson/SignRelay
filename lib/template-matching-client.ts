@@ -6,6 +6,8 @@ export type MatchInput = MatchRequest | { type: "configure"; kind: "personal" | 
   | { type: "cancel" };
 export type MatchOutput = { id: number; generation: number; prediction: TemplatePrediction | null; error?: string; phase?: "loading" | "matching" };
 type Port = Pick<Worker, "postMessage" | "terminate" | "onmessage" | "onerror" | "onmessageerror">;
+type ScheduledMatch = { request: MatchRequest; submittedAt: number };
+const MAX_RESULT_AGE_MS = 2500;
 
 /** A separate CPU lane: one active scan plus one replaceable latest snapshot.
  * Never await matching on the recognition worker's frame/acknowledgement path.
@@ -14,8 +16,8 @@ type Port = Pick<Worker, "postMessage" | "terminate" | "onmessage" | "onerror" |
 export class TemplateMatchingClient {
   private worker: Port | null = null;
   private templates: CalibrationTemplate[] = [];
-  private active: MatchRequest | null = null;
-  private queued: MatchRequest | null = null;
+  private active: ScheduledMatch | null = null;
+  private queued: ScheduledMatch | null = null;
   private generation = 0;
   private nextId = 0;
   private newestTimestamp = -Infinity;
@@ -40,7 +42,8 @@ export class TemplateMatchingClient {
   submit(frames: VisionFrame[]) {
     if (this.closed || !frames.length || (this.kind === "personal" && !this.templates.length)) return;
     this.newestTimestamp = frames.at(-1)!.timestamp;
-    this.queued = { type: "match", id: ++this.nextId, generation: this.generation, frames: [...frames] };
+    this.queued = { request: { type: "match", id: ++this.nextId, generation: this.generation, frames: [...frames] },
+      submittedAt: performance.now() };
     this.pump();
   }
 
@@ -58,23 +61,25 @@ export class TemplateMatchingClient {
 
   private pump() {
     if (this.closed || this.active || !this.queued || performance.now() < this.retryAfter) return;
+    if (performance.now() - this.queued.submittedAt > MAX_RESULT_AGE_MS) { this.queued = null; return; }
     try {
       if (!this.worker) {
         const worker = this.createWorker();
         this.worker = worker;
         worker.onmessage = ({ data }: MessageEvent<MatchOutput>) => {
-          if (worker !== this.worker || data.id !== this.active?.id) return;
+          if (worker !== this.worker || data.id !== this.active?.request.id) return;
           if (data.phase) {
             if (data.generation === this.generation) this.armTimeout(data.phase === "loading" ? 400000 : 20000);
             return;
           }
-          const request = this.active;
+          const { request, submittedAt } = this.active;
           this.clearTimer();
           this.active = null;
           if (data.generation === this.generation && request.generation === this.generation) {
             if (data.error) { this.fail(data.error); return; }
             const timestamp = request.frames.at(-1)!.timestamp;
-            if (this.newestTimestamp - timestamp <= 2500) this.onResult(data.prediction, timestamp);
+            if (this.newestTimestamp - timestamp <= MAX_RESULT_AGE_MS
+              && performance.now() - submittedAt <= MAX_RESULT_AGE_MS) this.onResult(data.prediction, timestamp);
             this.failures = 0;
           }
           this.pump();
@@ -86,7 +91,7 @@ export class TemplateMatchingClient {
       }
       this.active = this.queued;
       this.queued = null;
-      this.worker.postMessage(this.active);
+      this.worker.postMessage(this.active.request);
       // Includes first PSL download; never restarts the camera/model worker.
       this.armTimeout(120000);
     } catch { this.fail("Template matching could not start. Retrying shortly…"); }
