@@ -30,6 +30,8 @@ export type WorkerAnalysis = {
   confidence: number;
   bufferSize: number;
   feedback?: string;
+  source?: "personal" | "starter" | "model";
+  motionReason?: string;
 };
 
 export type WorkerConfirmation = {
@@ -39,6 +41,7 @@ export type WorkerConfirmation = {
   gloss: string;
   confidence: number;
   timestamp: number;
+  source?: "personal" | "starter" | "model";
 };
 
 export type WorkerMessage = WorkerAnalysis | WorkerConfirmation

@@ -1,0 +1,21 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><!--POLICY--><title>SignRelay local recognition diagnostic</title>
+<style>body{max-width:1040px;margin:32px auto;padding:0 20px;font:16px/1.5 system-ui;background:#111;color:#eee}label{display:inline-block;margin:8px}input,select,button{font:inherit;padding:8px;background:#262626;color:#fff;border:1px solid #777;border-radius:6px}button{cursor:pointer}video{width:100%;max-height:420px;background:#222}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#222;padding:16px}small{display:block;color:#bbb}section{border-top:1px solid #555;padding:16px 0}</style></head><body>
+<h1>Local recognition diagnostic</h1><p>Uses SignRelay's actual pinned MediaPipe Tasks API and recognition worker. Files stay on this device. This page is generated only for local QA and is removed by the next production build.</p>
+<p id="status" role="status">Choose metadata before starting. No camera is running.</p>
+<section><label>Language <select id="language"><option value="asl">ASL</option><option value="bsl">BSL</option></select></label>
+<label>Participant pseudonym <input id="participant" value="participant-01" maxlength="64"></label>
+<label>Trial <select id="trial-type"><option value="sign">Known sign</option><option value="no_sign">Ordinary activity / no signing</option><option value="unknown_sign">Out-of-vocabulary sign</option></select></label>
+<label>Expected gloss <input id="expected" value="HELLO"></label>
+<label>Declared split <select id="split"><option value="development">Development</option><option value="held_out">Held out</option></select></label>
+<label><input type="checkbox" id="independent"> Recording and participant have never been used for tuning/calibration</label>
+<label>Source / consent record <input id="provenance" placeholder="Local consent ID or licensed source"></label></section>
+<section><h2>Hand labels and orientation</h2><label>Raise this physical hand alone <select id="physical-hand"><option value="Unknown">Unlabelled</option><option value="Right">My right hand</option><option value="Left">My left hand</option></select></label>
+<label><input type="checkbox" id="mirror-preview" checked> Mirror preview only (CSS)</label>
+<label><input type="checkbox" id="mirror-input"> Mirror pixels sent to Tasks (diagnostic only)</label>
+<small>Compare both physical hands with each input orientation. Pose agreement is a consistency check, not ground truth. Production input mapping is unchanged.</small>
+<video id="video" muted playsinline></video><canvas id="canvas" hidden></canvas><pre id="hands">No observations</pre></section>
+<section><button id="camera">Start camera diagnostic</button> <button id="trial">Record 5-second trial</button> <button id="stop">Stop and release camera</button>
+<p><input id="file" type="file" accept="video/*"> <button id="run-file">Evaluate selected recording</button></p>
+<small>File trials seek through unique decoded source frames at at most 20Hz. No duplicated end frames or synthetic pause are appended. Raw frames and landmarks are never exported.</small></section>
+<section><button id="export">Download derived results JSONL</button><pre id="results">No trials yet</pre></section>
+<script type="module" src="/__qa/recognition-lab.js"></script></body></html>
