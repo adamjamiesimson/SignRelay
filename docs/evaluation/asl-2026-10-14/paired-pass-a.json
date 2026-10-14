@@ -1,0 +1,71 @@
+{
+  "diagnostic_only": true,
+  "paired_trials": 6,
+  "baseline": [
+    {
+      "group": "asl/held_out",
+      "trials": 6,
+      "signed_trials": 6,
+      "correct": 2,
+      "signed_accuracy": 0.3333333333333333,
+      "coverage": 0.6666666666666666,
+      "precision_when_accepted": 0.5,
+      "wrong_accepted_trials": 2,
+      "abstentions": 2,
+      "no_sign": {
+        "trials": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "unknown_sign": {
+        "trials": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "errors": 0,
+      "confusions": {
+        "PLEASE → THANK YOU": 1,
+        "THANK YOU → PLEASE": 1
+      },
+      "holdout_verified": false
+    }
+  ],
+  "candidate": [
+    {
+      "group": "asl/held_out",
+      "trials": 6,
+      "signed_trials": 6,
+      "correct": 2,
+      "signed_accuracy": 0.3333333333333333,
+      "coverage": 0.5,
+      "precision_when_accepted": 0.6666666666666666,
+      "wrong_accepted_trials": 1,
+      "abstentions": 3,
+      "no_sign": {
+        "trials": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "unknown_sign": {
+        "trials": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "errors": 0,
+      "confusions": {
+        "THANK YOU → PLEASE": 1
+      },
+      "holdout_verified": false
+    }
+  ],
+  "changes": [
+    {
+      "trial_id": "please-gtsignstudy4a.8031",
+      "expected": "PLEASE",
+      "before": [
+        "THANK YOU"
+      ],
+      "after": []
+    }
+  ]
+}

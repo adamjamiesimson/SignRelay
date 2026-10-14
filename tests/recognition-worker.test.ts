@@ -4,8 +4,14 @@ import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-type
 
 const mocks = vi.hoisted(() => ({
   asl: vi.fn(), bsl: vi.fn(), isl: vi.fn(), lse: vi.fn(), psl: vi.fn(),
-  motion: vi.fn(), personal: vi.fn(),
+  motion: vi.fn(), personal: vi.fn(), openConflict: vi.fn(),
 }));
+vi.mock("../lib/asl-starter-recognition", async importOriginal => {
+  const actual = await importOriginal<typeof import("../lib/asl-starter-recognition")>();
+  return { ...actual, analyzeAslStarter: (frames: VisionFrame[]) => mocks.openConflict()
+    ? { prediction: null, ambiguousOpenPalm: true, labels: ["HELLO", "THANK YOU"] }
+    : actual.analyzeAslStarter(frames) };
+});
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.asl }));
 vi.mock("../lib/bsl1064-runtime", () => ({ recognizeBsl1064: mocks.bsl }));
 vi.mock("../lib/isl263-runtime", () => ({ recognizeIsl263: mocks.isl }));
@@ -41,6 +47,7 @@ beforeEach(async () => {
   timestamp = 0;
   for (const id of ["asl", "bsl", "isl", "lse", "psl"] as const) mocks[id].mockResolvedValue(null);
   mocks.motion.mockReturnValue(true);
+  mocks.openConflict.mockReturnValue(false);
   mocks.personal.mockReturnValue(null);
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
   vi.stubGlobal("self", worker);
@@ -225,4 +232,15 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(worker.postMessage.mock.calls.at(-1)?.[0].feedback).not.toContain("could not run");
     expect(confirmations()).toHaveLength(0);
   });
+  it("invalidates a high-scoring model candidate when open-palm evidence conflicts", async () => {
+    mocks.asl.mockResolvedValue({ ...prediction, label: "PLEASE" });
+    await frames(7);
+    expect(mocks.asl).toHaveBeenCalled();
+    mocks.openConflict.mockReturnValue(true);
+    await frames(8);
+    expect(confirmations()).toHaveLength(0);
+    expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: null,
+      feedback: expect.stringContaining("more than one sign") });
+  });
+
 });

@@ -3,7 +3,7 @@
 import type { CalibrationTemplate, VisionFrame, WorkerInput, WorkerMessage } from "@/lib/vision-types";
 import { shouldConfirm } from "@/lib/decoder";
 import { templatesForLanguage } from "@/lib/personalized-recognition";
-import { recognizeAslStarter } from "@/lib/asl-starter-recognition";
+import { analyzeAslStarter } from "@/lib/asl-starter-recognition";
 import { analyzeSignMotion } from "@/lib/sign-motion";
 import { analyzeGenericSignMotion } from "@/lib/asl100-runtime";
 import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
@@ -130,7 +130,8 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (latestPersonal && now - personalTimestamp > MAX_PREDICTION_AGE_MS) latestPersonal = null;
   if (hasHand) personalMatcher.submit(frames);
   const personal = latestPersonal;
-  const starter = activeLanguage === "asl" ? recognizeAslStarter(frames) : null;
+  const starterAnalysis = activeLanguage === "asl" ? analyzeAslStarter(frames) : null;
+  const starter = starterAnalysis?.prediction ?? null;
   // The closed-set model can also label fist preparation YES. Require the
   // same completed wrist nod for automatic YES, while preserving personal
   // templates. Discard a rejected result so it cannot stall fresh inference.
@@ -139,7 +140,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   const motion = activeLanguage === "asl" ? analyzeSignMotion(frames)
     : { ...analyzeGenericSignMotion(frames), sequence: frames };
 
-  if (!motion.ready) invalidatePrediction();
+  if (!motion.ready || starterAnalysis?.ambiguousOpenPalm) invalidatePrediction();
   else {
     if (latestPrediction && now - predictionTimestamp > MAX_PREDICTION_AGE_MS) invalidatePrediction();
     const language = activeLanguage;
@@ -183,7 +184,9 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   else if (now - starterSeenAt > 500) blockedStarter = null;
   const rawResult = direct?.label === blockedStarter ? null : direct ?? latestPrediction;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
-  const feedback = personalProblem ? "Saved signs could not be checked. Retrying shortly…" : modelProblem
+  const source = result ? result === personal ? "personal" : result === starter ? "starter" : "model" : undefined;
+  const feedback = starterAnalysis?.ambiguousOpenPalm && !personal ? "This movement resembles more than one sign. Pause and try again."
+    : personalProblem ? "Saved signs could not be checked. Retrying shortly…" : modelProblem
     ? activeLanguage === "asl"
       ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly…"
       : "The research model could not run. Saved personal signs are still available. Retrying shortly…"
@@ -194,6 +197,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     state: frames.length < 6 ? "listening" : result ? "processing" : "uncertain",
     candidate: result?.label ?? null, confidence: result?.confidence ?? 0,
     bufferSize: frames.length, feedback,
+    source, motionReason: motion.reason,
   } satisfies WorkerMessage);
 
   if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
@@ -219,6 +223,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   })) {
     self.postMessage({ type: "confirmed", session: event.data.session, text: result.text, gloss: result.label,
       confidence: result.confidence, timestamp: Date.now(),
+      source,
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
     if (activeLanguage === "asl" && !candidateIsModel) {

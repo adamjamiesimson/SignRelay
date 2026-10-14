@@ -33,3 +33,17 @@ describe("vision resources and capture cadence", () => {
     expect(gesture.close).toHaveBeenCalledOnce();
   });
 });
+
+it("preserves Tasks handedness and forwards the exact unmirrored source", async () => {
+  const points = Array.from({ length: 21 }, () => ({ x: 0.3, y: 0.4, z: 0 }));
+  const recognizeForVideo = vi.fn().mockReturnValue({ landmarks: [points, points],
+    handedness: [[{ categoryName: "Left" }], [{ categoryName: "Right" }]], gestures: [[], []] });
+  mocks.gesture.mockResolvedValue({ recognizeForVideo, close: vi.fn() });
+  mocks.face.mockResolvedValue({ detectForVideo: () => ({ faceLandmarks: [] }), close: vi.fn() });
+  mocks.pose.mockResolvedValue({ detectForVideo: () => ({ landmarks: [] }), close: vi.fn() });
+  const { VisionEngine, taskHandedness } = await import("../lib/vision-engine");
+  const engine = await VisionEngine.create(); const source = {} as HTMLVideoElement;
+  expect(engine.process(source, 100).hands.map(hand => hand.handedness)).toEqual(["Left", "Right"]);
+  expect(recognizeForVideo).toHaveBeenCalledWith(source, 100);
+  expect(taskHandedness("unexpected")).toBe("Unknown"); engine.close();
+});
