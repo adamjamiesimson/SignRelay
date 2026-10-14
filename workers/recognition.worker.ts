@@ -24,6 +24,10 @@ let personalTemplates: CalibrationTemplate[] = [];
 let activeLanguage: LanguageId = "asl";
 const classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300, psl: recognizePsl776 };
 const pending = new Map<LanguageId, number>();
+const FIRST_LARGE_MODEL_LOAD_TIMEOUT_MS = 120000;
+const NORMAL_INFERENCE_TIMEOUT_MS = 20000;
+// A successful non-null result proves the BSL/ISL model completed loading.
+const provenReadyModels = new Set<LanguageId>();
 const MAX_PREDICTION_AGE_MS = 2500;
 let latestPrediction: Awaited<ReturnType<typeof recognizeAsl1000>> = null;
 let predictionTimestamp = 0;
@@ -47,6 +51,9 @@ function invalidatePrediction() {
 }
 
 function resetSession() {
+  // In-flight requests from old sessions are invalidated by modelGeneration;
+  // do not let their timers restart a newly selected language.
+  pending.clear();
   frames.length = 0;
   receivedFrames = 0;
   lastInferenceAt = -Infinity;
@@ -71,7 +78,11 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "reset") { resetSession(); return; }
 
   const now = event.data.frame.timestamp;
-  if ([...pending.values()].some(started => now - started >= 20000)) {
+  if ([...pending].some(([language, started]) => {
+    const firstLargeLoad = (language === "bsl" || language === "isl") && !provenReadyModels.has(language);
+    const deadline = firstLargeLoad ? FIRST_LARGE_MODEL_LOAD_TIMEOUT_MS : NORMAL_INFERENCE_TIMEOUT_MS;
+    return now - started >= deadline;
+  })) {
     invalidatePrediction();
     pending.clear();
     self.postMessage({ type: "fault", session: event.data.session,
@@ -110,6 +121,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
       lastInferenceAt = now;
       const generation = modelGeneration;
       classifier([...motion.sequence]).then((prediction) => {
+        if (prediction) provenReadyModels.add(language);
         if (generation !== modelGeneration) return;
         if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS) return;
         latestPrediction = prediction;

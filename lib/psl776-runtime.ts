@@ -43,10 +43,21 @@ export async function recognizePsl776(sequence: VisionFrame[]): Promise<Psl776Pr
   const candidate = prepareCalibrationSequence(sequence);
   let best: { template: Psl776Template; distance: number } | null = null;
   let rival: { template: Psl776Template; distance: number } | null = null;
+  // The acceptance gate requires a distance <= 0.5 and rejects a
+  // competing sign less than 0.06 away. All distances > 0.56 are irrelevant.
+  // Yield during a large template scan so camera frames, resets and watchdog
+  // acknowledgements can still be processed in this same Web Worker.
+  let lastYield = performance.now();
   for (const template of templates) {
-    const distance = sequenceDistance(candidate, template.frames);
-    if (!best || distance < best.distance) { rival = best; best = { template, distance }; }
-    else if (!rival || distance < rival.distance) rival = { template, distance };
+    const distance = sequenceDistance(candidate, template.frames, REJECT_DISTANCE + REJECT_MARGIN);
+    if (Number.isFinite(distance)) {
+      if (!best || distance < best.distance) { rival = best; best = { template, distance }; }
+      else if (!rival || distance < rival.distance) rival = { template, distance };
+    }
+    if (performance.now() - lastYield >= 12) {
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
+      lastYield = performance.now();
+    }
   }
   if (!best || best.distance > REJECT_DISTANCE || (rival && rival.distance - best.distance < REJECT_MARGIN)) return null;
   const confidence = clamp(0.9 - best.distance * 0.24, 0, 0.88);
