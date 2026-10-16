@@ -241,6 +241,17 @@ function circularMotion(xs: number[], ys: number[]) {
   // Normalize the axes: natural chest circles can be narrow ellipses.
   const width = span(xs);
   const height = span(ys);
+  if (xs.length < 5 || width <= 0 || height <= 0) return false;
+  // The turning angle alone accepts roughly two-thirds of an ellipse as a
+  // completed sign. A partial chest sweep or noisy outward stroke can then
+  // be mistaken for PLEASE/SORRY before the signer finishes moving.
+  // Demand a return near the starting position relative to the actual motion
+  // extent. Use proportions so this remains independent of camera distance.
+  const closure = Math.hypot(
+    (xs.at(-1)! - xs[0]) / width,
+    (ys.at(-1)! - ys[0]) / height,
+  );
+  if (!Number.isFinite(closure) || closure > 0.45) return false;
   const angles = xs.map((x, index) => Math.atan2((ys[index] - cy) / height, (x - cx) / width));
   let turn = 0;
   let travel = 0;
