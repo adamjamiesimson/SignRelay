@@ -8,7 +8,7 @@ PopSign ASL v1.0 (Georgia Tech / DPAN, CC BY 4.0) provides isolated mobile-recor
 
 ## The reproducible historical pilot
 
-- `.github/workflows/asl-video-pilot.yml` runs on PRs that change ASL matching or evaluation. It fetches only the six fingerprint-checked source clips into an ignored temporary directory, builds the actual production recognition worker and pinned MediaPipe Tasks browser runtime, compiles the exact **base branch** worker independently, and replays identical source frames in separate sessions.
+- `.github/workflows/asl-video-pilot.yml` runs on PRs that change ASL matching or evaluation. It fetches only the six fingerprint-checked source clips into an ignored temporary directory, builds the actual production recognition worker and pinned MediaPipe Tasks browser runtime, compiles the frozen **pre-PR28** worker (`6e099f94294942953138498666c561c562c8b50d`) independently, and replays identical source frames in separate sessions.
 - The command includes `--reviewed-pilot`, explicitly recording `evaluation_split=development` and `reviewed_pilot=true`. The original 14 October frozen manifest is retained as historical provenance, not silently rewritten.
 - `scripts/verify-video-pilot.mjs` rejects missing or extra clips, fingerprint/signer mismatches, unexpected capture modes, incomplete browser sessions, missing frame acknowledgement evidence and incorrectly declared held-out results. The paired comparator also verifies camera orientation, signer, language, split and runtime version.
 - Derived reports include every confirmed word, per-gloss correct/wrong/abstained/error counts and tracked-hand frame denominators; tracking dropouts are **not** excluded from signed accuracy. The workflow uploads derived JSON/JSONL only, not videos.
@@ -20,7 +20,7 @@ For local replication, with installed dependencies, a local Chrome executable an
 python3 training/fetch_evaluation_clips.py
 npm run build:firebase
 node scripts/prepare-recognition-lab.mjs
-# Compile the exact base-worker source to out/workers/baseline-recognition.worker.js.
+# Compile pre-PR28 commit 6e099f9 to out/workers/baseline-recognition.worker.js.
 node scripts/run-recognition-video-evaluation.mjs /path/to/chrome docs/evaluation/popsign-project-holdout-manifest.json evaluation/derived/base.jsonl --baseline --reviewed-pilot
 node scripts/run-recognition-video-evaluation.mjs /path/to/chrome docs/evaluation/popsign-project-holdout-manifest.json evaluation/derived/candidate.jsonl --reviewed-pilot
 node scripts/compare-recognition-evaluation.mjs evaluation/derived/base.jsonl evaluation/derived/candidate.jsonl
