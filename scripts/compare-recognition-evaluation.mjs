@@ -9,7 +9,7 @@ const changes = [];
 for (const row of a) {
   const candidate = byId.get(row.trial_id);
   if (!candidate) throw new Error("Missing trial in candidate");
-  for (const key of ["recording_sha256", "tasks_version", "input_mirrored", "capture_mode", "expected_gloss", "trial_type"]) {
+  for (const key of ["recording_sha256", "tasks_version", "input_mirrored", "preview_mirrored", "model_mapping", "capture_mode", "expected_gloss", "trial_type", "participant_id", "language", "evaluation_split"]) {
     if (row[key] === undefined || row[key] !== candidate[key]) throw new Error(`Comparison differs in ${key}: ${row.trial_id}`);
   }
   if (JSON.stringify(row.accepted_glosses) !== JSON.stringify(candidate.accepted_glosses)) {

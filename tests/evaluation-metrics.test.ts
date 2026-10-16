@@ -39,6 +39,31 @@ describe("accuracy evidence counts failures instead of hiding them", () => {
     expect(() => validateTrials([trial, { ...trial, evaluation_split: "development" }])).toThrow("participant");
     expect(() => validateTrials([1, 2].map(() => ({ ...trial, recording_sha256: "a".repeat(64) })))).toThrow("duplicate recording");
   });
+  it("reports each sign separately without dropping tracking failures or wrong words", () => {
+    const rows = [
+      { ...trial, trial_id: "a", recording_sha256: "a".repeat(64), frames: 30, hand_frames: 4 },
+      { ...trial, trial_id: "b", recording_sha256: "b".repeat(64), predicted_gloss: "PLEASE",
+        accepted_glosses: ["PLEASE"], frames: 30, hand_frames: 15 },
+      { ...trial, trial_id: "c", recording_sha256: "c".repeat(64), expected_gloss: "PLEASE",
+        predicted_gloss: null, accepted: false, frames: 25, hand_frames: 0 },
+      { ...trial, trial_id: "d", recording_sha256: "d".repeat(64), expected_gloss: "PLEASE",
+        predicted_gloss: null, accepted: false, errors: ["camera stopped"], frames: 8, hand_frames: 2 },
+    ];
+    const [summary] = summarizeTrials(rows);
+    expect(summary.per_gloss).toEqual([
+      { gloss: "HELLO", trials: 2, correct: 1, wrong_accepted: 1, abstentions: 0, errors: 0,
+        hand_tracking: { measured_trials: 2, frames: 60, frames_with_hands: 19 } },
+      { gloss: "PLEASE", trials: 2, correct: 0, wrong_accepted: 0, abstentions: 2, errors: 1,
+        hand_tracking: { measured_trials: 2, frames: 33, frames_with_hands: 2 } },
+    ]);
+    expect(summary.errors).toBe(1);
+  });
+  it("does not invent hand-tracking coverage when video frame counters are absent or inconsistent", () => {
+    const [summary] = summarizeTrials([
+      { ...trial, frames: 20, hand_frames: 21 }, { ...trial, frames: 0, hand_frames: 0 }, trial,
+    ]);
+    expect(summary.per_gloss[0].hand_tracking).toEqual({ measured_trials: 0, frames: 0, frames_with_hands: 0 });
+  });
   it("separates development measurements from declared held-out measurements", () => {
     expect(summarizeTrials([trial, { ...trial, participant_id: "dev", evaluation_split: "development" }])).toHaveLength(2);
   });
