@@ -6,7 +6,7 @@ const rows = () => manifest.map((m, index) => ({
   trial_id: m.trial_id, participant_id: m.participant_id, session_id: `session-${index}`,
   language: "asl", trial_type: "sign", expected_gloss: m.expected_gloss,
   predicted_gloss: null, accepted: false, accepted_glosses: [],
-  evaluation_split: "held_out", recording_sha256: m.recording_sha256,
+  evaluation_split: "development", reviewed_pilot: true, recording_sha256: m.recording_sha256,
   capture_mode: "unique-decoded-source-frames", tasks_version: "0.10.22-rc.20250304",
   input_mirrored: false, preview_mirrored: true, model_mapping: "unchanged",
   source_duration_s: 1.5, status: "complete", errors: [] as string[], worker_sha256: "a".repeat(64),
@@ -44,6 +44,10 @@ describe("historical real-video pilot evidence gate", () => {
     expect(() => verifyPilot(manifest, observed, rows())).toThrow("acknowledgements");
     const tooMany = rows(); tooMany[0].analyses = 31;
     expect(() => verifyPilot(manifest, tooMany, rows())).toThrow("acknowledgements");
+  });
+  it("does not mislabel a reused pilot as a fresh holdout", () => {
+    const pretendingHoldout = rows(); pretendingHoldout[0].evaluation_split = "held_out";
+    expect(() => verifyPilot(manifest, rows(), pretendingHoldout)).toThrow("mismatched");
   });
   it("rejects changes in video orientation between paired runs", () => {
     const other = rows(); other[0].input_mirrored = true;
