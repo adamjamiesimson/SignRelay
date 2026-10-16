@@ -1,5 +1,6 @@
 // Test-only worker, bundled into out/ and removed after the browser check.
 // Uses actual installed checkpoints on synthetic inputs: execution, not accuracy.
+import { recognizeAsl1000 } from "../lib/asl1000-runtime";
 import { recognizeBsl1064 } from "../lib/bsl1064-runtime";
 import { recognizeIsl263 } from "../lib/isl263-runtime";
 import { recognizeLse300 } from "../lib/lse300-runtime";
@@ -9,7 +10,7 @@ self.onmessage = async () => {
   try {
     const checks = [];
     for (const [language, recognize] of [
-      ["bsl", recognizeBsl1064], ["isl", recognizeIsl263], ["lse", recognizeLse300],
+      ["asl", recognizeAsl1000], ["bsl", recognizeBsl1064], ["isl", recognizeIsl263], ["lse", recognizeLse300],
     ] as const) {
       const controller = new AbortController();
       let started!: () => void;

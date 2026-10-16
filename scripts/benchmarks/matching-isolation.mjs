@@ -30,7 +30,7 @@ try {
   const { makeSign, examples, recognizePsl776 } = await import(pathToFileURL(workload).href);
   await bundle("workers/template-matching.worker.ts", path.join(root, "public/workers/template-matching.worker.js"));
   const quantile = (values, q) => [...values].sort((a, b) => a - b)[Math.min(values.length - 1, Math.floor(values.length * q))];
-  for (const count of [150, 300]) for (const [version, script] of [["pr21", oldWorker], ["isolated", currentWorker]]) {
+  for (const count of [30, 150, 300]) for (const [version, script] of [["pr21", oldWorker], ["isolated", currentWorker]]) {
     const worker = new ThreadWorker(script, root); await worker.ready;
     const times = [], posted = new Map(); let id = 0, waiting = false, queued = null, sent = 0;
     const pump = () => {
@@ -52,6 +52,30 @@ try {
     worker.postMessage({ type: "reset", session: 2 }); worker.terminate();
     console.log(JSON.stringify({ benchmark: "frame-ack-real-threads", version, examples: count, offered: sample.length,
       acknowledged: times.length, sent, median_ms: +quantile(times, 0.5).toFixed(2),
+      p95_ms: +quantile(times, 0.95).toFixed(2), max_ms: +Math.max(...times).toFixed(2) }));
+  }
+  for (const [version, script] of [["pr21", oldWorker], ["isolated", currentWorker]]) {
+    const worker = new ThreadWorker(script, root); await worker.ready;
+    const times = [], posted = new Map(); let id = 0, waiting = false, queued = null;
+    const pump = () => {
+      if (waiting || !queued) return;
+      const frame = queued; queued = null; waiting = true; id++;
+      posted.set(id, performance.now());
+      worker.postMessage({ type: "frame", frame, frameId: id, session: 1 });
+    };
+    worker.onmessage = ({ data }) => {
+      if (data.type === "fault") throw new Error(data.message);
+      if (data.type !== "analysis") return;
+      times.push(performance.now() - posted.get(data.frameId)); waiting = false; pump();
+    };
+    worker.postMessage({ type: "templates", language: "psl", templates: [], session: 1 });
+    const sample = makeSign("HELLO", { duration: 3950, count: 80 });
+    for (const frame of sample) { queued = frame; pump(); await delay(50); }
+    const deadline = performance.now() + 5000;
+    while ((waiting || queued) && performance.now() < deadline) await delay(10);
+    worker.terminate();
+    console.log(JSON.stringify({ benchmark: "psl-frame-ack-real-threads", version, references: 775,
+      offered: sample.length, acknowledged: times.length, median_ms: +quantile(times, 0.5).toFixed(2),
       p95_ms: +quantile(times, 0.95).toFixed(2), max_ms: +Math.max(...times).toFixed(2) }));
   }
   const originalFetch = globalThis.fetch;

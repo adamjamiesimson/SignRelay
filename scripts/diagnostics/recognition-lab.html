@@ -2,7 +2,7 @@
 <style>body{max-width:1040px;margin:32px auto;padding:0 20px;font:16px/1.5 system-ui;background:#111;color:#eee}label{display:inline-block;margin:8px}input,select,button{font:inherit;padding:8px;background:#262626;color:#fff;border:1px solid #777;border-radius:6px}button{cursor:pointer}video{width:100%;max-height:420px;background:#222}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#222;padding:16px}small{display:block;color:#bbb}section{border-top:1px solid #555;padding:16px 0}</style></head><body>
 <h1>Local recognition diagnostic</h1><p>Uses SignRelay's actual pinned MediaPipe Tasks API and recognition worker. Files stay on this device. This page is generated only for local QA and is removed by the next production build.</p>
 <p id="status" role="status">Choose metadata before starting. No camera is running.</p>
-<section><label>Language <select id="language"><option value="asl">ASL</option><option value="bsl">BSL</option></select></label>
+<section><label>Language <select id="language"><option value="asl">ASL</option><option value="bsl">BSL</option><option value="isl">ISL</option><option value="lse">LSE</option><option value="psl">PSL</option></select></label>
 <label>Participant pseudonym <input id="participant" value="participant-01" maxlength="64"></label>
 <label>Trial <select id="trial-type"><option value="sign">Known sign</option><option value="no_sign">Ordinary activity / no signing</option><option value="unknown_sign">Out-of-vocabulary sign</option></select></label>
 <label>Expected gloss <input id="expected" value="HELLO"></label>

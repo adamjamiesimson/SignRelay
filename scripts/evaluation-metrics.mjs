@@ -1,5 +1,5 @@
 const gloss = value => typeof value === "string" ? value.normalize("NFC").trim().replace(/\s+/g, " ").toUpperCase() : null;
-const failed = row => row.status === "error" || (Array.isArray(row.errors) && row.errors.length > 0);
+const failed = row => (row.status !== undefined && row.status !== "complete") || (Array.isArray(row.errors) && row.errors.length > 0);
 
 export function validateTrials(rows) {
   if (!Array.isArray(rows) || !rows.length) throw new Error("No evaluation trials found");
@@ -12,6 +12,8 @@ export function validateTrials(rows) {
     if (!["sign", "no_sign", "unknown_sign"].includes(row.trial_type)) fail("invalid trial_type");
     if (typeof row.accepted !== "boolean") fail("accepted must be boolean");
     for (const key of ["session_id", "participant_id", "language"]) if (typeof row[key] !== "string" || !row[key].trim()) fail(`invalid ${key}`);
+    if (row.status !== undefined && !["complete", "error", "incomplete", "cancelled"].includes(row.status)) fail("invalid trial status");
+    if (row.errors !== undefined && (!Array.isArray(row.errors) || row.errors.some(error => typeof error !== "string"))) fail("invalid errors");
     const expected = gloss(row.expected_gloss);
     if (row.trial_type === "sign" && !expected) fail("signed trial needs an expected gloss");
     if (row.trial_type !== "sign" && expected) fail("negative trial must have null expected_gloss");
@@ -77,13 +79,21 @@ export function summarizeTrials(input) {
       const trackable = examples.filter(r => Number.isInteger(r.frames) && r.frames > 0
         && Number.isInteger(r.hand_frames) && r.hand_frames >= 0 && r.hand_frames <= r.frames);
       return { gloss: label, trials: examples.length, correct: right.length,
-        wrong_accepted: mismatches.length, abstentions: examples.filter(r => !r.accepted).length,
+        wrong_accepted: mismatches.length, abstentions: examples.filter(r => !r.accepted && !failed(r)).length,
         errors: examples.filter(failed).length,
         hand_tracking: { measured_trials: trackable.length,
           frames: trackable.reduce((sum, r) => sum + r.frames, 0),
           frames_with_hands: trackable.reduce((sum, r) => sum + r.hand_frames, 0) },
       };
     });
+    const confusion_matrix = {};
+    for (const row of signed) {
+      const cells = confusion_matrix[row.expected_gloss] ??= {};
+      const outcomes = new Set(row.accepted_glosses);
+      if (failed(row)) outcomes.add("[ERROR]");
+      else if (!row.accepted) outcomes.add("[ABSTAIN]");
+      for (const outcome of outcomes) cells[outcome] = (cells[outcome] ?? 0) + 1;
+    }
     const confusions = {};
     for (const row of wrong) for (const predicted of new Set(row.accepted_glosses)) {
       if (predicted === row.expected_gloss) continue;
@@ -93,7 +103,15 @@ export function summarizeTrials(input) {
       signed_accuracy: signed.length ? correct.length / signed.length : null,
       coverage: signed.length ? accepted.length / signed.length : null,
       precision_when_accepted: accepted.length ? correct.length / accepted.length : null,
-      wrong_accepted_trials: wrong.length, abstentions: signed.length - accepted.length,
+      wrong_accepted_trials: wrong.length, abstentions: signed.filter(r => !r.accepted && !failed(r)).length,
+      signed_errors: signed.filter(failed).length,
+      incorrect_acceptance_rate: signed.length ? wrong.length / signed.length : null,
+      error_rate: trials.length ? trials.filter(failed).length / trials.length : null,
+      unique_recordings: trials.filter(r => r.recording_sha256).length,
+      unique_participants: new Set(trials.map(r => r.participant_id)).size,
+      sign_coverage: [...byGloss.keys()].sort(),
+      per_sign_recall: Object.fromEntries(per_gloss.map(r => [r.gloss, r.correct / r.trials])),
+      confusion_matrix, confusion_matrix_unit: "trials per distinct emitted label; multi-output/error cells may overlap",
       no_sign: negatives("no_sign"), unknown_sign: negatives("unknown_sign"),
       errors: trials.filter(failed).length, confusions, per_gloss,
       holdout_verified: false,

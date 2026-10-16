@@ -29,7 +29,9 @@ try {
       terminate() { this.closed = true; }
       emit(gloss) { if (!this.closed) this.onmessage?.({data:{type:'confirmed',session:this.session,text:gloss,gloss,confidence:0.86,timestamp:Date.now(),source:'starter'}}); }
     };
-    navigator.mediaDevices.getUserMedia = () => { window.__qaCameraRequests++; return new Promise(resolve => window.__qaCameraResolvers.push(() => resolve({getTracks:()=>[{stop:()=>window.__qaStoppedTracks++}]}))); };
+    navigator.mediaDevices.getUserMedia = () => { window.__qaCameraRequests++;
+      if (window.__qaDenyCamera) return Promise.reject(new DOMException('Denied by controlled permission test','NotAllowedError'));
+      return new Promise(resolve => window.__qaCameraResolvers.push(() => resolve({getTracks:()=>[{stop:()=>window.__qaStoppedTracks++}]}))); };
     window.__qaEmit = gloss => window.__qaWorkers.filter(w=>!w.closed).at(-1).emit(gloss);
     window.__qaDenyStorage = () => { const original=Storage.prototype.setItem;
       Storage.prototype.setItem=function(key,value){if(key==='signrelay.history.v1')throw new DOMException('full','QuotaExceededError');return original.call(this,key,value);};
@@ -96,9 +98,20 @@ try {
   await select("rsl"); await click("Back to languages"); await click("Start translating");
   await until(() => evaluate("!!document.querySelector('#rsl-title')"), "RSL re-entry failed");
   assert.equal(await evaluate("window.__qaCameraRequests"), requests, "RSL entry started the unused shared camera");
+  await evaluate("window.__qaDenyCamera=true");
+  await select("asl");
+  await until(async () => await language() === "asl", "ASL view missing for denied permission test");
+  await click("Start camera");
+  await until(() => evaluate("document.body.textContent.includes('Camera permission was denied')"), "Denied permission did not surface a recoverable error");
+  await evaluate("window.__qaDenyCamera=false");
+  await click("Start camera");
+  await until(() => evaluate("window.__qaCameraResolvers.length===1"), "Camera retry after denial failed");
+  await select("rsl");
+  await evaluate("window.__qaCameraResolvers.forEach(resolve=>resolve());window.__qaCameraResolvers=[]");
+  await until(() => evaluate(`window.__qaStoppedTracks===${requests + 1}`), "Late retry grant leaked camera tracks");
   console.log(JSON.stringify({ passed: true, checks: ["footer navigation", "workspace transcript isolation", "welcome transcript isolation",
-    "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "visible match-score qualification"],
-    camera_requests: requests, stale_tracks_stopped: await evaluate("window.__qaStoppedTracks") }));
+    "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "visible match-score qualification", "denied permission and cancelled retry"],
+    camera_requests: await evaluate("window.__qaCameraRequests"), denied_requests: 1, stale_tracks_stopped: await evaluate("window.__qaStoppedTracks") }));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors, diagnostics: await browser.evaluate(`({mediaDevices:typeof navigator.mediaDevices,
     requests:window.__qaCameraRequests, workers:window.__qaWorkers?.length, camera:document.querySelector('.camera-guidance')?.textContent,

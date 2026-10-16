@@ -72,6 +72,7 @@ async function finishTrial(extra: Record<string, unknown> = {}) {
   // manufacture more evidence. The next trial resets any late predictions.
   await sleep(300);
   if (!trial) throw new Error("No trial running");
+  if (!trial.frames || !trial.analyses) trial.errors.push("No processed frames or worker acknowledgements");
   const accepted = trial.confirmations.map(message => message.gloss);
   const row = { ...trial.data, ...extra, predicted_gloss: accepted[0] ?? null, accepted: accepted.length > 0,
     accepted_glosses: accepted, confirmed_sources: trial.confirmations.map(message => message.source ?? "unknown"),

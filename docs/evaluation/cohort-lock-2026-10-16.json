@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "manifests": [
+    {
+      "file": "docs/evaluation/popsign-project-holdout-manifest.json",
+      "role": "historical-development",
+      "sha256": "4c820832a342dc4f226c4e8c30496cf5f1ed7264201f6c97393b3ba5e5d96966",
+      "recordings": 6
+    },
+    {
+      "file": "docs/evaluation/popsign-development-2026-10-16.json",
+      "role": "development",
+      "sha256": "f0a8764ce995e3a5e52abd2d782ff196a67cb0ba7c9ca8bba4d584585da64d1a",
+      "recordings": 5
+    },
+    {
+      "file": "docs/evaluation/popsign-reserved-holdout-2026-10-16.json",
+      "role": "sealed-holdout",
+      "sha256": "ed1a1817af1c7a73ea8ab236f01e987d8718d27d6e601cc84e4659e43531c66c",
+      "recordings": 5
+    }
+  ],
+  "vocabulary_sha256": "c2b11ee3a62c929a1e88c8c15d3d42da090d17681d69ff407ea22abd0b2bf3d5",
+  "note": "Frozen before final candidate comparison. Sealed cohort not decoded or predicted. Publisher labels; upstream training identity overlap unknown."
+}

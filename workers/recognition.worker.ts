@@ -20,6 +20,7 @@ const frames: VisionFrame[] = [];
 let candidateLabel: string | null = null;
 let candidateStreak = 0;
 let candidateIsModel = false;
+let candidateSource: "personal" | "starter" | "model" | undefined;
 let lastConfirmation = { label: "", time: 0 };
 let personalTemplates: CalibrationTemplate[] = [];
 let activeLanguage: LanguageId = "asl";
@@ -30,6 +31,7 @@ const NORMAL_INFERENCE_TIMEOUT_MS = 20000;
 const MAX_PREDICTION_AGE_MS = 2500;
 let latestPrediction: Awaited<ReturnType<typeof recognizeAsl1000>> = null;
 let predictionTimestamp = 0;
+let predictionReceivedAt = 0;
 let predictionVersion = 0;
 let consumedPredictionVersion = 0;
 let receivedFrames = 0;
@@ -42,6 +44,7 @@ let starterSeenAt = 0;
 
 let latestPersonal: TemplatePrediction | null = null;
 let personalTimestamp = 0;
+let personalReceivedAt = 0;
 let personalVersion = 0;
 let consumedPersonalVersion = 0;
 let hadPersonalTracking = false;
@@ -49,6 +52,7 @@ let personalProblem = false;
 const personalMatcher = new TemplateMatchingClient("personal", (prediction, timestamp) => {
   latestPersonal = prediction;
   personalTimestamp = timestamp;
+  personalReceivedAt = performance.now();
   personalVersion++;
   personalProblem = false;
 }, () => { personalProblem = true; });
@@ -56,6 +60,7 @@ const pslMatcher = new TemplateMatchingClient("psl", (prediction, timestamp) => 
   if (activeLanguage !== "psl") return;
   latestPrediction = prediction as typeof latestPrediction;
   predictionTimestamp = timestamp;
+  predictionReceivedAt = performance.now();
   predictionVersion++;
   modelProblem = false;
 }, () => { modelProblem = true; });
@@ -94,6 +99,8 @@ function resetSession() {
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
+  hadPersonalTracking = false;
+  candidateSource = undefined;
 }
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
@@ -127,7 +134,8 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   const hasHand = event.data.frame.hands.some(validHand);
   if (!hasHand && hadPersonalTracking) invalidatePersonal();
   hadPersonalTracking = hasHand;
-  if (latestPersonal && now - personalTimestamp > MAX_PREDICTION_AGE_MS) latestPersonal = null;
+  if (latestPersonal && (now - personalTimestamp > MAX_PREDICTION_AGE_MS
+    || performance.now() - personalReceivedAt > MAX_PREDICTION_AGE_MS)) latestPersonal = null;
   if (hasHand) personalMatcher.submit(frames);
   const personal = latestPersonal;
   const starterAnalysis = activeLanguage === "asl" ? analyzeAslStarter(frames) : null;
@@ -142,7 +150,8 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
 
   if (!motion.ready || starterAnalysis?.ambiguousOpenPalm) invalidatePrediction();
   else {
-    if (latestPrediction && now - predictionTimestamp > MAX_PREDICTION_AGE_MS) invalidatePrediction();
+    if (latestPrediction && (now - predictionTimestamp > MAX_PREDICTION_AGE_MS
+      || performance.now() - predictionReceivedAt > MAX_PREDICTION_AGE_MS)) invalidatePrediction();
     const language = activeLanguage;
     const classifier = language in classifiers ? classifiers[language as keyof typeof classifiers] : null;
     if (language === "psl" && frames.length >= 24 && receivedFrames % 6 === 0) pslMatcher.submit([...motion.sequence]);
@@ -159,15 +168,18 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
       pending.set(language, request);
       lastInferenceAt = now;
       const generation = modelGeneration;
+      const submittedAt = performance.now();
       classifier([...motion.sequence], { signal: request.controller.signal, onPhase: phase => {
         if (pending.get(language) !== request) return;
         request.phase = phase;
         request.started = frames.at(-1)?.timestamp ?? now;
       } }).then((prediction) => {
         if (generation !== modelGeneration || request.controller.signal.aborted) return;
-        if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS) return;
+        if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS
+          || performance.now() - submittedAt > MAX_PREDICTION_AGE_MS) return;
         latestPrediction = prediction;
         predictionTimestamp = now;
+        predictionReceivedAt = performance.now();
         predictionVersion += 1;
         modelProblem = false;
       }).catch(() => {
@@ -214,8 +226,9 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     consumedPersonalVersion = personalVersion;
   }
   candidateIsModel = result === latestPrediction;
-  if (candidateLabel === result.label) candidateStreak += 1;
-  else { candidateLabel = result.label; candidateStreak = 1; }
+  // Independent recognizers cannot lend each other confirmation evidence.
+  if (candidateLabel === result.label && candidateSource === source) candidateStreak += 1;
+  else { candidateLabel = result.label; candidateSource = source; candidateStreak = 1; }
 
   if (shouldConfirm({ confidence: result.confidence, threshold: CONFIDENCE_THRESHOLD,
     streak: candidateStreak, sameLabel: lastConfirmation.label === result.label,

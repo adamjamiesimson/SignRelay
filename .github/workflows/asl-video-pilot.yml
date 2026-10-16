@@ -4,7 +4,9 @@ name: ASL Video Pilot (non-release)
 on:
   pull_request:
     branches:
+      - main
       - 'fix/**'
+      - 'sprint/**'
     paths:
       - 'lib/asl-starter-recognition.ts'
       - 'workers/recognition.worker.ts'
@@ -13,6 +15,11 @@ on:
       - 'scripts/run-recognition-video-evaluation.mjs'
       - 'tests/asl-*.test.ts'
       - 'tests/evaluation-metrics.test.ts'
+      - 'scripts/verify-video-pilot.mjs'
+      - 'scripts/freeze-evaluation-cohorts.mjs'
+      - 'docs/evaluation/*manifest*.json'
+      - 'docs/evaluation/cohort-lock*.json'
+      - 'docs/evaluation/popsign-*.json'
       - '.github/workflows/asl-video-pilot.yml'
 
 permissions:
@@ -42,6 +49,9 @@ jobs:
 
       - name: Fetch only six licensed, SHA-256-frozen video clips
         run: python3 training/fetch_evaluation_clips.py
+
+      - name: Fetch frozen additional development recordings (never sealed holdout)
+        run: python3 training/fetch_evaluation_clips.py docs/evaluation/popsign-development-2026-10-16.json
 
       - name: Build candidate local static export
         run: npm run build:firebase
@@ -89,6 +99,19 @@ jobs:
           cat evaluation/derived/paired-report.json
           node scripts/verify-video-pilot.mjs \
             evaluation/derived/base.jsonl evaluation/derived/candidate.jsonl
+
+      - name: Replay additional development positives with both workers
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          node scripts/run-recognition-video-evaluation.mjs "$chrome" \
+            docs/evaluation/popsign-development-2026-10-16.json \
+            evaluation/derived/development-base.jsonl --baseline --fetch-assets-via-node
+          node scripts/run-recognition-video-evaluation.mjs "$chrome" \
+            docs/evaluation/popsign-development-2026-10-16.json \
+            evaluation/derived/development-candidate.jsonl --fetch-assets-via-node
+          node scripts/compare-recognition-evaluation.mjs \
+            evaluation/derived/development-base.jsonl evaluation/derived/development-candidate.jsonl \
+            > evaluation/derived/development-paired.json
 
       - name: Store derived metrics only — never participant video
         if: always()

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-types";
+import { incompleteArcWithOutwardSuffix } from "./fixtures/asl-ambiguous-arc";
 import { makeSign } from "./fixtures/asl-motion";
 
 const mocks = vi.hoisted(() => ({ model: vi.fn() }));
@@ -24,6 +25,11 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
   it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("confirms %s once without another label", async sign => {
     await feed(makeSign(sign));
     expect(confirmations().map(result => result.gloss)).toEqual([sign]);
+  });
+  it("does not expose an outward suffix or model winner after vetoing a partial chest arc", async () => {
+    mocks.model.mockResolvedValue({ label: "THANK YOU", text: "Thank you", confidence: 0.99, margin: 0.9 });
+    await feed(incompleteArcWithOutwardSuffix());
+    expect(confirmations()).toHaveLength(0);
   });
   it("recognizes successive different signs after consuming the first movement", async () => {
     await feed(makeSign("NO"));

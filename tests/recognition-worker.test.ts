@@ -4,13 +4,13 @@ import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-type
 
 const mocks = vi.hoisted(() => ({
   asl: vi.fn(), bsl: vi.fn(), isl: vi.fn(), lse: vi.fn(), psl: vi.fn(),
-  motion: vi.fn(), personal: vi.fn(), openConflict: vi.fn(),
+  motion: vi.fn(), personal: vi.fn(), openConflict: vi.fn(), starter: vi.fn(),
 }));
 vi.mock("../lib/asl-starter-recognition", async importOriginal => {
   const actual = await importOriginal<typeof import("../lib/asl-starter-recognition")>();
   return { ...actual, analyzeAslStarter: (frames: VisionFrame[]) => mocks.openConflict()
     ? { prediction: null, ambiguousOpenPalm: true, labels: ["HELLO", "THANK YOU"] }
-    : actual.analyzeAslStarter(frames) };
+    : mocks.starter() ?? actual.analyzeAslStarter(frames) };
 });
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.asl }));
 vi.mock("../lib/bsl1064-runtime", () => ({ recognizeBsl1064: mocks.bsl }));
@@ -232,6 +232,40 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(worker.postMessage.mock.calls.at(-1)?.[0].feedback).not.toContain("could not run");
     expect(confirmations()).toHaveLength(0);
   });
+  it("does not fall through a repeated-starter block to a model word", async () => {
+    mocks.starter.mockReturnValue({ prediction: { label: "HELLO", text: "Hello", confidence: 0.86 },
+      ambiguousOpenPalm: false, labels: ["HELLO"] });
+    mocks.asl.mockResolvedValue(prediction);
+    await frames(20);
+    expect(mocks.asl).toHaveBeenCalled();
+    expect(confirmations().map(result => result.gloss)).toEqual(["HELLO"]);
+  });
+
+  it("does not combine starter and model predictions into a confirmation streak", async () => {
+    mocks.asl.mockResolvedValueOnce(prediction).mockImplementation(() => new Promise(() => {}));
+    await frames(6);
+    mocks.starter.mockReturnValueOnce({ prediction, ambiguousOpenPalm: false, labels: ["BOOK"] });
+    await frames(1);
+    expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: "BOOK", source: "starter" });
+    await frames(1);
+    expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: "BOOK", source: "model" });
+    expect(confirmations()).toHaveLength(0);
+  });
+
+  it("expires model results by elapsed time when camera timestamps stall", async () => {
+    vi.useFakeTimers();
+    try {
+      let finish!: (value: typeof prediction) => void;
+      mocks.asl.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+      await frames(6);
+      await vi.advanceTimersByTimeAsync(3000);
+      finish(prediction); await Promise.resolve();
+      await frames(1);
+      expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: null });
+      expect(confirmations()).toHaveLength(0);
+    } finally { vi.useRealTimers(); }
+  });
+
   it("invalidates a high-scoring model candidate when open-palm evidence conflicts", async () => {
     mocks.asl.mockResolvedValue({ ...prediction, label: "PLEASE" });
     await frames(7);

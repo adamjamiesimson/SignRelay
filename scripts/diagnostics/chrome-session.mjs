@@ -25,7 +25,7 @@ export async function startChrome(executable, { forwardAssets = false } = {}) {
     socket = new WebSocket(tabs.find(tab => tab.type === "page").webSocketDebuggerUrl);
     await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
     let id = 0; const pending = new Map(), errors = [];
-    const assetCache = new Map(), requestUrls = new Map();
+    const assetCache = new Map(), requestUrls = new Map(), listeners = new Set();
     socket.onmessage = ({ data }) => {
       const message = JSON.parse(data);
       if (message.id) {
@@ -59,10 +59,11 @@ export async function startChrome(executable, { forwardAssets = false } = {}) {
       if (message.method === "Network.requestWillBeSent") requestUrls.set(message.params.requestId, message.params.request.url);
       if (message.method === "Network.loadingFailed") errors.push({ error: message.params.errorText, url: requestUrls.get(message.params.requestId) });
       if (message.method === "Runtime.exceptionThrown") errors.push(message.params.exceptionDetails.exception?.description ?? message.params.exceptionDetails.text);
+      for (const listener of listeners) listener(message);
     };
-    const send = (method, params = {}) => new Promise((resolve, reject) => {
+    const send = (method, params = {}, sessionId) => new Promise((resolve, reject) => {
       const key = ++id; const timer = setTimeout(() => { pending.delete(key); reject(new Error(`${method} timed out`)); }, 180000);
-      pending.set(key, { resolve, reject, timer }); socket.send(JSON.stringify({ id: key, method, params }));
+      pending.set(key, { resolve, reject, timer }); socket.send(JSON.stringify({ id: key, method, params, sessionId }));
     });
     const evaluate = async expression => {
       const value = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
@@ -76,6 +77,6 @@ export async function startChrome(executable, { forwardAssets = false } = {}) {
       { urlPattern: "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm/*" },
       { urlPattern: "https://storage.googleapis.com/mediapipe-models/*" },
     ] });
-    return { send, evaluate, errors, close };
+    return { send, evaluate, errors, close, onEvent: handler => { listeners.add(handler); return () => listeners.delete(handler); } };
   } catch (error) { await close(); throw error; }
 }

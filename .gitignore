@@ -61,3 +61,6 @@ next-env.d.ts
 
 # Built from workers/template-matching.worker.ts during build:worker.
 /public/workers/template-matching.worker.js
+
+# Ephemeral derived runs are reviewed and copied into docs explicitly.
+/evaluation/derived/

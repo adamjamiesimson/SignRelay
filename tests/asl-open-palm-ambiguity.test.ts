@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { analyzeAslStarter, recognizeAslStarter } from "../lib/asl-starter-recognition";
+import { incompleteArcWithOutwardSuffix } from "./fixtures/asl-ambiguous-arc";
 import { makeSign } from "./fixtures/asl-motion";
 
 // A small open hand waving along a slightly curved path. Short suffixes can
@@ -22,6 +23,13 @@ describe("conflicting open-palm evidence", () => {
     expect(analysis.labels).toEqual(expect.arrayContaining(["HELLO", "THANK YOU"]));
     expect(analysis.ambiguousOpenPalm).toBe(true);
     expect(recognizeAslStarter(ambiguousWave())).toBeNull();
+  });
+  it("retains incomplete PLEASE evidence when completion removes its permission to emit", () => {
+    const analysis = analyzeAslStarter(incompleteArcWithOutwardSuffix().slice(0, 23));
+    expect(analysis.labels).toEqual(["THANK YOU"]);
+    expect(analysis.incompleteLabels).toEqual(["PLEASE"]);
+    expect(analysis.ambiguousOpenPalm).toBe(true);
+    expect(analysis.prediction).toBeNull();
   });
   it.each(["HELLO", "PLEASE", "THANK YOU"] as const)("retains unambiguous %s positives", sign => {
     expect(analyzeAslStarter(makeSign(sign))).toMatchObject({ ambiguousOpenPalm: false, prediction: { label: sign } });

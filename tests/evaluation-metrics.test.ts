@@ -53,10 +53,26 @@ describe("accuracy evidence counts failures instead of hiding them", () => {
     expect(summary.per_gloss).toEqual([
       { gloss: "HELLO", trials: 2, correct: 1, wrong_accepted: 1, abstentions: 0, errors: 0,
         hand_tracking: { measured_trials: 2, frames: 60, frames_with_hands: 19 } },
-      { gloss: "PLEASE", trials: 2, correct: 0, wrong_accepted: 0, abstentions: 2, errors: 1,
+      { gloss: "PLEASE", trials: 2, correct: 0, wrong_accepted: 0, abstentions: 1, errors: 1,
         hand_tracking: { measured_trials: 2, frames: 33, frames_with_hands: 2 } },
     ]);
     expect(summary.errors).toBe(1);
+  });
+  it.each(["incomplete", "cancelled"])("counts %s negatives as failures and withholds their rate", status => {
+    const [summary] = summarizeTrials([{ ...trial, trial_type: "no_sign", expected_gloss: null,
+      accepted: false, predicted_gloss: null, status }]);
+    expect(summary.no_sign.rate).toBeNull();
+    expect(summary.no_sign.completed_trials).toBe(0);
+    expect(summary.error_rate).toBe(1);
+  });
+  it("reports full matrix, per-sign recall and distinct real denominators", () => {
+    const [summary] = summarizeTrials([{ ...trial, recording_sha256: "a".repeat(64) },
+      { ...trial, trial_id: "b", predicted_gloss: null, accepted: false, status: "error" }]);
+    expect(summary.confusion_matrix).toEqual({ HELLO: { HELLO: 1, "[ERROR]": 1 } });
+    expect(summary.per_sign_recall).toEqual({ HELLO: 0.5 });
+    expect(summary.abstentions).toBe(0);
+    expect(summary.signed_errors).toBe(1);
+    expect(summary.unique_recordings).toBe(1);
   });
   it("does not invent hand-tracking coverage when video frame counters are absent or inconsistent", () => {
     const [summary] = summarizeTrials([

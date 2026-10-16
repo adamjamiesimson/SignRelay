@@ -86,10 +86,11 @@ export function recognizeAslStarter(sequence: VisionFrame[]): StarterPrediction 
  */
 export function analyzeAslStarter(sequence: VisionFrame[]) {
   const now = sequence.at(-1)?.timestamp;
-  if (now === undefined) return { prediction: null, ambiguousOpenPalm: false, labels: [] as string[] };
+  if (now === undefined) return { prediction: null, ambiguousOpenPalm: false, labels: [] as string[], incompleteLabels: [] as string[] };
   let yes: StarterPrediction | null = null;
   let preferred: StarterPrediction | null = null;
   const labels = new Set<string>();
+  const incompleteLabels = new Set<string>();
   for (const duration of [650, 1100, 1700, 2600]) {
     for (const side of ["Right", "Left", "Unknown"] as const) {
       const recent = recentContinuousFrames(sequence, duration,
@@ -97,6 +98,11 @@ export function analyzeAslStarter(sequence: VisionFrame[]) {
       const samples = samplesFor(recent, side);
       if (!samples.length) continue;
       const result = recognizeSamples(samples);
+      // A completion veto removes permission to emit a word, not evidence of
+      // a competing movement. Otherwise tightening PLEASE exposes a THANK YOU
+      // suffix that used to be suppressed by the cross-window ambiguity gate.
+      const evidence = recognizeSamples(samples, false);
+      if (evidence?.label === "PLEASE" && result?.label !== "PLEASE") incompleteLabels.add("PLEASE");
       if (result) labels.add(result.label);
       // A short suffix must not override a chest circle visible in a longer
       // window. Keep the whole movement available to distinguish SORRY.
@@ -104,15 +110,15 @@ export function analyzeAslStarter(sequence: VisionFrame[]) {
       else if (result && !preferred) preferred = result;
     }
   }
-  const ambiguousOpenPalm = ["HELLO", "PLEASE", "THANK YOU"].filter(label => labels.has(label)).length > 1;
-  return { prediction: ambiguousOpenPalm ? null : preferred ?? yes, ambiguousOpenPalm, labels: [...labels] };
+  const ambiguousOpenPalm = ["HELLO", "PLEASE", "THANK YOU"].filter(label => labels.has(label) || incompleteLabels.has(label)).length > 1;
+  return { prediction: ambiguousOpenPalm ? null : preferred ?? yes, ambiguousOpenPalm, labels: [...labels], incompleteLabels: [...incompleteLabels] };
 }
 
 const span = (values: number[]) => Math.max(...values) - Math.min(...values);
 const ratio = (samples: Sample[], predicate: (sample: Sample) => boolean) => samples.filter(predicate).length / samples.length;
 const prediction = (label: string, text: string): StarterPrediction => ({ label, text, confidence: 0.86 });
 
-function recognizeSamples(samples: Sample[]): StarterPrediction | null {
+function recognizeSamples(samples: Sample[], requireClosure = true): StarterPrediction | null {
   const first = samples[0];
   const last = samples.at(-1)!;
   const mostlyOpen = ratio(samples, sample => sample.open >= 3) >= 0.75;
@@ -148,7 +154,7 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
 
   const atChest = ratio(samples, sample => sample.wrist.y > -0.1 && sample.wrist.y < 1.05
     && Math.abs(sample.wrist.x) < 0.8) >= 0.8;
-  if (atChest && xRange > 0.1 && yRange > 0.1 && circularMotion(xs, ys)) {
+  if (atChest && xRange > 0.1 && yRange > 0.1 && circularMotion(xs, ys, requireClosure)) {
     if (mostlyOpen) return prediction("PLEASE", "Please");
     if (mostlyFist) return prediction("SORRY", "Sorry");
   }
@@ -235,7 +241,7 @@ function directionChanges(values: number[], epsilon: number) {
   return changes;
 }
 
-function circularMotion(xs: number[], ys: number[]) {
+function circularMotion(xs: number[], ys: number[], requireClosure: boolean) {
   const cx = (Math.max(...xs) + Math.min(...xs)) / 2;
   const cy = (Math.max(...ys) + Math.min(...ys)) / 2;
   // Normalize the axes: natural chest circles can be narrow ellipses.
@@ -251,7 +257,7 @@ function circularMotion(xs: number[], ys: number[]) {
     (xs.at(-1)! - xs[0]) / width,
     (ys.at(-1)! - ys[0]) / height,
   );
-  if (!Number.isFinite(closure) || closure > 0.45) return false;
+  if (requireClosure && (!Number.isFinite(closure) || closure > 0.45)) return false;
   const angles = xs.map((x, index) => Math.atan2((ys[index] - cy) / height, (x - cx) / width));
   let turn = 0;
   let travel = 0;

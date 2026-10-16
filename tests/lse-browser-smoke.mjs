@@ -1,79 +1,36 @@
-// Full browser smoke test; requires a built export, Chrome and an optional Y4M
-// camera fixture. No real camera is used. This verifies execution, not accuracy.
-// node tests/lse-browser-smoke.mjs /path/to/chrome
+// Actual checkpoint + pinned Tasks in Chrome with a synthetic camera. Execution only.
 import assert from "node:assert/strict";
 import { build } from "esbuild";
 import { spawn } from "node:child_process";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
-const [chromePath, fixture] = process.argv.slice(2);
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+const chromePath = process.argv[2];
 assert(chromePath, "Supply a Chrome executable path");
-const profile = await mkdtemp(join(tmpdir(), "signrelay-browser-"));
-const port = 18000 + Math.floor(Math.random() * 1000), cdpPort = port + 1000;
-const origin = `http://127.0.0.1:${port}`;
+const port = 18000 + Math.floor(Math.random() * 1000), origin = `http://127.0.0.1:${port}`;
 const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--port", String(port)], { stdio: "ignore" });
-const chrome = spawn(chromePath, ["--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--no-first-run",
-  "--no-default-browser-check", "--disable-background-networking", `--user-data-dir=${profile}`,
-  `--remote-debugging-port=${cdpPort}`, "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream",
-  ...(fixture ? [`--use-file-for-fake-video-capture=${fixture}`] : []), "about:blank"],
-  { stdio: ["ignore", "ignore", "pipe"] });
-let chromeStderr = "";
-chrome.stderr?.setEncoding("utf8");
-chrome.stderr?.on("data", chunk => { chromeStderr += chunk; });
-let socket;
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function until(check, message, limit = 10000) {
   const start = Date.now();
   while (Date.now() - start < limit) { try { if (await check()) return; } catch {} await pause(200); }
   throw new Error(message);
 }
-async function waitForChrome(limit = 30000) {
-  const start = Date.now();
-  while (Date.now() - start < limit) {
-    if (chrome.exitCode !== null) {
-      throw new Error(`Chrome exited before CDP became ready (code ${chrome.exitCode}).\n${chromeStderr.slice(-4000)}`);
-    }
-    try {
-      const response = await fetch(`http://127.0.0.1:${cdpPort}/json/list`);
-      if (response.ok) {
-        const tabs = await response.json();
-        if (tabs.length) return tabs;
-      }
-    } catch {}
-    await pause(250);
-  }
-  throw new Error(`Chrome did not expose CDP within ${limit}ms.\n${chromeStderr.slice(-4000)}`);
-}
+let browser;
 try {
   await build({ entryPoints: ["tests/lse-browser-probe.ts"], bundle: true, format: "esm", platform: "browser", target: "es2020", outfile: "out/workers/lse-smoke-probe.js" });
   await until(async () => (await fetch(`${origin}/`)).ok, "Static server failed");
-  const tabs = await waitForChrome();
-  const page = tabs.find(tab => tab.type === "page");
-  assert(page?.webSocketDebuggerUrl, "Chrome CDP did not expose a page target");
-  socket = new WebSocket(page.webSocketDebuggerUrl);
-  await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
-  let id = 0;
-  const pending = new Map(), errors = [], requests = [];
-  socket.onmessage = ({ data }) => {
-    const message = JSON.parse(data);
-    if (message.id) { const task = pending.get(message.id); pending.delete(message.id); if (message.error) task?.reject(message.error); else task?.resolve(message.result); }
+  browser = await startChrome(chromePath, { forwardAssets: true });
+  const { send, evaluate } = browser;
+  const errors = [], requests = [];
+  browser.onEvent(message => {
     if (message.method === "Runtime.exceptionThrown") errors.push(message.params.exceptionDetails);
     if (message.method === "Network.requestWillBeSent") requests.push(message.params.request);
     if (message.method === "Target.attachedToTarget") {
       const sessionId = message.params.sessionId;
       void send("Network.enable", {}, sessionId)
         .then(() => send("Runtime.runIfWaitingForDebugger", {}, sessionId))
-        .catch(error => errors.push(error));
+        .catch(error => errors.push(String(error)));
     }
-  };
-  const send = (method, params = {}, sessionId) => new Promise((resolve, reject) => { const key = ++id; pending.set(key, { resolve, reject }); socket.send(JSON.stringify({ id: key, method, params, sessionId })); });
-  const evaluate = async expression => {
-    const value = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
-    if (value.exceptionDetails) throw new Error(JSON.stringify(value.exceptionDetails));
-    return value.result?.value;
-  };
+  });
   const click = text => evaluate(`Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes(${JSON.stringify(text)}))?.click()`);
   await send("Runtime.enable"); await send("Network.enable");
   await send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
@@ -129,8 +86,6 @@ try {
   console.log("Three real Spanish model inferences, camera release, navigation and no-upload checks passed. No uncaught page errors.");
 
 } finally {
-  socket?.close(); chrome.kill(); server.kill();
+  await browser?.close(); server.kill();
   await rm("out/workers/lse-smoke-probe.js", { force: true });
-  await pause(300);
-  await rm(profile, { recursive: true, force: true });
 }
