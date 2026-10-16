@@ -17,7 +17,7 @@ export function verifyPilot(manifest, base, candidate) {
       if (!original || row.recording_sha256 !== original.recording_sha256
         || row.participant_id !== original.participant_id
         || row.expected_gloss !== original.expected_gloss
-        || row.trial_type !== "sign"
+        || row.trial_type !== "sign" || row.evaluation_split !== "development" || row.reviewed_pilot !== true
         || row.capture_mode !== "unique-decoded-source-frames") {
         throw new Error(`${label}: mismatched or unexpected trial ${row.trial_id}`);
       }
