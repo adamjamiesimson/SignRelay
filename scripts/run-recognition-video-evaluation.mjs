@@ -1,5 +1,5 @@
 // Actual pinned Tasks -> production worker. No raw media/landmarks in output.
-// node scripts/run-recognition-video-evaluation.mjs /path/to/chrome manifest.json output.jsonl [--mirrored] [--baseline]
+// node scripts/run-recognition-video-evaluation.mjs /path/to/chrome manifest.json output.jsonl [--mirrored] [--baseline] [--reviewed-pilot]
 import { spawn } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -29,7 +29,8 @@ try {
     }
     const fields = { language: fixture.language, participant: fixture.participant_id,
       "trial-type": fixture.trial_type, expected: fixture.expected_gloss ?? "",
-      split: fixture.evaluation_split ?? "development", provenance: `${fixture.source ?? "local consent"} ${fixture.license ?? ""}` };
+      split: flags.includes("--reviewed-pilot") ? "development" : fixture.evaluation_split ?? "development",
+      provenance: `${fixture.source ?? "local consent"} ${fixture.license ?? ""}` };
     await browser.evaluate(`(() => {
       for (const [id, value] of Object.entries(${JSON.stringify(fields)})) document.getElementById(id).value = value;
       document.getElementById('independent').checked = true;
@@ -41,12 +42,14 @@ try {
     const row = await browser.evaluate("window.signrelayLab.evaluateFile(document.getElementById('file').files[0])");
     if (fixture.recording_sha256 && fixture.recording_sha256 !== row.recording_sha256) throw new Error("Recording fingerprint differs from frozen manifest");
     Object.assign(row, { trial_id: fixture.trial_id, source: fixture.source, license: fixture.license,
-      worker_sha256: workerSha, version: flags.includes("--baseline") ? "pr21" : "candidate" });
+      worker_sha256: workerSha, reviewed_pilot: flags.includes("--reviewed-pilot"),
+      version: flags.includes("--baseline") ? "base" : "candidate" });
     rows.push(row); await writeFile(output, rows.map(row => JSON.stringify(row)).join("\n") + "\n");
     console.log(JSON.stringify({ trial: fixture.trial_id, expected: row.expected_gloss, confirmed: row.accepted_glosses,
       frames: row.frames, hand_frames: row.hand_frames, status: row.status }));
   }
-  const report = { diagnostic_only: true, source_frame_step: true, assets_fetched_via_node: flags.includes("--fetch-assets-via-node"), browser_errors: browser.errors, groups: summarizeTrials(rows) };
+  const report = { diagnostic_only: true, source_frame_step: true, reviewed_pilot: flags.includes("--reviewed-pilot"),
+    assets_fetched_via_node: flags.includes("--fetch-assets-via-node"), browser_errors: browser.errors, groups: summarizeTrials(rows) };
   await writeFile(output + ".summary.json", JSON.stringify(report, null, 2)); console.log(JSON.stringify(report));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ browser_errors: browser.errors,
