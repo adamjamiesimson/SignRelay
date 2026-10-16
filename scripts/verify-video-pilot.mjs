@@ -36,6 +36,12 @@ export function verifyPilot(manifest, base, candidate) {
     for (const key of ["tasks_version", "input_mirrored", "preview_mirrored", "model_mapping", "source_duration_s"]) {
       if (row[key] !== other[key]) throw new Error(`Pair changed ${key} for ${row.trial_id}`);
     }
+    // Safety regression on an already-inspected development pilot: surface a
+    // newly accepted wrong word even when another fixed trial hides it in the
+    // aggregate. This is not a generalization/accuracy estimate.
+    const oldWrong = new Set(row.accepted_glosses.filter(gloss => gloss !== row.expected_gloss));
+    const newWrong = other.accepted_glosses.filter(gloss => gloss !== other.expected_gloss && !oldWrong.has(gloss));
+    if (newWrong.length) throw new Error(`New wrong acceptance on ${row.trial_id}: ${row.expected_gloss} -> ${newWrong.join(", ")}`);
   }
   return { diagnostic_only: true, new_holdout: false,
     note: "Six previously inspected, publisher-labelled isolated signs; not fresh or independent new evidence. No idle/OOV negative trials.",
