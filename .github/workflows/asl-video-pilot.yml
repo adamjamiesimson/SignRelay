@@ -49,15 +49,13 @@ jobs:
       - name: Build ephemeral diagnostic (not a deployed route)
         run: node scripts/prepare-recognition-lab.mjs
 
-      - name: Compile exact base-branch worker for paired comparison
+      - name: Compile frozen pre-PR28 worker for paired comparison
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          # PR #27 exact head before PR #28 changed chest-circle geometry.
+          BASE_SHA: 6e099f94294942953138498666c561c562c8b50d
         run: |
           set -euo pipefail
-          if [ -z "$BASE_SHA" ]; then
-            echo "This paired test requires a pull_request base SHA" >&2
-            exit 1
-          fi
+          git merge-base --is-ancestor "$BASE_SHA" HEAD || { echo "Frozen baseline is not an ancestor" >&2; exit 1; }
           base_dir="$RUNNER_TEMP/signrelay-video-base"
           git worktree add --detach "$base_dir" "$BASE_SHA"
           ln -s "$GITHUB_WORKSPACE/node_modules" "$base_dir/node_modules"
