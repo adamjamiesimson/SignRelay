@@ -1,0 +1,8 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> signrelay@0.1.0 repo:guard
+> node scripts/check-large-assets.mjs
+
+Reviewed legacy large asset: public/models/bdsl401-videomae/model.onnx (92.3 MiB)
+Reviewed legacy large asset: public/models/bsl1064-pose2sign/model.onnx (43.8 MiB)
+Repository asset policy passed.

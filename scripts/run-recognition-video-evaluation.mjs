@@ -8,6 +8,7 @@ import { startChrome } from "./diagnostics/chrome-session.mjs";
 import { summarizeTrials } from "./evaluation-metrics.mjs";
 import { validateManifest, aslVocabulary, fingerprint } from "./evaluation-manifest.mjs";
 import { execFileSync } from "node:child_process";
+import { TASKS_VERSION } from "../lib/vision-runtime.mjs";
 const [executable, input, output, ...flags] = process.argv.slice(2);
 if (!executable || !input || !output) throw new Error("Supply Chrome executable, manifest JSON and output JSONL");
 const manifestBytes = await readFile(input);
@@ -87,7 +88,7 @@ try {
         status: "error", errors: [String(error)], evaluation_split: fields.split };
     }
     if (row.status === "complete" && (row.tasks_js_version !== installedTasksJs
-      || row.tasks_wasm_version !== "0.10.22-rc.20250304")) throw new Error("Diagnostic does not report the installed JS and pinned WASM versions; rebuild the lab");
+      || row.tasks_wasm_version !== TASKS_VERSION)) throw new Error("Diagnostic does not report the installed JS and pinned WASM versions; rebuild the lab");
     if (fixture.recording_sha256 && fixture.recording_sha256 !== row.recording_sha256) throw new Error("Recording fingerprint differs from frozen manifest");
     Object.assign(row, { trial_id: fixture.trial_id, source: fixture.source, license: fixture.license,
       worker_sha256: workerSha, manifest_sha256: fingerprint(manifestBytes), source_commit: sourceCommit, harness_dirty: harnessDirty, vocabulary_sha256: vocabulary.sha256, reviewed_pilot: flags.includes("--reviewed-pilot"),

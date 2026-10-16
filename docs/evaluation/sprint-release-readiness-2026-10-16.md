@@ -4,6 +4,8 @@
 
 Review: [draft PR #30](https://github.com/adamjamiesimson/SignRelay/pull/30). Code commit: `1e9b7449d4b5d78b920d55b57d19c730e6ea1bc8`, tree `44825b1b61d753977ae6aaa9b40fabc57f300983`. The evidence/handover follow-up commit contains this document and derived records. The incremental code diff is available [against PR #29](https://github.com/adamjamiesimson/SignRelay/compare/a300483a464b1f648294c6827e778381fd6bbf3d...1e9b7449d4b5d78b920d55b57d19c730e6ea1bc8).
 
+**Subsequent follow-up:** [MediaPipe alignment and dependency investigation](runtime-alignment-2026-10-16.md) aligns JS/WASM at 0.10.35, preserves all eleven development-video outputs and adds exact-pin/build guards. The 324-test and mixed-runtime evidence below records the original sprint; the follow-up passes 330 tests. THANK YOU confusion, reviewed footage, physical-phone validation and the full audit remain blockers.
+
 ## 1. ASL regression and root causes
 
 The path is: unmirrored camera/canvas pixels → MediaPipe Tasks gesture/hand, compact face and full pose observations → continuous hand histories at four temporal window lengths → explicit starter geometry plus separately segmented closed-set ASL TGCN inference → personal/starter/model arbitration → finite confidence and two-evidence confirmation → repeated-word block, prediction invalidation and history consumption. Generic motion segmentation gates model inference. Starter rules have their own motion criteria and can still confirm while the generic segment reports `moving`; blanket gating all starters would change established behavior and was not applied without broader evidence.

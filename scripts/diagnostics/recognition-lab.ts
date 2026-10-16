@@ -4,9 +4,9 @@ import { diagnoseHandedness } from "../../lib/handedness-diagnostic";
 import { summarizeTrials } from "../evaluation-metrics.mjs";
 import type { LanguageId } from "../../lib/model-adapters";
 import type { VisionFrame, WorkerConfirmation } from "../../lib/vision-types";
+import { TASKS_VERSION as TASKS_WASM_VERSION } from "../../lib/vision-runtime.mjs";
 
 declare const __TASKS_JS_VERSION__: string;
-const TASKS_WASM_VERSION = "0.10.22-rc.20250304";
 
 const el = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const value = (id: string) => el<HTMLInputElement>(id).value.trim();

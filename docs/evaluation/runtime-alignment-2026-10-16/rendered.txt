@@ -1,0 +1,15 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> signrelay@0.1.0 test:rendered
+> node --test tests/rendered-html.test.mjs
+
+✔ public pages contain metadata, working internal links, image alternatives and script protection (27.995453ms)
+✔ export excludes sensitive files and source maps; Firebase protects responses (3.751862ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 105.019487

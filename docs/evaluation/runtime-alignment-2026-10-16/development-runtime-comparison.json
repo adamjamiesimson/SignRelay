@@ -1,0 +1,314 @@
+{
+  "diagnostic_only": true,
+  "new_holdout": false,
+  "paired_trials": 5,
+  "baseline_runtime": {
+    "js": "0.10.35",
+    "wasm": "0.10.22-rc.20250304"
+  },
+  "candidate_runtime": {
+    "js": "0.10.35",
+    "wasm": "0.10.35"
+  },
+  "baseline": [
+    {
+      "group": "asl/development",
+      "trials": 5,
+      "signed_trials": 5,
+      "correct": 2,
+      "signed_accuracy": 0.4,
+      "coverage": 0.4,
+      "precision_when_accepted": 1,
+      "wrong_accepted_trials": 0,
+      "abstentions": 3,
+      "signed_errors": 0,
+      "incorrect_acceptance_rate": 0,
+      "error_rate": 0,
+      "unique_recordings": 5,
+      "unique_participants": 4,
+      "sign_coverage": [
+        "HELLO",
+        "NO",
+        "PLEASE",
+        "THANK YOU",
+        "YES"
+      ],
+      "per_sign_recall": {
+        "HELLO": 0,
+        "NO": 1,
+        "PLEASE": 1,
+        "THANK YOU": 0,
+        "YES": 0
+      },
+      "confusion_matrix": {
+        "THANK YOU": {
+          "[ABSTAIN]": 1
+        },
+        "PLEASE": {
+          "PLEASE": 1
+        },
+        "HELLO": {
+          "[ABSTAIN]": 1
+        },
+        "YES": {
+          "[ABSTAIN]": 1
+        },
+        "NO": {
+          "NO": 1
+        }
+      },
+      "confusion_matrix_unit": "trials per distinct emitted label; multi-output/error cells may overlap",
+      "no_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "unknown_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "errors": 0,
+      "confusions": {},
+      "per_gloss": [
+        {
+          "gloss": "HELLO",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 35,
+            "frames_with_hands": 12
+          }
+        },
+        {
+          "gloss": "NO",
+          "trials": 1,
+          "correct": 1,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 51,
+            "frames_with_hands": 11
+          }
+        },
+        {
+          "gloss": "PLEASE",
+          "trials": 1,
+          "correct": 1,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 47,
+            "frames_with_hands": 15
+          }
+        },
+        {
+          "gloss": "THANK YOU",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 30,
+            "frames_with_hands": 6
+          }
+        },
+        {
+          "gloss": "YES",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 31,
+            "frames_with_hands": 5
+          }
+        }
+      ],
+      "holdout_verified": false
+    }
+  ],
+  "candidate": [
+    {
+      "group": "asl/development",
+      "trials": 5,
+      "signed_trials": 5,
+      "correct": 2,
+      "signed_accuracy": 0.4,
+      "coverage": 0.4,
+      "precision_when_accepted": 1,
+      "wrong_accepted_trials": 0,
+      "abstentions": 3,
+      "signed_errors": 0,
+      "incorrect_acceptance_rate": 0,
+      "error_rate": 0,
+      "unique_recordings": 5,
+      "unique_participants": 4,
+      "sign_coverage": [
+        "HELLO",
+        "NO",
+        "PLEASE",
+        "THANK YOU",
+        "YES"
+      ],
+      "per_sign_recall": {
+        "HELLO": 0,
+        "NO": 1,
+        "PLEASE": 1,
+        "THANK YOU": 0,
+        "YES": 0
+      },
+      "confusion_matrix": {
+        "THANK YOU": {
+          "[ABSTAIN]": 1
+        },
+        "PLEASE": {
+          "PLEASE": 1
+        },
+        "HELLO": {
+          "[ABSTAIN]": 1
+        },
+        "YES": {
+          "[ABSTAIN]": 1
+        },
+        "NO": {
+          "NO": 1
+        }
+      },
+      "confusion_matrix_unit": "trials per distinct emitted label; multi-output/error cells may overlap",
+      "no_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "unknown_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "errors": 0,
+      "confusions": {},
+      "per_gloss": [
+        {
+          "gloss": "HELLO",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 35,
+            "frames_with_hands": 12
+          }
+        },
+        {
+          "gloss": "NO",
+          "trials": 1,
+          "correct": 1,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 51,
+            "frames_with_hands": 11
+          }
+        },
+        {
+          "gloss": "PLEASE",
+          "trials": 1,
+          "correct": 1,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 47,
+            "frames_with_hands": 15
+          }
+        },
+        {
+          "gloss": "THANK YOU",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 30,
+            "frames_with_hands": 6
+          }
+        },
+        {
+          "gloss": "YES",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 31,
+            "frames_with_hands": 5
+          }
+        }
+      ],
+      "holdout_verified": false
+    }
+  ],
+  "changes": [],
+  "tracking": [
+    {
+      "trial_id": "dev-thankyou-4a.7003",
+      "frames": 30,
+      "before_hand_frames": 6,
+      "after_hand_frames": 6
+    },
+    {
+      "trial_id": "dev-please-4a.8017",
+      "frames": 47,
+      "before_hand_frames": 15,
+      "after_hand_frames": 15
+    },
+    {
+      "trial_id": "dev-hello-4a.8006",
+      "frames": 35,
+      "before_hand_frames": 12,
+      "after_hand_frames": 12
+    },
+    {
+      "trial_id": "dev-yes-4a.8006",
+      "frames": 31,
+      "before_hand_frames": 5,
+      "after_hand_frames": 5
+    },
+    {
+      "trial_id": "dev-no-4a.8030",
+      "frames": 51,
+      "before_hand_frames": 11,
+      "after_hand_frames": 11
+    }
+  ]
+}

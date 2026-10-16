@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { TASKS_WASM_PATH } from "../../lib/vision-runtime.mjs";
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 export async function startChrome(executable, { forwardAssets = false } = {}) {
   const profile = await mkdtemp(join(tmpdir(), "signrelay-diagnostic-"));
@@ -39,7 +40,7 @@ export async function startChrome(executable, { forwardAssets = false } = {}) {
           // Optional CI proxy compatibility. Fetch only the fixed public runtime
           // assets with Node's normal TLS verification. Never intercept media,
           // page data, credentials, or requests to arbitrary destinations.
-          const allowed = request.url.startsWith("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm/")
+          const allowed = request.url.startsWith(`${TASKS_WASM_PATH}/`)
             || request.url.startsWith("https://storage.googleapis.com/mediapipe-models/");
           if (!allowed || request.method !== "GET") { await send("Fetch.continueRequest", { requestId }); return; }
           let asset = assetCache.get(request.url);
@@ -74,7 +75,7 @@ export async function startChrome(executable, { forwardAssets = false } = {}) {
     await send("Runtime.enable");
     await send("Network.enable");
     if (forwardAssets) await send("Fetch.enable", { patterns: [
-      { urlPattern: "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm/*" },
+      { urlPattern: `${TASKS_WASM_PATH}/*` },
       { urlPattern: "https://storage.googleapis.com/mediapipe-models/*" },
     ] });
     return { send, evaluate, errors, close, onEvent: handler => { listeners.add(handler); return () => listeners.delete(handler); } };

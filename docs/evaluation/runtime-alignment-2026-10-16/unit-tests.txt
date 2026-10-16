@@ -1,0 +1,14 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> signrelay@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /workspace/scratch/ecc150285984/SignRelay
+
+[0;93m2026-10-16 17:37:20.931627 [W:onnxruntime:Default, cpuid_info.cc:91 LogEarlyWarning] Unknown CPU vendor. cpuinfo_vendor value: 0[m
+
+ Test Files  41 passed (41)
+      Tests  330 passed (330)
+   Start at  17:37:18
+   Duration  4.72s (transform 1.87s, setup 0ms, import 3.08s, tests 11.51s, environment 5ms)
