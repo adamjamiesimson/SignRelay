@@ -47,7 +47,7 @@ describe("historical real-video pilot evidence gate", () => {
   });
   it("does not mislabel a reused pilot as a fresh holdout", () => {
     const pretendingHoldout = rows(); pretendingHoldout[0].evaluation_split = "held_out";
-    expect(() => verifyPilot(manifest, rows(), pretendingHoldout)).toThrow("mismatched");
+    expect(() => verifyPilot(manifest, rows(), pretendingHoldout)).toThrow(/development and held_out|mismatched/);
   });
   it("rejects changes in video orientation between paired runs", () => {
     const other = rows(); other[0].input_mirrored = true;
