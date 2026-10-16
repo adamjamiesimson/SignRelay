@@ -61,6 +61,29 @@ export function summarizeTrials(input) {
       return { trials: rows.length, completed_trials: rows.length - errors, errors,
         false_accepts: falseAccepts, rate: rows.length && !errors ? falseAccepts / rows.length : null };
     };
+    // Per-gloss denominators expose whether a favorable aggregate hides a
+    // consistently missed sign. Tracking is diagnostic only, not an excuse to
+    // remove failures from the accuracy denominator.
+    const byGloss = new Map();
+    for (const trial of signed) {
+      const key = trial.expected_gloss;
+      if (!byGloss.has(key)) byGloss.set(key, []);
+      byGloss.get(key).push(trial);
+    }
+    const per_gloss = [...byGloss.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([label, examples]) => {
+      const right = examples.filter(r => !failed(r) && r.accepted_glosses.length
+        && r.accepted_glosses.every(g => g === label));
+      const mismatches = examples.filter(r => r.accepted_glosses.some(g => g !== label));
+      const trackable = examples.filter(r => Number.isInteger(r.frames) && r.frames > 0
+        && Number.isInteger(r.hand_frames) && r.hand_frames >= 0 && r.hand_frames <= r.frames);
+      return { gloss: label, trials: examples.length, correct: right.length,
+        wrong_accepted: mismatches.length, abstentions: examples.filter(r => !r.accepted).length,
+        errors: examples.filter(failed).length,
+        hand_tracking: { measured_trials: trackable.length,
+          frames: trackable.reduce((sum, r) => sum + r.frames, 0),
+          frames_with_hands: trackable.reduce((sum, r) => sum + r.hand_frames, 0) },
+      };
+    });
     const confusions = {};
     for (const row of wrong) for (const predicted of new Set(row.accepted_glosses)) {
       if (predicted === row.expected_gloss) continue;
@@ -72,7 +95,7 @@ export function summarizeTrials(input) {
       precision_when_accepted: accepted.length ? correct.length / accepted.length : null,
       wrong_accepted_trials: wrong.length, abstentions: signed.length - accepted.length,
       no_sign: negatives("no_sign"), unknown_sign: negatives("unknown_sign"),
-      errors: trials.filter(failed).length, confusions,
+      errors: trials.filter(failed).length, confusions, per_gloss,
       holdout_verified: false,
     };
   });
