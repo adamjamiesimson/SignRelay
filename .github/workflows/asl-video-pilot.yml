@@ -1,0 +1,105 @@
+name: ASL Video Pilot (non-release)
+# Evaluates existing, already-inspected isolated-sign clips. It does not create
+# fresh holdout data, certify accuracy or unblock production deployment.
+on:
+  pull_request:
+    branches:
+      - 'fix/**'
+    paths:
+      - 'lib/asl-starter-recognition.ts'
+      - 'workers/recognition.worker.ts'
+      - 'scripts/evaluation-*.mjs'
+      - 'scripts/compare-recognition-evaluation.mjs'
+      - 'scripts/run-recognition-video-evaluation.mjs'
+      - 'tests/asl-*.test.ts'
+      - 'tests/evaluation-metrics.test.ts'
+      - '.github/workflows/asl-video-pilot.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asl-video-pilot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  real-video-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - name: Install unchanged dependencies
+        run: npm ci
+
+      - name: Fetch only six licensed, SHA-256-frozen video clips
+        run: python3 training/fetch_evaluation_clips.py
+
+      - name: Build candidate local static export
+        run: npm run build:firebase
+
+      - name: Build ephemeral diagnostic (not a deployed route)
+        run: node scripts/prepare-recognition-lab.mjs
+
+      - name: Compile exact base-branch worker for paired comparison
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "$BASE_SHA" ]; then
+            echo "This paired test requires a pull_request base SHA" >&2
+            exit 1
+          fi
+          base_dir="$RUNNER_TEMP/signrelay-video-base"
+          git worktree add --detach "$base_dir" "$BASE_SHA"
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$base_dir/node_modules"
+          "$GITHUB_WORKSPACE/node_modules/.bin/esbuild" "$base_dir/workers/recognition.worker.ts" \
+            --bundle --platform=browser --format=esm --target=es2020 \
+            --tsconfig="$base_dir/tsconfig.json" \
+            --outfile="$GITHUB_WORKSPACE/out/workers/baseline-recognition.worker.js"
+
+      - name: Replay base worker on actual video frames
+        run: |
+          mkdir -p evaluation/derived
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          node scripts/run-recognition-video-evaluation.mjs "$chrome" \
+            docs/evaluation/popsign-project-holdout-manifest.json \
+            evaluation/derived/base.jsonl --baseline --fetch-assets-via-node
+
+      - name: Replay candidate worker on identical videos
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          node scripts/run-recognition-video-evaluation.mjs "$chrome" \
+            docs/evaluation/popsign-project-holdout-manifest.json \
+            evaluation/derived/candidate.jsonl --fetch-assets-via-node
+
+      - name: Compare exact same clips and reject incomplete sessions
+        run: |
+          node scripts/compare-recognition-evaluation.mjs \
+            evaluation/derived/base.jsonl evaluation/derived/candidate.jsonl \
+            > evaluation/derived/paired-report.json
+          node scripts/verify-video-pilot.mjs \
+            evaluation/derived/base.jsonl evaluation/derived/candidate.jsonl
+          cat evaluation/derived/paired-report.json
+
+      - name: Store derived metrics only — never participant video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asl-video-pilot-derived
+          path: |
+            evaluation/derived/*.json
+            evaluation/derived/*.jsonl
+          retention-days: 7
+          if-no-files-found: ignore
