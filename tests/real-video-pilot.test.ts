@@ -5,7 +5,7 @@ import manifest from "../docs/evaluation/popsign-project-holdout-manifest.json";
 const rows = () => manifest.map((m, index) => ({
   trial_id: m.trial_id, participant_id: m.participant_id, session_id: `session-${index}`,
   language: "asl", trial_type: "sign", expected_gloss: m.expected_gloss,
-  predicted_gloss: null, accepted: false, accepted_glosses: [],
+  predicted_gloss: null as string | null, accepted: false, accepted_glosses: [] as string[],
   evaluation_split: "development", reviewed_pilot: true, recording_sha256: m.recording_sha256,
   capture_mode: "unique-decoded-source-frames", tasks_version: "0.10.22-rc.20250304",
   input_mirrored: false, preview_mirrored: true, model_mapping: "unchanged",
