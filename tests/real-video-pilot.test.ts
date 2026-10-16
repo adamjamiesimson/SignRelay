@@ -9,7 +9,7 @@ const rows = () => manifest.map((m, index) => ({
   evaluation_split: "held_out", recording_sha256: m.recording_sha256,
   capture_mode: "unique-decoded-source-frames", tasks_version: "0.10.22-rc.20250304",
   input_mirrored: false, preview_mirrored: true, model_mapping: "unchanged",
-  source_duration_s: 1.5, status: "complete", errors: [], worker_sha256: "a".repeat(64),
+  source_duration_s: 1.5, status: "complete", errors: [] as string[], worker_sha256: "a".repeat(64),
   frames: 30, hand_frames: 10, analyses: 25,
 }));
 
