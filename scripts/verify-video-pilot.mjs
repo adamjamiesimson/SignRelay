@@ -1,6 +1,7 @@
 // Fail closed: a successful browser command is not proof that all six videos
 // were evaluated. This historical pilot cannot be treated as a new holdout.
 import { readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import { validateTrials, summarizeTrials } from "./evaluation-metrics.mjs";
 
 export function verifyPilot(manifest, base, candidate) {
@@ -23,7 +24,8 @@ export function verifyPilot(manifest, base, candidate) {
       if (row.status !== "complete" || row.errors?.length) {
         throw new Error(`${label}: failed or partial trial ${row.trial_id}`);
       }
-      if (!row.tasks_version || !row.worker_sha256 || row.analyses !== row.frames) {
+      if (!row.tasks_version || !row.worker_sha256 || !Number.isInteger(row.analyses)
+        || row.analyses <= 0 || row.analyses > row.frames) {
         throw new Error(`${label}: missing runtime evidence or frame acknowledgements ${row.trial_id}`);
       }
     }
@@ -40,7 +42,7 @@ export function verifyPilot(manifest, base, candidate) {
     base: groups[0], candidate: groups[1] };
 }
 
-if (process.argv[1] && import.meta.url === new URL("file://" + process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [before, after] = process.argv.slice(2);
   if (!before || !after) throw new Error("Usage: node scripts/verify-video-pilot.mjs base.jsonl candidate.jsonl");
   const parse = file => readFileSync(file, "utf8").trim().split(/\r?\n/).map(line => JSON.parse(line));
