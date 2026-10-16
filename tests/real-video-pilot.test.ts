@@ -49,6 +49,13 @@ describe("historical real-video pilot evidence gate", () => {
     const pretendingHoldout = rows(); pretendingHoldout[0].evaluation_split = "held_out";
     expect(() => verifyPilot(manifest, rows(), pretendingHoldout)).toThrow(/development and held_out|mismatched/);
   });
+  it("flags a newly accepted wrong sign even when the total number correct is unchanged", () => {
+    const candidate = rows();
+    candidate[0].predicted_gloss = "PLEASE";
+    candidate[0].accepted_glosses = ["PLEASE"];
+    candidate[0].accepted = true;
+    expect(() => verifyPilot(manifest, rows(), candidate)).toThrow(/New wrong acceptance.*HELLO.*PLEASE/);
+  });
   it("rejects changes in video orientation between paired runs", () => {
     const other = rows(); other[0].input_mirrored = true;
     expect(() => verifyPilot(manifest, rows(), other)).toThrow("input_mirrored");
