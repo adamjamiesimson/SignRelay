@@ -24,7 +24,8 @@ export function verifyPilot(manifest, base, candidate) {
       if (row.status !== "complete" || row.errors?.length) {
         throw new Error(`${label}: failed or partial trial ${row.trial_id}`);
       }
-      if (!row.tasks_version || !row.worker_sha256 || !Number.isInteger(row.analyses)
+      if (!row.tasks_js_version || !row.tasks_wasm_version || row.tasks_wasm_version !== row.tasks_version
+        || !row.tasks_version || !row.worker_sha256 || !Number.isInteger(row.analyses)
         || row.analyses <= 0 || row.analyses > row.frames) {
         throw new Error(`${label}: missing runtime evidence or frame acknowledgements ${row.trial_id}`);
       }
@@ -33,7 +34,7 @@ export function verifyPilot(manifest, base, candidate) {
   }
   for (const row of base) {
     const other = candidate.find(trial => trial.trial_id === row.trial_id);
-    for (const key of ["tasks_version", "input_mirrored", "preview_mirrored", "model_mapping", "source_duration_s"]) {
+    for (const key of ["tasks_version", "tasks_js_version", "tasks_wasm_version", "input_mirrored", "preview_mirrored", "model_mapping", "source_duration_s"]) {
       if (row[key] !== other[key]) throw new Error(`Pair changed ${key} for ${row.trial_id}`);
     }
     // Safety regression on an already-inspected development pilot: surface a

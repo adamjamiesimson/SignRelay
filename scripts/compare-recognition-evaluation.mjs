@@ -12,6 +12,11 @@ for (const row of a) {
   for (const key of ["recording_sha256", "tasks_version", "input_mirrored", "preview_mirrored", "model_mapping", "capture_mode", "expected_gloss", "trial_type", "participant_id", "language", "evaluation_split"]) {
     if (row[key] === undefined || row[key] !== candidate[key]) throw new Error(`Comparison differs in ${key}: ${row.trial_id}`);
   }
+  // Legacy reports used tasks_version for the WASM URL only. New reports
+  // must carry both versions on each side; mixing legacy/new is not parity.
+  for (const key of ["tasks_js_version", "tasks_wasm_version"]) {
+    if (row[key] !== candidate[key]) throw new Error(`Comparison differs in ${key}: ${row.trial_id}`);
+  }
   if (JSON.stringify(row.accepted_glosses) !== JSON.stringify(candidate.accepted_glosses)) {
     changes.push({ trial_id: row.trial_id, expected: row.expected_gloss, before: row.accepted_glosses, after: candidate.accepted_glosses });
   }

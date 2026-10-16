@@ -28,6 +28,7 @@ for (const item of registry.manifests) {
 const vocabulary = aslVocabulary();
 if (registry.vocabulary_sha256 !== vocabulary.sha256) throw new Error("Installed ASL vocabulary changed after cohort freeze");
 validateManifest(manifest, { related, vocabulary, allowHoldout: flags.includes("--final-holdout") });
+const installedTasksJs = JSON.parse(await readFile("node_modules/@mediapipe/tasks-vision/package.json", "utf8")).version;
 const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 if (flags.includes("--final-holdout")) {
   if (process.env.FINAL_CANDIDATE_SHA !== sourceCommit
@@ -44,8 +45,11 @@ for (const fixture of manifest) {
 await mkdir(path.dirname(output), { recursive: true });
 await writeFile(output, "", { flag: "wx" }); // A failed rerun cannot leave a previous successful result.
 
+const workerVariant = flags.includes("--baseline") ? "base" : flags.includes("--pr28") ? "pr28" : "candidate";
+const workerFile = workerVariant === "base" ? "baseline-recognition.worker.js" : workerVariant === "pr28" ? "pr28-recognition.worker.js" : "recognition.worker.js";
+const harnessDirty = Boolean(execFileSync("git", ["status", "--porcelain", "--untracked-files=no"], { encoding: "utf8" }).trim());
 const port = 17000 + Math.floor(Math.random() * 1000), origin = `http://127.0.0.1:${port}`;
-const workerSha = createHash("sha256").update(await readFile(flags.includes("--baseline") ? "out/workers/baseline-recognition.worker.js" : "out/workers/recognition.worker.js")).digest("hex");
+const workerSha = createHash("sha256").update(await readFile(`out/workers/${workerFile}`)).digest("hex");
 const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--port", String(port)], { stdio: "ignore" });
 let browser; const rows = [];
 try {
@@ -56,7 +60,7 @@ try {
   for (const fixture of manifest) {
     // Fresh Tasks tracking and model/worker state for every recording. This
     // prevents prior signers, source poses or predictions leaking between clips.
-    await browser.send("Page.navigate", { url: `${origin}/__qa/recognition-lab.html${flags.includes("--baseline") ? "?baseline=1" : ""}` });
+    await browser.send("Page.navigate", { url: `${origin}/__qa/recognition-lab.html${workerVariant === "base" ? "?baseline=1" : workerVariant === "pr28" ? "?pr28=1" : ""}` });
     for (let i = 0; i < 100; i++) {
       if (await browser.evaluate("!!window.signrelayLab")) break;
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -82,10 +86,12 @@ try {
         accepted: false, accepted_glosses: [], frames: 0, hand_frames: 0, analyses: 0,
         status: "error", errors: [String(error)], evaluation_split: fields.split };
     }
+    if (row.status === "complete" && (row.tasks_js_version !== installedTasksJs
+      || row.tasks_wasm_version !== "0.10.22-rc.20250304")) throw new Error("Diagnostic does not report the installed JS and pinned WASM versions; rebuild the lab");
     if (fixture.recording_sha256 && fixture.recording_sha256 !== row.recording_sha256) throw new Error("Recording fingerprint differs from frozen manifest");
     Object.assign(row, { trial_id: fixture.trial_id, source: fixture.source, license: fixture.license,
-      worker_sha256: workerSha, manifest_sha256: fingerprint(manifestBytes), source_commit: sourceCommit, vocabulary_sha256: vocabulary.sha256, reviewed_pilot: flags.includes("--reviewed-pilot"),
-      version: flags.includes("--baseline") ? "base" : "candidate" });
+      worker_sha256: workerSha, manifest_sha256: fingerprint(manifestBytes), source_commit: sourceCommit, harness_dirty: harnessDirty, vocabulary_sha256: vocabulary.sha256, reviewed_pilot: flags.includes("--reviewed-pilot"),
+      version: workerVariant });
     rows.push(row); await writeFile(output, rows.map(row => JSON.stringify(row)).join("\n") + "\n");
     console.log(JSON.stringify({ trial: fixture.trial_id, expected: row.expected_gloss, confirmed: row.accepted_glosses,
       frames: row.frames, hand_frames: row.hand_frames, status: row.status }));

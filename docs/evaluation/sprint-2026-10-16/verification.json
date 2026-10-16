@@ -1,7 +1,7 @@
 {
   "runtime_code_commit": "1e9b7449d4b5d78b920d55b57d19c730e6ea1bc8",
   "code_tree": "44825b1b61d753977ae6aaa9b40fabc57f300983",
-  "final_followup_changes": "Report/evidence plus a fail-closed non-ASL OOV certification guard; no recognition/runtime arithmetic change",
+  "final_followup_changes": "Evidence/report, non-ASL OOV guard and corrected JS/WASM runtime identity metadata. Recognition worker and production VisionEngine unchanged.",
   "final_followup_guard_files": {
     "scripts/evaluation-manifest.mjs": "374c3bb7b4b7f9b9540532b451e286210a027ebebc8659b2bf29c6368f78ddee",
     "tests/evaluation-manifest.test.ts": "240059e5ea103d6196ad8d111a88f8fbfc9bca932069f3995670bb59921450ff"
@@ -26,7 +26,7 @@
   },
   "local_checks": {
     "unit_files": 39,
-    "unit_tests": 323,
+    "unit_tests": 324,
     "typecheck": "pass",
     "lint": "pass",
     "worker_build": "pass",
@@ -83,5 +83,20 @@
   },
   "release_ready": false,
   "merge_performed": false,
-  "deployment_performed": false
+  "deployment_performed": false,
+  "runtime_versions": {
+    "tasks_js": "0.10.35",
+    "tasks_wasm_and_glue": "0.10.22-rc.20250304",
+    "onnxruntime_web": "1.23.2",
+    "pair_changed": false,
+    "note": "Legacy tasks_version represented only WASM URL. Explicit JS/WASM metadata correction and renewed replays are included in the final follow-up. Pair compatibility remains a release validation concern."
+  },
+  "evaluation_harness_file_fingerprints": {
+    "scripts/prepare-recognition-lab.mjs": "7f7eaabf66b6d518fee1ab4bc849852da90fb127f6849742b222619fe2f35307",
+    "scripts/diagnostics/recognition-lab.ts": "d040f6b379f0057f65bcf4334edb742285529337a50b4617250b8e17c09eec3c",
+    "scripts/run-recognition-video-evaluation.mjs": "3b43fd530f834c9de36a119f34a77eae1475e6988a78c956b9b96959eb9c63d0",
+    "scripts/verify-video-pilot.mjs": "0df467962dc0bffb246517f636fbffea3b8ee51afbf35aaf8cc99eaca62d18ba",
+    "scripts/compare-recognition-evaluation.mjs": "4bc29710ad1951cd1285ec8cca275edfdf65a0243019fd4fcb8184648179a1af"
+  },
+  "legacy_ci_runtime_metadata_note": "Earlier CI metrics carry a legacy WASM-only tasks_version label. Renewed local replays identify JS 0.10.35 separately; no runtime pair or recognizer change."
 }

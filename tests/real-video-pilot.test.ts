@@ -7,7 +7,7 @@ const rows = () => manifest.map((m, index) => ({
   language: "asl", trial_type: "sign", expected_gloss: m.expected_gloss,
   predicted_gloss: null as string | null, accepted: false, accepted_glosses: [] as string[],
   evaluation_split: "development", reviewed_pilot: true, recording_sha256: m.recording_sha256,
-  capture_mode: "unique-decoded-source-frames", tasks_version: "0.10.22-rc.20250304",
+  capture_mode: "unique-decoded-source-frames", tasks_version: "0.10.22-rc.20250304", tasks_js_version: "0.10.35", tasks_wasm_version: "0.10.22-rc.20250304",
   input_mirrored: false, preview_mirrored: true, model_mapping: "unchanged",
   source_duration_s: 1.5, status: "complete", errors: [] as string[], worker_sha256: "a".repeat(64),
   frames: 30, hand_frames: 10, analyses: 25,
@@ -55,6 +55,12 @@ describe("historical real-video pilot evidence gate", () => {
     candidate[0].accepted_glosses = ["PLEASE"];
     candidate[0].accepted = true;
     expect(() => verifyPilot(manifest, rows(), candidate)).toThrow(/New wrong acceptance.*HELLO.*PLEASE/);
+  });
+  it("rejects a missing JS version or different JS runtime between paired runs", () => {
+    const missing = rows(); missing[0].tasks_js_version = "";
+    expect(() => verifyPilot(manifest, missing, rows())).toThrow("runtime evidence");
+    const changed = rows(); changed[0].tasks_js_version = "other-runtime";
+    expect(() => verifyPilot(manifest, rows(), changed)).toThrow("tasks_js_version");
   });
   it("rejects changes in video orientation between paired runs", () => {
     const other = rows(); other[0].input_mirrored = true;

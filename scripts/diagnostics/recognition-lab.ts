@@ -5,6 +5,9 @@ import { summarizeTrials } from "../evaluation-metrics.mjs";
 import type { LanguageId } from "../../lib/model-adapters";
 import type { VisionFrame, WorkerConfirmation } from "../../lib/vision-types";
 
+declare const __TASKS_JS_VERSION__: string;
+const TASKS_WASM_VERSION = "0.10.22-rc.20250304";
+
 const el = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const value = (id: string) => el<HTMLInputElement>(id).value.trim();
 const checked = (id: string) => el<HTMLInputElement>(id).checked;
@@ -15,7 +18,9 @@ const rows: Record<string, unknown>[] = [];
 let engine: VisionEngine | null = null, stream: MediaStream | null = null, live = false, busy = false;
 let trial: ReturnType<typeof startTrial> | null = null;
 let sourceUrl: string | null = null;
-const workerUrl = new URLSearchParams(location.search).get("baseline") === "1" ? "/workers/baseline-recognition.worker.js" : "/workers/recognition.worker.js";
+const params = new URLSearchParams(location.search);
+const workerUrl = params.get("baseline") === "1" ? "/workers/baseline-recognition.worker.js"
+  : params.get("pr28") === "1" ? "/workers/pr28-recognition.worker.js" : "/workers/recognition.worker.js";
 const session = new RecognitionSession(() => new Worker(workerUrl, { type: "module" }), message => {
   if (!trial) return;
   if (message.type === "confirmed") trial.confirmations.push(message);
@@ -38,7 +43,7 @@ function metadata() {
     language: value("language"), trial_type: kind, expected_gloss: kind === "sign" ? value("expected").toUpperCase() : null,
     evaluation_split: split, provenance: value("provenance"),
     input_mirrored: checked("mirror-input"), preview_mirrored: checked("mirror-preview"),
-    tasks_version: "0.10.22-rc.20250304", model_mapping: "unchanged" };
+    tasks_version: TASKS_WASM_VERSION, tasks_js_version: __TASKS_JS_VERSION__, tasks_wasm_version: TASKS_WASM_VERSION, model_mapping: "unchanged" };
 }
 function startTrial() {
   const data = metadata();
@@ -47,7 +52,7 @@ function startTrial() {
     sources: {} as Record<string, number>, handedness: {} as Record<string, number>, errors: [] as string[], started: performance.now() };
 }
 function observe(frame: VisionFrame) {
-  el("hands").textContent = JSON.stringify({ tasks_version: "0.10.22-rc.20250304",
+  el("hands").textContent = JSON.stringify({ tasks_version: TASKS_WASM_VERSION, tasks_js_version: __TASKS_JS_VERSION__, tasks_wasm_version: TASKS_WASM_VERSION,
     input_mirrored: checked("mirror-input"), preview_mirrored: checked("mirror-preview"),
     hands: diagnoseHandedness(frame, value("physical-hand") as "Left" | "Right" | "Unknown") }, null, 2);
   if (trial) {
