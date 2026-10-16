@@ -86,9 +86,9 @@ jobs:
           node scripts/compare-recognition-evaluation.mjs \
             evaluation/derived/base.jsonl evaluation/derived/candidate.jsonl \
             > evaluation/derived/paired-report.json
+          cat evaluation/derived/paired-report.json
           node scripts/verify-video-pilot.mjs \
             evaluation/derived/base.jsonl evaluation/derived/candidate.jsonl
-          cat evaluation/derived/paired-report.json
 
       - name: Store derived metrics only — never participant video
         if: always()
