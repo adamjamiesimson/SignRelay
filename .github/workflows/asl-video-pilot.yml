@@ -14,7 +14,6 @@ on:
       - 'tests/asl-*.test.ts'
       - 'tests/evaluation-metrics.test.ts'
       - '.github/workflows/asl-video-pilot.yml'
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -74,7 +73,7 @@ jobs:
           test -n "$chrome"
           node scripts/run-recognition-video-evaluation.mjs "$chrome" \
             docs/evaluation/popsign-project-holdout-manifest.json \
-            evaluation/derived/base.jsonl --baseline --fetch-assets-via-node
+            evaluation/derived/base.jsonl --baseline --fetch-assets-via-node --reviewed-pilot
 
       - name: Replay candidate worker on identical videos
         run: |
@@ -82,7 +81,7 @@ jobs:
           test -n "$chrome"
           node scripts/run-recognition-video-evaluation.mjs "$chrome" \
             docs/evaluation/popsign-project-holdout-manifest.json \
-            evaluation/derived/candidate.jsonl --fetch-assets-via-node
+            evaluation/derived/candidate.jsonl --fetch-assets-via-node --reviewed-pilot
 
       - name: Compare exact same clips and reject incomplete sessions
         run: |
