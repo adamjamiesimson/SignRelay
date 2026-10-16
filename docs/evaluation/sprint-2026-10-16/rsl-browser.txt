@@ -1,0 +1,4 @@
+Language selection, lazy loading and mobile layout passed.
+Actual pretrained ONNX loaded in Chrome; fake camera ready.
+Camera capture and worker inference completed: No confident match. Try one complete sign with clear framing and lighting.
+Cancellation, camera release, navigation and no-upload checks passed. No uncaught page errors.

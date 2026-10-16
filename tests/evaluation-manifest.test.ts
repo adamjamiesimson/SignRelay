@@ -29,6 +29,12 @@ describe("frozen video manifest preflight", () => {
     expect(() => validateManifest([negative], { vocabulary })).toThrow("supported");
     expect(() => validateManifest([{ ...negative, vocabulary_sha256: "changed" }], { vocabulary })).toThrow("snapshot changed");
   });
+  it("does not use the ASL vocabulary to certify another language's OOV controls", () => {
+    const vocabulary = aslVocabulary();
+    expect(() => validateManifest([{ ...row, language: "bsl", trial_type: "unknown_sign",
+      expected_gloss: null, oov_gloss: "review-needed", annotation_review: "unit-test-only",
+      vocabulary_sha256: vocabulary.sha256 }], { vocabulary })).toThrow("only implemented for ASL");
+  });
   it("rejects traversal and invalid negative labels", () => {
     expect(() => validateManifest([{ ...row, file: "evaluation/videos/../a.mp4" }])).toThrow("ignored");
     expect(() => validateManifest([{ ...row, trial_type: "no_sign" }])).toThrow("expected gloss");

@@ -38,6 +38,7 @@ export function validateManifest(manifest, options = {}) {
     signers.set(signer, row.evaluation_split);
     if (row.trial_type === "no_sign" && (!row.negative_activity || !row.annotation_review)) fail("no-sign controls need reviewed real activity");
     if (row.trial_type === "unknown_sign") {
+      if (row.language !== "asl") fail("OOV vocabulary verification is only implemented for ASL");
       if (!row.oov_gloss || !row.annotation_review || !vocabulary) fail("OOV needs review and installed vocabulary");
       if (row.vocabulary_sha256 !== vocabulary.sha256) fail("OOV vocabulary snapshot changed");
       if (vocabulary.words.includes(normalized(row.oov_gloss))) fail("OOV sign is supported by the installed recognizer");
