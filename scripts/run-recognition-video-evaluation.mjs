@@ -11,6 +11,7 @@ import { validateManifest, aslVocabulary, fingerprint } from "./evaluation-manif
 import { execFileSync } from "node:child_process";
 import { TASKS_VERSION } from "../lib/vision-runtime.mjs";
 import { loadFrozenCohorts } from "./evaluation-cohorts.mjs";
+import { failedEvaluationTrial } from "./evaluation-failed-trial.mjs";
 const [executable, input, output, ...flags] = process.argv.slice(2);
 if (!executable || !input || !output) throw new Error("Supply Chrome executable, manifest JSON and output JSONL");
 const captureFrames = flags.includes("--capture-frames");
@@ -88,10 +89,8 @@ try {
     try {
       row = await browser.evaluate("window.signrelayLab.evaluateFile(document.getElementById('file').files[0])");
     } catch (error) {
-      // Persist the failed recording and denominator before stopping the run.
-      row = { ...fields, ...fixture, session_id: `failed-${fixture.trial_id}`, predicted_gloss: null,
-        accepted: false, accepted_glosses: [], frames: 0, hand_frames: 0, analyses: 0,
-        status: "error", errors: [String(error)], evaluation_split: fields.split };
+      const partial = await browser.evaluate("window.signrelayLab?.rows.at(-1) ?? null").catch(() => null);
+      row = failedEvaluationTrial(fixture, fields.split, partial, error);
     }
     if (traceDir) await writeFile(path.join(traceDir, `${fixture.recording_sha256}.json`), JSON.stringify({
       trial_id: fixture.trial_id, recording_sha256: fixture.recording_sha256, row,

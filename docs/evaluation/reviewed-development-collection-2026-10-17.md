@@ -56,4 +56,6 @@ Use `--fetch-assets-via-node` only for the existing fixed official-runtime forwa
 
 Report every take, per-sign recall, wrong words, abstentions, runtime errors, actual no-sign/OOV false-accept denominators and hand-tracking coverage. Until real negative recordings have completed, their rates remain null. The existing live-camera lab can subsequently test actual phones, but this file does not certify physical-device performance or authorize release.
 
+An interrupted trial retains observed confirmed words and partial counters when identity matches. Missing browser evidence uses null counters; it does not establish a successful rejection. Incomplete negative cohorts keep false-acceptance rates null even when an observed false acceptance is retained.
+
 The importer was exercised locally with six clearly marked generated-video controls, including metadata freezing, round-trip loading, unique hashes, original-cohort preservation and overwrite refusal. No recognition was run on those generated files, and they contribute no signing or negative-trial evidence. [Technical control result](asl-miss-diagnosis-2026-10-17/import-smoke.json).

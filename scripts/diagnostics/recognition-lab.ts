@@ -113,13 +113,16 @@ async function camera() {
 async function evaluateFile(file: File) {
   if (busy) throw new Error("A diagnostic is already running");
   metadata(); busy = true; await stop();
+  const sourceMetadata: Record<string, unknown> = { capture_mode: "unique-decoded-source-frames" };
   try {
     if (file.size > 100 * 1024 * 1024) throw new Error("Use a recording under 100MB");
     const fingerprint = [...new Uint8Array(await crypto.subtle.digest("SHA-256", await file.arrayBuffer()))].map(b => b.toString(16).padStart(2, "0")).join("");
+    sourceMetadata.recording_sha256 = fingerprint;
     if (rows.some(row => row.recording_sha256 === fingerprint)) throw new Error("This recording is already in the results. Export and reload for a separate repeat pass");
     engine = await VisionEngine.create(status); sourceUrl = URL.createObjectURL(file); video.src = sourceUrl;
     await new Promise<void>((resolve, reject) => { video.onloadeddata = () => resolve(); video.onerror = () => reject(new Error("Video could not decode")); video.load(); });
     if (!Number.isFinite(video.duration) || video.duration > 30) throw new Error("Use a recording of at most 30 seconds");
+    sourceMetadata.source_duration_s = video.duration;
     trial = startTrial(); const base = performance.now(); let previous = -1;
     process(base); previous = 0;
     for (let time = 0.05; time < video.duration; time += 0.05) {
@@ -131,9 +134,9 @@ async function evaluateFile(file: File) {
       if (decodedTime > previous + 0.001) { process(base + decodedTime * 1000); previous = decodedTime; }
       await sleep(50);
     }
-    return await finishTrial({ recording_sha256: fingerprint, capture_mode: "unique-decoded-source-frames", source_duration_s: video.duration });
+    return await finishTrial(sourceMetadata);
   } catch (error) {
-    if (trial) { trial.errors.push(String(error)); await finishTrial(); }
+    if (trial) { trial.errors.push(String(error)); await finishTrial(sourceMetadata); }
     throw error;
   } finally { await stop(); busy = false; }
 }

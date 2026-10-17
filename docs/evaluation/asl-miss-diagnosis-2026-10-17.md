@@ -23,6 +23,14 @@ Local runtime: Node 24.19.0, Chrome for Testing headless shell 151.0.7922.34, ex
 
 The first additional-development attempt had two real frame-delivery timeouts, on PLEASE and HELLO. Its failed rows and summary are retained and counted as errors, not abstentions. A fresh complete five-recording retry returned the prior 2 correct / 0 wrong / 3 abstentions. This does not establish that the intermittent browser decoding issue is repaired. Historical replay completed with 3 correct / 0 wrong / 3 abstentions. Completed runs each have one analysis per decoded frame; their frame/hand counts remain 220/101 and 194/49. Browser logs also include aborted blob loads during teardown.
 
+### Failure-path repair found during diagnosis
+
+The original CLI fallback discarded partial trial results on a playback exception: it wrote zero counters and no accepted words. The two local timeout traces actually contain 23 and 14 processed frames with matching analyses, although their old CLI rows say zero. Those original rows remain unmodified. More seriously, a word confirmed before a later failure could disappear from a negative trial's recorded false-accept evidence.
+
+The lab now preserves recording identity, source duration and capture mode when finishing an errored trial. The runner retains matching partial counters and **every** confirmed word, while keeping `status=error`. If the browser result is unavailable or belongs to another recording/participant/split, counters are null rather than invented zeroes. Malformed partial evidence fails validation. Negative false-accept counts retain observed words, but the rate remains null when a trial fails; errored signed trials never receive correct-recognition credit.
+
+A real-browser technical control deliberately withholds a frame callback after the known NO recording has confirmed. It preserves **30 frames, 11 hand-visible frames, 30 analyses and NO**, while reporting an error and zero successful signed trials. [Control output](asl-miss-diagnosis-2026-10-17/forced-failure-browser.json). Synthetic negative-row tests separately prove a false accepted word survives interruption. These are failure-path controls, not new independent signing or negative recordings. The video workflow now runs the browser control before its normal paired replays. The underlying intermittent callback timeout is still not claimed repaired.
+
 Explicit local trace mode was used only on development recordings. Raw footage, face frames and landmark traces remain in ignored local directories and are not in Git or workflow artifacts. The new report tool rejects held-out, incomplete, identity-mismatched and counter-mismatched traces; outputs only aggregate counts; and does not simulate unconsumed histories after successful confirmations.
 
 ```sh

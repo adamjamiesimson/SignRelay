@@ -22,6 +22,8 @@ on:
       - 'scripts/reviewed-development.mjs'
       - 'scripts/prepare-reviewed-development.mjs'
       - 'tests/reviewed-development.test.ts'
+      - 'tests/evaluation-failed-trial.test.ts'
+      - 'tests/evaluation-failure-browser-smoke.mjs'
       - 'scripts/compare-recognition-evaluation.mjs'
       - 'scripts/run-recognition-video-evaluation.mjs'
       - 'tests/asl-*.test.ts'
@@ -69,6 +71,13 @@ jobs:
 
       - name: Build ephemeral diagnostic (not a deployed route)
         run: node scripts/prepare-recognition-lab.mjs
+
+      - name: Preserve partial counters and confirmed words after a forced video failure
+        run: |
+          mkdir -p evaluation/derived
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          node tests/evaluation-failure-browser-smoke.mjs "$chrome" > evaluation/derived/failure-path.json
 
       - name: Compile frozen pre-PR28 worker for paired comparison
         env:
