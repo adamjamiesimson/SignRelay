@@ -38,4 +38,8 @@ describe("explicit runtime comparison retains recognition and evidence gates", (
     const candidate = lost.map((row, i) => i ? row : { ...row, predicted_gloss: null });
     expect(() => verifyRuntimeChange(manifest, rows(baseline.wasm), candidate, baseline)).toThrow("Lost correct");
   });
+  it("keeps frame stepping fixed during a runtime-only experiment", () => {
+    const changed = rows(TASKS_VERSION).map(row => ({ ...row, frame_stepper: "seek-and-presentation-v1" }));
+    expect(() => verifyRuntimeChange(manifest, rows(baseline.wasm), changed, baseline)).toThrow("frame_stepper");
+  });
 });

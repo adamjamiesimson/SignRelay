@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "forced_failure": true,
+  "technical_control_only": true,
+  "recording_sha256": "c05226e472bc0969b9422d1ccfe4a5f255d42eece42557687529926e532870b1",
+  "partial_frames": 30,
+  "partial_hand_frames": 11,
+  "partial_analyses": 30,
+  "retained_glosses": [
+    "NO"
+  ],
+  "status": "error",
+  "successful_signed_trials": 0,
+  "errors": 1,
+  "no_raw_landmarks_retained": true
+}

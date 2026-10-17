@@ -30,11 +30,16 @@ try {
     for (const [id, value] of Object.entries(${JSON.stringify({ language: "asl", participant: fixture.participant_id,
       "trial-type": "sign", expected: "NO", split: "development", provenance: "licensed source; forced callback failure control" })})) document.getElementById(id).value = value;
     const native = HTMLVideoElement.prototype.requestVideoFrameCallback;
-    let requests = 0; window.__forcedCallbackFailure = false;
+    window.__forcedCallbackFailure = false; window.__observedFrames = 0; window.__confirmedNo = false;
+    window.signrelayLab.setTraceObserver(event => {
+      if (event.type === 'frame') window.__observedFrames++;
+      if (event.type === 'worker' && event.message.type === 'confirmed' && event.message.gloss === 'NO') window.__confirmedNo = true;
+    });
     HTMLVideoElement.prototype.requestVideoFrameCallback = function(callback) {
-      const withhold = ++requests === 30;
       return native.call(this, (now, info) => {
-        if (withhold) window.__forcedCallbackFailure = true;
+        // Count processed source frames, not callback registrations: a stepper
+        // may correctly cancel speculative callbacks while waiting for seeked.
+        if (window.__observedFrames >= 30 && window.__confirmedNo) window.__forcedCallbackFailure = true;
         else callback(now, info);
       });
     };
@@ -46,7 +51,7 @@ try {
     try { await window.signrelayLab.evaluateFile(document.getElementById('file').files[0]); return {unexpected_success:true}; }
     catch (error) { return {error:String(error), forced:window.__forcedCallbackFailure, partial:window.signrelayLab.rows.at(-1)}; }
   })()`);
-  assert.equal(result.forced, true); assert.match(result.error, /Video frame delivery timed out/);
+  assert.equal(result.forced, true, JSON.stringify(result)); assert.match(result.error, /Video frame delivery timed out/);
   const row = failedEvaluationTrial(fixture, "development", result.partial, result.error);
   assert(row.frames > 0 && row.frames < 51); assert(row.analyses > 0);
   assert(row.accepted_glosses.includes("NO")); assert.equal(row.status, "error");

@@ -5,6 +5,7 @@ import { summarizeTrials } from "../evaluation-metrics.mjs";
 import type { LanguageId } from "../../lib/model-adapters";
 import type { VisionFrame, WorkerConfirmation, WorkerMessage } from "../../lib/vision-types";
 import { TASKS_VERSION as TASKS_WASM_VERSION } from "../../lib/vision-runtime.mjs";
+import { loadVideoData, seekDecodedFrame } from "./video-frame-step";
 
 declare const __TASKS_JS_VERSION__: string;
 
@@ -18,6 +19,7 @@ const rows: Record<string, unknown>[] = [];
 let engine: VisionEngine | null = null, stream: MediaStream | null = null, live = false, busy = false;
 let trial: ReturnType<typeof startTrial> | null = null;
 let sourceUrl: string | null = null;
+let fileController: AbortController | null = null;
 // Opt-in local debugging only. No trace is retained by the default lab or app.
 type TraceEvent = { type: "frame"; frame: VisionFrame } | { type: "worker"; message: WorkerMessage };
 let traceObserver: ((event: TraceEvent) => void) | undefined;
@@ -94,6 +96,7 @@ async function finishTrial(extra: Record<string, unknown> = {}) {
   return row;
 }
 async function stop() {
+  fileController?.abort(new Error("Diagnostic stopped")); fileController = null;
   live = false; stream?.getTracks().forEach(track => track.stop()); stream = null;
   video.pause(); video.srcObject = null; video.removeAttribute("src"); video.load();
   engine?.close(); engine = null; session.postMessage({ type: "reset" });
@@ -113,27 +116,27 @@ async function camera() {
 async function evaluateFile(file: File) {
   if (busy) throw new Error("A diagnostic is already running");
   metadata(); busy = true; await stop();
-  const sourceMetadata: Record<string, unknown> = { capture_mode: "unique-decoded-source-frames" };
+  const controller = new AbortController(); fileController = controller;
+  const sourceMetadata: Record<string, unknown> = { capture_mode: "unique-decoded-source-frames", frame_stepper: "seek-and-presentation-v1" };
   try {
     if (file.size > 100 * 1024 * 1024) throw new Error("Use a recording under 100MB");
     const fingerprint = [...new Uint8Array(await crypto.subtle.digest("SHA-256", await file.arrayBuffer()))].map(b => b.toString(16).padStart(2, "0")).join("");
     sourceMetadata.recording_sha256 = fingerprint;
     if (rows.some(row => row.recording_sha256 === fingerprint)) throw new Error("This recording is already in the results. Export and reload for a separate repeat pass");
-    engine = await VisionEngine.create(status); sourceUrl = URL.createObjectURL(file); video.src = sourceUrl;
-    await new Promise<void>((resolve, reject) => { video.onloadeddata = () => resolve(); video.onerror = () => reject(new Error("Video could not decode")); video.load(); });
+    engine = await VisionEngine.create(status);
+    controller.signal.throwIfAborted();
+    sourceUrl = URL.createObjectURL(file);
+    await loadVideoData(video, sourceUrl, { signal: controller.signal });
     if (!Number.isFinite(video.duration) || video.duration > 30) throw new Error("Use a recording of at most 30 seconds");
     sourceMetadata.source_duration_s = video.duration;
     trial = startTrial(); const base = performance.now(); let previous = -1;
     process(base); previous = 0;
     for (let time = 0.05; time < video.duration; time += 0.05) {
-      const next = new Promise<number>((resolve, reject) => {
-        const timer = setTimeout(() => { video.cancelVideoFrameCallback(id); reject(new Error("Video frame delivery timed out")); }, 3000);
-        const id = video.requestVideoFrameCallback((_now, info) => { clearTimeout(timer); resolve(info.mediaTime); });
-      });
-      video.currentTime = time; const decodedTime = await next;
+      const decodedTime = await seekDecodedFrame(video, time, { signal: controller.signal });
       if (decodedTime > previous + 0.001) { process(base + decodedTime * 1000); previous = decodedTime; }
       await sleep(50);
     }
+    controller.signal.throwIfAborted();
     return await finishTrial(sourceMetadata);
   } catch (error) {
     if (trial) { trial.errors.push(String(error)); await finishTrial(sourceMetadata); }

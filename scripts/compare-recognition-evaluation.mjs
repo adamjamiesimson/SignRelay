@@ -14,7 +14,7 @@ for (const row of a) {
   }
   // Legacy reports used tasks_version for the WASM URL only. New reports
   // must carry both versions on each side; mixing legacy/new is not parity.
-  for (const key of ["tasks_js_version", "tasks_wasm_version"]) {
+  for (const key of ["tasks_js_version", "tasks_wasm_version", "frame_stepper"]) {
     if (row[key] !== candidate[key]) throw new Error(`Comparison differs in ${key}: ${row.trial_id}`);
   }
   if (JSON.stringify(row.accepted_glosses) !== JSON.stringify(candidate.accepted_glosses)) {

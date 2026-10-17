@@ -36,6 +36,7 @@ export function verifyRuntimeChange(manifest, before, after, baselineRuntime) {
   const byId = new Map(b.map(row => [row.trial_id, row])), changes = [], tracking = [];
   for (const row of a) {
     const other = byId.get(row.trial_id);
+    if (row.frame_stepper !== other.frame_stepper) throw new Error(`Runtime experiment changed frame_stepper: ${row.trial_id}`);
     for (const key of ["worker_sha256", "manifest_sha256", "vocabulary_sha256", "input_mirrored", "preview_mirrored",
       "model_mapping", "source_duration_s", "frames"]) {
       if (row[key] === undefined || row[key] !== other[key]) throw new Error(`Runtime experiment changed ${key}: ${row.trial_id}`);

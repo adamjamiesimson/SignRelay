@@ -34,7 +34,7 @@ export function verifyPilot(manifest, base, candidate) {
   }
   for (const row of base) {
     const other = candidate.find(trial => trial.trial_id === row.trial_id);
-    for (const key of ["tasks_version", "tasks_js_version", "tasks_wasm_version", "input_mirrored", "preview_mirrored", "model_mapping", "source_duration_s", "frames"]) {
+    for (const key of ["tasks_version", "tasks_js_version", "tasks_wasm_version", "frame_stepper", "input_mirrored", "preview_mirrored", "model_mapping", "source_duration_s", "frames"]) {
       if (row[key] !== other[key]) throw new Error(`Pair changed ${key} for ${row.trial_id}`);
     }
     // Safety regression on an already-inspected development pilot: surface a

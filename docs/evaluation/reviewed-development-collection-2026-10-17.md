@@ -1,5 +1,7 @@
 # Reviewed ASL development collection, 17 October 2026
 
+The [video-frame follow-up](video-frame-reliability-2026-10-17.md) bounds file loading, waits for seek completion and presentation, and preserves interrupted observations. It does not supply participant recordings or reviews.
+
 This packet prepares the next development batch. **Zero new participant recordings and zero fluent-signer reviews have been collected.** The 144 slots below are a collection target, not measured results, release thresholds or a statistical power calculation. The five reserved PopSign holdout clips remain sealed.
 
 | Four new development participants | Takes per participant | Planned total |

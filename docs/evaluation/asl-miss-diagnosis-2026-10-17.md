@@ -1,5 +1,7 @@
 # Remaining ASL misses, 17 October 2026
 
+**Later follow-up:** [Video-frame reliability](video-frame-reliability-2026-10-17.md) repairs the lab's seek/presentation ordering and bounds loading/cancellation. Natural timeout causality remains unproven; production recognition and the need for real reviewed footage are unchanged.
+
 The remaining misses do not share one cause. Fresh production-worker traces reproduce the previous outputs: **five correct and six abstaining recordings out of the same eleven inspected development clips**. This follow-up adds diagnostics and a reviewed collection/import workflow; recognition behavior, thresholds, model mappings, model assets and production worker bytes are unchanged. It claims no new accuracy gain.
 
 The path inspected is original decoded video frames → production MediaPipe VisionEngine → recognition session → production starter/motion/model arbitration → two-evidence confirmation. All successful source frames receive worker analyses. These are publisher-labelled isolated signs; a new fluent reviewer has not verified their variants or the temporal extent of each articulation.
