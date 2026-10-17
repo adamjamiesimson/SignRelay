@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 const normalized = value => typeof value === "string" ? value.normalize("NFC").trim().toUpperCase().replace(/[^\p{L}\p{N}]/gu, "") : "";
-const signerKey = id => id.replace(/^gtsignstudy/, "popsign-").replace(/^popsign-(?:gtsignstudy)?/, "popsign-");
+export const signerKey = id => id.replace(/^gtsignstudy/, "popsign-").replace(/^popsign-(?:gtsignstudy)?/, "popsign-");
 export const fingerprint = bytes => createHash("sha256").update(bytes).digest("hex");
 export function aslVocabulary() {
   // Actual installed automatic path; no personal templates are loaded by the lab.

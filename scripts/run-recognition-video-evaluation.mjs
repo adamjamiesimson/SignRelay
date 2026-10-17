@@ -10,6 +10,7 @@ import { summarizeTrials } from "./evaluation-metrics.mjs";
 import { validateManifest, aslVocabulary, fingerprint } from "./evaluation-manifest.mjs";
 import { execFileSync } from "node:child_process";
 import { TASKS_VERSION } from "../lib/vision-runtime.mjs";
+import { loadFrozenCohorts } from "./evaluation-cohorts.mjs";
 const [executable, input, output, ...flags] = process.argv.slice(2);
 if (!executable || !input || !output) throw new Error("Supply Chrome executable, manifest JSON and output JSONL");
 const captureFrames = flags.includes("--capture-frames");
@@ -17,20 +18,13 @@ if (captureFrames && flags.includes("--final-holdout")) throw new Error("Develop
 const manifestBytes = await readFile(input);
 const manifest = JSON.parse(manifestBytes);
 if (flags.includes("--reviewed-pilot")) for (const row of manifest) row.evaluation_split = "development";
-const registry = JSON.parse(await readFile("docs/evaluation/cohort-lock-2026-10-16.json", "utf8"));
+const vocabulary = aslVocabulary();
+const lockOptions = flags.filter(flag => flag.startsWith("--cohort-lock="));
+if (lockOptions.length > 1 || lockOptions[0] === "--cohort-lock=") throw new Error("Supply one nonempty --cohort-lock=path");
+const { registry, cohorts } = await loadFrozenCohorts(lockOptions[0]?.slice("--cohort-lock=".length), vocabulary);
 const entry = registry.manifests.find(item => path.resolve(item.file) === path.resolve(input));
 if (!entry || entry.sha256 !== fingerprint(manifestBytes)) throw new Error("Manifest is not frozen in the cohort lock; validate and freeze it before replay");
-const related = [];
-for (const item of registry.manifests) {
-  if (item === entry) continue;
-  const bytes = await readFile(item.file);
-  if (fingerprint(bytes) !== item.sha256) throw new Error("Related cohort manifest changed after freezing");
-  const rows = JSON.parse(bytes);
-  if (item.role === "historical-development") for (const row of rows) row.evaluation_split = "development";
-  related.push(rows);
-}
-const vocabulary = aslVocabulary();
-if (registry.vocabulary_sha256 !== vocabulary.sha256) throw new Error("Installed ASL vocabulary changed after cohort freeze");
+const related = cohorts.filter(cohort => path.resolve(cohort.file) !== path.resolve(input)).map(cohort => cohort.rows);
 validateManifest(manifest, { related, vocabulary, allowHoldout: flags.includes("--final-holdout") });
 // Explicit diagnostics stay outside the shareable derived results and never
 // leave the local ignored directory. Normal evaluation retains no landmarks.

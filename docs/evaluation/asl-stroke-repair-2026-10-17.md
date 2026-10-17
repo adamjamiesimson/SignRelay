@@ -1,5 +1,7 @@
 # ASL stroke boundaries and recall guard, 17 October 2026
 
+**Subsequent diagnostic follow-up:** [Remaining misses and reviewed collection](asl-miss-diagnosis-2026-10-17.md) identifies tracking, rule-match, ambiguity and confirmation limits without changing production recognition behavior. It prepares a 144-slot development collection/import workflow; no new participant recordings or fluent reviews are claimed.
+
 **Decision: keep draft PR #30 in review.** On the six previously inspected historical development recordings, the missed PLEASE is restored and THANK YOU `.8033` stops emitting PLEASE. That THANK YOU now abstains; it is not correctly translated. The five additional development recordings retain their prior outputs. These results do not establish live translation accuracy or unblock release.
 
 ## What was repaired
