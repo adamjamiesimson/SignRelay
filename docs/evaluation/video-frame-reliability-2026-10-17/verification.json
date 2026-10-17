@@ -5,7 +5,7 @@
   "production_recognition_changed": false,
   "worker_sha256": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
   "source_sha256": {
-    ".github/workflows/asl-video-pilot.yml": "0053122aecb1ee9981247f7cba353ef51d6fa143f1e7274e470005e5269acddd",
+    ".github/workflows/asl-video-pilot.yml": "31f1ae436aed40a7603535c38fdcdf1cfaa02dbf75ef024e2353717c4ccac8e4",
     "scripts/diagnostics/recognition-lab.ts": "90d6a1c9704bb6c99ac91f073aceacff0be9733be4d9cbdc4bc81522e9abc333",
     "scripts/diagnostics/video-frame-step.ts": "8f91ea2b86bd398ca956c25b20a49f247f6b0e4c439b9af54355cfc5b7e3e564",
     "scripts/compare-recognition-evaluation.mjs": "19cb39f31a0a87244716b7d81a3573a633dd4b35ce7c646c682374029f8e636e",
@@ -77,5 +77,11 @@
     "production_findings": 0,
     "waived": false
   },
-  "no_merge_or_deployment": true
+  "no_merge_or_deployment": true,
+  "hosted_setup_followup": {
+    "first_commit": "a64d8de96ce6a37bdc0dc212621f8e3fe1b61125",
+    "video_run": 39059548133,
+    "outcome": "failed before replay: ffmpeg missing",
+    "repair": "install ffmpeg explicitly for generated-video controls"
+  }
 }

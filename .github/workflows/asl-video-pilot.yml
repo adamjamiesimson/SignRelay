@@ -62,6 +62,11 @@ jobs:
       - name: Install unchanged dependencies
         run: npm ci
 
+      - name: Install generated-video control dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
+
       - name: Fetch only six licensed, SHA-256-frozen video clips
         run: python3 training/fetch_evaluation_clips.py
 

@@ -22,6 +22,8 @@ File rows identify `frame_stepper=seek-and-presentation-v1`. Worker comparisons,
 
 One initial local failure-control invocation produced no usable result; the next exposed its obsolete callback counter by completing without the intended fault. Neither is a successful control. The revised injector subsequently passed. Exploratory passes are not pooled into independent accuracy statistics. Aborted local blob loads during teardown remain visible in the replay summary.
 
+The first hosted video run at `a64d8de` stopped before replay because FFmpeg was absent. The workflow now installs that generated-pattern dependency explicitly. That failed run supplies no paired recognition evidence; the final exact-head run is linked in PR #30.
+
 ## Remaining work
 
 The refreshed [full audit](video-frame-reliability-2026-10-17/audit-full.json) still reports **five high development-tool findings** in `eslint-config-next → @next/eslint-plugin-next → fast-glob → micromatch → braces`. The [production audit](video-frame-reliability-2026-10-17/audit-production.json) has zero findings. Registry checks still return `braces` 3.0.3 and Next lint plugin/config 16.4.2; the [active advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) lists no patched release. No downgrade, replacement alias, audit waiver or force-fix is applied. This blocker remains unresolved.
