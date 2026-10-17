@@ -1,0 +1,144 @@
+{
+  "diagnostic_only": true,
+  "experiment": "frame-stepper-only; unchanged production worker",
+  "source_parent": "e265f0c04b852e999ee9e69da7a1af43eb8b78e4",
+  "harness_dirty": true,
+  "baseline": "docs/evaluation/asl-miss-diagnosis-2026-10-17/development-retry.jsonl",
+  "baseline_stepper": "callback-only (legacy field absent)",
+  "candidate_stepper": "seek-and-presentation-v1",
+  "paired_trials": 5,
+  "correct": 2,
+  "wrong_accepted": 0,
+  "abstentions": 3,
+  "runtime_errors": 0,
+  "source_frames": 194,
+  "hand_visible_frames": 49,
+  "changes": [],
+  "checks": [
+    {
+      "trial_id": "dev-thankyou-4a.7003",
+      "frames": 30,
+      "hand_frames": 6,
+      "accepted_glosses": [],
+      "compared_fields": [
+        "recording_sha256",
+        "participant_id",
+        "expected_gloss",
+        "tasks_js_version",
+        "tasks_wasm_version",
+        "input_mirrored",
+        "preview_mirrored",
+        "model_mapping",
+        "capture_mode",
+        "source_duration_s",
+        "frames",
+        "hand_frames",
+        "accepted_glosses",
+        "worker_sha256",
+        "status",
+        "errors"
+      ]
+    },
+    {
+      "trial_id": "dev-please-4a.8017",
+      "frames": 47,
+      "hand_frames": 15,
+      "accepted_glosses": [
+        "PLEASE"
+      ],
+      "compared_fields": [
+        "recording_sha256",
+        "participant_id",
+        "expected_gloss",
+        "tasks_js_version",
+        "tasks_wasm_version",
+        "input_mirrored",
+        "preview_mirrored",
+        "model_mapping",
+        "capture_mode",
+        "source_duration_s",
+        "frames",
+        "hand_frames",
+        "accepted_glosses",
+        "worker_sha256",
+        "status",
+        "errors"
+      ]
+    },
+    {
+      "trial_id": "dev-hello-4a.8006",
+      "frames": 35,
+      "hand_frames": 12,
+      "accepted_glosses": [],
+      "compared_fields": [
+        "recording_sha256",
+        "participant_id",
+        "expected_gloss",
+        "tasks_js_version",
+        "tasks_wasm_version",
+        "input_mirrored",
+        "preview_mirrored",
+        "model_mapping",
+        "capture_mode",
+        "source_duration_s",
+        "frames",
+        "hand_frames",
+        "accepted_glosses",
+        "worker_sha256",
+        "status",
+        "errors"
+      ]
+    },
+    {
+      "trial_id": "dev-yes-4a.8006",
+      "frames": 31,
+      "hand_frames": 5,
+      "accepted_glosses": [],
+      "compared_fields": [
+        "recording_sha256",
+        "participant_id",
+        "expected_gloss",
+        "tasks_js_version",
+        "tasks_wasm_version",
+        "input_mirrored",
+        "preview_mirrored",
+        "model_mapping",
+        "capture_mode",
+        "source_duration_s",
+        "frames",
+        "hand_frames",
+        "accepted_glosses",
+        "worker_sha256",
+        "status",
+        "errors"
+      ]
+    },
+    {
+      "trial_id": "dev-no-4a.8030",
+      "frames": 51,
+      "hand_frames": 11,
+      "accepted_glosses": [
+        "NO"
+      ],
+      "compared_fields": [
+        "recording_sha256",
+        "participant_id",
+        "expected_gloss",
+        "tasks_js_version",
+        "tasks_wasm_version",
+        "input_mirrored",
+        "preview_mirrored",
+        "model_mapping",
+        "capture_mode",
+        "source_duration_s",
+        "frames",
+        "hand_frames",
+        "accepted_glosses",
+        "worker_sha256",
+        "status",
+        "errors"
+      ]
+    }
+  ],
+  "new_independent_recordings": 0
+}

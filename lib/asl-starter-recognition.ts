@@ -30,7 +30,7 @@ export function bodyReference(frame: VisionFrame, hand: HandObservation) {
 
 type Sample = {
   hand: HandObservation; time: number; scale: number; palm: number;
-  wrist: Point; tip: Point; nose?: Point; mouth?: Point;
+  wrist: Point; circlePath: Point; tip: Point; nose?: Point; mouth?: Point; mouthRadius?: number;
   open: number; indexOpen: boolean; middleOpen: boolean;
 };
 
@@ -48,6 +48,12 @@ function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"]):
     const reference = bodyReference(frame, hand);
     return reference.tracked ? [{ time: frame.timestamp, reference }] : [];
   });
+  const scales = bodySamples.map(sample => sample.reference.scale).sort((a, b) => a - b);
+  const firstHand = frames.flatMap(frame => frame.hands).find(hand => hand.handedness === side && validHand(hand));
+  // Keep loop geometry in one camera coordinate system. Re-scaling each
+  // observation with intermittently refreshed pose estimates distorts loops.
+  // Body-relative wrist checks below still require movement over the torso.
+  const pathScale = scales[Math.floor(scales.length / 2)] ?? (firstHand ? handScale(firstHand) * 4 : 1);
   for (const frame of frames) {
     const hand = frame.hands.find(hand => hand.handedness === side && validHand(hand));
     if (!hand) continue;
@@ -59,7 +65,13 @@ function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"]):
       y: (p.y - reference.anchor.y) / reference.scale, z: p.z });
     const nose = frame.pose[0] ?? frame.face[1];
     const mouth = frame.face[3] ?? frame.pose[9] ?? nose;
-    samples.push({ hand, time: frame.timestamp, scale: reference.scale, palm: handScale(hand),
+    const faceNose = frame.face[1] ?? frame.pose[0];
+    const mouthRadius = faceNose && mouth ? Math.min(distance2(faceNose, mouth) / reference.scale, 0.4) : undefined;
+    const center = [0, 5, 9, 13, 17].reduce((p, i) => ({
+      x: p.x + hand.landmarks[i].x / 5, y: p.y + hand.landmarks[i].y / 5,
+    }), { x: 0, y: 0 });
+    samples.push({ hand, circlePath: { x: center.x / pathScale, y: center.y / pathScale, z: 0 },
+      mouthRadius, time: frame.timestamp, scale: reference.scale, palm: handScale(hand),
       wrist: point(hand.landmarks[0]), tip: point(hand.landmarks[8]),
       nose: nose && point(nose), mouth: mouth && point(mouth),
       open: [8, 12, 16, 20].filter(tip => extended(hand, tip)).length,
@@ -77,9 +89,20 @@ function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"]):
  * See docs/asl-dynamic-recognition.md for references and evaluation limitations.
  */
 export function recognizeAslStarter(sequence: VisionFrame[]): StarterPrediction | null {
+  return analyzeAslStarter(sequence).prediction;
+}
+
+/** Conflicting temporal windows are evidence to abstain, not a reason to pick
+ * whichever open-palm rule happened to run first. Personal examples keep their
+ * independent matcher and are not subject to this fallback-only veto.
+ */
+export function analyzeAslStarter(sequence: VisionFrame[]) {
   const now = sequence.at(-1)?.timestamp;
-  if (now === undefined) return null;
+  if (now === undefined) return { prediction: null, ambiguousOpenPalm: false, labels: [] as string[], incompleteLabels: [] as string[] };
   let yes: StarterPrediction | null = null;
+  let preferred: StarterPrediction | null = null;
+  const labels = new Set<string>();
+  const incompleteLabels = new Set<string>();
   for (const duration of [650, 1100, 1700, 2600]) {
     for (const side of ["Right", "Left", "Unknown"] as const) {
       const recent = recentContinuousFrames(sequence, duration,
@@ -87,20 +110,31 @@ export function recognizeAslStarter(sequence: VisionFrame[]): StarterPrediction 
       const samples = samplesFor(recent, side);
       if (!samples.length) continue;
       const result = recognizeSamples(samples);
+      // A completion veto removes permission to emit a word, not evidence of
+      // a competing movement. Otherwise tightening PLEASE exposes a THANK YOU
+      // suffix that used to be suppressed by the cross-window ambiguity gate.
+      const evidence = recognizeSamples(samples, false);
+      if (evidence?.label === "PLEASE" && result?.label !== "PLEASE") incompleteLabels.add("PLEASE");
+      // A mouth departure that lacks outward completion still competes with a
+      // chest circle. Preserve it for the same veto, including model fallback.
+      if (result?.label !== "THANK YOU" && ratio(samples, sample => sample.open >= 3) >= 0.75
+        && departingMouthStroke(samples)) incompleteLabels.add("THANK YOU");
+      if (result) labels.add(result.label);
       // A short suffix must not override a chest circle visible in a longer
       // window. Keep the whole movement available to distinguish SORRY.
       if (result?.label === "YES") yes = result;
-      else if (result) return result;
+      else if (result && !preferred) preferred = result;
     }
   }
-  return yes;
+  const ambiguousOpenPalm = ["HELLO", "PLEASE", "THANK YOU"].filter(label => labels.has(label) || incompleteLabels.has(label)).length > 1;
+  return { prediction: ambiguousOpenPalm ? null : preferred ?? yes, ambiguousOpenPalm, labels: [...labels], incompleteLabels: [...incompleteLabels] };
 }
 
 const span = (values: number[]) => Math.max(...values) - Math.min(...values);
 const ratio = (samples: Sample[], predicate: (sample: Sample) => boolean) => samples.filter(predicate).length / samples.length;
 const prediction = (label: string, text: string): StarterPrediction => ({ label, text, confidence: 0.86 });
 
-function recognizeSamples(samples: Sample[]): StarterPrediction | null {
+function recognizeSamples(samples: Sample[], requireClosure = true): StarterPrediction | null {
   const first = samples[0];
   const last = samples.at(-1)!;
   const mostlyOpen = ratio(samples, sample => sample.open >= 3) >= 0.75;
@@ -122,6 +156,12 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
     return prediction("NO", "No");
   }
 
+  // Preserve the original wrist-only competing evidence. New emitting rules
+  // must not erase a partial circle and expose its outward THANK YOU suffix.
+  const mouthStart = requireClosure ? departingMouthStroke(samples) : null;
+  if (mostlyOpen && mouthStart && (Math.abs(last.tip.x - mouthStart.tip.x) > 0.15
+    || last.palm / mouthStart.palm > 1.14)) return prediction("THANK YOU", "Thank you");
+
   const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
   const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
   if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12
@@ -136,7 +176,8 @@ function recognizeSamples(samples: Sample[]): StarterPrediction | null {
 
   const atChest = ratio(samples, sample => sample.wrist.y > -0.1 && sample.wrist.y < 1.05
     && Math.abs(sample.wrist.x) < 0.8) >= 0.8;
-  if (atChest && xRange > 0.1 && yRange > 0.1 && circularMotion(xs, ys)) {
+  if (atChest && xRange > 0.1 && yRange > 0.1 && !(mostlyOpen && mouthStart)
+    && (requireClosure ? completedPalmCircle(samples) : circularMotion(xs, ys, false))) {
     if (mostlyOpen) return prediction("PLEASE", "Please");
     if (mostlyFist) return prediction("SORRY", "Sorry");
   }
@@ -223,12 +264,23 @@ function directionChanges(values: number[], epsilon: number) {
   return changes;
 }
 
-function circularMotion(xs: number[], ys: number[]) {
+function circularMotion(xs: number[], ys: number[], requireClosure: boolean) {
   const cx = (Math.max(...xs) + Math.min(...xs)) / 2;
   const cy = (Math.max(...ys) + Math.min(...ys)) / 2;
   // Normalize the axes: natural chest circles can be narrow ellipses.
   const width = span(xs);
   const height = span(ys);
+  if (xs.length < 5 || width <= 0 || height <= 0) return false;
+  // The turning angle alone accepts roughly two-thirds of an ellipse as a
+  // completed sign. A partial chest sweep or noisy outward stroke can then
+  // be mistaken for PLEASE/SORRY before the signer finishes moving.
+  // Demand a return near the starting position relative to the actual motion
+  // extent. Use proportions so this remains independent of camera distance.
+  const closure = Math.hypot(
+    (xs.at(-1)! - xs[0]) / width,
+    (ys.at(-1)! - ys[0]) / height,
+  );
+  if (requireClosure && (!Number.isFinite(closure) || closure > 0.45)) return false;
   const angles = xs.map((x, index) => Math.atan2((ys[index] - cy) / height, (x - cx) / width));
   let turn = 0;
   let travel = 0;
@@ -240,4 +292,32 @@ function circularMotion(xs: number[], ys: number[]) {
     travel += Math.abs(delta);
   }
   return Math.abs(turn) > 4.2 && Math.abs(turn) / Math.max(travel, 0.01) > 0.8;
+}
+
+
+/** A mouth-origin stroke can include preparation before the hand reaches the
+ * lips. Two face-local observations locate that onset independently of the
+ * arbitrary rolling-window start. Existing departure/outward limits remain. */
+function departingMouthStroke(samples: Sample[]) {
+  const near = samples.filter(sample => sample.open >= 3 && sample.mouth && sample.mouthRadius
+    && distance2(sample.tip, sample.mouth) <= sample.mouthRadius);
+  if (near.length < 2) return null;
+  const origin = near.reduce((best, sample) =>
+    distance2(sample.tip, sample.mouth!) < distance2(best.tip, best.mouth!) ? sample : best);
+  const last = samples.at(-1)!;
+  return last.mouth && last.time - origin.time >= 160 && last.tip.y - origin.tip.y > 0.12
+    && distance2(last.tip, last.mouth) - distance2(origin.tip, origin.mouth!) > 0.25 ? origin : null;
+}
+
+/** Search for a loop ending now, so a continuing second circle is not rejected
+ * for failing to return to the beginning of the entire window. Do not revive a
+ * completed loop from earlier in a different movement. */
+function completedPalmCircle(samples: Sample[]) {
+  for (let start = 0; start <= samples.length - 5; start++) {
+    if (samples.at(-1)!.time - samples[start].time < 160) break;
+    const loop = samples.slice(start);
+    const xs = loop.map(sample => sample.circlePath.x), ys = loop.map(sample => sample.circlePath.y);
+    if (span(xs) > 0.1 && span(ys) > 0.1 && circularMotion(xs, ys, true)) return true;
+  }
+  return false;
 }

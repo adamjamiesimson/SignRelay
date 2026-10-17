@@ -1,7 +1,7 @@
 import type { FaceLandmarker, GestureRecognizer, PoseLandmarker } from "@mediapipe/tasks-vision";
 import type { Point, VisionFrame } from "./vision-types";
+import { TASKS_WASM_PATH } from "./vision-runtime.mjs";
 
-const WASM_PATH = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm";
 const GESTURE_MODEL = "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task";
 const FACE_MODEL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 const POSE_MODEL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
@@ -35,7 +35,7 @@ export class VisionEngine {
   static async create(onProgress?: (message: string) => void) {
     onProgress?.("Loading vision runtime");
     const vision = await import("@mediapipe/tasks-vision");
-    const files = await vision.FilesetResolver.forVisionTasks(WASM_PATH);
+    const files = await vision.FilesetResolver.forVisionTasks(TASKS_WASM_PATH);
 
     onProgress?.("Loading hand, face and pose models");
     const results = await Promise.allSettled([
@@ -79,7 +79,7 @@ export class VisionEngine {
     return new VisionEngine({ gesture: gesture.value, face: face.value, pose: pose.value });
   }
 
-  process(video: HTMLVideoElement, timestamp: number): VisionFrame {
+  process(video: HTMLVideoElement | HTMLCanvasElement, timestamp: number): VisionFrame {
     const handResult = this.parts.gesture.recognizeForVideo(video, timestamp);
     this.handFramesSinceAux++;
     // Leave alternate frames for hands even when CPU inference is already slow.
@@ -96,7 +96,8 @@ export class VisionEngine {
       timestamp,
       hands: handResult.landmarks.map((landmarks, index) => ({
         landmarks: landmarks.map(toPoint),
-        handedness: (handResult.handedness[index]?.[0]?.categoryName as "Left" | "Right") ?? "Unknown",
+        // Preserve Tasks labels. CSS preview mirroring never changes this input.
+        handedness: taskHandedness(handResult.handedness[index]?.[0]?.categoryName),
         gesture: handResult.gestures[index]?.[0]?.categoryName ?? "None",
         gestureScore: handResult.gestures[index]?.[0]?.score ?? 0,
       })),
@@ -110,6 +111,10 @@ export class VisionEngine {
     this.parts.face.close();
     this.parts.pose.close();
   }
+}
+
+export function taskHandedness(label: string | undefined): "Left" | "Right" | "Unknown" {
+  return label === "Left" || label === "Right" ? label : "Unknown";
 }
 
 function toPoint(point: { x: number; y: number; z: number; visibility?: number }): Point {

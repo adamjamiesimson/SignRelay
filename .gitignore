@@ -58,3 +58,9 @@ next-env.d.ts
 # Local live-camera evaluation captures. Never commit participant media.
 /evaluation/raw/
 /evaluation/videos/
+
+# Built from workers/template-matching.worker.ts during build:worker.
+/public/workers/template-matching.worker.js
+
+# Ephemeral derived runs are reviewed and copied into docs explicitly.
+/evaluation/derived/
