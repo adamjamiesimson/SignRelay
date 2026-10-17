@@ -1,4 +1,5 @@
-// Actual pinned Tasks -> production worker. No raw media/landmarks in output.
+// Actual pinned Tasks -> production worker. Derived results contain no raw
+// media/landmarks. --capture-frames opts into separate ignored local traces.
 // node scripts/run-recognition-video-evaluation.mjs /path/to/chrome manifest.json output.jsonl [--mirrored] [--baseline] [--reviewed-pilot]
 import { spawn } from "node:child_process";
 import { readFile, writeFile, mkdir } from "node:fs/promises";

@@ -1,5 +1,7 @@
 # SignRelay engineering sprint, 16 October 2026
 
+**Latest follow-up, 17 October:** [ASL stroke repair and recall guard](asl-stroke-repair-2026-10-17.md) restores the missed historical PLEASE and changes THANK YOU → PLEASE to an abstention, with no previously correct development output lost. The original sprint findings below are historical. Draft PR #30 remains blocked for release by incomplete signing/negative evidence, physical-device validation and the full dependency audit.
+
 **Decision: draft integration for review; not ready for production.** The new PR #28 wrong acceptance is repaired on the historical paired-video development suite. The existing THANK YOU → PLEASE error, incomplete signed/negative evidence, physical-device validation and the full dependency audit still block release. No merge, deployment, model-weight replacement, data migration or paid infrastructure was performed.
 
 Review: [draft PR #30](https://github.com/adamjamiesimson/SignRelay/pull/30). Code commit: `1e9b7449d4b5d78b920d55b57d19c730e6ea1bc8`, tree `44825b1b61d753977ae6aaa9b40fabc57f300983`. The evidence/handover follow-up commit contains this document and derived records. The incremental code diff is available [against PR #29](https://github.com/adamjamiesimson/SignRelay/compare/a300483a464b1f648294c6827e778381fd6bbf3d...1e9b7449d4b5d78b920d55b57d19c730e6ea1bc8).

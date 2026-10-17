@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-types";
 import { incompleteArcWithOutwardSuffix } from "./fixtures/asl-ambiguous-arc";
 import { makeSign } from "./fixtures/asl-motion";
+import { apparentCircleFromBodyMotion, approachMouthThenDepart, continuingChestCircle,
+  mouthDepartureWithReturningWrist } from "./fixtures/asl-stroke-boundaries";
 
 const mocks = vi.hoisted(() => ({ model: vi.fn() }));
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.model }));
@@ -30,6 +32,30 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     mocks.model.mockResolvedValue({ label: "THANK YOU", text: "Thank you", confidence: 0.99, margin: 0.9 });
     await feed(incompleteArcWithOutwardSuffix());
     expect(confirmations()).toHaveLength(0);
+  });
+  it.each([
+    ["PLEASE", continuingChestCircle], ["THANK YOU", approachMouthThenDepart],
+  ] as const)("confirms %s using stroke boundaries instead of whole-window endpoints", async (sign, fixture) => {
+    await feed(fixture());
+    expect(confirmations().map(result => result.gloss)).toEqual([sign]);
+  });
+  it("does not speak a word from pose jitter or rigid body travel", async () => {
+    await feed(apparentCircleFromBodyMotion(false));
+    expect(confirmations()).toHaveLength(0);
+    await worker.onmessage({ data: { type: "reset" } });
+    await feed(apparentCircleFromBodyMotion(true));
+    expect(confirmations()).toHaveLength(0);
+  });
+  it("does not call an outward mouth stroke PLEASE just because its wrist closes a loop", async () => {
+    mocks.model.mockResolvedValue({ label: "PLEASE", text: "Please", confidence: 0.99, margin: 0.9 });
+    const frames = mouthDepartureWithReturningWrist();
+    const last = frames.at(-1)!;
+    await feed([...frames, ...Array.from({ length: 8 }, (_, i) => ({
+      ...structuredClone(last), timestamp: last.timestamp + (i + 1) * 50,
+    }))]);
+    expect(confirmations()).toEqual([]);
+    expect(worker.postMessage.mock.calls.some(([message]) => message.type === "analysis"
+      && message.feedback.includes("more than one sign"))).toBe(true);
   });
   it("recognizes successive different signs after consuming the first movement", async () => {
     await feed(makeSign("NO"));

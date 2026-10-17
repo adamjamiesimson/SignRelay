@@ -83,6 +83,9 @@ function samplesFor(frames2, side) {
     const reference = bodyReference(frame, hand4);
     return reference.tracked ? [{ time: frame.timestamp, reference }] : [];
   });
+  const scales = bodySamples.map((sample) => sample.reference.scale).sort((a, b) => a - b);
+  const firstHand = frames2.flatMap((frame) => frame.hands).find((hand4) => hand4.handedness === side && validHand(hand4));
+  const pathScale = scales[Math.floor(scales.length / 2)] ?? (firstHand ? handScale(firstHand) * 4 : 1);
   for (const frame of frames2) {
     const hand4 = frame.hands.find((hand5) => hand5.handedness === side && validHand(hand5));
     if (!hand4) continue;
@@ -96,8 +99,16 @@ function samplesFor(frames2, side) {
     });
     const nose = frame.pose[0] ?? frame.face[1];
     const mouth = frame.face[3] ?? frame.pose[9] ?? nose;
+    const faceNose = frame.face[1] ?? frame.pose[0];
+    const mouthRadius = faceNose && mouth ? Math.min(distance2(faceNose, mouth) / reference.scale, 0.4) : void 0;
+    const center = [0, 5, 9, 13, 17].reduce((p, i) => ({
+      x: p.x + hand4.landmarks[i].x / 5,
+      y: p.y + hand4.landmarks[i].y / 5
+    }), { x: 0, y: 0 });
     samples.push({
       hand: hand4,
+      circlePath: { x: center.x / pathScale, y: center.y / pathScale, z: 0 },
+      mouthRadius,
       time: frame.timestamp,
       scale: reference.scale,
       palm: handScale(hand4),
@@ -132,6 +143,7 @@ function analyzeAslStarter(sequence) {
       const result = recognizeSamples(samples);
       const evidence = recognizeSamples(samples, false);
       if (evidence?.label === "PLEASE" && result?.label !== "PLEASE") incompleteLabels.add("PLEASE");
+      if (result?.label !== "THANK YOU" && ratio(samples, (sample) => sample.open >= 3) >= 0.75 && departingMouthStroke(samples)) incompleteLabels.add("THANK YOU");
       if (result) labels.add(result.label);
       if (result?.label === "YES") yes = result;
       else if (result && !preferred) preferred = result;
@@ -158,6 +170,8 @@ function recognizeSamples(samples, requireClosure = true) {
   if (opening && endGaps.every((gap) => gap < 0.8) && ratio(samples, (sample) => !extended(sample.hand, 16) && !extended(sample.hand, 20)) >= 0.8) {
     return prediction("NO", "No");
   }
+  const mouthStart = requireClosure ? departingMouthStroke(samples) : null;
+  if (mostlyOpen && mouthStart && (Math.abs(last.tip.x - mouthStart.tip.x) > 0.15 || last.palm / mouthStart.palm > 1.14)) return prediction("THANK YOU", "Thank you");
   const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
   const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
   if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12 && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth) > 0.25) {
@@ -167,7 +181,7 @@ function recognizeSamples(samples, requireClosure = true) {
   const startsNearHead = first.nose && distance2(first.tip, first.nose) < 0.8;
   if (mostlyOpen && raised && xRange > 0.25 && yRange < Math.max(0.35, xRange * 0.75) && (directionChanges(xs2, 0.025) >= 1 || startsNearHead)) return prediction("HELLO", "Hello");
   const atChest = ratio(samples, (sample) => sample.wrist.y > -0.1 && sample.wrist.y < 1.05 && Math.abs(sample.wrist.x) < 0.8) >= 0.8;
-  if (atChest && xRange > 0.1 && yRange > 0.1 && circularMotion(xs2, ys2, requireClosure)) {
+  if (atChest && xRange > 0.1 && yRange > 0.1 && !(mostlyOpen && mouthStart) && (requireClosure ? completedPalmCircle(samples) : circularMotion(xs2, ys2, false))) {
     if (mostlyOpen) return prediction("PLEASE", "Please");
     if (mostlyFist) return prediction("SORRY", "Sorry");
   }
@@ -258,6 +272,22 @@ function circularMotion(xs2, ys2, requireClosure) {
     travel += Math.abs(delta);
   }
   return Math.abs(turn) > 4.2 && Math.abs(turn) / Math.max(travel, 0.01) > 0.8;
+}
+function departingMouthStroke(samples) {
+  const near = samples.filter((sample) => sample.open >= 3 && sample.mouth && sample.mouthRadius && distance2(sample.tip, sample.mouth) <= sample.mouthRadius);
+  if (near.length < 2) return null;
+  const origin = near.reduce((best, sample) => distance2(sample.tip, sample.mouth) < distance2(best.tip, best.mouth) ? sample : best);
+  const last = samples.at(-1);
+  return last.mouth && last.time - origin.time >= 160 && last.tip.y - origin.tip.y > 0.12 && distance2(last.tip, last.mouth) - distance2(origin.tip, origin.mouth) > 0.25 ? origin : null;
+}
+function completedPalmCircle(samples) {
+  for (let start = 0; start <= samples.length - 5; start++) {
+    if (samples.at(-1).time - samples[start].time < 160) break;
+    const loop = samples.slice(start);
+    const xs2 = loop.map((sample) => sample.circlePath.x), ys2 = loop.map((sample) => sample.circlePath.y);
+    if (span(xs2) > 0.1 && span(ys2) > 0.1 && circularMotion(xs2, ys2, true)) return true;
+  }
+  return false;
 }
 
 // lib/personalized-recognition.ts

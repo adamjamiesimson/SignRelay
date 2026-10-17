@@ -1,5 +1,7 @@
 # MediaPipe alignment and dependency investigation, 16 October 2026
 
+**17 October follow-up:** [ASL stroke repair and recall guard](asl-stroke-repair-2026-10-17.md) restores the missed PLEASE and changes the historical THANK YOU → PLEASE error to an abstention. The alignment results below describe the earlier worker. Release remains blocked.
+
 **Decision: adopt the matching MediaPipe 0.10.35 JS/WASM pair in the draft branch. Release remains blocked.** The eleven existing development recordings retain exactly the same accepted words. This resolves runtime-version inconsistency, not the remaining ASL confusion or the missing accuracy evidence.
 
 ## Runtime change

@@ -76,4 +76,10 @@ describe("historical real-video pilot evidence gate", () => {
     const other = rows(); other[0].input_mirrored = true;
     expect(() => verifyPilot(manifest, rows(), other)).toThrow("input_mirrored");
   });
+  it("rejects changed source-frame counts while allowing changed hand tracking", () => {
+    const other = rows(); other[0].frames = 29;
+    expect(() => verifyPilot(manifest, rows(), other)).toThrow("Pair changed frames");
+    other[0].frames = 30; other[0].hand_frames = 11;
+    expect(() => verifyPilot(manifest, rows(), other)).not.toThrow();
+  });
 });

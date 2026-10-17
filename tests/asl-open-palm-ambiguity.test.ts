@@ -27,7 +27,7 @@ describe("conflicting open-palm evidence", () => {
   it("retains incomplete PLEASE evidence when completion removes its permission to emit", () => {
     const analysis = analyzeAslStarter(incompleteArcWithOutwardSuffix().slice(0, 23));
     expect(analysis.labels).toEqual(["THANK YOU"]);
-    expect(analysis.incompleteLabels).toEqual(["PLEASE"]);
+    expect(analysis.incompleteLabels).toContain("PLEASE");
     expect(analysis.ambiguousOpenPalm).toBe(true);
     expect(analysis.prediction).toBeNull();
   });
