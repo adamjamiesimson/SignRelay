@@ -3,7 +3,7 @@
 import { spawn } from "node:child_process";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { startChrome } from "./diagnostics/chrome-session.mjs";
 import { summarizeTrials } from "./evaluation-metrics.mjs";
 import { validateManifest, aslVocabulary, fingerprint } from "./evaluation-manifest.mjs";
@@ -11,6 +11,8 @@ import { execFileSync } from "node:child_process";
 import { TASKS_VERSION } from "../lib/vision-runtime.mjs";
 const [executable, input, output, ...flags] = process.argv.slice(2);
 if (!executable || !input || !output) throw new Error("Supply Chrome executable, manifest JSON and output JSONL");
+const captureFrames = flags.includes("--capture-frames");
+if (captureFrames && flags.includes("--final-holdout")) throw new Error("Development frame tracing cannot be combined with a final holdout run");
 const manifestBytes = await readFile(input);
 const manifest = JSON.parse(manifestBytes);
 if (flags.includes("--reviewed-pilot")) for (const row of manifest) row.evaluation_split = "development";
@@ -29,6 +31,14 @@ for (const item of registry.manifests) {
 const vocabulary = aslVocabulary();
 if (registry.vocabulary_sha256 !== vocabulary.sha256) throw new Error("Installed ASL vocabulary changed after cohort freeze");
 validateManifest(manifest, { related, vocabulary, allowHoldout: flags.includes("--final-holdout") });
+// Explicit diagnostics stay outside the shareable derived results and never
+// leave the local ignored directory. Normal evaluation retains no landmarks.
+const traceDir = captureFrames ? path.join("evaluation/raw/recognition-traces", randomUUID()) : null;
+if (traceDir) {
+  execFileSync("git", ["check-ignore", "--quiet", `${traceDir}/trace.json`]);
+  await mkdir(traceDir, { recursive: true });
+  console.log(`Local development traces: ${traceDir}`);
+}
 const installedTasksJs = JSON.parse(await readFile("node_modules/@mediapipe/tasks-vision/package.json", "utf8")).version;
 const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 if (flags.includes("--final-holdout")) {
@@ -75,6 +85,7 @@ try {
       document.getElementById('independent').checked = true;
       document.getElementById('mirror-input').checked = ${flags.includes("--mirrored")};
     })()`);
+    if (captureFrames) await browser.evaluate("window.__qaTrace = []; window.signrelayLab.setTraceObserver(event => window.__qaTrace.push(event))");
     const document = await browser.send("DOM.getDocument");
     const { nodeId } = await browser.send("DOM.querySelector", { nodeId: document.root.nodeId, selector: "#file" });
     await browser.send("DOM.setFileInputFiles", { nodeId, files: [path.resolve(fixture.file)] });
@@ -87,6 +98,10 @@ try {
         accepted: false, accepted_glosses: [], frames: 0, hand_frames: 0, analyses: 0,
         status: "error", errors: [String(error)], evaluation_split: fields.split };
     }
+    if (traceDir) await writeFile(path.join(traceDir, `${fixture.recording_sha256}.json`), JSON.stringify({
+      trial_id: fixture.trial_id, recording_sha256: fixture.recording_sha256, row,
+      events: await browser.evaluate("window.__qaTrace"),
+    }), { flag: "wx" });
     if (row.status === "complete" && (row.tasks_js_version !== installedTasksJs
       || row.tasks_wasm_version !== TASKS_VERSION)) throw new Error("Diagnostic does not report the installed JS and pinned WASM versions; rebuild the lab");
     if (fixture.recording_sha256 && fixture.recording_sha256 !== row.recording_sha256) throw new Error("Recording fingerprint differs from frozen manifest");

@@ -62,6 +62,16 @@ describe("historical real-video pilot evidence gate", () => {
     const changed = rows(); changed[0].tasks_js_version = "other-runtime";
     expect(() => verifyPilot(manifest, rows(), changed)).toThrow("tasks_js_version");
   });
+  it("rejects a lost positive even if another trial replaces it in the aggregate", () => {
+    const base = rows(), candidate = rows();
+    base[0].accepted = true; base[0].predicted_gloss = base[0].expected_gloss;
+    base[0].accepted_glosses = [base[0].expected_gloss];
+    candidate[1].accepted = true; candidate[1].predicted_gloss = candidate[1].expected_gloss;
+    candidate[1].accepted_glosses = [candidate[1].expected_gloss];
+    expect(() => verifyPilot(manifest, base, candidate)).toThrow(/Lost correct recognition.*hello-gtsignstudy4a.8031.*HELLO/);
+    candidate[0] = { ...base[0] };
+    expect(() => verifyPilot(manifest, base, candidate)).not.toThrow();
+  });
   it("rejects changes in video orientation between paired runs", () => {
     const other = rows(); other[0].input_mirrored = true;
     expect(() => verifyPilot(manifest, rows(), other)).toThrow("input_mirrored");

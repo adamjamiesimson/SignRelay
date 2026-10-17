@@ -43,6 +43,9 @@ export function verifyPilot(manifest, base, candidate) {
     const oldWrong = new Set(row.accepted_glosses.filter(gloss => gloss !== row.expected_gloss));
     const newWrong = other.accepted_glosses.filter(gloss => gloss !== other.expected_gloss && !oldWrong.has(gloss));
     if (newWrong.length) throw new Error(`New wrong acceptance on ${row.trial_id}: ${row.expected_gloss} -> ${newWrong.join(", ")}`);
+    const wasCorrect = row.accepted_glosses.length > 0 && row.accepted_glosses.every(gloss => gloss === row.expected_gloss);
+    const isCorrect = other.accepted_glosses.length > 0 && other.accepted_glosses.every(gloss => gloss === other.expected_gloss);
+    if (wasCorrect && !isCorrect) throw new Error(`Lost correct recognition on ${row.trial_id}: ${row.expected_gloss}`);
   }
   return { diagnostic_only: true, new_holdout: false,
     note: "Six previously inspected, publisher-labelled isolated signs; not fresh or independent new evidence. No idle/OOV negative trials.",

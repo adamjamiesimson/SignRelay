@@ -3,7 +3,7 @@ import { RecognitionSession } from "../../lib/recognition-session";
 import { diagnoseHandedness } from "../../lib/handedness-diagnostic";
 import { summarizeTrials } from "../evaluation-metrics.mjs";
 import type { LanguageId } from "../../lib/model-adapters";
-import type { VisionFrame, WorkerConfirmation } from "../../lib/vision-types";
+import type { VisionFrame, WorkerConfirmation, WorkerMessage } from "../../lib/vision-types";
 import { TASKS_VERSION as TASKS_WASM_VERSION } from "../../lib/vision-runtime.mjs";
 
 declare const __TASKS_JS_VERSION__: string;
@@ -18,10 +18,14 @@ const rows: Record<string, unknown>[] = [];
 let engine: VisionEngine | null = null, stream: MediaStream | null = null, live = false, busy = false;
 let trial: ReturnType<typeof startTrial> | null = null;
 let sourceUrl: string | null = null;
+// Opt-in local debugging only. No trace is retained by the default lab or app.
+type TraceEvent = { type: "frame"; frame: VisionFrame } | { type: "worker"; message: WorkerMessage };
+let traceObserver: ((event: TraceEvent) => void) | undefined;
 const params = new URLSearchParams(location.search);
 const workerUrl = params.get("baseline") === "1" ? "/workers/baseline-recognition.worker.js"
   : params.get("pr28") === "1" ? "/workers/pr28-recognition.worker.js" : "/workers/recognition.worker.js";
 const session = new RecognitionSession(() => new Worker(workerUrl, { type: "module" }), message => {
+  traceObserver?.({ type: "worker", message: structuredClone(message) });
   if (!trial) return;
   if (message.type === "confirmed") trial.confirmations.push(message);
   if (message.type === "analysis") {
@@ -52,6 +56,7 @@ function startTrial() {
     sources: {} as Record<string, number>, handedness: {} as Record<string, number>, errors: [] as string[], started: performance.now() };
 }
 function observe(frame: VisionFrame) {
+  traceObserver?.({ type: "frame", frame: structuredClone(frame) });
   el("hands").textContent = JSON.stringify({ tasks_version: TASKS_WASM_VERSION, tasks_js_version: __TASKS_JS_VERSION__, tasks_wasm_version: TASKS_WASM_VERSION,
     input_mirrored: checked("mirror-input"), preview_mirrored: checked("mirror-preview"),
     hands: diagnoseHandedness(frame, value("physical-hand") as "Left" | "Right" | "Unknown") }, null, 2);
@@ -152,4 +157,5 @@ el("export").onclick = () => {
   } catch (error) { report(error); }
 };
 window.addEventListener("pagehide", () => { void stop(); session.terminate(); });
-(window as Window & { signrelayLab?: unknown }).signrelayLab = { evaluateFile, rows, stop };
+(window as Window & { signrelayLab?: unknown }).signrelayLab = { evaluateFile, rows, stop,
+  setTraceObserver: (observer: typeof traceObserver) => { traceObserver = observer; } };
