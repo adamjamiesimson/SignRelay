@@ -96,6 +96,7 @@ async function finishTrial(extra: Record<string, unknown> = {}) {
   return row;
 }
 async function stop() {
+  if (live && trial) trial.errors.push("Camera trial interrupted before its five-second window completed");
   fileController?.abort(new Error("Diagnostic stopped")); fileController = null;
   live = false; stream?.getTracks().forEach(track => track.stop()); stream = null;
   video.pause(); video.srcObject = null; video.removeAttribute("src"); video.load();
@@ -103,7 +104,8 @@ async function stop() {
   if (sourceUrl) URL.revokeObjectURL(sourceUrl); sourceUrl = null;
 }
 async function camera() {
-  if (busy) return; await stop(); busy = true;
+  if (busy || trial) throw new Error("Finish the active diagnostic trial before starting the camera");
+  await stop(); busy = true;
   try {
     engine = await VisionEngine.create(status);
     stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
@@ -114,7 +116,7 @@ async function camera() {
   } catch (error) { await stop(); throw error; } finally { busy = false; }
 }
 async function evaluateFile(file: File) {
-  if (busy) throw new Error("A diagnostic is already running");
+  if (busy || trial) throw new Error("A diagnostic trial is already running");
   metadata(); busy = true; await stop();
   const controller = new AbortController(); fileController = controller;
   const sourceMetadata: Record<string, unknown> = { capture_mode: "unique-decoded-source-frames", frame_stepper: "seek-and-presentation-v1" };

@@ -6,12 +6,12 @@
   "worker_sha256": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
   "source_sha256": {
     ".github/workflows/asl-video-pilot.yml": "31f1ae436aed40a7603535c38fdcdf1cfaa02dbf75ef024e2353717c4ccac8e4",
-    "scripts/diagnostics/recognition-lab.ts": "90d6a1c9704bb6c99ac91f073aceacff0be9733be4d9cbdc4bc81522e9abc333",
+    "scripts/diagnostics/recognition-lab.ts": "4ac85f76cdd8e01337064cd8335bdcecbe2a7ff14dfef4aa79bd9d34e4762cf7",
     "scripts/diagnostics/video-frame-step.ts": "8f91ea2b86bd398ca956c25b20a49f247f6b0e4c439b9af54355cfc5b7e3e564",
     "scripts/compare-recognition-evaluation.mjs": "19cb39f31a0a87244716b7d81a3573a633dd4b35ce7c646c682374029f8e636e",
     "scripts/verify-video-pilot.mjs": "d74c9ae949c888828ab244683651701a82c07f80a50552134e13b261c87ef523",
     "scripts/verify-vision-runtime-change.mjs": "b52697bd704f353e3c8571fbddaa231455a2e1aa26909ec53884ec682f6ae815",
-    "tests/evaluation-failure-browser-smoke.mjs": "4951c7ad31f5a9c3bf6a81b43bc715de04e1331007256a6a56b3b7e3a644daa6",
+    "tests/evaluation-failure-browser-smoke.mjs": "bf3c0b688a498854d1fb55423dcc95a0c6709bb0e0fcdeccda42b6a04be40d74",
     "tests/real-video-pilot.test.ts": "94935baffe3a43d8354aecf928212892a2bccedab0aa1ce9e42ea4eec89bb6a5",
     "tests/vision-runtime-change.test.ts": "914b34495304919bae6ed44d6e494e0e2c62aadb2f6c21a622004938e3872344",
     "tests/video-frame-browser-smoke.mjs": "ae932ce37a9f7bc87ba1298b6846e425c01015b1a5088db1b86534609836c472",
@@ -26,7 +26,7 @@
     "development-harness-comparison.json": "897f701336f973c0502808d72e915b4dcaaadce23b006607fc265ce5876a06ff",
     "development.jsonl": "78e31825949605b4a5428ea9bfc250f87dc4a0b9d3bd5d59ac81b78b0adb96d6",
     "development.jsonl.summary.json": "a0b1520961cb0207f15beca1d3d041aacdccf6bc19dff15cce3347f71b2e16ca",
-    "forced-failure-browser.json": "d381b55159e90fa5940366fb05374f5cfce502c0b0f23b9c5c93f505c7887cd1",
+    "forced-failure-browser.json": "3925ff2e9b0922f861f7e4ceffe2724e79561b9a717f86c9c142d66d766d1da2",
     "generated-browser-controls.json": "aeb9c449dc52d89dffdcf24c261df52c47cc3aa35c2b8af718d01ada98328d1d",
     "previous-stepper-ordering.json": "b2c5d7542fbff32af202cca444a9a3c904af69d41c2df94cdcc666b580739607"
   },
@@ -41,7 +41,8 @@
     "secret_history_scan": "hosted Core CI required; local partial-clone history scan still in progress",
     "generated_frame_controls": "passed",
     "real_NO_forced_failure_control": "passed",
-    "final_development_replay": "5 complete, same 194 source / 49 hand-visible frames; 2 correct / 0 wrong / 3 abstain"
+    "final_development_replay": "5 complete, same 194 source / 49 hand-visible frames; 2 correct / 0 wrong / 3 abstain",
+    "early_camera_stop_and_overlapping_trial_control": "passed; synthetic camera only"
   },
   "matching_model_fingerprints": 56,
   "runtime": {
@@ -83,5 +84,6 @@
     "video_run": 39059548133,
     "outcome": "failed before replay: ffmpeg missing",
     "repair": "install ffmpeg explicitly for generated-video controls"
-  }
+  },
+  "camera_control_source_parent": "dad5e2710400b2b533d8c923a0859dc780b2d996"
 }

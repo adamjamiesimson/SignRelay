@@ -56,8 +56,42 @@ try {
   assert(row.frames > 0 && row.frames < 51); assert(row.analyses > 0);
   assert(row.accepted_glosses.includes("NO")); assert.equal(row.status, "error");
   const [metrics] = summarizeTrials([row]); assert.equal(metrics.correct, 0); assert.equal(metrics.signed_errors, 1);
+  await browser.send("Page.navigate", { url: `${origin}/__qa/recognition-lab.html` });
+  for (let i = 0; i < 100; i++) {
+    if (await browser.evaluate("!!window.signrelayLab")) break;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  const camera = await browser.evaluate(`(async () => {
+    document.getElementById('provenance').value = 'synthetic-camera interruption control';
+    document.getElementById('camera').click();
+    for (let i = 0; i < 300; i++) {
+      if (document.getElementById('status').textContent.startsWith('Camera running')) break;
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    document.getElementById('trial').click();
+    await new Promise(resolve => setTimeout(resolve, 250));
+    let overlappingFile;
+    try { await window.signrelayLab.evaluateFile(new File([], 'unused.webm')); }
+    catch(error) { overlappingFile=String(error); }
+    document.getElementById('camera').click();
+    await new Promise(resolve => setTimeout(resolve, 50));
+    const overlappingCamera = document.getElementById('status').textContent;
+    document.getElementById('stop').click();
+    for (let i = 0; i < 150; i++) {
+      if (window.signrelayLab.rows.length) break;
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    return {row:window.signrelayLab.rows.at(-1), overlappingFile, overlappingCamera};
+  })()`);
+  assert.match(camera.overlappingFile, /trial is already running/);
+  assert.match(camera.overlappingCamera, /Finish the active diagnostic trial/);
+  assert.equal(camera.row.capture_mode, "physical-camera"); assert.equal(camera.row.status, "error");
+  assert(camera.row.frames > 0); assert(camera.row.errors.some(error => error.includes("Camera trial interrupted")));
+  const [cameraMetrics] = summarizeTrials([camera.row]); assert.equal(cameraMetrics.correct, 0); assert.equal(cameraMetrics.signed_errors, 1);
   console.log(JSON.stringify({ passed: true, forced_failure: true, technical_control_only: true,
     recording_sha256: fixture.recording_sha256, partial_frames: row.frames, partial_hand_frames: row.hand_frames,
     partial_analyses: row.analyses, retained_glosses: row.accepted_glosses, status: row.status,
-    successful_signed_trials: metrics.correct, errors: metrics.signed_errors, no_raw_landmarks_retained: true }));
+    successful_signed_trials: metrics.correct, errors: metrics.signed_errors, no_raw_landmarks_retained: true,
+    camera_stop_control: { synthetic_camera_only: true, frames: camera.row.frames, status: camera.row.status,
+      signed_errors: cameraMetrics.signed_errors, successful_signed_trials: cameraMetrics.correct, overlapping_trials_rejected: true } }));
 } finally { await browser?.close(); server.kill(); }

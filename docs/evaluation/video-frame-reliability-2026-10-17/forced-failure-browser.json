@@ -12,5 +12,13 @@
   "status": "error",
   "successful_signed_trials": 0,
   "errors": 1,
-  "no_raw_landmarks_retained": true
+  "no_raw_landmarks_retained": true,
+  "camera_stop_control": {
+    "synthetic_camera_only": true,
+    "frames": 4,
+    "status": "error",
+    "signed_errors": 1,
+    "successful_signed_trials": 0,
+    "overlapping_trials_rejected": true
+  }
 }
