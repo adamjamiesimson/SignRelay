@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   capturePlan, captureTrial, captureTypes, slotLabels, takeCount, videoExtension,
   type CaptureType,
@@ -186,7 +187,7 @@ export default function FieldTestPage() {
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <nav className={styles.nav}><a href="/">← SignRelay</a><span>Private research capture · development only</span></nav>
+        <nav className={styles.nav}><Link href="/">← SignRelay</Link><span>Private research capture · development only</span></nav>
         <h1>Capture real signing evidence.</h1>
         <p className={styles.lead}>Record consenting participants locally for the ASL development set. Nothing here automatically uploads, validates a gloss, establishes fluency or enters the final holdout.</p>
         <div className={styles.banner} role="note"><strong>Privacy first.</strong> Record in a secure place. Download and move clips to your private, Git-ignored evaluation directory. Never submit participant video, faces, consent records or landmarks to a public repository. Obtain guardian permission when required.</div>
