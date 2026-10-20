@@ -35,12 +35,15 @@ export default function FieldTestPage() {
   const [oovGloss, setOovGloss] = useState("");
   const [consent, setConsent] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
+  const [cameraPending, setCameraPending] = useState(false);
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [clip, setClip] = useState<Clip | null>(null);
   const [notice, setNotice] = useState("Select a development slot and start the camera.");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const cameraGenerationRef = useRef(0);
+  const cameraPendingRef = useRef(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const invalidCaptureRef = useRef(false);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -56,6 +59,10 @@ export default function FieldTestPage() {
   };
 
   const releaseCamera = () => {
+    cameraGenerationRef.current++;
+    cameraPendingRef.current = false;
+    setCameraPending(false);
+    invalidCaptureRef.current = true;
     resetTimers();
     if (recorderRef.current?.state === "recording") recorderRef.current.stop();
     streamRef.current?.getTracks().forEach(track => track.stop());
@@ -65,6 +72,7 @@ export default function FieldTestPage() {
   };
 
   useEffect(() => () => {
+    cameraGenerationRef.current++;
     if (countdownRef.current) clearInterval(countdownRef.current);
     if (cutoffRef.current) clearTimeout(cutoffRef.current);
     if (recorderRef.current?.state === "recording") {
@@ -75,28 +83,42 @@ export default function FieldTestPage() {
   }, []);
 
   async function startCamera() {
+    if (cameraPendingRef.current || streamRef.current) return;
     if (!consent) { setNotice("Confirm appropriate participant consent before opening the camera."); return; }
     if (!navigator.mediaDevices?.getUserMedia) { setNotice("Camera capture requires HTTPS or localhost and a compatible browser."); return; }
+    const generation = ++cameraGenerationRef.current;
+    cameraPendingRef.current = true;
+    setCameraPending(true);
+    setNotice("Waiting for camera permission…");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
-      if (!videoRef.current) { stream.getTracks().forEach(track => track.stop()); return; }
+      if (generation !== cameraGenerationRef.current || !videoRef.current) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
       streamRef.current?.getTracks().forEach(track => track.stop());
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
+      if (generation !== cameraGenerationRef.current) { stream.getTracks().forEach(track => track.stop()); return; }
       for (const track of stream.getVideoTracks()) track.addEventListener("ended", () => {
-        invalidCaptureRef.current = true;
-        if (recorderRef.current?.state === "recording") recorderRef.current.stop();
-        setCameraOn(false);
+        if (generation !== cameraGenerationRef.current) return;
+        releaseCamera();
         setNotice("Camera disconnected. Interrupted recordings will be discarded.");
       }, { once: true });
       setCameraOn(true);
       setNotice("Camera ready. Record one original take without mirroring, cutting or re-encoding it.");
     } catch (error) {
+      if (generation !== cameraGenerationRef.current) return;
       setCameraOn(false);
       streamRef.current?.getTracks().forEach(track => track.stop());
       streamRef.current = null;
       setNotice(error instanceof Error ? "Camera unavailable: " + error.message : "Camera could not start.");
+    } finally {
+      if (generation === cameraGenerationRef.current) {
+        cameraPendingRef.current = false;
+        setCameraPending(false);
+      }
     }
   }
 
@@ -234,7 +256,14 @@ export default function FieldTestPage() {
           </div>
           <p className={styles.slot}><strong>Slot:</strong> {trial.trial_id} · {trial.instruction}</p>
           <label className={styles.consent}>
-            <input type="checkbox" checked={consent} disabled={recording} onChange={e => setConsent(e.target.checked)} />
+            <input type="checkbox" checked={consent} onChange={e => {
+              setConsent(e.target.checked);
+              if (!e.target.checked) {
+                releaseCamera();
+                setClip(null);
+                setNotice("Consent acknowledgement withdrawn. Camera closed; any partial recording discarded.");
+              }
+            }} />
             <span>I have obtained appropriate informed consent for this research recording, including guardian consent if required. The actual consent reference must be documented privately.</span>
           </label>
         </section>
@@ -247,10 +276,10 @@ export default function FieldTestPage() {
             {recording && <span className={styles.rec}>● REC {elapsed}s / 30s</span>}
           </div>
           <div className={styles.actions}>
-            <button type="button" disabled={recording || cameraOn || !consent} onClick={() => void startCamera()}>Start camera</button>
+            <button type="button" disabled={recording || cameraOn || cameraPending || !consent} onClick={() => void startCamera()}>Start camera</button>
             <button type="button" disabled={recording || !cameraOn || !consent} onClick={startRecording}>Record this take</button>
             <button type="button" disabled={!recording} onClick={stopRecording}>Stop recording</button>
-            <button type="button" disabled={!cameraOn || recording} onClick={releaseCamera}>Close camera</button>
+            <button type="button" disabled={recording || (!cameraOn && !cameraPending)} onClick={releaseCamera}>Close camera</button>
           </div>
           <p role="status" className={styles.notice}>{notice}</p>
         </section>
