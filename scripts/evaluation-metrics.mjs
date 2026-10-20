@@ -1,3 +1,5 @@
+import { signerKey } from "./evaluation-manifest.mjs";
+
 const gloss = value => typeof value === "string" ? value.normalize("NFC").trim().replace(/\s+/g, " ").toUpperCase() : null;
 const failed = row => (row.status !== undefined && row.status !== "complete") || (Array.isArray(row.errors) && row.errors.length > 0);
 
@@ -31,9 +33,10 @@ export function validateTrials(rows) {
       hashes.add(row.recording_sha256);
     }
     if (split !== "unspecified") {
-      const previous = participantSplits.get(row.participant_id);
+      const participant = signerKey(row.participant_id);
+      const previous = participantSplits.get(participant);
       if (previous && previous !== split) fail("participant appears in development and held_out splits");
-      participantSplits.set(row.participant_id, split);
+      participantSplits.set(participant, split);
     }
     return { ...row, expected_gloss: expected, accepted_glosses: predictions.map(gloss), evaluation_split: split };
   });
@@ -108,7 +111,7 @@ export function summarizeTrials(input) {
       incorrect_acceptance_rate: signed.length ? wrong.length / signed.length : null,
       error_rate: trials.length ? trials.filter(failed).length / trials.length : null,
       unique_recordings: trials.filter(r => r.recording_sha256).length,
-      unique_participants: new Set(trials.map(r => r.participant_id)).size,
+      unique_participants: new Set(trials.map(r => signerKey(r.participant_id))).size,
       sign_coverage: [...byGloss.keys()].sort(),
       per_sign_recall: Object.fromEntries(per_gloss.map(r => [r.gloss, r.correct / r.trials])),
       confusion_matrix, confusion_matrix_unit: "trials per distinct emitted label; multi-output/error cells may overlap",
