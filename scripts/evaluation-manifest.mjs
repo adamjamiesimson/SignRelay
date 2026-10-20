@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 const normalized = value => typeof value === "string" ? value.normalize("NFC").trim().toUpperCase().replace(/[^\p{L}\p{N}]/gu, "") : "";
-export { signerKey } from "./signer-identity.mjs";
+import { signerKey } from "./signer-identity.mjs";
+export { signerKey };
 export const fingerprint = bytes => createHash("sha256").update(bytes).digest("hex");
 export function aslVocabulary() {
   // Actual installed automatic path; no personal templates are loaded by the lab.
