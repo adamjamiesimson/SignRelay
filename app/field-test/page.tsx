@@ -96,7 +96,7 @@ export default function FieldTestPage() {
         stream.getTracks().forEach(track => track.stop());
         return;
       }
-      streamRef.current?.getTracks().forEach(track => track.stop());
+      // An existing active stream is rejected before the permission request.
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
