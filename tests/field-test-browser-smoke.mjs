@@ -22,13 +22,13 @@ try {
       outgoing.push(message.params.request.method + " " + message.params.request.url);
   });
   const injection = [
-    "window.__qaDownloads=[];window.__qaBlobs=new Map();window.__qaTracks=[];",
+    "window.__qaDownloads=[];window.__qaBlobs=new Map();window.__qaTracks=[];window.__qaDelayPermission=false;window.__qaReleasePermission=null;",
     "const create=URL.createObjectURL.bind(URL);",
     "URL.createObjectURL=function(blob){const url=create(blob);window.__qaBlobs.set(url,blob);return url;};",
     "const nativeClick=HTMLAnchorElement.prototype.click;",
     "HTMLAnchorElement.prototype.click=function(){if(this.download){window.__qaDownloads.push({name:this.download,url:this.href});return;}return nativeClick.call(this);};",
     "const get=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);",
-    "navigator.mediaDevices.getUserMedia=async options=>{const stream=await get(options);window.__qaTracks.push(...stream.getTracks());return stream;};",
+    "navigator.mediaDevices.getUserMedia=async options=>{if(window.__qaDelayPermission)await new Promise(resolve=>window.__qaReleasePermission=resolve);const stream=await get(options);window.__qaTracks.push(...stream.getTracks());return stream;};",
   ].join("");
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: "(()=>{" + injection + "})()" });
   await browser.send("Page.navigate", { url: origin + "/field-test/" });
@@ -87,10 +87,21 @@ try {
   await until(() => evaluate("window.__qaTracks.at(-1)?.readyState==='ended'"), "Camera track not stopped when consent withdrawn");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Start camera')?.disabled"), true);
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Download original recording')?.disabled"), true);
+  // Hold permission in the browser until after the consent acknowledgement is revoked.
+  await evaluate("document.querySelector('input[type=checkbox]').click()");
+  await until(() => evaluate("![...document.querySelectorAll('button')].find(b=>b.textContent==='Start camera')?.disabled"), "Consent could not be renewed");
+  await evaluate("window.__qaDelayPermission=true");
+  await click("Start camera");
+  await until(async () => (await status())?.includes("Waiting for camera permission"), "Deferred grant never requested");
+  await evaluate("document.querySelector('input[type=checkbox]').click()");
+  await until(async () => (await status())?.includes("Consent acknowledgement withdrawn"), "Pending request not cancelled");
+  await evaluate("window.__qaReleasePermission()");
+  await until(() => evaluate("window.__qaTracks.at(-1)?.readyState==='ended'"), "Late camera permission leaked a track");
+  assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Start camera')?.disabled"), true);
   assert.deepEqual(outgoing, [], "Camera data must not be POSTed");
   console.log(JSON.stringify({passed:true,synthetic_only:true,physical_device_tested:false,
     local_downloads:files.map(f=>({name:f.name,mime:f.mime,bytes:f.size})),
-    metadata_pending_review:true,interrupted_take_rejected:true,consent_withdrawal_closes_camera:true,tracks_released:true,
+    metadata_pending_review:true,interrupted_take_rejected:true,consent_withdrawal_closes_camera:true,late_permission_released:true,tracks_released:true,
     zero_upload_network_requests:true,mobile_390px:true}));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors, status: await browser.evaluate("document.querySelector('[role=status]')?.textContent").catch(() => null) }));
