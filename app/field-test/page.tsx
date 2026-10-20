@@ -41,6 +41,7 @@ export default function FieldTestPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const invalidCaptureRef = useRef(false);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cutoffRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -83,8 +84,10 @@ export default function FieldTestPage() {
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
       for (const track of stream.getVideoTracks()) track.addEventListener("ended", () => {
+        invalidCaptureRef.current = true;
+        if (recorderRef.current?.state === "recording") recorderRef.current.stop();
         setCameraOn(false);
-        setNotice("Camera disconnected. Discard any interrupted trial and restart.");
+        setNotice("Camera disconnected. Interrupted recordings will be discarded.");
       }, { once: true });
       setCameraOn(true);
       setNotice("Camera ready. Record one original take without mirroring, cutting or re-encoding it.");
@@ -114,21 +117,23 @@ export default function FieldTestPage() {
     if (recorderRef.current?.state === "recording") return;
     const currentTrial = captureTrial(participant, kind, slot, take);
     const chosenMime = MIME_OPTIONS.find(mime => MediaRecorder.isTypeSupported(mime));
+    if (!chosenMime) { setNotice("This browser does not support tested WebM/MP4 recording. Use Chrome or a compatible recorder."); return; }
+    invalidCaptureRef.current = false;
     const chunks: BlobPart[] = [];
     const recordedAt = new Date().toISOString();
     const capturedHand = physicalHands === "Both" ? ["Left", "Right"] : [physicalHands];
     try {
-      const recorder = new MediaRecorder(stream, { ...(chosenMime ? { mimeType: chosenMime } : {}), videoBitsPerSecond: 1_500_000 });
+      const recorder = new MediaRecorder(stream, { mimeType: chosenMime, videoBitsPerSecond: 1_500_000 });
       recorderRef.current = recorder;
       recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
-      recorder.onerror = () => { resetTimers(); setRecording(false); setNotice("Recording failed; this take cannot be used."); };
+      recorder.onerror = () => { invalidCaptureRef.current = true; resetTimers(); setRecording(false); setNotice("Recording failed; this take cannot be used."); };
       recorder.onstop = () => {
         resetTimers();
         setRecording(false);
         const blob = new Blob(chunks, { type: recorder.mimeType || chosenMime || "video/webm" });
-        if (!blob.size || blob.size > MAX_BYTES) {
+        if (invalidCaptureRef.current || !blob.size || blob.size > MAX_BYTES) {
           setClip(null);
-          setNotice("The recording is empty or exceeds 100 MB. Discard it and try again.");
+          setNotice("The capture was interrupted, empty or exceeded 100 MB. Discard and try again.");
           return;
         }
         setClip({ blob, mime: blob.type, trial: currentTrial, recordedAt,
@@ -244,7 +249,7 @@ export default function FieldTestPage() {
             <button type="button" disabled={recording || cameraOn || !consent} onClick={() => void startCamera()}>Start camera</button>
             <button type="button" disabled={recording || !cameraOn || !consent} onClick={startRecording}>Record this take</button>
             <button type="button" disabled={!recording} onClick={stopRecording}>Stop recording</button>
-            <button type="button" disabled={!cameraOn} onClick={releaseCamera}>Close camera</button>
+            <button type="button" disabled={!cameraOn || recording} onClick={releaseCamera}>Close camera</button>
           </div>
           <p role="status" className={styles.notice}>{notice}</p>
         </section>
