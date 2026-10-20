@@ -1,4 +1,4 @@
-import { signerKey } from "./evaluation-manifest.mjs";
+import { signerKey } from "./signer-identity.mjs";
 
 const gloss = value => typeof value === "string" ? value.normalize("NFC").trim().replace(/\s+/g, " ").toUpperCase() : null;
 const failed = row => (row.status !== undefined && row.status !== "complete") || (Array.isArray(row.errors) && row.errors.length > 0);
