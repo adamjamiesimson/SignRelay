@@ -61,7 +61,7 @@ export function summarizeAslTrace(trace: Trace, row: ResultRow) {
       if (result.ambiguousOpenPalm) ambiguousPrefixes++;
     }
   }
-  const handContinuity = summarizeHandContinuity(frames, frame => frame.hands.some(validHand));
+  const handContinuity = summarizeHandContinuity(frames, (frame: VisionFrame) => frame.hands.some(validHand));
   const candidateRuns = candidateContinuity(analyses, row.expected_gloss);
   const report = {
     trial_id: row.trial_id, recording_sha256: row.recording_sha256,
