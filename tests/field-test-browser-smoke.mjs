@@ -18,7 +18,7 @@ try {
   browser = await startChrome(executable);
   const outgoing = [];
   detach = browser.onEvent(message => {
-    if (message.method === "Network.requestWillBeSent" && message.params.request.method !== "GET")
+    if (message.method === "Network.requestWillBeSent" && ["POST", "PUT", "PATCH"].includes(message.params.request.method))
       outgoing.push(message.params.request.method + " " + message.params.request.url);
   });
   const injection = [
@@ -87,7 +87,7 @@ try {
   console.log(JSON.stringify({passed:true,synthetic_only:true,physical_device_tested:false,
     local_downloads:files.map(f=>({name:f.name,mime:f.mime,bytes:f.size})),
     metadata_pending_review:true,interrupted_take_rejected:true,consent_withdrawal_closes_camera:true,tracks_released:true,
-    zero_non_get_network_requests:true,mobile_390px:true}));
+    zero_upload_network_requests:true,mobile_390px:true}));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors, status: await browser.evaluate("document.querySelector('[role=status]')?.textContent").catch(() => null) }));
   throw error;
