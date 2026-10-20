@@ -80,6 +80,20 @@ describe("accuracy evidence counts failures instead of hiding them", () => {
     ]);
     expect(summary.per_gloss[0].hand_tracking).toEqual({ measured_trials: 0, frames: 0, frames_with_hands: 0 });
   });
+  it("blocks publisher aliases of the same signer from crossing development and holdout", () => {
+    expect(() => validateTrials([
+      { ...trial, participant_id: "gtsignstudy4a.8031", evaluation_split: "development" },
+      { ...trial, participant_id: "popsign-4a.8031", evaluation_split: "held_out" },
+    ])).toThrow("participant appears in development and held_out splits");
+  });
+  it("does not inflate unique-participant counts when one signer has two source aliases", () => {
+    const [summary] = summarizeTrials([
+      { ...trial, participant_id: "gtsignstudy4a.8031", evaluation_split: "development" },
+      { ...trial, participant_id: "popsign-4a.8031", evaluation_split: "development" },
+    ]);
+    expect(summary.trials).toBe(2);
+    expect(summary.unique_participants).toBe(1);
+  });
   it("separates development measurements from declared held-out measurements", () => {
     expect(summarizeTrials([trial, { ...trial, participant_id: "dev", evaluation_split: "development" }])).toHaveLength(2);
   });
