@@ -763,15 +763,15 @@ export function TranslatorExperience() {
                 <div>
                   <h2 id="transcript-title">Transcript</h2>
                 </div>
-                <div className={`recognition-state ${recognitionState}`}>
-                  <span /> {recognitionState}
+                <div className={`recognition-state ${cameraState === "active" && !recognitionUnavailable ? recognitionState : "paused"}`}>
+                  <span /> {cameraState !== "active" ? "camera off" : recognitionUnavailable ? "recognition unavailable" : recognitionState}
                 </div>
               </div>
 
               <div className="candidate-bar" aria-live="polite">
                 <div>
                   <span className="candidate-label">Current sequence</span>
-                  <strong>{candidate ? candidate : bufferSize < 10 ? "Building movement context…" : "No confident match"}</strong>
+                  <strong>{cameraState !== "active" ? "Start the camera to begin" : recognitionUnavailable ? "Recognition unavailable" : !detection.hands ? "Waiting for hands in frame" : candidate ? candidate : bufferSize < 10 ? "Building movement context…" : "No confident match"}</strong>
                 </div>
                 <div className="confidence-ring" title="Match score, not a measured probability of correct translation" style={{ "--confidence": `${Math.round(confidence * 100)}%` } as React.CSSProperties}>
                   <span aria-label={`Match score ${Math.round(confidence * 100)} out of 100`}>{Math.round(confidence * 100)}</span>
