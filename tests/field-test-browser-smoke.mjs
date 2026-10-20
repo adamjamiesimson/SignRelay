@@ -90,13 +90,14 @@ try {
   // Hold permission in the browser until after the consent acknowledgement is revoked.
   await evaluate("document.querySelector('input[type=checkbox]').click()");
   await until(() => evaluate("![...document.querySelectorAll('button')].find(b=>b.textContent==='Start camera')?.disabled"), "Consent could not be renewed");
+  const existingTrackCount = await evaluate("window.__qaTracks.length");
   await evaluate("window.__qaDelayPermission=true");
   await click("Start camera");
   await until(async () => (await status())?.includes("Waiting for camera permission"), "Deferred grant never requested");
   await evaluate("document.querySelector('input[type=checkbox]').click()");
   await until(async () => (await status())?.includes("Consent acknowledgement withdrawn"), "Pending request not cancelled");
   await evaluate("window.__qaReleasePermission()");
-  await until(() => evaluate("window.__qaTracks.at(-1)?.readyState==='ended'"), "Late camera permission leaked a track");
+  await until(() => evaluate("window.__qaTracks.length>" + existingTrackCount + " && window.__qaTracks.at(-1)?.readyState==='ended'"), "Late camera permission leaked a track");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Start camera')?.disabled"), true);
   assert.deepEqual(outgoing, [], "Camera data must not be POSTed");
   console.log(JSON.stringify({passed:true,synthetic_only:true,physical_device_tested:false,
