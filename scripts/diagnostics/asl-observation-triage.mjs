@@ -80,7 +80,8 @@ export function triageAslAbstention(report) {
     sum + (word === target ? 0 : Number(count) || 0), 0);
   const incomplete = report.abstention_prefix_probe?.incomplete_labels?.[target] ?? 0;
   const episodes = report.hand_continuity?.hand_tracking_episodes ?? null;
-  const ready = report.worker_motion_reasons?.ready ?? null;
+  const ready = report.worker_motion_reasons && Object.values(report.worker_motion_reasons).every(n => Number.isInteger(n) && n >= 0)
+    ? (report.worker_motion_reasons.ready ?? 0) : null;
   const primary = !handFrames ? "no_hands_visible"
     : handFrames < 6 ? "sparse_hand_samples"
     : !eligible ? "no_starter_window"
