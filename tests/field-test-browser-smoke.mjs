@@ -78,12 +78,15 @@ try {
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Download original recording')?.disabled"), true);
   await click("Start camera");
   await until(async () => (await status())?.includes("Camera ready"), "Recovery camera failed");
-  await click("Close camera");
-  await until(() => evaluate("window.__qaTracks.at(-1)?.readyState==='ended'"), "Camera track not stopped");
+  await evaluate("document.querySelector('input[type=checkbox]').click()");
+  await until(async () => (await status())?.includes("Consent acknowledgement withdrawn"), "Consent withdrawal not reflected");
+  await until(() => evaluate("window.__qaTracks.at(-1)?.readyState==='ended'"), "Camera track not stopped when consent withdrawn");
+  assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Start camera')?.disabled"), true);
+  assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Download original recording')?.disabled"), true);
   assert.deepEqual(outgoing, [], "Camera data must not be POSTed");
   console.log(JSON.stringify({passed:true,synthetic_only:true,physical_device_tested:false,
     local_downloads:files.map(f=>({name:f.name,mime:f.mime,bytes:f.size})),
-    metadata_pending_review:true,interrupted_take_rejected:true,tracks_released:true,
+    metadata_pending_review:true,interrupted_take_rejected:true,consent_withdrawal_closes_camera:true,tracks_released:true,
     zero_non_get_network_requests:true,mobile_390px:true}));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors, status: await browser.evaluate("document.querySelector('[role=status]')?.textContent").catch(() => null) }));
