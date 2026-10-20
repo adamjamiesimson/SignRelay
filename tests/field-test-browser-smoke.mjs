@@ -38,8 +38,12 @@ try {
   await until(() => evaluate("!!document.querySelector('input[type=checkbox]')"), "Capture UI missing");
   assert.equal(await evaluate("document.querySelector('meta[name=robots]')?.content.includes('noindex')"), true);
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Start camera')?.disabled"), true);
-  await evaluate("document.querySelector('input[type=checkbox]').click()");
-  await until(() => evaluate("![...document.querySelectorAll('button')].find(b=>b.textContent==='Start camera')?.disabled"), "Consent did not activate camera button");
+  // Static prerendered controls can exist before React attaches handlers.
+  // Re-attempt a genuine unchecked→checked transition until state changes.
+  await until(async () => {
+    await evaluate("(()=>{const box=document.querySelector('input[type=checkbox]');if(box.checked)box.click();box.click()})()");
+    return evaluate("![...document.querySelectorAll('button')].find(b=>b.textContent==='Start camera')?.disabled");
+  }, "Consent did not activate camera button after hydration");
   await click("Start camera");
   await until(async () => (await status())?.includes("Camera ready"), "Camera did not start");
   await click("Record this take");
