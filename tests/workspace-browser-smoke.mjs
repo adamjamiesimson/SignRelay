@@ -60,6 +60,11 @@ try {
   assert.equal(await evaluate("[...document.querySelectorAll('footer a')].find(a=>a.textContent==='Translate')?.getAttribute('href')"), "/#languages");
   await click("Start translating"); await until(async () => await language() === "asl", "ASL workspace missing");
   await until(() => evaluate("window.__qaCameraRequests===1"), "Automatic camera request missing");
+  assert.match(await evaluate("document.querySelector('.candidate-bar strong')?.textContent"), /Start the camera to begin/,
+    "An inactive camera must not imply recognition is collecting movement");
+  assert.match(await evaluate("document.querySelector('.recognition-state')?.textContent"), /camera off/,
+    "An inactive camera must not claim to be listening");
+
   await emit("BOOK"); await until(async () => (await transcript())?.includes("BOOK"), "Controlled word missing");
   assert.match(await evaluate("document.querySelector('.candidate-bar')?.nextElementSibling?.textContent"), /not measured translation accuracy/);
   await browser.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
