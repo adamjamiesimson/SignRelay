@@ -11,7 +11,7 @@ describe("aggregate tracking continuity, not a signed-stroke annotation", () => 
   it("reports internal hand-visibility gaps separately from leading and trailing empty frames", () => {
     const present = [false, true, true, false, false, true, false];
     const frames = present.map((hand, i) => ({ timestamp: 1000 + i * 50, hand }));
-    expect(summarizeHandContinuity(frames, f => f.hand)).toEqual({
+    expect(summarizeHandContinuity(frames, (f: { timestamp: number; hand: boolean }) => f.hand)).toEqual({
       hand_tracking_episodes: 2,
       hand_visible_frames: 3,
       hand_visible_fraction: 3 / 7,
@@ -27,7 +27,7 @@ describe("aggregate tracking continuity, not a signed-stroke annotation", () => 
   });
   it("does not make up a hand endpoint when no frames contain valid hands", () => {
     const frames = [0, 50, 100].map(timestamp => ({ timestamp, seen: false }));
-    expect(summarizeHandContinuity(frames, f => f.seen)).toMatchObject({
+    expect(summarizeHandContinuity(frames, (f: { timestamp: number; seen: boolean }) => f.seen)).toMatchObject({
       hand_tracking_episodes: 0, hand_visible_frames: 0,
       first_valid_hand_delay_ms: null, last_valid_hand_to_end_ms: null,
       leading_missing_hand_frames: 3, trailing_missing_hand_frames: 3,
