@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { analyzeAslStarter, validHand } from "../../lib/asl-starter-recognition";
 import { recentContinuousFrames } from "../../lib/frame-timing";
+import { candidateContinuity, summarizeHandContinuity, triageAslAbstention } from "./asl-observation-triage.mjs";
 import type { VisionFrame, WorkerAnalysis, WorkerMessage } from "../../lib/vision-types";
 
 type ResultRow = {
@@ -60,7 +61,9 @@ export function summarizeAslTrace(trace: Trace, row: ResultRow) {
       if (result.ambiguousOpenPalm) ambiguousPrefixes++;
     }
   }
-  return {
+  const handContinuity = summarizeHandContinuity(frames, frame => frame.hands.some(validHand));
+  const candidateRuns = candidateContinuity(analyses, row.expected_gloss);
+  const report = {
     trial_id: row.trial_id, recording_sha256: row.recording_sha256,
     worker_sha256: row.worker_sha256, source_commit: row.source_commit,
     expected_gloss: row.expected_gloss, accepted_glosses: row.accepted_glosses,
@@ -75,11 +78,14 @@ export function summarizeAslTrace(trace: Trace, row: ResultRow) {
     worker_candidates: counts(analyses.flatMap(message => message.candidate ? [message.candidate] : [])),
     worker_candidate_sources: counts(analyses.flatMap(message => message.source ? [message.source] : [])),
     worker_ambiguity_analyses: analyses.filter(message => message.feedback?.includes("more than one sign")).length,
+    hand_continuity: handContinuity,
+    candidate_continuity: candidateRuns,
     abstention_prefix_probe: row.accepted_glosses.length ? null : {
       labels: counts(proposalLabels), incomplete_labels: counts(incompleteLabels), ambiguous_prefixes: ambiguousPrefixes,
     },
-    note: "Aggregate development diagnostics. Tracking eligibility is necessary, not sufficient, for a starter match. Prefix probes are not model inference or a new accuracy result.",
+    note: "Aggregate development diagnostics. Missing-hand runs may include normal rests/occlusion and do not establish which part of a sign was lost. Prefix probes are not model inference or a new accuracy result.",
   };
+  return { ...report, abstention_triage: triageAslAbstention(report) };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
