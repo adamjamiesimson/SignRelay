@@ -1,0 +1,43 @@
+name: Private ASL Capture Browser Smoke
+# Synthetic webcam checks only. No participant media, holdout, or upload.
+on:
+  pull_request:
+    branches:
+      - main
+      - 'feat/**'
+      - 'fix/**'
+      - 'sprint/**'
+    paths:
+      - 'app/field-test/**'
+      - 'lib/field-test-capture.ts'
+      - 'tests/field-test-browser-smoke.mjs'
+      - 'tests/field-test-capture.test.ts'
+      - '.github/workflows/field-test-browser.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - name: Install exact lockfile dependencies
+        run: npm ci
+      - name: Validate capture slot contracts
+        run: npx vitest run tests/field-test-capture.test.ts
+      - name: Build static site with browser capture route
+        run: npm run build:firebase
+      - name: Validate no-upload, download, metadata and interruption controls
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          node tests/field-test-browser-smoke.mjs "$chrome"
