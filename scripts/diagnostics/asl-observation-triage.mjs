@@ -63,8 +63,9 @@ const followups = {
 };
 
 export function triageAslAbstention(report) {
-  if (!report || !Array.isArray(report.accepted_glosses) || report.accepted_glosses.length)
-    return null;
+  if (!report || !Array.isArray(report.accepted_glosses))
+    throw new Error("Cannot diagnose missing accepted-word evidence");
+  if (report.accepted_glosses.length) return null;
   const handFrames = report.valid_hand_frames;
   const eligible = report.starter_tracking_eligible_endpoints;
   const totalFrames = report.frames;
