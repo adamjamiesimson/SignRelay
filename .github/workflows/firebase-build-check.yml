@@ -111,8 +111,14 @@ jobs:
           npm install --no-save axe-core@4.10.3
           node tests/a11y-axe-smoke.mjs "$(command -v google-chrome)" node_modules/axe-core/axe.min.js
 
-      - name: Audit dependencies, history and exported pages
-        run: npm run audit:security
+      # Build verification: everything audit:security checks except the strict
+      # npm advisory gate, which runs as its own job below so a passing export
+      # is not reported as one opaque failure (and the gate is not weakened).
+      - name: Secret scan, rendered export and fail-closed dependency gate
+        run: |
+          npm run audit:secrets
+          npm run test:rendered
+          npm run audit:deps
 
       - name: Preserve browser evidence
         if: always()
@@ -129,3 +135,30 @@ jobs:
           name: signrelay-firebase-out
           path: out
           retention-days: 3
+
+  # Strict zero-advisory release gate, unchanged: `npm run audit:security`
+  # against the exact export built above. It stays red while any advisory is
+  # reported (currently the reviewed dev-only braces chain); accepting that is
+  # an owner decision, not something CI configuration may waive.
+  strict-dependency-audit:
+    name: Strict dependency audit (release gate)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: signrelay-firebase-out
+          path: out
+      - name: npm audit --audit-level=moderate, secret scan and exported pages
+        run: npm run audit:security

@@ -48,3 +48,22 @@ describe("fail-closed dependency gate", () => {
     expect(result.stale).toHaveLength(1);
   });
 });
+
+describe("reviewed exceptions cannot be widened", () => {
+  const base = JSON.parse(readFileSync("docs/security/dependency-exceptions.json", "utf8"));
+  const withException = (patch: object) => ({ ...base, exceptions: [{ ...base.exceptions[0], ...patch }] });
+  it.each([
+    [{ scope: "production" }, "scoped to development"],
+    [{ reason: "" }, "lacks reason"],
+    [{ expires: "someday" }, "expired"],
+    [{ advisory: "GHSA-xxxx-xxxx-xxxx" }, "Unreviewed development advisory"],
+  ])("fails closed for a malformed or unapproved exception %#", (patch, message) => {
+    const result = evaluateAudit({ full: braces, production: clean, exceptions: withException(patch), today: "2026-10-21" });
+    expect(result.ok).toBe(false);
+    expect(result.failures.join("\n")).toContain(message);
+  });
+  it("the committed exception expires within the reviewed window", () => {
+    expect(base.exceptions).toHaveLength(1);
+    expect(base.exceptions[0].expires <= "2026-11-30").toBe(true);
+  });
+});

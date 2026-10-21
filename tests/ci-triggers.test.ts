@@ -22,3 +22,23 @@ describe("stacked pull requests receive checks", () => {
       "lib/asl-starter-recognition.ts", "workers/recognition.worker.ts"]) expect(paths).toContain(`'${file}'`);
   });
 });
+
+describe("strict dependency audit stays a release gate", () => {
+  const firebase = workflow("firebase-build-check.yml");
+  it("runs the unchanged audit:security script in its own job against the built export", () => {
+    const job = firebase.slice(firebase.indexOf("  strict-dependency-audit:"));
+    expect(job).toContain("needs: build");
+    expect(job).toContain("run: npm run audit:security");
+    expect(job).toContain("name: signrelay-firebase-out");
+    expect(job).not.toMatch(/continue-on-error|\|\| true/);
+  });
+  it("never lets audit:security become optional or silently skipped", () => {
+    expect(firebase).not.toMatch(/continue-on-error/);
+    const pkg = JSON.parse(readFileSync("package.json", "utf8"));
+    expect(pkg.scripts["audit:security"]).toBe("npm audit --audit-level=moderate && npm run audit:secrets && npm run test:rendered");
+  });
+  it("still runs the fail-closed dependency gate in the build job and Core CI", () => {
+    expect(firebase.slice(0, firebase.indexOf("  strict-dependency-audit:"))).toContain("npm run audit:deps");
+    expect(workflow("ci.yml")).toContain("npm run audit:deps");
+  });
+});
