@@ -23,13 +23,18 @@ async function until(check, reason, attempts = 600) {
 const loopback = url => { try { const { protocol, hostname } = new URL(url); return ["data:", "blob:", "about:", "chrome:", "devtools:"].includes(protocol) || ["127.0.0.1", "localhost", "[::1]"].includes(hostname); } catch { return false; } };
 
 // Browser-initiated services only. Page and worker requests are still captured
-// over CDP, and the deny-all proxy still refuses every outbound tunnel. Branded
-// Google Chrome (CI) otherwise contacts www.gstatic.com and update.googleapis.com.
+// over CDP, and the deny-all proxy still refuses every outbound tunnel.
 export const QUIET_CHROME = ["--disable-background-networking", "--disable-component-update", "--disable-sync", "--disable-default-apps", "--no-pings",
   "--disable-domain-reliability", "--disable-client-side-phishing-detection", "--disable-breakpad", "--no-default-browser-check",
   "--disable-features=AutofillServerCommunication,OptimizationHints,OptimizationGuideModelDownloading,MediaRouter,Translate,NetworkTimeServiceQuerying,SafeBrowsing,InterestFeedContentSuggestions,CertificateTransparencyComponentUpdater,SignInProfileCreation,AccountConsistency"];
-// Measured on Chromium 141 headless with these flags and an about:blank tab only.
-export const BROWSER_INTERNAL_HOSTS = new Set(["www.google.com:443", "accounts.google.com:443", "android.clients.google.com:443"]);
+// Tunnels the browser process itself opens, which the deny-all proxy refuses.
+// Measured with an about:blank tab only: the first three on Chromium 141
+// headless; www.gstatic.com and update.googleapis.com on the CI runner's
+// branded Google Chrome even with QUIET_CHROME. This list never excuses a page
+// or worker request: those are checked separately over CDP, and the self-test
+// plants a page request to one of these hosts to prove it is still caught.
+export const BROWSER_INTERNAL_HOSTS = new Set(["www.google.com:443", "accounts.google.com:443", "android.clients.google.com:443",
+  "www.gstatic.com:443", "update.googleapis.com:443"]);
 const outbound = [];
 const deny = createServer((request, response) => { outbound.push(`${request.method} ${request.url}`); response.writeHead(403); response.end(); });
 // Chrome may reset a refused tunnel; a reset socket is expected, not a test failure.
@@ -82,12 +87,14 @@ try {
     visited.push(path);
   }
   if (selfTest) await evaluate(`(() => { fetch('https://example.org/signrelay-self-test').catch(() => {});
+    fetch('https://www.gstatic.com/signrelay-self-test').catch(() => {});
     new Worker(URL.createObjectURL(new Blob(["fetch('https://cdn.jsdelivr.net/npm/signrelay-self-test').catch(() => {})"], { type: "text/javascript" }))); })()`);
   await pause(1500);
   const leaked = pageRequests.filter(url => !loopback(url));
   if (selfTest) {
     assert.ok(leaked.includes("https://example.org/signrelay-self-test"), "Self-test: page leak was not detected");
     assert.ok(leaked.includes("https://cdn.jsdelivr.net/npm/signrelay-self-test"), "Self-test: worker leak was not detected");
+    assert.ok(leaked.includes("https://www.gstatic.com/signrelay-self-test"), "Self-test: a page request to a browser-internal host was excused");
     assert.ok(outbound.some(line => line.includes("example.org")), "Self-test: the deny proxy did not see the page leak");
     console.log(JSON.stringify({ self_test: "passed", detected: leaked, refused_by_proxy: outbound.filter(line => !BROWSER_INTERNAL_HOSTS.has(line.replace(/^CONNECT /, ""))) }));
     process.exitCode = 0;
