@@ -12,11 +12,16 @@ import { recognizeBsl1064 } from "@/lib/bsl1064-runtime";
 import { recognizeLse300 } from "@/lib/lse300-runtime";
 import { TemplateMatchingClient, type TemplatePrediction } from "@/lib/template-matching-client";
 import { validHand } from "@/lib/asl-starter-recognition";
+import { stabilizeHandedness, type SingleHandTrack } from "@/lib/hand-tracking";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
 const frames: VisionFrame[] = [];
+// Index-aligned with frames. ASL rules and segmentation follow one physical
+// hand through MediaPipe label changes; models still receive raw frames.
+const trackFrames: VisionFrame[] = [];
+let handTrack: SingleHandTrack = null;
 let candidateLabel: string | null = null;
 let candidateStreak = 0;
 let candidateIsModel = false;
@@ -87,6 +92,8 @@ function resetSession() {
   pending.clear();
   invalidatePersonal();
   frames.length = 0;
+  trackFrames.length = 0;
+  handTrack = null;
   receivedFrames = 0;
   lastInferenceAt = -Infinity;
   lastConfirmation = { label: "", time: 0 };
@@ -130,7 +137,10 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   }
   receivedFrames += 1;
   frames.push(event.data.frame);
-  while (frames.length > (activeLanguage === "asl" ? 120 : 80)) frames.shift();
+  const stabilized = stabilizeHandedness(handTrack, event.data.frame);
+  handTrack = stabilized.track;
+  trackFrames.push(stabilized.frame);
+  while (frames.length > (activeLanguage === "asl" ? 120 : 80)) { frames.shift(); trackFrames.shift(); }
   const hasHand = event.data.frame.hands.some(validHand);
   if (!hasHand && hadPersonalTracking) invalidatePersonal();
   hadPersonalTracking = hasHand;
@@ -138,15 +148,17 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     || performance.now() - personalReceivedAt > MAX_PREDICTION_AGE_MS)) latestPersonal = null;
   if (hasHand) personalMatcher.submit(frames);
   const personal = latestPersonal;
-  const starterAnalysis = activeLanguage === "asl" ? analyzeAslStarter(frames) : null;
+  const starterAnalysis = activeLanguage === "asl" ? analyzeAslStarter(trackFrames) : null;
   const starter = starterAnalysis?.prediction ?? null;
   // The closed-set model can also label fist preparation YES. Require the
   // same completed wrist nod for automatic YES, while preserving personal
   // templates. Discard a rejected result so it cannot stall fresh inference.
   if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES"
     && starter?.label !== "YES") invalidatePrediction();
-  const motion = activeLanguage === "asl" ? analyzeSignMotion(frames)
+  const motion = activeLanguage === "asl" ? analyzeSignMotion(trackFrames)
     : { ...analyzeGenericSignMotion(frames), sequence: frames };
+  // The ASL segment is a suffix of trackFrames; give the model the same raw suffix.
+  const modelSequence = activeLanguage === "asl" ? frames.slice(frames.length - motion.sequence.length) : motion.sequence;
 
   if (!motion.ready || starterAnalysis?.ambiguousOpenPalm) invalidatePrediction();
   else {
@@ -154,7 +166,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
       || performance.now() - predictionReceivedAt > MAX_PREDICTION_AGE_MS)) invalidatePrediction();
     const language = activeLanguage;
     const classifier = language in classifiers ? classifiers[language as keyof typeof classifiers] : null;
-    if (language === "psl" && frames.length >= 24 && receivedFrames % 6 === 0) pslMatcher.submit([...motion.sequence]);
+    if (language === "psl" && frames.length >= 24 && receivedFrames % 6 === 0) pslMatcher.submit([...modelSequence]);
     const cadence = language === "isl" ? 8 : 6;
     // Frame-count scheduling can skip the entire completion window on a slow
     // device. ASL needs fresh results while that movement is still available.
@@ -169,7 +181,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
       lastInferenceAt = now;
       const generation = modelGeneration;
       const submittedAt = performance.now();
-      classifier([...motion.sequence], { signal: request.controller.signal, onPhase: phase => {
+      classifier([...modelSequence], { signal: request.controller.signal, onPhase: phase => {
         if (pending.get(language) !== request) return;
         request.phase = phase;
         request.started = frames.at(-1)?.timestamp ?? now;
@@ -246,8 +258,11 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     invalidatePrediction();
     invalidatePersonal();
     candidateStreak = 0;
-    if (activeLanguage === "asl") frames.length = 0;
-    else frames.splice(0, Math.max(0, frames.length - 5));
+    if (activeLanguage === "asl") { frames.length = 0; trackFrames.length = 0; }
+    else {
+      frames.splice(0, Math.max(0, frames.length - 5));
+      trackFrames.splice(0, Math.max(0, trackFrames.length - 5));
+    }
   }
 };
 

@@ -30,3 +30,11 @@ SignRelay uses @mediapipe/tasks-vision@0.10.22-rc.20250304. This analysis does n
 ## Decision
 
 Leave handedness unchanged. Synthetic slot tests verify model-adapter wiring only, not camera handedness or real-world signing accuracy.
+
+## 21 October 2026: single-hand label continuity (not a label swap)
+
+The left/right mapping is still unchanged. A separate weakness is now fixed: the ASL rules and the motion segmenter group samples by MediaPipe's per-frame handedness label. A **sustained** label change on one moving hand therefore split it into two partial tracks. In synthetic tests, a mid-sign switch made YES, PLEASE and SORRY abstain; single-frame flicker up to every third frame was already tolerated.
+
+`lib/hand-tracking.ts` keeps the established label of a single hand only while it stays spatially continuous: within 300 ms of the previous single-hand frame, and with a centre displacement of at most max(0.12, 2 × hand scale). Frames with two hands, hands that reappear after a pause, and hands that reappear elsewhere are never linked. The stabilized copy feeds only the ASL rules and segmentation; the ASL, PSL and other models still receive the raw MediaPipe labels.
+
+Whether real MediaPipe output switches labels mid-sign has **not** been measured. `tracker_behavior.single_hand_label_sustained_switches` in opt-in traces now counts it. Real-video effects come from the paired CI video pilot, not from these synthetic tests.
