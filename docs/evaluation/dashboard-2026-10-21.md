@@ -9,7 +9,7 @@
 | development | `docs/evaluation/asl-stroke-repair-2026-10-17/final-development.jsonl` | 5 | 4 | 8a7d967e8c23 | 5bc014348 | true |
 | historical | `docs/evaluation/asl-stroke-repair-2026-10-17/final-historical.jsonl` | 6 | 2 | 8a7d967e8c23 | 5bc014348 | true |
 
-Current `public/workers/recognition.worker.js` (8a7d967e8c23) is byte-identical to the evaluated worker, so these results describe the current recognizer.
+**Stale:** the current worker (ccce84c876f9) differs from the evaluated worker(s) (8a7d967e8c23). Re-run the video pilot before quoting these numbers for this build.
 
 ## Signed trials
 

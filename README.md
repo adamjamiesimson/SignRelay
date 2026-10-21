@@ -19,6 +19,16 @@ This repository is an engineering foundation, not a claim of full sign-language 
 - Auto speak, volume, rate and landmark overlay preferences are stored locally.
 - Camera frames are not uploaded or stored.
 
+## GITEX YouthX demo (research prototype)
+
+The October 2026 demo scope is six isolated ASL words: HELLO, THANK YOU, PLEASE, SORRY, YES and NO. When the recognizer is unsure it says so. The evidence is thin: on 11 previously seen development clips, 5 were correct, 0 wrong and 6 no-match; see [the dashboard](docs/evaluation/dashboard-2026-10-21.md). No new-signer, live-camera or false-positive measurement exists yet.
+
+- Demo script, setup, fallbacks and go/no-go: [docs/gitex/demo-package-2026-10-21.md](docs/gitex/demo-package-2026-10-21.md)
+- Machine-checkable acceptance criteria: [docs/gitex/demo-contract.json](docs/gitex/demo-contract.json)
+- Progress ledger and risks: [docs/gitex/sprint-ledger-2026-10-21.md](docs/gitex/sprint-ledger-2026-10-21.md)
+
+`npm run build:firebase` copies the MediaPipe runtime from npm and installs the size- and SHA-256-pinned models into `/vision/`. After that, `npm start` serves a fully working demo on `http://localhost:3000` without internet access. Add `?perf` to the URL to show tracking and recognition timings on screen for device tests.
+
 ## Honest model status
 
 The [17 September handoff](docs/pretrained-expansion-2026-09-17.md) records the current installation, evaluation limits and Firebase update steps.
