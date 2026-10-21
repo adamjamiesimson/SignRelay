@@ -52,11 +52,12 @@ RSL (Slovo) and Bangla (BdSLW401) use separate explicit clip-capture components 
 | R1 | No independently reviewed, new-signer, live-camera or negative evidence; n=11 reused clips | Critical for claims | Blocked on people (signers, fluent reviewer). Tooling ready. |
 | R2 | Stacked PRs into `feat/**`/`sprint/**` skipped Core CI, export and pilot | High | Fixed (workflow triggers + regression test) |
 | R3 | Private `/field-test` recorder shipped in public exports; `noindex` ≠ access control | High | Fixed (excluded from public export; deploy refuses dev export) |
-| R4 | Runtime dependency on jsDelivr (WASM) and googleapis (models): venue network failure = no demo | High for GITEX | See Agenda 21 |
-| R5 | Auto speak voiced confirmations the transcript dropped as duplicates | Medium | See Agenda 23 |
-| R6 | Candidate bar was an `aria-live` region announcing tentative candidates | Medium (a11y + honesty) | See Agenda 24 |
-| R7 | A sustained MediaPipe handedness label switch on one physical hand split its track (synthetic YES/PLEASE/SORRY abstain) | Medium | See Agenda 12 |
+| R4 | Runtime dependency on jsDelivr (WASM) and googleapis (models): venue network failure = no demo | High for GITEX | Fixed: self-hosted pinned runtime, CDN-blocked smoke |
+| R5 | Auto speak voiced confirmations the transcript dropped as duplicates | Medium | Fixed |
+| R6 | Candidate bar was an `aria-live` region announcing tentative candidates | Medium (a11y + honesty) | Fixed |
+| R7 | A sustained MediaPipe handedness label switch on one physical hand split its track (synthetic YES/PLEASE/SORRY abstain) | Medium | Fix tried and reverted after a real-video HELLO regression; measure with traces |
 | R8 | Intake template paths assumed `.mp4` while the recorder produced WebM; no checksum pairing | Medium | Fixed (Agenda 7) |
 | R9 | Dev-only `braces` advisory chain, no upstream fix; strict `audit:security` fails | Low exploitability | Documented; owner decision |
 | R10 | RSL model host (`sbercloud.ru`) is unreachable from some networks; `build:firebase` then fails | Medium for builds | Documented |
-| R11 | Six-language selector could imply validated multilingual accuracy | Medium (honesty) | See Agenda 24 |
+| R11 | Six-language selector could imply validated multilingual accuracy | Medium (honesty) | Fixed: evidence-tied banner and selector labels |
+| R12 | Landing hero showed 'LIVE · RECOGNIZING' with invented 88–97% confidence and non-demo words | High (honesty) | Fixed: labelled as an illustration, six demo words only, no numbers |
