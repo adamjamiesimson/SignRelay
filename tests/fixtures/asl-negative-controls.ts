@@ -41,5 +41,6 @@ export const NEGATIVE_CONTROLS: Record<string, () => VisionFrame[]> = {
   "scratching the chin": () => trajectory([0, 0.2, 0.4, 0.6, 0.8, 1].map((t, i) => ({ t, x: 0.53 + (i % 2 ? 0.012 : 0), y: 0.5 })), { duration: 1500 }),
   "lowering a hand from the mouth to rest": () => trajectory([{ t: 0, x: 0.53, y: 0.5 }, { t: 0.4, x: 0.53, y: 0.5 }, { t: 1, x: 0.72, y: 0.86 }], { duration: 1000 }),
   "lifting a fist as if holding a cup": () => trajectory([{ t: 0, x: 0.6, y: 0.82, shape: "fist" }, { t: 0.5, x: 0.56, y: 0.52, shape: "fist" }, { t: 1, x: 0.6, y: 0.82, shape: "fist" }], { duration: 1800 }),
+  "raising an open hand from the chin toward the forehead": () => trajectory([{ t: 0, x: 0.53, y: 0.5 }, { t: 1, x: 0.68, y: 0.36 }], { duration: 800 }),
   "small fist shake at the chest": () => trajectory([0, 0.25, 0.5, 0.75, 1].map((t, i) => ({ t, x: 0.62 + (i % 2 ? 0.02 : 0), y: 0.6, shape: "fist" as const })), { duration: 900 }),
 };
