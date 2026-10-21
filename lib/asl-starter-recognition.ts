@@ -264,7 +264,8 @@ function directionChanges(values: number[], epsilon: number) {
   return changes;
 }
 
-function circularMotion(xs: number[], ys: number[], requireClosure: boolean) {
+/** Exported for geometry stress tests only. */
+export function circularMotion(xs: number[], ys: number[], requireClosure: boolean) {
   const cx = (Math.max(...xs) + Math.min(...xs)) / 2;
   const cy = (Math.max(...ys) + Math.min(...ys)) / 2;
   // Normalize the axes: natural chest circles can be narrow ellipses.
