@@ -92,9 +92,10 @@ try {
 
   // 4. Camera track ended outside the app (unplugged device / revoked permission).
   await evaluate("window.__qa.tracks.filter(t => t.readyState === 'live').forEach(t => t.stop())");
-  // track.stop() from script does not fire "ended", so the app's 8 s
-  // no-progress watchdog must catch it; a device-ended track fires "ended".
-  await until(() => evaluate("/The camera stopped sending video|The camera was disconnected/.test(document.body.textContent)"), "Ended camera track was not reported", 150);
+  // track.stop() from script does not fire "ended" (a device-ended track does),
+  // and branded Chrome keeps advancing the video clock, so the frame loop must
+  // notice the ended track itself rather than wait for the 8 s watchdog.
+  await until(() => evaluate("/The camera was disconnected/.test(document.body.textContent)"), "Ended camera track was not reported", 50);
   assert.equal(await liveTracks(), 0);
   await until(() => has("Start camera") || has("Retry camera"), "No way to restart the camera");
   await click((await has("Start camera")) ? "Start camera" : "Retry camera");

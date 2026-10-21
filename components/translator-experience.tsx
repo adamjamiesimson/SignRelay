@@ -443,6 +443,15 @@ export function TranslatorExperience() {
     const video = videoRef.current;
     const engine = engineRef.current;
     const now = performance.now();
+    // A track can end without an "ended" event (stopped by script, some drivers,
+    // revoked permission), and some browsers keep advancing the video clock.
+    const tracks = streamRef.current?.getVideoTracks() ?? [];
+    if (engine && tracks.length && tracks.every((track) => track.readyState === "ended")) {
+      stopCamera();
+      setCameraState("error");
+      setCameraMessage("The camera was disconnected or stopped by your device. Start the camera again to reconnect.");
+      return;
+    }
     if (video && engine && !document.hidden) {
       if (video.readyState >= 2 && video.currentTime !== lastVideoTimeRef.current) cameraProgressRef.current = now;
       if (now - cameraProgressRef.current >= 8000) {
