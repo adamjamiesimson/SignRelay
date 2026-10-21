@@ -106,3 +106,16 @@ describe("ongoing recognition sessions", () => {
     expect(workers[0].frames()).toHaveLength(1);
   });
 });
+
+describe("?perf session counters", () => {
+  it("counts offered, forwarded, replaced and answered frames and the forwarded frame's queue wait", () => {
+    send(0);
+    for (let index = 1; index <= 4; index++) { vi.advanceTimersByTime(50); send(index * 50); }
+    expect(session.stats).toMatchObject({ offered: 5, forwarded: 1, replaced: 3, answered: 0, lastQueueAgeMs: 0 });
+    vi.advanceTimersByTime(30);
+    workers[0].acknowledge(workers[0].frames()[0]);
+    expect(session.stats).toMatchObject({ offered: 5, forwarded: 2, replaced: 3, answered: 1, lastQueueAgeMs: 30 });
+    session.resetStats();
+    expect(session.stats).toEqual({ offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null });
+  });
+});

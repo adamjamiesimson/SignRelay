@@ -19,6 +19,11 @@ export class RecognitionSession {
   private closed = false;
   /** Milliseconds from posting the last answered frame to its analysis. */
   lastRoundTripMs: number | null = null;
+  /** Counters for the opt-in ?perf readout (numbers only). `replaced` frames
+   * were superseded by a newer camera frame before they could be forwarded;
+   * `lastQueueAgeMs` is how long the last forwarded frame waited. */
+  readonly stats = { offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null as number | null };
+  private queuedAt = 0;
   private watchdog: ReturnType<typeof setInterval>;
 
   constructor(
@@ -38,7 +43,10 @@ export class RecognitionSession {
     if (this.closed) return;
     if (message.type === "frame") {
       if (!this.worker) return;
+      this.stats.offered++;
+      if (this.queued) this.stats.replaced++;
       this.queued = message.frame;
+      this.queuedAt = Date.now();
       this.pump();
       return;
     }
@@ -58,6 +66,10 @@ export class RecognitionSession {
     } catch {
       this.recover("Recognition could not receive the session. Restarting…");
     }
+  }
+
+  resetStats() {
+    Object.assign(this.stats, { offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null });
   }
 
   restart() {
@@ -86,6 +98,7 @@ export class RecognitionSession {
         const waiting = this.waiting;
         if (message.type === "analysis" && waiting && message.frameId === waiting.id) {
           this.lastRoundTripMs = Date.now() - waiting.since;
+          this.stats.answered++;
           this.waiting = null;
           if (this.recovering) {
             this.recovering = false;
@@ -109,6 +122,8 @@ export class RecognitionSession {
     const frame = this.queued;
     this.queued = null;
     this.waiting = { id: ++this.nextFrameId, since: Date.now() };
+    this.stats.forwarded++;
+    this.stats.lastQueueAgeMs = this.waiting.since - this.queuedAt;
     try {
       this.worker.postMessage({ type: "frame", frame, frameId: this.waiting.id, session: this.session } satisfies WorkerInput);
     } catch {
