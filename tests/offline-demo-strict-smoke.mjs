@@ -22,7 +22,10 @@ async function until(check, reason, attempts = 600) {
 }
 const loopback = url => { try { const { protocol, hostname } = new URL(url); return ["data:", "blob:", "about:", "chrome:", "devtools:"].includes(protocol) || ["127.0.0.1", "localhost", "[::1]"].includes(hostname); } catch { return false; } };
 
-export const QUIET_CHROME = ["--disable-component-update", "--disable-sync", "--disable-default-apps", "--no-pings",
+// Browser-initiated services only. Page and worker requests are still captured
+// over CDP, and the deny-all proxy still refuses every outbound tunnel. Branded
+// Google Chrome (CI) otherwise contacts www.gstatic.com and update.googleapis.com.
+export const QUIET_CHROME = ["--disable-background-networking", "--disable-component-update", "--disable-sync", "--disable-default-apps", "--no-pings",
   "--disable-domain-reliability", "--disable-client-side-phishing-detection", "--disable-breakpad", "--no-default-browser-check",
   "--disable-features=AutofillServerCommunication,OptimizationHints,OptimizationGuideModelDownloading,MediaRouter,Translate,NetworkTimeServiceQuerying,SafeBrowsing,InterestFeedContentSuggestions,CertificateTransparencyComponentUpdater,SignInProfileCreation,AccountConsistency"];
 // Measured on Chromium 141 headless with these flags and an about:blank tab only.
