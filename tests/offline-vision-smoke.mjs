@@ -1,5 +1,6 @@
 // CDN-blocked demo smoke: the ASL workspace must start real MediaPipe vision
 // from the self-hosted /vision/ copy with jsDelivr and googleapis unreachable,
+import { existsSync, readFileSync } from "node:fs";
 // and release the camera when paused. Timings come from headless Chromium on
 // the machine running the test with a synthetic camera; they are not phone or
 // laptop measurements and say nothing about recognition accuracy.
@@ -50,7 +51,15 @@ try {
   // unhydrated "Start translating" click is otherwise silently lost.
   const choose = name => evaluate(`[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes(${JSON.stringify(name)}))?.click()`);
   const checked = name => evaluate(`document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes(${JSON.stringify(name)})`);
-  await until(async () => { await choose("British"); return checked("British"); }, "Welcome screen did not hydrate", 100);
+  // The ASL demo profile disables every other language, so there hydration is
+  // proved by React's fiber on the radio and the disabled BSL choice must hold.
+  const profile = existsSync("out/runtime-manifest.json") ? JSON.parse(readFileSync("out/runtime-manifest.json", "utf8")).profile : "full";
+  if (profile === "asl-demo") {
+    await until(() => evaluate("Object.keys(document.querySelector('[role=radio]')).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate", 100);
+    assert.equal(await evaluate(`[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes('British'))?.disabled`), true, "BSL must be disabled in the ASL demo build");
+    await choose("British");
+    assert.equal(await checked("British"), false, "a disabled language was selected");
+  } else await until(async () => { await choose("British"); return checked("British"); }, "Welcome screen did not hydrate", 100);
   await choose("American");
   await until(() => checked("American"), "ASL selection failed", 100);
   const active = () => evaluate("document.querySelector('.status-badge')?.textContent === 'Active'");

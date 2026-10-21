@@ -11,7 +11,7 @@
     "install:rsl-model": "node scripts/install-rsl-model.mjs",
     "dev": "npm run build:worker && node scripts/dev.mjs",
     "build": "npm run build:firebase",
-    "build:firebase": "node scripts/verify-vision-runtime.mjs && npm run install:rsl-model && node scripts/verify-bdsl-assets.mjs && node scripts/verify-lse-assets.mjs && node scripts/verify-psl-assets.mjs && node scripts/prepare-export.mjs && node scripts/install-vision-assets.mjs && npm run build:worker && next build && node scripts/exclude-private-routes.mjs && node scripts/secure-export.mjs",
+    "build:firebase": "node scripts/verify-vision-runtime.mjs && npm run install:rsl-model && node scripts/verify-bdsl-assets.mjs && node scripts/verify-lse-assets.mjs && node scripts/verify-psl-assets.mjs && node scripts/prepare-export.mjs && node scripts/install-vision-assets.mjs && npm run build:worker && next build && node scripts/exclude-private-routes.mjs && node scripts/secure-export.mjs && node scripts/verify-runtime.mjs --out out --profile full",
     "start": "node scripts/serve-export.mjs",
     "test": "vitest run",
     "test:rendered": "node --test tests/rendered-html.test.mjs",
@@ -23,7 +23,8 @@
     "repo:guard": "node scripts/check-large-assets.mjs",
     "eval:live": "node scripts/summarize-live-evaluation.mjs",
     "install:vision-assets": "node scripts/install-vision-assets.mjs",
-    "verify:runtime": "node scripts/verify-runtime.mjs"
+    "verify:runtime": "node scripts/verify-runtime.mjs",
+    "build:asl-demo": "node scripts/build-profile.mjs asl-demo"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",

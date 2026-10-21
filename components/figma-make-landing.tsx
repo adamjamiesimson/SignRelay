@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BUILD_PROFILE, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import {
   LANGUAGE_LIST,
   MODEL_ADAPTERS,
@@ -213,7 +214,7 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
         <div className="figma-language-heading">
           <div>
             <h2>Supported languages</h2>
-            <p>7 automatic research recognizers · {LANGUAGE_LIST.length} total workspaces</p>
+            <p>{BUILD_PROFILE === "asl-demo" ? <>ASL demo build · other languages are not included in this build</> : <>7 automatic research recognizers · {LANGUAGE_LIST.length} total workspaces</>}</p>
           </div>
           <a href="/languages">View all languages</a>
         </div>
@@ -225,6 +226,8 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
               onClick={() => onSelect(language.id)}
               role="radio"
               aria-checked={selected === language.id}
+              disabled={!isLanguageAvailable(language.id)}
+              aria-disabled={!isLanguageAvailable(language.id)}
             >
               <div>
                 <strong>{language.shortName}</strong>
@@ -234,7 +237,7 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
               <div className="figma-language-meter" title="Relative automatic vocabulary size, not accuracy">
                 <i style={{ width: capabilityWidth(language) }} />
               </div>
-              <em>{language.id === "rsl" ? "1,000 classes" : language.id === "bdsl" ? "401 classes" : language.id === "psl" ? "775 signs" : language.automaticVocabularyCount.toLocaleString() + " classes"}</em>
+              <em>{!isLanguageAvailable(language.id) ? OUT_OF_PROFILE_LABEL : language.id === "rsl" ? "1,000 classes" : language.id === "bdsl" ? "401 classes" : language.id === "psl" ? "775 signs" : language.automaticVocabularyCount.toLocaleString() + " classes"}</em>
             </button>
           ))}
         </div>

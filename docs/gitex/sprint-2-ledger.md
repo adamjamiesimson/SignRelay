@@ -9,9 +9,9 @@ Statuses: **DONE**: the acceptance criteria are met and the evidence is recorded
 | # | Objective | Status | Evidence / gap |
 | --- | --- | --- | --- |
 | 1 | Verified Sprint 2 baseline | DONE | `scripts/readiness.mjs` (4 tests); baseline JSON/MD above |
-| 2 | Build vs strict-audit separation | TODO | |
-| 3 | ASL-only GITEX build profile | TODO | |
-| 4 | Asset/runtime verifier | TODO | |
+| 2 | Build vs strict-audit separation | DONE | `firebase-build-check.yml`: the build job runs secrets, rendered-export and fail-closed `audit:deps`; a separate `strict-dependency-audit` job (needs build, no `continue-on-error`) runs the unchanged `audit:security`. Tests in `ci-triggers.test.ts` and `audit-dependencies.test.ts` (an exception cannot be widened to production, emptied, given a bad expiry or reused for another advisory). The strict gate still fails and blocks release. |
+| 3 | ASL-only GITEX build profile | DONE | `npm run build:asl-demo` (`scripts/build-profile.mjs`, `lib/build-profile.ts`, `scripts/prune-profile.mjs`). Other languages are visible but disabled and labelled. Their weights, labels, templates and clip workers are pruned; their attribution and licence notices are kept. Private-route exclusion and secure-export run unchanged. Local build: verify-runtime ok, rendered-export 2/2, offline smoke passed (BSL disabled, worker `ccce84c8`). The full export (every step except the network-blocked RSL download) still passes workspace, offline and rendered checks. 5 tests in `tests/build-profile.test.ts`. |
+| 4 | Asset/runtime verifier | DONE | `npm run verify:runtime` (`scripts/verify-runtime.mjs`) checks MediaPipe WASM against the locked package, pinned vision models by size and SHA-256, ASL-2000 files against `sha256.txt` (never verified before), ORT files and the worker against the committed bundle. It writes `out/runtime-manifest.json` and links the worker to `docs/evaluation/evaluated-runtimes.json`. It runs at the end of `build:firebase` and `build:asl-demo`. 9 tests (tampered, missing, stale, uncommitted, no evidence, profile leakage). |
 | 5 | One-command offline demo | TODO | |
 | 6 | Evaluation provenance | TODO | |
 | 7 | Adversarial non-sign tests | TODO | |

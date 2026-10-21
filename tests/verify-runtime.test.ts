@@ -48,8 +48,13 @@ describe("deterministic runtime verifier", () => {
     const result = verifyRuntime({ ...setup, evaluated: [] });
     expect(result.manifest.real_video_evidence).toBeNull();
   });
-  it("rejects other language models in the ASL demo profile", () => {
-    const result = verifyRuntime({ ...fixture(root => mkdirSync(join(root, "models/rsl1000-slovo"))), profile: "asl-demo" });
-    expect(result.failures.join("\n")).toContain("asl-demo export contains models/rsl1000-slovo");
+  it("rejects other language models in the ASL demo profile but allows their licence notices", () => {
+    const withRsl = (files: string[]) => fixture(root => {
+      mkdirSync(join(root, "models/rsl1000-slovo"));
+      for (const file of files) writeFileSync(join(root, "models/rsl1000-slovo", file), "x");
+    });
+    const result = verifyRuntime({ ...withRsl(["ATTRIBUTION.md", "labels.json"]), profile: "asl-demo" });
+    expect(result.failures.join("\n")).toContain("asl-demo export contains models/rsl1000-slovo/labels.json");
+    expect(verifyRuntime({ ...withRsl(["ATTRIBUTION.md", "LICENSE.pdf"]), profile: "asl-demo" }).ok).toBe(true);
   });
 });

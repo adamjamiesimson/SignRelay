@@ -6,7 +6,7 @@
 //   node scripts/verify-runtime.mjs [--out out] [--profile full|asl-demo] [--require-evaluated]
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -18,6 +18,8 @@ const fileSha = path => existsSync(path) ? sha(readFileSync(path)) : null;
 
 /** Language model directories that the ASL demo profile must not ship. */
 export const NON_ASL_MODEL_DIRS = ["bdsl401-videomae", "bsl1064-pose2sign", "isl263-include", "lse300-swl", "psl776-hfad", "rsl1000-slovo"];
+/** Licence and attribution documents stay in the ASL demo so linked notices keep working; no weights, labels or templates. */
+export const KEPT_NOTICES = new Set(["ATTRIBUTION.md", "LICENSE.pdf"]);
 
 /** @param {{ root: string, wasmSource: string, ortSource: string, committedWorker?: string | null, evaluated?: any[],
  *   profile?: string, wasmFiles?: string[], models?: Record<string, { file: string, bytes: number, sha256: string }> }} options */
@@ -63,8 +65,10 @@ export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = n
     fail("workers/recognition.worker.js differs from the committed bundle", "rebuild with npm ci && npm run build:worker and commit the bundle with the recognition change, or this export is not the evaluated code");
   const evidence = evaluated.find(entry => entry.worker_sha256 === worker);
   manifest.real_video_evidence = evidence ? { outcome: evidence.outcome, evidence: evidence.evidence } : null;
-  if (profile === "asl-demo") for (const dir of NON_ASL_MODEL_DIRS)
-    if (existsSync(join(root, "models", dir))) fail(`asl-demo export contains models/${dir}`, "the ASL profile must not ship other language models; rebuild with npm run build:asl-demo");
+  if (profile === "asl-demo") for (const dir of NON_ASL_MODEL_DIRS) {
+    const shipped = existsSync(join(root, "models", dir)) ? readdirSync(join(root, "models", dir)).filter(name => !KEPT_NOTICES.has(name)) : [];
+    if (shipped.length) fail(`asl-demo export contains models/${dir}/${shipped.join(", ")}`, "the ASL profile must not ship other language models; rebuild with npm run build:asl-demo");
+  }
   return { ok: failures.length === 0, failures, manifest };
 }
 

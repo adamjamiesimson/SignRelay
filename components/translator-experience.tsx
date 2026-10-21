@@ -38,6 +38,7 @@ import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalize
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
 import { recognitionStatus } from "@/lib/recognition-status";
+import { BUILD_PROFILE, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import { RollingTimer } from "@/lib/frame-perf";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
@@ -192,6 +193,12 @@ export function TranslatorExperience() {
 
   function selectLanguage(language: LanguageId) {
     if (language === selected) return true;
+    // The ASL demo build does not ship other models; never open a workspace
+    // that would pretend they are usable.
+    if (!isLanguageAvailable(language)) {
+      setStorageMessage(`${MODEL_ADAPTERS[language].language} is not included in this ASL demo build.`);
+      return false;
+    }
     // All entry points share this boundary, including returning home before
     // selecting another language. Keep the original transcript on save failure.
     if (entries.length) {
@@ -737,7 +744,7 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <span className="honesty-label">Model status</span>
-            <p><strong>{capability.headline}</strong> {capability.evidence} Check every word before relying on it. <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
+            <p>{BUILD_PROFILE === "asl-demo" && <><strong>ASL demo build.</strong> Other language models are not included. </>}<strong>{capability.headline}</strong> {capability.evidence} Check every word before relying on it. <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
             <button className="text-action" onClick={() => {
               const panel = vocabularyRef.current;
               if (!panel) return;
@@ -1091,15 +1098,15 @@ function WorkspaceLanguageSwitcher({
         >
           <optgroup label="Research models · live accuracy not measured">
             {automatic.map((language) => (
-              <option key={language.id} value={language.id}>
-                {language.shortName} · {language.language}
+              <option key={language.id} value={language.id} disabled={!isLanguageAvailable(language.id)}>
+                {language.shortName} · {language.language}{isLanguageAvailable(language.id) ? "" : ` (${OUT_OF_PROFILE_LABEL.toLowerCase()})`}
               </option>
             ))}
           </optgroup>
           <optgroup label="Teach your own signs · no automatic model">
             {development.map((language) => (
-              <option key={language.id} value={language.id}>
-                {language.shortName} · {language.language}
+              <option key={language.id} value={language.id} disabled={!isLanguageAvailable(language.id)}>
+                {language.shortName} · {language.language}{isLanguageAvailable(language.id) ? "" : ` (${OUT_OF_PROFILE_LABEL.toLowerCase()})`}
               </option>
             ))}
           </optgroup>
