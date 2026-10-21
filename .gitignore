@@ -64,3 +64,6 @@ next-env.d.ts
 
 # Ephemeral derived runs are reviewed and copied into docs explicitly.
 /evaluation/derived/
+
+# Self-hosted MediaPipe runtime: copied from npm and pinned model downloads.
+/public/vision/

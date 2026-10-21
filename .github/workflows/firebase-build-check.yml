@@ -77,6 +77,8 @@ jobs:
           test -f out/workers/ort-wasm-simd-threaded.jsep.wasm
           test -f out/workers/ort-wasm-simd-threaded.jsep.mjs
           test ! -e out/field-test.html
+          test -f out/vision/wasm/vision_wasm_internal.wasm
+          test -f out/vision/models/gesture_recognizer.task
           test ! -e out/.signrelay-private-capture-included
           echo "Static export created successfully."
 
@@ -100,6 +102,9 @@ jobs:
 
       - name: Verify Spanish camera and model worker in headless Chrome
         run: node tests/lse-browser-smoke.mjs "$(command -v google-chrome)"
+
+      - name: Start ASL vision with CDNs blocked (self-hosted MediaPipe runtime)
+        run: node tests/offline-vision-smoke.mjs "$(command -v google-chrome)"
 
       - name: Audit dependencies, history and exported pages
         run: npm run audit:security
