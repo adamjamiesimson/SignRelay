@@ -47,6 +47,8 @@ export async function prepareReviewedDevelopment(mode, planFile, intakeFile, man
     const details = await stat(actual);
     if (!details.isFile() || details.size <= 0 || details.size > 100 * 1024 * 1024) throw new Error("Use nonempty video files under 100 MB");
     row.recording_sha256 = fingerprint(await readFile(actual));
+    // Imported captures carry the browser checksum of the downloaded take.
+    if (row.capture_sha256 && row.capture_sha256 !== row.recording_sha256) throw new Error(`${row.trial_id}: recording changed after capture`);
     if (knownHashes.has(row.recording_sha256)) throw new Error("Duplicate frozen recording cannot enter the new batch");
     knownHashes.add(row.recording_sha256);
     const media = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration:stream=codec_type", "-of", "json", actual], { encoding: "utf8" }));

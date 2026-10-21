@@ -99,6 +99,7 @@ export function approveDevelopmentIntake(intake, plan, vocabulary) {
       file: row.file, source: row.source, license: row.license, consent_reference: row.consent_reference,
       recording_group: row.recording_group, dominant_hand: participant.dominant_hand,
       physical_hands: row.physical_hands, device: row.device, original_unmodified_take: row.original_unmodified_take,
+      capture_sha256: row.capture?.sha256 ?? row.capture_sha256 ?? null,
       collection_slot: row.collection_slot, take: row.take, independent_review: row.review,
       annotation_review: `independent fluent review: ${row.review?.reviewer_id}`,
       ...(row.trial_type === "no_sign" ? { negative_activity: expected.instruction } : {}),

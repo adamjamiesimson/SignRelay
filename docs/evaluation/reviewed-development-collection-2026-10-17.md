@@ -61,3 +61,19 @@ Report every take, per-sign recall, wrong words, abstentions, runtime errors, ac
 An interrupted trial retains observed confirmed words and partial counters when identity matches. Missing browser evidence uses null counters; it does not establish a successful rejection. Incomplete negative cohorts keep false-acceptance rates null even when an observed false acceptance is retained.
 
 The importer was exercised locally with six clearly marked generated-video controls, including metadata freezing, round-trip loading, unique hashes, original-cohort preservation and overwrite refusal. No recognition was run on those generated files, and they contribute no signing or negative-trial evidence. [Technical control result](asl-miss-diagnosis-2026-10-17/import-smoke.json).
+
+## Importing `/field-test` downloads (21 October 2026)
+
+1. Create the private intake once: `node scripts/prepare-reviewed-development.mjs template docs/evaluation/development-collection-plan-2026-10-17.json evaluation/raw/asl-development-2026-10-17/intake.json`.
+2. Move each downloaded `TRIAL.webm|mp4` and its `TRIAL.capture.json` into `evaluation/videos/asl-development-2026-10-17/` (Git-ignored).
+3. Run `node scripts/capture-intake.mjs docs/evaluation/development-collection-plan-2026-10-17.json evaluation/raw/asl-development-2026-10-17/intake.json evaluation/videos/asl-development-2026-10-17`.
+
+The importer is all-or-nothing. It fails when:
+- a sidecar names a trial outside the 144 planned slots, or its participant, type, expected gloss or split differ from the plan;
+- the sidecar claims any review status;
+- the file name differs from the trial ID, or the extension, MIME type and actual container bytes (WebM EBML / MP4 `ftyp`) disagree;
+- the size or SHA-256 differ from the values computed at capture;
+- the duration is outside 1–30 s, or the dominant hand, physical hands or device are missing;
+- one recording is reused for two trials, a participant's dominant hand contradicts an earlier take, an imported trial would be silently replaced, or a trial already holds a review decision.
+
+The importer replaces the template's placeholder `.mp4` path with the real file and records `capture.sha256`. Freezing then refuses a recording whose bytes changed after capture. It never fills `consent_reference`, `recording_group`, `source`, `license` or any review field; its report counts what is still required. Schema-1 sidecars (no checksum) import with `original_unmodified_take: false`.
