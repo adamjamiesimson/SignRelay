@@ -2,11 +2,8 @@ name: ASL Video Pilot (non-release)
 # Evaluates existing, already-inspected isolated-sign clips. It does not create
 # fresh holdout data, certify accuracy or unblock production deployment.
 on:
+  # Path-filtered, but on every PR base so stacked feat/** PRs are covered.
   pull_request:
-    branches:
-      - main
-      - 'fix/**'
-      - 'sprint/**'
     paths:
       - 'lib/asl-starter-recognition.ts'
       - 'lib/vision-engine.ts'
@@ -35,7 +32,16 @@ on:
       - 'docs/evaluation/*manifest*.json'
       - 'docs/evaluation/cohort-lock*.json'
       - 'docs/evaluation/popsign-*.json'
+      - 'lib/sign-motion.ts'
+      - 'lib/frame-timing.ts'
+      - 'lib/decoder.ts'
+      - 'lib/hand-tracking.ts'
+      - 'lib/asl1000-runtime.ts'
+      - 'lib/landmark-inference.ts'
+      - 'lib/landmark-model-loader.ts'
+      - 'public/models/asl2000-tgcn/**'
       - '.github/workflows/asl-video-pilot.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read

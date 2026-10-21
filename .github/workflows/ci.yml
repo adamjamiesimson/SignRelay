@@ -4,10 +4,9 @@ on:
   push:
     branches:
       - main
+  # Stacked feature PRs target other feature branches. Run on every PR base so
+  # a retargeted PR cannot silently skip typecheck, tests and lint.
   pull_request:
-    branches:
-      - main
-      - 'fix/**'
   workflow_dispatch:
 
 permissions:

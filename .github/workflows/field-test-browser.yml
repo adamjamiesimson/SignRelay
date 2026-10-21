@@ -2,11 +2,6 @@ name: Private ASL Capture Browser Smoke
 # Synthetic webcam checks only. No participant media, holdout, or upload.
 on:
   pull_request:
-    branches:
-      - main
-      - 'feat/**'
-      - 'fix/**'
-      - 'sprint/**'
     paths:
       - 'app/field-test/**'
       - 'lib/field-test-capture.ts'
