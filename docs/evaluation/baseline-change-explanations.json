@@ -1,0 +1,5 @@
+{
+  "schema": 1,
+  "note": "Each entry explains one per-trial outcome change against docs/evaluation/established-baseline.json for one candidate worker. New wrong acceptances cannot be explained away. An explanation is a reviewed engineering reason, never a substitute for re-running the trial.",
+  "changes": []
+}
