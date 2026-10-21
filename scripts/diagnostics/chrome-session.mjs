@@ -35,7 +35,9 @@ export async function startChrome(executable, { forwardAssets = false, proxy = p
         if (!task) return; clearTimeout(task.timer);
         if (message.error) task.reject(new Error(JSON.stringify(message.error))); else task.resolve(message.result);
       }
-      if (message.method === "Fetch.requestPaused") {
+      // Only the forwardAssets mode enables interception here; callers that
+      // enable Fetch themselves handle their own paused requests.
+      if (forwardAssets && message.method === "Fetch.requestPaused") {
         const { requestId, request } = message.params;
         void (async () => {
           // Optional CI proxy compatibility. Fetch only the fixed public runtime
