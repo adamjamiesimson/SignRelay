@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "status": "Synthetic kinematic controls only. These are not reviewed negative recordings and not a false-acceptance rate. Real no-sign and unsupported-sign false acceptance is NOT MEASURED.",
+  "source": "tests/fixtures/asl-negative-controls.ts through the real recognition worker (tests/asl-negative-controls.test.ts)",
+  "synthetic_rule_outcomes": {
+    "hands resting at the chest": [],
+    "adjusting glasses": ["THANK YOU/starter"],
+    "pushing hair aside near the forehead": ["HELLO/starter"],
+    "conversational beat gestures": [],
+    "reaching toward the camera": [],
+    "reaching across the chest": [],
+    "scratching the chin": [],
+    "lowering a hand from the mouth to rest": ["THANK YOU/starter"],
+    "lifting a fist as if holding a cup": [],
+    "small fist shake at the chest": []
+  },
+  "explanations": {
+    "adjusting glasses": "Descending from the eyes, the open hand passes the mouth and moves down and sideways. In 2-D landmarks this matches the THANK YOU rule's mouth-departure geometry. Not changed: no reviewed THANK YOU or glasses recordings exist to justify a stricter origin rule, and THANK YOU already abstains on 3/3 development clips.",
+    "pushing hair aside near the forehead": "An open hand moving sideways from the forehead matches the HELLO salute geometry. Not changed for the same reason.",
+    "lowering a hand from the mouth to rest": "Indistinguishable from THANK YOU in 2-D landmarks without handshape, palm-orientation or contact evidence.",
+    "lifting a fist as if holding a cup": "Fixed 2026-10-21: produced SORRY because circularMotion accumulated an arbitrary +/-pi at each crossing of the bounding-box centre by a straight up-and-down path. Loops must now enclose at least 0.3 of their normalized box (an ellipse encloses about 0.785)."
+  },
+  "demo_mitigation": "Between signs, rest the hands below the chest or out of frame. Do not touch the face, glasses or hair during the demonstration. Every confirmed word is labelled as a rule or model match and can be removed."
+}

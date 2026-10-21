@@ -36,3 +36,12 @@ describe("ASL chest-circle completion", () => {
     expect(analysis.labels).not.toContain("PLEASE");
   });
 });
+
+describe("degenerate loops", () => {
+  it("does not treat a fist lifted and lowered along one line as a SORRY circle", async () => {
+    const { NEGATIVE_CONTROLS } = await import("./fixtures/asl-negative-controls");
+    const { analyzeAslStarter } = await import("../lib/asl-starter-recognition");
+    const frames = NEGATIVE_CONTROLS["lifting a fist as if holding a cup"]();
+    for (let n = 6; n <= frames.length; n++) expect(analyzeAslStarter(frames.slice(0, n)).labels).not.toContain("SORRY");
+  });
+});

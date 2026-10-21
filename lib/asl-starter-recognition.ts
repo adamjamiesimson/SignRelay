@@ -281,6 +281,16 @@ function circularMotion(xs: number[], ys: number[], requireClosure: boolean) {
     (ys.at(-1)! - ys[0]) / height,
   );
   if (requireClosure && (!Number.isFinite(closure) || closure > 0.45)) return false;
+  // A back-and-forth straight stroke passes through the box centre, where each
+  // crossing adds an arbitrary +/-pi to the turning angle; two same-signed
+  // crossings made a lifted-and-lowered fist look like a full SORRY loop.
+  // A real loop encloses area: an ellipse covers pi/4 of its own normalized box.
+  let enclosed = 0;
+  for (let index = 0; index < xs.length; index++) {
+    const next = (index + 1) % xs.length;
+    enclosed += ((xs[index] - cx) / width) * ((ys[next] - cy) / height) - ((xs[next] - cx) / width) * ((ys[index] - cy) / height);
+  }
+  if (Math.abs(enclosed) / 2 < 0.3) return false;
   const angles = xs.map((x, index) => Math.atan2((ys[index] - cy) / height, (x - cx) / width));
   let turn = 0;
   let travel = 0;
