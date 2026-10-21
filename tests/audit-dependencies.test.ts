@@ -2,7 +2,17 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { evaluateAudit } from "../scripts/audit-dependencies.mjs";
 
-const exceptions = JSON.parse(readFileSync("docs/security/dependency-exceptions.json", "utf8"));
+const committed = JSON.parse(readFileSync("docs/security/dependency-exceptions.json", "utf8"));
+// The 2026-10-21 review of the braces chain, kept as a fixture so the gate's
+// fail-closed rules stay tested after the chain was removed from the lockfile.
+const exceptions = {
+  ...committed,
+  exceptions: [{
+    advisory: "GHSA-vfj7-8cjw-p6xm", package: "braces", range: "<=3.0.3", scope: "development",
+    chain: ["micromatch", "fast-glob", "@next/eslint-plugin-next", "eslint-config-next"],
+    reason: "Development-only lint tooling; no patched braces release.", reviewed_on: "2026-10-21", expires: "2026-11-30",
+  }],
+};
 const advisory = (name: string, id: string, severity = "high") => ({
   name, severity, isDirect: false, effects: [],
   via: [{ name, url: `https://github.com/advisories/${id}`, severity, title: "test", range: "*" }],
@@ -50,7 +60,7 @@ describe("fail-closed dependency gate", () => {
 });
 
 describe("reviewed exceptions cannot be widened", () => {
-  const base = JSON.parse(readFileSync("docs/security/dependency-exceptions.json", "utf8"));
+  const base = exceptions;
   const withException = (patch: object) => ({ ...base, exceptions: [{ ...base.exceptions[0], ...patch }] });
   it.each([
     [{ scope: "production" }, "scoped to development"],
@@ -62,8 +72,7 @@ describe("reviewed exceptions cannot be widened", () => {
     expect(result.ok).toBe(false);
     expect(result.failures.join("\n")).toContain(message);
   });
-  it("the committed exception expires within the reviewed window", () => {
-    expect(base.exceptions).toHaveLength(1);
-    expect(base.exceptions[0].expires <= "2026-11-30").toBe(true);
+  it("no development exception is committed once the braces chain is gone", () => {
+    expect(committed.exceptions).toEqual([]);
   });
 });
