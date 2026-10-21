@@ -1,6 +1,6 @@
 # Sprint 3 integration report, 21 October 2026
 
-Integration branch `claude/peaceful-allen-21u61u`, pull request [#38](https://github.com/adamjamiesimson/SignRelay/pull/38) to `main`. The final readiness record for the merge candidate is `docs/gitex/sprint-3/final-<commit>.{json,md}`, written by `npm run readiness`.
+Integration branch `claude/peaceful-allen-21u61u`, pull request [#38](https://github.com/adamjamiesimson/SignRelay/pull/38) to `main`. The final readiness record is [`final-439f6df.md`](final-439f6df.md) ([JSON](final-439f6df.json)). It comes from a fresh `git worktree` at `439f6df`, with `npm ci` and no build outputs present, run as `node scripts/readiness.mjs --label final --dir docs/gitex/sprint-3 --browser <chromium> --build rehearsal,asl-demo`. All 21 checks pass, including the strict `audit:security` gate (871 tests passed, 1 skipped, in 84 files). The full multilingual `build:firebase` and its smokes could not run in that container, because its network policy blocks the RSL model host; they run in CI on every push. The commit that adds the report changes documentation only.
 
 ## 1. Starting state (verified, not assumed)
 
