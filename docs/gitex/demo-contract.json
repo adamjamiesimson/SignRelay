@@ -3,32 +3,244 @@
   "contract": "SignRelay GITEX YouthX research-prototype demo, 30 October 2026",
   "scope": "Live ASL isolated-sign demo of six words (HELLO, THANK YOU, PLEASE, SORRY, YES, NO) on one prepared laptop with Chrome, plus honest abstention. Not sentence translation; not validated accuracy.",
   "automated": [
-    { "id": "CAM-1", "requirement": "The camera is requested only after the visitor starts the workspace; a denied permission shows a recoverable message and a retry works.", "check": { "file": "tests/workspace-browser-smoke.mjs", "contains": "Denied permission did not surface a recoverable error" } },
-    { "id": "CAM-2", "requirement": "While the camera is off, pending, denied or broken, no status claims recognition is running.", "check": { "file": "tests/recognition-status.test.ts", "contains": "never claims recognition while the camera is %s" } },
-    { "id": "CAM-3", "requirement": "A camera grant that arrives after leaving or cancelling is released immediately.", "check": { "file": "tests/workspace-browser-smoke.mjs", "contains": "Late retry grant leaked camera tracks" } },
-    { "id": "CAM-4", "requirement": "Pausing the camera ends every media track and shows camera off.", "check": { "file": "tests/offline-vision-smoke.mjs", "contains": "Camera tracks were not released" } },
-    { "id": "OFF-1", "requirement": "Hand tracking starts with jsDelivr and googleapis unreachable, using only self-hosted pinned assets.", "check": { "file": "tests/offline-vision-smoke.mjs", "contains": "CDN requests were attempted" } },
-    { "id": "PERF-1", "requirement": "In CI headless Chrome, vision cold start completes in under 15 s and frames reach recognition.", "check": { "file": "tests/offline-vision-smoke.mjs", "contains": "Cold start exceeded the 15 s contract" } },
-    { "id": "REC-1", "requirement": "The scripted six-word sequence confirms each word once, in order, with natural rests (synthetic kinematics).", "check": { "file": "tests/demo-sequence.test.ts", "contains": "keeps all six words in order with %i ms rests between signs" } },
-    { "id": "REC-2", "requirement": "Every core word confirms exactly once with no other label across 15 capture conditions (synthetic).", "check": { "file": "tests/asl-cross-sign-regression.test.ts", "contains": "confirms exactly once with no other label" } },
-    { "id": "REC-3", "requirement": "Two-evidence confirmation is preserved: a single proposal never becomes a word.", "check": { "file": "tests/asl-sign-specific.test.ts", "contains": "keeps two-evidence confirmation" } },
-    { "id": "ABS-1", "requirement": "Resting hands and a confident closed-set model alone never emit a word; every synthetic everyday-movement outcome matches the documented risk list.", "check": { "file": "tests/asl-negative-controls.test.ts", "contains": "matches the documented outcome" } },
-    { "id": "ABS-2", "requirement": "Stale, competing or reset evidence and wrong-language model results never confirm.", "check": { "file": "tests/arbitration.test.ts", "contains": "discards an ASL inference that finishes after switching to BSL" } },
-    { "id": "TXT-1", "requirement": "A duplicate confirmation is neither shown nor spoken; auto speak voices confirmed words only.", "check": { "file": "tests/workspace-browser-smoke.mjs", "contains": "Auto speak must voice a confirmed word exactly once" } },
-    { "id": "TXT-2", "requirement": "Copy, save-and-clear, history and per-language transcript isolation work; storage failure keeps the transcript.", "check": { "file": "tests/workspace-browser-smoke.mjs", "contains": "Copy did not place the transcript on the clipboard" } },
-    { "id": "A11Y-1", "requirement": "Tentative candidates are not announced; confirmed words are announced to screen readers.", "check": { "file": "tests/workspace-browser-smoke.mjs", "contains": "Tentative candidates must not be announced as translations" } },
-    { "id": "A11Y-2", "requirement": "The workspace and capture studio fit a 390 px phone viewport without horizontal overflow.", "check": { "file": "tests/workspace-browser-smoke.mjs", "contains": "Match score UI overflows a phone viewport" } },
-    { "id": "PRIV-1", "requirement": "The private capture studio is absent from public exports and deploys.", "check": { "file": "tests/rendered-html.test.mjs", "contains": "must not ship in a public export" } },
-    { "id": "PRIV-2", "requirement": "No camera data is uploaded by the capture studio.", "check": { "file": "tests/field-test-browser-smoke.mjs", "contains": "Camera data must not be POSTed" } },
-    { "id": "REL-1", "requirement": "A stalled or crashed recognition worker restarts, then pauses with a manual restart after repeated failures.", "check": { "file": "tests/recognition-session.test.ts", "contains": "limits automatic restarts and allows an explicit retry" } },
-    { "id": "HON-1", "requirement": "Displayed capability claims quote the committed evaluation exactly and never claim validation or measured live accuracy.", "check": { "file": "tests/capability-status.test.ts", "contains": "quotes the ASL development result exactly" } }
+    {
+      "id": "CAM-1",
+      "requirement": "The camera is requested only after the visitor starts the workspace; a denied permission shows a recoverable message and a retry works.",
+      "check": {
+        "file": "tests/workspace-browser-smoke.mjs",
+        "contains": "Denied permission did not surface a recoverable error"
+      }
+    },
+    {
+      "id": "CAM-2",
+      "requirement": "While the camera is off, pending, denied or broken, no status claims recognition is running.",
+      "check": {
+        "file": "tests/recognition-status.test.ts",
+        "contains": "never claims recognition while the camera is %s"
+      }
+    },
+    {
+      "id": "CAM-3",
+      "requirement": "A camera grant that arrives after leaving or cancelling is released immediately.",
+      "check": {
+        "file": "tests/workspace-browser-smoke.mjs",
+        "contains": "Late retry grant leaked camera tracks"
+      }
+    },
+    {
+      "id": "CAM-4",
+      "requirement": "Pausing the camera ends every media track and shows camera off.",
+      "check": {
+        "file": "tests/offline-vision-smoke.mjs",
+        "contains": "Camera tracks were not released"
+      }
+    },
+    {
+      "id": "OFF-1",
+      "requirement": "Hand tracking starts with jsDelivr and googleapis unreachable, using only self-hosted pinned assets.",
+      "check": {
+        "file": "tests/offline-vision-smoke.mjs",
+        "contains": "CDN requests were attempted"
+      }
+    },
+    {
+      "id": "PERF-1",
+      "requirement": "In CI headless Chrome, vision cold start completes in under 15 s and frames reach recognition.",
+      "check": {
+        "file": "tests/offline-vision-smoke.mjs",
+        "contains": "Cold start exceeded the 15 s contract"
+      }
+    },
+    {
+      "id": "REC-1",
+      "requirement": "The scripted six-word sequence confirms each word once, in order, with natural rests (synthetic kinematics).",
+      "check": {
+        "file": "tests/demo-sequence.test.ts",
+        "contains": "keeps all six words in order with %i ms rests between signs"
+      }
+    },
+    {
+      "id": "REC-2",
+      "requirement": "Every core word confirms exactly once with no other label across 15 capture conditions (synthetic).",
+      "check": {
+        "file": "tests/asl-cross-sign-regression.test.ts",
+        "contains": "confirms exactly once with no other label"
+      }
+    },
+    {
+      "id": "REC-3",
+      "requirement": "Two-evidence confirmation is preserved: a single proposal never becomes a word.",
+      "check": {
+        "file": "tests/asl-sign-specific.test.ts",
+        "contains": "keeps two-evidence confirmation"
+      }
+    },
+    {
+      "id": "ABS-1",
+      "requirement": "Resting hands and a confident closed-set model alone never emit a word; every synthetic everyday-movement outcome matches the documented risk list.",
+      "check": {
+        "file": "tests/asl-negative-controls.test.ts",
+        "contains": "matches the documented outcome"
+      }
+    },
+    {
+      "id": "ABS-2",
+      "requirement": "Stale, competing or reset evidence and wrong-language model results never confirm.",
+      "check": {
+        "file": "tests/arbitration.test.ts",
+        "contains": "discards an ASL inference that finishes after switching to BSL"
+      }
+    },
+    {
+      "id": "TXT-1",
+      "requirement": "A duplicate confirmation is neither shown nor spoken; auto speak voices confirmed words only.",
+      "check": {
+        "file": "tests/workspace-browser-smoke.mjs",
+        "contains": "Auto speak must voice a confirmed word exactly once"
+      }
+    },
+    {
+      "id": "TXT-2",
+      "requirement": "Copy, save-and-clear, history and per-language transcript isolation work; storage failure keeps the transcript.",
+      "check": {
+        "file": "tests/workspace-browser-smoke.mjs",
+        "contains": "Copy did not place the transcript on the clipboard"
+      }
+    },
+    {
+      "id": "A11Y-1",
+      "requirement": "Tentative candidates are not announced; confirmed words are announced to screen readers.",
+      "check": {
+        "file": "tests/workspace-browser-smoke.mjs",
+        "contains": "Tentative candidates must not be announced as translations"
+      }
+    },
+    {
+      "id": "A11Y-2",
+      "requirement": "The workspace and capture studio fit a 390 px phone viewport without horizontal overflow.",
+      "check": {
+        "file": "tests/workspace-browser-smoke.mjs",
+        "contains": "Match score UI overflows a phone viewport"
+      }
+    },
+    {
+      "id": "PRIV-1",
+      "requirement": "The private capture studio is absent from public exports and deploys.",
+      "check": {
+        "file": "tests/rendered-html.test.mjs",
+        "contains": "must not ship in a public export"
+      }
+    },
+    {
+      "id": "PRIV-2",
+      "requirement": "No camera data is uploaded by the capture studio.",
+      "check": {
+        "file": "tests/field-test-browser-smoke.mjs",
+        "contains": "Camera data must not be POSTed"
+      }
+    },
+    {
+      "id": "REL-1",
+      "requirement": "A stalled or crashed recognition worker restarts, then pauses with a manual restart after repeated failures.",
+      "check": {
+        "file": "tests/recognition-session.test.ts",
+        "contains": "limits automatic restarts and allows an explicit retry"
+      }
+    },
+    {
+      "id": "HON-1",
+      "requirement": "Displayed capability claims quote the committed evaluation exactly and never claim validation or measured live accuracy.",
+      "check": {
+        "file": "tests/capability-status.test.ts",
+        "contains": "quotes the ASL development result exactly"
+      }
+    },
+    {
+      "id": "OFF-2",
+      "requirement": "The ASL demo build makes no request that leaves the machine: page and worker requests are loopback only, behind a deny-all proxy (npm run demo:check).",
+      "check": {
+        "file": "tests/offline-demo-strict-smoke.mjs",
+        "contains": "Outbound connections were attempted"
+      }
+    },
+    {
+      "id": "RT-1",
+      "requirement": "The served export contains exactly the pinned vision runtime, ASL model and committed recognition worker; demo:serve refuses anything else.",
+      "check": {
+        "file": "scripts/verify-runtime.mjs",
+        "contains": "does not match its pinned size and SHA-256"
+      }
+    },
+    {
+      "id": "RT-2",
+      "requirement": "The ASL demo build ships no other language model, and no build except rehearsal contains the synthetic-landmark hook.",
+      "check": {
+        "file": "scripts/verify-runtime.mjs",
+        "contains": "contains the automated rehearsal hook"
+      }
+    },
+    {
+      "id": "REG-1",
+      "requirement": "A recognition change cannot add a wrong acceptance or silently change an outcome on the 11 established development trials.",
+      "check": {
+        "file": "scripts/baseline-gate.mjs",
+        "contains": "NEW WRONG ACCEPTANCE"
+      }
+    },
+    {
+      "id": "REH-1",
+      "requirement": "Automated software rehearsal: on the rehearsal build, synthetic landmarks for the six-word script produce the six words in order through the real camera loop, abstain on everyday movements, and survive a camera interruption.",
+      "check": {
+        "file": "tests/gitex-rehearsal-smoke.mjs",
+        "contains": "Six-sign sequence"
+      }
+    },
+    {
+      "id": "LIFE-1",
+      "requirement": "Repeated start/pause, rapid cancels, hidden tabs and workspace re-entry release the camera and never leak recognition workers.",
+      "check": {
+        "file": "tests/lifecycle-stress-smoke.mjs",
+        "contains": "Start/pause must not leak recognition workers"
+      }
+    },
+    {
+      "id": "FAULT-1",
+      "requirement": "Worker crashes restart at most twice a minute and then wait for a manual restart; missing or corrupted tracking models release the camera with a clear message and recover.",
+      "check": {
+        "file": "tests/fault-injection-smoke.mjs",
+        "contains": "A third crash within a minute must pause recognition"
+      }
+    },
+    {
+      "id": "A11Y-3",
+      "requirement": "Keyboard reaches every workspace control with visible focus; touch targets are at least 24×24 px on a 390 px phone viewport; reduced motion stops animations.",
+      "check": {
+        "file": "tests/transcript-a11y-smoke.mjs",
+        "contains": "Touch targets under 24×24 CSS px"
+      }
+    }
   ],
   "manual_before_demo": [
-    { "id": "MAN-1", "requirement": "On the demo laptop's real webcam, start the camera, sign each of the six words twice, and record per-word outcomes (correct / wrong / no match) on paper. Do not publish them as accuracy." },
-    { "id": "MAN-2", "requirement": "Hold hands at rest for 30 s and perform the everyday controls in docs/gitex/known-false-accept-risks.json; record any word that appears." },
-    { "id": "MAN-3", "requirement": "Unplug the network after the page has loaded from the local server (`npm start`) and repeat MAN-1 once." },
-    { "id": "MAN-4", "requirement": "Deny camera permission once, then allow it; pull the webcam (or disable it) mid-session and confirm the recovery message." },
-    { "id": "MAN-5", "requirement": "Confirm auto speak voices only confirmed words on the demo laptop speakers." }
+    {
+      "id": "MAN-1",
+      "requirement": "On the demo laptop's real webcam, open the workspace with ?perf and confirm at least 10 frames analysed/s (YES is lost at 5–8 fps in synthetic tests); then start the camera, sign each of the six words twice, and record per-word outcomes (correct / wrong / no match) on paper. Do not publish them as accuracy."
+    },
+    {
+      "id": "MAN-2",
+      "requirement": "Hold hands at rest for 30 s and perform the everyday controls in docs/gitex/known-false-accept-risks.json; record any word that appears."
+    },
+    {
+      "id": "MAN-3",
+      "requirement": "Serve the ASL demo build with `npm run demo:serve`, unplug the network after the page has loaded, and repeat MAN-1 once."
+    },
+    {
+      "id": "MAN-4",
+      "requirement": "Deny camera permission once, then allow it; pull the webcam (or disable it) mid-session and confirm the recovery message."
+    },
+    {
+      "id": "MAN-5",
+      "requirement": "Confirm auto speak voices only confirmed words on the demo laptop speakers."
+    }
   ],
   "not_claimed": [
     "Sentence or continuous ASL translation, grammar, facial grammar or fingerspelling.",
@@ -36,5 +248,6 @@
     "Independent fluent-signer validation.",
     "False-acceptance rates for non-signing or unsupported signs.",
     "Phone or tablet performance."
-  ]
+  ],
+  "status": "NO-GO. All five manual_before_demo gates are pending; they need the physical demo laptop, webcam and a signer."
 }

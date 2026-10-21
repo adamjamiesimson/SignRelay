@@ -1,5 +1,7 @@
 # SignRelay GITEX YouthX demo package — research prototype
 
+> **Superseded in part:** see [`demo-package-sprint-2.md`](demo-package-sprint-2.md) for Sprint 2 setup (`npm run demo:prepare` / `demo:serve`), checks and findings.
+
 Prepared 21 October 2026 for the 30 October showcase. Branch `claude/funny-archimedes-rk1un6`, draft PR https://github.com/adamjamiesimson/SignRelay/pull/36 (stacked on #35). Machine-checkable contract: [`demo-contract.json`](demo-contract.json). Ledger: [`sprint-ledger-2026-10-21.md`](sprint-ledger-2026-10-21.md).
 
 ## Release decision

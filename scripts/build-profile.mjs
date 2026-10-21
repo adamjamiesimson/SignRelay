@@ -5,6 +5,7 @@
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
+/** @type {Record<string, string[][]>} */
 export const STEPS = {
   "asl-demo": [
     ["node", "scripts/verify-vision-runtime.mjs"],

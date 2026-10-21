@@ -6,16 +6,37 @@
     {
       "worker_sha256": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
       "source_commit": "5bc014348c1d5ee4d0eb1bd660c26fd73d3b33e2",
-      "evidence": ["docs/evaluation/asl-stroke-repair-2026-10-17/final-development.jsonl", "docs/evaluation/asl-stroke-repair-2026-10-17/final-historical.jsonl"],
+      "evidence": [
+        "docs/evaluation/asl-stroke-repair-2026-10-17/final-development.jsonl",
+        "docs/evaluation/asl-stroke-repair-2026-10-17/final-historical.jsonl"
+      ],
       "evidence_kind": "committed per-trial JSONL",
-      "outcome": { "signed_trials": 11, "correct": 5, "wrong_accepted": 0, "abstained": 6, "errors": 0 }
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      }
     },
     {
       "worker_sha256": "ccce84c876f95caf9cade9a93fad1b686d5009a77ada203049044ee17ceb5632",
       "source_commit": "9bd8594aa30887d03de4a177644c54b10f0fca61",
-      "evidence": ["https://github.com/adamjamiesimson/SignRelay/actions/runs/39557282103", "https://github.com/adamjamiesimson/SignRelay/actions/runs/39558447150", "docs/evaluation/ci-pilot-rerun-2026-10-21.md"],
+      "evidence": [
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/39557282103",
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/39558447150",
+        "docs/evaluation/ci-pilot-rerun-2026-10-21.md",
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/39573034510"
+      ],
       "evidence_kind": "CI paired pilot logs (per-trial outcomes transcribed in ci-pilot-rerun-2026-10-21.md; the JSONL artifact could not be downloaded in the sandbox). The bundle hash is the committed, deterministically rebuilt bundle of that commit.",
-      "outcome": { "signed_trials": 11, "correct": 5, "wrong_accepted": 0, "abstained": 6, "errors": 0 }
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "baseline_gate": "scripts/baseline-gate.mjs ok (0 changes on all 11 established trials) in CI run 39573034510 on Sprint 2 commit 2a6dfef"
     }
   ]
 }

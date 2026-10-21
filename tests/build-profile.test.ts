@@ -60,4 +60,15 @@ describe("ASL demo build profile", () => {
     expect(bad.status).not.toBe(0);
     expect(bad.stderr).toContain("Unknown build profile all-languages");
   });
+  it("the rehearsal build is the ASL demo build plus the labelled hook, never the demo itself", async () => {
+    const steps = STEPS.rehearsal.map(step => step.join(" "));
+    expect(steps.some(step => step.includes("prune-profile.mjs rehearsal"))).toBe(true);
+    expect(steps.at(-1)).toContain("verify-runtime.mjs --out out --profile rehearsal");
+    const { demoExportProblems } = await import("../scripts/demo.mjs");
+    const root = fakeExport();
+    writeFileSync(join(root, "index.html"), "<html></html>");
+    writeFileSync(join(root, "runtime-manifest.json"), JSON.stringify({ profile: "rehearsal" }));
+    expect(demoExportProblems(root, () => ({ status: 0, stdout: "", stderr: "" }))[0]).toContain("is the rehearsal build, not the ASL demo");
+  });
 });
+

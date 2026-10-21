@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHECKS, compareReports, parseVitest, runCheck } from "../scripts/readiness.mjs";
+import { BROWSER_SMOKES, CHECKS, compareReports, parseVitest, runCheck } from "../scripts/readiness.mjs";
 
 describe("readiness report", () => {
   it("parses vitest totals including failures", () => {
@@ -23,5 +23,21 @@ describe("readiness report", () => {
     const now = { checks: [{ id: "lint", passed: false }, { id: "strict-audit", passed: true }, { id: "unit-tests", passed: true, summary: { tests: 600 } }] };
     expect(compareReports(base, now)).toEqual([{ id: "lint", change: "regression" }, { id: "strict-audit", change: "fixed" },
       { id: "unit-tests", change: "fewer-tests", before: 678, after: 600 }]);
+  });
+});
+
+describe("release decision", () => {
+  it("is NO-GO with every pending manual gate listed, even when the strict gate passes", async () => {
+    const { releaseDecision } = await import("../scripts/readiness.mjs");
+    const gates = [{ id: "MAN-1", requirement: "sign on the real webcam" }, { id: "MAN-2", requirement: "rest hands" }];
+    const decision = releaseDecision({ strictPassed: true, manualGates: gates });
+    expect(decision.status).toBe("NO-GO");
+    expect(decision.reasons.filter((reason: string) => reason.startsWith("Manual gate"))).toHaveLength(2);
+    expect(releaseDecision({ strictPassed: false, manualGates: [] }).reasons[0]).toContain("Strict dependency release gate fails");
+  });
+  it("runs the rehearsal and strict offline suites for their own builds", () => {
+    expect(BROWSER_SMOKES.rehearsal).toEqual(["gitex-rehearsal-smoke", "transcript-a11y-smoke"]);
+    expect(BROWSER_SMOKES["asl-demo"]).toContain("offline-demo-strict-smoke");
+    expect(BROWSER_SMOKES.full).toContain("workspace-browser-smoke");
   });
 });
