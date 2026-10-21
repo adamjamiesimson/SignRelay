@@ -25,7 +25,7 @@ export const BROWSER_SMOKES = {
 /** Release is decided by people and evidence, never by green software checks alone. */
 export function releaseDecision({ strictPassed, manualGates }) {
   const reasons = [];
-  if (!strictPassed) reasons.push("Strict dependency release gate fails (dev-only braces advisories; owner decision pending).");
+  if (!strictPassed) reasons.push("Strict dependency release gate fails: npm audit, the secret scan or the rendered-export checks reported a problem.");
   for (const gate of manualGates) reasons.push(`Manual gate ${gate.id} pending: ${gate.requirement}`);
   reasons.push("No unseen, live-camera or new-signer evaluation exists; real no-sign false acceptance is not measured.");
   return { status: "NO-GO", reasons };
@@ -42,7 +42,7 @@ export const CHECKS = [
   { id: "dependency-gate", category: "security", command: ["npm", "run", "audit:deps"] },
   { id: "production-audit", category: "security", command: ["npm", "audit", "--omit=dev"] },
   { id: "strict-audit", category: "security-release-gate", command: ["npm", "run", "audit:security"],
-    note: "Strict zero-advisory release gate. Expected to fail while the reviewed dev-only braces chain exists; owner decision." },
+    note: "Strict zero-advisory release gate (npm audit --audit-level=moderate, secret scan, rendered export). Never waived by configuration." },
 ];
 
 export function parseVitest(output) {
@@ -74,6 +74,8 @@ export function runtimeFingerprint() {
     node: process.version, npm: spawnSync("npm", ["--version"], { encoding: "utf8" }).stdout.trim(),
     dependencies: Object.fromEntries(["next", "react", "@mediapipe/tasks-vision", "onnxruntime-web", "vitest", "vite", "eslint-config-next", "braces"]
       .map(name => [name, version(name)])),
+    // The reviewed in-repo replacement that keeps braces out of the tree.
+    fast_glob_resolved: lock.packages?.["node_modules/fast-glob"]?.resolved ?? null,
     committed_recognition_worker_sha256: (() => {
       const bytes = spawnSync("git", ["show", "HEAD:public/workers/recognition.worker.js"], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 }).stdout;
       return bytes?.length ? createHash("sha256").update(bytes).digest("hex") : null;
@@ -148,7 +150,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const contract = JSON.parse(readFileSync("docs/gitex/demo-contract.json", "utf8"));
   const report = { schema: 1, label, generated_at: new Date().toISOString(), runtime: runtimeFingerprint(), checks: results,
     verdicts: { build_and_tests: nonGate.every(check => check.passed) ? "PASS" : "FAIL",
-      strict_release_gate: strict ? (strict.passed ? "PASS" : "FAIL (owner decision pending)") : "NOT RUN" },
+      strict_release_gate: strict ? (strict.passed ? "PASS" : "FAIL") : "NOT RUN" },
     release: releaseDecision({ strictPassed: strict?.passed === true, manualGates: contract.manual_before_demo }),
     evidence: { evaluated_runtimes: JSON.parse(readFileSync("docs/evaluation/evaluated-runtimes.json", "utf8")).runtimes
       .map(entry => ({ worker_sha256: entry.worker_sha256, outcome: entry.outcome, evidence: entry.evidence })),

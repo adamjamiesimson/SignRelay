@@ -12,7 +12,7 @@ function pullRequestBlock(text: string) {
 }
 
 describe("stacked pull requests receive checks", () => {
-  it.each(["ci.yml", "firebase-build-check.yml", "asl-video-pilot.yml", "field-test-browser.yml"])(
+  it.each(["ci.yml", "firebase-build-check.yml", "asl-video-pilot.yml", "field-test-browser.yml", "asl-demo.yml"])(
     "%s does not restrict pull_request base branches", name => {
       expect(pullRequestBlock(workflow(name))).not.toMatch(/^\s+branches:/m);
     });
@@ -20,6 +20,17 @@ describe("stacked pull requests receive checks", () => {
     const paths = pullRequestBlock(workflow("asl-video-pilot.yml"));
     for (const file of ["lib/sign-motion.ts", "lib/frame-timing.ts", "lib/decoder.ts", "lib/asl1000-runtime.ts",
       "lib/asl-starter-recognition.ts", "workers/recognition.worker.ts"]) expect(paths).toContain(`'${file}'`);
+  });
+});
+
+describe("the offline demo profiles are checked on every pull request", () => {
+  it("builds both demo profiles and runs every demo, rehearsal and fault-injection smoke", () => {
+    const demo = workflow("asl-demo.yml");
+    for (const step of ["npm run build:rehearsal", "npm run build:asl-demo", "npm run demo:check", "--self-test",
+      "tests/gitex-rehearsal-smoke.mjs", "tests/transcript-a11y-smoke.mjs", "tests/offline-vision-smoke.mjs",
+      "tests/lifecycle-stress-smoke.mjs", "tests/fault-injection-smoke.mjs", "--profile rehearsal", "--profile asl-demo"]) expect(demo).toContain(step);
+    expect(demo.indexOf("npm run build:asl-demo")).toBeGreaterThan(demo.indexOf("npm run build:rehearsal"));
+    expect(demo).not.toMatch(/continue-on-error|\|\| true/);
   });
 });
 
