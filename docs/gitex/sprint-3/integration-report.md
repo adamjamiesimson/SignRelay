@@ -1,6 +1,6 @@
 # Sprint 3 integration report, 21 October 2026
 
-Integration branch `claude/peaceful-allen-21u61u`, pull request [#38](https://github.com/adamjamiesimson/SignRelay/pull/38) to `main`. The final readiness record is [`final-439f6df.md`](final-439f6df.md) ([JSON](final-439f6df.json)). It comes from a fresh `git worktree` at `439f6df`, with `npm ci` and no build outputs present, run as `node scripts/readiness.mjs --label final --dir docs/gitex/sprint-3 --browser <chromium> --build rehearsal,asl-demo`. All 21 checks pass, including the strict `audit:security` gate (871 tests passed, 1 skipped, in 84 files). The full multilingual `build:firebase` and its smokes could not run in that container, because its network policy blocks the RSL model host; they run in CI on every push. The commit that adds the report changes documentation only.
+Integration branch `claude/peaceful-allen-21u61u`, pull request [#38](https://github.com/adamjamiesimson/SignRelay/pull/38) to `main`. The final readiness record is [`final-b36e7ab.md`](final-b36e7ab.md) ([JSON](final-b36e7ab.json)); [`final-439f6df.md`](final-439f6df.md) is the earlier run before the camera-track fix. It comes from a fresh `git worktree` at `b36e7ab`, with `npm ci` and no build outputs present, run as `node scripts/readiness.mjs --label final --dir docs/gitex/sprint-3 --browser <chromium> --build rehearsal,asl-demo`. All 21 checks pass, including the strict `audit:security` gate (871 tests passed, 1 skipped, in 84 files). The full multilingual `build:firebase` and its smokes could not run in that container, because its network policy blocks the RSL model host; they run in CI on every push. The commit that adds the report changes documentation only.
 
 ## 1. Starting state (verified, not assumed)
 
@@ -38,6 +38,8 @@ No branch was deleted. No history was rewritten.
 | `949ee21` | `npm run eval:log`: operator log for live webcam trials. Validated rows are written atomically, results are git-ignored and guarded, and the summary keeps them apart from reviewed results |
 | `c92cd6f` | PSL described as one-shot reference matching. Workspace heading says "Live sign recognition" |
 | `add0ea5` | `demo:serve` banner printed `undefined` evidence counts; fixed and tested |
+| `f1df1ef` | `readiness` ran the strict gate before building an export; it now runs last, as in CI |
+| `439f6df`, `b36e7ab` | First CI runs of the demo smokes on branded Google Chrome. Its own update tunnels are now in the documented browser-internal set, and the self-test proves page traffic to those hosts is still caught. A camera track that ends without an `ended` event is now detected directly, instead of relying on an 8 s watchdog that branded Chrome's advancing video clock defeated |
 
 The production recognition worker is **unchanged** (`ccce84c8…`, the bundle the real-video evidence is recorded against). No thresholds, rules, confirmation or arbitration logic changed. No experiment is enabled.
 
