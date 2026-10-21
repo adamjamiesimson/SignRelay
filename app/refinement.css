@@ -271,3 +271,10 @@ body, .app-shell, .workspace-page, .info-page, .not-found { background: var(--pa
 .calibration-message.error { background: #321c20; color: #ffc2b8; }
 :focus-visible { outline: 2px solid #8ff5e2; outline-offset: 4px; }
 @media (max-width: 480px) { .cookie-banner { bottom: 12px; left: 12px; right: 12px; padding: 20px; } }
+
+/* Touch screens: at least 44 px targets for transcript and session controls. */
+@media (pointer: coarse) {
+  .button.small { min-height: 44px; }
+  .entry-actions button,
+  .history-heading button { height: 44px; min-width: 48px; }
+}
