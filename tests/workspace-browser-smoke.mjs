@@ -32,6 +32,10 @@ try {
     navigator.mediaDevices.getUserMedia = () => { window.__qaCameraRequests++;
       if (window.__qaDenyCamera) return Promise.reject(new DOMException('Denied by controlled permission test','NotAllowedError'));
       return new Promise(resolve => window.__qaCameraResolvers.push(() => resolve({getTracks:()=>[{stop:()=>window.__qaStoppedTracks++}]}))); };
+    window.__qaSpoken = []; window.__qaCopied = null;
+    window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
+    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: { speak: u => window.__qaSpoken.push(u.text), cancel: () => {} } });
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__qaCopied = text; } } });
     window.__qaEmit = gloss => window.__qaWorkers.filter(w=>!w.closed).at(-1).emit(gloss);
     window.__qaDenyStorage = () => { const original=Storage.prototype.setItem;
       Storage.prototype.setItem=function(key,value){if(key==='signrelay.history.v1')throw new DOMException('full','QuotaExceededError');return original.call(this,key,value);};
@@ -60,12 +64,29 @@ try {
   assert.equal(await evaluate("[...document.querySelectorAll('footer a')].find(a=>a.textContent==='Translate')?.getAttribute('href')"), "/#languages");
   await click("Start translating"); await until(async () => await language() === "asl", "ASL workspace missing");
   await until(() => evaluate("window.__qaCameraRequests===1"), "Automatic camera request missing");
-  assert.match(await evaluate("document.querySelector('.candidate-bar strong')?.textContent"), /Start the camera to begin/,
+  // Permission is still pending here: nothing may imply recognition is running.
+  assert.match(await evaluate("document.querySelector('.candidate-bar strong')?.textContent"), /Allow camera access|Start the camera/,
     "An inactive camera must not imply recognition is collecting movement");
-  assert.match(await evaluate("document.querySelector('.recognition-state')?.textContent"), /camera off/,
+  assert.match(await evaluate("document.querySelector('.recognition-state')?.textContent"), /camera off|waiting for permission/,
     "An inactive camera must not claim to be listening");
+  assert.doesNotMatch(await evaluate("document.querySelector('.recognition-state')?.textContent"), /listening|watching|checking|following/);
+  assert.equal(await evaluate("document.querySelector('.candidate-bar').hasAttribute('aria-live')"), false,
+    "Tentative candidates must not be announced as translations");
 
   await emit("BOOK"); await until(async () => (await transcript())?.includes("BOOK"), "Controlled word missing");
+  // Auto speak voices each confirmed word once; a suppressed duplicate is neither shown nor spoken.
+  await evaluate("(()=>{const box=[...document.querySelectorAll('.speech-controls input[type=checkbox]')][0];if(!box.checked)box.click();})()");
+  await until(() => evaluate("document.querySelector('.speech-controls input[type=checkbox]').checked"), "Auto speak did not enable");
+  await emit("HELLO"); await emit("HELLO");
+  await until(async () => (await transcript())?.includes("HELLO"), "Spoken word missing");
+  await pause(150);
+  assert.equal(await evaluate("document.querySelectorAll('.transcript-entry').length"), 2, "Duplicate confirmation entered the transcript");
+  assert.deepEqual(await evaluate("window.__qaSpoken"), ["HELLO"], "Auto speak must voice a confirmed word exactly once");
+  assert.equal(await evaluate("[...document.querySelectorAll('.sr-only[role=status]')].map(n=>n.textContent).includes('Confirmed: HELLO')"), true,
+    "Screen readers should hear the confirmed word");
+  await click("Copy");
+  await until(() => evaluate("window.__qaCopied === 'BOOK HELLO'"), "Copy did not place the transcript on the clipboard");
+  await evaluate("document.querySelector('.speech-controls input[type=checkbox]').click()");
   assert.match(await evaluate("document.querySelector('.candidate-bar')?.nextElementSibling?.textContent"), /not measured translation accuracy/);
   await browser.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
   assert(await evaluate("document.documentElement.scrollWidth <= 390"), "Match score UI overflows a phone viewport");
@@ -115,7 +136,8 @@ try {
   await evaluate("window.__qaCameraResolvers.forEach(resolve=>resolve());window.__qaCameraResolvers=[]");
   await until(() => evaluate(`window.__qaStoppedTracks===${requests + 1}`), "Late retry grant leaked camera tracks");
   console.log(JSON.stringify({ passed: true, checks: ["footer navigation", "workspace transcript isolation", "welcome transcript isolation",
-    "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "visible match-score qualification", "denied permission and cancelled retry"],
+    "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "visible match-score qualification", "denied permission and cancelled retry",
+    "duplicate confirmation neither shown nor spoken", "confirmed-only screen-reader announcements", "transcript copy"],
     camera_requests: await evaluate("window.__qaCameraRequests"), denied_requests: 1, stale_tracks_stopped: await evaluate("window.__qaStoppedTracks") }));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors, diagnostics: await browser.evaluate(`({mediaDevices:typeof navigator.mediaDevices,

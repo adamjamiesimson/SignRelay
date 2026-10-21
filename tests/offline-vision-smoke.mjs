@@ -70,7 +70,8 @@ try {
   assert.ok(visionRequests.some(path => path.startsWith("/vision/wasm/")), "Self-hosted WASM was not used");
   for (const cycle of cycles) {
     assert.ok(cycle.frames_forwarded_per_s > 0, "No frames reached recognition");
-    assert.match(cycle.sequence_text, /Waiting for hands|No confident match|Building movement context/);
+    assert.match(cycle.sequence_text, /Waiting for hands/);
+    assert.equal(cycle.status_while_no_hands, "waiting for hands", "Camera on without hands must say so, not 'uncertain' or 'listening'");
   }
   console.log(JSON.stringify({ passed: true, cdn_blocked: true, cdn_requests: cdnRequests.length,
     self_hosted_paths: [...new Set(visionRequests)].sort(), cycles,

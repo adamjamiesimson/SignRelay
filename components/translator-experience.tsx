@@ -37,6 +37,8 @@ import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
+import { recognitionStatus } from "@/lib/recognition-status";
+import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
 import type {
@@ -73,6 +75,11 @@ export function TranslatorExperience() {
   const [bufferSize, setBufferSize] = useState(0);
   const [recognitionFeedback, setRecognitionFeedback] = useState("");
   const [recognitionUnavailable, setRecognitionUnavailable] = useState(false);
+  const [motionReason, setMotionReason] = useState<string | null>(null);
+  const [visionSource, setVisionSource] = useState<VisionEngine["assetSource"] | null>(null);
+  // Screen readers hear confirmed words and camera changes, never tentative candidates.
+  const [announcement, setAnnouncement] = useState("");
+  const [transcriptMessage, setTranscriptMessage] = useState("");
   const [entries, setEntries] = useState<TranscriptEntry[]>([]);
   const [storageMessage, setStorageMessage] = useState("");
   const [history, setHistory] = useState<TranscriptSession[]>([]);
@@ -107,6 +114,7 @@ export function TranslatorExperience() {
   const templatesRef = useRef<CalibrationTemplate[]>([]);
   const captureFramesRef = useRef<VisionFrame[]>([]);
   const captureStateRef = useRef<CalibrationState>("idle");
+  const entriesRef = useRef<TranscriptEntry[]>([]);
 
   const model = useMemo(
     () => LANGUAGE_LIST.find((item) => item.id === selected)!,
@@ -207,6 +215,8 @@ export function TranslatorExperience() {
     return true;
   }
 
+  useEffect(() => { entriesRef.current = entries; }, [entries]);
+
   useEffect(() => {
     settingsRef.current = settings;
     if (typeof window !== "undefined") saveSettings(settings);
@@ -230,8 +240,11 @@ export function TranslatorExperience() {
       setConfidence(message.confidence);
       setBufferSize(message.bufferSize);
       setRecognitionFeedback(message.feedback ?? "");
+      setMotionReason(message.motionReason ?? null);
       return;
     }
+    // Confirmations from a stopped or replaced session never reach here:
+    // RecognitionSession drops messages from before every reset.
     if (message.type !== "confirmed") return;
 
     const entry: TranscriptEntry = {
@@ -242,11 +255,11 @@ export function TranslatorExperience() {
       timestamp: message.timestamp,
       source: message.source,
     };
-    setEntries((current) => {
-      const previous = current[current.length - 1];
-      if (isRecentDuplicate(previous, entry)) return current;
-      return [...current, entry];
-    });
+    // Decide once, synchronously, so a suppressed duplicate is neither shown nor spoken.
+    if (isRecentDuplicate(entriesRef.current.at(-1), entry)) return;
+    entriesRef.current = [...entriesRef.current, entry];
+    setEntries(entriesRef.current);
+    setAnnouncement(`Confirmed: ${message.text}`);
     if (settingsRef.current.autoSpeak) speak(message.text);
   }, [speak]);
 
@@ -293,6 +306,8 @@ export function TranslatorExperience() {
     setConfidence(0);
     setBufferSize(0);
     setRecognitionFeedback("");
+    setMotionReason(null);
+    window.speechSynthesis?.cancel();
     lastVideoTimeRef.current = -1;
     frameErrorsRef.current = 0;
     captureStateRef.current = "idle";
@@ -459,6 +474,7 @@ export function TranslatorExperience() {
       });
       if (generation !== cameraGenerationRef.current) { engine.close(); return; }
       engineRef.current = engine;
+      setVisionSource(engine.assetSource);
       cameraProgressRef.current = performance.now();
       setCameraState("active");
       setCameraMessage("Camera and vision models active");
@@ -623,6 +639,16 @@ export function TranslatorExperience() {
     setHistory(loadHistory());
   };
 
+  const copyTranscript = async () => {
+    const text = entries.map((entry) => entry.text).join(" ");
+    try {
+      await navigator.clipboard.writeText(text);
+      setTranscriptMessage("Transcript copied.");
+    } catch {
+      setTranscriptMessage("Copying is not available here. Select the transcript text to copy it.");
+    }
+  };
+
   const clearAllLocalData = async () => {
     clearLocalSignRelayData();
     await clearCalibrationTemplates();
@@ -660,6 +686,9 @@ export function TranslatorExperience() {
   }
 
   if (step === "workspace") {
+    const capability = capabilityStatus(selected);
+    const status = recognitionStatus({ camera: cameraState, unavailable: recognitionUnavailable,
+      handsVisible: detection.hands, motionReason, candidate, bufferSize });
     return (
       <div className="app-shell">
         <SurfaceMotion scene={`workspace-${selected}`} cursor={false} />
@@ -684,7 +713,7 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <span className="honesty-label">Model status</span>
-            <p>{model.status === "experimental" ? <><strong>Research preview.</strong> {model.automaticVocabularyCount.toLocaleString()} isolated signs. Check translations before relying on them.</> : model.status === "preparing" ? <><strong>Personal signs only.</strong> The shared model is not installed. Teach a sign to get started.</> : <><strong>Personal signs only.</strong> Record examples to activate your {model.shortName} vocabulary.</>}</p>
+            <p><strong>{capability.headline}</strong> {capability.evidence} Check every word before relying on it. <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
             <button className="text-action" onClick={() => {
               const panel = vocabularyRef.current;
               if (!panel) return;
@@ -739,6 +768,7 @@ export function TranslatorExperience() {
                 <DetectionItem label="Upper body" active={detection.pose} />
               </div>
 
+              {visionSource && <p className="calibration-message">Hand tracking loaded {visionSource === "self-hosted" ? "from this site, so it does not depend on an external CDN" : "from the public CDN fallback"}.</p>}
               <div className="camera-actions">
                 <label className="switch-row">
                   <input
@@ -752,8 +782,8 @@ export function TranslatorExperience() {
               </details>
               <div className="camera-session-actions">
                 <span>{cameraState === "active" ? "Camera on · video stays private" : "Video stays on this device"}</span>
-                <button className="button ghost small" onClick={cameraState === "active" ? stopCamera : requestCamera}>
-                  {cameraState === "active" ? "Pause camera" : "Start camera"}
+                <button className="button ghost small" onClick={cameraState === "active" || cameraState === "requesting" || cameraState === "loading" ? stopCamera : requestCamera}>
+                  {cameraState === "active" ? "Pause camera" : cameraState === "requesting" || cameraState === "loading" ? "Cancel" : "Start camera"}
                 </button>
               </div>
             </section>
@@ -763,15 +793,15 @@ export function TranslatorExperience() {
                 <div>
                   <h2 id="transcript-title">Transcript</h2>
                 </div>
-                <div className={`recognition-state ${cameraState === "active" && !recognitionUnavailable ? recognitionState : "paused"}`}>
-                  <span /> {cameraState !== "active" ? "camera off" : recognitionUnavailable ? "recognition unavailable" : recognitionState}
+                <div className={`recognition-state ${status.tone}`} data-status={status.key} data-worker-state={recognitionState}>
+                  <span /> {status.chip}
                 </div>
               </div>
 
-              <div className="candidate-bar" aria-live="polite">
+              <div className="candidate-bar">
                 <div>
-                  <span className="candidate-label">Current sequence</span>
-                  <strong>{cameraState !== "active" ? "Start the camera to begin" : recognitionUnavailable ? "Recognition unavailable" : !detection.hands ? "Waiting for hands in frame" : candidate ? candidate : bufferSize < 10 ? "Building movement context…" : "No confident match"}</strong>
+                  <span className="candidate-label">{status.key === "checking-sign" ? "Possible match · not confirmed" : "Current sequence"}</span>
+                  <strong>{status.key === "checking-sign" ? candidate : status.detail}</strong>
                 </div>
                 <div className="confidence-ring" title="Match score, not a measured probability of correct translation" style={{ "--confidence": `${Math.round(confidence * 100)}%` } as React.CSSProperties}>
                   <span aria-label={`Match score ${Math.round(confidence * 100)} out of 100`}>{Math.round(confidence * 100)}</span>
@@ -779,13 +809,15 @@ export function TranslatorExperience() {
               </div>
 
               <p className="calibration-message">Match score out of 100. It is not measured translation accuracy.</p>
-              {recognitionFeedback && <p className="calibration-message" role="status">{recognitionFeedback}</p>}
+              {recognitionFeedback && <p className="calibration-message">{recognitionFeedback}</p>}
+              <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
+              <p className="sr-only" role="status" aria-live="polite">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraState === "idle" ? "Camera off." : cameraMessage}</p>
               {recognitionUnavailable && (
                 <button className="button secondary small" onClick={() => workerRef.current?.restart()}>
                   Restart recognition
                 </button>
               )}
-              <div className="transcript-body" aria-live="polite" aria-label="Confirmed translation">
+              <div className="transcript-body" aria-label="Confirmed words">
                 {!entries.length ? (
                   <div className="transcript-empty">
                     <h3>Your words, here.</h3>
@@ -859,10 +891,14 @@ export function TranslatorExperience() {
                 <button className="button ghost small" onClick={() => setShowHistory((current) => !current)}>
                   History ({history.length})
                 </button>
+                <button className="button ghost small" disabled={!entries.length} onClick={() => void copyTranscript()}>
+                  Copy
+                </button>
                 <button className="button danger small" disabled={!entries.length} onClick={clearTranscript}>
                   Save & clear
                 </button>
               </div>
+              {transcriptMessage && <p className="calibration-message" role="status">{transcriptMessage}</p>}
 
               {storageMessage && <p className="calibration-message" role="status">{storageMessage}</p>}
               {showHistory && (
@@ -1028,14 +1064,14 @@ function WorkspaceLanguageSwitcher({
           onChange={(event) => onChange(event.target.value as LanguageId)}
           aria-label="Change sign language"
         >
-          <optgroup label="Automatic recognition">
+          <optgroup label="Research models · live accuracy not measured">
             {automatic.map((language) => (
               <option key={language.id} value={language.id}>
                 {language.shortName} · {language.language}
               </option>
             ))}
           </optgroup>
-          <optgroup label="Models in development">
+          <optgroup label="Teach your own signs · no automatic model">
             {development.map((language) => (
               <option key={language.id} value={language.id}>
                 {language.shortName} · {language.language}
