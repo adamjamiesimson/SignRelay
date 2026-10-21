@@ -38,6 +38,10 @@ if (parentPort) {
   const script = workerData.script.startsWith("/workers/")
     ? path.join(workerData.root, "public", workerData.script) : workerData.script;
   await import(pathToFileURL(script).href);
-  parentPort.on("message", data => void self.onmessage?.({ data }));
+  // Benchmark-only probe: report this thread's V8 heap without touching the worker under test.
+  const { getHeapStatistics } = await import("node:v8");
+  parentPort.on("message", data => data?.type === "__heap"
+    ? parentPort.postMessage({ type: "__heap", used: getHeapStatistics().used_heap_size })
+    : void self.onmessage?.({ data }));
   parentPort.postMessage({ type: "host-ready" });
 }
