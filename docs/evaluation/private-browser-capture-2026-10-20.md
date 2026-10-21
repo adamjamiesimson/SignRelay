@@ -17,3 +17,11 @@
 - Downloaded clips are not automatically integrated with `intake.json`; integrity, labels, cohort split and fingerprint checks remain enforced downstream. A partially completed batch may not be frozen by the existing importer.
 - Desktop/mobile MediaRecorder format support varies. The browser chooses supported WebM/MP4 and matches the filename extension; test a sample before arranging participants.
 - Current isolated-sign pilot remains **5 correct / 0 wrong / 6 abstentions across 11 reused development clips**; this tool creates **no new sign evaluation result** by itself. The five reserved holdout clips remain sealed.
+
+## 21 October 2026 hardening (sidecar schema 2)
+
+- `/field-test` is omitted from public Firebase/Vercel exports. Run it with `npm run dev`, or build with `SIGNRELAY_INCLUDE_PRIVATE_CAPTURE=1` for local synthetic tests (that export is marked and `scripts/deploy-firebase.sh` refuses it).
+- A take is rejected (no download offered) when it is shorter than 1 second, empty, over 100 MB or 30 seconds, in an unsupported format, or interrupted. Interruptions include the camera track ending, the device muting/pausing the camera, the page becoming hidden, recorder errors, closing the camera, and withdrawing the consent acknowledgement.
+- "Physical hands used" no longer defaults to Right; it must be chosen explicitly, like the dominant hand.
+- The sidecar (`schema: 2`) adds `recording_sha256` (computed in the browser over the exact downloaded bytes), `duration_ms`, `stop_reason` (`manual` or `time-limit`), `capture_tool` and `camera_settings` (resolution, frame rate and facing mode only). Camera device labels are deliberately **not** recorded because browsers can expose names such as "<name>'s iPhone Camera".
+- These are local tooling checks. They do not establish consent, a correct gloss, signing quality or review status. Every sidecar remains `pending-independent-fluent-review`.

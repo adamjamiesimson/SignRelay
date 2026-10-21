@@ -3,14 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  capturePlan, captureTrial, captureTypes, slotLabels, takeCount, videoExtension,
-  type CaptureType,
+  MAX_RECORDING_MS, captureMetadata, capturePlan, captureTrial, captureTypes, rejectRecording, sha256Hex,
+  slotLabels, takeCount, videoExtension, type CaptureType, type CapturedTake,
 } from "@/lib/field-test-capture";
 import styles from "./page.module.css";
 
-type Clip = { blob: Blob; mime: string; trial: ReturnType<typeof captureTrial>; recordedAt: string; dominantHand: string; physicalHands: string[]; device: string; oovGloss: string | null };
-const MAX_MS = 30_000;
-const MAX_BYTES = 100 * 1024 * 1024;
+type Clip = CapturedTake & { blob: Blob };
 const MIME_OPTIONS = ["video/webm;codecs=vp8", "video/webm", "video/mp4"];
 
 function saveDownload(blob: Blob, filename: string) {
@@ -30,7 +28,7 @@ export default function FieldTestPage() {
   const [slot, setSlot] = useState(1);
   const [take, setTake] = useState(1);
   const [dominantHand, setDominantHand] = useState("");
-  const [physicalHands, setPhysicalHands] = useState("Right");
+  const [physicalHands, setPhysicalHands] = useState("");
   const [device, setDevice] = useState("");
   const [oovGloss, setOovGloss] = useState("");
   const [consent, setConsent] = useState(false);
@@ -45,7 +43,8 @@ export default function FieldTestPage() {
   const cameraGenerationRef = useRef(0);
   const cameraPendingRef = useRef(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
-  const invalidCaptureRef = useRef(false);
+  // Why the current take cannot be used; null while it is still intact.
+  const interruptionRef = useRef<string | null>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cutoffRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -62,7 +61,7 @@ export default function FieldTestPage() {
     cameraGenerationRef.current++;
     cameraPendingRef.current = false;
     setCameraPending(false);
-    invalidCaptureRef.current = true;
+    interruptionRef.current ??= "camera closed";
     resetTimers();
     if (recorderRef.current?.state === "recording") recorderRef.current.stop();
     streamRef.current?.getTracks().forEach(track => track.stop());
@@ -133,45 +132,72 @@ export default function FieldTestPage() {
       setNotice("Start the camera in a browser with MediaRecorder support first.");
       return;
     }
-    if (!consent || !dominantHand || !device.trim() || (kind === "unknown_sign" && !oovGloss.trim())) {
-      setNotice("Consent, actual dominant hand and device are required. Unsupported signs also need a preselected label.");
+    if (!consent || !dominantHand || !physicalHands || !device.trim() || (kind === "unknown_sign" && !oovGloss.trim())) {
+      setNotice("Consent, actual dominant hand, physical hands used and device are required. Unsupported signs also need a preselected label.");
       return;
     }
     if (recorderRef.current?.state === "recording") return;
     const currentTrial = captureTrial(participant, kind, slot, take);
     const chosenMime = MIME_OPTIONS.find(mime => MediaRecorder.isTypeSupported(mime));
     if (!chosenMime) { setNotice("This browser does not support tested WebM/MP4 recording. Use Chrome or a compatible recorder."); return; }
-    invalidCaptureRef.current = false;
+    interruptionRef.current = null;
     const chunks: BlobPart[] = [];
     const recordedAt = new Date().toISOString();
     const capturedHand = physicalHands === "Both" ? ["Left", "Right"] : [physicalHands];
+    const videoTrack = stream.getVideoTracks()[0];
+    const settings = videoTrack?.getSettings?.() ?? {};
+    const camera = { width: settings.width ?? null, height: settings.height ?? null,
+      frameRate: settings.frameRate ?? null, facingMode: settings.facingMode ?? null };
+    let stopReason: Clip["stopReason"] = "manual";
+    let started = performance.now();
     try {
       const recorder = new MediaRecorder(stream, { mimeType: chosenMime, videoBitsPerSecond: 1_500_000 });
       recorderRef.current = recorder;
+      // A paused camera or hidden page can drop frames without ending the track.
+      const interrupt = (reason: string) => {
+        interruptionRef.current ??= reason;
+        if (recorder.state === "recording") recorder.stop();
+      };
+      const onMute = () => interrupt("camera paused by the device");
+      const onHidden = () => { if (document.hidden) interrupt("page hidden during recording"); };
+      videoTrack?.addEventListener("mute", onMute);
+      document.addEventListener("visibilitychange", onHidden);
       recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
-      recorder.onerror = () => { invalidCaptureRef.current = true; resetTimers(); setRecording(false); setNotice("Recording failed; this take cannot be used."); };
+      recorder.onerror = () => { interruptionRef.current ??= "recorder error"; resetTimers(); setRecording(false); setNotice("Recording failed; this take cannot be used."); };
       recorder.onstop = () => {
+        const durationMs = performance.now() - started;
+        videoTrack?.removeEventListener("mute", onMute);
+        document.removeEventListener("visibilitychange", onHidden);
         resetTimers();
         setRecording(false);
         const blob = new Blob(chunks, { type: recorder.mimeType || chosenMime || "video/webm" });
-        if (invalidCaptureRef.current || !blob.size || blob.size > MAX_BYTES) {
+        const rejection = rejectRecording({ durationMs, bytes: blob.size, mimeType: blob.type, interruption: interruptionRef.current });
+        if (rejection) {
           setClip(null);
-          setNotice("The capture was interrupted, empty or exceeded 100 MB. Discard and try again.");
+          setNotice(rejection);
           return;
         }
-        setClip({ blob, mime: blob.type, trial: currentTrial, recordedAt,
-          dominantHand, physicalHands: capturedHand, device: device.trim(), oovGloss: kind === "unknown_sign" ? oovGloss.trim() : null });
-        setNotice("Recorded locally. Download BOTH the original video and its metadata; they have not been reviewed.");
+        const generation = cameraGenerationRef.current;
+        setNotice("Computing the recording checksum…");
+        void sha256Hex(blob).catch(() => null).then(sha256 => {
+          if (generation !== cameraGenerationRef.current) return;
+          setClip({ blob, mime: blob.type, bytes: blob.size, sha256, trial: currentTrial, recordedAt, durationMs, stopReason,
+            camera, dominantHand, physicalHands: capturedHand, device: device.trim(), oovGloss: kind === "unknown_sign" ? oovGloss.trim() : null });
+          setNotice(sha256
+            ? "Recorded locally. Download BOTH the original video and its metadata; they have not been reviewed."
+            : "Recorded locally without a checksum (this browser lacks Web Crypto). Download BOTH files; intake will compute the checksum.");
+        });
       };
       setClip(null);
       recorder.start(500);
+      started = performance.now();
       setRecording(true);
       setElapsed(0);
-      const started = performance.now();
       countdownRef.current = setInterval(() => setElapsed(Math.min(30, Math.floor((performance.now() - started) / 1000))), 250);
       cutoffRef.current = setTimeout(() => {
+        stopReason = "time-limit";
         if (recorder.state === "recording") recorder.stop();
-      }, MAX_MS);
+      }, MAX_RECORDING_MS);
       setNotice("Recording in progress. Include a natural lead-in and ending; stop within 30 seconds.");
     } catch (error) {
       resetTimers();
@@ -187,22 +213,7 @@ export default function FieldTestPage() {
 
   function downloadMetadata() {
     if (!clip) return;
-    const metadata = {
-      ...clip.trial,
-      status: "pending-independent-fluent-review",
-      original_recording_file: clip.trial.trial_id + "." + videoExtension(clip.mime),
-      mime_type: clip.mime,
-      bytes: clip.blob.size,
-      recorded_at: clip.recordedAt,
-      dominant_hand: clip.dominantHand,
-      physical_hands: clip.physicalHands,
-      device: clip.device,
-      claimed_unsupported_gloss: clip.oovGloss,
-      oov_vocabulary_verified: false,
-      consent_documentation: "Store consent reference separately in private intake. Checkbox is not proof of consent.",
-      review: { status: "pending", reviewer_id: null, fluent_asl: false, blinded_to_predictions: false },
-      note: "Downloaded original browser recording. Not scored or reviewed. This is a development take, never a holdout."
-    };
+    const metadata = captureMetadata(clip);
     saveDownload(new Blob([JSON.stringify(metadata, null, 2) + "\n"], { type: "application/json" }), clip.trial.trial_id + ".capture.json");
   }
 
@@ -244,7 +255,7 @@ export default function FieldTestPage() {
             </label>
             <label>Physical hands used
               <select value={physicalHands} disabled={recording} onChange={e => setPhysicalHands(e.target.value)}>
-                <option value="Left">Left</option><option value="Right">Right</option><option value="Both">Both</option>
+                <option value="">Select hands used</option><option value="Left">Left</option><option value="Right">Right</option><option value="Both">Both</option>
               </select>
             </label>
             <label>Device (model / browser)
@@ -292,7 +303,7 @@ export default function FieldTestPage() {
             <button type="button" disabled={!clip} onClick={downloadMetadata}>Download capture metadata</button>
             <button type="button" disabled={!clip} onClick={() => { setClip(null); setNotice("Recording discarded from this page's memory."); }}>Discard local result</button>
           </div>
-          {clip && <p className={styles.slot}>Ready: {clip.trial.trial_id} · {(clip.blob.size / (1024 * 1024)).toFixed(1)} MB · {clip.mime}</p>}
+          {clip && <p className={styles.slot}>Ready: {clip.trial.trial_id} · {(clip.durationMs / 1000).toFixed(1)} s · {(clip.blob.size / (1024 * 1024)).toFixed(1)} MB · {clip.mime}{clip.sha256 ? ` · SHA-256 ${clip.sha256.slice(0, 12)}…` : ""}</p>}
           <p className={styles.small}>No video, identity mapping, consent record or results are saved by this page across reloads. The downloaded file is not automatically imported into the collection plan. Never mark it reviewed without a human independent fluent signer.</p>
         </section>
       </div>

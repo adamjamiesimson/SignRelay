@@ -48,16 +48,23 @@ try {
   await until(async () => (await status())?.includes("Camera ready"), "Camera did not start");
   await click("Record this take");
   await until(async () => (await status())?.includes("actual dominant hand"), "Missing metadata was not rejected");
-  await evaluate("(()=>{const hand=[...document.querySelectorAll('label')].find(l=>l.textContent.includes('Actual dominant hand')).querySelector('select');hand.value='Right';hand.dispatchEvent(new Event('change',{bubbles:true}));const input=document.querySelector('input[placeholder=\"e.g. Pixel 8 / Chrome\"]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,'CI fake camera / Chrome');input.dispatchEvent(new Event('input',{bubbles:true}));})()");
+  await evaluate("(()=>{const hand=[...document.querySelectorAll('label')].find(l=>l.textContent.includes('Actual dominant hand')).querySelector('select');hand.value='Right';hand.dispatchEvent(new Event('change',{bubbles:true}));const used=[...document.querySelectorAll('label')].find(l=>l.textContent.includes('Physical hands used')).querySelector('select');used.value='Right';used.dispatchEvent(new Event('change',{bubbles:true}));const input=document.querySelector('input[placeholder=\"e.g. Pixel 8 / Chrome\"]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,'CI fake camera / Chrome');input.dispatchEvent(new Event('input',{bubbles:true}));})()");
   await until(() => evaluate("document.querySelector('input[placeholder=\"e.g. Pixel 8 / Chrome\"]')?.value.includes('CI fake')"), "Device metadata did not hydrate");
+  // An accidental start/stop cannot contain a lead-in, sign and ending.
+  await click("Record this take");
+  await until(() => evaluate("!!document.querySelector('span[class*=rec]')"), "Short recording did not start");
+  await pause(300);
+  await click("Stop recording");
+  await until(async () => (await status())?.includes("shorter than 1 second"), "Too-short take was not rejected");
+  assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Download original recording')?.disabled"), true);
   await click("Record this take");
   await until(() => evaluate("!!document.querySelector('span[class*=rec]')"), "Recording did not start");
-  await pause(800);
+  await pause(1500);
   await click("Stop recording");
   await until(async () => (await status())?.includes("Download BOTH"), "Recording was not completed");
   await click("Download original recording");
   await click("Download capture metadata");
-  const files = await evaluate("(async()=>{const files=[];for(const entry of window.__qaDownloads){const blob=window.__qaBlobs.get(entry.url);files.push({name:entry.name,mime:blob?.type,size:blob?.size,meta:entry.name.endsWith('.json')?JSON.parse(await blob.text()):null});}return files;})()");
+  const files = await evaluate("(async()=>{const hex=async b=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',await b.arrayBuffer()))].map(x=>x.toString(16).padStart(2,'0')).join('');const files=[];for(const entry of window.__qaDownloads){const blob=window.__qaBlobs.get(entry.url);files.push({name:entry.name,mime:blob?.type,size:blob?.size,sha256:await hex(blob),meta:entry.name.endsWith('.json')?JSON.parse(await blob.text()):null});}return files;})()");
   assert.equal(files.length, 2);
   const video = files.find(f => /\.(mp4|webm)$/.test(f.name));
   const metadata = files.find(f => f.name.endsWith(".capture.json"));
@@ -72,9 +79,23 @@ try {
   assert.equal(metadata.meta.expected_gloss, "HELLO");
   assert.equal(metadata.meta.device, "CI fake camera / Chrome");
   assert.equal(metadata.meta.dominant_hand, "Right");
+  assert.deepEqual(metadata.meta.physical_hands, ["Right"]);
+  assert.equal(metadata.meta.schema, 2);
+  assert.equal(metadata.meta.recording_sha256, video.sha256, "Sidecar checksum must identify the downloaded video");
+  assert.equal(metadata.meta.bytes, video.size);
+  assert.ok(metadata.meta.duration_ms >= 1000 && metadata.meta.duration_ms < 30000, String(metadata.meta.duration_ms));
+  assert.equal(metadata.meta.stop_reason, "manual");
+  assert.equal("label" in metadata.meta.camera_settings, false, "Camera device labels can contain personal names");
   await browser.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, mobile: true, deviceScaleFactor: 1 });
   assert.equal(await evaluate("document.documentElement.scrollWidth<=390"), true, "Phone layout overflows");
   await browser.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, mobile: false, deviceScaleFactor: 1 });
+  // Backgrounding the page can silently drop frames; such takes are discarded.
+  await click("Record this take");
+  await until(() => evaluate("!!document.querySelector('span[class*=rec]')"), "Hidden-page recording did not start");
+  await pause(1200);
+  await evaluate("(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));delete document.hidden;})()");
+  await until(async () => (await status())?.includes("page hidden"), "Hidden-page interruption was not rejected");
+  assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Download original recording')?.disabled"), true);
   await click("Record this take");
   await until(() => evaluate("!!document.querySelector('span[class*=rec]')"), "Second recording did not start");
   await evaluate("(()=>{const track=window.__qaTracks.findLast(t=>t.kind==='video');if(!track)throw Error('No video track');track.dispatchEvent(new Event('ended'));})()");
@@ -102,7 +123,7 @@ try {
   assert.deepEqual(outgoing, [], "Camera data must not be POSTed");
   console.log(JSON.stringify({passed:true,synthetic_only:true,physical_device_tested:false,
     local_downloads:files.map(f=>({name:f.name,mime:f.mime,bytes:f.size})),
-    metadata_pending_review:true,interrupted_take_rejected:true,consent_withdrawal_closes_camera:true,late_permission_released:true,tracks_released:true,
+    metadata_pending_review:true,checksum_paired:true,too_short_take_rejected:true,hidden_page_take_rejected:true,interrupted_take_rejected:true,consent_withdrawal_closes_camera:true,late_permission_released:true,tracks_released:true,
     zero_upload_network_requests:true,mobile_390px:true}));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors, status: await browser.evaluate("document.querySelector('[role=status]')?.textContent").catch(() => null) }));
