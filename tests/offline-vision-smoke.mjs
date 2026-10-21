@@ -45,10 +45,14 @@ try {
   const evaluate = browser.evaluate;
   const click = text => evaluate(`(() => { const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)}); if(!b||b.disabled) throw new Error('Missing button '+${JSON.stringify(text)}); b.click(); })()`);
   await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Welcome screen missing");
-  await until(async () => {
-    await evaluate("[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes('American'))?.click()");
-    return evaluate("document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes('American')");
-  }, "Welcome screen did not hydrate", 100);
+  // ASL is already checked in the static HTML, so selecting it proves nothing
+  // about hydration. Prove React handles clicks by selecting BSL first; an
+  // unhydrated "Start translating" click is otherwise silently lost.
+  const choose = name => evaluate(`[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes(${JSON.stringify(name)}))?.click()`);
+  const checked = name => evaluate(`document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes(${JSON.stringify(name)})`);
+  await until(async () => { await choose("British"); return checked("British"); }, "Welcome screen did not hydrate", 100);
+  await choose("American");
+  await until(() => checked("American"), "ASL selection failed", 100);
   const active = () => evaluate("document.querySelector('.status-badge')?.textContent === 'Active'");
   const cycles = [];
   for (let cycle = 0; cycle < 3; cycle++) {
