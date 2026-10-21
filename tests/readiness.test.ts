@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BROWSER_SMOKES, CHECKS, compareReports, parseVitest, runCheck } from "../scripts/readiness.mjs";
+import { BROWSER_SMOKES, CHECKS, compareReports, orderChecks, parseVitest, runCheck } from "../scripts/readiness.mjs";
 
 describe("readiness report", () => {
   it("parses vitest totals including failures", () => {
@@ -19,6 +19,10 @@ describe("readiness report", () => {
   it("keeps the strict audit as its own release-gate category", () => {
     expect(CHECKS.find(check => check.id === "strict-audit")?.category).toBe("security-release-gate");
     expect(CHECKS.filter(check => check.category === "security-release-gate")).toHaveLength(1);
+    // It needs an export, so it runs after any profile build, never before.
+    const ordered = orderChecks([...CHECKS, { id: "build-asl-demo", category: "build", command: ["npm", "run", "build:asl-demo"] }]);
+    expect(ordered.at(-1)?.id).toBe("strict-audit");
+    expect(ordered.map(check => check.id).filter(id => id !== "strict-audit")).toEqual([...CHECKS.map(check => check.id).filter(id => id !== "strict-audit"), "build-asl-demo"]);
   });
   it("flags regressions, fixes and lost tests between two reports", () => {
     const base = { checks: [{ id: "lint", passed: true }, { id: "strict-audit", passed: false }, { id: "unit-tests", passed: true, summary: { tests: 678 } }] };

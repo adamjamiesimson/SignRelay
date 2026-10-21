@@ -45,6 +45,13 @@ export const CHECKS = [
     note: "Strict zero-advisory release gate (npm audit --audit-level=moderate, secret scan, rendered export). Never waived by configuration." },
 ];
 
+/** The strict gate includes the rendered-export checks, so it runs last,
+ * against whatever export the listed builds left in out/ (as CI does). */
+export function orderChecks(checks) {
+  return [...checks.filter(check => check.category !== "security-release-gate"),
+    ...checks.filter(check => check.category === "security-release-gate")];
+}
+
 export function parseVitest(output) {
   const strip = output.replace(/\u001b\[[0-9;]*m/g, "");
   const files = strip.match(/Test Files\s+(?:(\d+) failed \| )?(\d+) passed(?: \| (\d+) skipped)? \((\d+)\)/);
@@ -144,7 +151,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   if (!builds.length && existsSync("out/index.html")) exportChecks(current, "");
   const results = [];
-  for (const check of checks) { process.stderr.write(`running ${check.id}…\n`); results.push(runCheck(check)); }
+  for (const check of orderChecks(checks)) { process.stderr.write(`running ${check.id}…\n`); results.push(runCheck(check)); }
   const nonGate = results.filter(check => check.category !== "security-release-gate");
   const strict = results.find(check => check.category === "security-release-gate");
   const contract = JSON.parse(readFileSync("docs/gitex/demo-contract.json", "utf8"));
