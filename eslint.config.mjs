@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     "outputs/**",
     "next-env.d.ts",
     "public/wasm/**",
+    // Copied from the locked @mediapipe/tasks-vision package at build time.
+    "public/vision/**",
     "public/workers/*.js",
     "public/workers/*.mjs",
   ]),

@@ -24,7 +24,7 @@ export function buildDashboard(sources, { currentWorker = null } = {}) {
   const all = sources.flatMap(source => source.rows.map(row => ({ ...row, __source: source.label })));
   const hashes = all.map(row => row.recording_sha256).filter(Boolean);
   if (new Set(hashes).size !== hashes.length) throw new Error("The same recording appears in two sources; it would be double-counted");
-  const [summary] = summarizeTrials(all.map(({ __source, ...row }) => row)).filter(group => group.group.startsWith("asl/"));
+  const [summary] = summarizeTrials(sources.flatMap(source => source.rows)).filter(group => group.group.startsWith("asl/"));
   const workers = unique(all.map(row => row.worker_sha256));
   const lines = [];
   lines.push("# ASL evaluation dashboard (development evidence only)", "");
