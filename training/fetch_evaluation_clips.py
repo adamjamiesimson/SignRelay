@@ -11,8 +11,22 @@ from urllib.request import Request, urlopen
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("manifest", type=Path, nargs="?", default=Path("docs/evaluation/popsign-project-holdout-manifest.json"))
+parser.add_argument("--cohort-lock", type=Path, default=Path("docs/evaluation/cohort-lock-2026-10-16.json"))
+parser.add_argument("--final-holdout", action="store_true",
+                    help="Authorized once-only final measurement of a frozen candidate. Never use for development.")
 args = parser.parse_args()
-for row in json.loads(args.manifest.read_text()):
+rows = json.loads(args.manifest.read_text())
+# The cohort lock, not a row label, decides what is sealed: historical rows are
+# labelled held_out but locked as development. Match sealed clips by fingerprint
+# so a copied or renamed manifest cannot fetch them either.
+sealed = set()
+for entry in json.loads(args.cohort_lock.read_text())["manifests"]:
+    if entry["role"] == "sealed-holdout":
+        sealed.update(item["recording_sha256"] for item in json.loads(Path(entry["file"]).read_text()))
+requested = [row["trial_id"] for row in rows if row.get("recording_sha256") in sealed]
+if requested and not args.final_holdout:
+    raise SystemExit(f"Refusing to fetch {len(requested)} sealed holdout clip(s); they stay unseen until an authorized --final-holdout run.")
+for row in rows:
     path = Path(row["file"])
     if path.is_absolute() or ".." in path.parts or path.parts[:2] != ("evaluation", "videos"):
         raise ValueError("Evaluation output must stay in evaluation/videos/")

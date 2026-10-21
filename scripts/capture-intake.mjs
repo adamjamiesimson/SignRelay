@@ -21,7 +21,7 @@ const extensionFor = mime => /^video\/mp4\b/.test(mime ?? "") ? "mp4" : /^video\
 
 /**
  * @param {{plan: object, intake: object, captures: {sidecar: object, sidecarName: string, videoName: string | null, video: Buffer | null}[]}} input
- * @returns {{intake: object, report: object}} a new intake; the input is not mutated.
+ * @returns {{intake: any, report: any}} a new intake; the input is not mutated.
  */
 export function importCaptures({ plan, intake, captures }) {
   const template = makeDevelopmentIntake(plan);
