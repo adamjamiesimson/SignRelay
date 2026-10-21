@@ -4,7 +4,9 @@ import { BROWSER_SMOKES, CHECKS, compareReports, parseVitest, runCheck } from ".
 describe("readiness report", () => {
   it("parses vitest totals including failures", () => {
     expect(parseVitest(" Test Files  69 passed (69)\n      Tests  678 passed (678)"))
-      .toEqual({ test_files: 69, test_files_failed: 0, tests: 678, tests_failed: 0, tests_passed: 678 });
+      .toEqual({ test_files: 69, test_files_failed: 0, tests: 678, tests_failed: 0, tests_passed: 678, tests_skipped: 0 });
+    expect(parseVitest(" Test Files  86 passed | 1 skipped (87)\n      Tests  831 passed | 1 skipped (832)"))
+      .toMatchObject({ test_files: 87, tests: 832, tests_passed: 831, tests_skipped: 1 });
     expect(parseVitest(" Test Files  1 failed | 68 passed (69)\n      Tests  2 failed | 676 passed (678)"))
       .toMatchObject({ test_files_failed: 1, tests_failed: 2, tests: 678 });
   });
@@ -23,6 +25,8 @@ describe("readiness report", () => {
     const now = { checks: [{ id: "lint", passed: false }, { id: "strict-audit", passed: true }, { id: "unit-tests", passed: true, summary: { tests: 600 } }] };
     expect(compareReports(base, now)).toEqual([{ id: "lint", change: "regression" }, { id: "strict-audit", change: "fixed" },
       { id: "unit-tests", change: "fewer-tests", before: 678, after: 600 }]);
+    expect(compareReports({ checks: [...base.checks, { id: "workspace-browser-smoke", passed: true }] }, { checks: [...now.checks, { id: "lint:asl-demo", passed: true }] }))
+      .toEqual(expect.arrayContaining([{ id: "workspace-browser-smoke", change: "not-run" }]));
   });
 });
 

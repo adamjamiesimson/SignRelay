@@ -47,11 +47,11 @@ export const CHECKS = [
 
 export function parseVitest(output) {
   const strip = output.replace(/\u001b\[[0-9;]*m/g, "");
-  const files = strip.match(/Test Files\s+(?:(\d+) failed \| )?(\d+) passed \((\d+)\)/);
-  const tests = strip.match(/Tests\s+(?:(\d+) failed \| )?(\d+) passed \((\d+)\)/);
+  const files = strip.match(/Test Files\s+(?:(\d+) failed \| )?(\d+) passed(?: \| (\d+) skipped)? \((\d+)\)/);
+  const tests = strip.match(/Tests\s+(?:(\d+) failed \| )?(\d+) passed(?: \| (\d+) skipped)? \((\d+)\)/);
   if (!files || !tests) return null;
-  return { test_files: Number(files[3]), test_files_failed: Number(files[1] ?? 0),
-    tests: Number(tests[3]), tests_failed: Number(tests[1] ?? 0), tests_passed: Number(tests[2]) };
+  return { test_files: Number(files[4]), test_files_failed: Number(files[1] ?? 0),
+    tests: Number(tests[4]), tests_failed: Number(tests[1] ?? 0), tests_passed: Number(tests[2]), tests_skipped: Number(tests[3] ?? 0) };
 }
 
 export function runCheck(check, run = spawnSync) {
@@ -62,7 +62,7 @@ export function runCheck(check, run = spawnSync) {
     passed: result.status === 0, duration_ms: Date.now() - started,
     ...(check.parse === "vitest" ? { summary: parseVitest(output) } : {}),
     ...(check.note ? { note: check.note } : {}),
-    tail: output.split("\n").filter(Boolean).slice(-6).map(line => line.replace(/\u001b\[[0-9;]*m/g, "").slice(0, 240)) };
+    tail: output.split("\n").filter(line => line && !/UNDICI-EHPA|--trace-warnings/.test(line)).slice(-6).map(line => line.replace(/\u001b\[[0-9;]*m/g, "").slice(0, 240)) };
 }
 
 export function runtimeFingerprint() {
@@ -86,15 +86,19 @@ export function runtimeFingerprint() {
 
 export function compareReports(base, current) {
   const byId = new Map(base.checks.map(check => [check.id, check]));
-  return current.checks.flatMap(check => {
-    const before = byId.get(check.id);
+  // A check that ran in the baseline but not now is reported, never silently dropped.
+  const ran = new Set(current.checks.map(check => check.id.split(":")[0]));
+  const missing = base.checks.filter(check => !ran.has(check.id)).map(check => ({ id: check.id, change: "not-run" }));
+  return [...missing, ...current.checks.flatMap(check => {
+    const before = byId.get(check.id) ?? byId.get(check.id.split(":")[0]);
     if (!before) return [{ id: check.id, change: "new-check", passed: check.passed }];
     if (before.passed && !check.passed) return [{ id: check.id, change: "regression" }];
     if (!before.passed && check.passed) return [{ id: check.id, change: "fixed" }];
     const a = before.summary, b = check.summary;
     if (a && b && b.tests < a.tests) return [{ id: check.id, change: "fewer-tests", before: a.tests, after: b.tests }];
+    if (a && b && b.tests > a.tests) return [{ id: check.id, change: "more-tests", before: a.tests, after: b.tests }];
     return [];
-  });
+  })];
 }
 
 export function markdown(report) {
@@ -102,7 +106,7 @@ export function markdown(report) {
     `Commit \`${report.runtime.commit}\` on \`${report.runtime.branch}\`${report.runtime.worktree_dirty ? " (**uncommitted changes present**)" : ""}, generated ${report.generated_at}. Node ${report.runtime.node}, npm ${report.runtime.npm}.`, "",
     "| Check | Category | Command | Exit | Result |", "| --- | --- | --- | ---: | --- |"];
   for (const check of report.checks) {
-    const detail = check.summary ? ` (${check.summary.tests - check.summary.tests_failed}/${check.summary.tests} tests, ${check.summary.test_files} files)` : "";
+    const detail = check.summary ? ` (${check.summary.tests_passed}/${check.summary.tests} passed${check.summary.tests_skipped ? `, ${check.summary.tests_skipped} skipped` : ""}, ${check.summary.test_files} files)` : "";
     lines.push(`| ${check.id} | ${check.category} | \`${check.command}\` | ${check.exit_code} | ${check.passed ? "pass" : "**fail**"}${detail} |`);
   }
   lines.push("", `Build/test/privacy checks: **${report.verdicts.build_and_tests}**. Strict dependency release gate: **${report.verdicts.strict_release_gate}**.`);
