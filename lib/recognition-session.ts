@@ -17,6 +17,8 @@ export class RecognitionSession {
   private restarts: number[] = [];
   private recovering = false;
   private closed = false;
+  /** Milliseconds from posting the last answered frame to its analysis. */
+  lastRoundTripMs: number | null = null;
   private watchdog: ReturnType<typeof setInterval>;
 
   constructor(
@@ -81,7 +83,9 @@ export class RecognitionSession {
         if (worker !== this.worker || event.data.session !== this.session) return;
         const message = event.data;
         if (message.type === "fault") { this.recover(message.message); return; }
-        if (message.type === "analysis" && message.frameId === this.waiting?.id) {
+        const waiting = this.waiting;
+        if (message.type === "analysis" && waiting && message.frameId === waiting.id) {
+          this.lastRoundTripMs = Date.now() - waiting.since;
           this.waiting = null;
           if (this.recovering) {
             this.recovering = false;

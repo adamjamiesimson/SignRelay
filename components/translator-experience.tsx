@@ -38,6 +38,7 @@ import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalize
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
 import { recognitionStatus } from "@/lib/recognition-status";
+import { RollingTimer } from "@/lib/frame-perf";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
@@ -80,6 +81,9 @@ export function TranslatorExperience() {
   // Screen readers hear confirmed words and camera changes, never tentative candidates.
   const [announcement, setAnnouncement] = useState("");
   const [transcriptMessage, setTranscriptMessage] = useState("");
+  // Opt-in device-test readout (`?perf`): timings only, nothing is stored or sent.
+  const [perfMode] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("perf"));
+  const [perfReadout, setPerfReadout] = useState("");
   const [entries, setEntries] = useState<TranscriptEntry[]>([]);
   const [storageMessage, setStorageMessage] = useState("");
   const [history, setHistory] = useState<TranscriptSession[]>([]);
@@ -115,6 +119,7 @@ export function TranslatorExperience() {
   const captureFramesRef = useRef<VisionFrame[]>([]);
   const captureStateRef = useRef<CalibrationState>("idle");
   const entriesRef = useRef<TranscriptEntry[]>([]);
+  const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), analysed: 0, since: 0 });
 
   const model = useMemo(
     () => LANGUAGE_LIST.find((item) => item.id === selected)!,
@@ -234,6 +239,11 @@ export function TranslatorExperience() {
 
   const handleWorkerMessage = useCallback((message: WorkerMessage) => {
     if (message.type === "analysis") {
+      if (perfMode) {
+        perfRef.current.analysed++;
+        const roundTrip = workerRef.current?.lastRoundTripMs;
+        if (roundTrip !== null && roundTrip !== undefined) perfRef.current.roundTrip.record(roundTrip);
+      }
       setRecognitionUnavailable(false);
       setRecognitionState(message.state);
       setCandidate(message.candidate);
@@ -261,7 +271,7 @@ export function TranslatorExperience() {
     setEntries(entriesRef.current);
     setAnnouncement(`Confirmed: ${message.text}`);
     if (settingsRef.current.autoSpeak) speak(message.text);
-  }, [speak]);
+  }, [speak, perfMode]);
 
   useEffect(() => {
     if (step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
@@ -332,6 +342,18 @@ export function TranslatorExperience() {
     setRecognitionUnavailable(false);
     setRecognitionState("listening");
   };
+
+  useEffect(() => {
+    if (!perfMode || cameraState !== "active") return;
+    const perf = perfRef.current;
+    perf.tracking.reset(); perf.roundTrip.reset(); perf.analysed = 0; perf.since = performance.now();
+    const timer = window.setInterval(() => {
+      const tracking = perf.tracking.summary(), roundTrip = perf.roundTrip.summary();
+      const rate = perf.analysed / Math.max(1, (performance.now() - perf.since) / 1000);
+      setPerfReadout(`Tracking ${tracking ? `${tracking.p50}/${tracking.p95} ms` : "—"} (p50/p95) · recognition round trip ${roundTrip ? `${roundTrip.p50}/${roundTrip.p95} ms` : "—"} · ${rate.toFixed(1)} frames analysed/s · assets ${engineRef.current?.assetSource ?? "—"}`);
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [perfMode, cameraState]);
 
   useEffect(() => () => {
     cameraGenerationRef.current++;
@@ -405,7 +427,9 @@ export function TranslatorExperience() {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
       try {
+        const trackingStarted = performance.now();
         const frame = engine.process(video, now);
+        if (perfMode) perfRef.current.tracking.record(performance.now() - trackingStarted);
         const nextDetection = {
           person: frame.face.length > 0 || frame.pose.length > 0,
           hands: frame.hands.length > 0,
@@ -428,7 +452,7 @@ export function TranslatorExperience() {
       }
     }
     animationRef.current = requestAnimationFrame(frameLoopRef.current);
-  }, [drawOverlay, stopCamera]);
+  }, [drawOverlay, stopCamera, perfMode]);
 
   useEffect(() => {
     frameLoopRef.current = runFrameLoop;
@@ -768,6 +792,7 @@ export function TranslatorExperience() {
                 <DetectionItem label="Upper body" active={detection.pose} />
               </div>
 
+              {perfMode && <p className="calibration-message perf-readout" data-perf>{perfReadout || "Collecting timings…"}</p>}
               {visionSource && <p className="calibration-message">Hand tracking loaded {visionSource === "self-hosted" ? "from this site, so it does not depend on an external CDN" : "from the public CDN fallback"}.</p>}
               <div className="camera-actions">
                 <label className="switch-row">

@@ -41,7 +41,7 @@ try {
       postMessage(message, transfer) { if (message?.type === 'frame') window.__qaFrames++; return super.postMessage(message, transfer); }
     };
   })();` });
-  await browser.send("Page.navigate", { url: origin });
+  await browser.send("Page.navigate", { url: `${origin}/?perf` });
   const evaluate = browser.evaluate;
   const click = text => evaluate(`(() => { const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)}); if(!b||b.disabled) throw new Error('Missing button '+${JSON.stringify(text)}); b.click(); })()`);
   await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Welcome screen missing");
@@ -63,13 +63,14 @@ try {
     await pause(4000);
     const framesPerSecond = (await evaluate("window.__qaFrames") - framesBefore) / 4;
     const status = await evaluate("document.querySelector('.recognition-state')?.textContent.trim()");
+    const perf = await evaluate("document.querySelector('[data-perf]')?.textContent");
     const sequence = await evaluate("document.querySelector('.candidate-bar strong')?.textContent");
     await click("Pause camera");
     await until(() => evaluate("window.__qaTracks.length > 0 && window.__qaTracks.every(t => t.readyState === 'ended')"), "Camera tracks were not released");
     await until(() => evaluate("document.querySelector('.recognition-state')?.textContent.includes('camera off')"), "Camera-off state not shown");
     await browser.send("HeapProfiler.collectGarbage").catch(() => {});
     const heapMb = await evaluate("performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null");
-    cycles.push({ cold_start_ms: coldStartMs, frames_forwarded_per_s: framesPerSecond, status_while_no_hands: status, sequence_text: sequence, js_heap_mb_after_pause: heapMb });
+    cycles.push({ cold_start_ms: coldStartMs, frames_forwarded_per_s: framesPerSecond, status_while_no_hands: status, sequence_text: sequence, perf_readout: perf, js_heap_mb_after_pause: heapMb });
   }
   assert.equal(cdnRequests.length, 0, `CDN requests were attempted: ${cdnRequests.join(", ")}`);
   assert.ok(visionRequests.some(path => path.endsWith("gesture_recognizer.task")), "Self-hosted models were not used");
@@ -78,6 +79,7 @@ try {
     assert.ok(cycle.cold_start_ms < 15000, `Cold start exceeded the 15 s contract: ${cycle.cold_start_ms} ms`);
     assert.ok(cycle.frames_forwarded_per_s > 0, "No frames reached recognition");
     assert.match(cycle.sequence_text, /Waiting for hands/);
+    assert.match(cycle.perf_readout ?? "", /frames analysed\/s · assets self-hosted/, "The ?perf device readout is missing");
     assert.equal(cycle.status_while_no_hands, "waiting for hands", "Camera on without hands must say so, not 'uncertain' or 'listening'");
   }
   console.log(JSON.stringify({ passed: true, cdn_blocked: true, cdn_requests: cdnRequests.length,

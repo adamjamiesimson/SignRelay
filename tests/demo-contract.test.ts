@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 const contract = JSON.parse(readFileSync("docs/gitex/demo-contract.json", "utf8"));
 
 describe("GITEX demo contract is machine-checkable", () => {
-  it.each(contract.automated.map((item: { id: string }) => [item.id, item]))("%s points at an existing automated check", (_id, item) => {
-    const { file, contains } = (item as { check: { file: string; contains: string } }).check;
+  it.each(contract.automated as { id: string; check: { file: string; contains: string } }[])("$id points at an existing automated check", item => {
+    const { file, contains } = item.check;
     expect(existsSync(file), file).toBe(true);
     expect(readFileSync(file, "utf8"), `${file} must contain the cited check`).toContain(contains);
   });
