@@ -28,7 +28,8 @@
     "demo:prepare": "node scripts/demo.mjs prepare",
     "demo:serve": "node scripts/demo.mjs serve",
     "demo:check": "node scripts/demo.mjs check",
-    "demo": "npm run demo:prepare && npm run demo:serve"
+    "demo": "npm run demo:prepare && npm run demo:serve",
+    "build:rehearsal": "node scripts/build-profile.mjs rehearsal"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",

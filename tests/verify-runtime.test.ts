@@ -57,4 +57,12 @@ describe("deterministic runtime verifier", () => {
     expect(result.failures.join("\n")).toContain("asl-demo export contains models/rsl1000-slovo/labels.json");
     expect(verifyRuntime({ ...withRsl(["ATTRIBUTION.md", "LICENSE.pdf"]), profile: "asl-demo" }).ok).toBe(true);
   });
+  it("allows the automated rehearsal hook only in the rehearsal profile", () => {
+    const hooked = () => fixture(root => { mkdirSync(join(root, "_next/static/chunks"), { recursive: true }); writeFileSync(join(root, "_next/static/chunks/app.js"), "window.__signrelayRehearsal={}"); });
+    expect(verifyRuntime({ ...hooked(), profile: "asl-demo" }).failures.join("\n")).toContain("contains the automated rehearsal hook");
+    expect(verifyRuntime({ ...hooked(), profile: "full" }).failures.join("\n")).toContain("contains the automated rehearsal hook");
+    expect(verifyRuntime({ ...hooked(), profile: "rehearsal" }).ok).toBe(true);
+    const plain = fixture(root => { mkdirSync(join(root, "_next/static/chunks"), { recursive: true }); writeFileSync(join(root, "_next/static/chunks/app.js"), "console.log(1)"); });
+    expect(verifyRuntime({ ...plain, profile: "rehearsal" }).failures.join("\n")).toContain("missing its rehearsal hook");
+  });
 });

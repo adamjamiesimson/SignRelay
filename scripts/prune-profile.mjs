@@ -11,7 +11,7 @@ export const NON_ASL_WORKERS = ["rsl.worker.js", "bdsl.worker.js"];
 
 export async function pruneProfile(root, profile) {
   if (profile === "full") return { removed: [] };
-  if (profile !== "asl-demo") throw new Error(`Unknown profile ${profile}`);
+  if (profile !== "asl-demo" && profile !== "rehearsal") throw new Error(`Unknown profile ${profile}`);
   const removed = [];
   const modelFiles = await Promise.all(NON_ASL_MODEL_DIRS.map(async dir =>
     (await readdir(join(root, "models", dir)).catch(() => [])).filter(name => !KEPT_NOTICES.has(name)).map(name => join("models", dir, name))));

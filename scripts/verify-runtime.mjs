@@ -6,7 +6,7 @@
 //   node scripts/verify-runtime.mjs [--out out] [--profile full|asl-demo] [--require-evaluated]
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -18,6 +18,11 @@ const fileSha = path => existsSync(path) ? sha(readFileSync(path)) : null;
 
 /** Language model directories that the ASL demo profile must not ship. */
 export const NON_ASL_MODEL_DIRS = ["bdsl401-videomae", "bsl1064-pose2sign", "isl263-include", "lse300-swl", "psl776-hfad", "rsl1000-slovo"];
+export const REHEARSAL_HOOK = "__signrelayRehearsal";
+const jsFiles = dir => !existsSync(dir) ? [] : readdirSync(dir).flatMap(name => {
+  const path = join(dir, name);
+  return statSync(path).isDirectory() ? jsFiles(path) : name.endsWith(".js") ? [path] : [];
+});
 /** Licence and attribution documents stay in the ASL demo so linked notices keep working; no weights, labels or templates. */
 export const KEPT_NOTICES = new Set(["ATTRIBUTION.md", "LICENSE.pdf"]);
 
@@ -65,7 +70,13 @@ export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = n
     fail("workers/recognition.worker.js differs from the committed bundle", "rebuild with npm ci && npm run build:worker and commit the bundle with the recognition change, or this export is not the evaluated code");
   const evidence = evaluated.find(entry => entry.worker_sha256 === worker);
   manifest.real_video_evidence = evidence ? { outcome: evidence.outcome, evidence: evidence.evidence } : null;
-  if (profile === "asl-demo") for (const dir of NON_ASL_MODEL_DIRS) {
+  // The rehearsal hook must exist only in the rehearsal build.
+  const scripts = jsFiles(join(root, "_next"));
+  const hooked = scripts.filter(file => readFileSync(file, "utf8").includes(REHEARSAL_HOOK));
+  manifest.rehearsal_hook = hooked.length > 0;
+  if (profile !== "rehearsal" && hooked.length) fail(`${profile} export contains the automated rehearsal hook`, "rebuild without NEXT_PUBLIC_SIGNRELAY_PROFILE=rehearsal");
+  if (profile === "rehearsal" && scripts.length && !hooked.length) fail("rehearsal export is missing its rehearsal hook", "rebuild with npm run build:rehearsal");
+  if (profile === "asl-demo" || profile === "rehearsal") for (const dir of NON_ASL_MODEL_DIRS) {
     const shipped = existsSync(join(root, "models", dir)) ? readdirSync(join(root, "models", dir)).filter(name => !KEPT_NOTICES.has(name)) : [];
     if (shipped.length) fail(`asl-demo export contains models/${dir}/${shipped.join(", ")}`, "the ASL profile must not ship other language models; rebuild with npm run build:asl-demo");
   }
@@ -77,7 +88,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const option = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
   const root = option("--out", "out");
   const committed = spawnSync("git", ["show", "HEAD:public/workers/recognition.worker.js"], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 });
-  const result = verifyRuntime({ root, profile: option("--profile", existsSync(join(root, "models/bdsl401-videomae")) ? "full" : "asl-demo"),
+  const result = verifyRuntime({ root, profile: option("--profile", existsSync(join(root, "models/bdsl401-videomae/model.onnx")) ? "full" : "asl-demo"),
     wasmSource: join(dirname(require.resolve("@mediapipe/tasks-vision")), "wasm"), ortSource: dirname(require.resolve("onnxruntime-web")),
     committedWorker: committed.status === 0 ? sha(committed.stdout) : null,
     evaluated: JSON.parse(readFileSync("docs/evaluation/evaluated-runtimes.json", "utf8")).runtimes });

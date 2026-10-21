@@ -38,8 +38,9 @@ import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalize
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
 import { recognitionStatus } from "@/lib/recognition-status";
-import { BUILD_PROFILE, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
-import { RollingTimer } from "@/lib/frame-perf";
+import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
+import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
+import { formatPerfReadout, RollingTimer } from "@/lib/frame-perf";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
@@ -120,7 +121,17 @@ export function TranslatorExperience() {
   const captureFramesRef = useRef<VisionFrame[]>([]);
   const captureStateRef = useRef<CalibrationState>("idle");
   const entriesRef = useRef<TranscriptEntry[]>([]);
-  const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), analysed: 0, since: 0 });
+  const rehearsalRef = useRef<RehearsalScript | null>(null);
+  useEffect(() => {
+    if (!REHEARSAL) return;
+    const script = new RehearsalScript();
+    rehearsalRef.current = script;
+    (window as unknown as { __signrelayRehearsal?: unknown }).__signrelayRehearsal = {
+      play: (frames: VisionFrame[]) => script.play(frames), get playing() { return script.playing; },
+    };
+    return () => { delete (window as unknown as { __signrelayRehearsal?: unknown }).__signrelayRehearsal; };
+  }, []);
+  const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(), analysed: 0, since: 0 });
 
   const model = useMemo(
     () => LANGUAGE_LIST.find((item) => item.id === selected)!,
@@ -250,6 +261,8 @@ export function TranslatorExperience() {
         perfRef.current.analysed++;
         const roundTrip = workerRef.current?.lastRoundTripMs;
         if (roundTrip !== null && roundTrip !== undefined) perfRef.current.roundTrip.record(roundTrip);
+        const queueWait = workerRef.current?.stats.lastQueueAgeMs;
+        if (queueWait !== null && queueWait !== undefined) perfRef.current.queueWait.record(queueWait);
       }
       setRecognitionUnavailable(false);
       setRecognitionState(message.state);
@@ -353,11 +366,12 @@ export function TranslatorExperience() {
   useEffect(() => {
     if (!perfMode || cameraState !== "active") return;
     const perf = perfRef.current;
-    perf.tracking.reset(); perf.roundTrip.reset(); perf.analysed = 0; perf.since = performance.now();
+    perf.tracking.reset(); perf.roundTrip.reset(); perf.queueWait.reset(); perf.analysed = 0; perf.since = performance.now();
+    workerRef.current?.resetStats();
     const timer = window.setInterval(() => {
-      const tracking = perf.tracking.summary(), roundTrip = perf.roundTrip.summary();
-      const rate = perf.analysed / Math.max(1, (performance.now() - perf.since) / 1000);
-      setPerfReadout(`Tracking ${tracking ? `${tracking.p50}/${tracking.p95} ms` : "—"} (p50/p95) · recognition round trip ${roundTrip ? `${roundTrip.p50}/${roundTrip.p95} ms` : "—"} · ${rate.toFixed(1)} frames analysed/s · assets ${engineRef.current?.assetSource ?? "—"}`);
+      setPerfReadout(formatPerfReadout({ tracking: perf.tracking.summary(), roundTrip: perf.roundTrip.summary(), queueWait: perf.queueWait.summary(),
+        seconds: (performance.now() - perf.since) / 1000, analysed: perf.analysed, session: workerRef.current?.stats ?? null,
+        assets: engineRef.current?.assetSource ?? null }));
     }, 1000);
     return () => window.clearInterval(timer);
   }, [perfMode, cameraState]);
@@ -435,7 +449,9 @@ export function TranslatorExperience() {
       lastVideoTimeRef.current = video.currentTime;
       try {
         const trackingStarted = performance.now();
-        const frame = engine.process(video, now);
+        // Rehearsal builds only: while a script plays, synthetic landmarks replace
+        // the tracker, which is not run (its output would be discarded).
+        const frame = (REHEARSAL ? rehearsalRef.current?.next(now) : null) ?? engine.process(video, now);
         if (perfMode) perfRef.current.tracking.record(performance.now() - trackingStarted);
         const nextDetection = {
           person: frame.face.length > 0 || frame.pose.length > 0,
@@ -744,7 +760,7 @@ export function TranslatorExperience() {
 
           <div className="honesty-banner" role="note">
             <span className="honesty-label">Model status</span>
-            <p>{BUILD_PROFILE === "asl-demo" && <><strong>ASL demo build.</strong> Other language models are not included. </>}<strong>{capability.headline}</strong> {capability.evidence} Check every word before relying on it. <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
+            <p>{ASL_ONLY && <><strong>ASL demo build.</strong> Other language models are not included. </>}<strong>{capability.headline}</strong> {capability.evidence} Check every word before relying on it. <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
             <button className="text-action" onClick={() => {
               const panel = vocabularyRef.current;
               if (!panel) return;

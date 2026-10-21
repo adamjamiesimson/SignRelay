@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BUILD_PROFILE, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
+import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import {
   LANGUAGE_LIST,
   MODEL_ADAPTERS,
@@ -214,7 +214,7 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
         <div className="figma-language-heading">
           <div>
             <h2>Supported languages</h2>
-            <p>{BUILD_PROFILE === "asl-demo" ? <>ASL demo build · other languages are not included in this build</> : <>7 automatic research recognizers · {LANGUAGE_LIST.length} total workspaces</>}</p>
+            <p>{ASL_ONLY ? <>ASL demo build · other languages are not included in this build</> : <>7 automatic research recognizers · {LANGUAGE_LIST.length} total workspaces</>}</p>
           </div>
           <a href="/languages">View all languages</a>
         </div>

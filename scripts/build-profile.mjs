@@ -18,6 +18,8 @@ export const STEPS = {
     ["node", "scripts/verify-runtime.mjs", "--out", "out", "--profile", "asl-demo"],
   ],
 };
+// Automated software rehearsal: the ASL demo build plus the labelled synthetic-landmark hook.
+STEPS.rehearsal = STEPS["asl-demo"].map(step => step.map(part => part === "asl-demo" ? "rehearsal" : part));
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const profile = process.argv[2];

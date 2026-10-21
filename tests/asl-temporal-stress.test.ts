@@ -52,6 +52,9 @@ const SCENARIOS: Record<string, Scenario> = {
     let t = 1000;
     return chain(signs(ASL_DEMO_WORDS), 700).map((frame, i) => ({ ...frame, timestamp: (t += i ? 45 * (0.7 + 0.6 * random()) : 0) }));
   } },
+  // Headless Chromium on a 4-core Xeon tracks at about 4–6 frames/s (?perf);
+  // the rehearsal smoke lost PLEASE, SORRY and YES at that rate.
+  ...Object.fromEntries([5, 6, 7, 8].map(fps => [`six words at ${fps} fps`, { intended: [...ASL_DEMO_WORDS], frames: () => chain(signs(ASL_DEMO_WORDS, { count: Math.round(fps * 0.9) + 1 }), 700) }])),
   "frame rate drops from 22 to 10 fps mid-sequence": { intended: [...ASL_DEMO_WORDS], frames: () =>
     chain([...signs(ASL_DEMO_WORDS.slice(0, 3)), ...signs(ASL_DEMO_WORDS.slice(3), { count: 10 })], 700) },
   // Outside the input contract: the app forwards at most one frame per 50 ms

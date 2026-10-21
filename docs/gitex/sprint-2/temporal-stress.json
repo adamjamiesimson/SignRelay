@@ -135,6 +135,26 @@
       "confirmed": 6,
       "words": "HELLO THANK YOU PLEASE SORRY YES NO"
     },
+    "six words at 5 fps": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "six words at 6 fps": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "six words at 7 fps": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "six words at 8 fps": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
     "frame rate drops from 22 to 10 fps mid-sequence": {
       "intended": 6,
       "confirmed": 6,
