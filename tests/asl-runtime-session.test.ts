@@ -3,6 +3,10 @@ import { afterEach, expect, it, vi } from "vitest";
 import { makeSign } from "./fixtures/asl-motion";
 
 afterEach(() => vi.unstubAllGlobals());
+// Both tests run the real model (no arithmetic mocked): about 2 s alone, but
+// 4–5 s while the rest of the suite runs in parallel, so the 5 s default is
+// too tight. The assertions are unchanged.
+const REAL_MODEL_TIMEOUT_MS = 30000;
 
 it("continues handling events while the real ASL model computes a prediction", async () => {
   vi.resetModules();
@@ -21,7 +25,7 @@ it("continues handling events while the real ASL model computes a prediction", a
   } finally {
     clearInterval(timer);
   }
-});
+}, REAL_MODEL_TIMEOUT_MS);
 
 it("cancels real ASL arithmetic at a yield and reuses the exact cached weights", async () => {
   vi.resetModules();
@@ -36,4 +40,4 @@ it("cancels real ASL arithmetic at a yield and reuses the exact cached weights",
   try { await expect(pending).rejects.toMatchObject({ name: "AbortError" }); }
   finally { clearTimeout(timer); }
   expect(await recognizeAsl1000(frames)).toEqual(first);
-});
+}, REAL_MODEL_TIMEOUT_MS);
