@@ -1,4 +1,4 @@
-import { analyzeAslStarter, bodyReference, validHand } from "./asl-starter-recognition";
+import { analyzeAslStarter, bodyReference, distance2, validHand } from "./asl-starter-recognition";
 import { recentContinuousFrames } from "./frame-timing";
 import type { HandObservation, Point, VisionFrame } from "./vision-types";
 
@@ -27,6 +27,13 @@ export const EXPERIMENTS = {
     objective: 10,
     description: "If no rule matches, interpolate hand gaps of up to two frames (at most 200 ms) and accept only a YES from the filled sequence.",
     targets: ["YES under sparse hand tracking"],
+  },
+  "mask-confirmed-sign-tail": {
+    objective: 10,
+    description: "After a word is confirmed, hide the hand from recognition until it rests (out of view for 250 ms or still for 300 ms). The rest of the confirmed sign's movement then cannot become a later word, from the model or a rule.",
+    targets: ["THANK YOU followed by a model word from the same movement's tail", "a rule word repeated from its own tail after a pause in view"],
+    // Applied to the frame stream by ConfirmedSignTailGuard; analyzeWithExperiments ignores it.
+    kind: "frame filter",
   },
 } as const;
 export type ExperimentId = keyof typeof EXPERIMENTS;
@@ -102,6 +109,54 @@ export function fillHandGaps(sequence: VisionFrame[], maxFrames = 2, maxMs = 200
     }
   }
   return out;
+}
+
+/** Frame filter for `mask-confirmed-sign-tail`. The recognition worker
+ * clears its ASL buffer when a word is confirmed, but the remainder of the same
+ * stroke keeps arriving and is analysed as a fresh movement: the closed-set
+ * model may label it, and once the same-word cooldown has passed the rule that
+ * just fired can match it again. This filter sits in front of the worker (where
+ * the app posts camera frames) and replaces the hand with "no hand" from a
+ * confirmation until the hand rests. It never adds evidence and changes no
+ * threshold, rule or confirmation step. Not imported by the app or the worker:
+ * evaluation harnesses drive it. */
+export class ConfirmedSignTailGuard {
+  static readonly ABSENT_MS = 250;
+  static readonly STILL_MS = 300;
+  /** Wrist travel, in body-reference units, that still counts as resting. */
+  static readonly STILL_RADIUS = 0.035;
+  private masking = false;
+  private stillAnchor: { at: number; wrist: Point } | null = null;
+  private absentSince: number | null = null;
+
+  /** Call for every confirmed word, in order. */
+  noteConfirmation() {
+    this.masking = true;
+    this.stillAnchor = null;
+    this.absentSince = null;
+  }
+
+  /** Call for every camera frame; post the returned frame to the worker. */
+  filter(frame: VisionFrame): VisionFrame {
+    if (!this.masking) return frame;
+    const hand = frame.hands.find(validHand);
+    const now = frame.timestamp;
+    if (!hand) {
+      this.stillAnchor = null;
+      this.absentSince ??= now;
+      if (now - this.absentSince >= ConfirmedSignTailGuard.ABSENT_MS) this.masking = false;
+      return frame;
+    }
+    this.absentSince = null;
+    const { anchor, scale } = bodyReference(frame, hand);
+    const wrist = { x: (hand.landmarks[0].x - anchor.x) / scale, y: (hand.landmarks[0].y - anchor.y) / scale, z: 0 };
+    if (!this.stillAnchor || distance2(this.stillAnchor.wrist, wrist) > ConfirmedSignTailGuard.STILL_RADIUS) this.stillAnchor = { at: now, wrist };
+    else if (now - this.stillAnchor.at >= ConfirmedSignTailGuard.STILL_MS) { this.masking = false; return frame; }
+    return { ...frame, hands: [] };
+  }
+
+  get active() { return this.masking; }
+  reset() { this.masking = false; this.stillAnchor = null; this.absentSince = null; }
 }
 
 /** analyzeAslStarter with the given experiments applied; with none it is exactly analyzeAslStarter. */

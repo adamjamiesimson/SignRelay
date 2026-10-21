@@ -1,0 +1,947 @@
+{
+  "schema": 1,
+  "experiment": "mask-confirmed-sign-tail",
+  "status": "OFF in production: no app or worker code imports it. Synthetic kinematic fixtures through the real worker; not recordings, not accuracy, not evidence that it helps real signers.",
+  "generated_by": "RUN_TAIL_GUARD=1 npx vitest run tests/asl-tail-guard.test.ts",
+  "parameters": {
+    "absent_ms": 250,
+    "still_ms": 300,
+    "still_radius": 0.035
+  },
+  "confusion_with_confidently_wrong_model": {
+    "production": {
+      "HELLO": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      },
+      "NO": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      },
+      "YES": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      },
+      "PLEASE": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      },
+      "SORRY": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      },
+      "THANK YOU": {
+        "correct": 42,
+        "extra_words": 9,
+        "wrong_or_missing": 0
+      }
+    },
+    "guarded": {
+      "HELLO": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      },
+      "NO": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      },
+      "YES": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      },
+      "PLEASE": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      },
+      "SORRY": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      },
+      "THANK YOU": {
+        "correct": 51,
+        "extra_words": 0,
+        "wrong_or_missing": 0
+      }
+    }
+  },
+  "production_extra_words": [
+    "THANK YOU 30 fps: THANK YOU + HELLO",
+    "THANK YOU left hand: THANK YOU + HELLO",
+    "THANK YOU farther from camera: THANK YOU + HELLO",
+    "THANK YOU closer to camera: THANK YOU + HELLO",
+    "THANK YOU every 5th hand frame lost: THANK YOU + HELLO",
+    "THANK YOU two-frame mid-sign dropout: THANK YOU + HELLO",
+    "THANK YOU no pose: THANK YOU + HELLO",
+    "THANK YOU no face: THANK YOU + HELLO",
+    "THANK YOU unknown handedness: THANK YOU + HELLO"
+  ],
+  "everyday_movements": {
+    "rules, production": {
+      "HELLO/starter": 144,
+      "THANK YOU/starter": 136,
+      "abstain": 404
+    },
+    "rules, guarded": {
+      "HELLO/starter": 144,
+      "THANK YOU/starter": 136,
+      "abstain": 404
+    },
+    "confidently_wrong_model, production": {
+      "HELLO/starter + PLEASE/model": 12,
+      "HELLO/starter": 132,
+      "PLEASE/model + THANK YOU/starter + PLEASE/model": 4,
+      "PLEASE/model": 44,
+      "THANK YOU/starter + PLEASE/model": 4,
+      "THANK YOU/starter": 120,
+      "abstain": 368
+    },
+    "confidently_wrong_model, guarded": {
+      "HELLO/starter": 144,
+      "PLEASE/model": 48,
+      "THANK YOU/starter": 124,
+      "abstain": 368
+    }
+  },
+  "rule_word_then_unrelated_movement": {
+    "HELLO, still in view 400 ms, jump into an unrelated movement": {
+      "production": [
+        "HELLO"
+      ],
+      "guarded": [
+        "HELLO"
+      ]
+    },
+    "HELLO, still in view 400 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "HELLO",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "HELLO",
+        "THANK YOU"
+      ]
+    },
+    "HELLO, still in view 1500 ms, jump into an unrelated movement": {
+      "production": [
+        "HELLO"
+      ],
+      "guarded": [
+        "HELLO"
+      ]
+    },
+    "HELLO, still in view 1500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "HELLO",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "HELLO",
+        "THANK YOU"
+      ]
+    },
+    "HELLO, still in view 2500 ms, jump into an unrelated movement": {
+      "production": [
+        "HELLO"
+      ],
+      "guarded": [
+        "HELLO"
+      ]
+    },
+    "HELLO, still in view 2500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "HELLO",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "HELLO",
+        "THANK YOU"
+      ]
+    },
+    "NO, still in view 400 ms, jump into an unrelated movement": {
+      "production": [
+        "NO"
+      ],
+      "guarded": [
+        "NO"
+      ]
+    },
+    "NO, still in view 400 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "NO"
+      ],
+      "guarded": [
+        "NO"
+      ]
+    },
+    "NO, still in view 1500 ms, jump into an unrelated movement": {
+      "production": [
+        "NO"
+      ],
+      "guarded": [
+        "NO"
+      ]
+    },
+    "NO, still in view 1500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "NO"
+      ],
+      "guarded": [
+        "NO"
+      ]
+    },
+    "NO, still in view 2500 ms, jump into an unrelated movement": {
+      "production": [
+        "NO"
+      ],
+      "guarded": [
+        "NO"
+      ]
+    },
+    "NO, still in view 2500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "NO"
+      ],
+      "guarded": [
+        "NO"
+      ]
+    },
+    "YES, still in view 400 ms, jump into an unrelated movement": {
+      "production": [
+        "YES"
+      ],
+      "guarded": [
+        "YES"
+      ]
+    },
+    "YES, still in view 400 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "YES"
+      ],
+      "guarded": [
+        "YES"
+      ]
+    },
+    "YES, still in view 1500 ms, jump into an unrelated movement": {
+      "production": [
+        "YES"
+      ],
+      "guarded": [
+        "YES"
+      ]
+    },
+    "YES, still in view 1500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "YES"
+      ],
+      "guarded": [
+        "YES"
+      ]
+    },
+    "YES, still in view 2500 ms, jump into an unrelated movement": {
+      "production": [
+        "YES"
+      ],
+      "guarded": [
+        "YES"
+      ]
+    },
+    "YES, still in view 2500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "YES"
+      ],
+      "guarded": [
+        "YES"
+      ]
+    },
+    "PLEASE, still in view 400 ms, jump into an unrelated movement": {
+      "production": [
+        "PLEASE"
+      ],
+      "guarded": [
+        "PLEASE"
+      ]
+    },
+    "PLEASE, still in view 400 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "PLEASE"
+      ],
+      "guarded": [
+        "PLEASE"
+      ]
+    },
+    "PLEASE, still in view 1500 ms, jump into an unrelated movement": {
+      "production": [
+        "PLEASE"
+      ],
+      "guarded": [
+        "PLEASE"
+      ]
+    },
+    "PLEASE, still in view 1500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "PLEASE"
+      ],
+      "guarded": [
+        "PLEASE"
+      ]
+    },
+    "PLEASE, still in view 2500 ms, jump into an unrelated movement": {
+      "production": [
+        "PLEASE"
+      ],
+      "guarded": [
+        "PLEASE"
+      ]
+    },
+    "PLEASE, still in view 2500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "PLEASE"
+      ],
+      "guarded": [
+        "PLEASE"
+      ]
+    },
+    "SORRY, still in view 400 ms, jump into an unrelated movement": {
+      "production": [
+        "SORRY"
+      ],
+      "guarded": [
+        "SORRY"
+      ]
+    },
+    "SORRY, still in view 400 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "SORRY"
+      ],
+      "guarded": [
+        "SORRY"
+      ]
+    },
+    "SORRY, still in view 1500 ms, jump into an unrelated movement": {
+      "production": [
+        "SORRY"
+      ],
+      "guarded": [
+        "SORRY"
+      ]
+    },
+    "SORRY, still in view 1500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "SORRY"
+      ],
+      "guarded": [
+        "SORRY"
+      ]
+    },
+    "SORRY, still in view 2500 ms, jump into an unrelated movement": {
+      "production": [
+        "SORRY"
+      ],
+      "guarded": [
+        "SORRY"
+      ]
+    },
+    "SORRY, still in view 2500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "SORRY"
+      ],
+      "guarded": [
+        "SORRY"
+      ]
+    },
+    "THANK YOU, still in view 400 ms, jump into an unrelated movement": {
+      "production": [
+        "THANK YOU",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU"
+      ]
+    },
+    "THANK YOU, still in view 400 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "THANK YOU",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU"
+      ]
+    },
+    "THANK YOU, still in view 1500 ms, jump into an unrelated movement": {
+      "production": [
+        "THANK YOU",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU"
+      ]
+    },
+    "THANK YOU, still in view 1500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "THANK YOU",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU"
+      ]
+    },
+    "THANK YOU, still in view 2500 ms, jump into an unrelated movement": {
+      "production": [
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU"
+      ]
+    },
+    "THANK YOU, still in view 2500 ms, glide 300 ms into an unrelated movement": {
+      "production": [
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU"
+      ]
+    }
+  },
+  "production_repeated_from_tail": [
+    "HELLO, still in view 400 ms, glide 300 ms into an unrelated movement: HELLO + THANK YOU",
+    "HELLO, still in view 1500 ms, glide 300 ms into an unrelated movement: HELLO + THANK YOU",
+    "HELLO, still in view 2500 ms, glide 300 ms into an unrelated movement: HELLO + THANK YOU",
+    "THANK YOU, still in view 400 ms, jump into an unrelated movement: THANK YOU + THANK YOU",
+    "THANK YOU, still in view 400 ms, glide 300 ms into an unrelated movement: THANK YOU + THANK YOU",
+    "THANK YOU, still in view 1500 ms, jump into an unrelated movement: THANK YOU + THANK YOU",
+    "THANK YOU, still in view 1500 ms, glide 300 ms into an unrelated movement: THANK YOU + THANK YOU"
+  ],
+  "rule_word_then_model_word": {
+    "HELLO then GOOD, out of view 400 ms": {
+      "production": [
+        "HELLO",
+        "GOOD"
+      ],
+      "guarded": [
+        "HELLO",
+        "GOOD"
+      ]
+    },
+    "HELLO then GOOD, out of view 700 ms": {
+      "production": [
+        "HELLO",
+        "GOOD"
+      ],
+      "guarded": [
+        "HELLO",
+        "GOOD"
+      ]
+    },
+    "HELLO then GOOD, out of view 1500 ms": {
+      "production": [
+        "HELLO",
+        "GOOD"
+      ],
+      "guarded": [
+        "HELLO",
+        "GOOD"
+      ]
+    },
+    "HELLO then GOOD, held still 400 ms": {
+      "production": [
+        "HELLO",
+        "GOOD"
+      ],
+      "guarded": [
+        "HELLO",
+        "GOOD"
+      ]
+    },
+    "HELLO then GOOD, held still 700 ms": {
+      "production": [
+        "HELLO",
+        "GOOD"
+      ],
+      "guarded": [
+        "HELLO",
+        "GOOD"
+      ]
+    },
+    "HELLO then GOOD, held still 1500 ms": {
+      "production": [
+        "HELLO",
+        "GOOD"
+      ],
+      "guarded": [
+        "HELLO",
+        "GOOD"
+      ]
+    },
+    "NO then GOOD, out of view 400 ms": {
+      "production": [
+        "NO",
+        "GOOD"
+      ],
+      "guarded": [
+        "NO",
+        "GOOD"
+      ]
+    },
+    "NO then GOOD, out of view 700 ms": {
+      "production": [
+        "NO",
+        "GOOD"
+      ],
+      "guarded": [
+        "NO",
+        "GOOD"
+      ]
+    },
+    "NO then GOOD, out of view 1500 ms": {
+      "production": [
+        "NO",
+        "GOOD"
+      ],
+      "guarded": [
+        "NO",
+        "GOOD"
+      ]
+    },
+    "NO then GOOD, held still 400 ms": {
+      "production": [
+        "NO",
+        "GOOD"
+      ],
+      "guarded": [
+        "NO",
+        "GOOD"
+      ]
+    },
+    "NO then GOOD, held still 700 ms": {
+      "production": [
+        "NO",
+        "GOOD"
+      ],
+      "guarded": [
+        "NO",
+        "GOOD"
+      ]
+    },
+    "NO then GOOD, held still 1500 ms": {
+      "production": [
+        "NO",
+        "GOOD"
+      ],
+      "guarded": [
+        "NO",
+        "GOOD"
+      ]
+    },
+    "YES then GOOD, out of view 400 ms": {
+      "production": [
+        "YES",
+        "GOOD"
+      ],
+      "guarded": [
+        "YES",
+        "GOOD"
+      ]
+    },
+    "YES then GOOD, out of view 700 ms": {
+      "production": [
+        "YES",
+        "GOOD"
+      ],
+      "guarded": [
+        "YES",
+        "GOOD"
+      ]
+    },
+    "YES then GOOD, out of view 1500 ms": {
+      "production": [
+        "YES",
+        "GOOD"
+      ],
+      "guarded": [
+        "YES",
+        "GOOD"
+      ]
+    },
+    "YES then GOOD, held still 400 ms": {
+      "production": [
+        "YES",
+        "GOOD"
+      ],
+      "guarded": [
+        "YES",
+        "GOOD"
+      ]
+    },
+    "YES then GOOD, held still 700 ms": {
+      "production": [
+        "YES",
+        "GOOD"
+      ],
+      "guarded": [
+        "YES",
+        "GOOD"
+      ]
+    },
+    "YES then GOOD, held still 1500 ms": {
+      "production": [
+        "YES",
+        "GOOD"
+      ],
+      "guarded": [
+        "YES",
+        "GOOD"
+      ]
+    },
+    "PLEASE then GOOD, out of view 400 ms": {
+      "production": [
+        "PLEASE",
+        "GOOD"
+      ],
+      "guarded": [
+        "PLEASE",
+        "GOOD"
+      ]
+    },
+    "PLEASE then GOOD, out of view 700 ms": {
+      "production": [
+        "PLEASE",
+        "GOOD"
+      ],
+      "guarded": [
+        "PLEASE",
+        "GOOD"
+      ]
+    },
+    "PLEASE then GOOD, out of view 1500 ms": {
+      "production": [
+        "PLEASE",
+        "GOOD"
+      ],
+      "guarded": [
+        "PLEASE",
+        "GOOD"
+      ]
+    },
+    "PLEASE then GOOD, held still 400 ms": {
+      "production": [
+        "PLEASE",
+        "GOOD"
+      ],
+      "guarded": [
+        "PLEASE",
+        "GOOD"
+      ]
+    },
+    "PLEASE then GOOD, held still 700 ms": {
+      "production": [
+        "PLEASE",
+        "GOOD"
+      ],
+      "guarded": [
+        "PLEASE",
+        "GOOD"
+      ]
+    },
+    "PLEASE then GOOD, held still 1500 ms": {
+      "production": [
+        "PLEASE",
+        "GOOD"
+      ],
+      "guarded": [
+        "PLEASE",
+        "GOOD"
+      ]
+    },
+    "SORRY then GOOD, out of view 400 ms": {
+      "production": [
+        "SORRY",
+        "GOOD"
+      ],
+      "guarded": [
+        "SORRY",
+        "GOOD"
+      ]
+    },
+    "SORRY then GOOD, out of view 700 ms": {
+      "production": [
+        "SORRY",
+        "GOOD"
+      ],
+      "guarded": [
+        "SORRY",
+        "GOOD"
+      ]
+    },
+    "SORRY then GOOD, out of view 1500 ms": {
+      "production": [
+        "SORRY",
+        "GOOD"
+      ],
+      "guarded": [
+        "SORRY",
+        "GOOD"
+      ]
+    },
+    "SORRY then GOOD, held still 400 ms": {
+      "production": [
+        "SORRY",
+        "GOOD"
+      ],
+      "guarded": [
+        "SORRY",
+        "GOOD"
+      ]
+    },
+    "SORRY then GOOD, held still 700 ms": {
+      "production": [
+        "SORRY",
+        "GOOD"
+      ],
+      "guarded": [
+        "SORRY",
+        "GOOD"
+      ]
+    },
+    "SORRY then GOOD, held still 1500 ms": {
+      "production": [
+        "SORRY",
+        "GOOD"
+      ],
+      "guarded": [
+        "SORRY",
+        "GOOD"
+      ]
+    },
+    "THANK YOU then GOOD, out of view 400 ms": {
+      "production": [
+        "THANK YOU",
+        "GOOD"
+      ],
+      "guarded": [
+        "THANK YOU",
+        "GOOD"
+      ]
+    },
+    "THANK YOU then GOOD, out of view 700 ms": {
+      "production": [
+        "THANK YOU",
+        "GOOD"
+      ],
+      "guarded": [
+        "THANK YOU",
+        "GOOD"
+      ]
+    },
+    "THANK YOU then GOOD, out of view 1500 ms": {
+      "production": [
+        "THANK YOU",
+        "GOOD"
+      ],
+      "guarded": [
+        "THANK YOU",
+        "GOOD"
+      ]
+    },
+    "THANK YOU then GOOD, held still 400 ms": {
+      "production": [
+        "THANK YOU",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU",
+        "GOOD"
+      ]
+    },
+    "THANK YOU then GOOD, held still 700 ms": {
+      "production": [
+        "THANK YOU",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU",
+        "GOOD"
+      ]
+    },
+    "THANK YOU then GOOD, held still 1500 ms": {
+      "production": [
+        "THANK YOU",
+        "THANK YOU",
+        "GOOD"
+      ],
+      "guarded": [
+        "THANK YOU",
+        "GOOD"
+      ]
+    }
+  },
+  "demo_and_repeats": {
+    "six-word demo, 400 ms out of view": {
+      "production": [
+        "HELLO",
+        "THANK YOU",
+        "PLEASE",
+        "SORRY",
+        "YES",
+        "NO"
+      ],
+      "guarded": [
+        "HELLO",
+        "THANK YOU",
+        "PLEASE",
+        "SORRY",
+        "YES",
+        "NO"
+      ]
+    },
+    "THANK YOU, HELLO, THANK YOU, 400 ms out of view": {
+      "production": [
+        "THANK YOU",
+        "HELLO",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU",
+        "HELLO",
+        "THANK YOU"
+      ]
+    },
+    "six-word demo, 700 ms out of view": {
+      "production": [
+        "HELLO",
+        "THANK YOU",
+        "PLEASE",
+        "SORRY",
+        "YES",
+        "NO"
+      ],
+      "guarded": [
+        "HELLO",
+        "THANK YOU",
+        "PLEASE",
+        "SORRY",
+        "YES",
+        "NO"
+      ]
+    },
+    "THANK YOU, HELLO, THANK YOU, 700 ms out of view": {
+      "production": [
+        "THANK YOU",
+        "HELLO",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU",
+        "HELLO",
+        "THANK YOU"
+      ]
+    },
+    "six-word demo, 1500 ms out of view": {
+      "production": [
+        "HELLO",
+        "THANK YOU",
+        "PLEASE",
+        "SORRY",
+        "YES",
+        "NO"
+      ],
+      "guarded": [
+        "HELLO",
+        "THANK YOU",
+        "PLEASE",
+        "SORRY",
+        "YES",
+        "NO"
+      ]
+    },
+    "THANK YOU, HELLO, THANK YOU, 1500 ms out of view": {
+      "production": [
+        "THANK YOU",
+        "HELLO",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU",
+        "HELLO",
+        "THANK YOU"
+      ]
+    },
+    "HELLO twice, 2000 ms out of view": {
+      "production": [
+        "HELLO",
+        "HELLO"
+      ],
+      "guarded": [
+        "HELLO",
+        "HELLO"
+      ]
+    },
+    "NO twice, 2000 ms out of view": {
+      "production": [
+        "NO",
+        "NO"
+      ],
+      "guarded": [
+        "NO",
+        "NO"
+      ]
+    },
+    "YES twice, 2000 ms out of view": {
+      "production": [
+        "YES",
+        "YES"
+      ],
+      "guarded": [
+        "YES",
+        "YES"
+      ]
+    },
+    "PLEASE twice, 2000 ms out of view": {
+      "production": [
+        "PLEASE",
+        "PLEASE"
+      ],
+      "guarded": [
+        "PLEASE",
+        "PLEASE"
+      ]
+    },
+    "SORRY twice, 2000 ms out of view": {
+      "production": [
+        "SORRY",
+        "SORRY"
+      ],
+      "guarded": [
+        "SORRY",
+        "SORRY"
+      ]
+    },
+    "THANK YOU twice, 2000 ms out of view": {
+      "production": [
+        "THANK YOU",
+        "THANK YOU"
+      ],
+      "guarded": [
+        "THANK YOU",
+        "THANK YOU"
+      ]
+    }
+  },
+  "no_rest_cost": {
+    "production": [
+      "THANK YOU"
+    ],
+    "guarded": [
+      "THANK YOU"
+    ]
+  }
+}
