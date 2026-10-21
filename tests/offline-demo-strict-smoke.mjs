@@ -29,7 +29,9 @@ export const QUIET_CHROME = ["--disable-component-update", "--disable-sync", "--
 export const BROWSER_INTERNAL_HOSTS = new Set(["www.google.com:443", "accounts.google.com:443", "android.clients.google.com:443"]);
 const outbound = [];
 const deny = createServer((request, response) => { outbound.push(`${request.method} ${request.url}`); response.writeHead(403); response.end(); });
-deny.on("connect", (request, socket) => { outbound.push(`CONNECT ${request.url}`); socket.end("HTTP/1.1 403 Forbidden\r\n\r\n"); });
+// Chrome may reset a refused tunnel; a reset socket is expected, not a test failure.
+deny.on("connect", (request, socket) => { socket.on("error", () => {}); outbound.push(`CONNECT ${request.url}`); socket.end("HTTP/1.1 403 Forbidden\r\n\r\n"); });
+deny.on("clientError", (_error, socket) => socket.destroy());
 await new Promise(resolve => deny.listen(0, "127.0.0.1", resolve));
 const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", String(port)], { stdio: "ignore" });
 let browser;
