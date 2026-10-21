@@ -108,3 +108,72 @@ export function triageAslAbstention(report) {
     uncertainty: "These are observations on publisher-labelled isolated-sign development footage, not proof of an incomplete human sign, tracking failure cause, or model accuracy. Stroke boundaries and variants require independent fluent review.",
   };
 }
+
+const median = values => {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)];
+};
+
+/** Observable tracker behaviour only: when MediaPipe returned a valid hand and
+ * which label it gave. It does not know where the human sign started or ended,
+ * so every counter here describes the tracker, not the signer.
+ * @param {{timestamp: number, hands: {handedness: string}[]}[]} frames
+ * @param {(hand: any) => boolean} validHand */
+export function summarizeTrackerBehavior(frames, validHand, sustainFrames = 3) {
+  if (!Array.isArray(frames) || frames.length < 2 || typeof validHand !== "function") throw new Error("Need at least two frames and a hand-validity predicate");
+  const intervals = [];
+  for (let i = 1; i < frames.length; i++) {
+    const gap = frames[i].timestamp - frames[i - 1].timestamp;
+    if (!Number.isFinite(gap) || gap <= 0) throw new Error("Tracker summary needs increasing source timestamps");
+    intervals.push(gap);
+  }
+  const hands = frames.map(frame => frame.hands.filter(validHand));
+  const missingRuns = [];
+  const reacquisitionDelays = [];
+  let run = 0, lastTracked = null, coveredMs = 0, episodeStart = null;
+  for (let i = 0; i < frames.length; i++) {
+    if (hands[i].length) {
+      if (run && lastTracked !== null) { missingRuns.push(run); reacquisitionDelays.push(frames[i].timestamp - frames[lastTracked].timestamp); }
+      if (episodeStart === null) episodeStart = i;
+      run = 0; lastTracked = i;
+    } else {
+      if (episodeStart !== null) { coveredMs += frames[i - 1].timestamp - frames[episodeStart].timestamp; episodeStart = null; }
+      if (lastTracked !== null) run++;
+    }
+  }
+  if (episodeStart !== null) coveredMs += frames.at(-1).timestamp - frames[episodeStart].timestamp;
+  // Label continuity is only judged where exactly one valid hand is visible in
+  // consecutive frames; two-hand frames are a different tracking situation.
+  // A change away from the established label counts as sustained only if the
+  // new label then holds; returning after a brief flicker is not a switch.
+  // Reacquisition with a new label is not judged here.
+  let flickers = 0, sustained = 0, stable = null;
+  for (let i = 0; i < frames.length; i++) {
+    if (hands[i].length !== 1 || (i && hands[i - 1].length !== 1)) { stable = hands[i].length === 1 ? hands[i][0].handedness : null; continue; }
+    const now = hands[i][0].handedness;
+    if (stable === null) { stable = now; continue; }
+    if (now === stable) continue;
+    let held = 1;
+    while (i + held < frames.length && hands[i + held].length === 1 && hands[i + held][0].handedness === now) held++;
+    if (held >= sustainFrames) { sustained++; stable = now; }
+    else flickers++;
+    i += held - 1;
+  }
+  const buckets = { "1": 0, "2-3": 0, "4-7": 0, "8+": 0 };
+  for (const length of missingRuns) buckets[length === 1 ? "1" : length <= 3 ? "2-3" : length <= 7 ? "4-7" : "8+"]++;
+  const duration = frames.at(-1).timestamp - frames[0].timestamp;
+  return {
+    source_frame_interval_ms: { median: Math.round(median(intervals)), max: Math.round(Math.max(...intervals)) },
+    frames_with_one_hand: hands.filter(list => list.length === 1).length,
+    frames_with_two_hands: hands.filter(list => list.length >= 2).length,
+    hand_reacquisitions: reacquisitionDelays.length,
+    reacquisition_delay_ms: reacquisitionDelays.length ? { min: Math.round(Math.min(...reacquisitionDelays)),
+      median: Math.round(median(reacquisitionDelays)), max: Math.round(Math.max(...reacquisitionDelays)) } : null,
+    interior_missing_runs_by_frames: buckets,
+    tracked_temporal_coverage: duration > 0 ? Math.round(coveredMs / duration * 1000) / 1000 : null,
+    single_hand_label_flickers: flickers,
+    single_hand_label_sustained_switches: sustained,
+    note: "Tracker observations only. A missing interval may be a rest, occlusion, framing or a tracker failure; a label switch may be a real hand change. Neither identifies stroke boundaries.",
+  };
+}

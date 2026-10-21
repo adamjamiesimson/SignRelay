@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { analyzeAslStarter, validHand } from "../../lib/asl-starter-recognition";
 import { recentContinuousFrames } from "../../lib/frame-timing";
-import { candidateContinuity, summarizeHandContinuity, triageAslAbstention } from "./asl-observation-triage.mjs";
+import { candidateContinuity, summarizeHandContinuity, summarizeTrackerBehavior, triageAslAbstention } from "./asl-observation-triage.mjs";
 import type { VisionFrame, WorkerAnalysis, WorkerMessage } from "../../lib/vision-types";
 
 type ResultRow = {
@@ -79,6 +79,7 @@ export function summarizeAslTrace(trace: Trace, row: ResultRow) {
     worker_candidate_sources: counts(analyses.flatMap(message => message.source ? [message.source] : [])),
     worker_ambiguity_analyses: analyses.filter(message => message.feedback?.includes("more than one sign")).length,
     hand_continuity: handContinuity,
+    tracker_behavior: frames.length >= 2 ? summarizeTrackerBehavior(frames, validHand) : null,
     candidate_continuity: candidateRuns,
     abstention_prefix_probe: row.accepted_glosses.length ? null : {
       labels: counts(proposalLabels), incomplete_labels: counts(incompleteLabels), ambiguous_prefixes: ambiguousPrefixes,
