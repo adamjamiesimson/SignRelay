@@ -66,8 +66,10 @@ try {
   const visited = ["/"];
   await click("Start translating");
   await until(() => evaluate("document.querySelector('.status-badge')?.textContent === 'Active'"), "ASL vision did not start offline");
-  await pause(5000);
+  // Long enough for one full 5 s throughput window after the first readout tick.
+  await pause(6500);
   const perf = await evaluate("document.querySelector('[data-perf]')?.textContent");
+  const throughputWarning = await evaluate("document.querySelector('[data-perf-warning]')?.textContent ?? null");
   const status = await evaluate("document.querySelector('.recognition-state')?.textContent.trim()");
   await click("Pause camera");
   await until(() => evaluate("window.__qaTracks.length > 0 && window.__qaTracks.every(t => t.readyState === 'ended')"), "Camera tracks were not released");
@@ -92,10 +94,13 @@ try {
   assert.deepEqual(unexplained, [], `Outbound connections were attempted: ${unexplained.join(", ")}`);
   assert.ok(workers.some(url => url.includes("recognition.worker.js")), "The recognition worker was not observed, so its requests were not checked");
   assert.match(perf ?? "", /assets self-hosted/, "The ?perf readout must confirm self-hosted assets");
+  assert.match(perf ?? "", /recognition running, 0 recoveries · hand tracked in 0% of frames/, "Recognition restarted, or the readout lost its worker and tracking fields");
   assert.equal(status, "waiting for hands");
   console.log(JSON.stringify({ passed: true, profile: manifest.profile, recognition_worker_sha256: manifest.recognition_worker_sha256,
     pages: visited, page_and_worker_requests: pageRequests.length, workers_observed: [...new Set(workers.map(url => new URL(url).pathname))],
     non_loopback_requests: 0, refused_browser_internal: [...new Set(outbound)], perf_readout: perf,
+    // Headless frame rates say nothing about the demo laptop; recorded, not asserted.
+    throughput_warning: throughputWarning,
     environment: "headless Chromium behind a deny-all proxy, synthetic fake camera (no hands); proves offline operation only" }));
   }
 } catch (error) {

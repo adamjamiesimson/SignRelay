@@ -96,6 +96,19 @@ describe("ongoing recognition sessions", () => {
     send(21000); workers[3].acknowledge();
     expect(onMessage).toHaveBeenCalledOnce();
   });
+  it("reports its state and counts every recovery attempt for the ?perf readout", () => {
+    expect(session.state).toBe("running");
+    expect(session.stats.recoveries).toBe(0);
+    workers[0].onerror?.();
+    expect(session.state).toBe("recovering");
+    send(1); workers[1].acknowledge();
+    expect(session.state).toBe("running");
+    workers[1].onerror?.(); workers[2].onerror?.();
+    expect(session.state).toBe("failed");
+    expect(session.stats.recoveries).toBe(3);
+    session.resetStats();
+    expect(session.stats.recoveries).toBe(0);
+  });
   it("does not restart or post after the session is closed", () => {
     send(1);
     session.terminate();
@@ -116,6 +129,6 @@ describe("?perf session counters", () => {
     workers[0].acknowledge(workers[0].frames()[0]);
     expect(session.stats).toMatchObject({ offered: 5, forwarded: 2, replaced: 3, answered: 1, lastQueueAgeMs: 30 });
     session.resetStats();
-    expect(session.stats).toEqual({ offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null });
+    expect(session.stats).toEqual({ offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null, recoveries: 0 });
   });
 });

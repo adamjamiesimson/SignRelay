@@ -22,14 +22,16 @@ export class RecognitionSession {
   /** Counters for the opt-in ?perf readout (numbers only). `replaced` frames
    * were superseded by a newer camera frame before they could be forwarded;
    * `lastQueueAgeMs` is how long the last forwarded frame waited. */
-  readonly stats = { offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null as number | null };
+  readonly stats = { offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null as number | null, recoveries: 0 };
+  /** Last state reported through onStatus, for the ?perf readout. */
+  state: SessionStatus["state"] = "running";
   private queuedAt = 0;
   private watchdog: ReturnType<typeof setInterval>;
 
   constructor(
     private createWorker: () => Port,
     private onMessage: (message: WorkerMessage) => void,
-    private onStatus: (status: SessionStatus) => void,
+    private readonly reportStatus: (status: SessionStatus) => void,
   ) {
     this.launch();
     this.watchdog = setInterval(() => {
@@ -69,7 +71,12 @@ export class RecognitionSession {
   }
 
   resetStats() {
-    Object.assign(this.stats, { offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null });
+    Object.assign(this.stats, { offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null, recoveries: 0 });
+  }
+
+  private onStatus(status: SessionStatus) {
+    this.state = status.state;
+    this.reportStatus(status);
   }
 
   restart() {
@@ -132,6 +139,7 @@ export class RecognitionSession {
   }
 
   private recover(message: string) {
+    this.stats.recoveries++;
     this.disposeWorker();
     this.waiting = null;
     this.queued = null;

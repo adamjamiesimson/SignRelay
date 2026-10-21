@@ -80,6 +80,38 @@ try {
   const small = targets.filter(t => t.w < 24 || t.h < 24);
   assert.deepEqual(small, [], "Touch targets under 24×24 CSS px on a 390 px viewport");
   checks.push({ check: "touch targets ≥ 24×24 on a 390 px phone viewport", targets: targets.length, under_44px: targets.filter(t => t.w < 44 || t.h < 44).length });
+  await h.browser.send("Emulation.clearDeviceMetricsOverride");
+
+  // An edit that leaves no text removes the entry instead of keeping a blank.
+  const key = async (name, code, keyCode) => {
+    await h.browser.send("Input.dispatchKeyEvent", { type: "keyDown", key: name, code, windowsVirtualKeyCode: keyCode, ...(name === "Enter" ? { text: "\r" } : {}) });
+    await h.browser.send("Input.dispatchKeyEvent", { type: "keyUp", key: name, code, windowsVirtualKeyCode: keyCode });
+  };
+  await h.evaluate("[...document.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === 'Edit Thank you').focus()");
+  await key("Enter", "Enter", 13);
+  await until(() => h.evaluate("document.activeElement?.classList.contains('entry-editor')"), "Edit did not focus the editor");
+  await h.evaluate("document.activeElement.select()");
+  await key("Backspace", "Backspace", 8);
+  await key("Enter", "Enter", 13);
+  await until(async () => !(await h.words()).includes("Thank you") && !(await h.words()).includes(""), "Emptied entry was kept");
+  assert.deepEqual(await h.words(), ["Hello there", "Please", "Sorry", "Yes", "No"], "Only the emptied entry is removed");
+  checks.push({ check: "emptying an entry removes it" });
+
+  // Removing an entry keeps keyboard focus in the transcript and says what happened.
+  await h.evaluate("[...document.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === 'Remove Please').focus()");
+  await key("Enter", "Enter", 13);
+  await until(async () => !(await h.words()).includes("Please"), "Remove did not remove the entry");
+  assert.equal(await h.evaluate("document.activeElement?.id"), "transcript-title", "Focus is lost after removing an entry");
+  assert.ok(await h.evaluate(`[...document.querySelectorAll('[role=status]')].some(n => n.textContent === 'Removed "Please".')`), "Removal is not announced");
+  checks.push({ check: "remove keeps focus in the transcript and is announced" });
+
+  // Save & clear stops any speech of the cleared transcript.
+  const cancelsBeforeClear = await h.evaluate("window.__qa.cancels");
+  await h.click("Speak");
+  await h.click("Save & clear");
+  await until(async () => (await h.words()).length === 0, "Save & clear did not clear the transcript");
+  assert.ok(await h.evaluate(`window.__qa.cancels > ${cancelsBeforeClear + 1}`), "Save & clear must stop speech of the cleared transcript");
+  checks.push({ check: "save & clear cancels speech" });
 
   // Reduced motion: no CSS animations or transitions keep running.
   await h.open();

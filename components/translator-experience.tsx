@@ -40,7 +40,7 @@ import { RecognitionSession } from "@/lib/recognition-session";
 import { recognitionStatus } from "@/lib/recognition-status";
 import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
-import { formatPerfReadout, RollingTimer } from "@/lib/frame-perf";
+import { formatPerfReadout, RollingTimer, ThroughputMonitor } from "@/lib/frame-perf";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
@@ -83,9 +83,11 @@ export function TranslatorExperience() {
   // Screen readers hear confirmed words and camera changes, never tentative candidates.
   const [announcement, setAnnouncement] = useState("");
   const [transcriptMessage, setTranscriptMessage] = useState("");
+  const [privacyMessage, setPrivacyMessage] = useState("");
   // Opt-in device-test readout (`?perf`): timings only, nothing is stored or sent.
   const [perfMode] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("perf"));
   const [perfReadout, setPerfReadout] = useState("");
+  const [perfWarning, setPerfWarning] = useState<string | null>(null);
   const [entries, setEntries] = useState<TranscriptEntry[]>([]);
   const [storageMessage, setStorageMessage] = useState("");
   const [history, setHistory] = useState<TranscriptSession[]>([]);
@@ -102,6 +104,7 @@ export function TranslatorExperience() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const vocabularyRef = useRef<HTMLDetailsElement>(null);
+  const transcriptHeadingRef = useRef<HTMLHeadingElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const engineRef = useRef<VisionEngine | null>(null);
@@ -131,7 +134,8 @@ export function TranslatorExperience() {
     };
     return () => { delete (window as unknown as { __signrelayRehearsal?: unknown }).__signrelayRehearsal; };
   }, []);
-  const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(), analysed: 0, since: 0 });
+  const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(),
+    throughput: new ThroughputMonitor(), analysed: 0, since: 0, frames: 0, handFrames: 0 });
 
   const model = useMemo(
     () => LANGUAGE_LIST.find((item) => item.id === selected)!,
@@ -224,6 +228,9 @@ export function TranslatorExperience() {
     setEntries([]);
     setEditingId(null);
     setStorageMessage("");
+    setTranscriptMessage("");
+    // Nothing from the previous language's transcript may keep speaking.
+    window.speechSynthesis?.cancel();
     sessionStartedRef.current = Date.now();
     workerRef.current?.postMessage({ type: "reset" });
     captureGenerationRef.current++;
@@ -366,14 +373,20 @@ export function TranslatorExperience() {
   useEffect(() => {
     if (!perfMode || cameraState !== "active") return;
     const perf = perfRef.current;
-    perf.tracking.reset(); perf.roundTrip.reset(); perf.queueWait.reset(); perf.analysed = 0; perf.since = performance.now();
+    perf.tracking.reset(); perf.roundTrip.reset(); perf.queueWait.reset(); perf.throughput.reset();
+    perf.analysed = 0; perf.frames = 0; perf.handFrames = 0; perf.since = performance.now();
     workerRef.current?.resetStats();
     const timer = window.setInterval(() => {
+      const session = workerRef.current;
+      perf.throughput.tick(perf.analysed, performance.now());
+      setPerfWarning(perf.throughput.warning());
       setPerfReadout(formatPerfReadout({ tracking: perf.tracking.summary(), roundTrip: perf.roundTrip.summary(), queueWait: perf.queueWait.summary(),
-        seconds: (performance.now() - perf.since) / 1000, analysed: perf.analysed, session: workerRef.current?.stats ?? null,
-        assets: engineRef.current?.assetSource ?? null }));
+        seconds: (performance.now() - perf.since) / 1000, analysed: perf.analysed, session: session?.stats ?? null,
+        assets: engineRef.current?.assetSource ?? null,
+        recognition: session ? { state: session.state, recoveries: session.stats.recoveries } : null,
+        hands: { seen: perf.handFrames, frames: perf.frames } }));
     }, 1000);
-    return () => window.clearInterval(timer);
+    return () => { window.clearInterval(timer); setPerfWarning(null); };
   }, [perfMode, cameraState]);
 
   useEffect(() => () => {
@@ -452,7 +465,11 @@ export function TranslatorExperience() {
         // Rehearsal builds only: while a script plays, synthetic landmarks replace
         // the tracker, which is not run (its output would be discarded).
         const frame = (REHEARSAL ? rehearsalRef.current?.next(now) : null) ?? engine.process(video, now);
-        if (perfMode) perfRef.current.tracking.record(performance.now() - trackingStarted);
+        if (perfMode) {
+          perfRef.current.tracking.record(performance.now() - trackingStarted);
+          perfRef.current.frames++;
+          if (frame.hands.length) perfRef.current.handFrames++;
+        }
         const nextDetection = {
           person: frame.face.length > 0 || frame.pose.length > 0,
           hands: frame.hands.length > 0,
@@ -680,10 +697,26 @@ export function TranslatorExperience() {
       entries,
     });
     if (!saved) { setStorageMessage("Could not save on this device. Your transcript has been kept here."); return; }
+    window.speechSynthesis?.cancel();
     setStorageMessage("");
+    setEditingId(null);
     setEntries([]);
     sessionStartedRef.current = Date.now();
     setHistory(loadHistory());
+    setTranscriptMessage("Transcript saved to this device's history and cleared.");
+  };
+
+  // An edit that leaves no text removes the entry, so Speak and Copy never see blanks.
+  const finishEditing = (id: string) => {
+    setEditingId(null);
+    setEntries((current) => current.flatMap((item) => item.id !== id ? [item] : item.text.trim() ? [{ ...item, text: item.text.trim() }] : []));
+  };
+
+  const removeEntry = (entry: TranscriptEntry) => {
+    setEntries((current) => current.filter((item) => item.id !== entry.id));
+    setTranscriptMessage(`Removed "${entry.text}".`);
+    // The pressed button disappears; keep keyboard focus in the transcript.
+    transcriptHeadingRef.current?.focus();
   };
 
   const copyTranscript = async () => {
@@ -697,12 +730,21 @@ export function TranslatorExperience() {
   };
 
   const clearAllLocalData = async () => {
+    window.speechSynthesis?.cancel();
     clearLocalSignRelayData();
-    await clearCalibrationTemplates();
     setEntries([]);
+    setEditingId(null);
     setHistory([]);
-    setCalibrationTemplates([]);
     setSettings(DEFAULT_SETTINGS);
+    sessionStartedRef.current = Date.now();
+    try {
+      await clearCalibrationTemplates();
+      setCalibrationTemplates([]);
+      setPrivacyMessage("Local transcripts, settings and personal signs were cleared from this browser.");
+    } catch {
+      // Keep showing what is still stored rather than pretending it was deleted.
+      setPrivacyMessage("Transcripts and settings were cleared, but personal signs could not be deleted. Clear this site's data in your browser settings.");
+    }
   };
 
   if (step === "workspace" && selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental") {
@@ -828,6 +870,7 @@ export function TranslatorExperience() {
                 </label>
               </div>
               </details>
+              {perfMode && perfWarning && <p className="calibration-message error" role="status" data-perf-warning>{perfWarning}</p>}
               <div className="camera-session-actions">
                 <span>{cameraState === "active" ? "Camera on · video stays private" : "Video stays on this device"}</span>
                 <button className="button ghost small" onClick={cameraState === "active" || cameraState === "requesting" || cameraState === "loading" ? stopCamera : requestCamera}>
@@ -839,7 +882,7 @@ export function TranslatorExperience() {
             <section className="transcript-panel" aria-labelledby="transcript-title">
               <div className="panel-heading">
                 <div>
-                  <h2 id="transcript-title">Transcript</h2>
+                  <h2 id="transcript-title" ref={transcriptHeadingRef} tabIndex={-1}>Transcript</h2>
                 </div>
                 <div className={`recognition-state ${status.tone}`} data-status={status.key} data-worker-state={recognitionState}>
                   <span /> {status.chip}
@@ -885,8 +928,8 @@ export function TranslatorExperience() {
                             value={entry.text}
                             autoFocus
                             onChange={(event) => setEntries((current) => current.map((item) => item.id === entry.id ? { ...item, text: event.target.value } : item))}
-                            onBlur={() => setEditingId(null)}
-                            onKeyDown={(event) => event.key === "Enter" && setEditingId(null)}
+                            onBlur={() => finishEditing(entry.id)}
+                            onKeyDown={(event) => event.key === "Enter" && finishEditing(entry.id)}
                             aria-label={`Edit ${entry.text}`}
                           />
                         ) : (
@@ -895,7 +938,7 @@ export function TranslatorExperience() {
                         <div className="entry-actions">
                           <span>{Math.round(entry.confidence * 100)}/100 {entry.source === "starter" ? "rule match" : entry.source === "personal" ? "template match" : "match score"} · {entry.gloss}</span>
                           <button onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`}>Edit</button>
-                          <button onClick={() => setEntries((current) => current.filter((item) => item.id !== entry.id))} aria-label={`Remove ${entry.text}`}>Remove</button>
+                          <button onClick={() => removeEntry(entry)} aria-label={`Remove ${entry.text}`}>Remove</button>
                         </div>
                       </article>
                     ))}
@@ -1068,8 +1111,9 @@ export function TranslatorExperience() {
               <h2 id="privacy-heading">Your camera stays private</h2>
               <p>Frames are analysed in this browser. Raw video is not uploaded or stored. Settings and saved transcripts stay in local browser storage.</p>
             </div>
-            <button className="button ghost small" onClick={clearAllLocalData}>Clear local data</button>
+            <button className="button ghost small" onClick={() => void clearAllLocalData()}>Clear local data</button>
           </section>
+          {privacyMessage && <p className="calibration-message" role="status">{privacyMessage}</p>}
           </details>
         </main>
         <SiteFooter />
