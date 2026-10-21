@@ -25,6 +25,7 @@ export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = n
   wasmFiles = VISION_WASM_FILES, models = VISION_MODELS }) {
   const failures = [];
   const fail = (what, fix) => failures.push(`${what} — ${fix}`);
+  /** @type {Record<string, any>} */
   const manifest = { schema: 1, profile, tasks_version: TASKS_VERSION, files: {} };
   const record = (key, path) => { const digest = fileSha(path); manifest.files[key] = digest; return digest; };
 
