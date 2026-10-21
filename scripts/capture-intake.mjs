@@ -2,13 +2,16 @@
 // recording only; it never reviews, approves, scores or predicts anything.
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { readdir, readFile, rename, writeFile } from "node:fs/promises";
+import { lstat, readdir, readFile, realpath, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { makeDevelopmentIntake } from "./reviewed-development.mjs";
 
 const sha256 = bytes => createHash("sha256").update(bytes).digest("hex");
 const HANDS = ["Left", "Right"];
+export const MAX_RECORDING_BYTES = 100 * 1024 * 1024;
+export const MAX_SIDECAR_BYTES = 64 * 1024;
+const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 /** Container magic bytes; a renamed or mislabelled file is not the original take. */
 export function containerOf(bytes) {
@@ -24,6 +27,7 @@ const extensionFor = mime => /^video\/mp4\b/.test(mime ?? "") ? "mp4" : /^video\
  * @returns {{intake: any, report: any}} a new intake; the input is not mutated.
  */
 export function importCaptures({ plan, intake, captures }) {
+  if (typeof plan?.plan_id !== "string" || !SAFE_ID.test(plan.plan_id) || plan.plan_id.includes("..")) throw new Error("Plan ID is not a safe single path segment");
   const template = makeDevelopmentIntake(plan);
   if (intake.plan_id !== plan.plan_id || intake.trials?.length !== template.trials.length) throw new Error("Intake does not match the frozen collection plan; regenerate it with prepare-reviewed-development template");
   const next = structuredClone(intake);
@@ -38,6 +42,8 @@ export function importCaptures({ plan, intake, captures }) {
 
   for (const { sidecar, sidecarName, videoName, video } of captures) {
     const fail = message => { throw new Error(`${sidecarName}: ${message}`); };
+    if (!sidecar || typeof sidecar !== "object" || Array.isArray(sidecar)) fail("sidecar is not a JSON object");
+    if (typeof sidecar.trial_id !== "string" || !SAFE_ID.test(sidecar.trial_id) || sidecar.trial_id.includes("..")) fail("trial ID is not a safe single path segment");
     if (![1, 2].includes(sidecar.schema ?? 1)) fail("unknown sidecar schema");
     if (sidecar.plan_id !== plan.plan_id) fail(`belongs to plan ${sidecar.plan_id}, not ${plan.plan_id}`);
     const expected = planned.get(sidecar.trial_id);
@@ -55,7 +61,7 @@ export function importCaptures({ plan, intake, captures }) {
     if (sidecar.original_recording_file !== `${sidecar.trial_id}.${extension}`) fail("recording file name differs from trial ID or MIME type");
     if (!video || videoName !== sidecar.original_recording_file) fail(`paired recording ${sidecar.original_recording_file} is missing`);
     if (containerOf(video) !== extension) fail(`file contents are not ${extension.toUpperCase()} (renamed, re-encoded or truncated?)`);
-    if (video.length !== sidecar.bytes || video.length <= 0 || video.length > 100 * 1024 * 1024) fail("recording size differs from its sidecar");
+    if (video.length !== sidecar.bytes || video.length <= 0 || video.length > MAX_RECORDING_BYTES) fail("recording size differs from its sidecar or exceeds 100 MB");
     const digest = sha256(video);
     const verified = (sidecar.schema ?? 1) >= 2;
     if (verified && sidecar.recording_sha256 !== digest) fail("recording SHA-256 differs from the checksum computed at capture");
@@ -100,9 +106,47 @@ export function importCaptures({ plan, intake, captures }) {
   return { intake: next, report };
 }
 
-function within(file, directory) {
+export function within(file, directory) {
   const relative = path.relative(path.resolve(directory), path.resolve(file));
   return relative && !relative.startsWith("..") && !path.isAbsolute(relative);
+}
+
+/** Read a capture directory without following links or loading oversized
+ * files. Only regular `*.capture.json`, `*.webm` and `*.mp4` files are allowed;
+ * anything else (links, folders, hidden or unexpected files) stops the import. */
+export async function readCaptureDirectory(mediaDir) {
+  const names = (await readdir(mediaDir)).sort();
+  const sizes = new Map();
+  for (const name of names) {
+    const info = await lstat(path.join(mediaDir, name));
+    if (info.isSymbolicLink() || !info.isFile()) throw new Error(`${name}: not a regular file (links and folders are refused)`);
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:capture\.json|webm|mp4)$/.test(name)) throw new Error(`${name}: unexpected file in the capture folder`);
+    if (name.endsWith(".capture.json") && info.size > MAX_SIDECAR_BYTES) throw new Error(`${name}: sidecar exceeds ${MAX_SIDECAR_BYTES} bytes`);
+    if (!name.endsWith(".capture.json") && info.size > MAX_RECORDING_BYTES) throw new Error(`${name}: recording exceeds 100 MB`);
+    sizes.set(name, info.size);
+  }
+  const captures = [];
+  for (const sidecarName of names.filter(name => name.endsWith(".capture.json"))) {
+    let sidecar;
+    try { sidecar = JSON.parse(await readFile(path.join(mediaDir, sidecarName), "utf8")); }
+    catch { throw new Error(`${sidecarName}: malformed JSON`); }
+    const declared = typeof sidecar?.original_recording_file === "string" ? sidecar.original_recording_file : null;
+    const videoName = declared && sizes.has(declared) && !declared.endsWith(".capture.json") ? declared : null;
+    captures.push({ sidecar, sidecarName, videoName, video: videoName ? await readFile(path.join(mediaDir, videoName)) : null });
+  }
+  const unpaired = names.filter(name => /\.(?:webm|mp4)$/i.test(name) && !captures.some(item => item.videoName === name));
+  if (unpaired.length) throw new Error(`Recordings without sidecars: ${unpaired.join(", ")}`);
+  return captures;
+}
+
+/** Replace the intake only if it is unchanged since it was read; never leaves a partial file. */
+export async function writeIntakeAtomically(intakeFile, updated, originalBytes) {
+  const temporary = `${intakeFile}.${process.pid}.tmp`;
+  await writeFile(temporary, JSON.stringify(updated, null, 2) + "\n", { flag: "wx" });
+  try {
+    if (sha256(await readFile(intakeFile)) !== sha256(originalBytes)) throw new Error("The intake changed while importing; nothing was written. Re-run the import.");
+    await rename(temporary, intakeFile);
+  } catch (error) { await rm(temporary, { force: true }); throw error; }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -111,22 +155,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (!within(intakeFile, "evaluation/raw")) throw new Error("Private intake must stay in ignored evaluation/raw/");
   if (!within(mediaDir, "evaluation/videos")) throw new Error("Recordings must stay in ignored evaluation/videos/");
   for (const target of [intakeFile, mediaDir]) execFileSync("git", ["check-ignore", "--quiet", target]);
+  // A linked folder could point at tracked or unrelated files; compare real paths.
+  if (!within(await realpath(mediaDir), await realpath("evaluation/videos"))) throw new Error("The capture folder resolves outside evaluation/videos/");
   const plan = JSON.parse(await readFile(planFile, "utf8"));
   if (path.basename(path.resolve(mediaDir)) !== plan.plan_id) throw new Error(`Store recordings under evaluation/videos/${plan.plan_id}/`);
-  const intake = JSON.parse(await readFile(intakeFile, "utf8"));
-  const names = await readdir(mediaDir);
-  const captures = [];
-  for (const sidecarName of names.filter(name => name.endsWith(".capture.json")).sort()) {
-    const sidecar = JSON.parse(await readFile(path.join(mediaDir, sidecarName), "utf8"));
-    const videoName = names.includes(sidecar.original_recording_file) ? sidecar.original_recording_file : null;
-    captures.push({ sidecar, sidecarName, videoName, video: videoName ? await readFile(path.join(mediaDir, videoName)) : null });
-  }
-  const unpaired = names.filter(name => /\.(?:webm|mp4)$/i.test(name) && !captures.some(item => item.videoName === name));
-  if (unpaired.length) throw new Error(`Recordings without sidecars: ${unpaired.join(", ")}`);
+  const originalBytes = await readFile(intakeFile);
+  const intake = JSON.parse(originalBytes.toString("utf8"));
+  const captures = await readCaptureDirectory(mediaDir);
   // All-or-nothing: validation throws before anything is written.
   const { intake: updated, report } = importCaptures({ plan, intake, captures });
-  const temporary = `${intakeFile}.${process.pid}.tmp`;
-  await writeFile(temporary, JSON.stringify(updated, null, 2) + "\n", { flag: "wx" });
-  await rename(temporary, intakeFile);
+  await writeIntakeAtomically(intakeFile, updated, originalBytes);
   console.log(JSON.stringify(report, null, 2));
 }

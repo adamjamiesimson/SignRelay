@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { containerOf, importCaptures } from "../scripts/capture-intake.mjs";
+import { containerOf, importCaptures, MAX_SIDECAR_BYTES, readCaptureDirectory, writeIntakeAtomically } from "../scripts/capture-intake.mjs";
 import { makeDevelopmentIntake } from "../scripts/reviewed-development.mjs";
 import { captureMetadata, captureTrial } from "../lib/field-test-capture";
 
@@ -58,5 +60,52 @@ describe("private capture intake", () => {
     const reviewed = structuredClone(intake);
     reviewed.trials[0].review.status = "approved";
     expect(() => importCaptures({ plan, intake: reviewed, captures: [capture(0, 1, 1, webm(1))] })).toThrow("review decision");
+  });
+});
+
+describe("capture folder and intake file hardening", () => {
+  const folder = (files: Record<string, string | Buffer>) => {
+    const dir = mkdtempSync(join(tmpdir(), "intake-"));
+    for (const [name, content] of Object.entries(files)) writeFileSync(join(dir, name), content);
+    return dir;
+  };
+  it("reports malformed sidecar JSON by file name", async () => {
+    const dir = folder({ "dev-20261017-p01-sign-1-1.capture.json": "{ not json" });
+    await expect(readCaptureDirectory(dir)).rejects.toThrow("dev-20261017-p01-sign-1-1.capture.json: malformed JSON");
+    rmSync(dir, { recursive: true });
+  });
+  it("refuses links, folders, hidden and unexpected files, and oversized sidecars before reading them", async () => {
+    const outside = folder({ "secret.webm": webm(9) });
+    const linked = folder({});
+    symlinkSync(join(outside, "secret.webm"), join(linked, "dev-20261017-p01-sign-1-1.webm"));
+    await expect(readCaptureDirectory(linked)).rejects.toThrow("not a regular file");
+    const nested = folder({}); mkdirSync(join(nested, "sub"));
+    await expect(readCaptureDirectory(nested)).rejects.toThrow("not a regular file");
+    await expect(readCaptureDirectory(folder({ ".hidden.webm": webm(1) }))).rejects.toThrow("unexpected file");
+    await expect(readCaptureDirectory(folder({ "notes.txt": "x" }))).rejects.toThrow("unexpected file");
+    await expect(readCaptureDirectory(folder({ "a.capture.json": " ".repeat(MAX_SIDECAR_BYTES + 1) }))).rejects.toThrow("sidecar exceeds");
+    await expect(readCaptureDirectory(folder({ "orphan.webm": webm(1) }))).rejects.toThrow("Recordings without sidecars: orphan.webm");
+  });
+  it("rejects traversal in trial or plan IDs and non-object sidecars", () => {
+    const traversal = capture(0, 1, 1, webm(1), undefined, { trial_id: "../../etc/passwd" });
+    expect(() => importCaptures({ plan, intake: makeDevelopmentIntake(plan), captures: [traversal] })).toThrow("safe single path segment");
+    expect(() => importCaptures({ plan: { ...plan, plan_id: "../x" }, intake: makeDevelopmentIntake(plan), captures: [] })).toThrow("Plan ID is not a safe");
+    expect(() => importCaptures({ plan, intake: makeDevelopmentIntake(plan), captures: [{ ...capture(0, 1, 1, webm(1)), sidecar: [] as never }] })).toThrow("not a JSON object");
+  });
+  it("rejects an oversized recording even when its sidecar agrees", () => {
+    const big = Buffer.concat([Buffer.from([0x1a, 0x45, 0xdf, 0xa3]), Buffer.alloc(100 * 1024 * 1024)]);
+    const item = capture(0, 1, 1, big);
+    expect(() => importCaptures({ plan, intake: makeDevelopmentIntake(plan), captures: [item] })).toThrow("exceeds 100 MB");
+  });
+  it("writes the intake atomically and refuses if it changed during the import", async () => {
+    const dir = folder({ "intake.json": "{\"v\":1}\n" });
+    const file = join(dir, "intake.json");
+    await writeIntakeAtomically(file, { v: 2 }, Buffer.from("{\"v\":1}\n"));
+    expect(JSON.parse(readFileSync(file, "utf8"))).toEqual({ v: 2 });
+    await expect(writeIntakeAtomically(file, { v: 3 }, Buffer.from("{\"v\":1}\n"))).rejects.toThrow("changed while importing");
+    expect(JSON.parse(readFileSync(file, "utf8"))).toEqual({ v: 2 });
+    expect(readdirSync(dir).filter(name => name.endsWith(".tmp"))).toEqual([]);
+    expect(existsSync(file)).toBe(true);
+    rmSync(dir, { recursive: true });
   });
 });
