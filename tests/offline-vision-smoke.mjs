@@ -20,8 +20,11 @@ let browser, detach;
 try {
   await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } }, "No static server");
   browser = await startChrome(executable);
-  const cdnRequests = [], visionRequests = [];
+  const cdnRequests = [], visionRequests = [], responses = [], failures = [];
   detach = browser.onEvent(message => {
+    if (message.method === "Network.responseReceived" && /\/vision\/|jsdelivr|googleapis/.test(message.params.response.url))
+      responses.push(`${message.params.response.status} ${message.params.response.mimeType} ${message.params.response.url}`);
+    if (message.method === "Network.loadingFailed") failures.push(`${message.params.errorText} ${message.params.blockedReason ?? ""}`);
     if (message.method !== "Network.requestWillBeSent") return;
     const url = message.params.request.url;
     if (/cdn\.jsdelivr\.net|storage\.googleapis\.com/.test(url)) cdnRequests.push(url);
@@ -51,7 +54,10 @@ try {
   for (let cycle = 0; cycle < 3; cycle++) {
     const started = Date.now();
     if (cycle === 0) await click("Start translating"); else await click("Start camera");
-    await until(active, `Vision did not start without CDNs (cycle ${cycle + 1}): ` + "status");
+    await until(active, `Vision did not start without CDNs (cycle ${cycle + 1})`).catch(error => {
+      console.error(JSON.stringify({ cdnRequests, visionRequests, responses, failures: failures.slice(-20) }));
+      throw error;
+    });
     const coldStartMs = Date.now() - started;
     const framesBefore = await evaluate("window.__qaFrames");
     await pause(4000);
@@ -76,4 +82,9 @@ try {
   console.log(JSON.stringify({ passed: true, cdn_blocked: true, cdn_requests: cdnRequests.length,
     self_hosted_paths: [...new Set(visionRequests)].sort(), cycles,
     environment: "headless Chromium, synthetic fake camera (no hands), this machine's CPU; not a physical device measurement" }));
+} catch (error) {
+  if (browser) console.error(JSON.stringify({ errors: browser.errors,
+    page: await browser.evaluate(`({ badge: document.querySelector('.status-badge')?.textContent, placeholder: document.querySelector('.camera-placeholder')?.textContent,
+      status: document.querySelector('.recognition-state')?.textContent, simd: typeof WebAssembly.validate })`).catch(() => null) }));
+  throw error;
 } finally { detach?.(); await browser?.close(); server.kill(); }
