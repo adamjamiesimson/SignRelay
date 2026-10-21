@@ -26,6 +26,11 @@ const reviewed = [];
 const modelDirSizes = new Map();
 
 for (const path of tracked) {
+  // Live trial logs and raw captures are local-only (see .gitignore).
+  if (/^evaluation\/(results|raw|videos)\//.test(path)) {
+    failures.push(`${path} is a local evaluation file. Live results and captures must never be committed.`);
+    continue;
+  }
   let size;
   try {
     size = statSync(path).size;

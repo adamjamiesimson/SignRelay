@@ -22,6 +22,7 @@
     "typecheck": "tsc --noEmit",
     "repo:guard": "node scripts/check-large-assets.mjs",
     "eval:live": "node scripts/summarize-live-evaluation.mjs",
+    "eval:log": "node scripts/live-trial-log.mjs",
     "install:vision-assets": "node scripts/install-vision-assets.mjs",
     "verify:runtime": "node scripts/verify-runtime.mjs",
     "build:asl-demo": "node scripts/build-profile.mjs asl-demo",
