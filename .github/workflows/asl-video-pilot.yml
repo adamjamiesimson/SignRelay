@@ -35,7 +35,6 @@ on:
       - 'lib/sign-motion.ts'
       - 'lib/frame-timing.ts'
       - 'lib/decoder.ts'
-      - 'lib/hand-tracking.ts'
       - 'lib/asl1000-runtime.ts'
       - 'lib/landmark-inference.ts'
       - 'lib/landmark-model-loader.ts'

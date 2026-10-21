@@ -261,6 +261,12 @@ function circularMotion(xs2, ys2, requireClosure) {
     (ys2.at(-1) - ys2[0]) / height
   );
   if (requireClosure && (!Number.isFinite(closure) || closure > 0.45)) return false;
+  let enclosed = 0;
+  for (let index = 0; index < xs2.length; index++) {
+    const next = (index + 1) % xs2.length;
+    enclosed += (xs2[index] - cx) / width * ((ys2[next] - cy) / height) - (xs2[next] - cx) / width * ((ys2[index] - cy) / height);
+  }
+  if (Math.abs(enclosed) / 2 < 0.3) return false;
   const angles = xs2.map((x, index) => Math.atan2((ys2[index] - cy) / height, (x - cx) / width));
   let turn = 0;
   let travel = 0;

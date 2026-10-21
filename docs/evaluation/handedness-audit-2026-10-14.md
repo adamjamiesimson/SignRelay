@@ -31,10 +31,12 @@ SignRelay uses @mediapipe/tasks-vision@0.10.22-rc.20250304. This analysis does n
 
 Leave handedness unchanged. Synthetic slot tests verify model-adapter wiring only, not camera handedness or real-world signing accuracy.
 
-## 21 October 2026: single-hand label continuity (not a label swap)
+## 21 October 2026: single-hand label continuity, tried and reverted
 
-The left/right mapping is still unchanged. A separate weakness is now fixed: the ASL rules and the motion segmenter group samples by MediaPipe's per-frame handedness label. A **sustained** label change on one moving hand therefore split it into two partial tracks. In synthetic tests, a mid-sign switch made YES, PLEASE and SORRY abstain; single-frame flicker up to every third frame was already tolerated.
+**Hypothesis.** The ASL rules and the motion segmenter group samples by MediaPipe's per-frame handedness label. A sustained label change on one moving hand could split it into two partial tracks. In synthetic tests, a mid-sign switch made YES, PLEASE and SORRY abstain; single-frame flicker up to every third frame was already tolerated.
 
-`lib/hand-tracking.ts` keeps the established label of a single hand only while it stays spatially continuous: within 300 ms of the previous single-hand frame, and with a centre displacement of at most max(0.12, 2 × hand scale). Frames with two hands, hands that reappear after a pause, and hands that reappear elsewhere are never linked. The stabilized copy feeds only the ASL rules and segmentation; the ASL, PSL and other models still receive the raw MediaPipe labels.
+**Change tried.** For the ASL rules and segmentation only, a single hand that stayed spatially continuous for 300 ms inherited its established label. The models kept the raw labels.
 
-Whether real MediaPipe output switches labels mid-sign has **not** been measured. `tracker_behavior.single_hand_label_sustained_switches` in opt-in traces now counts it. Real-video effects come from the paired CI video pilot, not from these synthetic tests.
+**Real-video result.** In the paired CI pilot (run 39556336628), the candidate lost the correct HELLO on `hello-gtsignstudy4a.8033`. That clip's 9 tracked frames are 8 "Right" and 1 "Left". Relabelling the single Left frame into the Right track changed the window enough to fail the HELLO rule. No clip gained a correct word.
+
+**Decision.** Reverted. One measured real-video regression and no measured benefit outweigh the synthetic fragility. Retuning the rule until this clip passes would be fitting to the same reused development clips. `tracker_behavior.single_hand_label_sustained_switches` in opt-in traces stays available, so future reviewed recordings can show whether sustained switches actually occur.
