@@ -145,6 +145,8 @@ jobs:
           node scripts/compare-recognition-evaluation.mjs \
             evaluation/derived/development-base.jsonl evaluation/derived/development-candidate.jsonl \
             > evaluation/derived/development-paired.json
+          # Aggregate outcomes only (no media or landmarks), visible without the artifact.
+          cat evaluation/derived/development-paired.json
 
       - name: Store derived metrics only — never participant video
         if: always()
