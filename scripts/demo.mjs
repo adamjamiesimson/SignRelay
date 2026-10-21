@@ -25,6 +25,22 @@ export function demoExportProblems(root = "out", verify = () => spawnSync("node"
   return [];
 }
 
+/** What demo:serve prints. `real_video_evidence` is `{ outcome, evidence }` as
+ * written by scripts/verify-runtime.mjs.
+ * @param {{ recognition_worker_sha256: string, matches_committed_worker: boolean,
+ *   real_video_evidence?: { outcome: { signed_trials: number, correct: number, wrong_accepted: number, abstained: number } } | null }} manifest
+ * @param {string} port */
+export function serveBanner(manifest, port) {
+  const outcome = manifest.real_video_evidence?.outcome;
+  return [
+    `SignRelay ASL demo build — http://127.0.0.1:${port}/`,
+    `Recognition worker ${manifest.recognition_worker_sha256.slice(0, 12)} (matches committed bundle: ${manifest.matches_committed_worker}).`,
+    outcome ? `Recorded development evidence: ${outcome.correct} of ${outcome.signed_trials} previously inspected publisher clips correct, ${outcome.wrong_accepted} wrong, ${outcome.abstained} no match. Not live-camera or signer accuracy.`
+      : "No real-video development evidence is recorded for this worker.",
+    "Serving on loopback only. Release status: NO-GO; physical-camera checks remain manual.",
+  ].join("\n");
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [command, ...rest] = process.argv.slice(2);
   const run = (cmd, args) => { const result = spawnSync(cmd, args, { stdio: "inherit" }); if (result.status !== 0) process.exit(result.status ?? 1); };
@@ -36,14 +52,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (problems.length) { console.error(problems.join("\n")); process.exit(1); }
     const manifest = JSON.parse(readFileSync("out/runtime-manifest.json", "utf8"));
     const port = rest.includes("--port") ? rest[rest.indexOf("--port") + 1] : "3000";
-    const evidence = manifest.real_video_evidence;
-    console.log([
-      `SignRelay ASL demo build — http://127.0.0.1:${port}/`,
-      `Recognition worker ${manifest.recognition_worker_sha256.slice(0, 12)} (matches committed bundle: ${manifest.matches_committed_worker}).`,
-      evidence ? `Recorded development evidence: ${evidence.correct}/${evidence.signed_trials} correct, ${evidence.wrong_accepted} wrong, ${evidence.abstained} abstained on previously inspected publisher clips — not live-camera or signer accuracy.`
-        : "No real-video development evidence is recorded for this worker.",
-      "Serving on loopback only. Release status: NO-GO; physical-camera checks remain manual.",
-    ].join("\n"));
+    console.log(serveBanner(manifest, port));
     run("node", ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", port]);
   } else if (command === "check") {
     const problems = demoExportProblems();
