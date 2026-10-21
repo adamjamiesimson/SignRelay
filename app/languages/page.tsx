@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LANGUAGE_LIST } from "@/lib/model-adapters";
+import { ASL_ONLY } from "@/lib/build-profile";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function LanguagesPage() {
             <span className="figma-eyebrow">Language support</span>
             <h1>Supported sign languages</h1>
             <p>Seven language workspaces currently include automatic research recognition. The remaining language models are in development, with private signer-taught recognition available in those workspaces in the meantime.</p>
+            {ASL_ONLY && <p role="note"><strong>ASL demo build:</strong> only the ASL workspace is included. The other languages below are listed for information; their models are not part of this build.</p>}
             <div className="figma-language-summary" aria-label="Language support summary">
               <div><strong>{automatic.length}</strong><span>Automatic</span></div>
               <div><strong>{personal.length}</strong><span>In development</span></div>

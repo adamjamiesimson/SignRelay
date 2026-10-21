@@ -1,0 +1,8 @@
+{"benchmark":"personal","mode":"easy","examples":30,"old_ms":188.15,"new_cold_ms":20.09,"new_warm_ms":8.65,"speedup_warm":21.75,"decision_equal":true}
+{"benchmark":"personal","mode":"easy","examples":150,"old_ms":665.1,"new_cold_ms":57.34,"new_warm_ms":33,"speedup_warm":20.15,"decision_equal":true}
+{"benchmark":"personal","mode":"easy","examples":300,"old_ms":1328.23,"new_cold_ms":59.11,"new_warm_ms":57.52,"speedup_warm":23.09,"decision_equal":true}
+{"benchmark":"personal","mode":"hard","examples":30,"old_ms":148.22,"new_cold_ms":24.91,"new_warm_ms":22.76,"speedup_warm":6.51,"decision_equal":true}
+{"benchmark":"personal","mode":"hard","examples":150,"old_ms":530.88,"new_cold_ms":178.42,"new_warm_ms":130.79,"speedup_warm":4.06,"decision_equal":true}
+{"benchmark":"personal","mode":"hard","examples":300,"old_ms":1352.8,"new_cold_ms":290.82,"new_warm_ms":284.97,"speedup_warm":4.75,"decision_equal":true}
+{"benchmark":"psl-distance-only","mode":"easy","examples":775,"old_ms":863.76,"new_ms":81.08,"speedup":10.65,"decision_equal":true}
+{"benchmark":"psl-distance-only","mode":"hard","examples":775,"old_ms":769.57,"new_ms":239.87,"speedup":3.21,"decision_equal":true}

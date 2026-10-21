@@ -11,6 +11,12 @@ else
   test -f out/index.html
 fi
 
+# Development exports that include the private capture studio are never deployed.
+if [[ -e out/.signrelay-private-capture-included || -e out/field-test.html || -e out/field-test ]]; then
+  echo "Refusing to deploy: out/ includes the private /field-test capture route. Rebuild without SIGNRELAY_INCLUDE_PRIVATE_CAPTURE."
+  exit 1
+fi
+
 echo "Deploying to Firebase project signrelay-76f34, site signrelay..."
 
 max_attempts=5

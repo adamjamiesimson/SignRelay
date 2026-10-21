@@ -1,3 +1,5 @@
+import type { InferenceOptions } from "./landmark-model-loader";
+import { downloadModelBytes } from "./model-download";
 import type { Point, VisionFrame } from "./vision-types";
 
 type PackedArray = {
@@ -81,65 +83,77 @@ const MODEL_MIN_CONFIDENCE = 0.62;
 const MODEL_MIN_MARGIN = 0.22;
 
 let modelPromise: Promise<MaterialisedModel> | null = null;
+let loadController: AbortController | null = null;
 
-function loadModel() {
-  modelPromise ??= Promise.all([
-    fetch("/models/asl2000-tgcn/model.json"),
-    fetch("/models/asl2000-tgcn/labels.json"),
-  ]).then(async ([manifestResponse, labelsResponse]) => {
-    if (!manifestResponse.ok || !labelsResponse.ok) {
-      throw new Error("ASL-2000 model assets could not load");
-    }
-    if (!("DecompressionStream" in self)) {
-      throw new Error("This browser cannot unpack the ASL-2000 model");
-    }
-    const manifest = await manifestResponse.json() as TgcnManifest;
-    const labels = await labelsResponse.json() as string[];
-    if (!Array.isArray(manifest.binaryParts) || manifest.binaryParts.length === 0) {
-      throw new Error("ASL-2000 model shard manifest is invalid");
-    }
-    const partResponses = await Promise.all(manifest.binaryParts.map((name) =>
-      fetch(`/models/asl2000-tgcn/${name}`)
-    ));
-    if (partResponses.some((response) => !response.ok)) {
-      throw new Error("ASL-2000 model assets could not load");
-    }
-    const partBuffers = await Promise.all(partResponses.map((response) => response.arrayBuffer()));
-    const compressed = new Uint8Array(manifest.compressedBytes);
-    let compressedOffset = 0;
-    for (const part of partBuffers) {
-      if (compressedOffset + part.byteLength > compressed.byteLength) {
+function loadModel(signal?: AbortSignal) {
+  signal?.throwIfAborted();
+  if (loadController?.signal.aborted) modelPromise = null;
+  if (!modelPromise) {
+    const controller = new AbortController();
+    loadController = controller;
+    const download = (url: string, maxBytes = 128 * 1024 * 1024) => downloadModelBytes(url, { signal: controller.signal, maxBytes });
+    const attempt = Promise.all([
+      download("/models/asl2000-tgcn/model.json", 1024 * 1024),
+      download("/models/asl2000-tgcn/labels.json", 1024 * 1024),
+    ]).then(async ([manifestBytes, labelBytes]) => {
+      if (!("DecompressionStream" in self)) {
+        throw new Error("This browser cannot unpack the ASL-2000 model");
+      }
+      const manifest = JSON.parse(new TextDecoder().decode(manifestBytes)) as TgcnManifest;
+      const labels = JSON.parse(new TextDecoder().decode(labelBytes)) as string[];
+      if (!Array.isArray(manifest.binaryParts) || manifest.binaryParts.length === 0) {
+        throw new Error("ASL-2000 model shard manifest is invalid");
+      }
+      const partBuffers = await Promise.all(manifest.binaryParts.map(name => {
+        if (!/^[a-zA-Z0-9._-]+$/.test(name) || name === "." || name === "..") throw new Error("Invalid ASL shard path");
+        return download(`/models/asl2000-tgcn/${name}`);
+      }));
+      const compressed = new Uint8Array(manifest.compressedBytes);
+      let compressedOffset = 0;
+      for (const part of partBuffers) {
+        if (compressedOffset + part.byteLength > compressed.byteLength) {
+          throw new Error("ASL-2000 compressed model integrity check failed");
+        }
+        compressed.set(new Uint8Array(part), compressedOffset);
+        compressedOffset += part.byteLength;
+      }
+      if (compressedOffset !== manifest.compressedBytes) {
         throw new Error("ASL-2000 compressed model integrity check failed");
       }
-      compressed.set(new Uint8Array(part), compressedOffset);
-      compressedOffset += part.byteLength;
-    }
-    if (compressedOffset !== manifest.compressedBytes) {
-      throw new Error("ASL-2000 compressed model integrity check failed");
-    }
-    const stream = new Blob([compressed.buffer])
-      .stream()
-      .pipeThrough(new DecompressionStream("gzip"));
-    const binary = await new Response(stream).arrayBuffer();
-    if (manifest.format !== "signrelay-tgcn-v1" || binary.byteLength !== manifest.binaryBytes) {
-      throw new Error("ASL-2000 model integrity check failed");
-    }
-    if (labels.length !== manifest.classes) {
-      throw new Error("ASL-2000 vocabulary does not match the model");
-    }
-    return materialiseTgcnModel(manifest, binary, labels);
-  }).catch(error => {
-    modelPromise = null;
-    throw error;
-  });
-  return modelPromise;
+      const stream = new Blob([compressed.buffer])
+        .stream()
+        .pipeThrough(new DecompressionStream("gzip"));
+      const binary = await new Response(stream).arrayBuffer();
+      controller.signal.throwIfAborted();
+      if (manifest.format !== "signrelay-tgcn-v1" || binary.byteLength !== manifest.binaryBytes) {
+        throw new Error("ASL-2000 model integrity check failed");
+      }
+      if (labels.length !== manifest.classes) {
+        throw new Error("ASL-2000 vocabulary does not match the model");
+      }
+      return materialiseTgcnModel(manifest, binary, labels);
+    }).catch(error => {
+      controller.abort(error);
+      if (modelPromise === attempt) modelPromise = null;
+      throw error;
+    });
+    modelPromise = attempt;
+  }
+  const controller = loadController!;
+  const abort = () => controller.abort(signal?.reason);
+  signal?.addEventListener("abort", abort, { once: true });
+  return modelPromise.finally(() => signal?.removeEventListener("abort", abort));
 }
 
-export async function recognizeAsl1000(sequence: VisionFrame[]): Promise<Asl1000Prediction | null> {
+export async function recognizeAsl1000(sequence: VisionFrame[], options: InferenceOptions = {}): Promise<Asl1000Prediction | null> {
+  options.signal?.throwIfAborted();
   if (sequence.length < 6) return null;
-  const model = await loadModel();
+  options.onPhase?.("loading");
+  const model = await loadModel(options.signal);
+  options.signal?.throwIfAborted();
+  options.onPhase?.("inference");
   const input = prepareTgcnInput(sequence, model.manifest.sequenceLength);
-  const logits = await runMaterialisedTgcnCooperatively(model, input);
+  const logits = await runMaterialisedTgcnCooperatively(model, input, options.signal);
   const probabilities = softmax(logits);
   const [best, runnerUp] = topTwo(probabilities);
   const confidence = probabilities[best];
@@ -213,7 +227,8 @@ function runMaterialisedTgcn(model: MaterialisedModel, input: Float32Array) {
   return step.value;
 }
 
-async function runMaterialisedTgcnCooperatively(model: MaterialisedModel, input: Float32Array) {
+async function runMaterialisedTgcnCooperatively(model: MaterialisedModel, input: Float32Array, signal?: AbortSignal) {
+  signal?.throwIfAborted();
   const steps = tgcnSteps(model, input);
   let sliceStarted = performance.now();
   let step = steps.next();
@@ -224,8 +239,10 @@ async function runMaterialisedTgcnCooperatively(model: MaterialisedModel, input:
       await new Promise<void>(resolve => setTimeout(resolve, 0));
       sliceStarted = performance.now();
     }
+    signal?.throwIfAborted();
     step = steps.next();
   }
+  signal?.throwIfAborted();
   return step.value;
 }
 

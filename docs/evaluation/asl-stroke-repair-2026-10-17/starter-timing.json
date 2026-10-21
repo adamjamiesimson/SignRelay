@@ -1,0 +1,32 @@
+{
+  "node": "v24.19.0",
+  "platform": "linux",
+  "arch": "x64",
+  "results": [
+    {
+      "synthetic": true,
+      "workload": "idle-52",
+      "iterations": 120,
+      "before_p95_ms": 1.0574469999999963,
+      "after_p95_ms": 0.9097639999999956,
+      "after_max_ms": 2.1084999999999923
+    },
+    {
+      "synthetic": true,
+      "workload": "two-hand-arc-52",
+      "iterations": 120,
+      "before_p95_ms": 1.545472000000018,
+      "after_p95_ms": 3.0120919999999956,
+      "after_max_ms": 6.461662999999987
+    },
+    {
+      "synthetic": true,
+      "workload": "two-hand-arc-120",
+      "iterations": 120,
+      "before_p95_ms": 3.363067000000001,
+      "after_p95_ms": 9.109584999999925,
+      "after_max_ms": 11.287891000000172
+    }
+  ],
+  "note": "Container CPU only; no signing-accuracy or phone-FPS claim."
+}

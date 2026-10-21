@@ -17,12 +17,21 @@ export class RecognitionSession {
   private restarts: number[] = [];
   private recovering = false;
   private closed = false;
+  /** Milliseconds from posting the last answered frame to its analysis. */
+  lastRoundTripMs: number | null = null;
+  /** Counters for the opt-in ?perf readout (numbers only). `replaced` frames
+   * were superseded by a newer camera frame before they could be forwarded;
+   * `lastQueueAgeMs` is how long the last forwarded frame waited. */
+  readonly stats = { offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null as number | null, recoveries: 0 };
+  /** Last state reported through onStatus, for the ?perf readout. */
+  state: SessionStatus["state"] = "running";
+  private queuedAt = 0;
   private watchdog: ReturnType<typeof setInterval>;
 
   constructor(
     private createWorker: () => Port,
     private onMessage: (message: WorkerMessage) => void,
-    private onStatus: (status: SessionStatus) => void,
+    private readonly reportStatus: (status: SessionStatus) => void,
   ) {
     this.launch();
     this.watchdog = setInterval(() => {
@@ -36,7 +45,10 @@ export class RecognitionSession {
     if (this.closed) return;
     if (message.type === "frame") {
       if (!this.worker) return;
+      this.stats.offered++;
+      if (this.queued) this.stats.replaced++;
       this.queued = message.frame;
+      this.queuedAt = Date.now();
       this.pump();
       return;
     }
@@ -56,6 +68,15 @@ export class RecognitionSession {
     } catch {
       this.recover("Recognition could not receive the session. Restarting…");
     }
+  }
+
+  resetStats() {
+    Object.assign(this.stats, { offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null, recoveries: 0 });
+  }
+
+  private onStatus(status: SessionStatus) {
+    this.state = status.state;
+    this.reportStatus(status);
   }
 
   restart() {
@@ -81,7 +102,10 @@ export class RecognitionSession {
         if (worker !== this.worker || event.data.session !== this.session) return;
         const message = event.data;
         if (message.type === "fault") { this.recover(message.message); return; }
-        if (message.type === "analysis" && message.frameId === this.waiting?.id) {
+        const waiting = this.waiting;
+        if (message.type === "analysis" && waiting && message.frameId === waiting.id) {
+          this.lastRoundTripMs = Date.now() - waiting.since;
+          this.stats.answered++;
           this.waiting = null;
           if (this.recovering) {
             this.recovering = false;
@@ -105,6 +129,8 @@ export class RecognitionSession {
     const frame = this.queued;
     this.queued = null;
     this.waiting = { id: ++this.nextFrameId, since: Date.now() };
+    this.stats.forwarded++;
+    this.stats.lastQueueAgeMs = this.waiting.since - this.queuedAt;
     try {
       this.worker.postMessage({ type: "frame", frame, frameId: this.waiting.id, session: this.session } satisfies WorkerInput);
     } catch {
@@ -113,6 +139,7 @@ export class RecognitionSession {
   }
 
   private recover(message: string) {
+    this.stats.recoveries++;
     this.disposeWorker();
     this.waiting = null;
     this.queued = null;

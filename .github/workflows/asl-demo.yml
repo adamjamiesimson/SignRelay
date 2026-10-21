@@ -1,0 +1,92 @@
+name: Offline ASL Demo and Rehearsal
+
+# The demo-only build profiles. The full multilingual export and its smokes run
+# in firebase-build-check.yml; these profiles skip the non-ASL models, so they
+# need no model downloads beyond the pinned MediaPipe assets.
+on:
+  push:
+    branches:
+      - main
+  # Every PR base, including stacked feature branches.
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asl-demo-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  demo:
+    name: Offline demo, rehearsal and fault-injection smokes
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - name: Install exact lockfile dependencies
+        run: npm ci
+
+      - name: Locate Chrome
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium)"
+          test -n "$chrome"
+          echo "CHROME=$chrome" >> "$GITHUB_ENV"
+
+      # Rehearsal profile: the ASL demo plus the labelled synthetic-landmark hook.
+      - name: Build rehearsal profile
+        run: npm run build:rehearsal
+
+      - name: Rehearsal - six signs, abstention, interruption, offline, speech, privacy
+        run: node tests/gitex-rehearsal-smoke.mjs "$CHROME"
+
+      - name: Rehearsal - transcript, live regions, keyboard, touch targets, reduced motion
+        run: node tests/transcript-a11y-smoke.mjs "$CHROME"
+
+      - name: Rehearsal - rendered export and runtime manifest
+        run: |
+          npm run test:rendered
+          node scripts/verify-runtime.mjs --out out --profile rehearsal
+
+      # The ASL demo profile, exactly as demo:prepare builds it. Built last so
+      # the synthetic hook is checked to be absent from the demo export.
+      - name: Build ASL demo profile
+        run: npm run build:asl-demo
+
+      - name: Demo - strict offline check (deny-all proxy)
+        run: npm run demo:check -- "$CHROME"
+
+      - name: Demo - the strict check's leak detector catches a planted request
+        run: node tests/offline-demo-strict-smoke.mjs "$CHROME" --self-test
+
+      - name: Demo - self-hosted vision with CDNs blocked
+        run: node tests/offline-vision-smoke.mjs "$CHROME"
+
+      - name: Demo - camera and worker lifecycle stress
+        run: node tests/lifecycle-stress-smoke.mjs "$CHROME"
+
+      - name: Demo - missing and corrupt assets, storage failures, worker faults
+        run: node tests/fault-injection-smoke.mjs "$CHROME"
+
+      - name: Demo - rendered export and runtime manifest
+        run: |
+          npm run test:rendered
+          node scripts/verify-runtime.mjs --out out --profile asl-demo
+
+      - name: Preserve browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signrelay-asl-demo-evidence
+          path: outputs/*-*.png
+          retention-days: 7
+          if-no-files-found: ignore

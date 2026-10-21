@@ -1,3 +1,4 @@
+import { installTemplateWorker } from "./helpers/template-worker";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { recognizeAslStarter } from "../lib/asl-starter-recognition";
 import { prepareCalibrationSequence } from "../lib/personalized-recognition";
@@ -20,6 +21,7 @@ beforeEach(async () => {
   mocks.model.mockReset().mockResolvedValue(null);
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
   vi.stubGlobal("self", worker);
+  installTemplateWorker();
   await import("../workers/recognition.worker");
 });
 

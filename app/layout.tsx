@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./refinement.css";
 import "./figma-ui.css";
+import { REHEARSAL, REHEARSAL_BANNER } from "@/lib/rehearsal";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://signrelay.web.app"),
@@ -44,6 +45,7 @@ export default function RootLayout({
           description: "Privacy-first browser research platform for sign-language recognition.",
           logo: "https://signrelay.web.app/signrelay-mark.webp", sameAs: ["https://github.com/adamjamiesimson/SignRelay"],
         }) }} />
+        {REHEARSAL && <div role="alert" className="rehearsal-banner" style={{ position: "sticky", top: 0, zIndex: 1000, padding: "8px 16px", background: "#7a1f1f", color: "#fff", fontWeight: 700, textAlign: "center" }}>{REHEARSAL_BANNER}</div>}
         {children}
       </body>
     </html>

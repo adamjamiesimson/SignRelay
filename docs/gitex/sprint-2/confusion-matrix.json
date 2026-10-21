@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "status": "Synthetic kinematic fixtures; not recordings, not accuracy.",
+  "generated_by": "UPDATE_CONFUSION=1 npx vitest run tests/asl-confusion-matrix.test.ts",
+  "columns": [
+    "HELLO",
+    "NO",
+    "YES",
+    "PLEASE",
+    "SORRY",
+    "THANK YOU",
+    "I LOVE YOU",
+    "abstain",
+    "more than one word"
+  ],
+  "rules": {
+    "matrix": {
+      "HELLO": {
+        "HELLO": 51,
+        "NO": 0,
+        "YES": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "THANK YOU": 0,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "NO": {
+        "HELLO": 0,
+        "NO": 51,
+        "YES": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "THANK YOU": 0,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "YES": {
+        "HELLO": 0,
+        "NO": 0,
+        "YES": 51,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "THANK YOU": 0,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "PLEASE": {
+        "HELLO": 0,
+        "NO": 0,
+        "YES": 0,
+        "PLEASE": 51,
+        "SORRY": 0,
+        "THANK YOU": 0,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "SORRY": {
+        "HELLO": 0,
+        "NO": 0,
+        "YES": 0,
+        "PLEASE": 0,
+        "SORRY": 51,
+        "THANK YOU": 0,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "THANK YOU": {
+        "HELLO": 0,
+        "NO": 0,
+        "YES": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "THANK YOU": 51,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "non-sign movement": {
+        "HELLO": 144,
+        "NO": 0,
+        "YES": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "THANK YOU": 136,
+        "I LOVE YOU": 0,
+        "abstain": 404,
+        "more than one word": 0
+      }
+    },
+    "wrong": {
+      "non-sign movement → HELLO": 144,
+      "non-sign movement → THANK YOU": 136
+    }
+  },
+  "confidently_wrong_model": {
+    "matrix": {
+      "HELLO": {
+        "HELLO": 51,
+        "NO": 0,
+        "YES": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "THANK YOU": 0,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "NO": {
+        "HELLO": 0,
+        "NO": 51,
+        "YES": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "THANK YOU": 0,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "YES": {
+        "HELLO": 0,
+        "NO": 0,
+        "YES": 51,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "THANK YOU": 0,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "PLEASE": {
+        "HELLO": 0,
+        "NO": 0,
+        "YES": 0,
+        "PLEASE": 51,
+        "SORRY": 0,
+        "THANK YOU": 0,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "SORRY": {
+        "HELLO": 0,
+        "NO": 0,
+        "YES": 0,
+        "PLEASE": 0,
+        "SORRY": 51,
+        "THANK YOU": 0,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 0
+      },
+      "THANK YOU": {
+        "HELLO": 0,
+        "NO": 0,
+        "YES": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "THANK YOU": 42,
+        "I LOVE YOU": 0,
+        "abstain": 0,
+        "more than one word": 9
+      },
+      "non-sign movement": {
+        "HELLO": 132,
+        "NO": 0,
+        "YES": 0,
+        "PLEASE": 44,
+        "SORRY": 0,
+        "THANK YOU": 120,
+        "I LOVE YOU": 0,
+        "abstain": 368,
+        "more than one word": 20
+      }
+    },
+    "wrong": {
+      "THANK YOU → more than one word": 9,
+      "non-sign movement → HELLO": 132,
+      "non-sign movement → PLEASE": 44,
+      "non-sign movement → THANK YOU": 120,
+      "non-sign movement → more than one word": 20
+    },
+    "wrong_conditions": {
+      "THANK YOU → more than one word": [
+        "30 fps: THANK YOU + HELLO",
+        "left hand: THANK YOU + HELLO",
+        "farther from camera: THANK YOU + HELLO",
+        "closer to camera: THANK YOU + HELLO",
+        "every 5th hand frame lost: THANK YOU + HELLO",
+        "two-frame mid-sign dropout: THANK YOU + HELLO",
+        "no pose: THANK YOU + HELLO",
+        "no face: THANK YOU + HELLO",
+        "unknown handedness: THANK YOU + HELLO"
+      ]
+    }
+  }
+}

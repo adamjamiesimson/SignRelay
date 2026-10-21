@@ -1,0 +1,123 @@
+{
+  "date": "2026-10-17",
+  "diagnostic_only": true,
+  "production_recognition_changed": false,
+  "production_worker_sha256": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
+  "source_parent": "9c579fa4ac408c0b6b284e97bb23584f702b464b",
+  "source_sha256": {
+    "scripts/diagnostics/asl-trace-report.ts": "28690bcbd26c898ca46c542aefafbab8f1534e7d02ae243de687681595f67fd3",
+    "scripts/reviewed-development.mjs": "de75f541a188c591408a7733d56ae6e75852b0b9cce900a77b39296b60c3b204",
+    "scripts/prepare-reviewed-development.mjs": "cce1e144033c7dbc78fd81ccfa91fc796a59b5b18f497a62ddd717d2af968edd",
+    "scripts/evaluation-cohorts.mjs": "e68efe0d42803e95eb9b46b7966afb031ee3ae3305e7b2c7a96ac2404dd12263",
+    "scripts/evaluation-manifest.mjs": "0a9cb5d4f30f60b464e8bc467057eabdeabdc1e4c1ad4ffea02c45b73f93a0ad",
+    "scripts/run-recognition-video-evaluation.mjs": "63a150300be35f8d76368165e80ec65ca44ef45f47335e4421793a01c19cb2ec",
+    "tests/asl-trace-report.test.ts": "861939824dc167a4267588360f66cd5307ebe2b920ee7ec105a3a71eaeab87ae",
+    "tests/reviewed-development.test.ts": "0fd4d48b2b62640b157ce80f48dc0cacc99c5c699f61fc5903e78fe5343e173b",
+    "docs/evaluation/development-collection-plan-2026-10-17.json": "db1bcd2435d9bab132b9097fe31e20854d2dc5b468a309b599875d5ecbf3a4f4",
+    ".github/workflows/asl-video-pilot.yml": "08f94d044348f9b14b8b953f779ade67f524648914f4324fc4daa17dbcbafdf8",
+    "lib/vision-engine.ts": "2797eb158aab1253797e0af53c459582a2c28fef5a0cb62a5e73f30b3cbe2964",
+    "lib/asl-starter-recognition.ts": "d7a25b488f76a972fda111facdafc0dcbf6ff6f9511ceac3011c9dd33f0b7221",
+    "workers/recognition.worker.ts": "e7b2244153165c0f10be46e3777594c8fe2b7f1712c2caa34c4449e50754a19b",
+    "public/workers/recognition.worker.js": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
+    "scripts/evaluation-failed-trial.mjs": "4c50e00c7722da65b1474d68a994c90f792af729b448dabc0a8f8c93e2788181",
+    "scripts/diagnostics/recognition-lab.ts": "3e313191267a0e8a5ec46c875e8b5b4d135bc1fb67b3130038bac4b09e110c67",
+    "tests/evaluation-failed-trial.test.ts": "c34189fa7c0dbef5f569aacbfc27e50124575cb22c14c8062dd9734be52ec25b",
+    "tests/evaluation-failure-browser-smoke.mjs": "75b1a4a01f4ec8e232e6147e79ba91e51b171bfbae3e13bfb685f1b68d8fdb61"
+  },
+  "derived_sha256": {
+    "development-retry.jsonl": "243eaef8816d7e25bec04f5c9795b9d3f08a07a878329e6bb1160b246759643d",
+    "development-retry.jsonl.summary.json": "bb16bb252c3d4b3888cd79748656e3c1d850214575540ea00b3c0f5a5dc93542",
+    "development-trace-report.json": "275583e7f2026c03861b2b5dee272f4cc1d3a769a40a9d51318eadbe40c46d7f",
+    "development-unchanged.json": "c2690cfaa887ec9f4c04aa9ae44f5072353ff04e1ffe4ba9b9d3992458c5054c",
+    "development.jsonl": "27e51efcb7feb62360db6d89d6638c12f180aceacfea3a78eb0f5357130fab3b",
+    "development.jsonl.summary.json": "19967e994d40000f24627d1509277d9cbab61e8d7ba62eb2c6a7ca33cd694525",
+    "historical-guard.json": "cbcee58bf833a03979d59c65671a9ceffc280c78fdc96b68bf51df24f5e7f837",
+    "historical-trace-report.json": "f57181ffb9a0097d816f903b4c2dd0b2319d4e06e47e174ae04b92713eb847f6",
+    "historical-unchanged.json": "8630d333377e740720e9f315d9f22a0ac9bcd43d5c1936f8caef6e1c2eb29a42",
+    "historical.jsonl": "a99b01b6023cd4564c5417e92d99112936cd33664df5d499c6d3c4137be20e61",
+    "historical.jsonl.summary.json": "9a4587d08dd94b11af98cc2026493263d082be05cbbe411a598416a33edc10e3",
+    "import-smoke.json": "18349201adee0c38ecaf1a4f988aa7797efc04f53d181f42cde972c252463093",
+    "original-partial-timeout-counters.json": "d04f4db832ae2d10d63d7ea4105bd47d1f4cb6186239598647e6dbbf962c59b7",
+    "forced-failure-browser.json": "43da25ddfd73387589c85c235abc2d7fb703fc8a0df84e3f935386dc2e8faac8"
+  },
+  "abstaining_recordings": 6,
+  "abstentions_with_model_ready_segment": 0,
+  "accepted_output_changes_from_prior_candidate": 0,
+  "first_additional_attempt": {
+    "trials": 5,
+    "runtime_errors": 2,
+    "retained": "development.jsonl"
+  },
+  "complete_additional_retry": "development-retry.jsonl",
+  "unit_tests": {
+    "passed": 365,
+    "files": 46
+  },
+  "runtime": {
+    "node": "v24.19.0",
+    "chrome": "151.0.7922.34",
+    "tasks_js": "0.10.35",
+    "tasks_wasm": "0.10.35"
+  },
+  "validation": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "secured_static_export": "passed",
+    "rendered_checks": 2,
+    "asset_policy": "passed",
+    "secret_history_scan": "passed",
+    "importer_smoke": "six generated-video controls; zero predictions; not signing evidence"
+  },
+  "matching_model_fingerprints": 56,
+  "collection": {
+    "status": "planned-not-recordings",
+    "participants_planned": 4,
+    "signed_slots": 72,
+    "no_sign_slots": 48,
+    "unknown_sign_slots": 24,
+    "new_real_recordings": 0,
+    "new_fluent_reviews": 0,
+    "no_sign_false_acceptance_rate": null,
+    "unknown_sign_false_acceptance_rate": null
+  },
+  "reserved_holdout": {
+    "recordings": 5,
+    "downloaded": false,
+    "viewed": false,
+    "evaluated": false
+  },
+  "notes": [
+    "Rows preserve their actual parent source commits and harness-dirty flags.",
+    "Only aggregates are stored; no raw frames, imagery, landmarks or private intake.",
+    "Two frame-delivery timeouts are retained as runtime errors; their cause is not claimed repaired.",
+    "Human review and consent are attestations; tooling cannot establish credentials or identity itself.",
+    "Original failed CLI rows remain unmodified. The new failure path preserves partial evidence; the forced browser control is separate from natural replay attempts."
+  ],
+  "unique_recordings_in_complete_diagnostic_cohorts": 11,
+  "all_local_replay_attempts": {
+    "trial_attempts": 16,
+    "completed": 14,
+    "errors": 2,
+    "unique_source_recordings": 11,
+    "repetitions_pooled_as_independent_evidence": false
+  },
+  "failure_path_repair": {
+    "source_parent": "eb45050c95b954babfe325426d957bc594248c36",
+    "partial_counters_preserved": true,
+    "confirmed_words_preserved": true,
+    "missing_counters": null,
+    "failed_trials_not_credited_as_correct": true,
+    "technical_browser_control": {
+      "forced_timeout": true,
+      "partial_frames": 30,
+      "hand_frames": 11,
+      "analyses": 30,
+      "retained_words": [
+        "NO"
+      ],
+      "status": "error",
+      "new_independent_accuracy_evidence": false
+    },
+    "original_intermittent_callback_timeout_cause_repaired": false
+  }
+}

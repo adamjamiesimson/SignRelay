@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "label": "baseline",
+  "generated_at": "2026-10-21T07:50:17.392Z",
+  "runtime": {
+    "commit": "d9fcc3b3cdf99b6dfd0acea81a11c2a0d34e334d",
+    "branch": "HEAD",
+    "worktree_dirty": false,
+    "node": "v22.22.0",
+    "npm": "10.9.4",
+    "dependencies": {
+      "next": "16.4.2",
+      "react": "19.2.6",
+      "@mediapipe/tasks-vision": "0.10.35",
+      "onnxruntime-web": "1.23.2",
+      "vitest": "4.1.11",
+      "vite": "8.3.4",
+      "eslint-config-next": "16.4.2",
+      "braces": "3.0.3"
+    },
+    "committed_recognition_worker_sha256": "ccce84c876f95caf9cade9a93fad1b686d5009a77ada203049044ee17ceb5632",
+    "built_recognition_worker_sha256": "ccce84c876f95caf9cade9a93fad1b686d5009a77ada203049044ee17ceb5632",
+    "asl_model_sha256": "ebac604f1c4ee86a7b3b20cfaa9c3a8f157cc814ad0c94e6a87be7902b3ac466",
+    "asl_labels_sha256": "4a4e1e6c024c19320557d0febdd7f3956960d77a691848a2101cbca72ce69380"
+  },
+  "checks": [
+    {
+      "id": "typecheck",
+      "category": "code",
+      "command": "npm run typecheck",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 5822,
+      "tail": [
+        "> signrelay@0.1.0 typecheck",
+        "> tsc --noEmit"
+      ]
+    },
+    {
+      "id": "lint",
+      "category": "code",
+      "command": "npm run lint",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 8473,
+      "tail": [
+        "> signrelay@0.1.0 lint",
+        "> eslint . --ignore-pattern .next --ignore-pattern out --ignore-pattern .sites-runtime"
+      ]
+    },
+    {
+      "id": "unit-tests",
+      "category": "code",
+      "command": "npm test",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 15678,
+      "summary": {
+        "test_files": 69,
+        "test_files_failed": 0,
+        "tests": 678,
+        "tests_failed": 0,
+        "tests_passed": 678
+      },
+      "tail": [
+        " RUN  v4.1.11 /tmp/claude-0/-home-user-SignRelay/ffd21a57-05bc-5ebc-9a83-981eb1e8f93a/scratchpad/base",
+        " Test Files  69 passed (69)",
+        "      Tests  678 passed (678)",
+        "   Start at  07:49:05",
+        "   Duration  15.07s (transform 2.17s, setup 0ms, import 4.01s, tests 24.56s, environment 8ms)",
+        "2026-10-21 07:49:15.279022 [W:onnxruntime:Default, cpuid_info.cc:91 LogEarlyWarning] Unknown CPU vendor. cpuinfo_vendor value: 0"
+      ]
+    },
+    {
+      "id": "worker-build",
+      "category": "build",
+      "command": "npm run build:worker",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 394,
+      "tail": [
+        "Self-hosted 4 MediaPipe WASM files.",
+        "  public/workers/recognition.worker.js        662.7kb",
+        "  public/workers/rsl.worker.js                542.4kb",
+        "  public/workers/bdsl.worker.js               497.1kb",
+        "  public/workers/template-matching.worker.js   17.5kb",
+        "⚡ Done in 90ms"
+      ]
+    },
+    {
+      "id": "repo-guard",
+      "category": "privacy-integrity",
+      "command": "npm run repo:guard",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 218,
+      "tail": [
+        "> signrelay@0.1.0 repo:guard",
+        "> node scripts/check-large-assets.mjs",
+        "Reviewed legacy large asset: public/models/bdsl401-videomae/model.onnx (92.3 MiB)",
+        "Reviewed legacy large asset: public/models/bsl1064-pose2sign/model.onnx (43.8 MiB)",
+        "Repository asset policy passed."
+      ]
+    },
+    {
+      "id": "secret-scan",
+      "category": "privacy-integrity",
+      "command": "npm run audit:secrets",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 22209,
+      "tail": [
+        "  \"scope\": \"All fetched Git refs and working tree; text blobs up to 5 MiB; known credential patterns. Values are never printed.\",",
+        "  \"commits\": 515,",
+        "  \"scannedHistoricalBlobs\": 1300,",
+        "  \"skippedObjects\": 2038,",
+        "  \"findings\": []",
+        "}"
+      ]
+    },
+    {
+      "id": "dependency-gate",
+      "category": "security",
+      "command": "npm run audit:deps",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 5192,
+      "tail": [
+        "      \"high\": 0,",
+        "      \"critical\": 0,",
+        "      \"total\": 0",
+        "    }",
+        "  }",
+        "}"
+      ]
+    },
+    {
+      "id": "production-audit",
+      "category": "security",
+      "command": "npm audit --omit=dev",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 506,
+      "tail": [
+        "found 0 vulnerabilities"
+      ]
+    },
+    {
+      "id": "strict-audit",
+      "category": "security-release-gate",
+      "command": "npm run audit:security",
+      "exit_code": 1,
+      "passed": false,
+      "duration_ms": 898,
+      "note": "Strict zero-advisory release gate. Expected to fail while the reviewed dev-only braces chain exists; owner decision.",
+      "tail": [
+        "        eslint-config-next  >=14.3.0-canary.0",
+        "        Depends on vulnerable versions of @next/eslint-plugin-next",
+        "        node_modules/eslint-config-next",
+        "5 high severity vulnerabilities",
+        "To address all issues (including breaking changes), run:",
+        "  npm audit fix --force"
+      ]
+    },
+    {
+      "id": "workspace-browser-smoke",
+      "category": "browser",
+      "command": "node tests/workspace-browser-smoke.mjs /opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 2563,
+      "tail": [
+        "{\"passed\":true,\"checks\":[\"footer navigation\",\"workspace transcript isolation\",\"welcome transcript isolation\",\"storage failure keeps transcript on both paths\",\"late permission releases tracks\",\"RSL/Bangla entry leaves shared camera off\",\"vis"
+      ]
+    },
+    {
+      "id": "offline-vision-smoke",
+      "category": "browser",
+      "command": "node tests/offline-vision-smoke.mjs /opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 24490,
+      "tail": [
+        "{\"passed\":true,\"cdn_blocked\":true,\"cdn_requests\":0,\"self_hosted_paths\":[\"/vision/models/face_landmarker.task\",\"/vision/models/gesture_recognizer.task\",\"/vision/models/pose_landmarker_lite.task\",\"/vision/wasm/vision_wasm_internal.js\",\"/visio"
+      ]
+    },
+    {
+      "id": "rendered-export",
+      "category": "privacy-integrity",
+      "command": "npm run test:rendered",
+      "exit_code": 0,
+      "passed": true,
+      "duration_ms": 387,
+      "tail": [
+        "# pass 2",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# todo 0",
+        "# duration_ms 147.825168"
+      ]
+    }
+  ],
+  "verdicts": {
+    "build_and_tests": "PASS",
+    "strict_release_gate": "FAIL (owner decision pending)"
+  }
+}

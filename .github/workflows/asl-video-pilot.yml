@@ -1,0 +1,174 @@
+name: ASL Video Pilot (non-release)
+# Evaluates existing, already-inspected isolated-sign clips. It does not create
+# fresh holdout data, certify accuracy or unblock production deployment.
+on:
+  # Path-filtered, but on every PR base so stacked feat/** PRs are covered.
+  pull_request:
+    paths:
+      - 'lib/asl-starter-recognition.ts'
+      - 'lib/vision-engine.ts'
+      - 'lib/vision-runtime.mjs'
+      - 'workers/recognition.worker.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/security-policy.mjs'
+      - 'scripts/verify-vision-runtime*.mjs'
+      - 'scripts/prepare-recognition-lab.mjs'
+      - 'scripts/diagnostics/**'
+      - 'scripts/evaluation-*.mjs'
+      - 'scripts/reviewed-development.mjs'
+      - 'scripts/prepare-reviewed-development.mjs'
+      - 'tests/reviewed-development.test.ts'
+      - 'tests/evaluation-failed-trial.test.ts'
+      - 'tests/evaluation-failure-browser-smoke.mjs'
+      - 'tests/video-frame-step.test.ts'
+      - 'tests/video-frame-browser-smoke.mjs'
+      - 'scripts/compare-recognition-evaluation.mjs'
+      - 'scripts/run-recognition-video-evaluation.mjs'
+      - 'tests/asl-*.test.ts'
+      - 'tests/evaluation-metrics.test.ts'
+      - 'scripts/verify-video-pilot.mjs'
+      - 'scripts/baseline-gate.mjs'
+      - 'docs/evaluation/established-baseline.json'
+      - 'docs/evaluation/baseline-change-explanations.json'
+      - 'scripts/freeze-evaluation-cohorts.mjs'
+      - 'docs/evaluation/*manifest*.json'
+      - 'docs/evaluation/cohort-lock*.json'
+      - 'docs/evaluation/popsign-*.json'
+      - 'lib/sign-motion.ts'
+      - 'lib/frame-timing.ts'
+      - 'lib/decoder.ts'
+      - 'lib/asl1000-runtime.ts'
+      - 'lib/landmark-inference.ts'
+      - 'lib/landmark-model-loader.ts'
+      - 'public/models/asl2000-tgcn/**'
+      - '.github/workflows/asl-video-pilot.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asl-video-pilot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  real-video-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - name: Install unchanged dependencies
+        run: npm ci
+
+      - name: Install generated-video control dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Fetch only six licensed, SHA-256-frozen video clips
+        run: python3 training/fetch_evaluation_clips.py
+
+      - name: Fetch frozen additional development recordings (never sealed holdout)
+        run: python3 training/fetch_evaluation_clips.py docs/evaluation/popsign-development-2026-10-16.json
+
+      - name: Build candidate local static export
+        run: npm run build:firebase
+
+      - name: Build ephemeral diagnostic (not a deployed route)
+        run: node scripts/prepare-recognition-lab.mjs
+
+      - name: Verify decoded-frame stepping and preserve evidence after a forced failure
+        run: |
+          mkdir -p evaluation/derived
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          node tests/video-frame-browser-smoke.mjs "$chrome" > evaluation/derived/frame-step-controls.json
+          node tests/evaluation-failure-browser-smoke.mjs "$chrome" > evaluation/derived/failure-path.json
+
+      - name: Compile frozen pre-PR28 worker for paired comparison
+        env:
+          # PR #27 exact head before PR #28 changed chest-circle geometry.
+          BASE_SHA: 6e099f94294942953138498666c561c562c8b50d
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor "$BASE_SHA" HEAD || { echo "Frozen baseline is not an ancestor" >&2; exit 1; }
+          base_dir="$RUNNER_TEMP/signrelay-video-base"
+          git worktree add --detach "$base_dir" "$BASE_SHA"
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$base_dir/node_modules"
+          "$GITHUB_WORKSPACE/node_modules/.bin/esbuild" "$base_dir/workers/recognition.worker.ts" \
+            --bundle --platform=browser --format=esm --target=es2020 \
+            --tsconfig="$base_dir/tsconfig.json" \
+            --outfile="$GITHUB_WORKSPACE/out/workers/baseline-recognition.worker.js"
+
+      - name: Replay base worker on actual video frames
+        run: |
+          mkdir -p evaluation/derived
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          node scripts/run-recognition-video-evaluation.mjs "$chrome" \
+            docs/evaluation/popsign-project-holdout-manifest.json \
+            evaluation/derived/base.jsonl --baseline --fetch-assets-via-node --reviewed-pilot
+
+      - name: Replay candidate worker on identical videos
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          node scripts/run-recognition-video-evaluation.mjs "$chrome" \
+            docs/evaluation/popsign-project-holdout-manifest.json \
+            evaluation/derived/candidate.jsonl --fetch-assets-via-node --reviewed-pilot
+
+      - name: Compare exact same clips and reject incomplete sessions
+        run: |
+          node scripts/compare-recognition-evaluation.mjs \
+            evaluation/derived/base.jsonl evaluation/derived/candidate.jsonl \
+            > evaluation/derived/paired-report.json
+          cat evaluation/derived/paired-report.json
+          node scripts/verify-video-pilot.mjs \
+            evaluation/derived/base.jsonl evaluation/derived/candidate.jsonl
+
+      - name: Replay additional development positives with both workers
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          node scripts/run-recognition-video-evaluation.mjs "$chrome" \
+            docs/evaluation/popsign-development-2026-10-16.json \
+            evaluation/derived/development-base.jsonl --baseline --fetch-assets-via-node
+          node scripts/run-recognition-video-evaluation.mjs "$chrome" \
+            docs/evaluation/popsign-development-2026-10-16.json \
+            evaluation/derived/development-candidate.jsonl --fetch-assets-via-node
+          node scripts/compare-recognition-evaluation.mjs \
+            evaluation/derived/development-base.jsonl evaluation/derived/development-candidate.jsonl \
+            > evaluation/derived/development-paired.json
+          # Aggregate outcomes only (no media or landmarks), visible without the artifact.
+          cat evaluation/derived/development-paired.json
+
+      - name: Gate against the exact established baseline (all 11 trials)
+        run: |
+          # New wrong acceptances always fail; lost correct outcomes and changed
+          # abstentions fail unless docs/evaluation/baseline-change-explanations.json
+          # explains that trial for this candidate worker. pipefail keeps tee
+          # from hiding the gate's exit status.
+          set -o pipefail
+          node scripts/baseline-gate.mjs \
+            evaluation/derived/candidate.jsonl evaluation/derived/development-candidate.jsonl \
+            | tee evaluation/derived/baseline-gate.json
+
+      - name: Store derived metrics only — never participant video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asl-video-pilot-derived
+          path: |
+            evaluation/derived/*.json
+            evaluation/derived/*.jsonl
+          retention-days: 7
+          if-no-files-found: ignore

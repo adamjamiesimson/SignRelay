@@ -1,6 +1,7 @@
 export const CONSENT_KEY = "signrelay.analytics-consent.v1";
 export const CONSENT_MAX_AGE = 180 * 24 * 60 * 60 * 1000;
-const configuredId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "";
+// The offline ASL demo build never loads analytics, whatever the environment says.
+const configuredId = process.env.NEXT_PUBLIC_SIGNRELAY_PROFILE === "asl-demo" ? "" : process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "";
 export const MEASUREMENT_ID = /^G-[A-Z0-9]{6,20}$/.test(configuredId) ? configuredId : "";
 
 export function readConsent(): "accepted" | "rejected" | null {

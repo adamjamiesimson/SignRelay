@@ -1,10 +1,17 @@
+import { installTemplateWorker } from "./helpers/template-worker";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-types";
 
 const mocks = vi.hoisted(() => ({
   asl: vi.fn(), bsl: vi.fn(), isl: vi.fn(), lse: vi.fn(), psl: vi.fn(),
-  motion: vi.fn(), personal: vi.fn(),
+  motion: vi.fn(), personal: vi.fn(), openConflict: vi.fn(), starter: vi.fn(),
 }));
+vi.mock("../lib/asl-starter-recognition", async importOriginal => {
+  const actual = await importOriginal<typeof import("../lib/asl-starter-recognition")>();
+  return { ...actual, analyzeAslStarter: (frames: VisionFrame[]) => mocks.openConflict()
+    ? { prediction: null, ambiguousOpenPalm: true, labels: ["HELLO", "THANK YOU"] }
+    : mocks.starter() ?? actual.analyzeAslStarter(frames) };
+});
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.asl }));
 vi.mock("../lib/bsl1064-runtime", () => ({ recognizeBsl1064: mocks.bsl }));
 vi.mock("../lib/isl263-runtime", () => ({ recognizeIsl263: mocks.isl }));
@@ -16,6 +23,7 @@ vi.mock("../lib/asl100-runtime", () => ({
 vi.mock("../lib/sign-motion", () => ({ analyzeSignMotion: (sequence: VisionFrame[]) => ({ ready: mocks.motion(), sequence, reason: "idle" }) }));
 vi.mock("../lib/personalized-recognition", () => ({
   recognizePersonalTemplate: mocks.personal,
+  recognizePersonalTemplateAsync: mocks.personal,
   templatesForLanguage: (templates: unknown[]) => templates,
 }));
 
@@ -26,7 +34,7 @@ const prediction = { label: "BOOK", text: "Book", confidence: 0.94, margin: 0.5 
 async function frames(count: number) {
   for (let i = 0; i < count; i++) {
     timestamp += 105;
-    const frame: VisionFrame = { timestamp, hands: [], face: [], pose: [] };
+    const frame: VisionFrame = { timestamp, hands: [{ handedness: "Right", gesture: "None", gestureScore: 0, landmarks: Array.from({ length: 21 }, () => ({ x: 0.5, y: 0.5, z: 0 })) }], face: [], pose: [] };
     await worker.onmessage({ data: { type: "frame", frame } });
     await Promise.resolve();
   }
@@ -39,9 +47,11 @@ beforeEach(async () => {
   timestamp = 0;
   for (const id of ["asl", "bsl", "isl", "lse", "psl"] as const) mocks[id].mockResolvedValue(null);
   mocks.motion.mockReturnValue(true);
+  mocks.openConflict.mockReturnValue(false);
   mocks.personal.mockReturnValue(null);
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
   vi.stubGlobal("self", worker);
+  installTemplateWorker();
   await import("../workers/recognition.worker");
 });
 
@@ -109,9 +119,10 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
   it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "psl", "uaesl", "vsl"] as const)("preserves personal recognition for %s", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks.personal.mockReturnValue(prediction);
+    await worker.onmessage({ data: { type: "templates", language, templates: [{ id: "saved", gloss: "BOOK", text: "Book", createdAt: 1, frames: [] }] } });
     // Personal templates and static starter signs have their own evidence gate.
     mocks.motion.mockReturnValue(false);
-    await frames(2);
+    await frames(4);
     expect(confirmations()).toHaveLength(1);
   });
 
@@ -160,6 +171,27 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     await frames(20);
     expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
   });
+  it.each(["bsl", "isl"] as const)("allows a slow initial %s model download beyond 20 seconds", async language => {
+    mocks[language].mockImplementation(() => new Promise(() => {}));
+    await worker.onmessage({ data: { type: "templates", language, templates: [] } });
+    await frames(270);
+    const faults = worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage)
+      .filter(message => message.type === "fault");
+    expect(mocks[language]).toHaveBeenCalled();
+    expect(faults).toHaveLength(0);
+  });
+
+  it("does not allow a previous language's pending download to restart the current session", async () => {
+    mocks.bsl.mockImplementation(() => new Promise(() => {}));
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [] } });
+    await frames(28);
+    await worker.onmessage({ data: { type: "templates", language: "csl", templates: [] } });
+    await frames(250);
+    const faults = worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage)
+      .filter(message => message.type === "fault");
+    expect(faults).toHaveLength(0);
+  });
+
   it("requests recovery if a model never resolves, instead of leaving it permanently pending", async () => {
     mocks.asl.mockImplementation(() => new Promise(() => {}));
     await frames(200);
@@ -168,4 +200,81 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(faults[0]).toMatchObject({ message: expect.stringContaining("stopped responding") });
     expect(confirmations()).toHaveLength(0);
   });
+
+  it.each(["bsl", "isl"] as const)("keeps %s downloads distinct from the inference watchdog, including abstentions", async language => {
+    let download!: () => void;
+    mocks[language].mockImplementationOnce(async (_frames, options) => {
+      options.onPhase("loading"); await new Promise<void>(resolve => { download = resolve; });
+      options.onPhase("inference"); return null;
+    });
+    await worker.onmessage({ data: { type: "templates", language, templates: [] } });
+    await frames(500); // 52.5s of arriving frames while the download progresses
+    expect(worker.postMessage.mock.calls.some(([m]) => m.type === "fault")).toBe(false);
+    download(); await Promise.resolve(); await Promise.resolve();
+    mocks[language].mockImplementation((_frames, options) => {
+      options.onPhase("inference"); return new Promise(() => {});
+    });
+    await frames(210);
+    expect(worker.postMessage.mock.calls.filter(([m]) => m.type === "fault")).toHaveLength(1);
+  });
+
+  it.each(["reset", "templates"] as const)("aborts an old BSL download on %s and ignores its rejection", async type => {
+    let signal!: AbortSignal, fail!: (error: Error) => void;
+    mocks.bsl.mockImplementation((_frames, options) => {
+      signal = options.signal; options.onPhase("loading");
+      return new Promise((_resolve, reject) => { fail = reject; });
+    });
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [] } });
+    await frames(24);
+    await worker.onmessage({ data: type === "reset" ? { type } : { type, language: "csl", templates: [] } });
+    expect(signal.aborted).toBe(true); fail(new Error("cancelled old download"));
+    await frames(2);
+    expect(worker.postMessage.mock.calls.at(-1)?.[0].feedback).not.toContain("could not run");
+    expect(confirmations()).toHaveLength(0);
+  });
+  it("does not fall through a repeated-starter block to a model word", async () => {
+    mocks.starter.mockReturnValue({ prediction: { label: "HELLO", text: "Hello", confidence: 0.86 },
+      ambiguousOpenPalm: false, labels: ["HELLO"] });
+    mocks.asl.mockResolvedValue(prediction);
+    await frames(20);
+    expect(mocks.asl).toHaveBeenCalled();
+    expect(confirmations().map(result => result.gloss)).toEqual(["HELLO"]);
+  });
+
+  it("does not combine starter and model predictions into a confirmation streak", async () => {
+    mocks.asl.mockResolvedValueOnce(prediction).mockImplementation(() => new Promise(() => {}));
+    await frames(6);
+    mocks.starter.mockReturnValueOnce({ prediction, ambiguousOpenPalm: false, labels: ["BOOK"] });
+    await frames(1);
+    expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: "BOOK", source: "starter" });
+    await frames(1);
+    expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: "BOOK", source: "model" });
+    expect(confirmations()).toHaveLength(0);
+  });
+
+  it("expires model results by elapsed time when camera timestamps stall", async () => {
+    vi.useFakeTimers();
+    try {
+      let finish!: (value: typeof prediction) => void;
+      mocks.asl.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+      await frames(6);
+      await vi.advanceTimersByTimeAsync(3000);
+      finish(prediction); await Promise.resolve();
+      await frames(1);
+      expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: null });
+      expect(confirmations()).toHaveLength(0);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("invalidates a high-scoring model candidate when open-palm evidence conflicts", async () => {
+    mocks.asl.mockResolvedValue({ ...prediction, label: "PLEASE" });
+    await frames(7);
+    expect(mocks.asl).toHaveBeenCalled();
+    mocks.openConflict.mockReturnValue(true);
+    await frames(8);
+    expect(confirmations()).toHaveLength(0);
+    expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: null,
+      feedback: expect.stringContaining("more than one sign") });
+  });
+
 });

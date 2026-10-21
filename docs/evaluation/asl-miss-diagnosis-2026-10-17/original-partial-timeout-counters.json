@@ -1,0 +1,20 @@
+{
+  "diagnostic_only": true,
+  "before_failure_path_repair": true,
+  "trials": [
+    {
+      "trial_id": "dev-please-4a.8017",
+      "recording_sha256": "a3dd244a9ce266bdeb4f88aad5792b02c5e4f20fdd16d165c5cccf44a82f574f",
+      "partial_trace_frames": 23,
+      "partial_worker_analyses": 23,
+      "old_cli_failed_row_frames": 0
+    },
+    {
+      "trial_id": "dev-hello-4a.8006",
+      "recording_sha256": "c6f032d16aefc0bc1e80ea6bcf4e672c9ac6946c5adc3c79945c2f1f42c20ca4",
+      "partial_trace_frames": 14,
+      "partial_worker_analyses": 14,
+      "old_cli_failed_row_frames": 0
+    }
+  ]
+}

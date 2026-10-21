@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import {
   LANGUAGE_LIST,
   MODEL_ADAPTERS,
@@ -21,14 +22,17 @@ type Props = {
   onStart: () => void;
 };
 
-const DEMO_SEQUENCE = [
-  { sign: "HELLO", translation: "Hello", confidence: 96 },
-  { sign: "HOW", translation: "How", confidence: 93 },
-  { sign: "ARE", translation: "are", confidence: 91 },
-  { sign: "YOU", translation: "you", confidence: 97 },
-  { sign: "THANK YOU", translation: "Thank you", confidence: 94 },
-  { sign: "PLEASE", translation: "Please", confidence: 90 },
-  { sign: "UNDERSTAND", translation: "Understand", confidence: 88 },
+// An illustration, not a recording or a live result: it only uses the six
+// demo words, shows no invented confidence figures, and includes the
+// no-match outcome the real recognizer gives when it is unsure.
+export const DEMO_SEQUENCE = [
+  { sign: "HELLO", translation: "Hello", confirmed: true },
+  { sign: "THANK YOU", translation: "Thank you", confirmed: true },
+  { sign: "—", translation: "No confident match", confirmed: false },
+  { sign: "PLEASE", translation: "Please", confirmed: true },
+  { sign: "YES", translation: "Yes", confirmed: true },
+  { sign: "SORRY", translation: "Sorry", confirmed: true },
+  { sign: "NO", translation: "No", confirmed: true },
 ];
 
 type DemoTracking = {
@@ -112,7 +116,7 @@ function HeroPreview() {
       inner = window.setTimeout(() => {
         setIdx((current) => {
           const next = (current + 1) % DEMO_SEQUENCE.length;
-          setSentence((previous) => [...previous, DEMO_SEQUENCE[next].translation].slice(-5));
+          if (DEMO_SEQUENCE[next].confirmed) setSentence((previous) => [...previous, DEMO_SEQUENCE[next].translation].slice(-5));
           setTracking((currentTracking) => ({
             ...currentTracking,
             handCount: next === 1 || next === 5 ? 1 : 2,
@@ -129,8 +133,8 @@ function HeroPreview() {
     <div className="figma-preview-card figma-preview-floating" aria-label="Animated illustrative SignRelay recognition demo">
       <div className="figma-preview-camera">
         <div className="figma-preview-hud">
-          <span><i /> LIVE · ASL</span>
-          <strong>RECOGNIZING</strong>
+          <span><i /> ILLUSTRATION · NOT LIVE</span>
+          <strong>EXAMPLE</strong>
         </div>
         <div className={`figma-preview-mesh-wrap ${phase}`}>
           <DemoTrackingOverlay tracking={tracking} />
@@ -141,7 +145,7 @@ function HeroPreview() {
         <div className="figma-corner figma-corner-bl" />
         <div className="figma-corner figma-corner-br" />
         <span className={`figma-sign-chip ${phase}`}>{item.sign}</span>
-        <span className={`figma-preview-confidence ${phase}`}>{item.confidence}%</span>
+        <span className={`figma-preview-confidence ${phase}`}>{item.confirmed ? "confirmed" : "abstained"}</span>
       </div>
       <div className="figma-tracking-row">
         <span className={tracking.face ? "active face" : ""}><i className="face" /> Face</span>
@@ -150,11 +154,10 @@ function HeroPreview() {
       </div>
       <div className="figma-preview-output">
         <div className="figma-preview-output-label">
-          <span>Translation</span>
-          <strong>{item.confidence}% confidence</strong>
+          <span>Example word</span>
+          <strong>{item.confirmed ? "Added after two matching observations" : "Nothing added"}</strong>
         </div>
         <h3 className={phase}>{item.translation}</h3>
-        <div className="figma-confidence-track"><span style={{ width: `${item.confidence}%` }} /></div>
         <div className="figma-sentence-preview">
           {sentence.map((word, index) => (
             <span key={`${index}-${word}`} className={index === sentence.length - 1 ? "current" : ""}>{word}</span>
@@ -211,7 +214,7 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
         <div className="figma-language-heading">
           <div>
             <h2>Supported languages</h2>
-            <p>7 automatic research recognizers · {LANGUAGE_LIST.length} total workspaces</p>
+            <p>{ASL_ONLY ? <>ASL demo build · other languages are not included in this build</> : <>7 automatic research recognizers · {LANGUAGE_LIST.length} total workspaces</>}</p>
           </div>
           <a href="/languages">View all languages</a>
         </div>
@@ -223,6 +226,8 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
               onClick={() => onSelect(language.id)}
               role="radio"
               aria-checked={selected === language.id}
+              disabled={!isLanguageAvailable(language.id)}
+              aria-disabled={!isLanguageAvailable(language.id)}
             >
               <div>
                 <strong>{language.shortName}</strong>
@@ -232,7 +237,7 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
               <div className="figma-language-meter" title="Relative automatic vocabulary size, not accuracy">
                 <i style={{ width: capabilityWidth(language) }} />
               </div>
-              <em>{language.id === "rsl" ? "1,000 classes" : language.id === "bdsl" ? "401 classes" : language.id === "psl" ? "775 signs" : language.automaticVocabularyCount.toLocaleString() + " classes"}</em>
+              <em>{!isLanguageAvailable(language.id) ? OUT_OF_PROFILE_LABEL : language.id === "rsl" ? "1,000 classes" : language.id === "bdsl" ? "401 classes" : language.id === "psl" ? "775 signs" : language.automaticVocabularyCount.toLocaleString() + " classes"}</em>
             </button>
           ))}
         </div>

@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "policy": "Development-only advisories with no published fix may be accepted for a short, dated period after review. Production advisories are never accepted here. `npm run audit:security` remains the strict release gate and still fails while any exception exists.",
+  "exceptions": [],
+  "history": [
+    {
+      "advisory": "GHSA-vfj7-8cjw-p6xm",
+      "package": "braces",
+      "accepted": "2026-10-21",
+      "retired": "2026-10-21",
+      "resolution": "Removed from the dependency tree: @next/eslint-plugin-next's only fast-glob call now resolves to the reviewed in-repo package tooling/fast-glob-shim (Node fs.globSync), so fast-glob, micromatch and braces are no longer installed. See docs/security/dependency-audit-2026-10-21.md."
+    }
+  ]
+}

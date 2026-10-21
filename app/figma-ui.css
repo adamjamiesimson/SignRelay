@@ -402,10 +402,10 @@ body::before {
 .camera-placeholder p { color: #7b8793; }
 .camera-guidance { color: #c8d2d8; background: rgba(4,9,13,.72); border: 1px solid rgba(255,255,255,.07); border-radius: 6px; }
 .candidate-bar { border-bottom: 1px solid var(--line); }
-.candidate-label { color: #6e7986; font-family: var(--font-mono); font-size: .62rem; }
+.candidate-label { color: #8a95a2; font-family: var(--font-mono); font-size: .62rem; }
 .candidate-bar strong { color: #d7dde2; }
 .confidence-ring { background: conic-gradient(var(--brand) var(--confidence), #1a2028 0); }
-.transcript-empty { color: #707c88; }
+.transcript-empty { color: #8a95a2; }
 .transcript-empty h3 { color: #dfe5e9; }
 .speech-controls,
 .transcript-actions { border-color: var(--line); }
@@ -441,7 +441,7 @@ body::before {
 }
 .footer-brand { display: flex; align-items: center; gap: 12px; }
 .footer-brand strong { color: #dfe4e7; font-size: .78rem; }
-.footer-brand span { color: #596472; font-size: .68rem; }
+.footer-brand span { color: #8a95a2; font-size: .68rem; }
 .site-footer nav { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .site-footer a,
 .privacy-settings-link { color: #78838f; }
@@ -510,13 +510,16 @@ body::before {
 }
 
 
-/* Exact Figma Make landing port */
-.figma-landing {
+/* Exact Figma Make landing port. The languages page reuses these components
+   (e.g. .figma-primary), so it needs the same tokens or its buttons lose
+   their background. */
+.figma-landing,
+.figma-language-page {
   --fig-bg: #080a0e;
   --fig-card: #0f1117;
   --fig-card-2: #11151d;
   --fig-text: #e8eaed;
-  --fig-muted: #606878;
+  --fig-muted: #8a95a2;
   --fig-border: rgba(255,255,255,.065);
   --fig-border-bright: rgba(255,255,255,.12);
   --fig-cyan: #22d3ee;
@@ -698,7 +701,7 @@ body::before {
 .figma-tracking-row i.shoulder { background:#9d83ff; }
 .figma-tracking-row i.hands { background:var(--fig-cyan); }
 .figma-preview-output { padding:15px 17px 17px; }
-.figma-preview-output-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:11px; color:#596574; font:500 .53rem/1 var(--font-mono); text-transform:uppercase; letter-spacing:.1em; }
+.figma-preview-output-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:11px; color:#8a95a2; font:500 .53rem/1 var(--font-mono); text-transform:uppercase; letter-spacing:.1em; }
 .figma-preview-output-label strong { color:rgba(34,211,238,.65); font-weight:500; }
 .figma-preview-output h3 { margin:0 0 12px; font-size:1.9rem; letter-spacing:-.04em; }
 .figma-confidence-track { height:2px; border-radius:2px; background:rgba(255,255,255,.06); overflow:hidden; }
@@ -729,7 +732,7 @@ body::before {
 .figma-how-copy h2, .figma-language-heading h2 {
   margin:0; color:#edf1f3; font-size:2.05rem; line-height:1.14; letter-spacing:-.04em;
 }
-.figma-how-copy > p { max-width:360px; margin:18px 0 28px; color:#687482; font-size:.88rem; line-height:1.72; }
+.figma-how-copy > p { max-width:360px; margin:18px 0 28px; color:#8a95a2; font-size:.88rem; line-height:1.72; }
 .figma-text-link {
   display:inline-flex; align-items:center; gap:7px; padding:0; border:0; background:none;
   color:var(--fig-cyan); font:600 .74rem/1 var(--font-sans); cursor:pointer;
@@ -745,7 +748,7 @@ body::before {
 .figma-step-icon { width:36px; height:36px; display:grid; place-items:center; border:1px solid rgba(34,211,238,.15); border-radius:8px; background:rgba(34,211,238,.06); color:var(--fig-cyan); }
 .figma-step span { color:var(--fig-cyan); font:500 .56rem/1 var(--font-mono); letter-spacing:.08em; }
 .figma-step h3 { margin:9px 0 8px; color:#eef1f3; font-size:.93rem; }
-.figma-step p { margin:0; color:#687482; font-size:.78rem; line-height:1.68; }
+.figma-step p { margin:0; color:#8a95a2; font-size:.78rem; line-height:1.68; }
 
 .figma-language-section { padding: 0 0 108px; }
 .figma-language-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:36px; }
@@ -775,10 +778,10 @@ body::before {
   padding:2px 5px; border:1px solid rgba(34,211,238,.2); border-radius:3px;
   background:rgba(34,211,238,.08); color:var(--fig-cyan); font:600 .48rem/1 var(--font-mono); letter-spacing:.07em;
 }
-.figma-language-row small { display:block; min-height:32px; margin-top:8px; color:#5d6876; font-size:.61rem; line-height:1.35; }
+.figma-language-row small { display:block; min-height:32px; margin-top:8px; color:#8a95a2; font-size:.61rem; line-height:1.35; }
 .figma-language-meter { height:2px; margin-top:9px; border-radius:1px; background:rgba(255,255,255,.055); overflow:hidden; }
 .figma-language-meter i { display:block; height:100%; background:rgba(34,211,238,.72); }
-.figma-language-row em { display:block; margin-top:6px; color:#586271; font:normal .5rem/1.2 var(--font-mono); }
+.figma-language-row em { display:block; margin-top:6px; color:#8a95a2; font:normal .5rem/1.2 var(--font-mono); }
 
 .figma-philosophy-section { padding: 0 0 108px; }
 .figma-philosophy-grid {
@@ -788,7 +791,7 @@ body::before {
 .figma-philosophy-grid article { min-height:210px; padding:34px; background:var(--fig-card); }
 .figma-philosophy-icon { width:34px; height:34px; display:grid; place-items:center; margin-bottom:22px; border:1px solid rgba(34,211,238,.16); border-radius:8px; background:rgba(34,211,238,.06); color:var(--fig-cyan); }
 .figma-philosophy-grid h3 { margin:0 0 10px; color:#edf1f3; font-size:.96rem; }
-.figma-philosophy-grid p { max-width:460px; margin:0; color:#67727f; font-size:.78rem; line-height:1.72; }
+.figma-philosophy-grid p { max-width:460px; margin:0; color:#8a95a2; font-size:.78rem; line-height:1.72; }
 
 .figma-final-cta { padding:0 0 112px; }
 .figma-final-card {
@@ -800,7 +803,7 @@ body::before {
   text-align:center;
 }
 .figma-final-card h2 { margin:0 0 14px; color:#f0f3f5; font-size:2.45rem; line-height:1.13; letter-spacing:-.045em; }
-.figma-final-card > p { max-width:520px; margin:0 auto 26px; color:#6a7582; font-size:.88rem; line-height:1.7; }
+.figma-final-card > p { max-width:520px; margin:0 auto 26px; color:#8a95a2; font-size:.88rem; line-height:1.7; }
 .figma-final-card > div { justify-content:center; }
 .figma-final-card > small { display:block; margin-top:22px; color:#4e5966; font-size:.63rem; }
 
@@ -868,7 +871,7 @@ body::before {
   background: var(--brand);
 }
 .figma-language-summary strong { color: #edf1f3; font-size: 1.25rem; line-height: 1; }
-.figma-language-summary span { color: #687482; font-size: .68rem; margin-top: 4px; }
+.figma-language-summary span { color: #8a95a2; font-size: .68rem; margin-top: 4px; }
 .figma-language-page-section { padding: 48px 0 8px; }
 .figma-language-page-heading {
   display: flex;
@@ -883,8 +886,8 @@ body::before {
 .figma-language-page-heading i.preparing { background: #f59e0b; }
 .figma-language-page-heading i.personal { background: #6b7280; }
 .figma-language-page-heading h2 { margin: 0; color: #e7ecef; font-size: .93rem; font-weight: 600; }
-.figma-language-page-heading span { color: #596472; font-size: .72rem; }
-.figma-language-page-heading > p { max-width: 570px; margin: 0; color: #616d79; font-size: .74rem; line-height: 1.6; text-align: right; }
+.figma-language-page-heading span { color: #8a95a2; font-size: .72rem; }
+.figma-language-page-heading > p { max-width: 570px; margin: 0; color: #8a95a2; font-size: .74rem; line-height: 1.6; text-align: right; }
 .figma-language-page-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0,1fr));
@@ -926,7 +929,7 @@ body::before {
   line-height: 1;
   font-weight: 700;
 }
-.figma-language-page-card > p { margin: 18px 0 0; color: #687482; font-size: .76rem; line-height: 1.65; }
+.figma-language-page-card > p { margin: 18px 0 0; color: #8a95a2; font-size: .76rem; line-height: 1.65; }
 .figma-language-page-meta {
   display: flex;
   justify-content: space-between;
@@ -934,7 +937,7 @@ body::before {
   margin-top: 18px;
   padding-top: 13px;
   border-top: 1px solid var(--line);
-  color: #53606d;
+  color: #8a95a2;
   font: .56rem/1.4 var(--font-mono);
 }
 .figma-language-page-meta span:last-child { text-align: right; }
@@ -1107,7 +1110,7 @@ body::before {
   flex-wrap: wrap;
 }
 .figma-sentence-preview > span {
-  color: #65717e;
+  color: #8a95a2;
   transition: color .3s ease, opacity .3s ease;
 }
 .figma-sentence-preview > span.current {
@@ -1143,7 +1146,7 @@ body::before {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #65717e;
+  color: #8a95a2;
   font-size: .65rem;
   font-weight: 600;
   white-space: nowrap;
@@ -1184,7 +1187,7 @@ body::before {
   position: absolute;
   right: 10px;
   pointer-events: none;
-  color: #687482;
+  color: #8a95a2;
 }
 .workspace-language-select option,
 .workspace-language-select optgroup {

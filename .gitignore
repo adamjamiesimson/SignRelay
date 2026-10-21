@@ -58,3 +58,14 @@ next-env.d.ts
 # Local live-camera evaluation captures. Never commit participant media.
 /evaluation/raw/
 /evaluation/videos/
+# Live trial logs (npm run eval:log): pseudonymous, unreviewed, local only.
+/evaluation/results/
+
+# Built from workers/template-matching.worker.ts during build:worker.
+/public/workers/template-matching.worker.js
+
+# Ephemeral derived runs are reviewed and copied into docs explicitly.
+/evaluation/derived/
+
+# Self-hosted MediaPipe runtime: copied from npm and pinned model downloads.
+/public/vision/

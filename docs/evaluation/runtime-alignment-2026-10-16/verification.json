@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-16",
+  "baseline_source_commit": "07996957d5134129273f92863773ca50a3bd0715",
+  "candidate_evaluator_parent": "07996957d5134129273f92863773ca50a3bd0715",
+  "candidate_harness_dirty_at_capture": true,
+  "recognizer_source_commit": "07996957d5134129273f92863773ca50a3bd0715",
+  "recognizer_worker_sha256": "c016a365d0c73455aa6564affabee35d5d49d0ed824b7b59d8bdf5a986b7d7fe",
+  "source_file_sha256": {
+    "lib/vision-runtime.mjs": "ffb49792d3e37d88b409bd5e4fb17d697c2b9c1f652a05f28923013052aacca1",
+    "lib/vision-engine.ts": "2797eb158aab1253797e0af53c459582a2c28fef5a0cb62a5e73f30b3cbe2964",
+    "scripts/verify-vision-runtime.mjs": "4772a8c3db7471c1a806199752a8fd2e6070692baba5c90994c4ff615cadeb42",
+    "scripts/verify-vision-runtime-change.mjs": "6a864c1b0ae2fb943e60bf2f95402fa030858e2dfaf27315aae6572754ea5ff1",
+    "scripts/security-policy.mjs": "19ee82ed6ce9e731d3b1799c04d4b2c7afd40a053fb853219a4bbbdc8f2e3431",
+    "scripts/prepare-recognition-lab.mjs": "d663a0c121f9b21dbead86a39d147d980dbc7d0e9603a0ed02954f2f9591e6b0",
+    "scripts/run-recognition-video-evaluation.mjs": "8d67db9e64fa58e15b76d90656f72f75edb0772592a31a6d707fb8a31fe8511f",
+    "scripts/diagnostics/recognition-lab.ts": "ebd55358424e080fd1ed47e642dfa364f54c9ab94a63398592ee0860317b291c",
+    "scripts/diagnostics/chrome-session.mjs": "e831d51609833d9902afb9dbf0de039e567ed621bcdff4162c5f866930deaf26",
+    "package.json": "3834dc4f66be77660087fb192598b233aad69c2820ae6dbb3138e26adb444196",
+    "package-lock.json": "e1f330f81ddabc4401d4515c3379819d20eba2e53775bfee3af11c91acd20422",
+    ".github/workflows/asl-video-pilot.yml": "b1dad7c35c0830381436debcafa8f2352181b72f2babb0fca7de0ca877200613"
+  },
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "Linux x86_64",
+    "logical_cpus": 9,
+    "browser": "Google Chrome for Testing 151.0.7922.34 headless shell"
+  },
+  "installed_tasks_js": "0.10.35",
+  "baseline_tasks_wasm": "0.10.22-rc.20250304",
+  "candidate_tasks_wasm": "0.10.35",
+  "models_verified": 56,
+  "model_fingerprints_reference": "../sprint-2026-10-16/installed-model-fingerprints.json",
+  "checks": {
+    "units": {
+      "passed": true,
+      "tests": 330,
+      "files": 41
+    },
+    "typecheck": true,
+    "lint": true,
+    "secured_static_export": true,
+    "rendered": {
+      "passed": true,
+      "tests": 2
+    },
+    "repo_asset_guard": true,
+    "secret_history_scan": true,
+    "strict_security_audit": {
+      "passed": false,
+      "exit_code": 1,
+      "high_development_package_findings": 5
+    },
+    "production_audit_findings": 0,
+    "workspace_browser": true,
+    "lse_camera_and_three_actual_checkpoint_inferences": true,
+    "physical_phones_tested": false,
+    "independent_fluent_asl_review": false,
+    "new_negative_recordings": 0,
+    "reserved_holdout_replayed": false
+  },
+  "note": "Candidate source hashes identify the exact uncommitted code that is included in this evidence commit. Baseline rows are from a clean 0799695 checkout. Video rows are unmodified captures. Browser summary ERR_ABORTED entries on blob URLs occurred during video teardown and are not additional successful/failed recordings; all 22 trial rows completed with empty error arrays. Initial truncated Chrome extraction failed before any trial and is excluded from successful evidence."
+}
