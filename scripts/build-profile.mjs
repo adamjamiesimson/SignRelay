@@ -22,7 +22,8 @@ export const STEPS = {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const profile = process.argv[2];
   if (!STEPS[profile]) throw new Error(`Usage: node scripts/build-profile.mjs ${Object.keys(STEPS).join("|")} (the full build is npm run build:firebase)`);
-  const env = { ...process.env, NEXT_PUBLIC_SIGNRELAY_PROFILE: profile };
+  // The offline demo must make no third-party requests, so analytics is never configured.
+  const env = { ...process.env, NEXT_PUBLIC_SIGNRELAY_PROFILE: profile, NEXT_PUBLIC_GA_MEASUREMENT_ID: "" };
   for (const [command, ...args] of STEPS[profile]) {
     console.log(`\n▶ ${command} ${args.join(" ")}`);
     const result = spawnSync(command, args, { stdio: "inherit", env });

@@ -4,13 +4,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { TASKS_WASM_PATH } from "../../lib/vision-runtime.mjs";
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-export async function startChrome(executable, { forwardAssets = false } = {}) {
+export async function startChrome(executable, { forwardAssets = false, proxy = process.env.HTTPS_PROXY, extraArgs = [] } = {}) {
   const profile = await mkdtemp(join(tmpdir(), "signrelay-diagnostic-"));
   const port = 19000 + Math.floor(Math.random() * 1000);
   const args = ["--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--no-first-run",
     "--disable-background-networking", `--user-data-dir=${profile}`, `--remote-debugging-port=${port}`,
     "--autoplay-policy=no-user-gesture-required", "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"];
-  if (process.env.HTTPS_PROXY) args.push(`--proxy-server=${process.env.HTTPS_PROXY}`, "--proxy-bypass-list=<-loopback>;localhost;127.0.0.1");
+  args.push(...extraArgs);
+  if (proxy) args.push(`--proxy-server=${proxy}`, "--proxy-bypass-list=<-loopback>;localhost;127.0.0.1");
   const browser = spawn(executable, [...args, "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
   let stderr = ""; browser.stderr.setEncoding("utf8"); browser.stderr.on("data", chunk => { stderr += chunk; });
   let socket;

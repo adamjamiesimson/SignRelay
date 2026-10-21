@@ -1,11 +1,11 @@
 // CDN-blocked demo smoke: the ASL workspace must start real MediaPipe vision
 // from the self-hosted /vision/ copy with jsDelivr and googleapis unreachable,
-import { existsSync, readFileSync } from "node:fs";
 // and release the camera when paused. Timings come from headless Chromium on
 // the machine running the test with a synthetic camera; they are not phone or
 // laptop measurements and say nothing about recognition accuracy.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
 
 const executable = process.argv[2];

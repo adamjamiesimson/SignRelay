@@ -13,6 +13,12 @@ import { pathToFileURL } from "node:url";
 const sha256 = path => existsSync(path) ? createHash("sha256").update(readFileSync(path)).digest("hex") : null;
 const git = args => spawnSync("git", args, { encoding: "utf8" }).stdout.trim();
 
+export const BROWSER_SMOKES = {
+  full: ["workspace-browser-smoke", "offline-vision-smoke", "lifecycle-stress-smoke"],
+  "asl-demo": ["offline-vision-smoke", "offline-demo-strict-smoke", "lifecycle-stress-smoke"],
+  rehearsal: ["gitex-rehearsal-smoke"],
+};
+
 /** Release-gate categories are reported separately; they are never folded into "build". */
 export const CHECKS = [
   { id: "typecheck", category: "code", command: ["npm", "run", "typecheck"] },
@@ -105,7 +111,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const browser = option("--browser");
   const build = option("--build");
   if (build) checks.push({ id: `build-${build}`, category: "build", command: ["npm", "run", build === "full" ? "build:firebase" : `build:${build}`] });
-  if (browser) for (const smoke of ["workspace-browser-smoke", "offline-vision-smoke", "lifecycle-stress-smoke", "gitex-rehearsal-smoke"])
+  // Browser smokes depend on which export is in out/: the multilingual workspace
+  // smoke needs the full build; the strict offline check needs the ASL demo build.
+  const profile = build ?? (existsSync("out/runtime-manifest.json") ? JSON.parse(readFileSync("out/runtime-manifest.json", "utf8")).profile : "full");
+  if (browser) for (const smoke of BROWSER_SMOKES[profile] ?? BROWSER_SMOKES.full)
     if (existsSync(`tests/${smoke}.mjs`)) checks.push({ id: smoke, category: "browser", command: ["node", `tests/${smoke}.mjs`, browser] });
   if (existsSync("out/index.html")) checks.push({ id: "rendered-export", category: "privacy-integrity", command: ["npm", "run", "test:rendered"] });
   if (existsSync("scripts/verify-runtime.mjs") && existsSync("out/index.html")) checks.push({ id: "runtime-verifier", category: "build", command: ["node", "scripts/verify-runtime.mjs", "--out", "out"] });
