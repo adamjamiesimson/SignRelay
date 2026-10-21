@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "policy": "Development-only advisories with no published fix may be accepted for a short, dated period after review. Production advisories are never accepted here. `npm run audit:security` remains the strict release gate and still fails while any exception exists.",
+  "exceptions": [
+    {
+      "advisory": "GHSA-vfj7-8cjw-p6xm",
+      "package": "braces",
+      "range": "<=3.0.3",
+      "scope": "development",
+      "chain": ["micromatch", "fast-glob", "@next/eslint-plugin-next", "eslint-config-next"],
+      "reason": "Stack-exhaustion DoS from deeply nested brace patterns. braces 3.0.3 is the newest published version, so no patched release exists. Reached only through eslint-config-next -> @next/eslint-plugin-next -> fast-glob -> micromatch during local/CI linting, with glob patterns from this repository's own configuration, not untrusted input. Not present in `npm audit --omit=dev` and not shipped in the static export. npm's suggested fix downgrades eslint-config-next to 14.x, which is incompatible with Next 16.",
+      "reviewed_on": "2026-10-21",
+      "expires": "2026-11-30"
+    }
+  ]
+}

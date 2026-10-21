@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:rendered": "node --test tests/rendered-html.test.mjs",
     "audit:secrets": "node scripts/audit-secrets.mjs",
+    "audit:deps": "node scripts/audit-dependencies.mjs",
     "audit:security": "npm audit --audit-level=moderate && npm run audit:secrets && npm run test:rendered",
     "lint": "eslint . --ignore-pattern .next --ignore-pattern out --ignore-pattern .sites-runtime",
     "typecheck": "tsc --noEmit",

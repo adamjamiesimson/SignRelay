@@ -60,5 +60,8 @@ jobs:
       - name: Check for accidental secrets
         run: npm run audit:secrets
 
+      - name: Dependency advisories (production fail-closed, reviewed dev exceptions expire)
+        run: npm run audit:deps
+
       - name: Enforce repository asset policy
         run: npm run repo:guard

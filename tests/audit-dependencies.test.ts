@@ -1,0 +1,50 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import { evaluateAudit } from "../scripts/audit-dependencies.mjs";
+
+const exceptions = JSON.parse(readFileSync("docs/security/dependency-exceptions.json", "utf8"));
+const advisory = (name: string, id: string, severity = "high") => ({
+  name, severity, isDirect: false, effects: [],
+  via: [{ name, url: `https://github.com/advisories/${id}`, severity, title: "test", range: "*" }],
+});
+const chainLink = (name: string, via: string) => ({ name, severity: "high", isDirect: false, via: [via], effects: [] });
+const braces = { vulnerabilities: {
+  braces: advisory("braces", "GHSA-vfj7-8cjw-p6xm"), micromatch: chainLink("micromatch", "braces"),
+  "fast-glob": chainLink("fast-glob", "micromatch"), "@next/eslint-plugin-next": chainLink("@next/eslint-plugin-next", "fast-glob"),
+  "eslint-config-next": chainLink("eslint-config-next", "@next/eslint-plugin-next"),
+} };
+const clean = { vulnerabilities: {} };
+
+describe("fail-closed dependency gate", () => {
+  it("accepts only the reviewed development braces chain before it expires", () => {
+    const result = evaluateAudit({ full: braces, production: clean, exceptions, today: "2026-10-21" });
+    expect(result.ok).toBe(true);
+    expect(result.accepted.map(item => item.advisory)).toEqual(["GHSA-vfj7-8cjw-p6xm"]);
+  });
+  it("fails once the review expires", () => {
+    const result = evaluateAudit({ full: braces, production: clean, exceptions, today: "2026-12-01" });
+    expect(result.ok).toBe(false);
+    expect(result.failures.join("\n")).toContain("expired");
+  });
+  it("never accepts the same advisory in production dependencies", () => {
+    const result = evaluateAudit({ full: braces, production: braces, exceptions, today: "2026-10-21" });
+    expect(result.ok).toBe(false);
+    expect(result.failures[0]).toContain("Production dependency advisory GHSA-vfj7-8cjw-p6xm");
+  });
+  it("fails on any new development advisory, such as the vite launch-editor findings", () => {
+    const full = { vulnerabilities: { ...braces.vulnerabilities, vite: advisory("vite", "GHSA-r825-w8mm-5pxw") } };
+    const result = evaluateAudit({ full, production: clean, exceptions, today: "2026-10-21" });
+    expect(result.ok).toBe(false);
+    expect(result.failures).toEqual([expect.stringContaining("Unreviewed development advisory GHSA-r825-w8mm-5pxw in vite")]);
+  });
+  it("fails when a vulnerable package is not explained by a reviewed chain", () => {
+    const full = { vulnerabilities: { ...braces.vulnerabilities, other: chainLink("other", "unknown") } };
+    expect(evaluateAudit({ full, production: clean, exceptions, today: "2026-10-21" }).failures)
+      .toEqual([expect.stringContaining("other is not explained")]);
+  });
+  it("reports a stale exception after the advisory disappears", () => {
+    const result = evaluateAudit({ full: clean, production: clean, exceptions, today: "2026-10-21" });
+    expect(result.ok).toBe(true);
+    expect(result.stale).toHaveLength(1);
+  });
+});
