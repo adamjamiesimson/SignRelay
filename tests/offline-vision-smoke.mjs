@@ -75,6 +75,7 @@ try {
   assert.ok(visionRequests.some(path => path.endsWith("gesture_recognizer.task")), "Self-hosted models were not used");
   assert.ok(visionRequests.some(path => path.startsWith("/vision/wasm/")), "Self-hosted WASM was not used");
   for (const cycle of cycles) {
+    assert.ok(cycle.cold_start_ms < 15000, `Cold start exceeded the 15 s contract: ${cycle.cold_start_ms} ms`);
     assert.ok(cycle.frames_forwarded_per_s > 0, "No frames reached recognition");
     assert.match(cycle.sequence_text, /Waiting for hands/);
     assert.equal(cycle.status_while_no_hands, "waiting for hands", "Camera on without hands must say so, not 'uncertain' or 'listening'");
