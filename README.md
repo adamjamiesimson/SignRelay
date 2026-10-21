@@ -1,6 +1,6 @@
 # SignRelay
 
-SignRelay is a privacy-first research web application for continuous sign-language recognition. It observes ordered hand, face and upper-body landmarks, evaluates a language-specific temporal adapter, confirms only high-confidence sequences, and can read confirmed text aloud.
+SignRelay is a privacy-first research web application that recognises **isolated signs** from a live camera. It observes ordered hand, face and upper-body landmarks, evaluates a language-specific temporal adapter, confirms only high-confidence sequences, and can read confirmed words aloud. It does not translate continuous signing or full sentences.
 
 This repository is an engineering foundation, not a claim of full sign-language translation.
 
@@ -25,9 +25,18 @@ The October 2026 demo scope is six isolated ASL words: HELLO, THANK YOU, PLEASE,
 
 - Demo script, setup, fallbacks and go/no-go: [docs/gitex/demo-package-2026-10-21.md](docs/gitex/demo-package-2026-10-21.md)
 - Machine-checkable acceptance criteria: [docs/gitex/demo-contract.json](docs/gitex/demo-contract.json)
-- Progress ledger and risks: [docs/gitex/sprint-ledger-2026-10-21.md](docs/gitex/sprint-ledger-2026-10-21.md)
+- Integration report, current release status and the remaining manual checks: [docs/gitex/sprint-3/integration-report.md](docs/gitex/sprint-3/integration-report.md) and [docs/gitex/sprint-3/real-world-test-checklist.md](docs/gitex/sprint-3/real-world-test-checklist.md)
 
-`npm run build:firebase` copies the MediaPipe runtime from npm and installs the size- and SHA-256-pinned models into `/vision/`. After that, `npm start` serves a fully working demo on `http://localhost:3000` without internet access. Add `?perf` to the URL to show tracking and recognition timings on screen for device tests.
+The offline demo, from a clean checkout (network needed once, for `npm ci` and the pinned vision models):
+
+```bash
+npm ci
+npm run demo:prepare                 # ASL-only export, verified runtime
+npm run demo:serve                   # loopback only; works with networking off
+npm run demo:check -- /path/to/chrome   # strict check: no request may leave the machine
+```
+
+Add `?perf` to the URL for the device-test readout: tracking, round-trip and queue timings, forwarded and dropped frames, frames analysed per second, asset source, recognition state and recovery count, and the share of frames with a tracked hand. A warning appears if a full 5 s window stays below the 10 frames per second the demo needs. During live trials, record outcomes with `npm run eval:log` (see [Live-camera evaluation](#live-camera-evaluation)).
 
 ## Honest model status
 
@@ -108,7 +117,7 @@ The camera requires a secure origin in production. Localhost is treated as secur
 
 ## Environment variables
 
-No application secrets or paid API keys are required. Vision model assets are fetched from the official public MediaPipe model bucket and inference runs locally after loading.
+No application secrets or paid API keys are required. The build copies the MediaPipe runtime from npm and installs size- and SHA-256-pinned vision models into `/vision/`, so the exported site serves its own tracking assets and inference runs locally.
 
 The only supported public variable is `NEXT_PUBLIC_GA_MEASUREMENT_ID` (see `.env.example`). Leave it empty to disable analytics. To enable GA4, configure your own measurement ID, turn off Enhanced Measurement in the Google Analytics data stream (to avoid automatic collection of form, search and navigation data), choose the appropriate retention settings, and rebuild. Visitors must opt in before any analytics script loads. Never put a secret in a `NEXT_PUBLIC_` variable or in `public/`; both are delivered to browsers.
 
@@ -149,25 +158,41 @@ Dataset names, vocabulary size and availability do not imply a licence suitable 
 
 ```bash
 npm run typecheck
-npm test
+npm test                 # unit, regression and synthetic recognition suites
 npm run lint
 npm run build:worker
-npm run repo:guard
-npm run build:firebase
-npm run audit:security
+npm run repo:guard       # asset size policy; no tracked live results or captures
+npm run audit:secrets
+npm run audit:deps       # production advisories fail; dev advisories need a dated review
+npm audit --omit=dev
+npm run build:firebase   # full multilingual export (downloads the RSL model once)
+npm run audit:security   # strict release gate: npm audit, secret scan, rendered export
+npm run build:asl-demo && npm run verify:runtime -- --out out --profile asl-demo
+npm run demo:check -- /path/to/chrome
+npm run readiness -- --label final --browser /path/to/chrome --build rehearsal,asl-demo
 ```
 
-Core CI runs typechecking, unit/regression tests, lint, worker compilation, secret checks and the repository asset policy on every pull request to `main`. The asset policy blocks new tracked files over 20 MiB; the two existing reviewed large ONNX files are explicit legacy exceptions and cannot grow without failing CI.
+Browser smokes take a Chrome executable: `tests/workspace-browser-smoke.mjs`, `landmark-lifecycle-browser-smoke.mjs`, `rsl-`, `bdsl-` and `lse-browser-smoke.mjs` and `a11y-axe-smoke.mjs` need the full export; `offline-vision-smoke.mjs`, `offline-demo-strict-smoke.mjs`, `lifecycle-stress-smoke.mjs` and `fault-injection-smoke.mjs` need the ASL demo export; `gitex-rehearsal-smoke.mjs` and `transcript-a11y-smoke.mjs` need `npm run build:rehearsal`. Do not run a build while a smoke is using `out/`.
 
-The unit suite verifies low-confidence rejection, temporal consensus and duplicate suppression. The rendered test checks all public routes and production metadata.
+Every pull request runs:
+
+- **Core CI**: typecheck, tests, lint, workers, matching benchmarks, secret scan, dependency gate, asset policy;
+- **Firebase Static Build Check**: the full export with all of its browser smokes, then the strict `audit:security` gate in its own job;
+- **Offline ASL Demo and Rehearsal**: both demo profiles with the strict offline check (and its leak-detector self-test), rehearsal, transcript/accessibility, lifecycle-stress and fault-injection smokes;
+- **ASL real-video pilot** when recognition code changes, and the private capture smoke when capture code changes.
+
+The asset policy blocks new tracked files over 20 MiB; the two existing reviewed large ONNX files are explicit legacy exceptions and cannot grow without failing CI. Synthetic and headless results are regression records. They are not live-camera accuracy or real-device performance.
 
 ## Live-camera evaluation
 
 Training metrics and synthetic tests are not treated as live-camera accuracy. SignRelay now has a language-specific, signer-independent evaluation protocol in [`evaluation/README.md`](evaluation/README.md), plus a JSONL summariser:
 
 ```bash
+npm run eval:log                                        # operator log during a live session
 npm run eval:live -- evaluation/results/<language>-<date>.jsonl
 ```
+
+`evaluation/results/` is git-ignored and `repo:guard` fails if anything in it is tracked. Operator-log rows are unreviewed observations and are summarised separately from reviewed results.
 
 The report separates signed-trial accuracy, accepted-sign coverage, precision among accepted predictions, common confusions and no-sign false-accept rate. Raw participant video and identifying participant data must not be committed to this repository. Experimental model status should only change after documented live-camera evaluation against thresholds chosen before the final results are inspected.
 
@@ -179,7 +204,7 @@ For future changes:
 
 1. branch from the current `main`;
 2. open a pull request back to `main`;
-3. require **Core CI** and **Firebase Static Build Check** to pass before merging;
+3. require **Core CI**, **Firebase Static Build Check** (including its strict dependency audit job) and **Offline ASL Demo and Rehearsal** to pass before merging;
 4. deploy Firebase only from the merged `main` commit.
 
 Before opening a pull request, run:
@@ -215,7 +240,8 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.
 - No continuous unrestricted grammar decoder is installed.
 - BSL and ISL use their own official isolated-sign checkpoints (1,064 and 263 labels respectively), still marked experimental because browser-side signer-independent evaluation has not yet been completed. Spanish adds a 300-class landmark model; Bangla and RSL use separate video models. The remaining workspaces are signer-specific until compatible, language-specific models are available and evaluated.
-- The first model load requires internet access to download official MediaPipe assets.
+- A build needs internet access once, for `npm ci` and the pinned MediaPipe models; the exported site then serves its own tracking assets. The full build also downloads the 141 MB RSL model.
+- With the hand kept in view, the motion segmenter does not split a sign's tail from the next movement, and a rule word can repeat from its own tail after a pause in view. An off-by-default guard is evaluated in [docs/gitex/sprint-3/tail-guard.md](docs/gitex/sprint-3/tail-guard.md); rest the hands between signs.
 
 ## Roadmap
 

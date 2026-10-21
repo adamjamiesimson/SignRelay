@@ -13,8 +13,8 @@ Prepared 21 October 2026 for the 30 October showcase. Branch `claude/funny-archi
 | Automated contract (19 criteria) | Passing locally and in CI (see the test outcomes below) |
 | Manual pre-demo checks MAN-1…MAN-5 on the actual laptop, webcam and signer | **Not run.** No physical device or signer was available to this sprint |
 | Independent fluent ASL review, consenting new signers | **Blocked:** none exist |
-| Strict dependency audit (`npm run audit:security`) | Fails on 5 dev-only `braces` advisories with no upstream fix. Owner decision |
-| Merge to `main` / production deploy | Not done; needs owner approval |
+| Strict dependency audit (`npm run audit:security`) | **Passes** since 21 Oct (sprint 3): the `braces` chain was removed from the tree ([dependency audit](../security/dependency-audit-2026-10-21.md)) |
+| Merge to `main` / production deploy | See [the sprint 3 integration report](sprint-3/integration-report.md). No production deploy |
 
 ## What the demo shows, honestly
 
@@ -97,5 +97,7 @@ See the PR description for the final CI state of the head commit. Locally on thi
 2. **Synthetic false-accept risks**: glasses → THANK YOU; hair aside, or a hand rising to the forehead → HELLO; lowering a hand from the mouth → THANK YOU. Mitigation: the signer rules above.
 3. Sparse real hand tracking (16–30% of frames on development clips) is the leading observable cause of misses; it needs reviewed recordings, not threshold tuning.
 4. MediaPipe runs on the CPU delegate on the main thread: about 150 ms per frame on the sandbox CPU. Real laptops are expected to be faster but are **unmeasured**.
-5. The dev-only `braces` advisory (no fix available; strict audit fails).
+5. ~~The dev-only `braces` advisory~~: resolved in sprint 3; the strict audit passes.
 6. A repeated word within 2.6 s is suppressed by design.
+7. With the hand held still **in view** after THANK YOU and then moved, THANK YOU can be confirmed a second time from the end of its own stroke (synthetic finding, sprint 3). Mitigation: lower the hands below the chest or out of frame between signs. A guard is evaluated but off: [tail-guard.md](sprint-3/tail-guard.md).
+8. `demo:serve` printed `undefined` evidence counts before sprint 3; fixed.

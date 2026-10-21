@@ -57,7 +57,7 @@ RSL (Slovo) and Bangla (BdSLW401) use separate explicit clip-capture components 
 | R6 | Candidate bar was an `aria-live` region announcing tentative candidates | Medium (a11y + honesty) | Fixed |
 | R7 | A sustained MediaPipe handedness label switch on one physical hand split its track (synthetic YES/PLEASE/SORRY abstain) | Medium | Fix tried and reverted after a real-video HELLO regression; measure with traces |
 | R8 | Intake template paths assumed `.mp4` while the recorder produced WebM; no checksum pairing | Medium | Fixed (Agenda 7) |
-| R9 | Dev-only `braces` advisory chain, no upstream fix; strict `audit:security` fails | Low exploitability | Documented; owner decision |
+| R9 | Dev-only `braces` advisory chain, no upstream fix; strict `audit:security` failed | Low exploitability | **Resolved 21 Oct (sprint 3)**: removed from the tree via the reviewed `tooling/fast-glob-shim`; strict audit passes |
 | R10 | RSL model host (`sbercloud.ru`) is unreachable from some networks; `build:firebase` then fails | Medium for builds | Documented |
 | R11 | Six-language selector could imply validated multilingual accuracy | Medium (honesty) | Fixed: evidence-tied banner and selector labels |
 | R12 | Landing hero showed 'LIVE · RECOGNIZING' with invented 88–97% confidence and non-demo words | High (honesty) | Fixed: labelled as an illustration, six demo words only, no numbers |

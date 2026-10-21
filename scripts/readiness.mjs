@@ -4,7 +4,7 @@
 // separate release gate and is reported apart from build/test results.
 //
 //   node scripts/readiness.mjs --label baseline [--browser /path/to/chrome] [--build asl-demo[,rehearsal]]
-//   node scripts/readiness.mjs --label final --compare docs/gitex/sprint-2/baseline-<sha>.json
+//   node scripts/readiness.mjs --label final --compare docs/gitex/sprint-2/baseline-<sha>.json [--dir docs/gitex/sprint-3]
 // Each listed profile is built, then its browser smokes, rendered-export and
 // runtime checks run against that export. List asl-demo last to leave the
 // demo build in out/.
@@ -157,8 +157,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       note: "Real-video evidence is 11 previously inspected publisher clips; synthetic suites are regression records, not accuracy." } };
   const compare = option("--compare");
   if (compare) report.comparison = { base: compare, changes: compareReports(JSON.parse(readFileSync(compare, "utf8")), report) };
-  mkdirSync("docs/gitex/sprint-2", { recursive: true });
-  const stem = `docs/gitex/sprint-2/${label}-${report.runtime.commit.slice(0, 7)}`;
+  const dir = option("--dir") ?? "docs/gitex/sprint-2";
+  mkdirSync(dir, { recursive: true });
+  const stem = `${dir}/${label}-${report.runtime.commit.slice(0, 7)}`;
   writeFileSync(`${stem}.json`, JSON.stringify(report, null, 2) + "\n");
   writeFileSync(`${stem}.md`, markdown(report));
   console.log(JSON.stringify({ written: [`${stem}.json`, `${stem}.md`], verdicts: report.verdicts }));

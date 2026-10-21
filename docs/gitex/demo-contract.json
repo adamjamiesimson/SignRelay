@@ -223,7 +223,7 @@
   "manual_before_demo": [
     {
       "id": "MAN-1",
-      "requirement": "On the demo laptop's real webcam, open the workspace with ?perf and confirm at least 10 frames analysed/s (YES is lost at 5–8 fps in synthetic tests); then start the camera, sign each of the six words twice, and record per-word outcomes (correct / wrong / no match) on paper. Do not publish them as accuracy."
+      "requirement": "On the demo laptop's real webcam, open the workspace with ?perf and confirm at least 10 frames analysed/s (YES is lost at 5–8 fps in synthetic tests); then start the camera, sign each of the six words twice, and record per-word outcomes (correct / wrong / no match / camera or tracking failure) with npm run eval:log, or on paper. Do not publish them as accuracy."
     },
     {
       "id": "MAN-2",
