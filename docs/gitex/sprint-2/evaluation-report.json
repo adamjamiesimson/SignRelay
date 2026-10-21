@@ -1,0 +1,260 @@
+{
+  "schema": 1,
+  "release_status": "NO-GO",
+  "status": "Development evidence and synthetic regression records only. Not accuracy, not live-camera or signer performance.",
+  "current_worker": "ccce84c876f95caf9cade9a93fad1b686d5009a77ada203049044ee17ceb5632",
+  "current_worker_evidence": {
+    "outcome": {
+      "signed_trials": 11,
+      "correct": 5,
+      "wrong_accepted": 0,
+      "abstained": 6,
+      "errors": 0
+    },
+    "kind": "CI paired pilot logs (per-trial outcomes transcribed in ci-pilot-rerun-2026-10-21.md; the JSONL artifact could not be downloaded in the sandbox). The bundle hash is the committed, deterministically rebuilt bundle of that commit."
+  },
+  "real_video": {
+    "trials": 11,
+    "correct": 5,
+    "wrong": 0,
+    "abstained": 6,
+    "per_sign": {
+      "HELLO": {
+        "trials": 3,
+        "correct": 1,
+        "wrong": 0,
+        "abstained": 2
+      },
+      "NO": {
+        "trials": 1,
+        "correct": 1,
+        "wrong": 0,
+        "abstained": 0
+      },
+      "PLEASE": {
+        "trials": 3,
+        "correct": 3,
+        "wrong": 0,
+        "abstained": 0
+      },
+      "THANK YOU": {
+        "trials": 3,
+        "correct": 0,
+        "wrong": 0,
+        "abstained": 3
+      },
+      "YES": {
+        "trials": 1,
+        "correct": 0,
+        "wrong": 0,
+        "abstained": 1
+      },
+      "SORRY": {
+        "trials": 0,
+        "correct": 0,
+        "wrong": 0,
+        "abstained": 0
+      }
+    },
+    "cohort": "previously inspected publisher-labelled development clips"
+  },
+  "baseline_gate": "not run in this report (runs in the CI video pilot)",
+  "synthetic": {
+    "adversarial": {
+      "patterns": 19,
+      "runs": 684,
+      "runs_with_accept": 280,
+      "accepted_by_gloss": {
+        "THANK YOU/starter": 136,
+        "HELLO/starter": 144
+      }
+    },
+    "confusion_rules_wrong": {
+      "non-sign movement → HELLO": 144,
+      "non-sign movement → THANK YOU": 136
+    },
+    "confusion_wrong_model": {
+      "THANK YOU → more than one word": 9,
+      "non-sign movement → HELLO": 132,
+      "non-sign movement → PLEASE": 44,
+      "non-sign movement → THANK YOU": 120,
+      "non-sign movement → more than one word": 20
+    },
+    "temporal_earliest_confirmation": {
+      "HELLO": {
+        "first_confirming_frames": 6,
+        "movement_fraction": 0.33,
+        "other_words": []
+      },
+      "THANK YOU": {
+        "first_confirming_frames": 9,
+        "movement_fraction": 0.53,
+        "other_words": []
+      },
+      "PLEASE": {
+        "first_confirming_frames": 15,
+        "movement_fraction": 0.93,
+        "other_words": []
+      },
+      "SORRY": {
+        "first_confirming_frames": 15,
+        "movement_fraction": 0.93,
+        "other_words": []
+      },
+      "YES": {
+        "first_confirming_frames": 19,
+        "movement_fraction": 1,
+        "other_words": []
+      },
+      "NO": {
+        "first_confirming_frames": 10,
+        "movement_fraction": 0.6,
+        "other_words": []
+      }
+    },
+    "experiments": {
+      "baseline": {
+        "positives": "90/90",
+        "sparse_yes": "29/36",
+        "adversarial_runs_with_word": 280
+      },
+      "hello-sideways-stroke": {
+        "positives": "90/90",
+        "sparse_yes": "29/36",
+        "adversarial_runs_with_word": 172
+      },
+      "thank-you-not-from-eyes": {
+        "positives": "90/90",
+        "sparse_yes": "29/36",
+        "adversarial_runs_with_word": 180
+      },
+      "thank-you-over-incomplete-please": {
+        "positives": "90/90",
+        "sparse_yes": "29/36",
+        "adversarial_runs_with_word": 280
+      },
+      "yes-gap-fill": {
+        "positives": "90/90",
+        "sparse_yes": "31/36",
+        "adversarial_runs_with_word": 280
+      },
+      "all experiments": {
+        "positives": "90/90",
+        "sparse_yes": "31/36",
+        "adversarial_runs_with_word": 72
+      }
+    }
+  },
+  "known_risks": [
+    "adjusting glasses",
+    "pushing hair aside near the forehead",
+    "lowering a hand from the mouth to rest",
+    "raising an open hand from the chin toward the forehead"
+  ],
+  "demo_mitigation": "Between signs, rest the hands below the chest or out of frame. Do not touch the face, glasses or hair, do not wave, shield the eyes or blow a kiss during the demonstration. Every confirmed word is labelled as a rule or model match and can be removed.",
+  "triage": [
+    {
+      "severity": "blocker",
+      "area": "evaluation",
+      "title": "No unseen, live-camera or new-signer evaluation exists",
+      "evidence": "Only 11 previously inspected publisher clips (5 correct, 0 wrong, 6 abstained); the sealed holdout is unopened.",
+      "next_action": "Collect reviewed recordings with the 144-slot plan and run the physical-camera manual gates."
+    },
+    {
+      "severity": "blocker",
+      "area": "evaluation",
+      "title": "Real no-sign and out-of-vocabulary false acceptance is not measured",
+      "evidence": "0 real negative trials exist.",
+      "next_action": "Record no-sign and unsupported-sign takes in the reviewed collection."
+    },
+    {
+      "severity": "high",
+      "area": "recognition",
+      "title": "THANK YOU is never recognized on development clips",
+      "evidence": "0/3 correct, 3 abstained.",
+      "next_action": "Diagnose with reviewed footage; see docs/gitex/sprint-2/experiments.md."
+    },
+    {
+      "severity": "high",
+      "area": "recognition",
+      "title": "YES is never recognized on development clips",
+      "evidence": "0/1 correct, 1 abstained.",
+      "next_action": "Diagnose with reviewed footage; see docs/gitex/sprint-2/experiments.md."
+    },
+    {
+      "severity": "high",
+      "area": "recognition",
+      "title": "SORRY has no real-video trial",
+      "evidence": "0 development clips.",
+      "next_action": "Include it in the reviewed collection before demonstrating it as supported."
+    },
+    {
+      "severity": "high",
+      "area": "false-accepts",
+      "title": "Everyday movements trigger HELLO and THANK YOU in synthetic tests",
+      "evidence": "280/684 synthetic runs (THANK YOU/starter 136, HELLO/starter 144).",
+      "next_action": "Keep the demo mitigation; evaluate the OFF experiments on reviewed footage before enabling any."
+    },
+    {
+      "severity": "medium",
+      "area": "arbitration",
+      "title": "A model word can follow a starter confirmation on the same movement",
+      "evidence": "9 sign runs with an always-wrong confident model (THANK YOU → more than one word).",
+      "next_action": "Decide on a guard that waits for a new movement onset after a starter confirmation; compare it with the baseline gate."
+    },
+    {
+      "severity": "low",
+      "area": "segmentation",
+      "title": "Very short pauses (0–100 ms) lose a word",
+      "evidence": "six words, 0 ms pause, hands lowered: 5/6; six words, 0 ms pause, hands held: 5/6; six words, 100 ms pause, hands lowered: 5/6; six words, 100 ms pause, hands held: 5/6",
+      "next_action": "Demo script keeps ≥400 ms rests with hands lowered."
+    }
+  ],
+  "export_runtime": {
+    "schema": 1,
+    "profile": "asl-demo",
+    "tasks_version": "0.10.35",
+    "files": {
+      "vision/wasm/vision_wasm_internal.js": "e7fd9858e8e8f221d9b96eddc11f8e077f263e0b7bbd79d3cbe882b134274f8c",
+      "vision/wasm/vision_wasm_internal.wasm": "6a5c64584c2ab61c763b6e204afbdbc7ce1caf7f5216187322bca8df94f646bc",
+      "vision/wasm/vision_wasm_nosimd_internal.js": "438d1fe8ff7f4d946025bc211c291543c037d8a3785ed4eee60f1f521b236296",
+      "vision/wasm/vision_wasm_nosimd_internal.wasm": "8a3092d34c79d3f57e6ba8592105e8a90f6b07c27891ffecd14cca428bfd3e31",
+      "vision/models/gesture_recognizer.task": "97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482",
+      "vision/models/face_landmarker.task": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+      "vision/models/pose_landmarker_lite.task": "59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a",
+      "models/asl2000-tgcn/model.part00.bin": "0d38c52c54b7f0318a57e64f92fb80cb1465b7032eb2373e2ec7ad3064bbb5d3",
+      "models/asl2000-tgcn/model.part01.bin": "8a4f519c23623d16bb2a5d628a5ad9679d661b74e629399e6fc15768e607f23e",
+      "models/asl2000-tgcn/model.part02.bin": "189d09d2c059333095e9e7829c0fa0a4c5c0b45309bcc99d050703c1caf93755",
+      "models/asl2000-tgcn/model.part03.bin": "c00f99fcca5cb9d2e68fabc3466934282f60d8db9ca5823af58f657b9415cc0e",
+      "models/asl2000-tgcn/model.part04.bin": "8e9961df4bb56d8e3d70efc046689217cbb00c7705865453c17a21dccc882761",
+      "models/asl2000-tgcn/model.part05.bin": "957e15ffa38a6955f9d56ff49f05233264c1382e83aac2f5a8fce82fc47ba929",
+      "models/asl2000-tgcn/model.part06.bin": "6cae4ae49c39a3c00f5ba642b5edcab6cf213b80271c1200e0c79a500dcbf6de",
+      "models/asl2000-tgcn/model.part07.bin": "7f659bc373a7debd44d93bd00f07af0bc16d79b39b3eada68902cea08b1e11b3",
+      "models/asl2000-tgcn/model.part08.bin": "727a1eb21c6532358ecf276555487fdf8fb2fce466fbde105175fd203686edb3",
+      "models/asl2000-tgcn/model.json": "ebac604f1c4ee86a7b3b20cfaa9c3a8f157cc814ad0c94e6a87be7902b3ac466",
+      "models/asl2000-tgcn/labels.json": "4a4e1e6c024c19320557d0febdd7f3956960d77a691848a2101cbca72ce69380",
+      "models/asl2000-tgcn/adapter.json": "081e4e83fb40064cabfa14160bf8eb801ad2e7fd07b4c6dc0502db93b69429fd",
+      "models/asl2000-tgcn/metrics.json": "813e7fc425a6a34e8c7f165a0412416c391610445f5edcb39fa6ea3400a43fe8",
+      "models/asl2000-tgcn/dataset-card.md": "3012e0c5817dcbd1289ec3e4691b5393889e40ed1a2a2123e84d2830d9165b65",
+      "workers/ort-wasm-simd-threaded.jsep.wasm": "ac0d8f1cfbf2732420ad78a86072b8507253c63885a61c3fd640b3055256d31d",
+      "workers/ort-wasm-simd-threaded.jsep.mjs": "c7b70c8003f077c62849e15275d0b1f1d1cf1a6dfc63b967400567c7224bfdbe",
+      "workers/recognition.worker.js": "ccce84c876f95caf9cade9a93fad1b686d5009a77ada203049044ee17ceb5632"
+    },
+    "recognition_worker_sha256": "ccce84c876f95caf9cade9a93fad1b686d5009a77ada203049044ee17ceb5632",
+    "matches_committed_worker": true,
+    "real_video_evidence": {
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "evidence": [
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/39557282103",
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/39558447150",
+        "docs/evaluation/ci-pilot-rerun-2026-10-21.md"
+      ]
+    }
+  }
+}
