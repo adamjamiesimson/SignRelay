@@ -18,6 +18,12 @@ describe("capability claims match the evidence", () => {
     expect(summary.per_gloss.map((row: { gloss: string }) => row.gloss)).not.toContain("SORRY");
     expect(evidence).toContain("SORRY untested");
   });
+  it("describes PSL as one-shot reference matching, not a trained model", () => {
+    const { headline } = capabilityStatus("psl");
+    expect(headline).toMatch(/one recorded reference/);
+    expect(headline).toMatch(/no trained model/i);
+    expect(headline).not.toMatch(/research model/);
+  });
   it.each(LANGUAGE_IDS)("%s never claims independent validation or measured live accuracy", language => {
     const status = capabilityStatus(language);
     expect(status.independentlyValidated).toBe(false);

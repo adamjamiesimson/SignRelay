@@ -20,6 +20,9 @@ export function capabilityStatus(language: LanguageId): Capability {
   if (language === "rsl" || language === "bdsl") return { tier: "clip-mode", independentlyValidated: false,
     headline: `Research preview. One sign per capture from a ${model.automaticVocabularyCount.toLocaleString()}-class model; suggestions are not added to a transcript.`,
     evidence: "Published dataset results only. SignRelay live-camera accuracy has not been measured." };
+  if (language === "psl") return { tier: "research-model", independentlyValidated: false,
+    headline: `Research preview. ${model.automaticVocabularyCount.toLocaleString()} dictionary signs, each matched against one recorded reference performance. There is no trained model.`,
+    evidence: "No live-camera or held-out evaluation exists for this language." };
   if (model.status === "experimental") return { tier: "research-model", independentlyValidated: false,
     headline: `Research preview. ${model.automaticVocabularyCount.toLocaleString()} isolated signs from a shared research model.`,
     evidence: "SignRelay live-camera accuracy has not been measured for this language." };

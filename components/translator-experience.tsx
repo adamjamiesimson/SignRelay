@@ -790,7 +790,7 @@ export function TranslatorExperience() {
             <div className="workspace-title">
               <span className="language-code compact">{model.shortName}</span>
               <div>
-                <h1>Live translation</h1>
+                <h1>Live sign recognition</h1>
                 <p>{model.language}</p>
               </div>
             </div>
