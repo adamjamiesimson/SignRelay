@@ -66,6 +66,16 @@ try {
     const framesBefore = await evaluate("window.__qaFrames");
     await pause(4000);
     const framesPerSecond = (await evaluate("window.__qaFrames") - framesBefore) / 4;
+    if (cycle === 0) {
+      // A hidden tab must stop analysing frames, then resume when visible again.
+      await evaluate("(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));})()");
+      await pause(600);
+      const hiddenStart = await evaluate("window.__qaFrames");
+      await pause(1500);
+      assert.equal(await evaluate("window.__qaFrames"), hiddenStart, "Frames were analysed while the page was hidden");
+      await evaluate("(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));})()");
+      await until(async () => await evaluate("window.__qaFrames") > hiddenStart + 3, "Analysis did not resume after the page became visible");
+    }
     const status = await evaluate("document.querySelector('.recognition-state')?.textContent.trim()");
     const perf = await evaluate("document.querySelector('[data-perf]')?.textContent");
     const sequence = await evaluate("document.querySelector('.candidate-bar strong')?.textContent");
