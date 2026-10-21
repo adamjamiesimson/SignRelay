@@ -76,6 +76,8 @@ jobs:
           test -f out/index.html
           test -f out/workers/ort-wasm-simd-threaded.jsep.wasm
           test -f out/workers/ort-wasm-simd-threaded.jsep.mjs
+          test ! -e out/field-test.html
+          test ! -e out/.signrelay-private-capture-included
           echo "Static export created successfully."
 
       - name: Test recognition and model contracts

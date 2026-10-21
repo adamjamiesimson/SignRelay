@@ -5,6 +5,7 @@ on:
     paths:
       - 'app/field-test/**'
       - 'lib/field-test-capture.ts'
+      - 'scripts/exclude-private-routes.mjs'
       - 'tests/field-test-browser-smoke.mjs'
       - 'tests/field-test-capture.test.ts'
       - '.github/workflows/field-test-browser.yml'
@@ -29,7 +30,9 @@ jobs:
         run: npm ci
       - name: Validate capture slot contracts
         run: npx vitest run tests/field-test-capture.test.ts
-      - name: Build static site with browser capture route
+      - name: Build development export that includes the private capture route
+        env:
+          SIGNRELAY_INCLUDE_PRIVATE_CAPTURE: "1"
         run: npm run build:firebase
       - name: Validate no-upload, download, metadata and interruption controls
         run: |

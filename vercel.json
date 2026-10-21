@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "npm run build:worker && npx next build",
+  "buildCommand": "npm run build:worker && npx next build && node scripts/exclude-private-routes.mjs",
   "git": {
     "deploymentEnabled": {
       "feature/pretrained-language-expansion": false
