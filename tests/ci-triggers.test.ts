@@ -27,7 +27,7 @@ describe("the offline demo profiles are checked on every pull request", () => {
   it("builds both demo profiles and runs every demo, rehearsal and fault-injection smoke", () => {
     const demo = workflow("asl-demo.yml");
     for (const step of ["npm run build:rehearsal", "npm run build:asl-demo", "npm run demo:check", "--self-test",
-      "tests/gitex-rehearsal-smoke.mjs", "tests/transcript-a11y-smoke.mjs", "tests/offline-vision-smoke.mjs",
+      "tests/gitex-rehearsal-smoke.mjs", "tests/transcript-a11y-smoke.mjs", "tests/user-feedback-fault-smoke.mjs", "tests/offline-vision-smoke.mjs",
       "tests/lifecycle-stress-smoke.mjs", "tests/fault-injection-smoke.mjs", "--profile rehearsal", "--profile asl-demo"]) expect(demo).toContain(step);
     expect(demo.indexOf("npm run build:asl-demo")).toBeGreaterThan(demo.indexOf("npm run build:rehearsal"));
     expect(demo).not.toMatch(/continue-on-error|\|\| true/);

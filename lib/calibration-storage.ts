@@ -46,6 +46,17 @@ export async function saveCalibrationTemplate(template: CalibrationTemplate) {
   });
 }
 
+/** Save, then re-read the list. `templates` is null when the save committed but
+ * the re-read failed: the example is stored, only the list could not refresh. */
+export async function saveCalibrationTemplateAndReload(template: CalibrationTemplate) {
+  await saveCalibrationTemplate(template);
+  try {
+    return { templates: await loadCalibrationTemplates() };
+  } catch {
+    return { templates: null };
+  }
+}
+
 export async function deleteCalibrationGloss(gloss: string, language: NonNullable<CalibrationTemplate["language"]>) {
   // One transaction, so an example of this word saved just before is removed too.
   await readwrite(store => {

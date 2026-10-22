@@ -23,7 +23,7 @@ import {
   clearCalibrationTemplates,
   deleteCalibrationGloss,
   loadCalibrationTemplates,
-  saveCalibrationTemplate,
+  saveCalibrationTemplateAndReload,
 } from "@/lib/calibration-storage";
 import {
   createCustomVocabularyEntry,
@@ -670,13 +670,15 @@ export function TranslatorExperience() {
     };
 
     try {
-      await saveCalibrationTemplate(template);
-      const updated = await loadCalibrationTemplates();
-      setCalibrationTemplates(updated);
+      const { templates: updated } = await saveCalibrationTemplateAndReload(template);
+      if (updated) setCalibrationTemplates(updated);
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "saved";
       setCalibrationState("saved");
-      setCalibrationMessage(`${calibrationWord.text} is now active for ${model.shortName}. Record two or three examples for better consistency.`);
+      // A failed re-read after a committed save is not a failed save.
+      setCalibrationMessage(updated
+        ? `${calibrationWord.text} is now active for ${model.shortName}. Record two or three examples for better consistency.`
+        : `${calibrationWord.text} was saved on this device, but the list of saved signs could not be refreshed. Reload the page to start using it.`);
     } catch {
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "error";
@@ -707,15 +709,19 @@ export function TranslatorExperience() {
     setCalibrationState("idle");
     try {
       await deleteCalibrationGloss(gloss, selected);
-      setCalibrationTemplates(await loadCalibrationTemplates());
-      setCalibrationMessage("Personal examples removed for this word.");
     } catch {
       // Show what is still stored rather than pretending it was deleted.
       await loadCalibrationTemplates().then(setCalibrationTemplates, () => {});
       captureStateRef.current = "error";
       setCalibrationState("error");
       setCalibrationMessage("These examples could not be removed from this browser. Try again, or clear this site's data in your browser settings.");
+      return;
     }
+    // The deletion committed. If the list cannot be re-read, drop exactly what was deleted.
+    const stored = await loadCalibrationTemplates().catch(() => null);
+    setCalibrationTemplates(current => stored ?? current.filter(template =>
+      template.gloss !== gloss || (template.language ?? "asl") !== selected));
+    setCalibrationMessage("Personal examples removed for this word.");
   }, [selected]);
 
   const returnHome = () => {
@@ -776,7 +782,7 @@ export function TranslatorExperience() {
     captureStateRef.current = "idle";
     captureFramesRef.current = [];
     setCalibrationState("idle");
-    clearLocalSignRelayData();
+    const localCleared = clearLocalSignRelayData();
     setEntries([]);
     setEditingId(null);
     setHistory([]);
@@ -787,10 +793,14 @@ export function TranslatorExperience() {
       await clearCalibrationTemplates();
       // Reflect storage, not an assumption: a save already committing finishes before the clear.
       setCalibrationTemplates(await loadCalibrationTemplates().catch(() => []));
-      setPrivacyMessage("Local transcripts, settings and personal signs were cleared from this browser.");
+      setPrivacyMessage(localCleared
+        ? "Local transcripts, settings and personal signs were cleared from this browser."
+        : "Personal signs were cleared, but saved transcripts and settings could not be removed from browser storage. Clear this site's data in your browser settings.");
     } catch {
       // Keep showing what is still stored rather than pretending it was deleted.
-      setPrivacyMessage("Transcripts and settings were cleared, but personal signs could not be deleted. Clear this site's data in your browser settings.");
+      setPrivacyMessage(localCleared
+        ? "Transcripts and settings were cleared, but personal signs could not be deleted. Clear this site's data in your browser settings."
+        : "Nothing could be removed from browser storage. Clear this site's data in your browser settings.");
     }
   };
 
@@ -1003,7 +1013,11 @@ export function TranslatorExperience() {
                   <span><strong>Auto speak</strong></span>
                 </label>
                 <div className="speech-buttons">
-                  <button className="button secondary small" disabled={!entries.length} onClick={() => speak(entries.map((entry) => entry.text).join(" "))}>
+                  <button className="button secondary small" disabled={!entries.length} onClick={() => {
+                    // Without the Web Speech API the button would otherwise do nothing at all.
+                    if (!("speechSynthesis" in window)) { setTranscriptMessage("Speech output is not available in this browser. The transcript can still be read or copied."); return; }
+                    speak(entries.map((entry) => entry.text).join(" "));
+                  }}>
                     Speak
                   </button>
                   <button className="button ghost small" onClick={() => window.speechSynthesis?.cancel()}>

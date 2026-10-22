@@ -52,6 +52,9 @@ jobs:
       - name: Rehearsal - transcript, live regions, keyboard, touch targets, reduced motion
         run: node tests/transcript-a11y-smoke.mjs "$CHROME"
 
+      - name: User-facing outcomes under storage and speech faults
+        run: node tests/user-feedback-fault-smoke.mjs "$CHROME"
+
       - name: Rehearsal - rendered export and runtime manifest
         run: |
           npm run test:rendered
