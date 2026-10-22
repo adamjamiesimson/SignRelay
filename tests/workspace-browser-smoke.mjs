@@ -23,7 +23,7 @@ try {
         this.onmessage = this.onerror = this.onmessageerror = null; this.closed = false; this.session = 0;
         window.__qaWorkers.push(this);
       }
-      postMessage(message) { this.session = message.session;
+      postMessage(message) { this.session = message.session; if (message.type === 'templates') (this.languages ??= []).push(message.language);
         if (message.type === 'frame') this.onmessage?.({data:{type:'analysis',session:this.session,frameId:message.frameId,state:'listening',candidate:null,confidence:0,bufferSize:0}});
       }
       terminate() { this.closed = true; }
@@ -135,9 +135,23 @@ try {
   await select("rsl");
   await evaluate("window.__qaCameraResolvers.forEach(resolve=>resolve());window.__qaCameraResolvers=[]");
   await until(() => evaluate(`window.__qaStoppedTracks===${requests + 1}`), "Late retry grant leaked camera tracks");
+  // Rapid switching with no waits: exactly one recognition worker stays live,
+  // it was configured last for the language on screen, and the transcript
+  // holds only the word confirmed after the last switch.
+  for (const id of ["asl", "bsl", "isl", "lse", "psl", "csl", "asl"]) await select(id);
+  await until(async () => await language() === "asl", "Rapid switching did not settle on ASL");
+  await pause(300);
+  const live = await evaluate("window.__qaWorkers.filter(w => !w.closed).map(w => w.languages?.at(-1))");
+  assert.deepEqual(live, ["asl"], `Expected exactly one live ASL recognition worker after rapid switching, got ${JSON.stringify(live)}`);
+  await evaluate("window.__qaEmit('HELLO')");
+  const entries = () => evaluate("[...document.querySelectorAll('.transcript-entry p')].map(p => p.textContent)");
+  await until(async () => (await entries()).includes("HELLO"), "Word after rapid switching was not shown");
+  await pause(300);
+  assert.deepEqual(await entries(), ["HELLO"], "After rapid switching the transcript must hold exactly the one new word");
   console.log(JSON.stringify({ passed: true, checks: ["footer navigation", "workspace transcript isolation", "welcome transcript isolation",
     "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "visible match-score qualification", "denied permission and cancelled retry",
-    "duplicate confirmation neither shown nor spoken", "confirmed-only screen-reader announcements", "transcript copy"],
+    "duplicate confirmation neither shown nor spoken", "confirmed-only screen-reader announcements", "transcript copy",
+    "rapid switching leaves one live worker for the language on screen"],
     camera_requests: await evaluate("window.__qaCameraRequests"), denied_requests: 1, stale_tracks_stopped: await evaluate("window.__qaStoppedTracks") }));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors, diagnostics: await browser.evaluate(`({mediaDevices:typeof navigator.mediaDevices,
