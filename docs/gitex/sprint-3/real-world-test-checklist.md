@@ -26,7 +26,7 @@ Record live outcomes with `npm run eval:log` in a second terminal (see `evaluati
 ## Rules that keep the evidence honest
 
 - Do not tune thresholds, rules or the tail guard on these observations and then re-measure on the same takes.
-- Do not open, fetch or replay the sealed holdout (`docs/evaluation/popsign-project-holdout-manifest.json`) until a final candidate is frozen and the owner authorises a single measurement.
+- Do not open, fetch or replay the sealed holdout (`docs/evaluation/popsign-reserved-holdout-2026-10-16.json`, role `sealed-holdout` in `cohort-lock-2026-10-16.json`) until a final candidate is frozen and the owner authorises a single measurement. Despite its name, `popsign-project-holdout-manifest.json` is the 6-clip historical-development cohort that the CI pilot replays.
 - The 11 development clips (5 correct, 0 wrong, 6 no match) are not an accuracy percentage and must not be presented as one.
 - `eval:live` reports operator-log rows separately, as `unreviewed_operator_observations`. Treat them as a demo record, not as results.
 - A trial with a camera or tracking failure counts as a failure. It is not removed from the denominator.
