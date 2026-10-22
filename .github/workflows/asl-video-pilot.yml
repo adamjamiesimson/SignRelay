@@ -9,6 +9,10 @@ on:
       - 'lib/vision-engine.ts'
       - 'lib/vision-runtime.mjs'
       - 'workers/recognition.worker.ts'
+      # The committed bundle changes whenever any source bundled into the
+      # recognition worker changes (verify:runtime requires it to match), so a
+      # worker-byte change can never skip the pilot.
+      - 'public/workers/recognition.worker.js'
       - 'package.json'
       - 'package-lock.json'
       - 'scripts/security-policy.mjs'

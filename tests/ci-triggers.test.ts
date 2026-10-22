@@ -21,6 +21,15 @@ describe("stacked pull requests receive checks", () => {
     for (const file of ["lib/sign-motion.ts", "lib/frame-timing.ts", "lib/decoder.ts", "lib/asl1000-runtime.ts",
       "lib/asl-starter-recognition.ts", "workers/recognition.worker.ts"]) expect(paths).toContain(`'${file}'`);
   });
+  it("re-runs the pilot whenever the committed recognition-worker bundle changes, whichever source changed it", () => {
+    // e.g. lib/template-transport.ts is bundled into the worker but is not in the source list.
+    expect(pullRequestBlock(workflow("asl-video-pilot.yml"))).toContain("'public/workers/recognition.worker.js'");
+  });
+  it.each(["firebase-build-check.yml", "field-test-browser.yml"])("%s cancels superseded pull-request runs but never main", name => {
+    const text = workflow(name);
+    expect(text).toContain("group: ${{ github.workflow }}-${{ github.ref }}");
+    expect(text).toContain("cancel-in-progress: ${{ github.event_name == 'pull_request' }}");
+  });
 });
 
 describe("the offline demo profiles are checked on every pull request", () => {
