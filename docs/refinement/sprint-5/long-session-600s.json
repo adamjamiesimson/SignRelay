@@ -1,0 +1,1035 @@
+{
+  "schema": 1,
+  "benchmark": "long-session",
+  "environment": "Node v22.22.0, Intel(R) Xeon(R) Processor @ 2.10GHz x4, real worker threads, local files; not a browser, camera or phone measurement",
+  "protocol": "20 Hz offered frames, one in flight and one latest (coalescing), six-sign cycle with rests",
+  "results": [
+    {
+      "scenario": "30 personal examples",
+      "seconds": 600,
+      "offered": 12001,
+      "sent": 12001,
+      "acknowledged": 12001,
+      "coalesced_dropped": 0,
+      "faults": [],
+      "confirmed": {},
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.76,
+        "p95": 2.1,
+        "max": 93.69
+      },
+      "max_at_s": 508.42,
+      "over_50ms": [
+        {
+          "t": 19.01,
+          "ms": 54.3
+        },
+        {
+          "t": 49.33,
+          "ms": 63.4
+        },
+        {
+          "t": 508.42,
+          "ms": 93.7
+        }
+      ],
+      "first_30s_p95_ms": 2.49,
+      "last_30s_p95_ms": 2.2,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0,
+        "max": 13.04
+      },
+      "worker_heap_mb": {
+        "first": 8.8,
+        "last": 18.5,
+        "max": 20.9
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 8.8
+        },
+        {
+          "t": 30,
+          "worker_heap_mb": 15.3
+        },
+        {
+          "t": 60,
+          "worker_heap_mb": 20.9
+        },
+        {
+          "t": 90,
+          "worker_heap_mb": 18.3
+        },
+        {
+          "t": 120,
+          "worker_heap_mb": 12.6
+        },
+        {
+          "t": 150,
+          "worker_heap_mb": 13.3
+        },
+        {
+          "t": 180,
+          "worker_heap_mb": 17.7
+        },
+        {
+          "t": 210,
+          "worker_heap_mb": 10.3
+        },
+        {
+          "t": 240,
+          "worker_heap_mb": 20.7
+        },
+        {
+          "t": 270,
+          "worker_heap_mb": 17.9
+        },
+        {
+          "t": 300,
+          "worker_heap_mb": 11.7
+        },
+        {
+          "t": 330,
+          "worker_heap_mb": 8.1
+        },
+        {
+          "t": 360,
+          "worker_heap_mb": 12.7
+        },
+        {
+          "t": 390,
+          "worker_heap_mb": 11.3
+        },
+        {
+          "t": 420,
+          "worker_heap_mb": 7.8
+        },
+        {
+          "t": 450,
+          "worker_heap_mb": 17.6
+        },
+        {
+          "t": 480,
+          "worker_heap_mb": 15.4
+        },
+        {
+          "t": 510,
+          "worker_heap_mb": 11.9
+        },
+        {
+          "t": 540,
+          "worker_heap_mb": 9.8
+        },
+        {
+          "t": 570,
+          "worker_heap_mb": 18.5
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 144.7
+        },
+        {
+          "t": 30,
+          "process_rss_mb": 180
+        },
+        {
+          "t": 60,
+          "process_rss_mb": 191.2
+        },
+        {
+          "t": 90,
+          "process_rss_mb": 196.8
+        },
+        {
+          "t": 120,
+          "process_rss_mb": 173.8
+        },
+        {
+          "t": 150,
+          "process_rss_mb": 183.2
+        },
+        {
+          "t": 180,
+          "process_rss_mb": 184.7
+        },
+        {
+          "t": 210,
+          "process_rss_mb": 198.4
+        },
+        {
+          "t": 240,
+          "process_rss_mb": 198.7
+        },
+        {
+          "t": 270,
+          "process_rss_mb": 199.4
+        },
+        {
+          "t": 300,
+          "process_rss_mb": 177.1
+        },
+        {
+          "t": 330,
+          "process_rss_mb": 183.5
+        },
+        {
+          "t": 360,
+          "process_rss_mb": 183.7
+        },
+        {
+          "t": 390,
+          "process_rss_mb": 197.3
+        },
+        {
+          "t": 420,
+          "process_rss_mb": 197
+        },
+        {
+          "t": 450,
+          "process_rss_mb": 197.3
+        },
+        {
+          "t": 480,
+          "process_rss_mb": 197.4
+        },
+        {
+          "t": 510,
+          "process_rss_mb": 197.5
+        },
+        {
+          "t": 540,
+          "process_rss_mb": 197.6
+        },
+        {
+          "t": 570,
+          "process_rss_mb": 197.8
+        }
+      ]
+    },
+    {
+      "scenario": "150 personal examples",
+      "seconds": 600,
+      "offered": 12000,
+      "sent": 12000,
+      "acknowledged": 12000,
+      "coalesced_dropped": 0,
+      "faults": [],
+      "confirmed": {},
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.71,
+        "p95": 1.75,
+        "max": 56.59
+      },
+      "max_at_s": 318.94,
+      "over_50ms": [
+        {
+          "t": 0.05,
+          "ms": 50.9
+        },
+        {
+          "t": 318.94,
+          "ms": 56.6
+        }
+      ],
+      "first_30s_p95_ms": 2.32,
+      "last_30s_p95_ms": 1.54,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0,
+        "max": 4.85
+      },
+      "worker_heap_mb": {
+        "first": 13.7,
+        "last": 14.9,
+        "max": 25.8
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 13.7
+        },
+        {
+          "t": 30,
+          "worker_heap_mb": 18.9
+        },
+        {
+          "t": 60,
+          "worker_heap_mb": 19.6
+        },
+        {
+          "t": 90,
+          "worker_heap_mb": 18.7
+        },
+        {
+          "t": 120,
+          "worker_heap_mb": 14.5
+        },
+        {
+          "t": 150,
+          "worker_heap_mb": 20.9
+        },
+        {
+          "t": 180,
+          "worker_heap_mb": 23.6
+        },
+        {
+          "t": 210,
+          "worker_heap_mb": 16.1
+        },
+        {
+          "t": 240,
+          "worker_heap_mb": 19.9
+        },
+        {
+          "t": 270,
+          "worker_heap_mb": 21.7
+        },
+        {
+          "t": 300,
+          "worker_heap_mb": 25.5
+        },
+        {
+          "t": 330,
+          "worker_heap_mb": 16.9
+        },
+        {
+          "t": 360,
+          "worker_heap_mb": 21.1
+        },
+        {
+          "t": 390,
+          "worker_heap_mb": 25.8
+        },
+        {
+          "t": 420,
+          "worker_heap_mb": 17
+        },
+        {
+          "t": 450,
+          "worker_heap_mb": 23.3
+        },
+        {
+          "t": 480,
+          "worker_heap_mb": 15.8
+        },
+        {
+          "t": 510,
+          "worker_heap_mb": 20.4
+        },
+        {
+          "t": 540,
+          "worker_heap_mb": 24.6
+        },
+        {
+          "t": 570,
+          "worker_heap_mb": 14.9
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 157.7
+        },
+        {
+          "t": 30,
+          "process_rss_mb": 216
+        },
+        {
+          "t": 60,
+          "process_rss_mb": 234.9
+        },
+        {
+          "t": 90,
+          "process_rss_mb": 235.2
+        },
+        {
+          "t": 120,
+          "process_rss_mb": 247.2
+        },
+        {
+          "t": 150,
+          "process_rss_mb": 247.4
+        },
+        {
+          "t": 180,
+          "process_rss_mb": 247.5
+        },
+        {
+          "t": 210,
+          "process_rss_mb": 251
+        },
+        {
+          "t": 240,
+          "process_rss_mb": 251
+        },
+        {
+          "t": 270,
+          "process_rss_mb": 251.2
+        },
+        {
+          "t": 300,
+          "process_rss_mb": 251.2
+        },
+        {
+          "t": 330,
+          "process_rss_mb": 251.2
+        },
+        {
+          "t": 360,
+          "process_rss_mb": 251.2
+        },
+        {
+          "t": 390,
+          "process_rss_mb": 254
+        },
+        {
+          "t": 420,
+          "process_rss_mb": 254.2
+        },
+        {
+          "t": 450,
+          "process_rss_mb": 254.2
+        },
+        {
+          "t": 480,
+          "process_rss_mb": 254.2
+        },
+        {
+          "t": 510,
+          "process_rss_mb": 254.2
+        },
+        {
+          "t": 540,
+          "process_rss_mb": 254.2
+        },
+        {
+          "t": 570,
+          "process_rss_mb": 257.3
+        }
+      ]
+    },
+    {
+      "scenario": "300 personal examples",
+      "seconds": 600,
+      "offered": 12001,
+      "sent": 12001,
+      "acknowledged": 12001,
+      "coalesced_dropped": 0,
+      "faults": [],
+      "confirmed": {},
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.74,
+        "p95": 2,
+        "max": 58.44
+      },
+      "max_at_s": 0.06,
+      "over_50ms": [
+        {
+          "t": 0.06,
+          "ms": 58.4
+        }
+      ],
+      "first_30s_p95_ms": 1.99,
+      "last_30s_p95_ms": 1.07,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0.01,
+        "max": 6.76
+      },
+      "worker_heap_mb": {
+        "first": 21,
+        "last": 24,
+        "max": 32.5
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 21
+        },
+        {
+          "t": 30,
+          "worker_heap_mb": 25.1
+        },
+        {
+          "t": 60,
+          "worker_heap_mb": 22.2
+        },
+        {
+          "t": 90,
+          "worker_heap_mb": 22.7
+        },
+        {
+          "t": 120,
+          "worker_heap_mb": 29.6
+        },
+        {
+          "t": 150,
+          "worker_heap_mb": 30.6
+        },
+        {
+          "t": 180,
+          "worker_heap_mb": 31.1
+        },
+        {
+          "t": 210,
+          "worker_heap_mb": 29.4
+        },
+        {
+          "t": 240,
+          "worker_heap_mb": 32.2
+        },
+        {
+          "t": 270,
+          "worker_heap_mb": 21.5
+        },
+        {
+          "t": 300,
+          "worker_heap_mb": 23.9
+        },
+        {
+          "t": 330,
+          "worker_heap_mb": 25.5
+        },
+        {
+          "t": 360,
+          "worker_heap_mb": 26.2
+        },
+        {
+          "t": 390,
+          "worker_heap_mb": 26
+        },
+        {
+          "t": 420,
+          "worker_heap_mb": 26.6
+        },
+        {
+          "t": 450,
+          "worker_heap_mb": 29.5
+        },
+        {
+          "t": 480,
+          "worker_heap_mb": 31.3
+        },
+        {
+          "t": 510,
+          "worker_heap_mb": 32.5
+        },
+        {
+          "t": 540,
+          "worker_heap_mb": 21.9
+        },
+        {
+          "t": 570,
+          "worker_heap_mb": 24
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 194.4
+        },
+        {
+          "t": 30,
+          "process_rss_mb": 253.7
+        },
+        {
+          "t": 60,
+          "process_rss_mb": 261.4
+        },
+        {
+          "t": 90,
+          "process_rss_mb": 261.7
+        },
+        {
+          "t": 120,
+          "process_rss_mb": 264.1
+        },
+        {
+          "t": 150,
+          "process_rss_mb": 274.4
+        },
+        {
+          "t": 180,
+          "process_rss_mb": 274.4
+        },
+        {
+          "t": 210,
+          "process_rss_mb": 278.2
+        },
+        {
+          "t": 240,
+          "process_rss_mb": 278.2
+        },
+        {
+          "t": 270,
+          "process_rss_mb": 278.2
+        },
+        {
+          "t": 300,
+          "process_rss_mb": 278.2
+        },
+        {
+          "t": 330,
+          "process_rss_mb": 278.2
+        },
+        {
+          "t": 360,
+          "process_rss_mb": 278.2
+        },
+        {
+          "t": 390,
+          "process_rss_mb": 278.6
+        },
+        {
+          "t": 420,
+          "process_rss_mb": 278.6
+        },
+        {
+          "t": 450,
+          "process_rss_mb": 278.6
+        },
+        {
+          "t": 480,
+          "process_rss_mb": 278.6
+        },
+        {
+          "t": 510,
+          "process_rss_mb": 278.6
+        },
+        {
+          "t": 540,
+          "process_rss_mb": 278.6
+        },
+        {
+          "t": 570,
+          "process_rss_mb": 278.9
+        }
+      ]
+    },
+    {
+      "scenario": "775 PSL references",
+      "seconds": 600,
+      "offered": 12000,
+      "sent": 11997,
+      "acknowledged": 11997,
+      "coalesced_dropped": 3,
+      "faults": [],
+      "confirmed": {},
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.74,
+        "p95": 2.22,
+        "max": 405.73
+      },
+      "max_at_s": 97.72,
+      "over_50ms": [
+        {
+          "t": 97.72,
+          "ms": 405.7
+        },
+        {
+          "t": 284.13,
+          "ms": 129.8
+        }
+      ],
+      "first_30s_p95_ms": 2.04,
+      "last_30s_p95_ms": 1.93,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0,
+        "max": 30.73
+      },
+      "worker_heap_mb": {
+        "first": 7.9,
+        "last": 13.3,
+        "max": 15.2
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 7.9
+        },
+        {
+          "t": 30,
+          "worker_heap_mb": 9.4
+        },
+        {
+          "t": 60,
+          "worker_heap_mb": 12.6
+        },
+        {
+          "t": 90,
+          "worker_heap_mb": 7.4
+        },
+        {
+          "t": 120,
+          "worker_heap_mb": 10.6
+        },
+        {
+          "t": 150,
+          "worker_heap_mb": 13.6
+        },
+        {
+          "t": 180,
+          "worker_heap_mb": 8.4
+        },
+        {
+          "t": 210,
+          "worker_heap_mb": 11.2
+        },
+        {
+          "t": 240,
+          "worker_heap_mb": 14.5
+        },
+        {
+          "t": 270,
+          "worker_heap_mb": 9.5
+        },
+        {
+          "t": 300,
+          "worker_heap_mb": 12.2
+        },
+        {
+          "t": 330,
+          "worker_heap_mb": 15.2
+        },
+        {
+          "t": 360,
+          "worker_heap_mb": 8.5
+        },
+        {
+          "t": 390,
+          "worker_heap_mb": 11.2
+        },
+        {
+          "t": 420,
+          "worker_heap_mb": 6.3
+        },
+        {
+          "t": 450,
+          "worker_heap_mb": 9.5
+        },
+        {
+          "t": 480,
+          "worker_heap_mb": 12.2
+        },
+        {
+          "t": 510,
+          "worker_heap_mb": 7.5
+        },
+        {
+          "t": 540,
+          "worker_heap_mb": 10.3
+        },
+        {
+          "t": 570,
+          "worker_heap_mb": 13.3
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 157.8
+        },
+        {
+          "t": 30,
+          "process_rss_mb": 345.1
+        },
+        {
+          "t": 60,
+          "process_rss_mb": 348.2
+        },
+        {
+          "t": 90,
+          "process_rss_mb": 358.6
+        },
+        {
+          "t": 120,
+          "process_rss_mb": 300.6
+        },
+        {
+          "t": 150,
+          "process_rss_mb": 309.4
+        },
+        {
+          "t": 180,
+          "process_rss_mb": 310
+        },
+        {
+          "t": 210,
+          "process_rss_mb": 311
+        },
+        {
+          "t": 240,
+          "process_rss_mb": 311.4
+        },
+        {
+          "t": 270,
+          "process_rss_mb": 311.4
+        },
+        {
+          "t": 300,
+          "process_rss_mb": 311.4
+        },
+        {
+          "t": 330,
+          "process_rss_mb": 311.4
+        },
+        {
+          "t": 360,
+          "process_rss_mb": 311.4
+        },
+        {
+          "t": 390,
+          "process_rss_mb": 311.4
+        },
+        {
+          "t": 420,
+          "process_rss_mb": 313.5
+        },
+        {
+          "t": 450,
+          "process_rss_mb": 313.5
+        },
+        {
+          "t": 480,
+          "process_rss_mb": 313.5
+        },
+        {
+          "t": 510,
+          "process_rss_mb": 313.5
+        },
+        {
+          "t": 540,
+          "process_rss_mb": 313.5
+        },
+        {
+          "t": 570,
+          "process_rss_mb": 313.5
+        }
+      ]
+    },
+    {
+      "scenario": "300 personal examples, language switch and idle every 30 s",
+      "seconds": 600,
+      "offered": 8182,
+      "sent": 8182,
+      "acknowledged": 8182,
+      "coalesced_dropped": 0,
+      "faults": [],
+      "confirmed": {},
+      "language_switch_idle_cycles": 19,
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.77,
+        "p95": 2.12,
+        "max": 61.64
+      },
+      "max_at_s": 78.78,
+      "over_50ms": [
+        {
+          "t": 78.78,
+          "ms": 61.6
+        }
+      ],
+      "first_30s_p95_ms": 2,
+      "last_30s_p95_ms": 2.2,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0,
+        "max": 5.72
+      },
+      "worker_heap_mb": {
+        "first": 21,
+        "last": 18.7,
+        "max": 21
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 21
+        },
+        {
+          "t": 40,
+          "worker_heap_mb": 20.3
+        },
+        {
+          "t": 70,
+          "worker_heap_mb": 20.5
+        },
+        {
+          "t": 100,
+          "worker_heap_mb": 18.7
+        },
+        {
+          "t": 130,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 160,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 190,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 220,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 250,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 280,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 310,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 340,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 370,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 400,
+          "worker_heap_mb": 18.7
+        },
+        {
+          "t": 430,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 460,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 490,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 520,
+          "worker_heap_mb": 18.7
+        },
+        {
+          "t": 550,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 580,
+          "worker_heap_mb": 18.7
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 262.6
+        },
+        {
+          "t": 40,
+          "process_rss_mb": 362.2
+        },
+        {
+          "t": 70,
+          "process_rss_mb": 410
+        },
+        {
+          "t": 100,
+          "process_rss_mb": 419
+        },
+        {
+          "t": 130,
+          "process_rss_mb": 419.7
+        },
+        {
+          "t": 160,
+          "process_rss_mb": 415.1
+        },
+        {
+          "t": 190,
+          "process_rss_mb": 419.3
+        },
+        {
+          "t": 220,
+          "process_rss_mb": 420.1
+        },
+        {
+          "t": 250,
+          "process_rss_mb": 420.9
+        },
+        {
+          "t": 280,
+          "process_rss_mb": 368.5
+        },
+        {
+          "t": 310,
+          "process_rss_mb": 410.7
+        },
+        {
+          "t": 340,
+          "process_rss_mb": 419.1
+        },
+        {
+          "t": 370,
+          "process_rss_mb": 419.5
+        },
+        {
+          "t": 400,
+          "process_rss_mb": 435.9
+        },
+        {
+          "t": 430,
+          "process_rss_mb": 370
+        },
+        {
+          "t": 460,
+          "process_rss_mb": 417.1
+        },
+        {
+          "t": 490,
+          "process_rss_mb": 418.7
+        },
+        {
+          "t": 520,
+          "process_rss_mb": 418.7
+        },
+        {
+          "t": 550,
+          "process_rss_mb": 421.3
+        },
+        {
+          "t": 580,
+          "process_rss_mb": 421.7
+        }
+      ]
+    }
+  ]
+}
