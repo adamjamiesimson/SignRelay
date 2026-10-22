@@ -182,8 +182,27 @@ try {
       if (scroll > viewport + 1) wide.push(`${path} at ${width} px is ${scroll} px wide`);
     }
   }
+  // 200% text size (WCAG 1.4.4) at 390 px.
+  for (const path of ["/", "/languages", "/models", "/privacy", "/about", "/how-it-works", "/roadmap", "/terms"]) {
+    await h.browser.send("Page.navigate", { url: `${h.origin}${path}` });
+    await until(() => h.evaluate("document.readyState === 'complete'"), `${path} did not load`);
+    await h.evaluate("document.documentElement.style.fontSize = '200%'");
+    await pause(300);
+    const { scroll, viewport } = await h.evaluate("({ scroll: document.documentElement.scrollWidth, viewport: window.visualViewport.width })");
+    if (scroll > viewport + 1) wide.push(`${path} at 390 px with 200% text is ${scroll} px wide`);
+  }
+  // A 48-character custom word without spaces must wrap inside its card and message.
+  await h.open();
+  await h.start();
+  await h.evaluate(`(() => { const input = document.querySelector('[aria-label="Word or short phrase to teach"]');
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, 'Pneumonoultramicroscopicsilicovolcanoconiosisxyz');
+    input.dispatchEvent(new Event('input', { bubbles: true })); document.querySelector('#personal-vocabulary').open = true; })()`);
+  await h.click("Select word");
+  await pause(300);
+  const spilled = await h.evaluate("[...document.querySelectorAll('.selected-word-card strong, .calibration-message')].filter(e => e.scrollWidth > e.clientWidth + 2).map(e => e.className || e.tagName)");
+  if (spilled.length) wide.push(`long custom word spills out of ${spilled.join(", ")}`);
   await h.browser.send("Emulation.clearDeviceMetricsOverride");
   assert.deepEqual(wide, [], "Pages wider than a phone screen");
-  checks.push({ check: "no horizontal scrolling on 8 pages at 320 and 390 px" });
+  checks.push({ check: "no horizontal scrolling on 8 pages at 320 and 390 px, at 200% text, and with a 48-character word" });
   console.log(JSON.stringify({ passed: true, checks, environment: "headless Chromium, rehearsal build with synthetic landmarks; not an assistive-technology user test" }));
 } finally { await h.close(); }

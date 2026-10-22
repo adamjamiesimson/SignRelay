@@ -611,3 +611,10 @@ body, .app-shell { background: #030708; }
 
 /* WCAG 2.2 AA target size (2.5.8): sliders keep at least a 24 px tall hit area. */
 .range-control input[type="range"] { min-height: 24px; }
+
+/* Reflow at 200% text and with long unbroken words (Sprint 5, objective 20).
+   Each rule only changes layouts that would otherwise overflow. */
+.site-header-inner { flex-wrap: wrap; }
+.info-section > * { min-width: 0; }
+.info-section, .selected-word-card strong, .calibration-message, .transcript-entry p,
+.vocabulary-grid button span, .history-session p { overflow-wrap: anywhere; }
