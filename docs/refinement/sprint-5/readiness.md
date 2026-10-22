@@ -18,6 +18,7 @@
 | Head | Core CI | Offline demo and rehearsal | Firebase build and strict audit | Real-video pilot | Private capture |
 | --- | --- | --- | --- | --- | --- |
 | `f3a7ed3` | pass | pass | pass (RSL cache miss → one download, verified) | pass | pass |
+| `4df0d48` | pass | **fail**: strict offline check flagged branded Chrome's own plain-HTTP update ping (E9, fixed in `1ad683a`) | pass | pass | pass |
 | Final head | see the PR description | | | | |
 
 The pilot ran on the unchanged worker `39a5f2c3`; the gate is expected to reproduce the 11 established trials exactly, and the PR description records the result.

@@ -63,6 +63,14 @@ Every fix was reproduced before it was made and has a regression check that fail
 - **Fix.** Grid children may shrink; those text containers break a word only when it cannot fit; the header wraps only when its row overflows. Layouts that already fitted are unchanged.
 - **Test.** `transcript-a11y-smoke`: 8 pages at 200 % text and the long-word card. Both checks failed on the old build. A 35-configuration matrix went from 4 issues to 0. Commit `eb17163`.
 
+## E9. The strict offline check failed on branded Chrome's own update ping (objectives 03, 24)
+
+- **Symptom.** "Offline ASL Demo and Rehearsal" failed on `4df0d48` ([run 39802717228](https://github.com/adamjamiesimson/SignRelay/actions/runs/39802717228)). The deny-all proxy saw `POST http://update.googleapis.com/service/update2/json?cup2key=…`.
+- **Root cause.** The CI runner's branded Google Chrome now also checks for its own updates over plain HTTP. Only its HTTPS `CONNECT` tunnels to that host were in the measured browser-internal set. No page or worker request left loopback; those are checked separately over CDP. Neither the smoke nor the export's network behaviour had changed on this PR.
+- **Fix.** The classification moves to `tests/helpers/browser-internal.mjs`, which excuses exactly that host, method and path. Look-alike hosts, other paths and methods, HTTPS, and every page or worker request still fail.
+- **Tests.** `tests/offline-proxy-classification.test.ts` (both sides); `--self-test` still catches every planted leak; the strict check passes locally. Commit `1ad683a`.
+- **Note.** PR #39 runs the same workflow without this fix. If the runner keeps sending the ping, a re-run there would fail the same way, and this commit can be ported.
+
 ## Investigated, no defect (details in the ledger)
 
 - **Low-throughput word loss (08).** Two-evidence confirmation under sparse sampling; see [low-throughput.md](low-throughput.md).
