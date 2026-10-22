@@ -138,3 +138,32 @@ describe("template transport to the matcher", () => {
     client.configure([]); expect(create).not.toHaveBeenCalled(); client.terminate();
   });
 });
+
+describe("matcher crash recovery", () => {
+  it("disposes a crashed matcher, backs off, ignores its late result, and re-sends templates to the replacement", async () => {
+    vi.useFakeTimers();
+    const ports: Array<{ postMessage: ReturnType<typeof vi.fn>; terminate: ReturnType<typeof vi.fn>; onmessage: ((event: MessageEvent<MatchOutput>) => void) | null; onerror: (() => void) | null; onmessageerror: null }> = [];
+    const result = vi.fn(), error = vi.fn();
+    const client = new TemplateMatchingClient("personal", result, error, () => {
+      const port = { postMessage: vi.fn(), terminate: vi.fn(), onmessage: null, onerror: null, onmessageerror: null }; ports.push(port); return port;
+    });
+    const saved = [{ id: "a", gloss: "BOOK", text: "Book", createdAt: 1, language: "csl" as const, frames: prepareCalibrationSequence(makeSign("HELLO")) }];
+    client.configure(saved);
+    client.submit(makeSign("HELLO"));
+    const crashed = ports[0], handler = crashed.onmessage;
+    const request = crashed.postMessage.mock.calls.map(([m]) => m as MatchInput).find(m => m.type === "match") as Extract<MatchInput, { type: "match" }>;
+    crashed.onerror?.();
+    expect(error).toHaveBeenCalledOnce();
+    expect(crashed.terminate).toHaveBeenCalledOnce();
+    handler?.({ data: { id: request.id, generation: request.generation, prediction: { label: "BOOK", text: "Book", confidence: 0.9 } } } as MessageEvent<MatchOutput>);
+    expect(result).not.toHaveBeenCalled();
+    client.submit(makeSign("HELLO"));
+    expect(ports).toHaveLength(1); // still backing off
+    await vi.advanceTimersByTimeAsync(5001);
+    client.submit(makeSign("HELLO"));
+    expect(ports).toHaveLength(2);
+    const configure = ports[1].postMessage.mock.calls.map(([m]) => m as MatchInput).find(m => m.type === "configure") as Extract<MatchInput, { type: "configure" }>;
+    expect(unpackTemplates(configure.templates)).toEqual(saved);
+    client.terminate();
+  });
+});
