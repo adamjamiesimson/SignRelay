@@ -331,6 +331,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .custom-word-input .button { width: 100%; }
   .vocabulary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); max-height: 340px; }
   .info-page { padding-left: 22px; padding-right: 22px; }
+  /* At the 3.2rem minimum, "communication." (About) is wider than a 320 px
+     screen and widened the whole page; scale with the viewport instead. */
+  .info-hero h1 { font-size: clamp(2.25rem, 12vw, 3.2rem); overflow-wrap: break-word; }
   .info-section { grid-template-columns: 1fr; gap: 16px; }
   .model-spec { grid-template-columns: 1fr; }
 }
