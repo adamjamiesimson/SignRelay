@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { deleteCalibrationGloss, loadCalibrationTemplates, saveCalibrationTemplate, saveCalibrationTemplateAndReload } from "../lib/calibration-storage";
+import { clearCalibrationTemplates, deleteCalibrationGloss, loadCalibrationTemplates, saveCalibrationTemplate, saveCalibrationTemplateAndReload } from "../lib/calibration-storage";
 import type { CalibrationTemplate } from "../lib/vision-types";
 
 // Minimal in-memory IndexedDB. Transactions run strictly one after another,
@@ -96,4 +96,24 @@ it("reports a committed save whose list reload failed as saved, not as lost", as
   expect([...rows.keys()].sort()).toEqual(["a", "b"]);
   // A save that itself fails still rejects, so the UI can say it was not saved.
   await expect(saveCalibrationTemplateAndReload({ ...example("c", "PIZZA", 3), frames: [] })).rejects.toThrow("Invalid personal sign example");
+});
+
+it("overwrites an example saved again under the same id instead of duplicating or pruning it", async () => {
+  const rows = installFakeIndexedDB();
+  for (const [id, createdAt] of [["a", 1], ["b", 2], ["c", 3]] as const) await saveCalibrationTemplate(example(id, "PIZZA", createdAt));
+  await saveCalibrationTemplate({ ...example("c", "PIZZA", 4), text: "Pizza!" });
+  expect([...rows.keys()].sort()).toEqual(["a", "b", "c"]);
+  expect((await loadCalibrationTemplates()).find(item => item.id === "c")?.text).toBe("Pizza!");
+});
+
+it("orders Clear local data and a save by when they started, never resurrecting cleared examples", async () => {
+  const rows = installFakeIndexedDB();
+  await saveCalibrationTemplate(example("a", "PIZZA", 1));
+  // Save started first, then Clear: the clear wins.
+  await Promise.all([saveCalibrationTemplate(example("b", "PIZZA", 2)), clearCalibrationTemplates()]);
+  expect([...rows.keys()]).toEqual([]);
+  // Clear started first, then a save: the new example (a deliberate new recording) remains, nothing older returns.
+  await saveCalibrationTemplate(example("c", "PIZZA", 3));
+  await Promise.all([clearCalibrationTemplates(), saveCalibrationTemplate(example("d", "PIZZA", 4))]);
+  expect([...rows.keys()]).toEqual(["d"]);
 });

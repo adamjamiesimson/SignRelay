@@ -18,7 +18,14 @@ const h = await openRehearsal(executable, { extraInit: `
       if (node.textContent && last.get(node) !== node.textContent) window.__qa.announcements.push(node.textContent);
       last.set(node, node.textContent);
     }
-  }).observe(document, { subtree: true, childList: true, characterData: true });` });
+  }).observe(document, { subtree: true, childList: true, characterData: true });
+  // Order of speech calls, to pin the current auto-speak policy.
+  window.__qa.speech = [];
+  if (window.speechSynthesis) {
+    const speak = window.speechSynthesis.speak, cancel = window.speechSynthesis.cancel;
+    window.speechSynthesis.speak = utterance => { window.__qa.speech.push('speak:' + utterance.text); speak(utterance); };
+    window.speechSynthesis.cancel = () => { window.__qa.speech.push('cancel'); cancel(); };
+  }` });
 const checks = [];
 try {
   // ?perf only adds the throughput readout, quoted if the rapid sequence fails.
@@ -40,6 +47,11 @@ try {
   const announced = await h.evaluate("window.__qa.announcements.filter(a => a.startsWith('Confirmed:'))");
   assert.deepEqual(announced, words.map(word => `Confirmed: ${word}`), "Each confirmed word is announced once in a polite live region");
   assert.deepEqual(await h.evaluate("window.__qa.spoken"), words, "Each word spoken once");
+  // Current policy (docs/refinement/sprint-5/speech-policy.md): each confirmed
+  // word cancels whatever is still being spoken, then speaks. Changing it must
+  // be a deliberate, documented decision.
+  assert.deepEqual(await h.evaluate("window.__qa.speech.filter(call => call.startsWith('speak:') || call === 'cancel').slice(-12)"),
+    words.flatMap(word => ["cancel", `speak:${word}`]), "Auto speak cancels the previous utterance before each confirmed word");
   checks.push({ check: "rapid words: order, single announcement, single speech", words: words.length });
 
   // Speech stops when the camera is paused.
