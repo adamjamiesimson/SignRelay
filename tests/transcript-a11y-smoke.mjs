@@ -68,7 +68,9 @@ try {
   await h.browser.send("Input.insertText", { text: " there" });
   await h.browser.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13, text: "\r" });
   await until(async () => (await h.words())[0] === "Hello there", "Keyboard edit was not saved");
-  checks.push({ check: "keyboard edit of a transcript entry" });
+  await until(() => h.evaluate("document.activeElement?.getAttribute('aria-label') === 'Edit Hello there'"),
+    "Saving an edit with Enter dropped keyboard focus instead of returning it to the entry", 20);
+  checks.push({ check: "keyboard edit of a transcript entry keeps focus on that entry" });
 
   // Touch targets on a phone viewport (WCAG 2.2 AA 2.5.8: at least 24×24 CSS px).
   await h.browser.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 3, mobile: true });
@@ -95,6 +97,7 @@ try {
   await key("Enter", "Enter", 13);
   await until(async () => !(await h.words()).includes("Thank you") && !(await h.words()).includes(""), "Emptied entry was kept");
   assert.deepEqual(await h.words(), ["Hello there", "Please", "Sorry", "Yes", "No"], "Only the emptied entry is removed");
+  await until(() => h.evaluate("document.activeElement?.id === 'transcript-title'"), "Focus is lost after an edit removes the entry", 20);
   checks.push({ check: "emptying an entry removes it" });
 
   // Removing an entry keeps keyboard focus in the transcript and says what happened.
@@ -138,5 +141,15 @@ try {
   await pause(300);
   assert.equal(await storedSettings(), null, "Loading the page re-created a cleared settings record");
   checks.push({ check: "settings persist across reloads and stay cleared after Clear local data" });
+
+  // Record pressed while the camera is still starting waits for it, rather
+  // than reporting that the camera is off.
+  await h.open();
+  await h.click("Start translating");
+  await h.click("Start camera & record");
+  await until(() => h.evaluate("!!document.querySelector('.calibration-capture.countdown, .calibration-capture.recording')"),
+    "Recording did not start after the camera finished starting");
+  assert.ok(!(await h.evaluate("document.body.textContent.includes('Start the camera before recording')")), "Record during camera start-up reported the camera as off");
+  checks.push({ check: "record pressed during camera start-up waits for the camera" });
   console.log(JSON.stringify({ passed: true, checks, environment: "headless Chromium, rehearsal build with synthetic landmarks; not an assistive-technology user test" }));
 } finally { await h.close(); }

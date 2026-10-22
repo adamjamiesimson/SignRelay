@@ -116,6 +116,7 @@ export function TranslatorExperience() {
   const cameraProgressRef = useRef(0);
   const cameraGenerationRef = useRef(0);
   const cameraPendingRef = useRef(false);
+  const cameraRequestRef = useRef<Promise<void> | null>(null);
   const captureGenerationRef = useRef(0);
   const frameLoopRef = useRef<() => void>(() => {});
   const settingsRef = useRef(settings);
@@ -514,7 +515,7 @@ export function TranslatorExperience() {
     frameLoopRef.current = runFrameLoop;
   }, [runFrameLoop]);
 
-  const requestCamera = useCallback(async () => {
+  const openCamera = useCallback(async () => {
     if (cameraPendingRef.current || engineRef.current) return;
     if (!navigator.mediaDevices?.getUserMedia) {
       setCameraState("error");
@@ -580,6 +581,15 @@ export function TranslatorExperience() {
       if (generation === cameraGenerationRef.current) cameraPendingRef.current = false;
     }
   }, [stopCamera]);
+
+  // A second caller (e.g. Record while the camera is still starting) waits for
+  // the request already in progress instead of seeing the camera as off.
+  const requestCamera = useCallback(() => {
+    if (cameraPendingRef.current && cameraRequestRef.current) return cameraRequestRef.current;
+    const request = openCamera();
+    cameraRequestRef.current = request;
+    return request;
+  }, [openCamera]);
 
   useEffect(() => {
     const resume = () => {
@@ -731,9 +741,15 @@ export function TranslatorExperience() {
   };
 
   // An edit that leaves no text removes the entry, so Speak and Copy never see blanks.
-  const finishEditing = (id: string) => {
+  const finishEditing = (id: string, { restoreFocus = false } = {}) => {
     setEditingId(null);
     setEntries((current) => current.flatMap((item) => item.id !== id ? [item] : item.text.trim() ? [{ ...item, text: item.text.trim() }] : []));
+    // Enter removes the editor; keep the keyboard on this entry (or the
+    // transcript heading if the edit removed it) instead of the page body.
+    if (restoreFocus) window.setTimeout(() => {
+      const entry = [...document.querySelectorAll<HTMLElement>("[data-entry-id]")].find(element => element.dataset.entryId === id);
+      (entry?.querySelector<HTMLElement>("[data-edit]") ?? transcriptHeadingRef.current)?.focus();
+    }, 0);
   };
 
   const removeEntry = (entry: TranscriptEntry) => {
@@ -861,7 +877,7 @@ export function TranslatorExperience() {
                     <h3>{cameraState === "loading" ? "Preparing your camera" : cameraState === "requesting" ? "Allow camera access" : cameraState === "idle" ? "Ready when you are" : "Camera unavailable"}</h3>
                     <p>{cameraMessage}</p>
                     {(cameraState === "denied" || cameraState === "error" || cameraState === "idle") && (
-                      <button className="button secondary small" onClick={requestCamera}>
+                      <button className="button secondary small" onClick={() => void requestCamera()}>
                         {cameraState === "idle" ? "Start camera" : "Retry camera"}
                       </button>
                     )}
@@ -904,7 +920,7 @@ export function TranslatorExperience() {
               {perfMode && perfWarning && <p className="calibration-message error" role="status" data-perf-warning>{perfWarning}</p>}
               <div className="camera-session-actions">
                 <span>{cameraState === "active" ? "Camera on · video stays private" : "Video stays on this device"}</span>
-                <button className="button ghost small" onClick={cameraState === "active" || cameraState === "requesting" || cameraState === "loading" ? stopCamera : requestCamera}>
+                <button className="button ghost small" onClick={cameraState === "active" || cameraState === "requesting" || cameraState === "loading" ? stopCamera : () => void requestCamera()}>
                   {cameraState === "active" ? "Pause camera" : cameraState === "requesting" || cameraState === "loading" ? "Cancel" : "Start camera"}
                 </button>
               </div>
@@ -948,7 +964,7 @@ export function TranslatorExperience() {
                 ) : (
                   <div className="transcript-list">
                     {entries.map((entry) => (
-                      <article className="transcript-entry" key={entry.id}>
+                      <article className="transcript-entry" key={entry.id} data-entry-id={entry.id}>
                         <div className="entry-time">
                           {new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </div>
@@ -960,7 +976,7 @@ export function TranslatorExperience() {
                             autoFocus
                             onChange={(event) => setEntries((current) => current.map((item) => item.id === entry.id ? { ...item, text: event.target.value } : item))}
                             onBlur={() => finishEditing(entry.id)}
-                            onKeyDown={(event) => event.key === "Enter" && finishEditing(entry.id)}
+                            onKeyDown={(event) => event.key === "Enter" && finishEditing(entry.id, { restoreFocus: true })}
                             aria-label={`Edit ${entry.text}`}
                           />
                         ) : (
@@ -968,7 +984,7 @@ export function TranslatorExperience() {
                         )}
                         <div className="entry-actions">
                           <span>{Math.round(entry.confidence * 100)}/100 {entry.source === "starter" ? "rule match" : entry.source === "personal" ? "template match" : "match score"} · {entry.gloss}</span>
-                          <button onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`}>Edit</button>
+                          <button data-edit onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`}>Edit</button>
                           <button onClick={() => removeEntry(entry)} aria-label={`Remove ${entry.text}`}>Remove</button>
                         </div>
                       </article>
