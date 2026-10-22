@@ -53,3 +53,26 @@ describe("strict dependency audit stays a release gate", () => {
     expect(workflow("ci.yml")).toContain("npm run audit:deps");
   });
 });
+
+describe("the external RSL model download is cached, verified and reported apart from code failures", () => {
+  it.each([["firebase-build-check.yml", "npm run build:firebase"], ["asl-video-pilot.yml", "npm run build:firebase"],
+    ["field-test-browser.yml", "npm run build:firebase"]])("%s restores, verifies and saves the model before building", (name, build) => {
+    const text = workflow(name);
+    const restore = text.indexOf("uses: actions/cache/restore@v4"), acquire = text.indexOf("run: npm run install:rsl-model");
+    const save = text.indexOf("uses: actions/cache/save@v4");
+    expect(restore).toBeGreaterThan(0);
+    expect(acquire).toBeGreaterThan(restore);
+    expect(save).toBeGreaterThan(acquire);
+    expect(text.indexOf(`run: ${build}`)).toBeGreaterThan(save);
+    expect(text).toContain("key: rsl-model-${{ hashFiles('public/models/rsl1000-slovo/manifest.json') }}");
+    // A cache hit is verified like a download: the acquire step never depends on the cache result.
+    const acquireStep = text.slice(text.lastIndexOf("- name:", acquire), acquire);
+    expect(acquireStep).not.toMatch(/\bif:/);
+    expect(text).not.toMatch(/continue-on-error|install:rsl-model \|\| true/);
+  });
+  it("still installs and verifies the model inside build:firebase itself", () => {
+    const pkg = JSON.parse(readFileSync("package.json", "utf8"));
+    expect(pkg.scripts["build:firebase"]).toContain("npm run install:rsl-model &&");
+    expect(pkg.scripts["install:rsl-model"]).toBe("node scripts/install-rsl-model.mjs");
+  });
+});
