@@ -123,5 +123,20 @@ try {
   const running = await h.evaluate("document.getAnimations().filter(a => a.playState === 'running').length");
   assert.equal(running, 0, "Animations keep running with prefers-reduced-motion: reduce");
   checks.push({ check: "prefers-reduced-motion stops CSS animations and transitions", running_by_default: runningByDefault, running_with_reduce: running });
+
+  // Preferences survive a reload (Auto speak was switched on above), and
+  // Clear local data leaves no settings record behind.
+  const storedSettings = () => h.evaluate("localStorage.getItem('signrelay.settings.v1')");
+  assert.equal(JSON.parse(await storedSettings())?.autoSpeak, true, "Reloading the page overwrote the saved Auto speak preference");
+  await h.start();
+  assert.equal(await h.evaluate("document.querySelector('.switch-row.prominent input').checked"), true, "Auto speak was not restored after a reload");
+  await h.click("Clear local data");
+  await until(async () => (await storedSettings()) === null, "Clear local data left the settings record in storage");
+  await pause(300);
+  assert.equal(await storedSettings(), null, "Settings were written back right after Clear local data");
+  await h.open();
+  await pause(300);
+  assert.equal(await storedSettings(), null, "Loading the page re-created a cleared settings record");
+  checks.push({ check: "settings persist across reloads and stay cleared after Clear local data" });
   console.log(JSON.stringify({ passed: true, checks, environment: "headless Chromium, rehearsal build with synthetic landmarks; not an assistive-technology user test" }));
 } finally { await h.close(); }

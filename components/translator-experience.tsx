@@ -189,7 +189,9 @@ export function TranslatorExperience() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setSettings(loadSettings());
+      const stored = loadSettings();
+      settingsRef.current = stored;
+      setSettings(stored);
       setHistory(loadHistory());
     }, 0);
     return () => window.clearTimeout(timer);
@@ -247,10 +249,15 @@ export function TranslatorExperience() {
 
   useEffect(() => { entriesRef.current = entries; }, [entries]);
 
-  useEffect(() => {
-    settingsRef.current = settings;
-    if (typeof window !== "undefined") saveSettings(settings);
-  }, [settings]);
+  // Persist only a change the person made. Saving from an effect on `settings`
+  // wrote the defaults over the stored preferences on every page load, before
+  // they were read, and re-created the record right after Clear local data.
+  const updateSettings = useCallback((patch: Partial<SpeechSettings>) => {
+    const next = { ...settingsRef.current, ...patch };
+    settingsRef.current = next;
+    setSettings(next);
+    saveSettings(next);
+  }, []);
 
   const speak = useCallback((text: string) => {
     if (!text || typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -686,11 +693,19 @@ export function TranslatorExperience() {
 
   const removeCalibration = useCallback(async (gloss: string) => {
     captureGenerationRef.current++;
-    await deleteCalibrationGloss(gloss, selected);
-    setCalibrationTemplates(await loadCalibrationTemplates());
     captureStateRef.current = "idle";
     setCalibrationState("idle");
-    setCalibrationMessage("Personal examples removed for this word.");
+    try {
+      await deleteCalibrationGloss(gloss, selected);
+      setCalibrationTemplates(await loadCalibrationTemplates());
+      setCalibrationMessage("Personal examples removed for this word.");
+    } catch {
+      // Show what is still stored rather than pretending it was deleted.
+      await loadCalibrationTemplates().then(setCalibrationTemplates, () => {});
+      captureStateRef.current = "error";
+      setCalibrationState("error");
+      setCalibrationMessage("These examples could not be removed from this browser. Try again, or clear this site's data in your browser settings.");
+    }
   }, [selected]);
 
   const returnHome = () => {
@@ -740,15 +755,22 @@ export function TranslatorExperience() {
 
   const clearAllLocalData = async () => {
     window.speechSynthesis?.cancel();
+    // An example being recorded now must not be saved after everything was cleared.
+    captureGenerationRef.current++;
+    captureStateRef.current = "idle";
+    captureFramesRef.current = [];
+    setCalibrationState("idle");
     clearLocalSignRelayData();
     setEntries([]);
     setEditingId(null);
     setHistory([]);
+    settingsRef.current = DEFAULT_SETTINGS;
     setSettings(DEFAULT_SETTINGS);
     sessionStartedRef.current = Date.now();
     try {
       await clearCalibrationTemplates();
-      setCalibrationTemplates([]);
+      // Reflect storage, not an assumption: a save already committing finishes before the clear.
+      setCalibrationTemplates(await loadCalibrationTemplates().catch(() => []));
       setPrivacyMessage("Local transcripts, settings and personal signs were cleared from this browser.");
     } catch {
       // Keep showing what is still stored rather than pretending it was deleted.
@@ -873,7 +895,7 @@ export function TranslatorExperience() {
                   <input
                     type="checkbox"
                     checked={settings.showOverlay}
-                    onChange={(event) => setSettings((current) => ({ ...current, showOverlay: event.target.checked }))}
+                    onChange={(event) => updateSettings({ showOverlay: event.target.checked })}
                   />
                   <span>Show landmarks</span>
                 </label>
@@ -960,7 +982,7 @@ export function TranslatorExperience() {
                   <input
                     type="checkbox"
                     checked={settings.autoSpeak}
-                    onChange={(event) => setSettings((current) => ({ ...current, autoSpeak: event.target.checked }))}
+                    onChange={(event) => updateSettings({ autoSpeak: event.target.checked })}
                   />
                   <span><strong>Auto speak</strong></span>
                 </label>
@@ -978,11 +1000,11 @@ export function TranslatorExperience() {
                 <div className="voice-ranges">
                 <label className="range-control">
                   <span>Volume <strong>{Math.round(settings.volume * 100)}%</strong></span>
-                  <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => setSettings((current) => ({ ...current, volume: Number(event.target.value) }))} />
+                  <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => updateSettings({ volume: Number(event.target.value) })} />
                 </label>
                 <label className="range-control">
                   <span>Rate <strong>{settings.rate.toFixed(2)}×</strong></span>
-                  <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => setSettings((current) => ({ ...current, rate: Number(event.target.value) }))} />
+                  <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => updateSettings({ rate: Number(event.target.value) })} />
                 </label>
                 </div>
               </details>
