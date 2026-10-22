@@ -32,6 +32,13 @@ describe("readiness report", () => {
     expect(compareReports({ checks: [...base.checks, { id: "workspace-browser-smoke", passed: true }] }, { checks: [...now.checks, { id: "lint:asl-demo", passed: true }] }))
       .toEqual(expect.arrayContaining([{ id: "workspace-browser-smoke", change: "not-run" }]));
   });
+  it("matches profile-qualified checks against a baseline that also ran profiles", () => {
+    const smoke = (id: string, passed = true) => ({ id, passed });
+    const base = { checks: [smoke("gitex-rehearsal-smoke:rehearsal"), smoke("offline-vision-smoke:asl-demo"), smoke("fault-injection-smoke:asl-demo")] };
+    const now = { checks: [smoke("gitex-rehearsal-smoke:rehearsal"), smoke("offline-vision-smoke:asl-demo", false)] };
+    expect(compareReports(base, now)).toEqual([{ id: "fault-injection-smoke:asl-demo", change: "not-run" },
+      { id: "offline-vision-smoke:asl-demo", change: "regression" }]);
+  });
 });
 
 describe("release decision", () => {

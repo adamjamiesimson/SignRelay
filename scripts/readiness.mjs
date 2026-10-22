@@ -96,7 +96,9 @@ export function runtimeFingerprint() {
 export function compareReports(base, current) {
   const byId = new Map(base.checks.map(check => [check.id, check]));
   // A check that ran in the baseline but not now is reported, never silently dropped.
-  const ran = new Set(current.checks.map(check => check.id.split(":")[0]));
+  // Match a profile-qualified id exactly; an older baseline without profiles
+  // matches the unqualified name.
+  const ran = new Set(current.checks.flatMap(check => [check.id, check.id.split(":")[0]]));
   const missing = base.checks.filter(check => !ran.has(check.id)).map(check => ({ id: check.id, change: "not-run" }));
   return [...missing, ...current.checks.flatMap(check => {
     const before = byId.get(check.id) ?? byId.get(check.id.split(":")[0]);
