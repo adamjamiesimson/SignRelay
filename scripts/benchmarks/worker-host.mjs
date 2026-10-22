@@ -6,12 +6,16 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 export class ThreadWorker {
+  /** Workers this thread has started and not yet terminated (benchmark probe). */
+  static live = 0;
   onmessage = null;
   onerror = null;
   onmessageerror = null;
   constructor(script, options) {
     const root = typeof options === "string" ? options : workerData?.root ?? process.cwd();
     this.thread = new Worker(new URL(import.meta.url), { workerData: { script, root } });
+    ThreadWorker.live++;
+    this.thread.once("exit", () => { ThreadWorker.live--; });
     this.ready = new Promise((resolve, reject) => {
       this.thread.on("message", data => {
         if (data?.type === "host-ready") resolve(); else this.onmessage?.({ data });
@@ -41,7 +45,7 @@ if (parentPort) {
   // Benchmark-only probe: report this thread's V8 heap without touching the worker under test.
   const { getHeapStatistics } = await import("node:v8");
   parentPort.on("message", data => data?.type === "__heap"
-    ? parentPort.postMessage({ type: "__heap", used: getHeapStatistics().used_heap_size })
+    ? parentPort.postMessage({ type: "__heap", used: getHeapStatistics().used_heap_size, workers: ThreadWorker.live })
     : void self.onmessage?.({ data }));
   parentPort.postMessage({ type: "host-ready" });
 }
