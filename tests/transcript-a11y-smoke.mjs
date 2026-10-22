@@ -21,7 +21,8 @@ const h = await openRehearsal(executable, { extraInit: `
   }).observe(document, { subtree: true, childList: true, characterData: true });` });
 const checks = [];
 try {
-  await h.open();
+  // ?perf only adds the throughput readout, quoted if the rapid sequence fails.
+  await h.open("/?perf");
   await h.start();
 
   // Rapid words: 250 ms rests (the shortest that keeps all six in synthetic tests).
@@ -30,7 +31,12 @@ try {
   await until(async () => !(await h.playing()), "Rapid sequence did not finish", 600);
   await pause(1500);
   const words = await h.words();
-  assert.deepEqual(words, ["Hello", "Thank you", "Please", "Sorry", "Yes", "No"], "Rapid words in order, no duplicates");
+  // Below ~10 analysed frames/s a short stroke completion can reach the worker
+  // only once, and two-evidence confirmation then drops the word
+  // (docs/refinement/sprint-5/low-throughput.json). The readout tells a slow
+  // environment apart from a regression.
+  const throughput = await h.evaluate("document.querySelector('[data-perf]')?.textContent ?? ''");
+  assert.deepEqual(words, ["Hello", "Thank you", "Please", "Sorry", "Yes", "No"], `Rapid words in order, no duplicates (${throughput})`);
   const announced = await h.evaluate("window.__qa.announcements.filter(a => a.startsWith('Confirmed:'))");
   assert.deepEqual(announced, words.map(word => `Confirmed: ${word}`), "Each confirmed word is announced once in a polite live region");
   assert.deepEqual(await h.evaluate("window.__qa.spoken"), words, "Each word spoken once");

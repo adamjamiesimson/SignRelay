@@ -1,0 +1,359 @@
+{
+  "schema": 1,
+  "status": "Synthetic kinematics through the real recognition worker, rules only (model abstains). Not recordings, not accuracy, not a device measurement.",
+  "method": "tests/asl-low-throughput.test.ts: the rehearsal sequence replayed by RehearsalScript against a frame loop at the given interval with ±30% jitter, 5 seeds",
+  "rows": [
+    {
+      "rest_ms": 250,
+      "frame_interval_ms": 50,
+      "analysed_fps": 20,
+      "confirmed_per_word": {
+        "HELLO": 5,
+        "THANK YOU": 5,
+        "PLEASE": 5,
+        "SORRY": 5,
+        "YES": 5,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 2,
+        "THANK YOU": 2,
+        "PLEASE": 2,
+        "SORRY": 2,
+        "YES": 2,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 250,
+      "frame_interval_ms": 75,
+      "analysed_fps": 13.3,
+      "confirmed_per_word": {
+        "HELLO": 5,
+        "THANK YOU": 5,
+        "PLEASE": 5,
+        "SORRY": 5,
+        "YES": 4,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 2,
+        "THANK YOU": 2,
+        "PLEASE": 2,
+        "SORRY": 2,
+        "YES": 2,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 250,
+      "frame_interval_ms": 100,
+      "analysed_fps": 10,
+      "confirmed_per_word": {
+        "HELLO": 5,
+        "THANK YOU": 5,
+        "PLEASE": 5,
+        "SORRY": 5,
+        "YES": 3,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 2,
+        "THANK YOU": 2,
+        "PLEASE": 2,
+        "SORRY": 2,
+        "YES": 2,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 250,
+      "frame_interval_ms": 125,
+      "analysed_fps": 8,
+      "confirmed_per_word": {
+        "HELLO": 5,
+        "THANK YOU": 5,
+        "PLEASE": 5,
+        "SORRY": 5,
+        "YES": 1,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 2,
+        "THANK YOU": 2,
+        "PLEASE": 2,
+        "SORRY": 2,
+        "YES": 1,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 250,
+      "frame_interval_ms": 150,
+      "analysed_fps": 6.7,
+      "confirmed_per_word": {
+        "HELLO": 5,
+        "THANK YOU": 5,
+        "PLEASE": 3,
+        "SORRY": 4,
+        "YES": 0,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 2,
+        "THANK YOU": 2,
+        "PLEASE": 2,
+        "SORRY": 2,
+        "YES": 1,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 250,
+      "frame_interval_ms": 200,
+      "analysed_fps": 5,
+      "confirmed_per_word": {
+        "HELLO": 1,
+        "THANK YOU": 1,
+        "PLEASE": 3,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 4
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 1,
+        "THANK YOU": 1,
+        "PLEASE": 2,
+        "SORRY": 1,
+        "YES": 0,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 250,
+      "frame_interval_ms": 250,
+      "analysed_fps": 4,
+      "confirmed_per_word": {
+        "HELLO": 0,
+        "THANK YOU": 1,
+        "PLEASE": 2,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 1,
+        "THANK YOU": 1,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 250,
+      "frame_interval_ms": 300,
+      "analysed_fps": 3.3,
+      "confirmed_per_word": {
+        "HELLO": 0,
+        "THANK YOU": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 1
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 0,
+        "THANK YOU": 1,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 1
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 700,
+      "frame_interval_ms": 50,
+      "analysed_fps": 20,
+      "confirmed_per_word": {
+        "HELLO": 5,
+        "THANK YOU": 5,
+        "PLEASE": 5,
+        "SORRY": 5,
+        "YES": 5,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 2,
+        "THANK YOU": 2,
+        "PLEASE": 2,
+        "SORRY": 2,
+        "YES": 2,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 700,
+      "frame_interval_ms": 75,
+      "analysed_fps": 13.3,
+      "confirmed_per_word": {
+        "HELLO": 5,
+        "THANK YOU": 5,
+        "PLEASE": 5,
+        "SORRY": 5,
+        "YES": 5,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 2,
+        "THANK YOU": 2,
+        "PLEASE": 2,
+        "SORRY": 2,
+        "YES": 2,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 700,
+      "frame_interval_ms": 100,
+      "analysed_fps": 10,
+      "confirmed_per_word": {
+        "HELLO": 5,
+        "THANK YOU": 5,
+        "PLEASE": 5,
+        "SORRY": 5,
+        "YES": 3,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 2,
+        "THANK YOU": 2,
+        "PLEASE": 2,
+        "SORRY": 2,
+        "YES": 2,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 700,
+      "frame_interval_ms": 125,
+      "analysed_fps": 8,
+      "confirmed_per_word": {
+        "HELLO": 5,
+        "THANK YOU": 5,
+        "PLEASE": 3,
+        "SORRY": 5,
+        "YES": 1,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 2,
+        "THANK YOU": 2,
+        "PLEASE": 2,
+        "SORRY": 2,
+        "YES": 1,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 700,
+      "frame_interval_ms": 150,
+      "analysed_fps": 6.7,
+      "confirmed_per_word": {
+        "HELLO": 5,
+        "THANK YOU": 5,
+        "PLEASE": 3,
+        "SORRY": 2,
+        "YES": 0,
+        "NO": 5
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 2,
+        "THANK YOU": 2,
+        "PLEASE": 2,
+        "SORRY": 0,
+        "YES": 1,
+        "NO": 2
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 700,
+      "frame_interval_ms": 200,
+      "analysed_fps": 5,
+      "confirmed_per_word": {
+        "HELLO": 1,
+        "THANK YOU": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 0
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 1,
+        "THANK YOU": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 1
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 700,
+      "frame_interval_ms": 250,
+      "analysed_fps": 4,
+      "confirmed_per_word": {
+        "HELLO": 0,
+        "THANK YOU": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 0
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 0,
+        "THANK YOU": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 0
+      },
+      "runs": 5
+    },
+    {
+      "rest_ms": 700,
+      "frame_interval_ms": 300,
+      "analysed_fps": 3.3,
+      "confirmed_per_word": {
+        "HELLO": 0,
+        "THANK YOU": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 1
+      },
+      "longest_consecutive_rule_run_median": {
+        "HELLO": 0,
+        "THANK YOU": 0,
+        "PLEASE": 0,
+        "SORRY": 0,
+        "YES": 0,
+        "NO": 0
+      },
+      "runs": 5
+    }
+  ]
+}
