@@ -35,12 +35,15 @@ try {
     { name: "150 personal examples", language: "csl", templates: examples(150) },
     { name: "300 personal examples", language: "csl", templates: examples(300) },
     { name: "775 PSL references", language: "psl", templates: [] },
+    // Every 30 s: switch to another language and back, then 10 s with no frames (camera paused).
+    { name: "300 personal examples, language switch and idle every 30 s", language: "csl", templates: examples(300), cycle: true },
   ];
   const results = [];
   // LONG_SESSION_ONLY="300 personal examples" runs one scenario (for longer memory checks).
   for (const scenario of scenarios.filter(item => !process.env.LONG_SESSION_ONLY || item.name === process.env.LONG_SESSION_ONLY)) {
     const worker = new ThreadWorker(workerScript, root); await worker.ready;
-    const latency = [], queueAge = [], heap = [], rss = [], faults = [];
+    const latency = [], queueAge = [], heap = [], rss = [], faults = [], matcherWorkers = [];
+    let cycles = 0, nextCycle = 30000, idleUntil = 0;
     let id = 0, inFlight = null, latest = null, offered = 0, sent = 0, coalesced = 0, acknowledged = 0, heapResolve = null;
     const confirmed = {};
     const pump = () => {
@@ -50,7 +53,7 @@ try {
       worker.postMessage({ type: "frame", frame, frameId: id, session: 1 });
     };
     worker.onmessage = ({ data }) => {
-      if (data.type === "__heap") { heapResolve?.(data.used); return; }
+      if (data.type === "__heap") { matcherWorkers.push(data.workers); heapResolve?.(data.used); return; }
       if (data.type === "fault") faults.push(data.message);
       if (data.type === "confirmed") confirmed[`${data.source}:${data.gloss}`] = (confirmed[`${data.source}:${data.gloss}`] ?? 0) + 1;
       if (data.type !== "analysis" || data.frameId !== inFlight?.id) return;
@@ -64,6 +67,14 @@ try {
     const started = performance.now();
     let frameTime = 1000, next = performance.now(), sampleAt = 0;
     while (performance.now() - started < seconds * 1000) {
+      if (scenario.cycle && performance.now() - started >= nextCycle) {
+        nextCycle += 30000; cycles++;
+        worker.thread.postMessage({ type: "templates", language: "bsl", templates: [], session: 1 });
+        const again = packTemplates(scenario.templates);
+        worker.thread.postMessage({ type: "templates", language: scenario.language, templates: again, session: 1 }, [again.values.buffer]);
+        idleUntil = performance.now() + 10000;
+      }
+      if (performance.now() < idleUntil) { next += 50; await delay(Math.max(0, next - performance.now())); continue; }
       const source = cycle[offered % cycle.length];
       frameTime += 50;
       const frame = { ...source, timestamp: frameTime, hands: source.hands.map(hand => ({ ...hand })) };
@@ -83,6 +94,8 @@ try {
     const window = (from, to) => latency.filter(sample => sample.t >= from && sample.t < to).map(sample => sample.ms);
     const firstHeap = heap.find(h => h.worker_heap_mb !== null)?.worker_heap_mb, lastHeap = heap.findLast(h => h.worker_heap_mb !== null)?.worker_heap_mb;
     results.push({ scenario: scenario.name, seconds, offered, sent, acknowledged, coalesced_dropped: coalesced, faults, confirmed,
+      ...(scenario.cycle ? { language_switch_idle_cycles: cycles } : {}),
+      matcher_workers: { max: Math.max(0, ...matcherWorkers), last: matcherWorkers.at(-1) ?? null },
       ack_latency_ms: { p50: quantile(latency.map(s => s.ms), 0.5), p95: quantile(latency.map(s => s.ms), 0.95), max: quantile(latency.map(s => s.ms), 1) },
       max_at_s: latency.length ? +latency.reduce((a, b) => b.ms > a.ms ? b : a).t.toFixed(2) : null,
       over_50ms: latency.filter(sample => sample.ms > 50).map(sample => ({ t: +sample.t.toFixed(2), ms: +sample.ms.toFixed(1) })),

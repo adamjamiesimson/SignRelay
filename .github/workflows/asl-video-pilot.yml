@@ -9,6 +9,10 @@ on:
       - 'lib/vision-engine.ts'
       - 'lib/vision-runtime.mjs'
       - 'workers/recognition.worker.ts'
+      # The committed bundle changes whenever any source bundled into the
+      # recognition worker changes (verify:runtime requires it to match), so a
+      # worker-byte change can never skip the pilot.
+      - 'public/workers/recognition.worker.js'
       - 'package.json'
       - 'package-lock.json'
       - 'scripts/security-policy.mjs'
@@ -80,6 +84,26 @@ jobs:
 
       - name: Fetch frozen additional development recordings (never sealed holdout)
         run: python3 training/fetch_evaluation_clips.py docs/evaluation/popsign-development-2026-10-16.json
+
+      - name: Restore the verified RSL model from the CI cache
+        id: rsl-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: public/models/rsl1000-slovo/model.onnx
+          key: rsl-model-${{ hashFiles('public/models/rsl1000-slovo/manifest.json') }}
+
+      # External download with bounded retries. The size and SHA-256 are always
+      # checked, cached copy included. Exit 75: the host could not deliver the
+      # model (not a code failure). Exit 65: wrong bytes, refused (fail closed).
+      - name: Acquire and verify the RSL model (external download)
+        run: npm run install:rsl-model
+
+      - name: Save the verified RSL model to the CI cache
+        if: steps.rsl-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: public/models/rsl1000-slovo/model.onnx
+          key: ${{ steps.rsl-cache.outputs.cache-primary-key }}
 
       - name: Build candidate local static export
         run: npm run build:firebase

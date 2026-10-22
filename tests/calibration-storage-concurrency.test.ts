@@ -1,24 +1,27 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { deleteCalibrationGloss, loadCalibrationTemplates, saveCalibrationTemplate } from "../lib/calibration-storage";
+import { clearCalibrationTemplates, deleteCalibrationGloss, loadCalibrationTemplates, saveCalibrationTemplate, saveCalibrationTemplateAndReload } from "../lib/calibration-storage";
 import type { CalibrationTemplate } from "../lib/vision-types";
 
 // Minimal in-memory IndexedDB. Transactions run strictly one after another,
 // which is a schedule real IndexedDB may legally choose (overlapping readwrite
 // scopes are always serialised; readonly ones may also run in order). Each
 // request completes asynchronously, as in a browser.
-function installFakeIndexedDB() {
+function installFakeIndexedDB({ failListReads = (): boolean => false } = {}) {
   const rows = new Map<string, unknown>();
   let turn = Promise.resolve();
   const database = {
     objectStoreNames: { contains: () => true },
     close() {},
-    transaction() {
+    transaction(_store: string, mode: "readonly" | "readwrite" = "readonly") {
       const ops: Array<() => void> = [];
       const transaction = {
         error: null, oncomplete: null as null | (() => void),
         onerror: null as null | (() => void), onabort: null as null | (() => void),
         objectStore: () => ({
-          getAll: () => request(() => [...rows.values()].map(value => structuredClone(value))),
+          getAll: () => {
+            if (mode === "readonly" && failListReads()) throw new DOMException("Injected read failure", "UnknownError");
+            return request(() => [...rows.values()].map(value => structuredClone(value)));
+          },
           put: (value: CalibrationTemplate) => request(() => { rows.set(value.id, structuredClone(value)); }),
           delete: (id: string) => request(() => { rows.delete(id); }),
           clear: () => request(() => rows.clear()),
@@ -82,4 +85,35 @@ it("removing a word deletes every example stored for it, including one saved jus
   const remove = deleteCalibrationGloss("PIZZA", "bsl");
   await Promise.all([save, remove]);
   expect([...rows.keys()]).toEqual([]);
+});
+
+it("reports a committed save whose list reload failed as saved, not as lost", async () => {
+  let failReads = false;
+  const rows = installFakeIndexedDB({ failListReads: () => failReads });
+  await expect(saveCalibrationTemplateAndReload(example("a", "PIZZA", 1))).resolves.toMatchObject({ templates: [{ id: "a" }] });
+  failReads = true;
+  await expect(saveCalibrationTemplateAndReload(example("b", "PIZZA", 2))).resolves.toEqual({ templates: null });
+  expect([...rows.keys()].sort()).toEqual(["a", "b"]);
+  // A save that itself fails still rejects, so the UI can say it was not saved.
+  await expect(saveCalibrationTemplateAndReload({ ...example("c", "PIZZA", 3), frames: [] })).rejects.toThrow("Invalid personal sign example");
+});
+
+it("overwrites an example saved again under the same id instead of duplicating or pruning it", async () => {
+  const rows = installFakeIndexedDB();
+  for (const [id, createdAt] of [["a", 1], ["b", 2], ["c", 3]] as const) await saveCalibrationTemplate(example(id, "PIZZA", createdAt));
+  await saveCalibrationTemplate({ ...example("c", "PIZZA", 4), text: "Pizza!" });
+  expect([...rows.keys()].sort()).toEqual(["a", "b", "c"]);
+  expect((await loadCalibrationTemplates()).find(item => item.id === "c")?.text).toBe("Pizza!");
+});
+
+it("orders Clear local data and a save by when they started, never resurrecting cleared examples", async () => {
+  const rows = installFakeIndexedDB();
+  await saveCalibrationTemplate(example("a", "PIZZA", 1));
+  // Save started first, then Clear: the clear wins.
+  await Promise.all([saveCalibrationTemplate(example("b", "PIZZA", 2)), clearCalibrationTemplates()]);
+  expect([...rows.keys()]).toEqual([]);
+  // Clear started first, then a save: the new example (a deliberate new recording) remains, nothing older returns.
+  await saveCalibrationTemplate(example("c", "PIZZA", 3));
+  await Promise.all([clearCalibrationTemplates(), saveCalibrationTemplate(example("d", "PIZZA", 4))]);
+  expect([...rows.keys()]).toEqual(["d"]);
 });

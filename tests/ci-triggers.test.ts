@@ -21,13 +21,22 @@ describe("stacked pull requests receive checks", () => {
     for (const file of ["lib/sign-motion.ts", "lib/frame-timing.ts", "lib/decoder.ts", "lib/asl1000-runtime.ts",
       "lib/asl-starter-recognition.ts", "workers/recognition.worker.ts"]) expect(paths).toContain(`'${file}'`);
   });
+  it("re-runs the pilot whenever the committed recognition-worker bundle changes, whichever source changed it", () => {
+    // e.g. lib/template-transport.ts is bundled into the worker but is not in the source list.
+    expect(pullRequestBlock(workflow("asl-video-pilot.yml"))).toContain("'public/workers/recognition.worker.js'");
+  });
+  it.each(["firebase-build-check.yml", "field-test-browser.yml"])("%s cancels superseded pull-request runs but never main", name => {
+    const text = workflow(name);
+    expect(text).toContain("group: ${{ github.workflow }}-${{ github.ref }}");
+    expect(text).toContain("cancel-in-progress: ${{ github.event_name == 'pull_request' }}");
+  });
 });
 
 describe("the offline demo profiles are checked on every pull request", () => {
   it("builds both demo profiles and runs every demo, rehearsal and fault-injection smoke", () => {
     const demo = workflow("asl-demo.yml");
     for (const step of ["npm run build:rehearsal", "npm run build:asl-demo", "npm run demo:check", "--self-test",
-      "tests/gitex-rehearsal-smoke.mjs", "tests/transcript-a11y-smoke.mjs", "tests/offline-vision-smoke.mjs",
+      "tests/gitex-rehearsal-smoke.mjs", "tests/transcript-a11y-smoke.mjs", "tests/user-feedback-fault-smoke.mjs", "tests/offline-vision-smoke.mjs",
       "tests/lifecycle-stress-smoke.mjs", "tests/fault-injection-smoke.mjs", "--profile rehearsal", "--profile asl-demo"]) expect(demo).toContain(step);
     expect(demo.indexOf("npm run build:asl-demo")).toBeGreaterThan(demo.indexOf("npm run build:rehearsal"));
     expect(demo).not.toMatch(/continue-on-error|\|\| true/);
@@ -51,5 +60,28 @@ describe("strict dependency audit stays a release gate", () => {
   it("still runs the fail-closed dependency gate in the build job and Core CI", () => {
     expect(firebase.slice(0, firebase.indexOf("  strict-dependency-audit:"))).toContain("npm run audit:deps");
     expect(workflow("ci.yml")).toContain("npm run audit:deps");
+  });
+});
+
+describe("the external RSL model download is cached, verified and reported apart from code failures", () => {
+  it.each([["firebase-build-check.yml", "npm run build:firebase"], ["asl-video-pilot.yml", "npm run build:firebase"],
+    ["field-test-browser.yml", "npm run build:firebase"]])("%s restores, verifies and saves the model before building", (name, build) => {
+    const text = workflow(name);
+    const restore = text.indexOf("uses: actions/cache/restore@v4"), acquire = text.indexOf("run: npm run install:rsl-model");
+    const save = text.indexOf("uses: actions/cache/save@v4");
+    expect(restore).toBeGreaterThan(0);
+    expect(acquire).toBeGreaterThan(restore);
+    expect(save).toBeGreaterThan(acquire);
+    expect(text.indexOf(`run: ${build}`)).toBeGreaterThan(save);
+    expect(text).toContain("key: rsl-model-${{ hashFiles('public/models/rsl1000-slovo/manifest.json') }}");
+    // A cache hit is verified like a download: the acquire step never depends on the cache result.
+    const acquireStep = text.slice(text.lastIndexOf("- name:", acquire), acquire);
+    expect(acquireStep).not.toMatch(/\bif:/);
+    expect(text).not.toMatch(/continue-on-error|install:rsl-model \|\| true/);
+  });
+  it("still installs and verifies the model inside build:firebase itself", () => {
+    const pkg = JSON.parse(readFileSync("package.json", "utf8"));
+    expect(pkg.scripts["build:firebase"]).toContain("npm run install:rsl-model &&");
+    expect(pkg.scripts["install:rsl-model"]).toBe("node scripts/install-rsl-model.mjs");
   });
 });

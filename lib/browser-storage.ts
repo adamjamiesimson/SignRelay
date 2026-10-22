@@ -81,9 +81,13 @@ function validSession(value: unknown): value is TranscriptSession {
       && Number.isFinite(e.timestamp) && Number.isFinite(e.confidence) && e.confidence >= 0 && e.confidence <= 1);
 }
 
+/** False when browser storage refused; clearing site data in the browser remains available. */
 export function clearLocalSignRelayData() {
   try {
     localStorage.removeItem(SETTINGS_KEY);
     localStorage.removeItem(HISTORY_KEY);
-  } catch { /* Clearing site data through the browser remains available. */ }
+    return true;
+  } catch {
+    return false;
+  }
 }

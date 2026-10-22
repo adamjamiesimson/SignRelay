@@ -172,7 +172,7 @@ npm run demo:check -- /path/to/chrome
 npm run readiness -- --label final --browser /path/to/chrome --build rehearsal,asl-demo
 ```
 
-Browser smokes take a Chrome executable: `tests/workspace-browser-smoke.mjs`, `landmark-lifecycle-browser-smoke.mjs`, `rsl-`, `bdsl-` and `lse-browser-smoke.mjs` and `a11y-axe-smoke.mjs` need the full export; `offline-vision-smoke.mjs`, `offline-demo-strict-smoke.mjs`, `lifecycle-stress-smoke.mjs` and `fault-injection-smoke.mjs` need the ASL demo export; `gitex-rehearsal-smoke.mjs` and `transcript-a11y-smoke.mjs` need `npm run build:rehearsal`. Do not run a build while a smoke is using `out/`.
+Browser smokes take a Chrome executable: `tests/workspace-browser-smoke.mjs`, `landmark-lifecycle-browser-smoke.mjs`, `rsl-`, `bdsl-` and `lse-browser-smoke.mjs` and `a11y-axe-smoke.mjs` need the full export; `offline-vision-smoke.mjs`, `offline-demo-strict-smoke.mjs`, `lifecycle-stress-smoke.mjs` and `fault-injection-smoke.mjs` need the ASL demo export; `gitex-rehearsal-smoke.mjs`, `transcript-a11y-smoke.mjs` and `user-feedback-fault-smoke.mjs` need `npm run build:rehearsal`. Do not run a build while a smoke is using `out/`.
 
 Every pull request runs:
 
