@@ -4,7 +4,7 @@ Branch `sprint/refinement-reliability-2026-10-22`, created from `origin/main` at
 
 Statuses: **DONE**: criteria met, evidence recorded. **PARTIAL**: part met, gap stated. **BLOCKED**: needs people, devices, network or authorisation. **NOT NEEDED**: investigated; no change justified by evidence.
 
-Root causes: [root-causes.md](root-causes.md) (D1–D7). Performance: [first-frame-stall.md](first-frame-stall.md). Readiness: [readiness.md](readiness.md).
+Root causes: [root-causes.md](root-causes.md) (D1–D8). Performance: [first-frame-stall.md](first-frame-stall.md). Readiness: [readiness.md](readiness.md).
 
 **Environment.** Cloud container: Intel Xeon 2.80 GHz x4, Node 22.22.0, npm 10.9.4, headless Chromium 1194 (`/opt/pw-browsers`). The RSL model host (`*.hc.sbercloud.ru`) is refused by this container's network policy, so the full `build:firebase` and the RSL smoke run only in CI. Every Node, headless-browser and synthetic-landmark number here is a regression record. None is real-device performance, live-camera accuracy or a user test.
 
@@ -51,7 +51,7 @@ A clean-worktree `readiness` run of `0637237` is recorded in [baseline-0637237.m
 | 22 | Privacy boundaries, dependency health, secrets | DONE | — | No new production dependency. Dev change only (D1, MIT). No new network path: templates move between local workers only | `audit:secrets` 0 findings; production audit 0; `private-routes` and `privacy-storage` tests; `test:rendered` 2/2 |
 | 23 | Model, worker, browser and storage failure paths | DONE | component | Remove now handles storage failure (D3 related). The matcher creation failure path is covered with eager creation (falls back to the existing backoff) | `fault-injection-smoke` (3 crashes, failed construction, missing and corrupted model, throwing localStorage), `calibration-abort`, `template-matching-client` timeout and backoff tests |
 | 24 | Dead code, stale docs, maintainability | PARTIAL | `scripts/benchmarks/*`, docs | Benchmarks now post templates the way the app does. The dashboard is regenerated for the new worker (honestly stale). **Corrected a wrong instruction:** the real-world checklist named `popsign-project-holdout-manifest.json` as the sealed holdout, but the cohort lock gives it role `historical-development` (the 6 clips CI replays); the sealed cohort is `popsign-reserved-holdout-2026-10-16.json`. Not removed: `recognizeAsl100` and `public/models/asl100` (640 KB) are unused by the app and already tree-shaken from the worker. They are the in-app half of `training/train_wlasl100.py` and are cited in historical fingerprint records, so removal is an owner decision | Export scan of `lib/`: the remaining unused exports are types and constants used inside their own module |
-| 25 | Regression, integration, performance and readiness reports | see [readiness.md](readiness.md) | `docs/refinement/*` | This ledger, root causes, performance and readiness | Final clean-worktree readiness run and CI results on #39 |
+| 25 | Regression, integration, performance and readiness reports | DONE | `docs/refinement/*`, `scripts/readiness.mjs` | This ledger, [root causes](root-causes.md) D1–D8, [performance](first-frame-stall.md), [readiness](readiness.md). D8: fixed the readiness comparison, which reported profile-qualified checks as not run | Clean-worktree baseline and final readiness runs; CI on #39. Release stays **NO-GO** |
 
 ## What was deliberately not changed
 

@@ -51,3 +51,10 @@ Each defect below was reproduced before it was fixed, and each has a regression 
 - **Root cause.** The info-page title has a 3.2rem minimum. "communication." at 51.2 px is 359 px in a 276 px box, and mobile Chrome widened the layout viewport to fit it. Element rectangles did not show it, because text overflow does not change the box.
 - **Fix.** Below 560 px the title scales with the viewport (`clamp(2.25rem, 12vw, 3.2rem)`) and may break a word that still cannot fit.
 - **Test.** transcript-a11y-smoke checks 8 pages at 320 and 390 px. It failed on `/about` with the old CSS and passes after. Commit `80a4395`.
+
+## D8. Readiness comparison reported passing checks as "not run" (objective 25)
+
+- **Symptom.** Comparing the final run with a baseline that also ran `--build` profiles listed all 10 browser, rendered-export and runtime checks as `not-run`, although both runs passed them.
+- **Root cause.** `compareReports` stripped the `:profile` suffix from the current run's check ids but compared them with the baseline's unstripped ids.
+- **Fix.** Ids match exactly, and an older unprofiled baseline still matches the unqualified name.
+- **Test.** `tests/readiness.test.ts`, "matches profile-qualified checks against a baseline that also ran profiles": failed before the fix, passes after. Commit `5511972`.
