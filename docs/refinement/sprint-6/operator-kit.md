@@ -65,8 +65,8 @@ Then, in Chrome, open **`http://127.0.0.1:3000/?perf`** (`?perf` adds a timing l
 
 ## 5. Camera permission check
 
-1. Choose **American Sign Language**, then **Start translating**.
-2. Allow the camera. Within a few seconds the camera badge shows **Active** and the transcript chip shows **waiting for hands**.
+1. Choose **American Sign Language**, then **Start signing**. On a browser profile that has not used SignRelay before, a four-step tour opens first and the camera stays off: choose **Skip tour** (or finish it), then **Start camera**. The tour is remembered, so later starts open the camera directly; **Clear local data** brings it back (Sprint 7).
+2. Allow the camera. Within a few seconds the camera badge shows **Active** and the transcript chip shows **Ready** ("Show your hands to begin").
 3. Open **Camera options**. It must say *"Hand tracking loaded from this site, so it does not depend on an external CDN."* If it says *public CDN fallback*, the demo is not running from the prepared build; go back to step 3.
 4. With `?perf`, the line under Camera options shows `… frames analysed/s …`. After you have signed for about 60 seconds it must stay **at or above 10**. If a red message says *"Only N frames analysed per second…"*, close other apps and tabs and plug in the laptop. Below 10, YES and other words are lost; do not run the recognition trials until it is fixed.
 
@@ -74,14 +74,14 @@ Then, in Chrome, open **`http://127.0.0.1:3000/?perf`** (`?perf` adds a timing l
 
 | Chip next to "Transcript" | Meaning |
 | --- | --- |
-| camera off / waiting for permission / starting | not analysing yet |
-| camera blocked | permission denied: allow it in Site settings, then **Retry camera** |
-| camera unavailable | camera disconnected, busy or stalled: read the message, then **Retry camera** / **Start camera** |
-| waiting for hands | analysing; no hand in view |
-| watching / following movement | building evidence |
-| checking + "Possible match · not confirmed" | a candidate only; **not** a result |
-| no confident match | it saw movement and declined to guess (this is correct behaviour for unknown movements) |
-| recognition unavailable + **Restart recognition** | the recogniser stopped twice within a minute; press Restart recognition |
+| Camera off / Waiting for permission / Starting | not analysing yet |
+| Camera blocked | permission denied: allow it in Site settings, then **Retry camera** |
+| Camera unavailable | camera disconnected, busy or stalled: read the message, then **Retry camera** / **Start camera** |
+| Ready | analysing; no hand in view (was "waiting for hands" before Sprint 7) |
+| Watching movement | building evidence (was "watching" / "following movement") |
+| Checking sign + "Possible match · not confirmed" | a candidate only; **not** a result |
+| No confident match | it saw movement and declined to guess (this is correct behaviour for unknown movements) |
+| Recognition unavailable + **Restart recognition** | the recogniser stopped twice within a minute; press Restart recognition |
 
 Only words in the **transcript list** are results. Each needs two consistent observations; the same word cannot be added again within about 2.6 seconds. Every entry shows its source (rule match / model match) and a match score, which is **not** a probability of being right. Any entry can be edited (Edit, then Enter) or removed.
 

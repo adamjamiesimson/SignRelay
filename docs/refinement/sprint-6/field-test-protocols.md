@@ -29,7 +29,7 @@ Rules for every part:
 | `eval:log` key | 1 | 2 | 3 | 4 | 5 | 6 | 6 | 5 | 4 | 3 | 2 | 1 |
 
 **Each attempt:**
-1. Signer rests the hands below the chest or out of frame for **3 s**; the chip shows *waiting for hands*.
+1. Signer rests the hands below the chest or out of frame for **3 s**; the chip shows *Ready* ("waiting for hands" before Sprint 7).
 2. Operator says the word; the signer signs it **once**, naturally, then lowers the hands.
 3. Watch the transcript for **4 s** after the hands are lowered. Ignore "Possible match · not confirmed"; only transcript entries count.
 4. Log it in `eval:log` immediately:
@@ -85,11 +85,11 @@ Software timings on this repository's CI and container are regression records on
 
 **Devices:** the demo laptop, plus at least two phones (ideally one Android, one iPhone). Phone access: operator kit §10. Record for each: device model, OS version, browser and version, power state (plugged / battery %), and the exact URL and commit tested.
 
-**Procedure per device** (open `/?perf`, choose ASL, Start translating):
+**Procedure per device** (open `/?perf`, choose ASL, Start signing; on a fresh browser profile skip the first-run tour, then Start camera):
 
 | Step | Measure | How |
 | --- | --- | --- |
-| C1 Cold start | seconds from pressing *Start translating* to **Active** | stopwatch; first load after a browser restart |
+| C1 Cold start | seconds from pressing *Start signing* (or *Start camera* after the tour) to **Active** | stopwatch; first load after a browser restart |
 | C2 Warm start | the same after **Pause camera** → **Start camera** | stopwatch |
 | C3 Throughput | the full `?perf` line after 60 s of continuous signing | copy the line as text (or photograph it); it contains tracking p50/p95, round trip p50/p95, queue wait, forwarded/s, dropped %, **frames analysed/s**, recoveries and hand-tracked % |
 | C4 Responsiveness | does Edit / Remove / Pause react at once (< 0.5 s by eye)? | yes / no per control |
