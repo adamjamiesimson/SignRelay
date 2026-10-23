@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, Camera } from "lucide-react";
 import type { BdslFrame, BdslInput, BdslOutput, BdslPrediction } from "@/lib/bdsl-video";
 
 type State = "idle" | "loading" | "ready" | "countdown" | "recording" | "processing" | "error";
@@ -119,22 +120,36 @@ export function BdslRecognizer({ onBack }: { onBack: () => void }) {
     animation.current = requestAnimationFrame(tick);
   }
 
-  return <section className="rsl-workspace" aria-labelledby="bdsl-title">
-    <button className="button secondary small" onClick={() => { release(); onBack(); }}>Back to languages</button>
-    <p className="eyebrow">Bangla Sign Language · experimental</p>
-    <h1 id="bdsl-title">Recognize one Bangla sign.</h1>
-    <p>401 trained sign classes, mapped to 398 distinct English glosses. No personal teaching required.</p>
-    <p>First load: 97 MB. This research model processes one sign at a time. Camera frames stay on your device and are discarded after use.</p>
-    <video ref={video} autoPlay playsInline muted aria-label="Unmirrored camera preview; keep your face, torso and hands visible" style={{ width: "100%", maxWidth: 640, aspectRatio: "4 / 3", background: "#111", borderRadius: 16 }} />
-    <p role="status" aria-live="polite">{message}</p>
-    <div className="rsl-actions">
-      {(state === "idle" || state === "error") && <button className="button primary" onClick={start}>Start camera &amp; load model</button>}
-      {state === "ready" && <button className="button primary" onClick={recognize}>Recognize one sign</button>}
-      {state === "recording" && <button className="button primary" onClick={() => { finishRequested.current = true; }}>Finish sign</button>}
-      {state !== "idle" && state !== "error" && <button className="button secondary" onClick={stop}>Stop / cancel</button>}
+  const busy = state === "loading" || state === "processing";
+  return <section className="clip-recognizer rsl-workspace" aria-labelledby="bdsl-title">
+    <div className="clip-header">
+      <button type="button" className="back-link" onClick={() => { release(); onBack(); }}><ArrowLeft aria-hidden="true" size={16} />Back to languages</button>
+      <p className="eyebrow">Bangla Sign Language · One sign at a time · Experimental</p>
+      <h1 id="bdsl-title">Recognize one Bangla sign.</h1>
+      <p className="lead">401 trained sign classes, mapped to 398 distinct English glosses, with no teaching required. This research model processes one sign at a time.</p>
     </div>
-    {result && <div className="rsl-result"><h2>{result.label}</h2><p>Class {result.code} · Model score: {Math.round(result.confidence * 100)}%. A score is not measured accuracy.</p></div>}
-    <p>After the countdown, make one complete sign and choose Finish sign. Results are suggestions; they are never automatically spoken or added to a transcript.</p>
-    <p><a href="/models">Evaluation and limitations</a> · <a href="/models/bdsl401-videomae/ATTRIBUTION.md">Model attribution</a></p>
+    <div className="clip-layout">
+      <div className="clip-stage" data-state={state}>
+        <video ref={video} autoPlay playsInline muted aria-label="Unmirrored camera preview; keep your face, torso and hands visible" />
+        {(state === "idle" || state === "error") && <div className="clip-placeholder" aria-hidden="true"><Camera size={22} /><span>Camera off</span></div>}
+      </div>
+      <div className="clip-panel">
+        <p className={`clip-status ${state}${busy ? " busy" : ""}`} role="status" aria-live="polite">{message}</p>
+        <div className="rsl-actions">
+          {(state === "idle" || state === "error") && <button type="button" className="button primary" onClick={start}>Start camera &amp; load model</button>}
+          {state === "ready" && <button type="button" className="button primary" onClick={recognize}>Recognize one sign</button>}
+          {state === "recording" && <button type="button" className="button primary" onClick={() => { finishRequested.current = true; }}>Finish sign</button>}
+          {state !== "idle" && state !== "error" && <button type="button" className="button secondary" onClick={stop}>Stop / cancel</button>}
+        </div>
+        {result && <div className="rsl-result"><span className="candidate-label">Suggestion · check the meaning</span><h2>{result.label}</h2><p>Class {result.code} · Model score {Math.round(result.confidence * 100)} out of 100. A score is not measured accuracy.</p></div>}
+        <ol className="clip-steps">
+          <li>Start the camera. Model loading (97 MB) begins only after you choose Start.</li>
+          <li>After the countdown, make one complete sign, then choose Finish sign.</li>
+          <li>Keep your face, upper body and both hands visible.</li>
+        </ol>
+        <p className="field-hint">Camera frames stay on your device and are discarded after use. Results are suggestions; they are never spoken or added to a transcript.</p>
+        <p className="clip-links"><a href="/models">Evaluation and limitations</a><a href="/models/bdsl401-videomae/ATTRIBUTION.md">Model attribution</a></p>
+      </div>
+    </div>
   </section>;
 }

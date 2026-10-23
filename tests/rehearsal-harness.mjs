@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 
 export const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 export async function until(check, reason, attempts = 300) {
@@ -34,7 +35,8 @@ export async function fixtures() {
   return { sequence, negative: name => NEGATIVE_CONTROLS[name]() };
 }
 
-export async function openRehearsal(executable, { extraInit = "" } = {}) {
+/** `returning: false` opens the site as a first-time visitor, who sees the tour. */
+export async function openRehearsal(executable, { extraInit = "", returning = true } = {}) {
   const manifest = JSON.parse(readFileSync("out/runtime-manifest.json", "utf8"));
   if (manifest.profile !== "rehearsal") throw new Error(`out/ is the ${manifest.profile} build; run npm run build:rehearsal first`);
   const port = 18700 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${port}`;
@@ -43,6 +45,7 @@ export async function openRehearsal(executable, { extraInit = "" } = {}) {
   const browser = await startChrome(executable);
   const pageRequests = [];
   browser.onEvent(message => { if (message.method === "Network.requestWillBeSent") pageRequests.push(message.params.request.url); });
+  if (returning) await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => {
     window.__qa = { tracks: [], spoken: [], cancels: 0 };
     const get = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
@@ -69,7 +72,7 @@ export async function openRehearsal(executable, { extraInit = "" } = {}) {
       await until(() => evaluate("Object.keys(document.querySelector('[role=radio]') ?? {}).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate");
     },
     async start() {
-      await harness.click("Start translating");
+      await harness.click("Start signing");
       await until(harness.active, "Camera did not start");
       await until(() => evaluate("!!window.__signrelayRehearsal"), "Rehearsal hook missing");
     },

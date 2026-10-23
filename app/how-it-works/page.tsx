@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { InfoPage } from "@/components/info-page";
 
-export const metadata: Metadata = { title: "How it works", description: "The SignRelay camera-to-transcript recognition pipeline.", alternates: { canonical: "/how-it-works" } };
+export const metadata: Metadata = { title: "How it works", description: "The SignRelay camera-to-transcript recognition pipeline, step by step.", alternates: { canonical: "/how-it-works" } };
 
 export default function HowItWorksPage() {
-  return <InfoPage eyebrow="Recognition architecture" title="Movement first, words second." intro="SignRelay analyses a short ordered sequence of hand, face and body landmarks. It never treats one frozen hand pose as a complete language." sections={[
-    { title: "Local camera input", body: <p>The camera is opened only after you choose a language and continue. The mirrored image is for your comfort; recognition receives the original coordinates.</p> },
-    { title: "Holistic landmark extraction", body: <p>Three lightweight MediaPipe tasks detect up to two hands, selected facial cues and upper-body pose. Raw frames stay in the browser and are not sent to a SignRelay server.</p> },
-    { title: "Temporal sequence buffer", body: <p>Ordered observations are passed to a Web Worker and stored in a rolling 32-frame buffer. The ASL starter checks handshape, location, direction, repetition and movement over time.</p> },
-    { title: "Language-specific adapter", body: <p>Every one of SignRelay’s 40 language workspaces declares its own identity, output locale and recognition path. Changing languages never relabels a shared model; personal recordings are scoped to exactly one selected language.</p> },
-    { title: "Confidence and segmentation", body: <p>A result must cross the adapter threshold, remain consistent across repeated evaluations and clear a cooldown. Otherwise it remains an unconfirmed candidate or the system stays silent.</p> },
-    { title: "Transcript and speech", body: <p>Only confirmed results enter the transcript. Duplicate suppression prevents a held sign from being added or spoken on every frame. Browser text-to-speech is optional and off by default.</p> },
-  ]} />;
+  return <InfoPage eyebrow="How it works" title="Movement first, words second."
+    intro="SignRelay follows a short, ordered sequence of hand, face and body landmarks in your browser. A word reaches the transcript only after its movement has been confirmed."
+    sections={[
+      { title: "1 · The camera stays on your device", body: <p>The camera starts only when you ask for it, after your browser’s permission prompt. The preview is mirrored for comfort; recognition uses the original coordinates. Frames are analysed in this browser and are never sent to a SignRelay server.</p> },
+      { title: "2 · Landmarks, not pictures", body: <p>Three lightweight MediaPipe tasks find up to two hands, a few facial reference points and the upper body. Only these points move on to recognition; the images themselves are not kept.</p> },
+      { title: "3 · A rolling movement buffer", body: <p>Points are passed to a background worker that keeps the last 32 frames in order. For ASL’s six demo words, simple rules check handshape, location, direction, repetition and timing; a 2,000-sign research model runs alongside them. Other languages use their own models or your personal examples.</p> },
+      { title: "4 · One adapter per language", body: <p>Each of SignRelay’s 40 language workspaces declares its own vocabulary, output language and recognition path. Changing language never relabels another language’s model, and personal signs belong to exactly one language.</p> },
+      { title: "5 · Confirm before writing", body: <p>A result must clear the language’s threshold, agree across repeated checks and wait out a short cooldown. Until then the workspace shows <em>Checking sign</em> or <em>No confident match</em>, and nothing is added. Match scores describe the match, not translation accuracy.</p> },
+      { title: "6 · Transcript and speech", body: <p>Confirmed words can be edited, removed, copied or saved on the device. Duplicate suppression stops a held sign from being added or spoken repeatedly. Speech uses your browser’s voices and is off by default.</p> },
+      { title: "One sign at a time: Russian and Bangla", body: <p>The RSL and Bangla models read short video clips rather than landmark streams, so those workspaces capture a single sign, analyse it locally (often 15–60 seconds) and show a suggestion. Suggestions are never spoken or added to a transcript automatically.</p> },
+    ]} />;
 }

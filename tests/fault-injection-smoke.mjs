@@ -8,6 +8,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 
 const executable = process.argv[2];
 if (!executable) throw new Error("Usage: node tests/fault-injection-smoke.mjs <chrome> (after building the export)");
@@ -51,9 +52,10 @@ try {
   const analysing = async () => { const before = await frames(); await pause(800); return await frames() > before; };
   const crash = () => evaluate("(() => { const w = window.__qa.workers.filter(w => w.__alive && w.__url.includes('recognition.worker')).at(-1); w.onerror?.(new ErrorEvent('error', { message: 'Injected crash' })); })()");
   const open = async () => {
+    await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
     await browser.send("Page.navigate", { url: `${origin}/?perf` });
     await until(() => evaluate("Object.keys(document.querySelector('[role=radio]') ?? {}).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate");
-    await click("Start translating");
+    await click("Start signing");
   };
 
   // 1. Worker crashes: two automatic restarts per minute, then a manual restart.
@@ -79,7 +81,7 @@ try {
   // 2. Worker construction fails once.
   await click("Change language");
   await evaluate("window.__qa.failWorkers = 1");
-  await click("Start translating");
+  await click("Start signing");
   await until(active, "Camera did not start after an injected construction failure");
   await until(analysing, "Recognition did not recover from a failed worker construction");
   results.push({ fault: "recognition worker fails to construct once", recovered: true });

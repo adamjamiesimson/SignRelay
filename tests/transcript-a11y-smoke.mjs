@@ -163,7 +163,7 @@ try {
   // Record pressed while the camera is still starting waits for it, rather
   // than reporting that the camera is off.
   await h.open();
-  await h.click("Start translating");
+  await h.click("Start signing");
   await h.click("Start camera & record");
   await until(() => h.evaluate("!!document.querySelector('.calibration-capture.countdown, .calibration-capture.recording')"),
     "Recording did not start after the camera finished starting");

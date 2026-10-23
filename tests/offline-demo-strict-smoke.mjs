@@ -10,6 +10,7 @@ import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
 import { browserInternal } from "./helpers/browser-internal.mjs";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 
 const executable = process.argv[2];
 // --self-test plants an outbound fetch in the page and in a worker and passes only if both are caught.
@@ -63,10 +64,11 @@ try {
   // The export's CSP would already stop a planted fetch; the self-test bypasses it
   // so the leak reaches the network layer, as it would after a CSP regression.
   if (selfTest) await browser.send("Page.setBypassCSP", { enabled: true });
+  await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
   await browser.send("Page.navigate", { url: `${origin}/?perf` });
   await until(() => evaluate("Object.keys(document.querySelector('[role=radio]') ?? {}).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate");
   const visited = ["/"];
-  await click("Start translating");
+  await click("Start signing");
   await until(() => evaluate("document.querySelector('.status-badge')?.textContent === 'Active'"), "ASL vision did not start offline");
   // Long enough for one full 5 s throughput window after the first readout tick.
   await pause(6500);
@@ -99,7 +101,7 @@ try {
   assert.ok(workers.some(url => url.includes("recognition.worker.js")), "The recognition worker was not observed, so its requests were not checked");
   assert.match(perf ?? "", /assets self-hosted/, "The ?perf readout must confirm self-hosted assets");
   assert.match(perf ?? "", /recognition running, 0 recoveries · hand tracked in 0% of frames/, "Recognition restarted, or the readout lost its worker and tracking fields");
-  assert.equal(status, "waiting for hands");
+  assert.equal(status, "Ready", "Camera on without hands must say Ready (waiting for hands), not a recognition state");
   console.log(JSON.stringify({ passed: true, profile: manifest.profile, recognition_worker_sha256: manifest.recognition_worker_sha256,
     pages: visited, page_and_worker_requests: pageRequests.length, workers_observed: [...new Set(workers.map(url => new URL(url).pathname))],
     non_loopback_requests: 0, refused_browser_internal: [...new Set(outbound)], perf_readout: perf,
