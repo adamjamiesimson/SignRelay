@@ -27,4 +27,11 @@ createServer(async (request, response) => {
     response.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
     response.end(request.method === "HEAD" ? undefined : await readFile(resolve(root, "404.html")));
   }
+}).on("error", error => {
+  // A raw stack trace here reads like a crash of this build, while another
+  // server keeps answering at the same address.
+  console.error(error.code === "EADDRINUSE"
+    ? `Port ${port} on ${host} is already in use by another program. Nothing was served; stop that program or pass --port.`
+    : `Cannot serve on ${host}:${port}: ${error.message}`);
+  process.exit(1);
 }).listen(port, host, () => console.log(`Serving static export on ${host}:${port}`));

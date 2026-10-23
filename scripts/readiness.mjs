@@ -19,7 +19,7 @@ const git = args => spawnSync("git", args, { encoding: "utf8" }).stdout.trim();
 export const BROWSER_SMOKES = {
   full: ["workspace-browser-smoke", "offline-vision-smoke", "lifecycle-stress-smoke", "fault-injection-smoke"],
   "asl-demo": ["offline-vision-smoke", "offline-demo-strict-smoke", "lifecycle-stress-smoke", "fault-injection-smoke"],
-  rehearsal: ["gitex-rehearsal-smoke", "transcript-a11y-smoke", "user-feedback-fault-smoke"],
+  rehearsal: ["gitex-rehearsal-smoke", "transcript-a11y-smoke", "user-feedback-fault-smoke", "personal-vocabulary-scale-smoke"],
 };
 
 /** Release is decided by people and evidence, never by green software checks alone. */

@@ -2,6 +2,8 @@
 
 Every item here is **PENDING** until a person has done it on real hardware and recorded the result. No software check in this repository replaces any of them. Synthetic fixtures, headless Chromium and Node benchmarks are regression records, not real-world evidence.
 
+> **Updated 23 October 2026:** until PRs #39, #40 and the Sprint 6 PR are merged, `main` is not the candidate; check out the candidate commit named in `docs/refinement/sprint-6/readiness.md` instead. Step-by-step instructions: `docs/refinement/sprint-6/operator-kit.md`; trial, false-accept, device and signer protocols: `docs/refinement/sprint-6/field-test-protocols.md`.
+
 Before you start, on the demo laptop:
 
 ```bash

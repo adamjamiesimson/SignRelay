@@ -1,8 +1,10 @@
+import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { createServer, type AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { demoExportProblems, serveBanner } from "../scripts/demo.mjs";
+import { demoExportProblems, portProblem, serveBanner } from "../scripts/demo.mjs";
 
 const dirs: string[] = [];
 afterEach(() => { for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true }); });
@@ -39,5 +41,36 @@ describe("offline demo command", () => {
   });
   it("accepts a verified ASL demo export", () => {
     expect(demoExportProblems(exportDir({ profile: "asl-demo" }), ok)).toEqual([]);
+  });
+});
+
+describe("demo port already in use", () => {
+  const occupy = async () => {
+    const server = createServer();
+    await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
+    return { server, port: String((server.address() as AddressInfo).port) };
+  };
+  it("refuses a port another program holds, before any banner, and accepts a free one", async () => {
+    const { server, port } = await occupy();
+    try {
+      const problem = await portProblem(port);
+      expect(problem).toContain(`Port ${port} on 127.0.0.1 is already in use`);
+      expect(problem).toContain("would not show this verified demo build");
+      expect(problem).toContain("--port 3001");
+    } finally { await new Promise(resolve => server.close(resolve)); }
+    expect(await portProblem(port)).toBeNull();
+    expect(await portProblem("not-a-port")).toContain("Cannot serve on 127.0.0.1:not-a-port");
+  });
+  it("serve-export exits with a plain message instead of a stack trace", async () => {
+    const { server, port } = await occupy();
+    try {
+      const root = exportDir();
+      mkdirSync(join(root, "out"));
+      writeFileSync(join(root, "out", "index.html"), "<html></html>");
+      const result = spawnSync(process.execPath, [join(process.cwd(), "scripts/serve-export.mjs"), "--host", "127.0.0.1", "--port", port], { cwd: root, encoding: "utf8", timeout: 10000 });
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(`Port ${port} on 127.0.0.1 is already in use by another program. Nothing was served`);
+      expect(result.stderr).not.toContain("node:events");
+    } finally { await new Promise(resolve => server.close(resolve)); }
   });
 });
