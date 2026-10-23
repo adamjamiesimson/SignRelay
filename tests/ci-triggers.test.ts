@@ -12,7 +12,7 @@ function pullRequestBlock(text: string) {
 }
 
 describe("stacked pull requests receive checks", () => {
-  it.each(["ci.yml", "firebase-build-check.yml", "asl-video-pilot.yml", "field-test-browser.yml", "asl-demo.yml"])(
+  it.each(["ci.yml", "firebase-build-check.yml", "asl-video-pilot.yml", "field-test-browser.yml", "asl-demo.yml", "consent-check.yml"])(
     "%s does not restrict pull_request base branches", name => {
       expect(pullRequestBlock(workflow(name))).not.toMatch(/^\s+branches:/m);
     });
@@ -36,7 +36,7 @@ describe("the offline demo profiles are checked on every pull request", () => {
   it("builds both demo profiles and runs every demo, rehearsal and fault-injection smoke", () => {
     const demo = workflow("asl-demo.yml");
     for (const step of ["npm run build:rehearsal", "npm run build:asl-demo", "npm run demo:check", "--self-test",
-      "tests/gitex-rehearsal-smoke.mjs", "tests/transcript-a11y-smoke.mjs", "tests/user-feedback-fault-smoke.mjs", "tests/personal-vocabulary-scale-smoke.mjs", "tests/offline-vision-smoke.mjs",
+      "tests/gitex-rehearsal-smoke.mjs", "tests/transcript-a11y-smoke.mjs", "tests/user-feedback-fault-smoke.mjs", "tests/personal-vocabulary-scale-smoke.mjs", "tests/onboarding-smoke.mjs", "tests/offline-vision-smoke.mjs",
       "tests/lifecycle-stress-smoke.mjs", "tests/fault-injection-smoke.mjs", "--profile rehearsal", "--profile asl-demo"]) expect(demo).toContain(step);
     expect(demo.indexOf("npm run build:asl-demo")).toBeGreaterThan(demo.indexOf("npm run build:rehearsal"));
     expect(demo).not.toMatch(/continue-on-error|\|\| true/);
@@ -83,5 +83,14 @@ describe("the external RSL model download is cached, verified and reported apart
     const pkg = JSON.parse(readFileSync("package.json", "utf8"));
     expect(pkg.scripts["build:firebase"]).toContain("npm run install:rsl-model &&");
     expect(pkg.scripts["install:rsl-model"]).toBe("node scripts/install-rsl-model.mjs");
+  });
+});
+
+describe("optional analytics consent is checked in a browser on every pull request", () => {
+  it("builds with a placeholder measurement ID that is never deployed and runs the consent smoke", () => {
+    const text = workflow("consent-check.yml");
+    expect(text).toContain("NEXT_PUBLIC_GA_MEASUREMENT_ID: G-SMOKETEST1");
+    expect(text).toContain("node tests/consent-smoke.mjs");
+    expect(text).not.toMatch(/firebase deploy|hosting:channel|upload-artifact|continue-on-error|\|\| true/);
   });
 });

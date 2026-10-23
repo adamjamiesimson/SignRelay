@@ -58,6 +58,9 @@ jobs:
       - name: Personal vocabulary at 30, 150 and 300 saved examples
         run: node tests/personal-vocabulary-scale-smoke.mjs "$CHROME"
 
+      - name: First-visit tour, navigation, cookie choices and hero animation (axe-core from the lockfile)
+        run: node tests/onboarding-smoke.mjs "$CHROME" node_modules/axe-core/axe.min.js
+
       - name: Rehearsal - rendered export and runtime manifest
         run: |
           npm run test:rendered

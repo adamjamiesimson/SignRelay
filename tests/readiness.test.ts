@@ -51,7 +51,7 @@ describe("release decision", () => {
     expect(releaseDecision({ strictPassed: false, manualGates: [] }).reasons[0]).toContain("Strict dependency release gate fails");
   });
   it("runs the rehearsal and strict offline suites for their own builds", () => {
-    expect(BROWSER_SMOKES.rehearsal).toEqual(["gitex-rehearsal-smoke", "transcript-a11y-smoke", "user-feedback-fault-smoke", "personal-vocabulary-scale-smoke"]);
+    expect(BROWSER_SMOKES.rehearsal).toEqual(["gitex-rehearsal-smoke", "transcript-a11y-smoke", "user-feedback-fault-smoke", "personal-vocabulary-scale-smoke", "onboarding-smoke"]);
     expect(BROWSER_SMOKES["asl-demo"]).toContain("offline-demo-strict-smoke");
     expect(BROWSER_SMOKES.full).toContain("workspace-browser-smoke");
   });
