@@ -140,7 +140,7 @@
 .transcript-entry:last-child { border-color: var(--accent-line); }
 .entry-time { color: var(--text-3); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
 .transcript-entry p { font-size: 1.125rem; font-weight: 560; letter-spacing: -0.01em; overflow-wrap: anywhere; }
-.entry-editor { min-height: 38px !important; font-size: 1rem; }
+.transcript-entry .entry-editor { min-height: 38px; font-size: 1rem; }
 .entry-actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 2px; }
 .entry-actions span { margin-right: auto; color: var(--text-3); font-size: 0.75rem; overflow-wrap: anywhere; }
 .entry-actions .icon-button { width: 32px; height: 32px; }

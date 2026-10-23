@@ -15,7 +15,7 @@ export const TOUR_STEPS: Step[] = [
   { target: "transcript", icon: MessageSquareText, title: "Your words, your way",
     body: "Only confirmed words appear here. Edit or remove any word, copy the text, or have it spoken aloud by your device." },
   { target: "teach", icon: BookPlus, title: "Teach SignRelay",
-    body: "Record your own signs to add words. They are saved only in this browser, and Privacy & data clears everything, including this tour." },
+    body: "Record your own signs to add words. They are saved only in this browser; Clear local data, under Privacy & data, removes them along with transcripts, settings and this tour." },
 ];
 
 type Rect = { top: number; left: number; width: number; height: number };

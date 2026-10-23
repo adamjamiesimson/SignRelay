@@ -172,7 +172,7 @@ try {
 
   // No page may scroll sideways on a small phone (WCAG 2.2 1.4.10 reflow).
   const wide = [];
-  for (const width of [320, 390]) {
+  for (const width of [320, 375, 390, 820]) {
     await h.browser.send("Emulation.setDeviceMetricsOverride", { width, height: 800, deviceScaleFactor: 2, mobile: true });
     for (const path of ["/", "/languages", "/models", "/privacy", "/about", "/how-it-works", "/roadmap", "/terms"]) {
       await h.browser.send("Page.navigate", { url: `${h.origin}${path}` });
@@ -203,6 +203,6 @@ try {
   if (spilled.length) wide.push(`long custom word spills out of ${spilled.join(", ")}`);
   await h.browser.send("Emulation.clearDeviceMetricsOverride");
   assert.deepEqual(wide, [], "Pages wider than a phone screen");
-  checks.push({ check: "no horizontal scrolling on 8 pages at 320 and 390 px, at 200% text, and with a 48-character word" });
+  checks.push({ check: "no horizontal scrolling on 8 pages at 320, 375, 390 and 820 px, at 200% text, and with a 48-character word" });
   console.log(JSON.stringify({ passed: true, checks, environment: "headless Chromium, rehearsal build with synthetic landmarks; not an assistive-technology user test" }));
 } finally { await h.close(); }
