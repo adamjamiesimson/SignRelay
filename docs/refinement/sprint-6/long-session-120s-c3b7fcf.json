@@ -1,0 +1,689 @@
+{
+  "schema": 1,
+  "benchmark": "long-session",
+  "environment": "Node v22.22.0, Intel(R) Xeon(R) Processor @ 2.10GHz x4, real worker threads, local files; not a browser, camera or phone measurement",
+  "protocol": "20 Hz offered frames, one in flight and one latest (coalescing), six-sign cycle with rests",
+  "results": [
+    {
+      "scenario": "30 personal examples",
+      "seconds": 120,
+      "offered": 2400,
+      "sent": 2400,
+      "acknowledged": 2400,
+      "coalesced_dropped": 0,
+      "faults": [],
+      "confirmed": {},
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.56,
+        "p95": 0.86,
+        "max": 59.58
+      },
+      "max_at_s": 1.96,
+      "over_50ms": [
+        {
+          "t": 1.96,
+          "ms": 59.6
+        }
+      ],
+      "first_30s_p95_ms": 0.93,
+      "last_30s_p95_ms": 0.79,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0,
+        "max": 0.89
+      },
+      "worker_heap_mb": {
+        "first": 8.9,
+        "last": 17,
+        "max": 17
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 8.9
+        },
+        {
+          "t": 10,
+          "worker_heap_mb": 8.3
+        },
+        {
+          "t": 20,
+          "worker_heap_mb": 10.1
+        },
+        {
+          "t": 30,
+          "worker_heap_mb": 12.5
+        },
+        {
+          "t": 40,
+          "worker_heap_mb": 12.6
+        },
+        {
+          "t": 50,
+          "worker_heap_mb": 11.7
+        },
+        {
+          "t": 60,
+          "worker_heap_mb": 15
+        },
+        {
+          "t": 70,
+          "worker_heap_mb": 11.8
+        },
+        {
+          "t": 80,
+          "worker_heap_mb": 16.6
+        },
+        {
+          "t": 90,
+          "worker_heap_mb": 10.7
+        },
+        {
+          "t": 100,
+          "worker_heap_mb": 13.7
+        },
+        {
+          "t": 110,
+          "worker_heap_mb": 17
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 149.7
+        },
+        {
+          "t": 10,
+          "process_rss_mb": 190.6
+        },
+        {
+          "t": 20,
+          "process_rss_mb": 168
+        },
+        {
+          "t": 30,
+          "process_rss_mb": 174.2
+        },
+        {
+          "t": 40,
+          "process_rss_mb": 175.8
+        },
+        {
+          "t": 50,
+          "process_rss_mb": 183
+        },
+        {
+          "t": 60,
+          "process_rss_mb": 183.2
+        },
+        {
+          "t": 70,
+          "process_rss_mb": 183.4
+        },
+        {
+          "t": 80,
+          "process_rss_mb": 183.5
+        },
+        {
+          "t": 90,
+          "process_rss_mb": 184.3
+        },
+        {
+          "t": 100,
+          "process_rss_mb": 198.5
+        },
+        {
+          "t": 110,
+          "process_rss_mb": 198.9
+        }
+      ]
+    },
+    {
+      "scenario": "150 personal examples",
+      "seconds": 120,
+      "offered": 2400,
+      "sent": 2400,
+      "acknowledged": 2400,
+      "coalesced_dropped": 0,
+      "faults": [],
+      "confirmed": {},
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.48,
+        "p95": 0.87,
+        "max": 80.1
+      },
+      "max_at_s": 46.68,
+      "over_50ms": [
+        {
+          "t": 46.68,
+          "ms": 80.1
+        }
+      ],
+      "first_30s_p95_ms": 1.19,
+      "last_30s_p95_ms": 0.79,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0,
+        "max": 0.05
+      },
+      "worker_heap_mb": {
+        "first": 13.7,
+        "last": 23.8,
+        "max": 23.9
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 13.7
+        },
+        {
+          "t": 10,
+          "worker_heap_mb": 14.1
+        },
+        {
+          "t": 20,
+          "worker_heap_mb": 16.2
+        },
+        {
+          "t": 30,
+          "worker_heap_mb": 18.9
+        },
+        {
+          "t": 40,
+          "worker_heap_mb": 16.9
+        },
+        {
+          "t": 50,
+          "worker_heap_mb": 19
+        },
+        {
+          "t": 60,
+          "worker_heap_mb": 19.2
+        },
+        {
+          "t": 70,
+          "worker_heap_mb": 19.2
+        },
+        {
+          "t": 80,
+          "worker_heap_mb": 20.4
+        },
+        {
+          "t": 90,
+          "worker_heap_mb": 21.4
+        },
+        {
+          "t": 100,
+          "worker_heap_mb": 23.9
+        },
+        {
+          "t": 110,
+          "worker_heap_mb": 23.8
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 157.2
+        },
+        {
+          "t": 10,
+          "process_rss_mb": 196
+        },
+        {
+          "t": 20,
+          "process_rss_mb": 206.4
+        },
+        {
+          "t": 30,
+          "process_rss_mb": 220.5
+        },
+        {
+          "t": 40,
+          "process_rss_mb": 224.4
+        },
+        {
+          "t": 50,
+          "process_rss_mb": 231.2
+        },
+        {
+          "t": 60,
+          "process_rss_mb": 231.2
+        },
+        {
+          "t": 70,
+          "process_rss_mb": 231.3
+        },
+        {
+          "t": 80,
+          "process_rss_mb": 230.7
+        },
+        {
+          "t": 90,
+          "process_rss_mb": 230.8
+        },
+        {
+          "t": 100,
+          "process_rss_mb": 241.4
+        },
+        {
+          "t": 110,
+          "process_rss_mb": 243.9
+        }
+      ]
+    },
+    {
+      "scenario": "300 personal examples",
+      "seconds": 120,
+      "offered": 2401,
+      "sent": 2401,
+      "acknowledged": 2401,
+      "coalesced_dropped": 0,
+      "faults": [],
+      "confirmed": {},
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.47,
+        "p95": 0.79,
+        "max": 39.66
+      },
+      "max_at_s": 0.04,
+      "over_50ms": [],
+      "first_30s_p95_ms": 0.89,
+      "last_30s_p95_ms": 0.84,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0,
+        "max": 1.48
+      },
+      "worker_heap_mb": {
+        "first": 21.1,
+        "last": 24,
+        "max": 26.7
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 21.1
+        },
+        {
+          "t": 10,
+          "worker_heap_mb": 25.6
+        },
+        {
+          "t": 20,
+          "worker_heap_mb": 21.4
+        },
+        {
+          "t": 30,
+          "worker_heap_mb": 22.8
+        },
+        {
+          "t": 40,
+          "worker_heap_mb": 25.5
+        },
+        {
+          "t": 50,
+          "worker_heap_mb": 24.9
+        },
+        {
+          "t": 60,
+          "worker_heap_mb": 25.8
+        },
+        {
+          "t": 70,
+          "worker_heap_mb": 26.7
+        },
+        {
+          "t": 80,
+          "worker_heap_mb": 22
+        },
+        {
+          "t": 90,
+          "worker_heap_mb": 23
+        },
+        {
+          "t": 100,
+          "worker_heap_mb": 23.3
+        },
+        {
+          "t": 110,
+          "worker_heap_mb": 24
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 182.6
+        },
+        {
+          "t": 10,
+          "process_rss_mb": 250
+        },
+        {
+          "t": 20,
+          "process_rss_mb": 230.6
+        },
+        {
+          "t": 30,
+          "process_rss_mb": 233.5
+        },
+        {
+          "t": 40,
+          "process_rss_mb": 236.6
+        },
+        {
+          "t": 50,
+          "process_rss_mb": 238
+        },
+        {
+          "t": 60,
+          "process_rss_mb": 243.3
+        },
+        {
+          "t": 70,
+          "process_rss_mb": 244.8
+        },
+        {
+          "t": 80,
+          "process_rss_mb": 244.9
+        },
+        {
+          "t": 90,
+          "process_rss_mb": 244.9
+        },
+        {
+          "t": 100,
+          "process_rss_mb": 244.9
+        },
+        {
+          "t": 110,
+          "process_rss_mb": 244.9
+        }
+      ]
+    },
+    {
+      "scenario": "775 PSL references",
+      "seconds": 120,
+      "offered": 2401,
+      "sent": 2401,
+      "acknowledged": 2401,
+      "coalesced_dropped": 0,
+      "faults": [],
+      "confirmed": {},
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.48,
+        "p95": 0.76,
+        "max": 20.51
+      },
+      "max_at_s": 97.87,
+      "over_50ms": [],
+      "first_30s_p95_ms": 0.73,
+      "last_30s_p95_ms": 0.88,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0,
+        "max": 0.35
+      },
+      "worker_heap_mb": {
+        "first": 7.9,
+        "last": 9.3,
+        "max": 14.1
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 7.9
+        },
+        {
+          "t": 10,
+          "worker_heap_mb": 7.4
+        },
+        {
+          "t": 20,
+          "worker_heap_mb": 8.3
+        },
+        {
+          "t": 30,
+          "worker_heap_mb": 9.4
+        },
+        {
+          "t": 40,
+          "worker_heap_mb": 10.1
+        },
+        {
+          "t": 50,
+          "worker_heap_mb": 11.7
+        },
+        {
+          "t": 60,
+          "worker_heap_mb": 12.5
+        },
+        {
+          "t": 70,
+          "worker_heap_mb": 13.1
+        },
+        {
+          "t": 80,
+          "worker_heap_mb": 14.1
+        },
+        {
+          "t": 90,
+          "worker_heap_mb": 7
+        },
+        {
+          "t": 100,
+          "worker_heap_mb": 8.1
+        },
+        {
+          "t": 110,
+          "worker_heap_mb": 9.3
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 138.7
+        },
+        {
+          "t": 10,
+          "process_rss_mb": 339.4
+        },
+        {
+          "t": 20,
+          "process_rss_mb": 346
+        },
+        {
+          "t": 30,
+          "process_rss_mb": 351.1
+        },
+        {
+          "t": 40,
+          "process_rss_mb": 356.5
+        },
+        {
+          "t": 50,
+          "process_rss_mb": 360.9
+        },
+        {
+          "t": 60,
+          "process_rss_mb": 366.4
+        },
+        {
+          "t": 70,
+          "process_rss_mb": 371.9
+        },
+        {
+          "t": 80,
+          "process_rss_mb": 376.6
+        },
+        {
+          "t": 90,
+          "process_rss_mb": 381.4
+        },
+        {
+          "t": 100,
+          "process_rss_mb": 385.9
+        },
+        {
+          "t": 110,
+          "process_rss_mb": 257.3
+        }
+      ]
+    },
+    {
+      "scenario": "300 personal examples, language switch and idle every 30 s",
+      "seconds": 120,
+      "offered": 1797,
+      "sent": 1797,
+      "acknowledged": 1797,
+      "coalesced_dropped": 0,
+      "faults": [],
+      "confirmed": {},
+      "language_switch_idle_cycles": 3,
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.53,
+        "p95": 0.86,
+        "max": 57.82
+      },
+      "max_at_s": 0.06,
+      "over_50ms": [
+        {
+          "t": 0.06,
+          "ms": 57.8
+        }
+      ],
+      "first_30s_p95_ms": 0.94,
+      "last_30s_p95_ms": 0.86,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0,
+        "max": 0.15
+      },
+      "worker_heap_mb": {
+        "first": 21,
+        "last": 19.2,
+        "max": 25.8
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 21
+        },
+        {
+          "t": 10,
+          "worker_heap_mb": 25.8
+        },
+        {
+          "t": 20,
+          "worker_heap_mb": 21.2
+        },
+        {
+          "t": 40,
+          "worker_heap_mb": 20.3
+        },
+        {
+          "t": 40,
+          "worker_heap_mb": 20.4
+        },
+        {
+          "t": 50,
+          "worker_heap_mb": 20.9
+        },
+        {
+          "t": 70,
+          "worker_heap_mb": 18.7
+        },
+        {
+          "t": 70,
+          "worker_heap_mb": 18.8
+        },
+        {
+          "t": 80,
+          "worker_heap_mb": 19.7
+        },
+        {
+          "t": 100,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 100,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 110,
+          "worker_heap_mb": 19.2
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 242.4
+        },
+        {
+          "t": 10,
+          "process_rss_mb": 346.3
+        },
+        {
+          "t": 20,
+          "process_rss_mb": 344.8
+        },
+        {
+          "t": 40,
+          "process_rss_mb": 386.7
+        },
+        {
+          "t": 40,
+          "process_rss_mb": 386.7
+        },
+        {
+          "t": 50,
+          "process_rss_mb": 371.5
+        },
+        {
+          "t": 70,
+          "process_rss_mb": 411.8
+        },
+        {
+          "t": 70,
+          "process_rss_mb": 411.8
+        },
+        {
+          "t": 80,
+          "process_rss_mb": 415.9
+        },
+        {
+          "t": 100,
+          "process_rss_mb": 419.2
+        },
+        {
+          "t": 100,
+          "process_rss_mb": 419.2
+        },
+        {
+          "t": 110,
+          "process_rss_mb": 420.5
+        }
+      ]
+    }
+  ]
+}

@@ -24,6 +24,7 @@ This repository is an engineering foundation, not a claim of full sign-language 
 The October 2026 demo scope is six isolated ASL words: HELLO, THANK YOU, PLEASE, SORRY, YES and NO. When the recognizer is unsure it says so. The evidence is thin: on 11 previously seen development clips, 5 were correct, 0 wrong and 6 no-match; see [the dashboard](docs/evaluation/dashboard-2026-10-21.md). No new-signer, live-camera or false-positive measurement exists yet.
 
 - Demo script, setup, fallbacks and go/no-go: [docs/gitex/demo-package-2026-10-21.md](docs/gitex/demo-package-2026-10-21.md)
+- Operator kit for a real laptop, and the MAN-1/MAN-2, device and new-signer protocols: [docs/refinement/sprint-6/operator-kit.md](docs/refinement/sprint-6/operator-kit.md), [docs/refinement/sprint-6/field-test-protocols.md](docs/refinement/sprint-6/field-test-protocols.md)
 - Machine-checkable acceptance criteria: [docs/gitex/demo-contract.json](docs/gitex/demo-contract.json)
 - Integration report, current release status and the remaining manual checks: [docs/gitex/sprint-3/integration-report.md](docs/gitex/sprint-3/integration-report.md) and [docs/gitex/sprint-3/real-world-test-checklist.md](docs/gitex/sprint-3/real-world-test-checklist.md)
 
@@ -172,7 +173,7 @@ npm run demo:check -- /path/to/chrome
 npm run readiness -- --label final --browser /path/to/chrome --build rehearsal,asl-demo
 ```
 
-Browser smokes take a Chrome executable: `tests/workspace-browser-smoke.mjs`, `landmark-lifecycle-browser-smoke.mjs`, `rsl-`, `bdsl-` and `lse-browser-smoke.mjs` and `a11y-axe-smoke.mjs` need the full export; `offline-vision-smoke.mjs`, `offline-demo-strict-smoke.mjs`, `lifecycle-stress-smoke.mjs` and `fault-injection-smoke.mjs` need the ASL demo export; `gitex-rehearsal-smoke.mjs`, `transcript-a11y-smoke.mjs` and `user-feedback-fault-smoke.mjs` need `npm run build:rehearsal`. Do not run a build while a smoke is using `out/`.
+Browser smokes take a Chrome executable: `tests/workspace-browser-smoke.mjs`, `landmark-lifecycle-browser-smoke.mjs`, `rsl-`, `bdsl-` and `lse-browser-smoke.mjs` and `a11y-axe-smoke.mjs` need the full export; `offline-vision-smoke.mjs`, `offline-demo-strict-smoke.mjs`, `lifecycle-stress-smoke.mjs` and `fault-injection-smoke.mjs` need the ASL demo export; `gitex-rehearsal-smoke.mjs`, `transcript-a11y-smoke.mjs`, `user-feedback-fault-smoke.mjs` and `personal-vocabulary-scale-smoke.mjs` need `npm run build:rehearsal`. Do not run a build while a smoke is using `out/`.
 
 Every pull request runs:
 
