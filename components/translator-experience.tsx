@@ -59,6 +59,9 @@ type CameraState = "idle" | "requesting" | "loading" | "active" | "denied" | "er
 type RecognitionState = "listening" | "processing" | "uncertain";
 type CalibrationState = "idle" | "countdown" | "recording" | "saving" | "saved" | "error";
 
+/** Personal-vocabulary words listed before a search narrows them. */
+const LISTED_WORDS = 80;
+
 const EMPTY_DETECTION: DetectionStatus = {
   person: false,
   hands: false,
@@ -185,8 +188,11 @@ export function TranslatorExperience() {
     const matches = search
       ? filteredCalibrationVocabulary.filter((word) => `${word.text} ${word.gloss}`.toLocaleLowerCase().includes(search))
       : filteredCalibrationVocabulary;
-    return matches.slice(0, search ? 200 : 80);
+    return matches.slice(0, search ? 200 : LISTED_WORDS);
   }, [filteredCalibrationVocabulary, vocabularySearch]);
+  // ASL has no built-in concept library, but more than LISTED_WORDS taught
+  // signs still need the search to reach the older ones (and to clear it).
+  const showVocabularySearch = selected !== "asl" || filteredCalibrationVocabulary.length > LISTED_WORDS || vocabularySearch !== "";
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -1119,18 +1125,23 @@ export function TranslatorExperience() {
               </div>
             </div>
 
-            {selected !== "asl" && (
+            {showVocabularySearch && (
               <div className="custom-word-controls starter-library-search">
                 <div>
-                  <span className="custom-word-label">Search the {model.vocabulary.length.toLocaleString()} built-in concepts</span>
-                  <p>Choose a concept first, then record two or three examples of the sign you use for it.</p>
+                  {selected === "asl" ? <>
+                    <span className="custom-word-label">Search your {filteredCalibrationVocabulary.length.toLocaleString()} taught signs</span>
+                    <p>Only the {LISTED_WORDS} most recently taught are listed. Search to find, extend or remove an older one.</p>
+                  </> : <>
+                    <span className="custom-word-label">Search the {model.vocabulary.length.toLocaleString()} built-in concepts</span>
+                    <p>Choose a concept first, then record two or three examples of the sign you use for it.</p>
+                  </>}
                 </div>
                 <div className="custom-word-input">
                   <input
                     value={vocabularySearch}
                     onChange={(event) => setVocabularySearch(event.target.value)}
                     placeholder="Search, e.g. doctor, travel, happy"
-                    aria-label={`Search built-in ${model.shortName} concepts`}
+                    aria-label={selected === "asl" ? "Search taught ASL signs" : `Search built-in ${model.shortName} concepts`}
                   />
                 </div>
               </div>

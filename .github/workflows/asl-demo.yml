@@ -55,6 +55,9 @@ jobs:
       - name: User-facing outcomes under storage and speech faults
         run: node tests/user-feedback-fault-smoke.mjs "$CHROME"
 
+      - name: Personal vocabulary at 30, 150 and 300 saved examples
+        run: node tests/personal-vocabulary-scale-smoke.mjs "$CHROME"
+
       - name: Rehearsal - rendered export and runtime manifest
         run: |
           npm run test:rendered
