@@ -84,9 +84,10 @@
 .camera-placeholder .button { margin-top: 6px; }
 @keyframes soft-pulse { 50% { box-shadow: 0 0 0 6px rgb(94 234 212 / 0.08); } }
 .camera-guidance {
-  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); max-width: calc(100% - 24px);
+  position: absolute; left: 12px; right: 12px; bottom: 12px; width: fit-content; max-width: calc(100% - 24px); margin: 0 auto;
   padding: 6px 12px; border-radius: 999px; background: rgb(7 9 11 / 0.72); color: var(--text-2); font-size: 0.8125rem; text-align: center;
 }
+@media (max-width: 420px) { .camera-guidance { bottom: 8px; padding: 4px 10px; border-radius: 10px; font-size: 0.75rem; } }
 .calibration-capture {
   position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px;
   background: rgb(7 9 11 / 0.55); text-align: center;
@@ -250,7 +251,7 @@
 }
 .tour-spotlight.none { inset: 0; border-radius: 0; box-shadow: 0 0 0 9999px rgb(4 6 8 / 0.72); }
 .tour-card {
-  position: fixed; left: var(--tour-left, 50%); top: var(--tour-top, auto); bottom: var(--tour-bottom, auto);
+  position: fixed; left: var(--tour-left, 50%); top: var(--tour-top, auto);
   display: grid; gap: 12px; width: min(360px, calc(100vw - 32px)); padding: 20px;
   border: 1px solid var(--line-2); border-radius: var(--radius-xl); background: var(--surface-2);
   box-shadow: 0 30px 90px -20px rgb(0 0 0 / 0.85);
@@ -269,4 +270,9 @@
 .tour-actions-end { display: flex; gap: 8px; margin-left: auto; }
 @media (max-width: 640px) {
   .tour-card { left: 12px !important; right: 12px; top: auto !important; bottom: max(12px, env(safe-area-inset-bottom)) !important; width: auto; transform: none !important; }
+}
+@media (min-width: 721px) {
+  .clip-workspace { position: relative; }
+  .clip-workspace .special-workspace-language-bar { position: absolute; top: 20px; right: 0; padding: 0; }
+  .clip-workspace .clip-header { padding-right: 320px; }
 }

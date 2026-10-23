@@ -80,8 +80,7 @@ export function OnboardingTour({ open, onClose }: { open: boolean; onClose: (sta
       }}>
       {open && <>
         <div className={`tour-spotlight${spotlight ? "" : " none"}`} aria-hidden="true" style={spotlight ?? undefined} />
-        <div className={`tour-card ${spotlight && spotlight.top + spotlight.height / 2 > window.innerHeight / 2 ? "above" : "below"}`}
-          style={spotlight ? tourCardPosition(spotlight) : undefined}>
+        <div className="tour-card" style={spotlight ? tourCardPosition(spotlight) : undefined}>
           <div className="tour-card-head">
             <span className="tour-icon" aria-hidden="true"><Icon size={20} /></span>
             <span className="tour-count">Step {index + 1} of {TOUR_STEPS.length}</span>
@@ -106,13 +105,19 @@ export function OnboardingTour({ open, onClose }: { open: boolean; onClose: (sta
   );
 }
 
-/** Beside the highlight on wide screens; phones use a bottom sheet (CSS). */
+/** Beside the highlight when there is room, otherwise below or above it,
+ * always fully on screen. Phones use a bottom sheet instead (CSS). */
 function tourCardPosition(spot: Rect): React.CSSProperties {
-  const width = 360, gap = 14, margin = 16;
-  const left = Math.max(margin, Math.min(spot.left, window.innerWidth - width - margin));
-  const below = spot.top + spot.height / 2 <= window.innerHeight / 2;
-  const top = below ? Math.min(spot.top + spot.height + gap, window.innerHeight - 260) : undefined;
-  const bottom = below ? undefined : Math.min(window.innerHeight - spot.top + gap, window.innerHeight - 260);
-  return { "--tour-left": `${left}px`, "--tour-top": top === undefined ? "auto" : `${Math.max(margin, top)}px`,
-    "--tour-bottom": bottom === undefined ? "auto" : `${Math.max(margin, bottom)}px` } as React.CSSProperties;
+  const width = 360, height = 320, gap = 16, margin = 16;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const top = (value: number) => Math.max(margin, Math.min(value, vh - height - margin));
+  let place: { left: number; top: number };
+  if (spot.left + spot.width + gap + width + margin <= vw) place = { left: spot.left + spot.width + gap, top: top(spot.top) };
+  else if (spot.left - gap - width >= margin) place = { left: spot.left - gap - width, top: top(spot.top) };
+  else {
+    const left = Math.max(margin, Math.min(spot.left, vw - width - margin));
+    const below = spot.top + spot.height + gap, above = spot.top - gap - height;
+    place = { left, top: below + height + margin <= vh ? below : above >= margin ? above : top(vh) };
+  }
+  return { "--tour-left": `${place.left}px`, "--tour-top": `${place.top}px` } as React.CSSProperties;
 }
