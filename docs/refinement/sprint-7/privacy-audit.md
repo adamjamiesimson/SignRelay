@@ -53,6 +53,6 @@ Necessary means needed for a feature the person uses; nothing in this list is se
 | O3 | Confirm Firebase Hosting log retention and the Google Cloud project's data location |
 | O4 | If analytics is ever enabled: Enhanced Measurement off, data retention set, a data-processing agreement accepted, and whether a 180-day consent lifetime suits the target jurisdictions |
 | O5 | Have a lawyer review both pages for the jurisdictions where SignRelay will be offered, including consumer-law wording in the Terms' responsibility clause and whether a minimum age or parental notice is needed |
-| O6 | The Vercel integration posts preview checks on pull requests. If it deploys previews, confirm that is intended and covered by the policy's hosting section |
+| O6 | The repository's Vercel integration automatically builds a public preview deployment of every pushed pull-request branch (it did for PR #42; nothing in this sprint triggered it deliberately). Confirm that is intended and, if previews stay, whether the policy's hosting section should name Vercel |
 
 No regulatory certification or compliance is claimed anywhere on the site.
