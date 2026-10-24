@@ -113,6 +113,7 @@ export function HeroPreview() {
     };
   }, [playing]);
 
+  const item = DEMO_SEQUENCE[view.index];
   const shown = view.phase === "result" ? view.index + 1 : view.index;
   const words = DEMO_SEQUENCE.slice(0, shown).filter(entry => entry.confirmed).map(entry => entry.translation).slice(-4);
   const initial = { dominant: handGeometry(STILL_FRAME.scene.dominant, 1), support: handGeometry(STILL_FRAME.scene.support, -1) };
