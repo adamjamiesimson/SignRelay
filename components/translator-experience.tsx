@@ -1090,7 +1090,7 @@ export function TranslatorExperience() {
           </div>
 
           <div className="workspace-secondary" data-tour="teach">
-            <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef}>
+            <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef} data-taught={trainedGlosses.size}>
               <summary>
                 <span className="summary-title"><BookPlus aria-hidden="true" size={18} />Personal signs</span>
                 <ChevronDown aria-hidden="true" size={16} />

@@ -52,7 +52,7 @@ try {
   await writeFile("outputs/lse-mobile.png", Buffer.from((await send("Page.captureScreenshot", { format: "png" })).data, "base64"));
   await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 960, deviceScaleFactor: 1, mobile: false });
   await click("Start camera");
-  await until(() => evaluate("!!document.querySelector('video')?.srcObject && !!document.querySelector('.camera-guidance')"), "Camera/trackers failed", 180000);
+  await until(() => evaluate("!!document.querySelector('video')?.srcObject && [...document.querySelectorAll('.sr-only[role=status]')].some(n => n.textContent === 'Camera on. Hand tracking is running.')"), "Camera/trackers failed", 180000);
   await pause(2000);
   assert.equal(await evaluate("document.querySelectorAll('.transcript-entry').length"), 0, "Fake empty camera must not create words");
   console.log("Spanish selection, mobile layout and fake camera tracking passed.");

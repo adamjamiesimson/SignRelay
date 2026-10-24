@@ -31,7 +31,7 @@ const seed = examples => database(`store.clear();
   tx.oncomplete = () => { db.close(); resolve(true); }; tx.onerror = () => reject(tx.error);`);
 const stored = () => database(`const request = store.getAll();
   request.onsuccess = () => { resolve(request.result.map(t => t.gloss)); db.close(); }; request.onerror = () => reject(request.error);`);
-const taught = () => h.evaluate("Number(document.querySelector('.vocabulary-disclosure summary small')?.textContent.match(/\\d+/)?.[0] ?? -1)");
+const taught = () => h.evaluate("Number(document.querySelector('.vocabulary-disclosure')?.dataset.taught ?? -1)");
 const listed = word => h.evaluate(`[...document.querySelectorAll('.vocabulary-grid button')].some(b => b.querySelector('span')?.textContent === ${JSON.stringify(word)})`);
 const lastSent = () => h.evaluate("window.__templatesSent.at(-1)");
 const checks = [];

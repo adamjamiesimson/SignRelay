@@ -89,9 +89,9 @@ try {
   await click("Copy");
   await until(() => evaluate("window.__qaCopied === 'BOOK HELLO'"), "Copy did not place the transcript on the clipboard");
   await evaluate("document.querySelector('.speech-controls input[type=checkbox]').click()");
-  assert.match(await evaluate("document.querySelector('.candidate-bar')?.nextElementSibling?.textContent"), /not measured translation accuracy/);
+  assert.doesNotMatch(await evaluate("document.querySelector('.candidate-bar')?.textContent"), /\d|%|score/i, "The workspace must not show a match score");
   await browser.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
-  assert(await evaluate("document.documentElement.scrollWidth <= 390"), "Match score UI overflows a phone viewport");
+  assert(await evaluate("document.documentElement.scrollWidth <= 390"), "Workspace overflows a phone viewport");
   await browser.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 960, deviceScaleFactor: 1, mobile: false });
   await select("bsl"); await until(async () => await language() === "bsl", "Workspace switch failed");
   assert.equal((await history())[0].language, "asl"); assert.equal((await history())[0].entries[0].text, "BOOK");
@@ -151,13 +151,13 @@ try {
   await pause(300);
   assert.deepEqual(await entries(), ["HELLO"], "After rapid switching the transcript must hold exactly the one new word");
   console.log(JSON.stringify({ passed: true, checks: ["footer navigation", "workspace transcript isolation", "welcome transcript isolation",
-    "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "visible match-score qualification", "denied permission and cancelled retry",
+    "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "no match score shown", "denied permission and cancelled retry",
     "duplicate confirmation neither shown nor spoken", "confirmed-only screen-reader announcements", "transcript copy",
     "rapid switching leaves one live worker for the language on screen"],
     camera_requests: await evaluate("window.__qaCameraRequests"), denied_requests: 1, stale_tracks_stopped: await evaluate("window.__qaStoppedTracks") }));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors, diagnostics: await browser.evaluate(`({mediaDevices:typeof navigator.mediaDevices,
-    requests:window.__qaCameraRequests, workers:window.__qaWorkers?.length, camera:document.querySelector('.camera-guidance')?.textContent,
-    status:document.querySelector('.camera-message')?.textContent})`).catch(() => null) }));
+    requests:window.__qaCameraRequests, workers:window.__qaWorkers?.length, status:document.querySelector('.recognition-state')?.dataset.status,
+    message:document.querySelector('.camera-message')?.textContent})`).catch(() => null) }));
   throw error;
 } finally { await browser?.close(); server.kill(); }
