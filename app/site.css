@@ -212,13 +212,14 @@
 .language-row button.selected { border-color: var(--accent-line); background: linear-gradient(180deg, rgb(94 234 212 / 0.08), rgb(94 234 212 / 0.02)), var(--surface); box-shadow: 0 0 0 1px var(--accent-line) inset; }
 .language-row button:disabled { opacity: 0.5; }
 .language-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.language-card-actions { display: inline-flex; align-items: center; gap: 8px; }
 .language-card-head strong { font-size: 1.125rem; letter-spacing: -0.01em; }
 .language-card-head svg { color: var(--accent); }
 .language-card-name { color: var(--text-2); font-size: 0.875rem; line-height: 1.35; }
 .language-card-meta { display: grid; margin-top: auto; padding-top: 8px; color: var(--text-3); font-size: 0.8125rem; line-height: 1.45; }
 .language-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
 .language-list button {
-  display: flex; align-items: baseline; gap: 10px; min-height: 48px; padding: 10px 14px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; min-height: 48px; padding: 10px 14px;
   border: 1px solid var(--line); border-radius: var(--radius); background: transparent; text-align: left;
   transition: border-color var(--fast) var(--ease), background-color var(--fast) var(--ease);
 }
@@ -227,6 +228,17 @@
 .language-list button:disabled { opacity: 0.5; }
 .language-list strong { flex: none; font-size: 0.875rem; }
 .language-list span { min-width: 0; color: var(--text-2); font-size: 0.875rem; overflow-wrap: anywhere; }
+.language-list-name { flex: 1 1 105px; }
+.language-list button > .language-status { margin-left: auto; }
+.language-status {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: none; min-width: max-content; padding: 3px 7px;
+  border: 1px solid var(--line-2); border-radius: 999px;
+  font-size: 0.6875rem !important; font-weight: 600; line-height: 1.25;
+  letter-spacing: .01em; white-space: nowrap;
+}
+.language-status.beta { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent) !important; }
+.language-status.in-progress { background: rgb(255 255 255 / 0.04); color: var(--text-2) !important; }
 .language-group > .button { justify-self: start; }
 
 /* ---------- Information pages ---------- */
@@ -297,6 +309,8 @@
 .directory-compact li div { min-width: 0; }
 .directory-compact strong { margin-right: 8px; font-size: 0.875rem; }
 .directory-compact span { color: var(--text-2); font-size: 0.875rem; overflow-wrap: anywhere; }
+.directory-compact .language-status { display: inline-flex; margin: 6px 0 0 8px; vertical-align: middle; }
+.directory-card-head > .language-status { flex: none; }
 
 /* ---------- 404 ---------- */
 .not-found { display: grid; gap: 16px; justify-items: start; width: min(720px, 100% - var(--gutter) * 2); margin: 0 auto; padding: clamp(64px, 12vw, 140px) 0; }
