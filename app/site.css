@@ -106,11 +106,6 @@
   text-wrap: nowrap;
 }
 .hero h1 em { color: var(--accent); font-style: inherit; font-weight: inherit; }
-.hero .lead {
-  position: relative; z-index: 2; grid-column: 2; grid-row: 1; align-self: start;
-  max-width: 32ch; padding-top: 4px; color: var(--text-2); font-size: 0.9375rem; line-height: 1.65;
-}
-.hero-detail-link { display: flex; align-items: center; gap: 8px; width: fit-content; min-height: 40px; margin-top: 14px; color: var(--text); font-size: 0.875rem; }
 .hero-actions { position: relative; z-index: 2; grid-column: 1; grid-row: 2; display: flex; align-items: start; gap: 22px; flex-wrap: wrap; }
 .hero-actions .button.primary {
   min-height: 44px; padding: 0 18px; border: 1px solid #5b8973; border-radius: 3px;
@@ -141,8 +136,6 @@
   .hero { display: flex; flex-direction: column; gap: 24px; padding: 42px 0 0; min-height: 0; }
   .hero-copy { display: contents; }
   .hero h1 { font-size: clamp(2.3rem, 7vw, 3.8rem); line-height: 1.14; }
-  .hero .lead { max-width: 36ch; padding: 0; }
-  .hero-detail-link { margin-top: 8px; }
   .hero-actions { gap: 18px; }
   .hero-sculpture { position: relative; width: calc(100% + 48px); right: auto; bottom: auto; align-self: center; margin-top: -12px; }
   .sign-demo { grid-template-columns: 1fr; gap: 32px; padding-top: 48px; }

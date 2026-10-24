@@ -26,7 +26,6 @@ export function Landing({ selected, onSelect, onStart }: Props) {
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
           <h1 id="hero-title" aria-label="Every sign deserves to be understood."><em>Every sign</em><br />deserves to be<br /><em>understood.</em></h1>
-          <p className="lead">Turn signs into words. Read them, speak them, and keep the conversation moving. All on your device.<a className="hero-detail-link" href="#sign-demo">See it in action <ArrowRight aria-hidden="true" size={14} /></a></p>
           <div className="hero-actions">
             <button type="button" className="button primary large" onClick={onStart}>Start signing</button>
             <a className="hero-secondary-link" href="#how-it-works">How it works <ArrowRight aria-hidden="true" size={14} /></a>
