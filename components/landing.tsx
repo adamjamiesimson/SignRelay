@@ -30,7 +30,7 @@ export function Landing({ selected, onSelect, onStart }: Props) {
     <div className="landing">
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="pill"><span className="pill-dot" aria-hidden="true" />Research preview · Runs in your browser</p>
+          <p className="pill">Research preview · Runs in your browser</p>
           <h1 id="hero-title">Every sign deserves to be understood.</h1>
           <p className="lead">SignRelay turns supported signs into words you can read, edit and speak. Your camera video is analysed on this device and never uploaded.</p>
           <div className="hero-actions">
