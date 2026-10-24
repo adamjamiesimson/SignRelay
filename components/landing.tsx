@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 import { HeroPreview } from "./hero-preview";
@@ -24,12 +25,21 @@ export function Landing({ selected, onSelect, onStart }: Props) {
     <div className="landing">
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <h1 id="hero-title" aria-label="Every sign deserves to be understood."><em>Every sign</em>{" "}deserves to be <em>understood.</em></h1>
-          <p className="lead">Turn signs into words you can read or speak. Camera video stays on your device.</p>
+          <h1 id="hero-title" aria-label="Every sign deserves to be understood."><em>Every sign</em><br />deserves to be<br /><em>understood.</em></h1>
+          <p className="lead">Turn signs into words. Read them, speak them, and keep the conversation moving. All on your device.<a className="hero-detail-link" href="#sign-demo">See it in action <ArrowRight aria-hidden="true" size={14} /></a></p>
           <div className="hero-actions">
             <button type="button" className="button primary large" onClick={onStart}>Start signing</button>
-            <a className="button ghost large" href="#how-it-works">How it works</a>
+            <a className="hero-secondary-link" href="#how-it-works">How it works <ArrowRight aria-hidden="true" size={14} /></a>
           </div>
+        </div>
+        <Image className="hero-sculpture" src="/art/chrome-ribbon.webp" width={1774} height={887} alt="" aria-hidden="true" priority unoptimized />
+      </section>
+
+      <section className="sign-demo" id="sign-demo" aria-labelledby="sign-demo-title">
+        <div className="sign-demo-copy">
+          <h2 id="sign-demo-title">From sign<br />to sentence.</h2>
+          <p className="lead">Choose a language. Try supported signs. Read or speak the words.</p>
+          <button type="button" className="text-action" onClick={onStart}>Try SignRelay <ArrowRight aria-hidden="true" size={16} /></button>
         </div>
         <HeroPreview />
       </section>

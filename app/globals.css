@@ -22,8 +22,8 @@
   --text-3: #a1b3a3;
 
   /* One emerald family for links, controls, and selection. */
-  --accent: #74d99a;
-  --accent-2: #74d99a;
+  --accent: #7cbea1;
+  --accent-2: #7cbea1;
   --accent-ink: #092113;
   --accent-soft: #173321;
   --accent-line: #4a9864;
@@ -32,8 +32,8 @@
   --danger: #f49c98;
   --danger-soft: #342424;
 
-  --action: #74d99a;
-  --action-hover: #8de5ad;
+  --action: #7cbea1;
+  --action-hover: #97d0b7;
   --action-ink: #092113;
   --forest: #102219;
   --forest-hover: #1e3928;
@@ -54,6 +54,15 @@
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --fast: 140ms;
   --medium: 240ms;
+}
+
+@font-face {
+  font-family: "SignRelay Display"; src: url("/fonts/signrelay-display.woff") format("woff");
+  font-style: normal; font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: "SignRelay Display"; src: url("/fonts/signrelay-display-italic.woff") format("woff");
+  font-style: italic; font-weight: 400; font-display: swap;
 }
 
 @theme inline {

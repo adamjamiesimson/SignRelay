@@ -1222,7 +1222,7 @@ export function TranslatorExperience() {
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell home-shell">
       <SiteHeader />
       <main id="main">
         {storageMessage && <p className="notice error page-notice" role="alert">{storageMessage}</p>}

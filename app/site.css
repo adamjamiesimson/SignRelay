@@ -75,32 +75,83 @@
   .consent-actions .button { flex: 1; }
 }
 
-/* ---------- Home ---------- */
-.landing { position: relative; isolation: isolate; width: min(var(--page), 100% - var(--gutter) * 2); margin: 0 auto; }
-/* A single quiet field of forest colour gives the hand artwork depth without enclosing it. */
-.landing::before {
-  content: ""; position: absolute; z-index: -1; pointer-events: none;
-  top: -64px; right: calc(-1 * var(--gutter)); width: min(1100px, 100vw); height: 860px;
-  background: radial-gradient(ellipse 35% 43% at 63% 43%, #1a512e73 0%, #102e1c40 42%, transparent 100%);
+/* ---------- Reference-led home composition ---------- */
+.home-shell {
+  --gutter: clamp(24px, 5vw, 64px);
+  width: min(1440px, calc(100% - 56px)); margin: 28px auto;
+  border: 1px solid #294538; border-radius: 18px; overflow: clip;
+  background: radial-gradient(ellipse 20% 36% at 0% 10%, #12382b61, transparent),
+    radial-gradient(ellipse 20% 30% at 100% 12%, #17473852, transparent), #080c09;
 }
+.home-shell .site-header { position: relative; background: transparent; }
+.home-shell .site-header-inner { min-height: 104px; }
+.home-shell .brand-mark { width: 24px; height: 24px; }
+.home-shell .brand-wordmark { font-size: 1rem; font-weight: 500; }
+.home-shell .site-nav { gap: 18px; }
+.home-shell .site-nav a { padding: 0; font-size: 0.875rem; font-weight: 400; }
+.home-shell .site-nav a:hover { background: transparent; color: var(--text); }
+.home-shell .site-footer { background: transparent; }
+.landing { width: min(var(--page), 100% - var(--gutter) * 2); margin: 0 auto; }
 .hero {
-  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; gap: clamp(32px, 6vw, 80px);
-  min-height: min(700px, calc(100vh - 64px)); padding: clamp(40px, 6vw, 80px) 0 clamp(48px, 6vw, 72px);
+  position: relative; display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); grid-template-rows: min-content 1fr;
+  column-gap: clamp(50px, 10vw, 144px); row-gap: 28px;
+  min-height: clamp(640px, 58vw, 780px); padding: clamp(58px, 7vw, 104px) 0 60px;
 }
-.hero-copy { display: grid; gap: 24px; justify-items: start; }
-.hero h1 { max-width: 13ch; font-size: clamp(2.6rem, 5.8vw, 4.5rem); font-weight: 450; letter-spacing: -0.045em; line-height: 1.06; }
-.hero h1 em { color: var(--accent); font-weight: 450; }
-.hero .lead { max-width: 46ch; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 4px; }
-.hero-meta { color: var(--text-3); font-size: 0.875rem; }
-@media (max-width: 900px) {
-  .hero { grid-template-columns: 1fr; min-height: 0; padding-top: 36px; }
-  .hero h1 { max-width: 15ch; }
+.hero-copy { display: contents; }
+.hero h1 {
+  position: relative; z-index: 2; grid-column: 1; grid-row: 1;
+  font-family: "SignRelay Display", var(--font); font-style: italic; font-weight: 400;
+  font-size: clamp(2.9rem, 4.75vw, 4.5rem); letter-spacing: -0.045em; line-height: 1.12;
+  text-wrap: nowrap;
+}
+.hero h1 em { color: var(--accent); font-style: inherit; font-weight: inherit; }
+.hero .lead {
+  position: relative; z-index: 2; grid-column: 2; grid-row: 1; align-self: start;
+  max-width: 32ch; padding-top: 4px; color: var(--text-2); font-size: 0.9375rem; line-height: 1.65;
+}
+.hero-detail-link { display: flex; align-items: center; gap: 8px; width: fit-content; min-height: 40px; margin-top: 14px; color: var(--text); font-size: 0.875rem; }
+.hero-actions { position: relative; z-index: 2; grid-column: 1; grid-row: 2; display: flex; align-items: start; gap: 22px; flex-wrap: wrap; }
+.hero-actions .button.primary {
+  min-height: 44px; padding: 0 18px; border: 1px solid #5b8973; border-radius: 3px;
+  background: transparent; color: var(--text); font-size: 0.875rem; font-weight: 400;
+}
+.hero-actions .button.primary:hover { background: #163728; border-color: var(--accent); }
+.hero-secondary-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--text-2); font-size: 0.875rem; }
+.hero-sculpture {
+  position: absolute; z-index: 0; pointer-events: none;
+  width: 88%; max-width: none; height: auto; right: calc(-1 * var(--gutter)); bottom: 0;
+  mix-blend-mode: lighten;
+}
+.sign-demo {
+  display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1fr); align-items: center;
+  gap: clamp(36px, 8vw, 100px); border-top: 1px solid var(--line); padding: 72px 0 16px; scroll-margin-top: 32px;
+}
+.sign-demo-copy { display: grid; justify-items: start; gap: 24px; }
+.sign-demo h2 { font-family: "SignRelay Display", var(--font); font-weight: 400; font-size: clamp(2rem, 4vw, 3.3rem); line-height: 1.15; letter-spacing: -.04em; }
+.sign-demo .lead { max-width: 30ch; font-size: 1rem; }
+@media (max-width: 1000px) {
+  .hero { column-gap: 40px; min-height: 620px; }
+  .hero h1 { font-size: clamp(2.4rem, 4.8vw, 3.4rem); }
+  .home-shell .site-nav { gap: 14px; }
+}
+@media (max-width: 760px) {
+  .home-shell { width: calc(100% - 24px); margin: 12px auto; border-radius: 12px; --gutter: 24px; }
+  .home-shell .site-header-inner { min-height: 80px; }
+  .hero { display: flex; flex-direction: column; gap: 24px; padding: 42px 0 0; min-height: 0; }
+  .hero-copy { display: contents; }
+  .hero h1 { font-size: clamp(2.3rem, 7vw, 3.8rem); line-height: 1.14; }
+  .hero .lead { max-width: 36ch; padding: 0; }
+  .hero-detail-link { margin-top: 8px; }
+  .hero-actions { gap: 18px; }
+  .hero-sculpture { position: relative; width: calc(100% + 48px); right: auto; bottom: auto; align-self: center; margin-top: -12px; }
+  .sign-demo { grid-template-columns: 1fr; gap: 32px; padding-top: 48px; }
+  .sign-demo-copy { gap: 18px; }
 }
 
 .section { padding: clamp(48px, 8vw, 96px) 0 0; scroll-margin-top: 72px; }
 .section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; margin-bottom: 28px; }
-.section-heading h2, .section-title { font-size: clamp(1.75rem, 3.4vw, 2.5rem); letter-spacing: -0.03em; }
+.section-heading h2, .section-title { font-family: "SignRelay Display", var(--font); font-weight: 400; font-size: clamp(1.75rem, 3.4vw, 2.5rem); letter-spacing: -0.03em; }
 .section-heading p { margin-top: 8px; color: var(--text-2); }
 .section-title { margin-bottom: 28px; }
 
@@ -234,7 +285,7 @@
 /* ---------- Information pages ---------- */
 .info-page { width: min(var(--page), 100% - var(--gutter) * 2); margin: 0 auto; padding-top: clamp(40px, 7vw, 88px); }
 .info-hero { display: grid; gap: 16px; max-width: 760px; padding-bottom: clamp(32px, 5vw, 56px); border-bottom: 1px solid var(--line); }
-.info-hero h1 { font-size: clamp(2.25rem, 5vw, 3.5rem); letter-spacing: -0.035em; overflow-wrap: anywhere; }
+.info-hero h1 { font-family: "SignRelay Display", var(--font); font-style: italic; font-weight: 400; font-size: clamp(2.25rem, 5vw, 3.5rem); letter-spacing: -0.035em; overflow-wrap: anywhere; }
 .info-hero .notice { margin-top: 8px; }
 .info-layout { display: grid; gap: 40px; padding-top: clamp(32px, 5vw, 56px); }
 .info-layout.with-contents { grid-template-columns: 220px minmax(0, 1fr); }
