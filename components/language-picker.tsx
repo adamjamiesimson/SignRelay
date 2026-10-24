@@ -60,17 +60,14 @@ export function LanguagePicker({ selected, onSelect }: Props) {
       <section className="language-group" aria-labelledby="automatic-heading">
         <div className="language-group-heading">
           <h3 id="automatic-heading">Automatic recognition</h3>
-          <span className="tag">Beta · Experimental</span>
-          <p>A built-in vocabulary is recognised with no setup. Results are research previews; check every word.</p>
+          <p>Experimental models for isolated signs. Check every result.</p>
         </div>
         {automatic.length > 0 && (
           <RadioGroup className="language-row" label="Sign languages with automatic recognition" items={automatic} selected={selected} onSelect={onSelect}
             render={language => <>
               <span className="language-card-head"><strong>{language.shortName}</strong><span className="language-card-actions"><LanguageStatus language={language} />{selected === language.id && <Check aria-hidden="true" size={16} />}</span></span>
               <span className="language-card-name">{language.language}</span>
-              {isLanguageAvailable(language.id)
-                ? <span className="language-card-meta"><span>{vocabularyLabel(language)}</span><span>{modeLabel(language)}</span></span>
-                : <span className="language-card-meta">{OUT_OF_PROFILE_LABEL}</span>}
+              {!isLanguageAvailable(language.id) && <span className="language-card-meta">{OUT_OF_PROFILE_LABEL}</span>}
             </>} />
         )}
       </section>
@@ -78,8 +75,7 @@ export function LanguagePicker({ selected, onSelect }: Props) {
       <section className="language-group" aria-labelledby="taught-heading">
         <div className="language-group-heading">
           <h3 id="taught-heading">Teach your own signs</h3>
-          <span className="tag muted">No automatic model</span>
-          <p>Nothing is recognised until you record examples of the signs you use. They stay on this device.</p>
+          <p>Record your own signs. Examples stay on your device.</p>
         </div>
         {taughtVisible ? (
           taught.length > 0 && <RadioGroup className="language-list" label="Sign languages that use signs you teach" items={taught} selected={selected} onSelect={onSelect}
