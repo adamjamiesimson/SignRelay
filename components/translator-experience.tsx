@@ -85,7 +85,6 @@ export function TranslatorExperience() {
   const [detection, setDetection] = useState<DetectionStatus>(EMPTY_DETECTION);
   const [recognitionState, setRecognitionState] = useState<RecognitionState>("listening");
   const [candidate, setCandidate] = useState<string | null>(null);
-  const [confidence, setConfidence] = useState(0);
   const [bufferSize, setBufferSize] = useState(0);
   const [recognitionFeedback, setRecognitionFeedback] = useState("");
   const [recognitionUnavailable, setRecognitionUnavailable] = useState(false);
@@ -182,7 +181,6 @@ export function TranslatorExperience() {
     return customWords;
   }, [calibrationTemplates, selected]);
 
-  const activeCustomCount = trainedGlosses.size;
 
   const filteredCalibrationVocabulary = useMemo(() => {
     const builtInStarter = selected === "asl" ? [] : PERSONAL_STARTER_VOCABULARY;
@@ -299,7 +297,6 @@ export function TranslatorExperience() {
       setRecognitionUnavailable(false);
       setRecognitionState(message.state);
       setCandidate(message.candidate);
-      setConfidence(message.confidence);
       setBufferSize(message.bufferSize);
       setRecognitionFeedback(message.feedback ?? "");
       setMotionReason(message.motionReason ?? null);
@@ -335,7 +332,6 @@ export function TranslatorExperience() {
         if (status.message) setRecognitionFeedback(status.message);
         if (status.state !== "running") {
           setCandidate(null);
-          setConfidence(0);
           setBufferSize(0);
           setRecognitionState("listening");
         }
@@ -365,7 +361,6 @@ export function TranslatorExperience() {
     setCameraMessage("Camera is off");
     setDetection(EMPTY_DETECTION);
     setCandidate(null);
-    setConfidence(0);
     setBufferSize(0);
     setRecognitionFeedback("");
     setMotionReason(null);
@@ -388,7 +383,6 @@ export function TranslatorExperience() {
 
     workerRef.current?.postMessage({ type: "reset" });
     setCandidate(null);
-    setConfidence(0);
     setBufferSize(0);
     setRecognitionFeedback("");
     setRecognitionUnavailable(false);
