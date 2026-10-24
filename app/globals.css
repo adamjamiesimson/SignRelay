@@ -7,30 +7,39 @@
 :root {
   color-scheme: dark;
 
-  /* Neutral surfaces occupy the page; accent is reserved for actions and selection. */
-  --bg: #101010;
-  --bg-raised: #171717;
-  --surface: #1c1c1c;
-  --surface-2: #242424;
-  --surface-3: #303030;
-  --line: rgb(255 255 255 / 0.08);
-  --line-2: rgb(255 255 255 / 0.14);
+  /* Charcoal carries the page; deep teal anchors visual sections and apricot marks actions. */
+  --bg: #171918;
+  --bg-raised: #1d201e;
+  --surface: #252925;
+  --surface-2: #2d322d;
+  --surface-3: #383e37;
+  --surface-hover: #444b42;
+  --line: rgb(245 242 234 / 0.09);
+  --line-2: rgb(245 242 234 / 0.2);
 
-  /* Text. --text-3 keeps 4.5:1 on --surface-2 and darker. */
-  --text: #f2f2ee;
-  --text-2: #b8b8b2;
-  --text-3: #a0a09a;
+  /* Readable neutral text on every shared dark surface. */
+  --text: #f5f2ea;
+  --text-2: #c2c7bd;
+  --text-3: #afb6a8;
 
-  /* One restrained accent, plus status colours used only for status. */
-  --accent: #5eead4;
-  --accent-2: #2dd4bf;
-  --accent-ink: #032420;
-  --accent-soft: rgb(94 234 212 / 0.1);
-  --accent-line: rgb(94 234 212 / 0.34);
+  /* Apricot links and actions, with semantic warning and error colours. */
+  --accent: #f0ae87;
+  --accent-2: #f0ae87;
+  --accent-ink: #3a2519;
+  --accent-soft: #3a3028;
+  --accent-line: #ba8566;
   --warn: #f2c27c;
-  --warn-soft: rgb(242 194 124 / 0.1);
+  --warn-soft: #3b3123;
   --danger: #ff9389;
-  --danger-soft: rgb(255 147 137 / 0.1);
+  --danger-soft: #402b28;
+
+  --action: #f0ae87;
+  --action-hover: #f6bc99;
+  --action-ink: #3a2519;
+  --forest: #173f38;
+  --forest-hover: #285349;
+  --forest-ink: #f5f2ea;
+  --forest-muted: #c6d6cc;
 
   --radius-sm: 3px;
   --radius: 4px;
@@ -74,7 +83,7 @@ img, svg, video, canvas { display: block; max-width: 100%; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :disabled { cursor: not-allowed; }
-::selection { background: rgb(94 234 212 / 0.28); color: #fff; }
+::selection { background: var(--accent); color: var(--accent-ink); }
 code { font-family: var(--font-mono); font-size: 0.9em; }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-sm); }
@@ -104,13 +113,13 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 .button:disabled { opacity: 0.42; }
 .button.small { min-height: 36px; padding: 0 14px; font-size: 0.875rem; gap: 6px; }
 .button.large { min-height: 52px; padding: 0 26px; font-size: 1rem; }
-.button.primary { background: var(--accent); color: var(--accent-ink); }
-.button.primary:hover:not(:disabled) { background: #7ff0de; }
+.button.primary { background: var(--action); color: var(--action-ink); }
+.button.primary:hover:not(:disabled) { background: var(--action-hover); }
 .button.secondary { background: var(--surface-3); border-color: transparent; color: var(--text); }
-.button.secondary:hover:not(:disabled) { background: #3b3b3b; border-color: transparent; }
+.button.secondary:hover:not(:disabled) { background: var(--surface-hover); border-color: transparent; }
 .button.ghost { background: transparent; border-color: var(--line-2); color: var(--text); }
-.button.ghost:hover:not(:disabled) { background: rgb(255 255 255 / 0.05); }
-.button.danger { background: transparent; border-color: rgb(255 147 137 / 0.36); color: var(--danger); }
+.button.ghost:hover:not(:disabled) { background: var(--surface); }
+.button.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
 .button.danger:hover:not(:disabled) { background: var(--danger-soft); }
 
 .icon-button {
@@ -120,7 +129,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
   background: transparent; color: var(--text-2);
   transition: background-color var(--fast) var(--ease), color var(--fast) var(--ease);
 }
-.icon-button:hover { background: rgb(255 255 255 / 0.07); color: var(--text); }
+.icon-button:hover { background: var(--surface); color: var(--text); }
 
 .text-action, .text-link {
   display: inline-flex; align-items: center; gap: 6px; min-height: 32px;
@@ -161,7 +170,7 @@ input[type="text"], input[type="search"], input:not([type]), select, textarea {
   transition: border-color var(--fast) var(--ease), background-color var(--fast) var(--ease);
 }
 input::placeholder { color: var(--text-3); }
-input:hover, select:hover { border-color: rgb(255 255 255 / 0.22); }
+input:hover, select:hover { border-color: var(--text-2); }
 input:focus-visible, select:focus-visible, textarea:focus-visible { outline-offset: 0; border-color: var(--accent-line); }
 input[type="search"]::-webkit-search-cancel-button { filter: grayscale(1) brightness(1.6); }
 select { appearance: none; padding-right: 40px; cursor: pointer; }

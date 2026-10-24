@@ -9,7 +9,7 @@
   display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px 0 8px;
   border: 0; border-radius: var(--radius); background: none; color: var(--text-2); font-size: 0.9375rem; font-weight: 500;
 }
-.back-link:hover { color: var(--text); background: rgb(255 255 255 / 0.06); }
+.back-link:hover { color: var(--text); background: var(--surface); }
 .workspace-title { display: flex; align-items: center; gap: 12px; min-width: 0; margin-right: auto; }
 .workspace-title h1 { font-size: 1.25rem; }
 .workspace-title p { color: var(--text-2); font-size: 0.875rem; }
@@ -66,27 +66,28 @@
 .recognition-state.uncertain > span { background: var(--warn); }
 
 /* ---------- Camera ---------- */
-.camera-stage { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: var(--radius); background: #080808; border: 0; }
+.camera-stage { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: var(--radius); background: var(--forest); border: 0; }
 .camera-stage video, .camera-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 .camera-stage canvas { pointer-events: none; }
 .camera-placeholder {
   position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 24px;
-  text-align: center; background: var(--bg-raised);
+  text-align: center; background: var(--forest); color: var(--forest-ink);
 }
-.camera-placeholder-icon { display: grid; place-items: center; margin-bottom: 4px; color: var(--text-2); }
-.camera-placeholder.requesting .camera-placeholder-icon, .camera-placeholder.loading .camera-placeholder-icon { color: var(--text); }
-.camera-placeholder.denied .camera-placeholder-icon, .camera-placeholder.error .camera-placeholder-icon { color: var(--warn); border-color: rgb(242 194 124 / 0.35); }
+.camera-placeholder-icon { display: grid; place-items: center; margin-bottom: 4px; color: var(--forest-muted); }
+.camera-placeholder.requesting .camera-placeholder-icon, .camera-placeholder.loading .camera-placeholder-icon { color: var(--forest-ink); }
+.camera-placeholder.denied .camera-placeholder-icon, .camera-placeholder.error .camera-placeholder-icon { color: #f2c27c; }
 .camera-placeholder h3 { font-size: 1.125rem; }
-.camera-placeholder p { max-width: 42ch; color: var(--text-2); font-size: 0.9375rem; }
+.camera-placeholder p { max-width: 42ch; color: var(--forest-muted); font-size: 0.9375rem; }
 .camera-placeholder .button { margin-top: 6px; }
+.camera-placeholder .button:focus-visible { outline-color: var(--action); }
 .camera-guidance {
   position: absolute; left: 12px; right: 12px; bottom: 12px; width: fit-content; max-width: calc(100% - 24px); margin: 0 auto;
-  padding: 6px 10px; border-radius: var(--radius); background: #101010; color: var(--text-2); font-size: 0.875rem; text-align: center;
+  padding: 6px 10px; border-radius: var(--radius); background: var(--forest); color: var(--forest-ink); font-size: 0.875rem; text-align: center;
 }
 @media (max-width: 420px) { .camera-guidance { bottom: 8px; padding: 4px 10px; border-radius: var(--radius); font-size: 0.875rem; } }
 .calibration-capture {
   position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px;
-  background: rgb(7 9 11 / 0.55); text-align: center;
+  background: rgb(7 9 11 / 0.55); color: #fff; text-align: center;
 }
 .calibration-capture span { display: grid; place-items: center; min-width: 72px; height: 72px; padding: 0 14px; border-radius: var(--radius); background: rgb(7 9 11 / 0.75); border: 1px solid var(--line-2); font-size: 1.75rem; font-weight: 700; }
 .calibration-capture.recording span { color: #fff; background: #b4232f; border-color: #e0525c; font-size: 1rem; letter-spacing: 0.08em; }
@@ -217,9 +218,9 @@
 .clip-header h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); letter-spacing: -0.03em; }
 .clip-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, 1fr); gap: 32px; align-items: start; }
 @media (max-width: 900px) { .clip-layout { grid-template-columns: 1fr; } }
-.clip-stage { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-xl); background: #080808; }
+.clip-stage { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-xl); background: var(--forest); }
 .clip-stage video { width: 100%; height: 100%; object-fit: contain; }
-.clip-placeholder { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 8px; color: var(--text-3); font-size: 0.875rem; }
+.clip-placeholder { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 8px; color: var(--forest-muted); font-size: 0.875rem; }
 .clip-panel { display: grid; gap: 16px; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .clip-status { padding: 12px 0; border: 0; border-radius: 0; background: transparent; color: var(--text); font-size: 0.9375rem; }
 .clip-status.error { color: var(--danger); }
