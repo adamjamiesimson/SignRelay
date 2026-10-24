@@ -126,7 +126,7 @@ export function HeroPreview() {
         Illustration, not live: two hands sign Hello, Thank you, Please, Yes, Sorry and No, and one movement gets no confident match, so nothing is added.
       </figcaption>
       <div className="hero-stage">
-        <span className="hero-label"><i aria-hidden="true" />Illustration · Not live</span>
+        <span className="hero-label">Illustration · Not live</span>
         <button type="button" className="hero-motion-toggle" onClick={() => setChoice(playing ? "pause" : "play")}
           aria-label={playing ? "Pause animation" : "Play animation"} aria-pressed={!playing}>
           {playing ? <Pause aria-hidden="true" size={14} /> : <Play aria-hidden="true" size={14} />}
@@ -154,7 +154,7 @@ export function HeroPreview() {
         </svg>
         <div className="hero-status">
           <span className={`hero-state ${view.phase}${view.phase === "result" && !item.confirmed ? " abstain" : ""}`}>
-            <i aria-hidden="true" />{status}
+            {status}
           </span>
           {item.confirmed && view.phase !== "watching" && <span className="hero-gloss" key={`${view.index}-gloss`}>{item.sign}</span>}
         </div>
