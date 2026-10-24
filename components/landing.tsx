@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Camera, Languages, MessageSquareText } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 import { HeroPreview } from "./hero-preview";
 import { LanguagePicker } from "./language-picker";
@@ -13,9 +13,9 @@ type Props = {
 };
 
 const STEPS = [
-  { icon: Languages, title: "Choose a language", body: "Use an experimental model or teach your own signs." },
-  { icon: Camera, title: "Sign to your camera", body: "Video stays on your device." },
-  { icon: MessageSquareText, title: "Use your transcript", body: "Edit, copy or speak the recognized words." },
+  { title: "Choose a language", body: "Use an experimental model or teach your own signs." },
+  { title: "Sign to your camera", body: "Video stays on your device." },
+  { title: "Use your transcript", body: "Edit, copy or speak the recognized words." },
 ];
 
 export function Landing({ selected, onSelect, onStart }: Props) {
@@ -39,9 +39,8 @@ export function Landing({ selected, onSelect, onStart }: Props) {
           <h2 id="steps-title">How it works</h2>
         </div>
         <ol className="steps">
-          {STEPS.map(({ icon: Icon, title, body }) => (
-            <li className="card step" key={title}>
-              <span className="step-icon" aria-hidden="true"><Icon size={20} /></span>
+          {STEPS.map(({ title, body }) => (
+            <li className="step" key={title}>
               <h3>{title}</h3>
               <p>{body}</p>
             </li>

@@ -7,19 +7,19 @@
 :root {
   color-scheme: dark;
 
-  /* Surfaces: charcoal, lifted in small steps. */
-  --bg: #0a0c0e;
-  --bg-raised: #0e1114;
-  --surface: #13171b;
-  --surface-2: #181d22;
-  --surface-3: #20262c;
+  /* Neutral surfaces occupy the page; accent is reserved for actions and selection. */
+  --bg: #101010;
+  --bg-raised: #171717;
+  --surface: #1c1c1c;
+  --surface-2: #242424;
+  --surface-3: #303030;
   --line: rgb(255 255 255 / 0.08);
   --line-2: rgb(255 255 255 / 0.14);
 
   /* Text. --text-3 keeps 4.5:1 on --surface-2 and darker. */
-  --text: #eef1f3;
-  --text-2: #a9b2ba;
-  --text-3: #808b94;
+  --text: #f2f2ee;
+  --text-2: #b8b8b2;
+  --text-3: #a0a09a;
 
   /* One restrained accent, plus status colours used only for status. */
   --accent: #5eead4;
@@ -32,11 +32,10 @@
   --danger: #ff9389;
   --danger-soft: rgb(255 147 137 / 0.1);
 
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
-  --shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 24px 60px -32px rgb(0 0 0 / 0.7);
+  --radius-sm: 3px;
+  --radius: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
 
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -88,9 +87,9 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 .app-shell { min-height: 100vh; display: flex; flex-direction: column; overflow-x: clip; }
 .app-shell > main { flex: 1; }
 
-.eyebrow { color: var(--accent); font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.02em; }
+.eyebrow { color: var(--accent); font-size: 0.875rem; font-weight: 600; letter-spacing: 0.02em; }
 .lead { color: var(--text-2); font-size: clamp(1.0625rem, 1.6vw, 1.1875rem); line-height: 1.6; }
-.field-hint { color: var(--text-3); font-size: 0.8125rem; line-height: 1.5; }
+.field-hint { color: var(--text-3); font-size: 0.875rem; line-height: 1.5; }
 
 /* ---------- Buttons ---------- */
 .button {
@@ -99,17 +98,16 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
   border: 1px solid transparent; border-radius: var(--radius);
   font-size: 0.9375rem; font-weight: 600; line-height: 1.2; white-space: nowrap;
   text-decoration: none;
-  transition: background-color var(--fast) var(--ease), border-color var(--fast) var(--ease), color var(--fast) var(--ease), transform var(--fast) var(--ease);
+  transition: background-color var(--fast) var(--ease), border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 }
 .button:hover { text-decoration: none; }
-.button:active:not(:disabled) { transform: translateY(1px); }
 .button:disabled { opacity: 0.42; }
 .button.small { min-height: 36px; padding: 0 14px; font-size: 0.875rem; gap: 6px; }
 .button.large { min-height: 52px; padding: 0 26px; font-size: 1rem; }
 .button.primary { background: var(--accent); color: var(--accent-ink); }
 .button.primary:hover:not(:disabled) { background: #7ff0de; }
-.button.secondary { background: var(--surface-3); border-color: var(--line-2); color: var(--text); }
-.button.secondary:hover:not(:disabled) { background: #283038; border-color: rgb(255 255 255 / 0.2); }
+.button.secondary { background: var(--surface-3); border-color: transparent; color: var(--text); }
+.button.secondary:hover:not(:disabled) { background: #3b3b3b; border-color: transparent; }
 .button.ghost { background: transparent; border-color: var(--line-2); color: var(--text); }
 .button.ghost:hover:not(:disabled) { background: rgb(255 255 255 / 0.05); }
 .button.danger { background: transparent; border-color: rgb(255 147 137 / 0.36); color: var(--danger); }
@@ -134,12 +132,12 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 /* ---------- Simple inline labels; no ornamental pill badges ---------- */
 .tag {
   display: inline; padding: 0; border: 0; border-radius: 0; background: none;
-  color: var(--accent); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.01em;
+  color: var(--accent); font-size: 0.875rem; font-weight: 600; letter-spacing: 0.01em;
 }
 .tag.muted { color: var(--text-3); }
 .pill {
   display: inline; padding: 0; border: 0; border-radius: 0; background: none;
-  color: var(--text-3); font-size: 0.8125rem; font-weight: 500;
+  color: var(--text-3); font-size: 0.875rem; font-weight: 500;
 }
 
 .notice {
@@ -148,12 +146,12 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 }
 .notice strong { color: var(--text); }
 .notice.compact { padding: 10px 14px; font-size: 0.875rem; }
-.notice.warn { border-color: rgb(242 194 124 / 0.3); background: var(--warn-soft); }
-.notice.error { border-color: rgb(255 147 137 / 0.34); background: var(--danger-soft); color: var(--text); }
-.empty-state { padding: 18px; border: 1px dashed var(--line-2); border-radius: var(--radius); color: var(--text-3); text-align: center; font-size: 0.9375rem; }
+.notice.warn { border-color: transparent; background: var(--surface-2); }
+.notice.error { border-color: transparent; background: var(--surface-2); color: var(--danger); }
+.empty-state { padding: 18px 0; border: 0; border-radius: 0; color: var(--text-3); text-align: center; font-size: 0.9375rem; }
 
 /* ---------- Cards ---------- */
-.card { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.card { border: 0; border-radius: 0; background: transparent; }
 
 /* ---------- Form controls ---------- */
 input[type="text"], input[type="search"], input:not([type]), select, textarea {
@@ -202,9 +200,9 @@ details[open] > summary > svg:last-child { transform: rotate(180deg); }
 .modal {
   width: min(480px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0;
   border: 1px solid var(--line-2); border-radius: var(--radius-xl);
-  background: var(--surface); color: var(--text); box-shadow: 0 40px 120px -20px rgb(0 0 0 / 0.8);
+  background: var(--surface); color: var(--text);
 }
-.modal::backdrop { background: rgb(4 6 8 / 0.7); backdrop-filter: blur(4px); }
+.modal::backdrop { background: rgb(0 0 0 / 0.75); }
 .modal-body { display: grid; gap: 14px; padding: 26px; }
 .modal-body h2 { font-size: 1.25rem; }
 .modal-body p { color: var(--text-2); }

@@ -1,20 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { BookPlus, Camera, Languages, MessageSquareText, type LucideIcon } from "lucide-react";
 import type { OnboardingStatus } from "@/lib/browser-storage";
 
-type Step = { target: string; title: string; body: string; icon: LucideIcon };
+type Step = { target: string; title: string; body: string };
 
 /** Four short steps over the real workspace. Nothing here starts the camera. */
 export const TOUR_STEPS: Step[] = [
-  { target: "language", icon: Languages, title: "Choose your language",
+  { target: "language", title: "Choose your language",
     body: "Switch sign language here at any time. Seven have experimental automatic recognition; the others recognise only signs you teach." },
-  { target: "camera", icon: Camera, title: "Start signing",
+  { target: "camera", title: "Start signing",
     body: "Turn the camera on when you are ready; your browser asks for permission first. Video is analysed on this device and never uploaded." },
-  { target: "transcript", icon: MessageSquareText, title: "Your words, your way",
+  { target: "transcript", title: "Your words, your way",
     body: "Only confirmed words appear here. Edit or remove any word, copy the text, or have it spoken aloud by your device." },
-  { target: "teach", icon: BookPlus, title: "Teach SignRelay",
+  { target: "teach", title: "Teach SignRelay",
     body: "Record your own signs to add words. They are saved only in this browser; Clear local data, under Privacy & data, removes them along with transcripts, settings and this tour." },
 ];
 
@@ -67,7 +66,6 @@ export function OnboardingTour({ open, onClose }: { open: boolean; onClose: (sta
   const go = (next: number) => setIndex(Math.max(0, Math.min(TOUR_STEPS.length - 1, next)));
   // Start from the first step next time the tour opens.
   const close = (status: OnboardingStatus) => { setIndex(0); setRect(null); onClose(status); };
-  const Icon = step.icon;
   const pad = 8;
   const spotlight = rect && { top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 };
 
@@ -82,7 +80,6 @@ export function OnboardingTour({ open, onClose }: { open: boolean; onClose: (sta
         <div className={`tour-spotlight${spotlight ? "" : " none"}`} aria-hidden="true" style={spotlight ?? undefined} />
         <div className="tour-card" style={spotlight ? tourCardPosition(spotlight) : undefined}>
           <div className="tour-card-head">
-            <span className="tour-icon" aria-hidden="true"><Icon size={20} /></span>
             <span className="tour-count">Step {index + 1} of {TOUR_STEPS.length}</span>
           </div>
           <h2 id="tour-title" ref={headingRef} tabIndex={-1}>{step.title}</h2>

@@ -130,13 +130,6 @@ export function HeroPreview() {
           {playing ? <Pause aria-hidden="true" size={14} /> : <Play aria-hidden="true" size={14} />}
         </button>
         <svg className="hero-hands" viewBox="0 0 400 300" aria-hidden="true" focusable="false">
-          <defs>
-            <radialGradient id="hero-space" cx="50%" cy="50%" r="50%">
-              <stop offset="0" stopColor="rgb(94 234 212 / .10)" />
-              <stop offset="1" stopColor="rgb(94 234 212 / 0)" />
-            </radialGradient>
-          </defs>
-          <ellipse cx="220" cy="170" rx="210" ry="160" fill="url(#hero-space)" />
           {[0, 1, 2].map(i => <path key={i} className={`hero-trail t${i}`} ref={node => { trailRefs.current[i] = node; }} />)}
           <circle className="hero-pulse" ref={pulseRef} r="22" opacity="0" />
           {(["support", "dominant"] as const).map(key => (
