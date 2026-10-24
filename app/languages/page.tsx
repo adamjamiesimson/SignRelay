@@ -45,7 +45,7 @@ export default function LanguagesPage() {
                 <article className="figma-language-page-card automatic" key={language.id}>
                   <div className="figma-language-page-card-head">
                     <div><strong>{language.shortName}</strong><span>{language.language}</span></div>
-                    <em>AUTO</em>
+                    <em className="beta-badge" title="Experimental automatic recognition; live accuracy is not fully validated"><span aria-hidden="true">β</span>Beta</em>
                   </div>
                   <p>{language.summary}</p>
                   <div className="figma-language-page-meta">
@@ -70,7 +70,7 @@ export default function LanguagesPage() {
                   <article className="figma-language-page-card preparing" key={language.id}>
                     <div className="figma-language-page-card-head">
                       <div><strong>{language.shortName}</strong><span>{language.language}</span></div>
-                      <em>PREPARING</em>
+                      <em title="Automatic recognition is in development; personal signs require training">In progress</em>
                     </div>
                     <p>{language.summary}</p>
                   </article>
@@ -91,7 +91,7 @@ export default function LanguagesPage() {
                 <article className="figma-language-page-card personal" key={language.id}>
                   <div className="figma-language-page-card-head">
                     <div><strong>{language.shortName}</strong><span>{language.language}</span></div>
-                    <em className="beta-badge"><span aria-hidden="true">β</span>BETA</em>
+                    <em title="Automatic recognition is in development; personal signs require training">In progress</em>
                   </div>
                   <p>{language.summary}</p>
                 </article>
