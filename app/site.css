@@ -77,14 +77,14 @@
 
 /* ---------- Reference-led home composition ---------- */
 .home-shell {
-  --gutter: clamp(24px, 5vw, 64px);
-  width: min(1440px, calc(100% - 56px)); margin: 28px auto;
+  --gutter: clamp(24px, 4vw, 48px);
+  width: min(1440px, calc(100% - 40px)); margin: 20px auto;
   border: 1px solid #294538; border-radius: 18px; overflow: clip;
   background: radial-gradient(ellipse 20% 36% at 0% 10%, #12382b61, transparent),
     radial-gradient(ellipse 20% 30% at 100% 12%, #17473852, transparent), #080c09;
 }
 .home-shell .site-header { position: relative; background: transparent; }
-.home-shell .site-header-inner { min-height: 104px; }
+.home-shell .site-header-inner { min-height: 76px; }
 .home-shell .brand-mark { width: 24px; height: 24px; }
 .home-shell .brand-wordmark { font-size: 1rem; font-weight: 500; }
 .home-shell .site-nav { gap: 18px; }
@@ -94,9 +94,9 @@
 .landing { width: min(var(--page), 100% - var(--gutter) * 2); margin: 0 auto; }
 .hero {
   position: relative; display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); grid-template-rows: min-content 1fr;
-  column-gap: clamp(50px, 10vw, 144px); row-gap: 28px;
-  min-height: clamp(640px, 58vw, 780px); padding: clamp(58px, 7vw, 104px) 0 60px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); grid-template-rows: min-content min-content;
+  column-gap: clamp(32px, 6vw, 80px); row-gap: 18px;
+  min-height: clamp(400px, 34vw, 480px); padding: 32px 0;
 }
 .hero-copy { display: contents; }
 .hero h1 {
@@ -115,30 +115,32 @@
 .hero-secondary-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--text-2); font-size: 0.875rem; }
 .hero-sculpture {
   position: absolute; z-index: 0; pointer-events: none;
-  width: 88%; max-width: none; height: auto; right: calc(-1 * var(--gutter)); bottom: 0;
+  width: 82%; max-width: none; height: auto; right: calc(-1 * var(--gutter)); bottom: 0;
   mix-blend-mode: lighten;
 }
 .sign-demo {
   display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1fr); align-items: center;
-  gap: clamp(36px, 8vw, 100px); border-top: 1px solid var(--line); padding: 72px 0 16px; scroll-margin-top: 32px;
+  gap: clamp(28px, 5vw, 56px); border-top: 1px solid var(--line); padding: 36px 0 0; scroll-margin-top: 32px;
 }
-.sign-demo-copy { display: grid; justify-items: start; gap: 24px; }
+.sign-demo-copy { display: grid; justify-items: start; gap: 20px; }
+.sign-demo .hero-preview { width: 100%; max-width: 420px; justify-self: end; }
 .sign-demo h2 { font-family: "SignRelay Display", var(--font); font-weight: 400; font-size: clamp(2rem, 4vw, 3.3rem); line-height: 1.15; letter-spacing: -.04em; }
 .sign-demo .lead { max-width: 30ch; font-size: 1rem; }
 @media (max-width: 1000px) {
-  .hero { column-gap: 40px; min-height: 620px; }
+  .hero { column-gap: 32px; min-height: 380px; }
   .hero h1 { font-size: clamp(2.4rem, 4.8vw, 3.4rem); }
   .home-shell .site-nav { gap: 14px; }
 }
 @media (max-width: 760px) {
   .home-shell { width: calc(100% - 24px); margin: 12px auto; border-radius: 12px; --gutter: 24px; }
-  .home-shell .site-header-inner { min-height: 80px; }
-  .hero { display: flex; flex-direction: column; gap: 24px; padding: 42px 0 0; min-height: 0; }
+  .home-shell .site-header-inner { min-height: 68px; }
+  .hero { display: flex; flex-direction: column; gap: 18px; padding: 20px 0 0; min-height: 0; }
   .hero-copy { display: contents; }
   .hero h1 { font-size: clamp(2.3rem, 7vw, 3.8rem); line-height: 1.14; }
   .hero-actions { gap: 18px; }
   .hero-sculpture { position: relative; width: calc(100% + 48px); right: auto; bottom: auto; align-self: center; margin-top: -12px; }
-  .sign-demo { grid-template-columns: 1fr; gap: 32px; padding-top: 48px; }
+  .sign-demo { grid-template-columns: 1fr; gap: 24px; padding-top: 28px; }
+  .sign-demo .hero-preview { justify-self: center; }
   .sign-demo-copy { gap: 18px; }
 }
 
