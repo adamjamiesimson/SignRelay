@@ -25,6 +25,15 @@ export function modeLabel(language: ModelAdapter) {
 const normalise = (value: string) => value.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("en");
 const matches = (language: ModelAdapter, query: string) => !query || normalise(`${language.shortName} ${language.language}`).includes(query);
 
+/** Availability label: model installed does not imply measured real-world accuracy. */
+export function LanguageStatus({ language }: { language: ModelAdapter }) {
+  const automatic = language.status === "experimental";
+  return <span className={`language-status ${automatic ? "beta" : "in-progress"}`}
+    title={automatic ? "Experimental automatic recognition; real-world accuracy is not yet validated" : "No shared automatic model; record personal signs on this device"}>
+    {automatic ? "Beta" : "In progress"}
+  </span>;
+}
+
 type Props = { selected: LanguageId; onSelect: (language: LanguageId) => unknown };
 
 /** Two radio groups sharing one selection: languages with experimental
@@ -51,13 +60,13 @@ export function LanguagePicker({ selected, onSelect }: Props) {
       <section className="language-group" aria-labelledby="automatic-heading">
         <div className="language-group-heading">
           <h3 id="automatic-heading">Automatic recognition</h3>
-          <span className="tag">Experimental</span>
+          <span className="tag">Beta · Experimental</span>
           <p>A built-in vocabulary is recognised with no setup. Results are research previews; check every word.</p>
         </div>
         {automatic.length > 0 && (
           <RadioGroup className="language-row" label="Sign languages with automatic recognition" items={automatic} selected={selected} onSelect={onSelect}
             render={language => <>
-              <span className="language-card-head"><strong>{language.shortName}</strong>{selected === language.id && <Check aria-hidden="true" size={16} />}</span>
+              <span className="language-card-head"><strong>{language.shortName}</strong><span className="language-card-actions"><LanguageStatus language={language} />{selected === language.id && <Check aria-hidden="true" size={16} />}</span></span>
               <span className="language-card-name">{language.language}</span>
               {isLanguageAvailable(language.id)
                 ? <span className="language-card-meta"><span>{vocabularyLabel(language)}</span><span>{modeLabel(language)}</span></span>
@@ -76,7 +85,8 @@ export function LanguagePicker({ selected, onSelect }: Props) {
           taught.length > 0 && <RadioGroup className="language-list" label="Sign languages that use signs you teach" items={taught} selected={selected} onSelect={onSelect}
             render={language => <>
               <strong>{language.shortName}</strong>
-              <span>{language.language}{isLanguageAvailable(language.id) ? "" : ` · ${OUT_OF_PROFILE_LABEL}`}</span>
+              <span className="language-list-name">{language.language}{isLanguageAvailable(language.id) ? "" : ` · ${OUT_OF_PROFILE_LABEL}`}</span>
+              <LanguageStatus language={language} />
             </>} />
         ) : (
           <button type="button" className="button ghost small" onClick={() => setShowTaught(true)}>
