@@ -1,4 +1,5 @@
 import type { LanguageId } from "./model-adapters";
+import type { PackedTemplates } from "./template-transport";
 
 export type Point = {
   x: number;
@@ -60,7 +61,8 @@ export type CalibrationTemplate = {
 export type WorkerInput = (
   | { type: "frame"; frame: VisionFrame }
   | { type: "reset" }
-  | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[] }
+  // RecognitionSession sends PackedTemplates; plain arrays remain accepted.
+  | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[] | PackedTemplates }
 ) & { session?: number; frameId?: number };
 
 export type DetectionStatus = {

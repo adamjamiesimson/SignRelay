@@ -26,7 +26,7 @@ try {
   const workerScript = path.join(temporary, "recognition-worker.mjs"), workload = path.join(temporary, "workload.mjs");
   await bundle("workers/recognition.worker.ts", workerScript);
   await bundle("scripts/benchmarks/matching-workload.ts", workload);
-  const { makeSign, examples } = await import(pathToFileURL(workload).href);
+  const { makeSign, examples, packTemplates } = await import(pathToFileURL(workload).href);
   // A repeating signing session: six signs with rests, as at a demo booth.
   const cycle = ["HELLO", "THANK YOU", "PLEASE", "SORRY", "YES", "NO"].flatMap(sign => [
     ...makeSign(sign, { duration: 1000, count: 21 }), ...Array.from({ length: 14 }, () => ({ timestamp: 0, hands: [], face: [], pose: [] }))]);
@@ -57,7 +57,10 @@ try {
       const ms = performance.now() - inFlight.sentAt;
       latency.push({ t: (performance.now() - started) / 1000, ms }); acknowledged++; inFlight = null; pump();
     };
-    worker.postMessage({ type: "templates", language: scenario.language, templates: scenario.templates, session: 1 });
+    // Posted as the app's RecognitionSession posts it: one transferred buffer.
+    const packed = packTemplates(scenario.templates);
+    await worker.ready;
+    worker.thread.postMessage({ type: "templates", language: scenario.language, templates: packed, session: 1 }, [packed.values.buffer]);
     const started = performance.now();
     let frameTime = 1000, next = performance.now(), sampleAt = 0;
     while (performance.now() - started < seconds * 1000) {

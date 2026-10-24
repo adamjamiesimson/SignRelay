@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { recognizePersonalTemplateAsync } from "@/lib/personalized-recognition";
 import { recognizePsl776 } from "@/lib/psl776-runtime";
-import type { MatchInput, MatchOutput } from "@/lib/template-matching-client";
+import { unpackTemplates, type MatchInput, type MatchOutput } from "@/lib/template-matching-client";
 import type { CalibrationTemplate } from "@/lib/vision-types";
 
 let kind: "personal" | "psl" = "personal";
@@ -11,7 +11,7 @@ let controller: AbortController | null = null;
 self.onmessage = async ({ data }: MessageEvent<MatchInput>) => {
   if (data.type !== "match") {
     controller?.abort();
-    if (data.type === "configure") { kind = data.kind; templates = data.templates; }
+    if (data.type === "configure") { kind = data.kind; templates = unpackTemplates(data.templates); }
     return;
   }
   controller?.abort();

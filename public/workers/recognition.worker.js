@@ -11275,6 +11275,31 @@ function readable3(label) {
   );
 }
 
+// lib/template-transport.ts
+function packTemplates(templates) {
+  let size = 0;
+  for (const template of templates) for (const row of template.frames) size += row.length;
+  const values = new Float64Array(size);
+  let offset = 0;
+  const meta = templates.map(({ frames: frames2, ...rest }) => {
+    for (const row of frames2) {
+      values.set(row, offset);
+      offset += row.length;
+    }
+    return { ...rest, widths: frames2.map((row) => row.length) };
+  });
+  return { meta, values };
+}
+function unpackTemplates({ meta, values }) {
+  let offset = 0;
+  return meta.map(({ widths, ...rest }) => ({ ...rest, frames: widths.map((width) => {
+    const row = new Array(width);
+    for (let k = 0; k < width; k++) row[k] = values[offset + k];
+    offset += width;
+    return row;
+  }) }));
+}
+
 // lib/template-matching-client.ts
 var MAX_RESULT_AGE_MS = 2500;
 var TemplateMatchingClient = class {
@@ -11300,7 +11325,8 @@ var TemplateMatchingClient = class {
     this.reset();
     this.templates = templates;
     try {
-      this.worker?.postMessage({ type: "configure", kind: this.kind, templates });
+      if (this.worker) this.postTemplates(this.worker);
+      else if (this.kind === "personal" && templates.length && !this.closed && performance.now() >= this.retryAfter) this.ensureWorker();
     } catch {
       this.fail("Saved signs could not be sent to the matcher. Retrying shortly\u2026");
     }
@@ -11336,41 +11362,48 @@ var TemplateMatchingClient = class {
       return;
     }
     try {
-      if (!this.worker) {
-        const worker = this.createWorker();
-        this.worker = worker;
-        worker.onmessage = ({ data }) => {
-          if (worker !== this.worker || data.id !== this.active?.request.id) return;
-          if (data.phase) {
-            if (data.generation === this.generation) this.armTimeout(data.phase === "loading" ? 4e5 : 2e4);
-            return;
-          }
-          const { request, submittedAt } = this.active;
-          this.clearTimer();
-          this.active = null;
-          if (data.generation === this.generation && request.generation === this.generation) {
-            if (data.error) {
-              this.fail(data.error);
-              return;
-            }
-            const timestamp = request.frames.at(-1).timestamp;
-            if (this.newestTimestamp - timestamp <= MAX_RESULT_AGE_MS && performance.now() - submittedAt <= MAX_RESULT_AGE_MS) this.onResult(data.prediction, timestamp);
-            this.failures = 0;
-          }
-          this.pump();
-        };
-        worker.onerror = worker.onmessageerror = () => {
-          if (worker === this.worker) this.fail("Template matching was interrupted. Retrying shortly\u2026");
-        };
-        worker.postMessage({ type: "configure", kind: this.kind, templates: this.templates });
-      }
+      const worker = this.ensureWorker();
       this.active = this.queued;
       this.queued = null;
-      this.worker.postMessage(this.active.request);
+      worker.postMessage(this.active.request);
       this.armTimeout(12e4);
     } catch {
       this.fail("Template matching could not start. Retrying shortly\u2026");
     }
+  }
+  postTemplates(worker) {
+    const templates = packTemplates(this.templates);
+    worker.postMessage({ type: "configure", kind: this.kind, templates }, [templates.values.buffer]);
+  }
+  ensureWorker() {
+    if (this.worker) return this.worker;
+    const worker = this.createWorker();
+    this.worker = worker;
+    worker.onmessage = ({ data }) => {
+      if (worker !== this.worker || data.id !== this.active?.request.id) return;
+      if (data.phase) {
+        if (data.generation === this.generation) this.armTimeout(data.phase === "loading" ? 4e5 : 2e4);
+        return;
+      }
+      const { request, submittedAt } = this.active;
+      this.clearTimer();
+      this.active = null;
+      if (data.generation === this.generation && request.generation === this.generation) {
+        if (data.error) {
+          this.fail(data.error);
+          return;
+        }
+        const timestamp = request.frames.at(-1).timestamp;
+        if (this.newestTimestamp - timestamp <= MAX_RESULT_AGE_MS && performance.now() - submittedAt <= MAX_RESULT_AGE_MS) this.onResult(data.prediction, timestamp);
+        this.failures = 0;
+      }
+      this.pump();
+    };
+    worker.onerror = worker.onmessageerror = () => {
+      if (worker === this.worker) this.fail("Template matching was interrupted. Retrying shortly\u2026");
+    };
+    this.postTemplates(worker);
+    return worker;
   }
   fail(message) {
     this.dispose();
@@ -15201,7 +15234,8 @@ function resetSession() {
 self.onmessage = async (event) => {
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
-    personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
+    const { templates } = event.data;
+    personalTemplates = templatesForLanguage(Array.isArray(templates) ? templates : unpackTemplates(templates), activeLanguage);
     resetSession();
     personalMatcher.configure(personalTemplates);
     return;

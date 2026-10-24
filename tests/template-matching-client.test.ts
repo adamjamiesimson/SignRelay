@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { TemplateMatchingClient, type MatchInput, type MatchOutput } from "../lib/template-matching-client";
+import { packTemplates, TemplateMatchingClient, unpackTemplates, type MatchInput, type MatchOutput } from "../lib/template-matching-client";
+import { prepareCalibrationSequence, recognizePersonalTemplate } from "../lib/personalized-recognition";
+import type { CalibrationTemplate } from "../lib/vision-types";
 import { makeSign } from "./fixtures/asl-motion";
 
 function harness() {
@@ -86,5 +88,53 @@ describe("bounded template matching lane", () => {
     expect(h.requests()).toHaveLength(1); expect(h.result).not.toHaveBeenCalled();
     h.client.submit(h.frames(3000)); expect(h.requests()).toHaveLength(2);
     h.finish(); expect(h.result).toHaveBeenCalledOnce(); h.client.terminate();
+  });
+});
+
+describe("template transport to the matcher", () => {
+  const example = (id: string, gloss: string, offset: number, width = 240): CalibrationTemplate => ({
+    id, gloss, text: gloss.toLowerCase(), language: "csl", createdAt: offset,
+    frames: prepareCalibrationSequence(makeSign("HELLO")).map((row, r) =>
+      row.slice(0, width).map((value, k) => k % 7 === 0 ? value : value + offset * 0.013 + r * 1e-9)),
+  });
+  it("round-trips every value exactly, including legacy 208-feature rows, -0 and non-finite values", () => {
+    const legacy = example("legacy", "OLD", 2, 208);
+    legacy.frames[3][5] = -0; legacy.frames[4][6] = Number.NaN;
+    const templates = [example("a", "BOOK", 1), legacy, { ...example("b", "BOOK", 3), language: undefined }];
+    const packed = packTemplates(templates);
+    expect(packed.values).toBeInstanceOf(Float64Array);
+    const restored = unpackTemplates(structuredClone(packed));
+    expect(restored).toEqual(templates);
+    expect(Object.is(restored[1].frames[3][5], -0)).toBe(true);
+    expect(restored.map(t => "language" in t)).toEqual(templates.map(t => "language" in t));
+  });
+  it("gives the same personal decision from transported templates", () => {
+    const templates = [example("a", "BOOK", 0), example("b", "BOOK", 1), example("c", "TREE", 9), example("d", "LAMP", 30)];
+    const restored = unpackTemplates(packTemplates(templates));
+    for (const sign of ["HELLO", "THANK YOU", "PLEASE", "SORRY", "YES", "NO"] as const) {
+      const frames = makeSign(sign);
+      expect(recognizePersonalTemplate(frames, restored)).toEqual(recognizePersonalTemplate(frames, templates));
+    }
+    expect(recognizePersonalTemplate(makeSign("HELLO"), restored)?.label).toBe("BOOK");
+  });
+  it("transfers one buffer instead of cloning nested arrays, and starts a personal matcher when templates arrive", () => {
+    const ports: Array<{ postMessage: ReturnType<typeof vi.fn>; terminate: ReturnType<typeof vi.fn>; onmessage: null; onerror: null; onmessageerror: null }> = [];
+    const create = vi.fn(() => { const port = { postMessage: vi.fn(), terminate: vi.fn(), onmessage: null, onerror: null, onmessageerror: null }; ports.push(port); return port; });
+    const client = new TemplateMatchingClient("personal", vi.fn(), vi.fn(), create);
+    client.configure([]);
+    expect(create).not.toHaveBeenCalled();
+    client.configure([example("a", "BOOK", 1)]);
+    expect(create).toHaveBeenCalledOnce();
+    const [message, transfer] = ports[0].postMessage.mock.calls.find(([m]) => m.type === "configure")!;
+    expect(transfer).toEqual([message.templates.values.buffer]);
+    expect(unpackTemplates(message.templates)[0].gloss).toBe("BOOK");
+    client.configure([example("b", "TREE", 2)]);
+    expect(create).toHaveBeenCalledOnce();
+    expect(ports[0].postMessage.mock.calls.filter(([m]) => m.type === "configure")).toHaveLength(2);
+    client.terminate();
+  });
+  it("keeps the PSL matcher lazy, so its references download only when PSL is used", () => {
+    const create = vi.fn(); const client = new TemplateMatchingClient("psl", vi.fn(), vi.fn(), create);
+    client.configure([]); expect(create).not.toHaveBeenCalled(); client.terminate();
   });
 });

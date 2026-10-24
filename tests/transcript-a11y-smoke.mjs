@@ -68,7 +68,9 @@ try {
   await h.browser.send("Input.insertText", { text: " there" });
   await h.browser.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13, text: "\r" });
   await until(async () => (await h.words())[0] === "Hello there", "Keyboard edit was not saved");
-  checks.push({ check: "keyboard edit of a transcript entry" });
+  await until(() => h.evaluate("document.activeElement?.getAttribute('aria-label') === 'Edit Hello there'"),
+    "Saving an edit with Enter dropped keyboard focus instead of returning it to the entry", 20);
+  checks.push({ check: "keyboard edit of a transcript entry keeps focus on that entry" });
 
   // Touch targets on a phone viewport (WCAG 2.2 AA 2.5.8: at least 24×24 CSS px).
   await h.browser.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 3, mobile: true });
@@ -95,6 +97,7 @@ try {
   await key("Enter", "Enter", 13);
   await until(async () => !(await h.words()).includes("Thank you") && !(await h.words()).includes(""), "Emptied entry was kept");
   assert.deepEqual(await h.words(), ["Hello there", "Please", "Sorry", "Yes", "No"], "Only the emptied entry is removed");
+  await until(() => h.evaluate("document.activeElement?.id === 'transcript-title'"), "Focus is lost after an edit removes the entry", 20);
   checks.push({ check: "emptying an entry removes it" });
 
   // Removing an entry keeps keyboard focus in the transcript and says what happened.
@@ -123,5 +126,46 @@ try {
   const running = await h.evaluate("document.getAnimations().filter(a => a.playState === 'running').length");
   assert.equal(running, 0, "Animations keep running with prefers-reduced-motion: reduce");
   checks.push({ check: "prefers-reduced-motion stops CSS animations and transitions", running_by_default: runningByDefault, running_with_reduce: running });
+
+  // Preferences survive a reload (Auto speak was switched on above), and
+  // Clear local data leaves no settings record behind.
+  const storedSettings = () => h.evaluate("localStorage.getItem('signrelay.settings.v1')");
+  assert.equal(JSON.parse(await storedSettings())?.autoSpeak, true, "Reloading the page overwrote the saved Auto speak preference");
+  await h.start();
+  assert.equal(await h.evaluate("document.querySelector('.switch-row.prominent input').checked"), true, "Auto speak was not restored after a reload");
+  await h.click("Clear local data");
+  await until(async () => (await storedSettings()) === null, "Clear local data left the settings record in storage");
+  await pause(300);
+  assert.equal(await storedSettings(), null, "Settings were written back right after Clear local data");
+  await h.open();
+  await pause(300);
+  assert.equal(await storedSettings(), null, "Loading the page re-created a cleared settings record");
+  checks.push({ check: "settings persist across reloads and stay cleared after Clear local data" });
+
+  // Record pressed while the camera is still starting waits for it, rather
+  // than reporting that the camera is off.
+  await h.open();
+  await h.click("Start translating");
+  await h.click("Start camera & record");
+  await until(() => h.evaluate("!!document.querySelector('.calibration-capture.countdown, .calibration-capture.recording')"),
+    "Recording did not start after the camera finished starting");
+  assert.ok(!(await h.evaluate("document.body.textContent.includes('Start the camera before recording')")), "Record during camera start-up reported the camera as off");
+  checks.push({ check: "record pressed during camera start-up waits for the camera" });
+
+  // No page may scroll sideways on a small phone (WCAG 2.2 1.4.10 reflow).
+  const wide = [];
+  for (const width of [320, 390]) {
+    await h.browser.send("Emulation.setDeviceMetricsOverride", { width, height: 800, deviceScaleFactor: 2, mobile: true });
+    for (const path of ["/", "/languages", "/models", "/privacy", "/about", "/how-it-works", "/roadmap", "/terms"]) {
+      await h.browser.send("Page.navigate", { url: `${h.origin}${path}` });
+      await until(() => h.evaluate("document.readyState === 'complete'"), `${path} did not load`);
+      await pause(300);
+      const { scroll, viewport } = await h.evaluate("({ scroll: document.documentElement.scrollWidth, viewport: window.visualViewport.width })");
+      if (scroll > viewport + 1) wide.push(`${path} at ${width} px is ${scroll} px wide`);
+    }
+  }
+  await h.browser.send("Emulation.clearDeviceMetricsOverride");
+  assert.deepEqual(wide, [], "Pages wider than a phone screen");
+  checks.push({ check: "no horizontal scrolling on 8 pages at 320 and 390 px" });
   console.log(JSON.stringify({ passed: true, checks, environment: "headless Chromium, rehearsal build with synthetic landmarks; not an assistive-technology user test" }));
 } finally { await h.close(); }

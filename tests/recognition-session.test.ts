@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RecognitionSession } from "../lib/recognition-session";
+import { unpackTemplates, type PackedTemplates } from "../lib/template-transport";
 import type { WorkerInput, WorkerMessage } from "../lib/vision-types";
 
 class FakeWorker {
   onmessage: ((event: MessageEvent<WorkerMessage>) => void) | null = null;
   onerror: (() => void) | null = null;
   onmessageerror: (() => void) | null = null;
-  postMessage = vi.fn<(message: WorkerInput) => void>();
+  postMessage = vi.fn<(message: WorkerInput, transfer?: Transferable[] | StructuredSerializeOptions) => void>();
   terminate = vi.fn();
   frames() { return this.postMessage.mock.calls.map(([message]) => message).filter(message => message.type === "frame"); }
   acknowledge(frame = this.frames().at(-1)!) {
@@ -45,7 +46,12 @@ describe("ongoing recognition sessions", () => {
     vi.advanceTimersByTime(8000);
     expect(workers[0].terminate).toHaveBeenCalledOnce();
     expect(workers).toHaveLength(2);
-    expect(workers[1].postMessage).toHaveBeenCalledWith(expect.objectContaining({ type: "templates", language: "bsl", templates }));
+    // Templates travel as one transferred buffer and arrive unchanged.
+    const [restart, transfer] = workers[1].postMessage.mock.calls.find(([message]) => message.type === "templates")!;
+    expect(restart).toMatchObject({ type: "templates", language: "bsl" });
+    const packed = (restart as Extract<WorkerInput, { type: "templates" }>).templates as PackedTemplates;
+    expect(unpackTemplates(packed)).toEqual(templates);
+    expect(transfer).toEqual([packed.values.buffer]);
     send(9000);
     workers[1].acknowledge();
     expect(onMessage).toHaveBeenCalledOnce();

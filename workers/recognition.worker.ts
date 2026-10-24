@@ -10,7 +10,7 @@ import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
 import { recognizeIsl263 } from "@/lib/isl263-runtime";
 import { recognizeBsl1064 } from "@/lib/bsl1064-runtime";
 import { recognizeLse300 } from "@/lib/lse300-runtime";
-import { TemplateMatchingClient, type TemplatePrediction } from "@/lib/template-matching-client";
+import { TemplateMatchingClient, unpackTemplates, type TemplatePrediction } from "@/lib/template-matching-client";
 import { validHand } from "@/lib/asl-starter-recognition";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 
@@ -106,7 +106,8 @@ function resetSession() {
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
-    personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
+    const { templates } = event.data;
+    personalTemplates = templatesForLanguage(Array.isArray(templates) ? templates : unpackTemplates(templates), activeLanguage);
     resetSession();
     personalMatcher.configure(personalTemplates);
     return;
