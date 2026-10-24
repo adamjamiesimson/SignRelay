@@ -120,10 +120,10 @@
 
 /* ---------- Transcript ---------- */
 .candidate-bar {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 12px; align-items: center;
+  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; gap: 4px; align-items: center;
   padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised);
 }
-.candidate-label { color: var(--text-3); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.01em; }
+.candidate-label { color: var(--text-2); font-size: 0.875rem; font-weight: 600; }
 .candidate-bar strong { grid-column: 1; color: var(--text); font-size: 0.9375rem; font-weight: 500; overflow-wrap: anywhere; }
 .candidate-score { grid-column: 2; grid-row: 1 / 3; color: var(--text); font-size: 1.125rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .candidate-score small { color: var(--text-3); font-size: 0.75rem; font-weight: 500; }
@@ -134,14 +134,14 @@
 .transcript-empty p { max-width: 34ch; color: var(--text-2); font-size: 0.9375rem; }
 .transcript-list { display: grid; gap: 6px; align-content: start; max-height: 420px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
 .transcript-entry {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px;
   padding: 10px 8px 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised);
 }
 .transcript-entry:last-child { border-color: var(--accent-line); }
 .entry-time { color: var(--text-3); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
 .transcript-entry p { font-size: 1.125rem; font-weight: 560; letter-spacing: -0.01em; overflow-wrap: anywhere; }
 .transcript-entry .entry-editor { min-height: 38px; font-size: 1rem; }
-.entry-actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 2px; }
+.entry-actions { display: flex; align-items: center; justify-self: end; gap: 2px; }
 .entry-actions span { margin-right: auto; color: var(--text-3); font-size: 0.75rem; overflow-wrap: anywhere; }
 .entry-actions .icon-button { width: 32px; height: 32px; }
 
@@ -186,7 +186,7 @@
 .selected-word-card > div:first-child { display: grid; gap: 2px; min-width: 0; }
 .selected-word-card span:first-child { color: var(--text-3); font-size: 0.8125rem; }
 .selected-word-card strong { font-size: 1.25rem; letter-spacing: -0.01em; overflow-wrap: anywhere; }
-.selected-word-card small { color: var(--text-2); font-size: 0.8125rem; }
+.selected-word-card small { color: var(--text-2); font-size: 0.9375rem; }
 .example-meter { display: flex; gap: 4px; padding-top: 6px; }
 .example-meter i { width: 28px; height: 4px; border-radius: 2px; background: var(--surface-3); }
 .example-meter i.filled { background: var(--accent); }
@@ -207,7 +207,7 @@
 .vocabulary-grid button.selected { border-color: var(--accent-line); background: var(--accent-soft); }
 .vocabulary-grid button > span:first-child { padding-right: 46px; font-size: 0.9375rem; font-weight: 560; overflow-wrap: anywhere; }
 .vocabulary-grid small { color: var(--text-3); font-size: 0.75rem; }
-.vocabulary-trained-label { position: absolute; top: 9px; right: 9px; padding: 1px 6px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); font-size: 0.6875rem; font-weight: 600; }
+.vocabulary-trained-label { position: absolute; top: 11px; right: 10px; color: var(--accent); font-size: 0.8125rem; font-weight: 600; }
 
 .privacy-strip { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .privacy-strip > div { display: grid; gap: 4px; max-width: 62ch; }
