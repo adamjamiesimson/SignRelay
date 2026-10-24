@@ -24,7 +24,7 @@ export function Landing({ selected, onSelect, onStart }: Props) {
     <div className="landing">
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <h1 id="hero-title">Every sign deserves to be understood.</h1>
+          <h1 id="hero-title" aria-label="Every sign deserves to be understood."><em>Every sign</em>{" "}deserves to be <em>understood.</em></h1>
           <p className="lead">Turn signs into words you can read or speak. Camera video stays on your device.</p>
           <div className="hero-actions">
             <button type="button" className="button primary large" onClick={onStart}>Start signing</button>

@@ -7,39 +7,38 @@
 :root {
   color-scheme: dark;
 
-  /* Cool near-black surfaces keep the layout continuous; teal marks actions and selection. */
-  --bg: #090d0e;
-  --bg-raised: #0d1314;
-  --surface: #111a1b;
-  --surface-2: #172223;
-  --surface-3: #223031;
-  --surface-hover: #2c3d3e;
-  --line: rgb(221 237 235 / 0.08);
-  --line-2: rgb(221 237 235 / 0.18);
+  /* Forest-black foundations with emerald emphasis and mineral-white type. */
+  --bg: #080c09;
+  --bg-raised: #0d1510;
+  --surface: #121d16;
+  --surface-2: #19271e;
+  --surface-3: #26362a;
+  --surface-hover: #334638;
+  --line: rgb(226 239 224 / 0.08);
+  --line-2: rgb(226 239 224 / 0.18);
 
-  /* Cool neutral text stays readable across the dark surfaces. */
-  --text: #edf3f2;
-  --text-2: #b4c2c0;
-  --text-3: #9cadaa;
+  --text: #edf2e9;
+  --text-2: #b8c7b9;
+  --text-3: #a1b3a3;
 
-  /* Muted teal is reserved for meaningful emphasis. */
-  --accent: #75c6bd;
-  --accent-2: #75c6bd;
-  --accent-ink: #082522;
-  --accent-soft: #142b29;
-  --accent-line: #4e928a;
+  /* One emerald family for links, controls, and selection. */
+  --accent: #74d99a;
+  --accent-2: #74d99a;
+  --accent-ink: #092113;
+  --accent-soft: #173321;
+  --accent-line: #4a9864;
   --warn: #edc58d;
   --warn-soft: #30291e;
   --danger: #f49c98;
   --danger-soft: #342424;
 
-  --action: #75c6bd;
-  --action-hover: #8bd4cc;
-  --action-ink: #082522;
-  --forest: #0e1c1d;
-  --forest-hover: #1c3131;
-  --forest-ink: #edf3f2;
-  --forest-muted: #b4c2c0;
+  --action: #74d99a;
+  --action-hover: #8de5ad;
+  --action-ink: #092113;
+  --forest: #102219;
+  --forest-hover: #1e3928;
+  --forest-ink: #edf2e9;
+  --forest-muted: #b8c7b9;
 
   --radius-sm: 3px;
   --radius: 4px;
