@@ -96,7 +96,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 .button {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 44px; padding: 0 18px;
-  border: 1px solid transparent; border-radius: 999px;
+  border: 1px solid transparent; border-radius: var(--radius);
   font-size: 0.9375rem; font-weight: 600; line-height: 1.2; white-space: nowrap;
   text-decoration: none;
   transition: background-color var(--fast) var(--ease), border-color var(--fast) var(--ease), color var(--fast) var(--ease), transform var(--fast) var(--ease);
@@ -118,7 +118,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 .icon-button {
   display: inline-grid; place-items: center; flex: none;
   width: 36px; height: 36px; padding: 0;
-  border: 1px solid transparent; border-radius: 999px;
+  border: 1px solid transparent; border-radius: var(--radius);
   background: transparent; color: var(--text-2);
   transition: background-color var(--fast) var(--ease), color var(--fast) var(--ease);
 }
@@ -131,19 +131,16 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
 }
 .text-action:hover, .text-link:hover { text-decoration: underline; }
 
-/* ---------- Tags, pills, notices ---------- */
+/* ---------- Simple inline labels; no ornamental pill badges ---------- */
 .tag {
-  display: inline-flex; align-items: center; gap: 6px; min-height: 22px; padding: 0 8px;
-  border: 1px solid var(--accent-line); border-radius: 999px; background: var(--accent-soft);
-  color: var(--accent); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap;
+  display: inline; padding: 0; border: 0; border-radius: 0; background: none;
+  color: var(--accent); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.01em;
 }
-.tag.muted { border-color: var(--line-2); background: rgb(255 255 255 / 0.04); color: var(--text-2); }
+.tag.muted { color: var(--text-3); }
 .pill {
-  display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px;
-  border: 1px solid var(--line-2); border-radius: 999px; background: rgb(255 255 255 / 0.03);
-  color: var(--text-2); font-size: 0.8125rem; font-weight: 500;
+  display: inline; padding: 0; border: 0; border-radius: 0; background: none;
+  color: var(--text-3); font-size: 0.8125rem; font-weight: 500;
 }
-.pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
 .notice {
   padding: 14px 16px; border: 1px solid var(--line-2); border-radius: var(--radius);
@@ -222,7 +219,7 @@ details[open] > summary > svg:last-child { transform: rotate(180deg); }
 }
 
 .skip-link {
-  position: fixed; z-index: 1001; top: 8px; left: 8px; padding: 10px 16px; border-radius: 999px;
+  position: fixed; z-index: 1001; top: 8px; left: 8px; padding: 10px 16px; border-radius: var(--radius);
   background: var(--accent); color: var(--accent-ink); font-weight: 600;
   transform: translateY(-160%); transition: transform var(--fast) var(--ease);
 }
