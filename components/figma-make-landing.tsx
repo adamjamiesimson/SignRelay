@@ -231,7 +231,7 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
             >
               <div>
                 <strong>{language.shortName}</strong>
-                <span>AUTO</span>
+                <span title="Experimental automatic recognition; live accuracy is not fully validated">BETA</span>
               </div>
               <small>{language.language}</small>
               <div className="figma-language-meter" title="Relative automatic vocabulary size, not accuracy">
