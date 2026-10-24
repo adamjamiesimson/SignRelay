@@ -3,6 +3,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 const executable = process.argv[2]; if (!executable) throw new Error("Supply Chrome executable");
 const port = 18000 + Math.floor(Math.random() * 1000), origin = `http://127.0.0.1:${port}`;
 const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--port", String(port)], { stdio: "ignore" });
@@ -43,6 +44,7 @@ try {
     };
   })();` });
   await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } }, "Server unavailable");
+  await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
   await browser.send("Page.navigate", { url: origin });
   const evaluate = browser.evaluate;
   const click = text => evaluate(`(() => { const button=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)}); if(!button)throw new Error('Missing button');button.click(); })()`);
@@ -52,7 +54,7 @@ try {
   const emit = gloss => evaluate(`window.__qaEmit(${JSON.stringify(gloss)})`);
   const language = () => evaluate("document.querySelector('select[aria-label=\"Change sign language\"]')?.value");
   const transcript = () => evaluate("document.querySelector('.transcript-body')?.textContent");
-  await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Welcome screen missing");
+  await until(() => evaluate("!!document.querySelector('.language-row [role=radio]')"), "Welcome screen missing");
   // The static export already contains the radios before React attaches its
   // handlers. Prove a real state change before issuing the one-shot Start click.
   await until(async () => {
@@ -61,15 +63,15 @@ try {
   }, "Welcome screen did not hydrate");
   await chooseWelcome("American");
   await until(() => evaluate("document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes('American')"), "Initial ASL selection failed");
-  assert.equal(await evaluate("[...document.querySelectorAll('footer a')].find(a=>a.textContent==='Translate')?.getAttribute('href')"), "/#languages");
-  await click("Start translating"); await until(async () => await language() === "asl", "ASL workspace missing");
+  assert.equal(await evaluate("[...document.querySelectorAll('footer a')].find(a=>a.textContent==='Translator')?.getAttribute('href')"), "/#translator");
+  await click("Start signing"); await until(async () => await language() === "asl", "ASL workspace missing");
   await until(() => evaluate("window.__qaCameraRequests===1"), "Automatic camera request missing");
   // Permission is still pending here: nothing may imply recognition is running.
   assert.match(await evaluate("document.querySelector('.candidate-bar strong')?.textContent"), /Allow camera access|Start the camera/,
     "An inactive camera must not imply recognition is collecting movement");
-  assert.match(await evaluate("document.querySelector('.recognition-state')?.textContent"), /camera off|waiting for permission/,
+  assert.match(await evaluate("document.querySelector('.recognition-state')?.textContent"), /camera off|waiting for permission/i,
     "An inactive camera must not claim to be listening");
-  assert.doesNotMatch(await evaluate("document.querySelector('.recognition-state')?.textContent"), /listening|watching|checking|following/);
+  assert.doesNotMatch(await evaluate("document.querySelector('.recognition-state')?.textContent"), /listening|watching|checking|following|ready/i);
   assert.equal(await evaluate("document.querySelector('.candidate-bar').hasAttribute('aria-live')"), false,
     "Tentative candidates must not be announced as translations");
 
@@ -87,18 +89,18 @@ try {
   await click("Copy");
   await until(() => evaluate("window.__qaCopied === 'BOOK HELLO'"), "Copy did not place the transcript on the clipboard");
   await evaluate("document.querySelector('.speech-controls input[type=checkbox]').click()");
-  assert.match(await evaluate("document.querySelector('.candidate-bar')?.nextElementSibling?.textContent"), /not measured translation accuracy/);
+  assert.doesNotMatch(await evaluate("document.querySelector('.candidate-bar')?.textContent"), /\d|%|score/i, "The workspace must not show a match score");
   await browser.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
-  assert(await evaluate("document.documentElement.scrollWidth <= 390"), "Match score UI overflows a phone viewport");
+  assert(await evaluate("document.documentElement.scrollWidth <= 390"), "Workspace overflows a phone viewport");
   await browser.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 960, deviceScaleFactor: 1, mobile: false });
   await select("bsl"); await until(async () => await language() === "bsl", "Workspace switch failed");
   assert.equal((await history())[0].language, "asl"); assert.equal((await history())[0].entries[0].text, "BOOK");
   assert.doesNotMatch(await transcript(), /BOOK/);
   await emit("CAR"); await until(async () => (await transcript())?.includes("CAR"), "BSL word missing");
   await click("Change language");
-  await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Back navigation failed");
+  await until(() => evaluate("!!document.querySelector('.language-row [role=radio]')"), "Back navigation failed");
   await chooseWelcome("Indian"); await until(async () => (await history())[0]?.language === "bsl", "Welcome language switch did not archive outgoing BSL");
-  await click("Start translating"); await until(async () => await language() === "isl", "Indian workspace missing");
+  await click("Start signing"); await until(async () => await language() === "isl", "Indian workspace missing");
   assert.doesNotMatch(await transcript(), /CAR/);
   await emit("HELP"); await until(async () => (await transcript())?.includes("HELP"), "Indian word missing");
   await evaluate("window.__qaDenyStorage()"); await select("asl"); await pause(200);
@@ -110,7 +112,7 @@ try {
   await click("Change language"); await evaluate("window.__qaDenyStorage()"); await chooseWelcome("British"); await pause(200);
   assert.match(await evaluate("document.querySelector('[role=alert]')?.textContent"), /Couldn't save/);
   assert.equal(await evaluate("document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes('American')"), true);
-  await evaluate("window.__qaRestoreStorage()"); await chooseWelcome("British"); await click("Start translating");
+  await evaluate("window.__qaRestoreStorage()"); await chooseWelcome("British"); await click("Start signing");
   await until(async () => await language() === "bsl", "Recovery after welcome save failure failed");
   await select("rsl"); await until(() => evaluate("!!document.querySelector('#rsl-title')"), "RSL view missing");
   const requests = await evaluate("window.__qaCameraRequests");
@@ -118,10 +120,10 @@ try {
   await until(() => evaluate(`window.__qaStoppedTracks===${requests}`), "Stale permission grants leaked camera tracks");
   await select("bdsl"); await until(() => evaluate("!!document.querySelector('#bdsl-title')"), "Bangla view missing");
   assert.equal(await evaluate("window.__qaCameraRequests"), requests);
-  await click("Back to languages"); await click("Start translating");
+  await click("Back to languages"); await click("Start signing");
   await until(() => evaluate("!!document.querySelector('#bdsl-title')"), "Bangla re-entry failed");
   assert.equal(await evaluate("window.__qaCameraRequests"), requests, "Bangla entry started the unused shared camera");
-  await select("rsl"); await click("Back to languages"); await click("Start translating");
+  await select("rsl"); await click("Back to languages"); await click("Start signing");
   await until(() => evaluate("!!document.querySelector('#rsl-title')"), "RSL re-entry failed");
   assert.equal(await evaluate("window.__qaCameraRequests"), requests, "RSL entry started the unused shared camera");
   await evaluate("window.__qaDenyCamera=true");
@@ -149,13 +151,13 @@ try {
   await pause(300);
   assert.deepEqual(await entries(), ["HELLO"], "After rapid switching the transcript must hold exactly the one new word");
   console.log(JSON.stringify({ passed: true, checks: ["footer navigation", "workspace transcript isolation", "welcome transcript isolation",
-    "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "visible match-score qualification", "denied permission and cancelled retry",
+    "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "no match score shown", "denied permission and cancelled retry",
     "duplicate confirmation neither shown nor spoken", "confirmed-only screen-reader announcements", "transcript copy",
     "rapid switching leaves one live worker for the language on screen"],
     camera_requests: await evaluate("window.__qaCameraRequests"), denied_requests: 1, stale_tracks_stopped: await evaluate("window.__qaStoppedTracks") }));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors, diagnostics: await browser.evaluate(`({mediaDevices:typeof navigator.mediaDevices,
-    requests:window.__qaCameraRequests, workers:window.__qaWorkers?.length, camera:document.querySelector('.camera-guidance')?.textContent,
-    status:document.querySelector('.camera-message')?.textContent})`).catch(() => null) }));
+    requests:window.__qaCameraRequests, workers:window.__qaWorkers?.length, status:document.querySelector('.recognition-state')?.dataset.status,
+    message:document.querySelector('.camera-message')?.textContent})`).catch(() => null) }));
   throw error;
 } finally { await browser?.close(); server.kill(); }

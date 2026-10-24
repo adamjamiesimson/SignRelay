@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { clearLocalSignRelayData, DEFAULT_SETTINGS, loadHistory, loadSettings, saveSession, saveSettings } from "../lib/browser-storage";
+import { clearLocalSignRelayData, DEFAULT_SETTINGS, loadHistory, loadSettings, ONBOARDING_KEY, onboardingState, saveOnboarding, saveSession, saveSettings } from "../lib/browser-storage";
 import { CONSENT_KEY, CONSENT_MAX_AGE, readConsent, startAnalytics } from "../lib/analytics-consent";
 import { createCustomVocabularyEntry } from "../lib/model-adapters";
 import { validCalibrationTemplate } from "../lib/calibration-storage";
@@ -25,11 +25,11 @@ describe("untrusted and unavailable browser storage", () => {
     expect(() => saveSettings(DEFAULT_SETTINGS)).not.toThrow();
     expect(saveSession({ id: "1", language: "asl", createdAt: 1, entries: [{ id: "1", text: "Hello", gloss: "HELLO", timestamp: 1, confidence: 0.9 }] })).toBe(false);
   });
-  it("reports whether clearing actually removed the settings and history", () => {
+  it("reports whether clearing actually removed the settings, history and tour progress", () => {
     const removeItem = vi.fn();
     vi.stubGlobal("localStorage", { removeItem });
     expect(clearLocalSignRelayData()).toBe(true);
-    expect(removeItem.mock.calls.map(([key]) => key)).toEqual(["signrelay.settings.v1", "signrelay.history.v1"]);
+    expect(removeItem.mock.calls.map(([key]) => key)).toEqual(["signrelay.settings.v1", "signrelay.history.v1", "signrelay.onboarding.v1"]);
     vi.stubGlobal("localStorage", { removeItem() { throw new DOMException("denied", "SecurityError"); } });
     expect(clearLocalSignRelayData()).toBe(false);
   });
@@ -58,5 +58,47 @@ describe("privacy defaults", () => {
     expect(readConsent()).toBe("rejected");
     // No document or navigator is provided: no script or network work should run.
     expect(() => startAnalytics()).not.toThrow();
+  });
+});
+
+describe("first-run tour state", () => {
+  function store(initial: Record<string, string> = {}) {
+    const values = { ...initial };
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => values[key] ?? null,
+      setItem: (key: string, value: string) => { values[key] = value; },
+      removeItem: (key: string) => { delete values[key]; },
+    });
+    return values;
+  }
+  it("is due on a first visit and when the stored record is malformed", () => {
+    store();
+    expect(onboardingState()).toBe("due");
+    for (const value of ["{", "null", JSON.stringify({ status: "seen" }), JSON.stringify({ status: "completed" })]) {
+      store({ [ONBOARDING_KEY]: value });
+      expect(onboardingState()).toBe("due");
+    }
+  });
+  it("remembers completion and dismissal under a versioned key", () => {
+    expect(ONBOARDING_KEY).toMatch(/\.v\d+$/);
+    const values = store();
+    expect(saveOnboarding("completed")).toBe(true);
+    expect(JSON.parse(values[ONBOARDING_KEY])).toMatchObject({ status: "completed" });
+    expect(onboardingState()).toBe("completed");
+    saveOnboarding("dismissed");
+    expect(onboardingState()).toBe("dismissed");
+  });
+  it("is due again after Clear local data", () => {
+    store();
+    saveOnboarding("completed");
+    expect(clearLocalSignRelayData()).toBe(true);
+    expect(onboardingState()).toBe("due");
+  });
+  it("is not forced on every visit when storage is blocked", () => {
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("localStorage", { getItem() { throw new DOMException("denied", "SecurityError"); }, setItem() { throw new DOMException("denied", "SecurityError"); } });
+    expect(onboardingState()).toBe("unavailable");
+    expect(saveOnboarding("dismissed")).toBe(false);
   });
 });

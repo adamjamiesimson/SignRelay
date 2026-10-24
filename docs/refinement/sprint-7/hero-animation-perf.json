@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-10-23T10:53:05.221Z",
+  "environment": "headless Chromium, static export, synthetic run; not a real device",
+  "runs": [
+    {
+      "label": "desktop",
+      "viewport": "1440×900",
+      "cpu_throttle": 1,
+      "seconds": 10.009,
+      "frames_per_second": 58.749,
+      "frame_callback_ms": {
+        "p50": 0.3,
+        "p95": 0.4,
+        "max": 2.5
+      },
+      "long_tasks": 0,
+      "caption_rerenders_per_second": 0.699
+    },
+    {
+      "label": "phone, CPU ×4 slower",
+      "viewport": "390×844",
+      "cpu_throttle": 4,
+      "seconds": 10.011,
+      "frames_per_second": 59.335,
+      "frame_callback_ms": {
+        "p50": 1.1,
+        "p95": 2.1,
+        "max": 7.1
+      },
+      "long_tasks": 0,
+      "caption_rerenders_per_second": 0.799
+    }
+  ],
+  "hero_mounted_in_workspace": false
+}

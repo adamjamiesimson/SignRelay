@@ -6,6 +6,7 @@ import { spawn } from "node:child_process";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 
 const [chromePath, fixture] = process.argv.slice(2);
 assert(chromePath, "Supply a Chrome executable path");
@@ -76,13 +77,14 @@ try {
   const status = () => evaluate("document.querySelector('[role=status]')?.textContent");
   await send("Runtime.enable"); await send("Network.enable");
   await send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
+  await send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
   await send("Page.navigate", { url: origin });
-  await until(() => evaluate("document.querySelectorAll('.figma-language-row [role=radio]').length === 7"), "Automatic language row missing");
+  await until(() => evaluate("document.querySelectorAll('.language-row [role=radio]').length === 7"), "Automatic language row missing");
   await until(async () => {
     await click("Bangla Sign Language");
-    return await evaluate("Array.from(document.querySelectorAll('.figma-language-row [role=radio]')).some(b => b.textContent.includes('Bangla Sign Language') && b.getAttribute('aria-checked') === 'true')");
+    return await evaluate("Array.from(document.querySelectorAll('.language-row [role=radio]')).some(b => b.textContent.includes('Bangla Sign Language') && b.getAttribute('aria-checked') === 'true')");
   }, "Bangla language choice did not hydrate");
-  await click("Start translating");
+  await click("Start signing");
   await until(() => evaluate("!!document.querySelector('#bdsl-title')"), "Bangla workspace missing");
   assert.equal(requests.filter(request => request.url.endsWith("model.onnx")).length, 0, "Weights should not load before start");
   await mkdir("outputs", { recursive: true });
@@ -107,7 +109,7 @@ try {
   assert.equal(await evaluate("document.querySelector('.rsl-result')"), null);
   assert.match(await status(), /Stopped/);
   await click("Back to languages");
-  await until(() => evaluate("!!document.querySelector('.figma-language-row')"), "Back navigation failed");
+  await until(() => evaluate("!!document.querySelector('.language-row')"), "Back navigation failed");
   assert.equal(errors.length, 0, JSON.stringify(errors));
   console.log("Cancellation, camera release, navigation and no-upload checks passed. No uncaught page errors.");
 } finally {

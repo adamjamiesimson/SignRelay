@@ -8,6 +8,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 
 const executable = process.argv[2];
 if (!executable) throw new Error("Usage: node tests/lifecycle-stress-smoke.mjs <chrome> (after building the export)");
@@ -45,9 +46,11 @@ try {
   const heapMb = async () => { await browser.send("HeapProfiler.collectGarbage").catch(() => {}); return evaluate("performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null"); };
   const report = { checks: [] };
 
+  await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
+
   await browser.send("Page.navigate", { url: `${origin}/?perf` });
   await until(() => evaluate("Object.keys(document.querySelector('[role=radio]') ?? {}).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate");
-  await click("Start translating");
+  await click("Start signing");
   await until(active, "Camera did not start");
   const heapStart = await heapMb();
 
@@ -105,10 +108,10 @@ try {
   // 5. Leave the workspace and come back.
   for (let i = 0; i < 3; i++) {
     await click("Change language");
-    await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Did not return to the welcome screen");
+    await until(() => evaluate("!!document.querySelector('.language-row [role=radio]')"), "Did not return to the welcome screen");
     await until(released, "Leaving the workspace did not release the camera");
     await until(async () => await aliveRecognition() === 0, "Leaving the workspace did not terminate the recognition worker");
-    await click("Start translating");
+    await click("Start signing");
     await until(active, "Workspace did not restart");
   }
   assert.equal(await aliveRecognition(), 1);

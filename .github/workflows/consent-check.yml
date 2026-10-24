@@ -1,0 +1,49 @@
+name: Analytics Consent Check
+
+# Optional analytics must stay off until a person allows it. This builds an
+# export with a placeholder measurement ID (never deployed or uploaded) and
+# checks in Chrome that Google is not contacted before consent, after Reject,
+# after withdrawal or with Global Privacy Control. Google's hosts are answered
+# locally by the test, so no request reaches Google.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  consent:
+    name: Consent before analytics, rejection and withdrawal
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build workers
+        run: npm run build:worker
+
+      - name: Build an export with a placeholder measurement ID (not deployable)
+        env:
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: G-SMOKETEST1
+        run: |
+          npx next build
+          node scripts/secure-export.mjs
+
+      - name: Consent smoke in headless Chrome
+        run: node tests/consent-smoke.mjs "$(command -v google-chrome || command -v chromium)"

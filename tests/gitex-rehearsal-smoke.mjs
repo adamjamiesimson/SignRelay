@@ -42,8 +42,8 @@ try {
   await until(async () => (await h.words()).length >= 6 || !(await h.playing()), "Sequence did not play", 600);
   await pause(1500);
   assert.deepEqual(await h.words(), TEXT, "Six-sign sequence");
-  const labels = await h.evaluate("[...document.querySelectorAll('.entry-actions span')].map(s => s.textContent)");
-  assert.ok(labels.every(label => label.includes("rule match")), "Every word is labelled with its source");
+  const editRemoveControls = await h.evaluate("document.querySelectorAll('.transcript-entry .entry-actions button[aria-label]').length");
+  assert.equal(editRemoveControls, TEXT.length * 2, "Each confirmed word offers edit and remove controls");
   assert.deepEqual(await h.evaluate("window.__qa.spoken"), TEXT, "Auto speak spoke each confirmed word once");
   step("six-sign sequence confirmed in order", { words: TEXT });
 
@@ -74,7 +74,7 @@ try {
 
   // No inaccurate claims on the workspace, and nothing left the machine.
   const body = await h.evaluate("document.body.innerText");
-  assert.match(body, /not measured translation accuracy/i);
+  assert.match(body, /research preview/i, "The experimental recognition limitation remains visible");
   for (const claim of [/\b\d{1,3}(\.\d+)?\s?% (accura|correct)/i, /accurately translates/i, /understands (all|any) sign/i, /real-world accuracy of/i])
     assert.doesNotMatch(body, claim, `Inaccurate claim on the page: ${claim}`);
   assert.deepEqual(h.nonLoopback(), [], "Non-loopback requests");

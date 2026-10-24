@@ -120,7 +120,7 @@
       "requirement": "The workspace and capture studio fit a 390 px phone viewport without horizontal overflow.",
       "check": {
         "file": "tests/workspace-browser-smoke.mjs",
-        "contains": "Match score UI overflows a phone viewport"
+        "contains": "Workspace overflows a phone viewport"
       }
     },
     {

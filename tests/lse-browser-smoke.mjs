@@ -4,6 +4,7 @@ import { build } from "esbuild";
 import { spawn } from "node:child_process";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 const chromePath = process.argv[2];
 assert(chromePath, "Supply a Chrome executable path");
 const port = 18000 + Math.floor(Math.random() * 1000), origin = `http://127.0.0.1:${port}`;
@@ -34,13 +35,14 @@ try {
   const click = text => evaluate(`Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes(${JSON.stringify(text)}))?.click()`);
   await send("Runtime.enable"); await send("Network.enable");
   await send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
+  await send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
   await send("Page.navigate", { url: origin });
-  await until(() => evaluate("document.querySelectorAll('.figma-language-row [role=radio]').length === 7"), "Automatic language row missing");
+  await until(() => evaluate("document.querySelectorAll('.language-row [role=radio]').length === 7"), "Automatic language row missing");
   await until(async () => {
     await click("Spanish Sign Language");
-    return await evaluate("Array.from(document.querySelectorAll('.figma-language-row [role=radio]')).some(b => b.textContent.includes('Spanish Sign Language') && b.getAttribute('aria-checked') === 'true')");
+    return await evaluate("Array.from(document.querySelectorAll('.language-row [role=radio]')).some(b => b.textContent.includes('Spanish Sign Language') && b.getAttribute('aria-checked') === 'true')");
   }, "Spanish language choice did not hydrate");
-  await click("Start translating");
+  await click("Start signing");
   await until(() => evaluate("document.querySelector('.workspace-title p')?.textContent === 'Spanish Sign Language'"), "Spanish workspace missing");
   assert.match(await evaluate("document.querySelector('.honesty-banner')?.textContent"), /300 isolated signs/);
   assert.equal(requests.filter(request => request.url.endsWith("model.onnx")).length, 0, "Weights must load only after signing");
@@ -50,7 +52,7 @@ try {
   await writeFile("outputs/lse-mobile.png", Buffer.from((await send("Page.captureScreenshot", { format: "png" })).data, "base64"));
   await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 960, deviceScaleFactor: 1, mobile: false });
   await click("Start camera");
-  await until(() => evaluate("!!document.querySelector('video')?.srcObject && !!document.querySelector('.camera-guidance')"), "Camera/trackers failed", 180000);
+  await until(() => evaluate("!!document.querySelector('video')?.srcObject && [...document.querySelectorAll('.sr-only[role=status]')].some(n => n.textContent === 'Camera on. Hand tracking is running.')"), "Camera/trackers failed", 180000);
   await pause(2000);
   assert.equal(await evaluate("document.querySelectorAll('.transcript-entry').length"), 0, "Fake empty camera must not create words");
   console.log("Spanish selection, mobile layout and fake camera tracking passed.");
@@ -81,7 +83,7 @@ try {
   assert.equal(requests.filter(request => request.method === "POST").length, 0, "No camera upload expected");
   await writeFile("outputs/lse-desktop.png", Buffer.from((await send("Page.captureScreenshot", { format: "png" })).data, "base64"));
   await click("Change language");
-  await until(() => evaluate("!!document.querySelector('.figma-language-row')"), "Back navigation failed");
+  await until(() => evaluate("!!document.querySelector('.language-row')"), "Back navigation failed");
   assert.equal(errors.length, 0, JSON.stringify(errors));
   console.log("Three real Spanish model inferences, camera release, navigation and no-upload checks passed. No uncaught page errors.");
 
