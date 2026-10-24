@@ -75,7 +75,7 @@
 }
 .camera-placeholder-icon { display: grid; place-items: center; margin-bottom: 4px; color: var(--forest-muted); }
 .camera-placeholder.requesting .camera-placeholder-icon, .camera-placeholder.loading .camera-placeholder-icon { color: var(--forest-ink); }
-.camera-placeholder.denied .camera-placeholder-icon, .camera-placeholder.error .camera-placeholder-icon { color: #f2c27c; }
+.camera-placeholder.denied .camera-placeholder-icon, .camera-placeholder.error .camera-placeholder-icon { color: var(--warn); }
 .camera-placeholder h3 { font-size: 1.125rem; }
 .camera-placeholder p { max-width: 42ch; color: var(--forest-muted); font-size: 0.9375rem; }
 .camera-placeholder .button { margin-top: 6px; }
