@@ -912,10 +912,10 @@ export function TranslatorExperience() {
           <div className="honesty-banner" role="note">
             <Info aria-hidden="true" size={18} />
             <div>
-              <p>{ASL_ONLY && <span className="tag">ASL demo build</span>} <strong>{capability.headline}</strong> Check every word before relying on it.</p>
+              <p>{ASL_ONLY && <span className="tag">ASL demo build · </span>}<strong>Research preview.</strong> Check every result.</p>
               <details>
                 <summary>What this means <ChevronDown aria-hidden="true" size={14} /></summary>
-                <p>{ASL_ONLY && "Other language models are not included in this build. "}{capability.evidence} <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
+                <p>{ASL_ONLY && "Other language models are not included in this build. "}<strong>{capability.headline}</strong> {capability.evidence} <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
               </details>
             </div>
           </div>
@@ -936,7 +936,7 @@ export function TranslatorExperience() {
                       {cameraState === "denied" || cameraState === "error" ? <CameraOff size={22} /> : <Camera size={22} />}
                     </span>
                     <h3>{cameraState === "loading" ? "Preparing hand tracking" : cameraState === "requesting" ? "Allow camera access" : cameraState === "idle" ? "Camera is off" : "Camera unavailable"}</h3>
-                    <p>{cameraState === "idle" ? "Start the camera when you are ready. Video is analysed on this device and never uploaded." : cameraMessage}</p>
+                    <p>{cameraState === "idle" ? "Video stays on this device." : cameraMessage}</p>
                     {(cameraState === "denied" || cameraState === "error") && (
                       <button type="button" className="button secondary small" onClick={() => void requestCamera()}>
                         Retry camera
@@ -944,10 +944,7 @@ export function TranslatorExperience() {
                     )}
                   </div>
                 )}
-                {cameraState === "active" && (
-                  <div className="camera-guidance">Keep your hands, face and shoulders in frame.</div>
-                )}
-                {calibrationState !== "idle" && calibrationState !== "saved" && calibrationState !== "error" && (
+                                {calibrationState !== "idle" && calibrationState !== "saved" && calibrationState !== "error" && (
                   <div className={`calibration-capture ${calibrationState}`} role="status" aria-live="assertive">
                     <span>{calibrationState === "countdown" ? countdown : calibrationState === "recording" ? "REC" : "···"}</span>
                     <strong>{calibrationState === "countdown" ? `Get ready: ${calibrationWord.text}` : calibrationState === "recording" ? `Sign ${calibrationWord.text}` : "Saving example"}</strong>
@@ -960,7 +957,6 @@ export function TranslatorExperience() {
                   onClick={cameraState === "active" || cameraBusy ? stopCamera : () => void requestCamera()}>
                   {cameraState === "active" ? "Pause camera" : cameraBusy ? "Cancel" : "Start camera"}
                 </button>
-                <span className="privacy-inline"><LockKeyhole aria-hidden="true" size={14} />{cameraState === "active" ? "Camera on · video stays on this device" : "Video stays on this device"}</span>
               </div>
               {perfMode && perfWarning && <p className="calibration-message error" role="status" data-perf-warning>{perfWarning}</p>}
 
@@ -993,11 +989,9 @@ export function TranslatorExperience() {
               </div>
 
               <div className="candidate-bar">
-                <span className="candidate-label">{status.key === "checking-sign" ? "Possible match · not confirmed" : "Status"}</span>
+                {status.key === "checking-sign" && <span className="candidate-label">Possible match · not confirmed</span>}
                 <strong>{status.key === "checking-sign" ? candidate : status.detail}</strong>
-                {status.key === "checking-sign" && <span className="candidate-score" title="Match score, not a measured probability of correct translation" aria-label={`Match score ${Math.round(confidence * 100)} out of 100`}>{Math.round(confidence * 100)}<small>/100</small></span>}
               </div>
-              <p className="candidate-note">Match scores are not measured translation accuracy.</p>
               {recognitionFeedback && <p className="calibration-message">{recognitionFeedback}</p>}
               <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
               <p className="sr-only" role="status" aria-live="polite">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraState === "idle" ? "Camera off." : cameraMessage}</p>
@@ -1010,16 +1004,12 @@ export function TranslatorExperience() {
                 {!entries.length ? (
                   <div className="transcript-empty">
                     <h3>Confirmed words appear here</h3>
-                    <p>Make each sign completely, then lower your hands. Uncertain movement adds nothing.</p>
                     <button type="button" className="text-action" onClick={openVocabulary}><BookPlus aria-hidden="true" size={16} />Teach a sign</button>
                   </div>
                 ) : (
                   <ol className="transcript-list">
                     {entries.map((entry) => (
                       <li className="transcript-entry" key={entry.id} data-entry-id={entry.id}>
-                        <time className="entry-time" dateTime={new Date(entry.timestamp).toISOString()}>
-                          {new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </time>
                         {editingId === entry.id ? (
                           <input
                             className="entry-editor"
@@ -1035,7 +1025,6 @@ export function TranslatorExperience() {
                           <p>{entry.text}</p>
                         )}
                         <div className="entry-actions">
-                          <span>{Math.round(entry.confidence * 100)}/100 {entry.source === "starter" ? "rule match" : entry.source === "personal" ? "template match" : "match score"} · {entry.gloss}</span>
                           <button type="button" className="icon-button" data-edit onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`} title="Edit"><Pencil aria-hidden="true" size={16} /></button>
                           <button type="button" className="icon-button" onClick={() => removeEntry(entry)} aria-label={`Remove ${entry.text}`} title="Remove"><X aria-hidden="true" size={16} /></button>
                         </div>
@@ -1109,13 +1098,13 @@ export function TranslatorExperience() {
           <div className="workspace-secondary" data-tour="teach">
             <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef}>
               <summary>
-                <span className="summary-title"><BookPlus aria-hidden="true" size={18} />Personal signs <small>{activeCustomCount} signs taught</small></span>
+                <span className="summary-title"><BookPlus aria-hidden="true" size={18} />Personal signs</span>
                 <ChevronDown aria-hidden="true" size={16} />
               </summary>
               <div className="calibration-body">
                 <div className="calibration-heading">
                   <h2 id="calibration-title">Teach a {model.shortName} sign</h2>
-                  <p>Choose a word, then record its complete sign two or three times. Examples are saved as landmark points in this browser, never as video.</p>
+                  <p>Choose a word and record it two or three times. Video is not saved.</p>
                 </div>
 
                 <ol className="teach-steps">
@@ -1142,7 +1131,6 @@ export function TranslatorExperience() {
                     <span className="teach-step-number" aria-hidden="true">2</span>
                     <div className="selected-word-card">
                       <div>
-                        <span>Selected word</span>
                         <strong>{calibrationWord.text}</strong>
                         <small>{examples} of 3 examples recorded</small>
                         <span className="example-meter" aria-hidden="true">{[0, 1, 2].map(i => <i key={i} className={i < examples ? "filled" : ""} />)}</span>
@@ -1165,7 +1153,6 @@ export function TranslatorExperience() {
                 <div className="vocabulary-section">
                   <div className="vocabulary-section-heading">
                     <h3>{selected === "asl" ? "Your signs" : `Your signs and ${model.shortName} concepts`}</h3>
-                    <span>{activeCustomCount} taught</span>
                   </div>
                   {showVocabularySearch && (
                     <div className="custom-word-controls starter-library-search">
@@ -1179,9 +1166,6 @@ export function TranslatorExperience() {
                           aria-label={selected === "asl" ? "Search taught ASL signs" : `Search built-in ${model.shortName} concepts`}
                         />
                       </label>
-                      <p className="field-hint">{selected === "asl"
-                        ? `Only the ${LISTED_WORDS} most recently taught are listed. Search to find, extend or remove an older one.`
-                        : "Choose a concept, then record two or three examples of the sign you use for it."}</p>
                     </div>
                   )}
                   {visibleCalibrationVocabulary.length ? (
@@ -1203,7 +1187,6 @@ export function TranslatorExperience() {
                             }}
                           >
                             <span>{word.text}</span>
-                            <small>{exampleCount ? `${exampleCount} example${exampleCount === 1 ? "" : "s"}` : word.category}</small>
                             {exampleCount > 0 && <span className="vocabulary-trained-label">Taught</span>}
                           </button>
                         );
