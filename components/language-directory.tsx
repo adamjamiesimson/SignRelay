@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight, Search } from "lucide-react";
 import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import { LANGUAGE_LIST, MODEL_ADAPTERS, type ModelAdapter } from "@/lib/model-adapters";
-import { AUTOMATIC_IDS, modeLabel, vocabularyLabel } from "./language-picker";
+import { AUTOMATIC_IDS, LanguageStatus, vocabularyLabel } from "./language-picker";
 
 const normalise = (value: string) => value.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("en");
 const open = (language: ModelAdapter) => `/?lang=${language.id}#translator`;
@@ -40,7 +40,7 @@ export function LanguageDirectory() {
         <section className="language-group" aria-labelledby="directory-automatic">
           <div className="language-group-heading">
             <h2 id="directory-automatic" className="section-title">Automatic recognition</h2>
-            <span className="tag">Experimental</span>
+            <span className="tag">Beta · Experimental</span>
             <p>Each has its own language-specific model or reference library. These are research previews for isolated signs, not continuous interpretation, and live-camera accuracy has not been measured.</p>
           </div>
           <div className="directory-grid">
@@ -48,7 +48,7 @@ export function LanguageDirectory() {
               <article className="card directory-card" key={language.id}>
                 <div className="directory-card-head">
                   <div><strong>{language.shortName}</strong><span>{language.language}</span></div>
-                  <span className="tag">{modeLabel(language)}</span>
+                  <LanguageStatus language={language} />
                 </div>
                 <p>{language.summary}</p>
                 <div className="directory-meta">
@@ -77,6 +77,7 @@ export function LanguageDirectory() {
                 <div>
                   <strong>{language.shortName}</strong>
                   <span>{language.language}{language.status === "preparing" ? " · Model planned" : ""}</span>
+                  <LanguageStatus language={language} />
                 </div>
                 {isLanguageAvailable(language.id)
                   ? <a className="button ghost small" href={open(language)} aria-label={`Open ${language.language} workspace`}>Open</a>
