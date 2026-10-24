@@ -115,7 +115,9 @@
 .hero-secondary-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--text-2); font-size: 0.875rem; }
 .hero-sculpture {
   position: absolute; z-index: 0; pointer-events: none;
-  width: 88%; max-width: none; height: auto; right: calc(-1 * var(--gutter)); top: 50%; bottom: auto; transform: translateY(-45%);
+  --art-rest-y: -45%;
+  width: 88%; max-width: none; height: auto; right: calc(-1 * var(--gutter)); top: 50%; bottom: auto; transform: translateY(var(--art-rest-y));
+  transform-origin: 65% 55%;
   mix-blend-mode: lighten;
   mask-image: linear-gradient(to right, transparent, #000 22%),
     linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
@@ -141,34 +143,75 @@
   .hero-copy { display: contents; }
   .hero h1 { font-size: clamp(2.3rem, 7vw, 3.8rem); line-height: 1.14; }
   .hero-actions { gap: 18px; }
-  .hero-sculpture { position: relative; width: calc(100% + 48px); right: auto; top: auto; bottom: auto; transform: none; align-self: center; margin-top: 0; }
+  .hero-sculpture { --art-rest-y: 0%; position: relative; width: calc(100% + 48px); right: auto; top: auto; bottom: auto; transform: none; align-self: center; margin-top: 0; }
   .sign-demo { grid-template-columns: 1fr; align-content: center; gap: 32px; padding: 40px 0; }
   .sign-demo .hero-preview { justify-self: center; }
   .sign-demo-copy { gap: 18px; }
 }
 
 
-/* Each scene remains fully visible without scroll-timeline support or with reduced motion. */
+/* Motion follows scroll position in both directions; all content stays static when motion is reduced. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .hero {
-      animation: hero-scene-out linear both;
-      animation-timeline: view();
-      animation-range: exit 0% exit 85%;
+    .hero { view-timeline-name: --hero-scroll; view-timeline-axis: block; }
+    .hero h1 {
+      animation: headline-scroll-out linear both;
+      animation-timeline: --hero-scroll;
+      animation-range: exit 0% exit 80%;
     }
-    .sign-demo {
-      animation: demo-scene-in linear both;
-      animation-timeline: view();
+    .hero-actions {
+      animation: actions-scroll-out linear both;
+      animation-timeline: --hero-scroll;
+      animation-range: exit 0% exit 55%;
+    }
+    .hero-sculpture {
+      animation: chrome-scroll-out linear both;
+      animation-timeline: --hero-scroll;
+      animation-range: exit 0% exit 100%;
+    }
+    .sign-demo { view-timeline-name: --demo-scroll; view-timeline-axis: block; }
+    .sign-demo-copy {
+      animation: demo-copy-in linear both;
+      animation-timeline: --demo-scroll;
       animation-range: entry 0% entry 55%;
     }
+    .sign-demo .hero-preview {
+      animation: demo-hands-in linear both;
+      animation-timeline: --demo-scroll;
+      animation-range: entry 5% entry 80%;
+    }
+    #how-it-works { view-timeline-name: --steps-scroll; view-timeline-axis: block; }
+    .step {
+      animation: step-scroll-in linear both;
+      animation-timeline: --steps-scroll;
+      animation-range: entry 0% entry 70%;
+    }
+    .step:nth-child(2) { animation-range: entry 10% entry 80%; }
+    .step:nth-child(3) { animation-range: entry 20% entry 90%; }
   }
 }
-@keyframes hero-scene-out {
-  from { opacity: 1; }
-  to { opacity: .15; }
+@keyframes headline-scroll-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-80px); }
 }
-@keyframes demo-scene-in {
-  from { opacity: .3; transform: translateY(24px); }
+@keyframes actions-scroll-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-48px); }
+}
+@keyframes chrome-scroll-out {
+  from { opacity: 1; transform: translate3d(0, var(--art-rest-y), 0) rotate(0deg) scale(1); }
+  to { opacity: 0; transform: translate3d(0, calc(var(--art-rest-y) - 140px), 0) rotate(9deg) scale(1.14); }
+}
+@keyframes demo-copy-in {
+  from { opacity: 0; transform: translateY(80px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes demo-hands-in {
+  from { opacity: 0; transform: translateY(140px) scale(.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes step-scroll-in {
+  from { opacity: 0; transform: translateY(36px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
