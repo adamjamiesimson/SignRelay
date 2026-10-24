@@ -17,7 +17,6 @@ function handGeometry(pose: HandPose, side: 1 | -1) {
     tips: dotsPath([points[0], ...visibleTips(points, pose)], 1.9), opacity: pose.opacity };
 }
 
-const PHASE_LABEL: Record<Phase, string> = { watching: "Watching movement", checking: "Checking sign", result: "" };
 const TRAIL = 22;
 
 /** The homepage illustration. Hand-authored motion only: it shows the six
@@ -114,10 +113,8 @@ export function HeroPreview() {
     };
   }, [playing]);
 
-  const item = DEMO_SEQUENCE[view.index];
   const shown = view.phase === "result" ? view.index + 1 : view.index;
   const words = DEMO_SEQUENCE.slice(0, shown).filter(entry => entry.confirmed).map(entry => entry.translation).slice(-4);
-  const status = view.phase === "result" ? (item.confirmed ? "Added to transcript" : "No confident match") : PHASE_LABEL[view.phase];
   const initial = { dominant: handGeometry(STILL_FRAME.scene.dominant, 1), support: handGeometry(STILL_FRAME.scene.support, -1) };
 
   return (
@@ -126,7 +123,7 @@ export function HeroPreview() {
         Illustration, not live: two hands sign Hello, Thank you, Please, Yes, Sorry and No, and one movement gets no confident match, so nothing is added.
       </figcaption>
       <div className="hero-stage">
-        <span className="hero-label">Illustration · Not live</span>
+        <span className="hero-label">Demo · Not live</span>
         <button type="button" className="hero-motion-toggle" onClick={() => setChoice(playing ? "pause" : "play")}
           aria-label={playing ? "Pause animation" : "Play animation"} aria-pressed={!playing}>
           {playing ? <Pause aria-hidden="true" size={14} /> : <Play aria-hidden="true" size={14} />}
@@ -152,22 +149,15 @@ export function HeroPreview() {
             </g>
           ))}
         </svg>
-        <div className="hero-status">
-          <span className={`hero-state ${view.phase}${view.phase === "result" && !item.confirmed ? " abstain" : ""}`}>
-            {status}
-          </span>
-          {item.confirmed && view.phase !== "watching" && <span className="hero-gloss" key={`${view.index}-gloss`}>{item.sign}</span>}
-        </div>
       </div>
       <div className="hero-transcript">
-        <span className="hero-transcript-label">Example transcript</span>
+        <span className="hero-transcript-label">Transcript preview</span>
         <p>
           {words.map((word, index) => (
             <span key={word} className={index === words.length - 1 && view.phase === "result" && item.confirmed ? "new" : ""}>{word}</span>
           ))}
           <i className="hero-caret" aria-hidden="true" />
         </p>
-        <small>A word is added only after its sign is confirmed.</small>
       </div>
     </figure>
   );
