@@ -22,6 +22,12 @@ function shouldConfirm({
 }
 
 // lib/frame-timing.ts
+function appendObservation(frames2, frame) {
+  const previous = frames2.at(-1);
+  if (previous && frame.timestamp <= previous.timestamp) frames2.length = 0;
+  frames2.push(frame);
+  while (frames2.length > 300 || frames2.length > 1 && frame.timestamp - frames2[0].timestamp > 4500) frames2.shift();
+}
 function trackingGapLimit(frames2) {
   const intervals = frames2.slice(-13).flatMap((frame, index, recent) => {
     const interval = index ? frame.timestamp - recent[index - 1].timestamp : 0;
@@ -11296,6 +11302,11 @@ var TemplateMatchingClient = class {
     this.failures = 0;
     this.closed = false;
   }
+  takeTiming() {
+    const value = this.matchingMs;
+    this.matchingMs = void 0;
+    return value;
+  }
   configure(templates = []) {
     this.reset();
     this.templates = templates;
@@ -11316,6 +11327,7 @@ var TemplateMatchingClient = class {
   }
   reset() {
     this.generation++;
+    this.matchingMs = void 0;
     this.queued = null;
     this.newestTimestamp = -Infinity;
     try {
@@ -11349,6 +11361,7 @@ var TemplateMatchingClient = class {
           this.clearTimer();
           this.active = null;
           if (data.generation === this.generation && request.generation === this.generation) {
+            this.matchingMs = data.matchingMs;
             if (data.error) {
               this.fail(data.error);
               return;
@@ -15139,6 +15152,7 @@ var modelProblem = false;
 var retryAfter = 0;
 var blockedStarter = null;
 var starterSeenAt = 0;
+var completedModelMs;
 var latestPersonal = null;
 var personalTimestamp = 0;
 var personalReceivedAt = 0;
@@ -15179,6 +15193,7 @@ function invalidatePrediction() {
   modelGeneration += 1;
 }
 function resetSession() {
+  completedModelMs = void 0;
   for (const request of pending.values()) request.controller.abort();
   pending.clear();
   invalidatePersonal();
@@ -15199,6 +15214,7 @@ function resetSession() {
   candidateSource = void 0;
 }
 self.onmessage = async (event) => {
+  const processingStarted = performance.now();
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
@@ -15231,8 +15247,7 @@ self.onmessage = async (event) => {
     }
   }
   receivedFrames += 1;
-  frames.push(event.data.frame);
-  while (frames.length > (activeLanguage === "asl" ? 120 : 80)) frames.shift();
+  appendObservation(frames, event.data.frame);
   const hasHand = event.data.frame.hands.some(validHand);
   if (!hasHand && hadPersonalTracking) invalidatePersonal();
   hadPersonalTracking = hasHand;
@@ -15258,12 +15273,15 @@ self.onmessage = async (event) => {
       lastInferenceAt = now;
       const generation = modelGeneration;
       const submittedAt = performance.now();
+      let inferenceStarted;
       classifier([...motion.sequence], { signal: request.controller.signal, onPhase: (phase) => {
         if (pending.get(language) !== request) return;
         request.phase = phase;
+        if (phase === "inference") inferenceStarted = performance.now();
         request.started = frames.at(-1)?.timestamp ?? now;
       } }).then((prediction2) => {
         if (generation !== modelGeneration || request.controller.signal.aborted) return;
+        if (inferenceStarted !== void 0) completedModelMs = performance.now() - inferenceStarted;
         if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS || performance.now() - submittedAt > MAX_PREDICTION_AGE_MS) return;
         latestPrediction = prediction2;
         predictionTimestamp = now;
@@ -15297,8 +15315,15 @@ self.onmessage = async (event) => {
     bufferSize: frames.length,
     feedback,
     source,
-    motionReason: motion.reason
+    motionReason: motion.reason,
+    ...event.data.measure ? {
+      processingMs: performance.now() - processingStarted,
+      modelMs: completedModelMs,
+      personalMs: personalMatcher.takeTiming(),
+      referenceMs: pslMatcher.takeTiming()
+    } : {}
   });
+  completedModelMs = void 0;
   if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
     candidateLabel = null;
     candidateStreak = 0;

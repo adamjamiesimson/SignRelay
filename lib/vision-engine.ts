@@ -19,6 +19,9 @@ type EngineParts = {
   pose: PoseLandmarker;
 };
 
+export type VisionTimings = { hands: number; auxiliary: number };
+type Source = HTMLVideoElement | HTMLCanvasElement | ImageBitmap;
+
 export class VisionEngine {
   private parts: EngineParts;
   /** Which copy of the pinned runtime loaded: "self-hosted" or "cdn". */
@@ -27,35 +30,39 @@ export class VisionEngine {
   private handFramesSinceAux = 2;
   private lastFace: Point[] = [];
   private lastPose: Point[] = [];
+  readonly timings: VisionTimings = { hands: 0, auxiliary: 0 };
 
-  private constructor(parts: EngineParts, assetSource: AssetSource["id"]) {
+  private constructor(parts: EngineParts, assetSource: AssetSource["id"], readonly delegate: "GPU" | "CPU") {
     this.parts = parts;
     this.assetSource = assetSource;
   }
 
   /** Self-hosted assets first, so a venue without CDN access still works;
    * the CDN holds the same pinned bytes and is only a fallback. */
-  static async create(onProgress?: (message: string) => void) {
+  static async create(onProgress?: (message: string) => void, accelerated = false) {
     onProgress?.("Loading vision runtime");
     const vision = await import("@mediapipe/tasks-vision");
     let lastError: unknown = new Error("Vision models could not start");
     for (const source of VISION_ASSET_SOURCES) {
-      try {
-        return new VisionEngine(await VisionEngine.load(vision, source, onProgress), source.id);
-      } catch (error) {
-        lastError = error;
+      for (const delegate of accelerated ? ["GPU", "CPU"] as const : ["CPU"] as const) {
+        try {
+          return new VisionEngine(await VisionEngine.load(vision, source, delegate, onProgress), source.id, delegate);
+        } catch (error) {
+          lastError = error;
+        }
       }
     }
     throw lastError;
   }
 
-  private static async load(vision: typeof import("@mediapipe/tasks-vision"), source: AssetSource, onProgress?: (message: string) => void) {
+  private static async load(vision: typeof import("@mediapipe/tasks-vision"), source: AssetSource, delegate: "GPU" | "CPU", onProgress?: (message: string) => void) {
     const files = await vision.FilesetResolver.forVisionTasks(source.wasm);
 
     onProgress?.("Loading hand, face and pose models");
     const results = await Promise.allSettled([
       vision.GestureRecognizer.createFromOptions(files, {
-        baseOptions: { modelAssetPath: source.models.gesture, delegate: "CPU" },
+        baseOptions: { modelAssetPath: source.models.gesture, delegate },
+        ...(typeof OffscreenCanvas !== "undefined" ? { canvas: new OffscreenCanvas(1, 1) } : {}),
         runningMode: "VIDEO",
         numHands: 2,
         minHandDetectionConfidence: 0.55,
@@ -64,7 +71,8 @@ export class VisionEngine {
         cannedGesturesClassifierOptions: { scoreThreshold: 0.55 },
       }),
       vision.FaceLandmarker.createFromOptions(files, {
-        baseOptions: { modelAssetPath: source.models.face, delegate: "CPU" },
+        baseOptions: { modelAssetPath: source.models.face, delegate },
+        ...(typeof OffscreenCanvas !== "undefined" ? { canvas: new OffscreenCanvas(1, 1) } : {}),
         runningMode: "VIDEO",
         numFaces: 1,
         minFaceDetectionConfidence: 0.55,
@@ -73,7 +81,8 @@ export class VisionEngine {
         outputFaceBlendshapes: false,
       }),
       vision.PoseLandmarker.createFromOptions(files, {
-        baseOptions: { modelAssetPath: source.models.pose, delegate: "CPU" },
+        baseOptions: { modelAssetPath: source.models.pose, delegate },
+        ...(typeof OffscreenCanvas !== "undefined" ? { canvas: new OffscreenCanvas(1, 1) } : {}),
         runningMode: "VIDEO",
         numPoses: 1,
         minPoseDetectionConfidence: 0.55,
@@ -94,8 +103,24 @@ export class VisionEngine {
     return { gesture: gesture.value, face: face.value, pose: pose.value };
   }
 
-  process(video: HTMLVideoElement | HTMLCanvasElement, timestamp: number): VisionFrame {
+  process(video: Source, timestamp: number, onHands?: (frame: VisionFrame) => void): VisionFrame {
+    const started = performance.now();
     const handResult = this.parts.gesture.recognizeForVideo(video, timestamp);
+    this.timings.hands = performance.now() - started;
+    const frame: VisionFrame = {
+      timestamp,
+      hands: handResult.landmarks.map((landmarks, index) => ({
+        landmarks: landmarks.map(toPoint),
+        handedness: taskHandedness(handResult.handedness[index]?.[0]?.categoryName),
+        gesture: handResult.gestures[index]?.[0]?.categoryName ?? "None",
+        gestureScore: handResult.gestures[index]?.[0]?.score ?? 0,
+      })),
+      face: this.lastFace, pose: this.lastPose,
+    };
+    // Publish hands before face/pose work. In the tracking worker this message
+    // can paint on the UI thread while auxiliary inference is still running.
+    onHands?.(frame);
+    const auxiliaryStarted = performance.now();
     this.handFramesSinceAux++;
     // Leave alternate frames for hands even when CPU inference is already slow.
     if (this.handFramesSinceAux >= 2 && timestamp - this.lastAuxTimestamp >= 150) {
@@ -107,18 +132,8 @@ export class VisionEngine {
       this.handFramesSinceAux = 0;
     }
 
-    return {
-      timestamp,
-      hands: handResult.landmarks.map((landmarks, index) => ({
-        landmarks: landmarks.map(toPoint),
-        // Preserve Tasks labels. CSS preview mirroring never changes this input.
-        handedness: taskHandedness(handResult.handedness[index]?.[0]?.categoryName),
-        gesture: handResult.gestures[index]?.[0]?.categoryName ?? "None",
-        gestureScore: handResult.gestures[index]?.[0]?.score ?? 0,
-      })),
-      face: this.lastFace,
-      pose: this.lastPose,
-    };
+    this.timings.auxiliary = performance.now() - auxiliaryStarted;
+    return { ...frame, face: this.lastFace, pose: this.lastPose };
   }
 
   close() {
