@@ -1,0 +1,37 @@
+{
+  "fullRegression": {
+    "passed": 881,
+    "failed": 5,
+    "skipped": 1,
+    "files": 86
+  },
+  "finalFocused": {
+    "passed": 48,
+    "files": 6
+  },
+  "typescript": "passed",
+  "productionBuild": "passed (13 routes)",
+  "browserSmoke": {
+    "passed": true,
+    "checks": [
+      "footer navigation",
+      "workspace transcript isolation",
+      "welcome transcript isolation",
+      "storage failure keeps transcript on both paths",
+      "late permission releases tracks",
+      "RSL/Bangla entry leaves shared camera off",
+      "visible match-score qualification",
+      "denied permission and cancelled retry",
+      "duplicate confirmation neither shown nor spoken",
+      "confirmed-only screen-reader announcements",
+      "transcript copy"
+    ],
+    "camera_requests": 5,
+    "denied_requests": 1,
+    "stale_tracks_stopped": 4
+  },
+  "eslint": "no errors; final edited benchmark/normalization/test files also pass without warnings",
+  "patchForwardApplyCheck": "passed against base commit",
+  "webcamTested": false,
+  "deployed": false
+}

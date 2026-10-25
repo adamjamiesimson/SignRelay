@@ -35,7 +35,7 @@ import {
 } from "@/lib/model-adapters";
 import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
-import { VisionEngine } from "@/lib/vision-engine";
+import { LiveVision } from "@/lib/live-vision";
 import { RecognitionSession } from "@/lib/recognition-session";
 import { recognitionStatus } from "@/lib/recognition-status";
 import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
@@ -79,7 +79,7 @@ export function TranslatorExperience() {
   const [recognitionFeedback, setRecognitionFeedback] = useState("");
   const [recognitionUnavailable, setRecognitionUnavailable] = useState(false);
   const [motionReason, setMotionReason] = useState<string | null>(null);
-  const [visionSource, setVisionSource] = useState<VisionEngine["assetSource"] | null>(null);
+  const [visionSource, setVisionSource] = useState<LiveVision["assetSource"] | null>(null);
   // Screen readers hear confirmed words and camera changes, never tentative candidates.
   const [announcement, setAnnouncement] = useState("");
   const [transcriptMessage, setTranscriptMessage] = useState("");
@@ -107,7 +107,7 @@ export function TranslatorExperience() {
   const transcriptHeadingRef = useRef<HTMLHeadingElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const engineRef = useRef<VisionEngine | null>(null);
+  const engineRef = useRef<LiveVision | null>(null);
   const workerRef = useRef<RecognitionSession | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
@@ -115,6 +115,7 @@ export function TranslatorExperience() {
   const frameErrorsRef = useRef(0);
   const cameraProgressRef = useRef(0);
   const cameraGenerationRef = useRef(0);
+  const trackingEpochRef = useRef(0);
   const cameraPendingRef = useRef(false);
   const captureGenerationRef = useRef(0);
   const frameLoopRef = useRef<() => void>(() => {});
@@ -135,6 +136,9 @@ export function TranslatorExperience() {
     return () => { delete (window as unknown as { __signrelayRehearsal?: unknown }).__signrelayRehearsal; };
   }, []);
   const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(),
+    capture: new RollingTimer(), hands: new RollingTimer(), auxiliary: new RollingTimer(), transport: new RollingTimer(),
+    overlay: new RollingTimer(), age: new RollingTimer(), classification: new RollingTimer(), communication: new RollingTimer(),
+    model: new RollingTimer(), personal: new RollingTimer(), reference: new RollingTimer(),
     throughput: new ThroughputMonitor(), analysed: 0, since: 0, frames: 0, handFrames: 0 });
 
   const model = useMemo(
@@ -268,6 +272,13 @@ export function TranslatorExperience() {
         perfRef.current.analysed++;
         const roundTrip = workerRef.current?.lastRoundTripMs;
         if (roundTrip !== null && roundTrip !== undefined) perfRef.current.roundTrip.record(roundTrip);
+        if (message.processingMs !== undefined) {
+          perfRef.current.classification.record(message.processingMs);
+          if (roundTrip != null) perfRef.current.communication.record(Math.max(0, roundTrip - message.processingMs));
+        }
+        if (message.modelMs !== undefined) perfRef.current.model.record(message.modelMs);
+        if (message.personalMs !== undefined) perfRef.current.personal.record(message.personalMs);
+        if (message.referenceMs !== undefined) perfRef.current.reference.record(message.referenceMs);
         const queueWait = workerRef.current?.stats.lastQueueAgeMs;
         if (queueWait !== null && queueWait !== undefined) perfRef.current.queueWait.record(queueWait);
       }
@@ -303,7 +314,7 @@ export function TranslatorExperience() {
   useEffect(() => {
     if (step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
     const worker = new RecognitionSession(
-      () => new Worker("/workers/recognition.worker.js?v=fist-motion-2", { type: "module" }),
+      () => new Worker("/workers/recognition.worker.js?v=tracking-temporal-3", { type: "module" }),
       handleWorkerMessage,
       status => {
         setRecognitionUnavailable(status.state === "failed");
@@ -315,6 +326,7 @@ export function TranslatorExperience() {
           setRecognitionState("listening");
         }
       },
+      perfMode,
     );
     worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current });
     workerRef.current = worker;
@@ -322,7 +334,7 @@ export function TranslatorExperience() {
       worker.terminate();
       workerRef.current = null;
     };
-  }, [step, selected, handleWorkerMessage]);
+  }, [step, selected, handleWorkerMessage, perfMode]);
 
   const stopCamera = useCallback(() => {
     cameraGenerationRef.current++;
@@ -374,6 +386,7 @@ export function TranslatorExperience() {
     if (!perfMode || cameraState !== "active") return;
     const perf = perfRef.current;
     perf.tracking.reset(); perf.roundTrip.reset(); perf.queueWait.reset(); perf.throughput.reset();
+    for (const name of ["capture", "hands", "auxiliary", "transport", "overlay", "age", "classification", "communication", "model", "personal", "reference"] as const) perf[name].reset();
     perf.analysed = 0; perf.frames = 0; perf.handFrames = 0; perf.since = performance.now();
     workerRef.current?.resetStats();
     const timer = window.setInterval(() => {
@@ -384,7 +397,10 @@ export function TranslatorExperience() {
         seconds: (performance.now() - perf.since) / 1000, analysed: perf.analysed, session: session?.stats ?? null,
         assets: engineRef.current?.assetSource ?? null,
         recognition: session ? { state: session.state, recoveries: session.stats.recoveries } : null,
-        hands: { seen: perf.handFrames, frames: perf.frames } }));
+        hands: { seen: perf.handFrames, frames: perf.frames },
+        stages: Object.fromEntries((["capture", "hands", "auxiliary", "transport", "overlay", "age", "classification", "communication", "model", "personal", "reference"] as const)
+          .map(name => [name, perf[name].summary()])),
+        tracker: engineRef.current ? `${engineRef.current.mode}/${engineRef.current.delegate}` : undefined }));
     }, 1000);
     return () => { window.clearInterval(timer); setPerfWarning(null); };
   }, [perfMode, cameraState]);
@@ -466,16 +482,34 @@ export function TranslatorExperience() {
       return;
     }
 
-    if (now - lastFrameRef.current >= 50 && video.currentTime !== lastVideoTimeRef.current) {
+    if (!engine.busy && now - lastFrameRef.current >= 33 && video.currentTime !== lastVideoTimeRef.current) {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
-      try {
-        const trackingStarted = performance.now();
+      const generation = cameraGenerationRef.current;
+      const trackingEpoch = trackingEpochRef.current;
+      const captureGeneration = captureGenerationRef.current;
+      const trackingStarted = performance.now();
+      const current = () => engineRef.current === engine && cameraGenerationRef.current === generation
+        && trackingEpochRef.current === trackingEpoch && !document.hidden;
+      const showHands = (frame: VisionFrame) => {
+        if (!current()) return;
+        const drawing = performance.now();
+        drawOverlay(frame);
+        if (perfMode) {
+          perfRef.current.overlay.record(performance.now() - drawing);
+          perfRef.current.age.record(performance.now() - trackingStarted);
+        }
+      };
+      void (async () => {
         // Rehearsal builds only: while a script plays, synthetic landmarks replace
         // the tracker, which is not run (its output would be discarded).
-        const frame = (REHEARSAL ? rehearsalRef.current?.next(now) : null) ?? engine.process(video, now);
+        const rehearsal = REHEARSAL ? rehearsalRef.current?.next(now) : null;
+        if (rehearsal) showHands(rehearsal);
+        const frame = rehearsal ?? await engine.process(video, now, showHands);
+        if (!frame || !current() || captureGeneration !== captureGenerationRef.current) return;
         if (perfMode) {
           perfRef.current.tracking.record(performance.now() - trackingStarted);
+          for (const name of ["capture", "hands", "auxiliary", "transport"] as const) perfRef.current[name].record(engine.timings[name]);
           perfRef.current.frames++;
           if (frame.hands.length) perfRef.current.handFrames++;
         }
@@ -485,12 +519,12 @@ export function TranslatorExperience() {
           face: frame.face.length > 0,
           pose: frame.pose.length > 0,
         };
-        setDetection(nextDetection);
-        drawOverlay(frame);
+        setDetection(previous => Object.keys(nextDetection).every(key => previous[key as keyof DetectionStatus] === nextDetection[key as keyof DetectionStatus]) ? previous : nextDetection);
         if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
         else workerRef.current?.postMessage({ type: "frame", frame });
         frameErrorsRef.current = 0;
-      } catch (error) {
+      })().catch(error => {
+        if (!current()) return;
         if (process.env.NODE_ENV === "development") console.warn("A video frame could not be processed", error);
         if (++frameErrorsRef.current >= 5) {
           stopCamera();
@@ -498,7 +532,7 @@ export function TranslatorExperience() {
           setCameraMessage("Hand tracking stopped. Start the camera again to reload tracking.");
           return;
         }
-      }
+      });
     }
     animationRef.current = requestAnimationFrame(frameLoopRef.current);
   }, [drawOverlay, stopCamera, perfMode]);
@@ -542,7 +576,7 @@ export function TranslatorExperience() {
 
       setCameraState("loading");
       loadingVision = true;
-      const engine = await VisionEngine.create(message => {
+      const engine = await LiveVision.create(message => {
         if (generation === cameraGenerationRef.current) setCameraMessage(message);
       });
       if (generation !== cameraGenerationRef.current) { engine.close(); return; }
@@ -576,6 +610,7 @@ export function TranslatorExperience() {
 
   useEffect(() => {
     const resume = () => {
+      trackingEpochRef.current++;
       workerRef.current?.postMessage({ type: "reset" });
       cameraProgressRef.current = performance.now();
       const video = videoRef.current;
@@ -649,7 +684,8 @@ export function TranslatorExperience() {
       gloss: calibrationWord.gloss,
       text: calibrationWord.text,
       createdAt,
-      frames: prepareCalibrationSequence(validFrames),
+      normalization: "trajectory-v3",
+      frames: prepareCalibrationSequence(validFrames, "trajectory-v3"),
     };
 
     try {

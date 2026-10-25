@@ -32,6 +32,11 @@ export type WorkerAnalysis = {
   feedback?: string;
   source?: "personal" | "starter" | "model";
   motionReason?: string;
+  /** Synchronous analysis only; asynchronous neural/template work is separate. */
+  processingMs?: number;
+  modelMs?: number;
+  personalMs?: number;
+  referenceMs?: number;
 };
 
 export type WorkerConfirmation = {
@@ -49,6 +54,8 @@ export type WorkerMessage = WorkerAnalysis | WorkerConfirmation
 
 export type CalibrationTemplate = {
   id: string;
+  /** Absent on older saved examples and the published PSL reference bundle. */
+  normalization?: "trajectory-v3";
   /** Older records without this field are treated as ASL for compatibility. */
   language?: LanguageId;
   gloss: string;
@@ -61,7 +68,7 @@ export type WorkerInput = (
   | { type: "frame"; frame: VisionFrame }
   | { type: "reset" }
   | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[] }
-) & { session?: number; frameId?: number };
+) & { session?: number; frameId?: number; measure?: boolean };
 
 export type DetectionStatus = {
   person: boolean;

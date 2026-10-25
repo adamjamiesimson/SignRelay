@@ -1,0 +1,183 @@
+{
+  "results": [
+    {
+      "mode": "baseline",
+      "source": "self-hosted",
+      "delegate": "CPU",
+      "tracker": "main",
+      "seconds": 4.640899999976158,
+      "stages": {
+        "capture": {
+          "count": 0
+        },
+        "hands": {
+          "count": 20,
+          "p50": 82.10000002384186,
+          "p95": 147.10000002384186
+        },
+        "auxiliary": {
+          "count": 20,
+          "p50": 43,
+          "p95": 84.60000002384186
+        },
+        "transport": {
+          "count": 0
+        },
+        "overlay": {
+          "count": 20,
+          "p50": 0,
+          "p95": 0.10000002384185791
+        },
+        "age": {
+          "count": 20,
+          "p50": 121.30000001192093,
+          "p95": 231.80000001192093
+        },
+        "full": {
+          "count": 20,
+          "p50": 121.30000001192093,
+          "p95": 231.80000001192093
+        },
+        "rafGap": {
+          "count": 110,
+          "p50": 16.699999999999818,
+          "p95": 116.69999999999982
+        },
+        "classification": {
+          "count": 20,
+          "p50": 0.10000002384185791,
+          "p95": 0.20000004768371582
+        },
+        "communication": {
+          "count": 20,
+          "p50": 0.800000011920929,
+          "p95": 1
+        }
+      },
+      "note": "Real inference on a generated no-hand canvas, not webcam/sign accuracy or sensor-to-photon latency."
+    },
+    {
+      "mode": "worker-cpu",
+      "source": "self-hosted",
+      "delegate": "CPU",
+      "tracker": "worker",
+      "lastError": null,
+      "seconds": 4.287,
+      "stages": {
+        "capture": {
+          "count": 20,
+          "p50": 0.19999998807907104,
+          "p95": 0.5
+        },
+        "hands": {
+          "count": 20,
+          "p50": 95.5,
+          "p95": 150
+        },
+        "auxiliary": {
+          "count": 20,
+          "p50": 54.60000002384186,
+          "p95": 112
+        },
+        "transport": {
+          "count": 20,
+          "p50": 0.5999999642372131,
+          "p95": 0.800000011920929
+        },
+        "overlay": {
+          "count": 20,
+          "p50": 0,
+          "p95": 0.10000002384185791
+        },
+        "age": {
+          "count": 20,
+          "p50": 96.10000002384186,
+          "p95": 151.0999999642372
+        },
+        "full": {
+          "count": 20,
+          "p50": 149.5,
+          "p95": 213.5
+        },
+        "rafGap": {
+          "count": 212,
+          "p50": 16.69999999999891,
+          "p95": 16.80000000000109
+        },
+        "classification": {
+          "count": 20,
+          "p50": 0.09999996423721313,
+          "p95": 0.30000001192092896
+        },
+        "communication": {
+          "count": 20,
+          "p50": 0,
+          "p95": 1
+        }
+      },
+      "note": "Real inference on a generated no-hand canvas, not webcam/sign accuracy or sensor-to-photon latency."
+    },
+    {
+      "mode": "candidate",
+      "source": "self-hosted",
+      "delegate": "CPU",
+      "tracker": "worker",
+      "lastError": "Error: Tracking warmup timed out",
+      "seconds": 4.073,
+      "stages": {
+        "capture": {
+          "count": 20,
+          "p50": 0.19999998807907104,
+          "p95": 0.30000001192092896
+        },
+        "hands": {
+          "count": 20,
+          "p50": 74,
+          "p95": 150.69999998807907
+        },
+        "auxiliary": {
+          "count": 20,
+          "p50": 50.5,
+          "p95": 108.80000001192093
+        },
+        "transport": {
+          "count": 20,
+          "p50": 0.40000003576278687,
+          "p95": 1.2999999523162842
+        },
+        "overlay": {
+          "count": 20,
+          "p50": 0,
+          "p95": 0.10000002384185791
+        },
+        "age": {
+          "count": 20,
+          "p50": 74.40000003576279,
+          "p95": 151.20000004768372
+        },
+        "full": {
+          "count": 20,
+          "p50": 118.80000001192093,
+          "p95": 193.29999995231628
+        },
+        "rafGap": {
+          "count": 187,
+          "p50": 16.700000000000728,
+          "p95": 16.80000000000291
+        },
+        "classification": {
+          "count": 20,
+          "p50": 0.09999996423721313,
+          "p95": 0.19999998807907104
+        },
+        "communication": {
+          "count": 20,
+          "p50": 0,
+          "p95": 1.899999976158142
+        }
+      },
+      "note": "Real inference on a generated no-hand canvas, not webcam/sign accuracy or sensor-to-photon latency."
+    }
+  ],
+  "errors": []
+}
