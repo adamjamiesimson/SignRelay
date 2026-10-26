@@ -9,6 +9,8 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+import { browserInternal } from "./helpers/browser-internal.mjs";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 
 const executable = process.argv[2];
 // --self-test plants an outbound fetch in the page and in a worker and passes only if both are caught.
@@ -27,14 +29,6 @@ const loopback = url => { try { const { protocol, hostname } = new URL(url); ret
 export const QUIET_CHROME = ["--disable-background-networking", "--disable-component-update", "--disable-sync", "--disable-default-apps", "--no-pings",
   "--disable-domain-reliability", "--disable-client-side-phishing-detection", "--disable-breakpad", "--no-default-browser-check",
   "--disable-features=AutofillServerCommunication,OptimizationHints,OptimizationGuideModelDownloading,MediaRouter,Translate,NetworkTimeServiceQuerying,SafeBrowsing,InterestFeedContentSuggestions,CertificateTransparencyComponentUpdater,SignInProfileCreation,AccountConsistency"];
-// Tunnels the browser process itself opens, which the deny-all proxy refuses.
-// Measured with an about:blank tab only: the first three on Chromium 141
-// headless; www.gstatic.com and update.googleapis.com on the CI runner's
-// branded Google Chrome even with QUIET_CHROME. This list never excuses a page
-// or worker request: those are checked separately over CDP, and the self-test
-// plants a page request to one of these hosts to prove it is still caught.
-export const BROWSER_INTERNAL_HOSTS = new Set(["www.google.com:443", "accounts.google.com:443", "android.clients.google.com:443",
-  "www.gstatic.com:443", "update.googleapis.com:443"]);
 const outbound = [];
 const deny = createServer((request, response) => { outbound.push(`${request.method} ${request.url}`); response.writeHead(403); response.end(); });
 // Chrome may reset a refused tunnel; a reset socket is expected, not a test failure.
@@ -48,7 +42,8 @@ try {
   const manifest = await (await fetch(`${origin}/runtime-manifest.json`)).json();
   assert.equal(manifest.profile, "asl-demo", "Serve the ASL demo export (npm run demo:prepare)");
   // Chrome's own background services (sync, autofill, component updates, time
-  // queries) are switched off so the proxy log measures only what SignRelay does.
+  // queries) are switched off so the proxy log measures only what SignRelay does; what the
+  // browser process itself still opens is classified by helpers/browser-internal.mjs.
   browser = await startChrome(executable, { proxy: `http://127.0.0.1:${deny.address().port}`, extraArgs: QUIET_CHROME });
   const pageRequests = [], workers = [];
   browser.onEvent(message => {
@@ -69,10 +64,11 @@ try {
   // The export's CSP would already stop a planted fetch; the self-test bypasses it
   // so the leak reaches the network layer, as it would after a CSP regression.
   if (selfTest) await browser.send("Page.setBypassCSP", { enabled: true });
+  await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
   await browser.send("Page.navigate", { url: `${origin}/?perf` });
   await until(() => evaluate("Object.keys(document.querySelector('[role=radio]') ?? {}).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate");
   const visited = ["/"];
-  await click("Start translating");
+  await click("Start signing");
   await until(() => evaluate("document.querySelector('.status-badge')?.textContent === 'Active'"), "ASL vision did not start offline");
   // Long enough for one full 5 s throughput window after the first readout tick.
   await pause(6500);
@@ -96,16 +92,16 @@ try {
     assert.ok(leaked.includes("https://cdn.jsdelivr.net/npm/signrelay-self-test"), "Self-test: worker leak was not detected");
     assert.ok(leaked.includes("https://www.gstatic.com/signrelay-self-test"), "Self-test: a page request to a browser-internal host was excused");
     assert.ok(outbound.some(line => line.includes("example.org")), "Self-test: the deny proxy did not see the page leak");
-    console.log(JSON.stringify({ self_test: "passed", detected: leaked, refused_by_proxy: outbound.filter(line => !BROWSER_INTERNAL_HOSTS.has(line.replace(/^CONNECT /, ""))) }));
+    console.log(JSON.stringify({ self_test: "passed", detected: leaked, refused_by_proxy: outbound.filter(line => !browserInternal(line)) }));
     process.exitCode = 0;
   } else {
   assert.deepEqual(leaked, [], `The page requested non-loopback URLs: ${leaked.join(", ")}`);
-  const unexplained = outbound.filter(line => !BROWSER_INTERNAL_HOSTS.has(line.replace(/^CONNECT /, "")));
+  const unexplained = outbound.filter(line => !browserInternal(line));
   assert.deepEqual(unexplained, [], `Outbound connections were attempted: ${unexplained.join(", ")}`);
   assert.ok(workers.some(url => url.includes("recognition.worker.js")), "The recognition worker was not observed, so its requests were not checked");
   assert.match(perf ?? "", /assets self-hosted/, "The ?perf readout must confirm self-hosted assets");
   assert.match(perf ?? "", /recognition running, 0 recoveries · hand tracked in 0% of frames/, "Recognition restarted, or the readout lost its worker and tracking fields");
-  assert.equal(status, "waiting for hands");
+  assert.equal(status, "Ready", "Camera on without hands must say Ready (waiting for hands), not a recognition state");
   console.log(JSON.stringify({ passed: true, profile: manifest.profile, recognition_worker_sha256: manifest.recognition_worker_sha256,
     pages: visited, page_and_worker_requests: pageRequests.length, workers_observed: [...new Set(workers.map(url => new URL(url).pathname))],
     non_loopback_requests: 0, refused_browser_internal: [...new Set(outbound)], perf_readout: perf,

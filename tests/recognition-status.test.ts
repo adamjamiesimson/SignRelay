@@ -4,15 +4,25 @@ import { recognitionStatus, type CameraPhase } from "../lib/recognition-status";
 const live = { camera: "active" as const, unavailable: false, handsVisible: true, motionReason: "idle", candidate: null, bufferSize: 40 };
 
 describe("live workspace status", () => {
-  it.each<[CameraPhase, string]>([["idle", "camera off"], ["requesting", "waiting for permission"], ["loading", "starting"],
-    ["denied", "camera blocked"], ["error", "camera unavailable"]])("never claims recognition while the camera is %s", (camera, chip) => {
+  it.each<[CameraPhase, string]>([["idle", "Camera off"], ["requesting", "Waiting for permission"], ["loading", "Starting"],
+    ["denied", "Camera blocked"], ["error", "Camera unavailable"]])("never claims recognition while the camera is %s", (camera, chip) => {
     const status = recognitionStatus({ ...live, camera, candidate: "HELLO" });
     expect(status.chip).toBe(chip);
     expect(status.tone).toBe("paused");
-    expect(`${status.chip} ${status.detail}`).not.toMatch(/HELLO|listening|checking/i);
+    expect(`${status.chip} ${status.detail}`).not.toMatch(/HELLO|listening|checking|watching|ready/i);
   });
   it("reports missing hands before any candidate or movement", () => {
-    expect(recognitionStatus({ ...live, handsVisible: false, candidate: "HELLO", motionReason: "moving" }).key).toBe("waiting-for-hands");
+    const status = recognitionStatus({ ...live, handsVisible: false, candidate: "HELLO", motionReason: "moving" });
+    expect(status.key).toBe("waiting-for-hands");
+    expect(status.chip).toBe("Ready");
+  });
+  it("uses the short user-facing states", () => {
+    const chips = new Set([
+      recognitionStatus({ ...live, camera: "idle" }), recognitionStatus({ ...live, camera: "loading" }),
+      recognitionStatus({ ...live, handsVisible: false }), recognitionStatus({ ...live, motionReason: "moving" }),
+      recognitionStatus({ ...live, candidate: "YES" }), recognitionStatus(live), recognitionStatus({ ...live, unavailable: true }),
+    ].map(status => status.chip));
+    expect([...chips]).toEqual(["Camera off", "Starting", "Ready", "Watching movement", "Checking sign", "No confident match", "Recognition unavailable"]);
   });
   it("describes a tentative candidate as a check, never as the translation", () => {
     const status = recognitionStatus({ ...live, candidate: "THANK YOU" });

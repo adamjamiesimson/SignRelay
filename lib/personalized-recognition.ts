@@ -18,10 +18,27 @@ const ZERO_HAND = new Array(66).fill(0);
 const ZERO_FACE = new Array(41).fill(0);
 const ZERO_POSE = new Array(67).fill(0);
 
-export function prepareCalibrationSequence(frames: VisionFrame[]) {
+export function prepareCalibrationSequence(frames: VisionFrame[], normalization?: CalibrationTemplate["normalization"]) {
   if (!frames.length) return [];
-  const features = frames.map(frameToFeatures);
-  return resample(features, CALIBRATION_SEQUENCE_LENGTH);
+  const references = normalization === "trajectory-v3" ? frames.flatMap(frame => {
+    const shoulders = [frame.pose[11], frame.pose[12]];
+    return shoulders.every(p => p && (p.visibility ?? 1) > 0.4 && [p.x, p.y, p.z].every(Number.isFinite))
+      ? [{ timestamp: frame.timestamp, anchor: midpoint(shoulders[0], shoulders[1]), bodyScale: Math.max(distance(shoulders[0], shoulders[1]), 0.08) }] : [];
+  }) : [];
+  // When no body is visible, retain travel relative to the first observed
+  // wrist, rather than subtracting a different wrist in every frame. Absolute
+  // body location is unavailable in this case; do not invent it.
+  const fallback = normalization === "trajectory-v3" && !references.length
+    ? { anchor: frames.flatMap(frame => frame.hands).find(validHand)?.landmarks[0] ?? { x: 0.5, y: 0.5, z: 0 }, bodyScale: 0.18 } : undefined;
+  let referenceIndex = 0;
+  const features = frames.map(frame => {
+    // Both lists are chronological: one forward cursor avoids a quadratic
+    // nearest-body search in every candidate window.
+    while (referenceIndex + 1 < references.length && Math.abs(references[referenceIndex + 1].timestamp - frame.timestamp)
+      < Math.abs(references[referenceIndex].timestamp - frame.timestamp)) referenceIndex++;
+    return frameToFeatures(frame, references[referenceIndex] ?? fallback);
+  });
+  return resample(features, CALIBRATION_SEQUENCE_LENGTH, frames.map(frame => frame.timestamp));
 }
 
 export function calibrationFrames(frames: VisionFrame[]) {
@@ -71,9 +88,14 @@ function* personalDistances(frames: VisionFrame[], templates: CalibrationTemplat
     if (recent.length === previousLength) continue;
     previousLength = recent.length;
     if (recent.length < 8 || recent.filter(frame => frame.hands.some(validHand)).length / recent.length < 0.7) continue;
-    const candidate = compileDistanceSequence(prepareCalibrationSequence(recent));
+    const candidates = new Map<CalibrationTemplate["normalization"], DistanceSequence>();
     for (const template of templates) {
       if (template.frames.length !== CALIBRATION_SEQUENCE_LENGTH) continue;
+      let candidate = candidates.get(template.normalization);
+      if (!candidate) {
+        candidate = compileDistanceSequence(prepareCalibrationSequence(recent, template.normalization));
+        candidates.set(template.normalization, candidate);
+      }
       const distance = compiledSequenceDistance(candidate, cachedTemplateSequence(template.frames), 0.56);
       yield [template, distance] as const;
     }
@@ -195,15 +217,15 @@ export function compiledSequenceDistance(query: DistanceSequence, template: Dist
   return previous[b.length] / divisor;
 }
 
-function frameToFeatures(frame: VisionFrame) {
+function frameToFeatures(frame: VisionFrame, reference?: { anchor: Point; bodyScale: number }) {
   const shoulders = frame.pose.length > 12 ? [frame.pose[11], frame.pose[12]] : [];
   const wrists = frame.hands.map((hand) => hand.landmarks[0]).filter(Boolean);
-  const anchor = shoulders.length === 2
+  const anchor = reference?.anchor ?? (shoulders.length === 2
     ? midpoint(shoulders[0], shoulders[1])
-    : averagePoint(wrists);
-  const bodyScale = shoulders.length === 2
+    : averagePoint(wrists));
+  const bodyScale = reference?.bodyScale ?? (shoulders.length === 2
     ? Math.max(distance(shoulders[0], shoulders[1]), 0.08)
-    : Math.max(pointRange(wrists), 0.18);
+    : Math.max(pointRange(wrists), 0.18));
 
   const left = frame.hands.find((hand) => hand.handedness === "Left") ?? frame.hands[1];
   const right = frame.hands.find((hand) => hand.handedness === "Right") ?? frame.hands[0];
@@ -267,12 +289,17 @@ function featureDistance(a: number[], b: number[]) {
   return compared ? Math.sqrt(total / compared) : Infinity;
 }
 
-function resample(sequence: number[][], targetLength: number) {
-  if (sequence.length === targetLength) return sequence;
+function resample(sequence: number[][], targetLength: number, times: number[]) {
   if (sequence.length === 1) return Array.from({ length: targetLength }, () => [...sequence[0]]);
+  const duration = times.at(-1)! - times[0];
+  if (!Number.isFinite(duration) || duration <= 0 || times.some((time, i) => !Number.isFinite(time) || (i > 0 && time <= times[i - 1]))) return [];
+  let cursor = 0;
   return Array.from({ length: targetLength }, (_, index) => {
-    const sourceIndex = Math.round(index * (sequence.length - 1) / (targetLength - 1));
-    return [...sequence[sourceIndex]];
+    const at = times[0] + index * duration / (targetLength - 1);
+    while (cursor < times.length - 1 && Math.abs(times[cursor + 1] - at) <= Math.abs(times[cursor] - at)) cursor++;
+    // Nearest observation preserves missing-hand masks and orientation. No
+    // invented landmarks across occlusion; DTW still handles signing speed.
+    return [...sequence[cursor]];
   });
 }
 

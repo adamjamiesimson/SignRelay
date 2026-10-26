@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 import { recognizePersonalTemplateAsync } from "../../lib/personalized-recognition";
 import { recognizePsl776 } from "../../lib/psl776-runtime";
-import type { MatchInput, MatchOutput } from "../../lib/template-matching-client";
+import { unpackTemplates, type MatchInput, type MatchOutput } from "../../lib/template-matching-client";
 import type { CalibrationTemplate } from "../../lib/vision-types";
 
 /** Exercise the real client protocol in Node. Browser/thread integration is
@@ -20,7 +20,7 @@ export function installTemplateWorker() {
     postMessage(data: MatchInput) {
       if (data.type !== "match") {
         this.controller?.abort();
-        if (data.type === "configure") { this.kind = data.kind; this.templates = data.templates; }
+        if (data.type === "configure") { this.kind = data.kind; this.templates = unpackTemplates(data.templates); }
         return;
       }
       const controller = new AbortController(); this.controller = controller;

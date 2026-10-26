@@ -4,6 +4,8 @@ import { recognizeAslStarter } from "../lib/asl-starter-recognition";
 import { analyzeSignMotion } from "../lib/sign-motion";
 import { prepareCalibrationSequence } from "../lib/personalized-recognition";
 import { makeSign } from "./fixtures/asl-motion";
+import { packTemplates } from "../lib/template-transport";
+import type { LanguageId } from "../lib/model-adapters";
 import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-types";
 
 const mocks = vi.hoisted(() => ({ model: vi.fn() }));
@@ -54,16 +56,16 @@ describe("recognition with slow and uneven camera delivery", () => {
     expect(mocks.model).not.toHaveBeenCalled();
     expect(confirmations()).toHaveLength(0);
   });
-  it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "uaesl", "vsl"] as const)("confirms saved personal %s signs with slow delivery", async language => {
+  it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "uaesl", "vsl"].flatMap(language => [[language, "arrays"], [language, "packed"]]) as Array<[LanguageId, "arrays" | "packed"]>)("confirms saved personal %s signs with slow delivery (%s templates)", async (language, transport) => {
     const movement = (duration: number, count: number) => makeSign("IDLE", { duration, count }).map((frame, index) => ({
       ...frame, hands: frame.hands.map(hand => ({ ...hand, landmarks: hand.landmarks.map(point => ({
         ...point, y: point.y + 0.3, x: point.x + Math.min(1, index / (count - 1) / 0.75) * 0.12,
       })) })),
     }));
-    await worker.onmessage({ data: { type: "templates", language, templates: [{
-      id: "personal", language, gloss: "MY WORD", text: "My word", createdAt: 1,
-      frames: prepareCalibrationSequence(movement(900, 21)),
-    }] } });
+    const templates = [{ id: "personal", language, gloss: "MY WORD", text: "My word", createdAt: 1,
+      frames: prepareCalibrationSequence(movement(900, 21)) }];
+    // The app sends one packed buffer (RecognitionSession); plain arrays stay accepted.
+    await worker.onmessage({ data: { type: "templates", language, templates: transport === "packed" ? packTemplates(templates) : templates } });
     const slow = movement(2400, 9);
     // Independent asynchronous matches are consumed on the next camera tick.
     await feed([...slow, { ...slow.at(-1)!, timestamp: slow.at(-1)!.timestamp + 300 }]);

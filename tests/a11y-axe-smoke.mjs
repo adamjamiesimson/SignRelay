@@ -6,6 +6,7 @@
 import { readFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 const axe = readFileSync(process.argv[3], "utf8");
 const port = 18600 + Math.floor(Math.random() * 100), origin = `http://127.0.0.1:${port}`;
 const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--port", String(port)], { stdio: "ignore"});
@@ -20,6 +21,7 @@ try {
     results[label] = out;
   };
   for (const path of ["/", "/languages", "/models", "/privacy", "/about"]) {
+    await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
     await browser.send("Page.navigate", { url: origin + path }); await pause(2500); await run(path);
   }
   await browser.send("Page.navigate", { url: origin + "/" }); await pause(2000);
@@ -30,7 +32,7 @@ try {
   }
   await browser.evaluate("[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes('American'))?.click()");
   await pause(300);
-  await browser.evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Start translating')?.click()");
+  await browser.evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Start signing')?.click()");
   await pause(6000);
   await run("workspace (camera active, no hands)");
   const violations = Object.entries(results).flatMap(([page, list]) => list.map(item => ({ page, ...item })));

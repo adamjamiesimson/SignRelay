@@ -3,6 +3,7 @@ import { makeSign } from "../../tests/fixtures/asl-motion";
 import type { CalibrationTemplate } from "../../lib/vision-types";
 export { makeSign };
 export { recognizePsl776 } from "../../lib/psl776-runtime";
+export { packTemplates } from "../../lib/template-transport";
 export function examples(count: number): CalibrationTemplate[] {
   const base = prepareCalibrationSequence(makeSign("HELLO", { duration: 1800, count: 37 }));
   return Array.from({ length: count }, (_, i) => ({

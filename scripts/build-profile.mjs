@@ -2,7 +2,7 @@
 // Firebase build (unchanged, including the RSL install). `asl-demo` skips the
 // RSL download and non-ASL asset checks, builds with the profile baked in,
 // prunes other language models, then verifies the exact runtime.
-import { spawnSync } from "node:child_process";
+import { runCommandSync as spawnSync } from "./run-command.mjs";
 import { pathToFileURL } from "node:url";
 
 /** @type {Record<string, string[][]>} */

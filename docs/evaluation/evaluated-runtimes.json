@@ -37,6 +37,41 @@
         "errors": 0
       },
       "baseline_gate": "scripts/baseline-gate.mjs ok (0 changes on all 11 established trials) in CI run 39573034510 on Sprint 2 commit 2a6dfef"
+    },
+    {
+      "worker_sha256": "39a5f2c307242a5409bfabbf75a0ff18d4e5e6bd5365bd72966e9e8907b75ed5",
+      "source_commit": "80a4395a7478b5fd226f36224e0a8642c31e6f86",
+      "evidence": [
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/39761389921",
+        "docs/evaluation/ci-pilot-2026-10-22.md"
+      ],
+      "evidence_kind": "CI paired pilot log (per-trial outcomes transcribed in ci-pilot-2026-10-22.md). The bundle hash is the committed, deterministically rebuilt bundle of that commit.",
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "baseline_gate": "scripts/baseline-gate.mjs ok (0 changes on all 11 established trials) in CI run 39761389921 on Sprint 4 commit 80a4395"
+    },
+    {
+      "worker_sha256": "4d1b5d73cace0cec3ae97f05d6bf10d6704fd8b3ad9aed5371824f82a103ca43",
+      "source_commit": "b0cb1d193cbc24d9ce76cc72029b1436a930933a",
+      "evidence": [
+        "docs/refinement/integration-2026-10-26/ci-pilot/candidate.jsonl",
+        "docs/refinement/integration-2026-10-26/ci-pilot/development-candidate.jsonl",
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/40287458234"
+      ],
+      "evidence_kind": "Unmodified per-trial CI artifact, downloaded and SHA-256 verified; same frozen development clips, not new or independently reviewed evidence.",
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "baseline_gate": "ok, zero changes or exceptions across all 11 established trials; see docs/refinement/integration-2026-10-26/ci-pilot/baseline-gate.json"
     }
   ]
 }

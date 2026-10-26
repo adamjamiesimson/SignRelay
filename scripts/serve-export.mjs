@@ -7,7 +7,7 @@ const args = process.argv.slice(2);
 const port = Number((args.includes("--port") ? args[args.indexOf("--port") + 1] : undefined) || process.env.PORT || 3000);
 const host = (args.includes("--host") ? args[args.indexOf("--host") + 1] : undefined) || "0.0.0.0";
 const root = resolve("out");
-const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".json": "application/json", ".txt": "text/plain", ".xml": "application/xml", ".png": "image/png", ".webp": "image/webp", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".wasm": "application/wasm", ".woff2": "font/woff2" };
+const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".json": "application/json", ".txt": "text/plain", ".xml": "application/xml", ".png": "image/png", ".webp": "image/webp", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".wasm": "application/wasm", ".woff": "font/woff", ".woff2": "font/woff2" };
 await stat(resolve(root, "index.html"));
 createServer(async (request, response) => {
   for (const { key, value } of baseHeaders) response.setHeader(key, value);
@@ -27,4 +27,11 @@ createServer(async (request, response) => {
     response.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
     response.end(request.method === "HEAD" ? undefined : await readFile(resolve(root, "404.html")));
   }
+}).on("error", error => {
+  // A raw stack trace here reads like a crash of this build, while another
+  // server keeps answering at the same address.
+  console.error(error.code === "EADDRINUSE"
+    ? `Port ${port} on ${host} is already in use by another program. Nothing was served; stop that program or pass --port.`
+    : `Cannot serve on ${host}:${port}: ${error.message}`);
+  process.exit(1);
 }).listen(port, host, () => console.log(`Serving static export on ${host}:${port}`));

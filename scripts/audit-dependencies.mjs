@@ -2,7 +2,7 @@
 // development-only advisory passes only with an exact, unexpired human review
 // in docs/security/dependency-exceptions.json; anything new or expired fails.
 // `npm run audit:security` remains the strict zero-advisory release check.
-import { execFileSync } from "node:child_process";
+import { execCommandSync as execFileSync } from "./run-command.mjs";
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 

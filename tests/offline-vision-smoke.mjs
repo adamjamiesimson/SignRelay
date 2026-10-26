@@ -7,6 +7,8 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+import { observeWorkerNetwork } from "../scripts/diagnostics/worker-network.mjs";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 
 const executable = process.argv[2];
 if (!executable) throw new Error("Supply Chrome executable after building the public export");
@@ -17,12 +19,16 @@ async function until(check, reason, attempts = 600) {
   for (let i = 0; i < attempts; i++) { if (await check()) return; await pause(100); }
   throw new Error(reason);
 }
-let browser, detach;
+let browser, detach, network;
 try {
   await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } }, "No static server");
   browser = await startChrome(executable);
-  const cdnRequests = [], visionRequests = [], responses = [], failures = [];
+  network = await observeWorkerNetwork(browser);
+  const cdnRequests = [], visionRequests = [], responses = [], failures = [], workerAssets = new Set();
   detach = browser.onEvent(message => {
+    if (message.sessionId && message.method === "Network.responseReceived"
+      && message.params.response.status === 200 && message.params.response.url.includes("/vision/"))
+      workerAssets.add(new URL(message.params.response.url).pathname);
     if (message.method === "Network.responseReceived" && /\/vision\/|jsdelivr|googleapis/.test(message.params.response.url))
       responses.push(`${message.params.response.status} ${message.params.response.mimeType} ${message.params.response.url}`);
     if (message.method === "Network.loadingFailed") failures.push(`${message.params.errorText} ${message.params.blockedReason ?? ""}`);
@@ -32,23 +38,25 @@ try {
     if (url.includes("/vision/")) visionRequests.push(new URL(url).pathname);
   });
   await browser.send("Network.enable");
-  await browser.send("Network.setBlockedURLs", { urls: ["*cdn.jsdelivr.net*", "*storage.googleapis.com*"] });
+  await network.block(["*cdn.jsdelivr.net*", "*storage.googleapis.com*"]);
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => {
     window.__qaTracks = []; window.__qaFrames = 0;
     const get = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getUserMedia = async options => { const stream = await get(options); window.__qaTracks.push(...stream.getTracks()); return stream; };
     const NativeWorker = window.Worker;
     window.Worker = class extends NativeWorker {
-      postMessage(message, transfer) { if (message?.type === 'frame') window.__qaFrames++; return super.postMessage(message, transfer); }
+      constructor(url, options) { super(url, options); this.__url = String(url); }
+      postMessage(message, transfer) { if (message?.type === 'frame' && this.__url.includes('recognition.worker')) window.__qaFrames++; return super.postMessage(message, transfer); }
     };
   })();` });
+  await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
   await browser.send("Page.navigate", { url: `${origin}/?perf` });
   const evaluate = browser.evaluate;
   const click = text => evaluate(`(() => { const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)}); if(!b||b.disabled) throw new Error('Missing button '+${JSON.stringify(text)}); b.click(); })()`);
-  await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Welcome screen missing");
+  await until(() => evaluate("!!document.querySelector('.language-row [role=radio]')"), "Welcome screen missing");
   // ASL is already checked in the static HTML, so selecting it proves nothing
   // about hydration. Prove React handles clicks by selecting BSL first; an
-  // unhydrated "Start translating" click is otherwise silently lost.
+  // unhydrated "Start signing" click is otherwise silently lost.
   const choose = name => evaluate(`[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes(${JSON.stringify(name)}))?.click()`);
   const checked = name => evaluate(`document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes(${JSON.stringify(name)})`);
   // The ASL demo profile disables every other language, so there hydration is
@@ -66,7 +74,7 @@ try {
   const cycles = [];
   for (let cycle = 0; cycle < 3; cycle++) {
     const started = Date.now();
-    if (cycle === 0) await click("Start translating"); else await click("Start camera");
+    if (cycle === 0) await click("Start signing"); else await click("Start camera");
     await until(active, `Vision did not start without CDNs (cycle ${cycle + 1})`).catch(error => {
       console.error(JSON.stringify({ cdnRequests, visionRequests, responses, failures: failures.slice(-20) }));
       throw error;
@@ -90,27 +98,32 @@ try {
     const sequence = await evaluate("document.querySelector('.candidate-bar strong')?.textContent");
     await click("Pause camera");
     await until(() => evaluate("window.__qaTracks.length > 0 && window.__qaTracks.every(t => t.readyState === 'ended')"), "Camera tracks were not released");
-    await until(() => evaluate("document.querySelector('.recognition-state')?.textContent.includes('camera off')"), "Camera-off state not shown");
+    await until(() => evaluate("document.querySelector('.recognition-state')?.textContent.toLowerCase().includes('camera off')"), "Camera-off state not shown");
     await browser.send("HeapProfiler.collectGarbage").catch(() => {});
     const heapMb = await evaluate("performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null");
     cycles.push({ cold_start_ms: coldStartMs, frames_forwarded_per_s: framesPerSecond, status_while_no_hands: status, sequence_text: sequence, perf_readout: perf, js_heap_mb_after_pause: heapMb });
   }
   assert.equal(cdnRequests.length, 0, `CDN requests were attempted: ${cdnRequests.join(", ")}`);
+  assert.deepEqual(network.failures, [], "Worker network instrumentation failed");
+  for (const model of ["gesture_recognizer.task", "face_landmarker.task", "pose_landmarker_lite.task"])
+    assert.ok([...workerAssets].some(path => path.endsWith(model)), `Worker did not load self-hosted ${model}`);
+  assert.ok([...workerAssets].some(path => path.endsWith(".wasm")), "Worker did not load self-hosted WASM");
   assert.ok(visionRequests.some(path => path.endsWith("gesture_recognizer.task")), "Self-hosted models were not used");
   assert.ok(visionRequests.some(path => path.startsWith("/vision/wasm/")), "Self-hosted WASM was not used");
   for (const cycle of cycles) {
+    console.log(JSON.stringify({ cycle, worker_assets: [...workerAssets].sort() }));
     assert.ok(cycle.cold_start_ms < 15000, `Cold start exceeded the 15 s contract: ${cycle.cold_start_ms} ms`);
     assert.ok(cycle.frames_forwarded_per_s > 0, "No frames reached recognition");
-    assert.match(cycle.sequence_text, /Waiting for hands/);
+    assert.match(cycle.sequence_text, /Show your hands to begin/);
     assert.match(cycle.perf_readout ?? "", /frames analysed\/s · assets self-hosted/, "The ?perf device readout is missing");
-    assert.equal(cycle.status_while_no_hands, "waiting for hands", "Camera on without hands must say so, not 'uncertain' or 'listening'");
+    assert.equal(cycle.status_while_no_hands, "Ready", "Camera on without hands must say Ready (waiting for hands), not a recognition state");
   }
   console.log(JSON.stringify({ passed: true, cdn_blocked: true, cdn_requests: cdnRequests.length,
-    self_hosted_paths: [...new Set(visionRequests)].sort(), cycles,
+    self_hosted_paths: [...new Set(visionRequests)].sort(), worker_assets: [...workerAssets].sort(), cycles,
     environment: "headless Chromium, synthetic fake camera (no hands), this machine's CPU; not a physical device measurement" }));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors,
     page: await browser.evaluate(`({ badge: document.querySelector('.status-badge')?.textContent, placeholder: document.querySelector('.camera-placeholder')?.textContent,
       status: document.querySelector('.recognition-state')?.textContent, simd: typeof WebAssembly.validate })`).catch(() => null) }));
   throw error;
-} finally { detach?.(); await browser?.close(); server.kill(); }
+} finally { detach?.(); network?.close(); await browser?.close(); server.kill(); }

@@ -1,0 +1,32 @@
+{
+  "base": "e63fffe64e6cc7136cf5191bd3beb07058c24200",
+  "note": "Synthetic kinematic fixtures, not recorded signs or accuracy. Exact original personal sampler versus candidate on identical observations.",
+  "comparisons": [
+    {
+      "sign": "THANK YOU",
+      "before": {
+        "mean_absolute_midpoint_feature_error": 0.0014660493827161813,
+        "prediction": "THANK YOU"
+      },
+      "after": {
+        "mean_absolute_midpoint_feature_error": 0.00007716049382743677,
+        "prediction": "THANK YOU"
+      }
+    },
+    {
+      "sign": "SORRY",
+      "before": {
+        "mean_absolute_midpoint_feature_error": 0.0017260275716796487,
+        "prediction": "SORRY"
+      },
+      "after": {
+        "mean_absolute_midpoint_feature_error": 0.00014093337785439354,
+        "prediction": "SORRY"
+      }
+    }
+  ],
+  "history_at_30fps_ms": {
+    "original_non_asl_80_frames": 2633.3333333333335,
+    "candidate": 4200
+  }
+}

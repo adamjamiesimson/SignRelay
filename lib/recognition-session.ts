@@ -1,4 +1,5 @@
 import type { VisionFrame, WorkerInput, WorkerMessage } from "./vision-types";
+import { packTemplates } from "./template-transport";
 
 type Port = Pick<Worker, "postMessage" | "terminate" | "onmessage" | "onerror" | "onmessageerror">;
 type Configuration = Extract<WorkerInput, { type: "templates" }>;
@@ -32,6 +33,7 @@ export class RecognitionSession {
     private createWorker: () => Port,
     private onMessage: (message: WorkerMessage) => void,
     private readonly reportStatus: (status: SessionStatus) => void,
+    private readonly measure = false,
   ) {
     this.launch();
     this.watchdog = setInterval(() => {
@@ -64,7 +66,7 @@ export class RecognitionSession {
       return;
     }
     try {
-      this.worker.postMessage({ ...message, session: this.session });
+      this.send(this.worker, message);
     } catch {
       this.recover("Recognition could not receive the session. Restarting…");
     }
@@ -118,10 +120,21 @@ export class RecognitionSession {
       worker.onerror = worker.onmessageerror = () => {
         if (worker === this.worker) this.recover("Recognition was interrupted. Restarting…");
       };
-      worker.postMessage({ ...this.configuration, session: this.session });
+      this.send(worker, this.configuration);
     } catch {
       this.recover("Recognition could not start. Retrying…");
     }
+  }
+
+  /** Templates go as one transferred buffer, so neither the page nor the
+   * recognition thread spends hundreds of milliseconds cloning them. */
+  private send(worker: Port, message: WorkerInput) {
+    if (message.type !== "templates" || !Array.isArray(message.templates)) {
+      worker.postMessage({ ...message, session: this.session });
+      return;
+    }
+    const templates = packTemplates(message.templates);
+    worker.postMessage({ ...message, templates, session: this.session }, [templates.values.buffer]);
   }
 
   private pump() {
@@ -132,7 +145,8 @@ export class RecognitionSession {
     this.stats.forwarded++;
     this.stats.lastQueueAgeMs = this.waiting.since - this.queuedAt;
     try {
-      this.worker.postMessage({ type: "frame", frame, frameId: this.waiting.id, session: this.session } satisfies WorkerInput);
+      this.worker.postMessage({ type: "frame", frame, frameId: this.waiting.id, session: this.session,
+        ...(this.measure ? { measure: true } : {}) } satisfies WorkerInput);
     } catch {
       this.recover("Recognition could not receive a frame. Restarting…");
     }

@@ -9,12 +9,19 @@ import {
   useState,
 } from "react";
 import {
+  ArrowLeft, BookPlus, Camera, CameraOff, ChevronDown, CircleHelp, Copy, History, Info, LockKeyhole, Pencil,
+  RotateCcw, Save, Square, Trash2, Volume2, X,
+} from "lucide-react";
+import {
   DEFAULT_SETTINGS,
   clearLocalSignRelayData,
   loadHistory,
   loadSettings,
+  onboardingState,
+  saveOnboarding,
   saveSession,
   saveSettings,
+  type OnboardingStatus,
   type SpeechSettings,
   type TranscriptEntry,
   type TranscriptSession,
@@ -23,10 +30,11 @@ import {
   clearCalibrationTemplates,
   deleteCalibrationGloss,
   loadCalibrationTemplates,
-  saveCalibrationTemplate,
+  saveCalibrationTemplateAndReload,
 } from "@/lib/calibration-storage";
 import {
   createCustomVocabularyEntry,
+  isLanguageId,
   LANGUAGE_LIST,
   MODEL_ADAPTERS,
   PERSONAL_STARTER_VOCABULARY,
@@ -35,7 +43,7 @@ import {
 } from "@/lib/model-adapters";
 import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
-import { VisionEngine } from "@/lib/vision-engine";
+import { LiveVision } from "@/lib/live-vision";
 import { RecognitionSession } from "@/lib/recognition-session";
 import { recognitionStatus } from "@/lib/recognition-status";
 import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
@@ -51,13 +59,16 @@ import type {
   WorkerMessage,
 } from "@/lib/vision-types";
 import { SiteFooter, SiteHeader } from "./site-chrome";
-import { FigmaMakeLanding } from "./figma-make-landing";
-import { SurfaceMotion } from "./surface-motion";
+import { Landing } from "./landing";
+import { OnboardingTour } from "./onboarding-tour";
 
 type Step = "welcome" | "workspace";
 type CameraState = "idle" | "requesting" | "loading" | "active" | "denied" | "error";
 type RecognitionState = "listening" | "processing" | "uncertain";
 type CalibrationState = "idle" | "countdown" | "recording" | "saving" | "saved" | "error";
+
+/** Personal-vocabulary words listed before a search narrows them. */
+const LISTED_WORDS = 80;
 
 const EMPTY_DETECTION: DetectionStatus = {
   person: false,
@@ -74,12 +85,11 @@ export function TranslatorExperience() {
   const [detection, setDetection] = useState<DetectionStatus>(EMPTY_DETECTION);
   const [recognitionState, setRecognitionState] = useState<RecognitionState>("listening");
   const [candidate, setCandidate] = useState<string | null>(null);
-  const [confidence, setConfidence] = useState(0);
   const [bufferSize, setBufferSize] = useState(0);
   const [recognitionFeedback, setRecognitionFeedback] = useState("");
   const [recognitionUnavailable, setRecognitionUnavailable] = useState(false);
   const [motionReason, setMotionReason] = useState<string | null>(null);
-  const [visionSource, setVisionSource] = useState<VisionEngine["assetSource"] | null>(null);
+  const [visionSource, setVisionSource] = useState<LiveVision["assetSource"] | null>(null);
   // Screen readers hear confirmed words and camera changes, never tentative candidates.
   const [announcement, setAnnouncement] = useState("");
   const [transcriptMessage, setTranscriptMessage] = useState("");
@@ -101,13 +111,17 @@ export function TranslatorExperience() {
   const [calibrationState, setCalibrationState] = useState<CalibrationState>("idle");
   const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
   const [countdown, setCountdown] = useState(3);
+  const [tourOpen, setTourOpen] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const vocabularyRef = useRef<HTMLDetailsElement>(null);
   const transcriptHeadingRef = useRef<HTMLHeadingElement>(null);
+  const cameraButtonRef = useRef<HTMLButtonElement>(null);
+  const urlEntryRef = useRef<() => void>(() => {});
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const engineRef = useRef<VisionEngine | null>(null);
+  const engineRef = useRef<LiveVision | null>(null);
+  const visionAbortRef = useRef<AbortController | null>(null);
   const workerRef = useRef<RecognitionSession | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
@@ -115,7 +129,9 @@ export function TranslatorExperience() {
   const frameErrorsRef = useRef(0);
   const cameraProgressRef = useRef(0);
   const cameraGenerationRef = useRef(0);
+  const trackingEpochRef = useRef(0);
   const cameraPendingRef = useRef(false);
+  const cameraRequestRef = useRef<Promise<void> | null>(null);
   const captureGenerationRef = useRef(0);
   const frameLoopRef = useRef<() => void>(() => {});
   const settingsRef = useRef(settings);
@@ -135,6 +151,9 @@ export function TranslatorExperience() {
     return () => { delete (window as unknown as { __signrelayRehearsal?: unknown }).__signrelayRehearsal; };
   }, []);
   const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(),
+    capture: new RollingTimer(), hands: new RollingTimer(), auxiliary: new RollingTimer(), transport: new RollingTimer(),
+    overlay: new RollingTimer(), age: new RollingTimer(), classification: new RollingTimer(), communication: new RollingTimer(),
+    model: new RollingTimer(), personal: new RollingTimer(), reference: new RollingTimer(),
     throughput: new ThroughputMonitor(), analysed: 0, since: 0, frames: 0, handFrames: 0 });
 
   const model = useMemo(
@@ -167,7 +186,6 @@ export function TranslatorExperience() {
     return customWords;
   }, [calibrationTemplates, selected]);
 
-  const activeCustomCount = trainedGlosses.size;
 
   const filteredCalibrationVocabulary = useMemo(() => {
     const builtInStarter = selected === "asl" ? [] : PERSONAL_STARTER_VOCABULARY;
@@ -184,12 +202,17 @@ export function TranslatorExperience() {
     const matches = search
       ? filteredCalibrationVocabulary.filter((word) => `${word.text} ${word.gloss}`.toLocaleLowerCase().includes(search))
       : filteredCalibrationVocabulary;
-    return matches.slice(0, search ? 200 : 80);
+    return matches.slice(0, search ? 200 : LISTED_WORDS);
   }, [filteredCalibrationVocabulary, vocabularySearch]);
+  // ASL has no built-in concept library, but more than LISTED_WORDS taught
+  // signs still need the search to reach the older ones (and to clear it).
+  const showVocabularySearch = selected !== "asl" || filteredCalibrationVocabulary.length > LISTED_WORDS || vocabularySearch !== "";
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setSettings(loadSettings());
+      const stored = loadSettings();
+      settingsRef.current = stored;
+      setSettings(stored);
       setHistory(loadHistory());
     }, 0);
     return () => window.clearTimeout(timer);
@@ -247,10 +270,15 @@ export function TranslatorExperience() {
 
   useEffect(() => { entriesRef.current = entries; }, [entries]);
 
-  useEffect(() => {
-    settingsRef.current = settings;
-    if (typeof window !== "undefined") saveSettings(settings);
-  }, [settings]);
+  // Persist only a change the person made. Saving from an effect on `settings`
+  // wrote the defaults over the stored preferences on every page load, before
+  // they were read, and re-created the record right after Clear local data.
+  const updateSettings = useCallback((patch: Partial<SpeechSettings>) => {
+    const next = { ...settingsRef.current, ...patch };
+    settingsRef.current = next;
+    setSettings(next);
+    saveSettings(next);
+  }, []);
 
   const speak = useCallback((text: string) => {
     if (!text || typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -268,13 +296,19 @@ export function TranslatorExperience() {
         perfRef.current.analysed++;
         const roundTrip = workerRef.current?.lastRoundTripMs;
         if (roundTrip !== null && roundTrip !== undefined) perfRef.current.roundTrip.record(roundTrip);
+        if (message.processingMs !== undefined) {
+          perfRef.current.classification.record(message.processingMs);
+          if (roundTrip != null) perfRef.current.communication.record(Math.max(0, roundTrip - message.processingMs));
+        }
+        if (message.modelMs !== undefined) perfRef.current.model.record(message.modelMs);
+        if (message.personalMs !== undefined) perfRef.current.personal.record(message.personalMs);
+        if (message.referenceMs !== undefined) perfRef.current.reference.record(message.referenceMs);
         const queueWait = workerRef.current?.stats.lastQueueAgeMs;
         if (queueWait !== null && queueWait !== undefined) perfRef.current.queueWait.record(queueWait);
       }
       setRecognitionUnavailable(false);
       setRecognitionState(message.state);
       setCandidate(message.candidate);
-      setConfidence(message.confidence);
       setBufferSize(message.bufferSize);
       setRecognitionFeedback(message.feedback ?? "");
       setMotionReason(message.motionReason ?? null);
@@ -303,18 +337,18 @@ export function TranslatorExperience() {
   useEffect(() => {
     if (step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
     const worker = new RecognitionSession(
-      () => new Worker("/workers/recognition.worker.js?v=fist-motion-2", { type: "module" }),
+      () => new Worker("/workers/recognition.worker.js?v=tracking-temporal-3", { type: "module" }),
       handleWorkerMessage,
       status => {
         setRecognitionUnavailable(status.state === "failed");
         if (status.message) setRecognitionFeedback(status.message);
         if (status.state !== "running") {
           setCandidate(null);
-          setConfidence(0);
           setBufferSize(0);
           setRecognitionState("listening");
         }
       },
+      perfMode,
     );
     worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current });
     workerRef.current = worker;
@@ -322,10 +356,12 @@ export function TranslatorExperience() {
       worker.terminate();
       workerRef.current = null;
     };
-  }, [step, selected, handleWorkerMessage]);
+  }, [step, selected, handleWorkerMessage, perfMode]);
 
   const stopCamera = useCallback(() => {
     cameraGenerationRef.current++;
+    visionAbortRef.current?.abort();
+    visionAbortRef.current = null;
     captureGenerationRef.current++;
     cameraPendingRef.current = false;
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -340,7 +376,6 @@ export function TranslatorExperience() {
     setCameraMessage("Camera is off");
     setDetection(EMPTY_DETECTION);
     setCandidate(null);
-    setConfidence(0);
     setBufferSize(0);
     setRecognitionFeedback("");
     setMotionReason(null);
@@ -363,7 +398,6 @@ export function TranslatorExperience() {
 
     workerRef.current?.postMessage({ type: "reset" });
     setCandidate(null);
-    setConfidence(0);
     setBufferSize(0);
     setRecognitionFeedback("");
     setRecognitionUnavailable(false);
@@ -374,6 +408,7 @@ export function TranslatorExperience() {
     if (!perfMode || cameraState !== "active") return;
     const perf = perfRef.current;
     perf.tracking.reset(); perf.roundTrip.reset(); perf.queueWait.reset(); perf.throughput.reset();
+    for (const name of ["capture", "hands", "auxiliary", "transport", "overlay", "age", "classification", "communication", "model", "personal", "reference"] as const) perf[name].reset();
     perf.analysed = 0; perf.frames = 0; perf.handFrames = 0; perf.since = performance.now();
     workerRef.current?.resetStats();
     const timer = window.setInterval(() => {
@@ -384,13 +419,17 @@ export function TranslatorExperience() {
         seconds: (performance.now() - perf.since) / 1000, analysed: perf.analysed, session: session?.stats ?? null,
         assets: engineRef.current?.assetSource ?? null,
         recognition: session ? { state: session.state, recoveries: session.stats.recoveries } : null,
-        hands: { seen: perf.handFrames, frames: perf.frames } }));
+        hands: { seen: perf.handFrames, frames: perf.frames },
+        stages: Object.fromEntries((["capture", "hands", "auxiliary", "transport", "overlay", "age", "classification", "communication", "model", "personal", "reference"] as const)
+          .map(name => [name, perf[name].summary()])),
+        tracker: engineRef.current ? `${engineRef.current.mode}/${engineRef.current.delegate}` : undefined }));
     }, 1000);
     return () => { window.clearInterval(timer); setPerfWarning(null); };
   }, [perfMode, cameraState]);
 
   useEffect(() => () => {
     cameraGenerationRef.current++;
+    visionAbortRef.current?.abort();
     captureGenerationRef.current++;
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     engineRef.current?.close();
@@ -466,16 +505,34 @@ export function TranslatorExperience() {
       return;
     }
 
-    if (now - lastFrameRef.current >= 50 && video.currentTime !== lastVideoTimeRef.current) {
+    if (!engine.busy && now - lastFrameRef.current >= 33 && video.currentTime !== lastVideoTimeRef.current) {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
-      try {
-        const trackingStarted = performance.now();
+      const generation = cameraGenerationRef.current;
+      const trackingEpoch = trackingEpochRef.current;
+      const captureGeneration = captureGenerationRef.current;
+      const trackingStarted = performance.now();
+      const current = () => engineRef.current === engine && cameraGenerationRef.current === generation
+        && trackingEpochRef.current === trackingEpoch && !document.hidden;
+      const showHands = (frame: VisionFrame) => {
+        if (!current()) return;
+        const drawing = performance.now();
+        drawOverlay(frame);
+        if (perfMode) {
+          perfRef.current.overlay.record(performance.now() - drawing);
+          perfRef.current.age.record(performance.now() - trackingStarted);
+        }
+      };
+      void (async () => {
         // Rehearsal builds only: while a script plays, synthetic landmarks replace
         // the tracker, which is not run (its output would be discarded).
-        const frame = (REHEARSAL ? rehearsalRef.current?.next(now) : null) ?? engine.process(video, now);
+        const rehearsal = REHEARSAL ? rehearsalRef.current?.next(now) : null;
+        if (rehearsal) showHands(rehearsal);
+        const frame = rehearsal ?? await engine.process(video, now, showHands);
+        if (!frame || !current() || captureGeneration !== captureGenerationRef.current) return;
         if (perfMode) {
           perfRef.current.tracking.record(performance.now() - trackingStarted);
+          for (const name of ["capture", "hands", "auxiliary", "transport"] as const) perfRef.current[name].record(engine.timings[name]);
           perfRef.current.frames++;
           if (frame.hands.length) perfRef.current.handFrames++;
         }
@@ -485,12 +542,12 @@ export function TranslatorExperience() {
           face: frame.face.length > 0,
           pose: frame.pose.length > 0,
         };
-        setDetection(nextDetection);
-        drawOverlay(frame);
+        setDetection(previous => Object.keys(nextDetection).every(key => previous[key as keyof DetectionStatus] === nextDetection[key as keyof DetectionStatus]) ? previous : nextDetection);
         if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
         else workerRef.current?.postMessage({ type: "frame", frame });
         frameErrorsRef.current = 0;
-      } catch (error) {
+      })().catch(error => {
+        if (!current()) return;
         if (process.env.NODE_ENV === "development") console.warn("A video frame could not be processed", error);
         if (++frameErrorsRef.current >= 5) {
           stopCamera();
@@ -498,7 +555,7 @@ export function TranslatorExperience() {
           setCameraMessage("Hand tracking stopped. Start the camera again to reload tracking.");
           return;
         }
-      }
+      });
     }
     animationRef.current = requestAnimationFrame(frameLoopRef.current);
   }, [drawOverlay, stopCamera, perfMode]);
@@ -507,7 +564,7 @@ export function TranslatorExperience() {
     frameLoopRef.current = runFrameLoop;
   }, [runFrameLoop]);
 
-  const requestCamera = useCallback(async () => {
+  const openCamera = useCallback(async () => {
     if (cameraPendingRef.current || engineRef.current) return;
     if (!navigator.mediaDevices?.getUserMedia) {
       setCameraState("error");
@@ -542,9 +599,12 @@ export function TranslatorExperience() {
 
       setCameraState("loading");
       loadingVision = true;
-      const engine = await VisionEngine.create(message => {
+      const visionAbort = new AbortController();
+      visionAbortRef.current = visionAbort;
+      const engine = await LiveVision.create(message => {
         if (generation === cameraGenerationRef.current) setCameraMessage(message);
-      });
+      }, true, visionAbort.signal);
+      if (visionAbortRef.current === visionAbort) visionAbortRef.current = null;
       if (generation !== cameraGenerationRef.current) { engine.close(); return; }
       engineRef.current = engine;
       setVisionSource(engine.assetSource);
@@ -574,8 +634,18 @@ export function TranslatorExperience() {
     }
   }, [stopCamera]);
 
+  // A second caller (e.g. Record while the camera is still starting) waits for
+  // the request already in progress instead of seeing the camera as off.
+  const requestCamera = useCallback(() => {
+    if (cameraPendingRef.current && cameraRequestRef.current) return cameraRequestRef.current;
+    const request = openCamera();
+    cameraRequestRef.current = request;
+    return request;
+  }, [openCamera]);
+
   useEffect(() => {
     const resume = () => {
+      trackingEpochRef.current++;
       workerRef.current?.postMessage({ type: "reset" });
       cameraProgressRef.current = performance.now();
       const video = videoRef.current;
@@ -592,18 +662,53 @@ export function TranslatorExperience() {
     return () => document.removeEventListener("visibilitychange", resume);
   }, [stopCamera]);
 
-  const beginTranslation = () => {
+  const enterWorkspace = ({ startCamera, tour = false, language = selected }: { startCamera: boolean; tour?: boolean; language?: LanguageId }) => {
     if (!entries.length) sessionStartedRef.current = Date.now();
     const generation = ++cameraGenerationRef.current;
     setStep("workspace");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     // RSL and Bangla use their own clip-capture components and cameras.
-    if (selected !== "rsl" && selected !== "bdsl") {
-      window.setTimeout(() => {
-        if (generation === cameraGenerationRef.current) void requestCamera();
-      }, 0);
-    }
+    if (language === "rsl" || language === "bdsl") return;
+    // A first visit opens the tour instead; nothing starts the camera behind it.
+    if (tour || onboardingState() === "due") { setTourOpen(true); return; }
+    if (!startCamera) return;
+    window.setTimeout(() => {
+      if (generation === cameraGenerationRef.current) void requestCamera();
+    }, 0);
   };
+  const beginTranslation = () => enterWorkspace({ startCamera: true });
+
+  const closeTour = (status: OnboardingStatus) => {
+    saveOnboarding(status);
+    setTourOpen(false);
+    // The control that opened the tour may be gone; continue where signing starts.
+    window.setTimeout(() => cameraButtonRef.current?.focus(), 0);
+  };
+
+  // Links into the translator: /#translator, /#tour (from "Take a tour") and
+  // ?lang=<id> (from the languages page). The URL is tidied afterwards so a
+  // repeated click fires again; other parameters such as ?perf are kept.
+  useEffect(() => {
+    urlEntryRef.current = () => {
+      const url = new URL(window.location.href);
+      const requested = url.searchParams.get("lang");
+      const hash = url.hash;
+      if (!requested && hash !== "#translator" && hash !== "#tour") return;
+      url.searchParams.delete("lang");
+      window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}`);
+      let language: LanguageId = isLanguageId(requested) && isLanguageAvailable(requested) ? requested : selected;
+      // The tour points at the live workspace, which RSL and Bangla do not use.
+      if (hash === "#tour" && (language === "rsl" || language === "bdsl")) language = "asl";
+      if (language !== selected && !selectLanguage(language)) return;
+      enterWorkspace({ startCamera: false, tour: hash === "#tour", language });
+    };
+  });
+  useEffect(() => {
+    const open = () => urlEntryRef.current();
+    const timer = window.setTimeout(open, 0);
+    window.addEventListener("hashchange", open);
+    return () => { window.clearTimeout(timer); window.removeEventListener("hashchange", open); };
+  }, []);
 
   const recordCalibration = useCallback(async () => {
     if (captureStateRef.current !== "idle" && captureStateRef.current !== "saved" && captureStateRef.current !== "error") return;
@@ -649,17 +754,20 @@ export function TranslatorExperience() {
       gloss: calibrationWord.gloss,
       text: calibrationWord.text,
       createdAt,
-      frames: prepareCalibrationSequence(validFrames),
+      normalization: "trajectory-v3",
+      frames: prepareCalibrationSequence(validFrames, "trajectory-v3"),
     };
 
     try {
-      await saveCalibrationTemplate(template);
-      const updated = await loadCalibrationTemplates();
-      setCalibrationTemplates(updated);
+      const { templates: updated } = await saveCalibrationTemplateAndReload(template);
+      if (updated) setCalibrationTemplates(updated);
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "saved";
       setCalibrationState("saved");
-      setCalibrationMessage(`${calibrationWord.text} is now active for ${model.shortName}. Record two or three examples for better consistency.`);
+      // A failed re-read after a committed save is not a failed save.
+      setCalibrationMessage(updated
+        ? `${calibrationWord.text} is now active for ${model.shortName}. Record two or three examples for better consistency.`
+        : `${calibrationWord.text} was saved on this device, but the list of saved signs could not be refreshed. Reload the page to start using it.`);
     } catch {
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "error";
@@ -686,16 +794,37 @@ export function TranslatorExperience() {
 
   const removeCalibration = useCallback(async (gloss: string) => {
     captureGenerationRef.current++;
-    await deleteCalibrationGloss(gloss, selected);
-    setCalibrationTemplates(await loadCalibrationTemplates());
     captureStateRef.current = "idle";
     setCalibrationState("idle");
+    try {
+      await deleteCalibrationGloss(gloss, selected);
+    } catch {
+      // Show what is still stored rather than pretending it was deleted.
+      await loadCalibrationTemplates().then(setCalibrationTemplates, () => {});
+      captureStateRef.current = "error";
+      setCalibrationState("error");
+      setCalibrationMessage("These examples could not be removed from this browser. Try again, or clear this site's data in your browser settings.");
+      return;
+    }
+    // The deletion committed. If the list cannot be re-read, drop exactly what was deleted.
+    const stored = await loadCalibrationTemplates().catch(() => null);
+    setCalibrationTemplates(current => stored ?? current.filter(template =>
+      template.gloss !== gloss || (template.language ?? "asl") !== selected));
     setCalibrationMessage("Personal examples removed for this word.");
   }, [selected]);
 
   const returnHome = () => {
     stopCamera();
+    setTourOpen(false);
     setStep("welcome");
+  };
+
+  const openVocabulary = () => {
+    const panel = vocabularyRef.current;
+    if (!panel) return;
+    panel.open = true;
+    panel.querySelector("summary")?.focus({ preventScroll: true });
+    panel.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   };
 
   const clearTranscript = () => {
@@ -716,9 +845,15 @@ export function TranslatorExperience() {
   };
 
   // An edit that leaves no text removes the entry, so Speak and Copy never see blanks.
-  const finishEditing = (id: string) => {
+  const finishEditing = (id: string, { restoreFocus = false } = {}) => {
     setEditingId(null);
     setEntries((current) => current.flatMap((item) => item.id !== id ? [item] : item.text.trim() ? [{ ...item, text: item.text.trim() }] : []));
+    // Enter removes the editor; keep the keyboard on this entry (or the
+    // transcript heading if the edit removed it) instead of the page body.
+    if (restoreFocus) window.setTimeout(() => {
+      const entry = [...document.querySelectorAll<HTMLElement>("[data-entry-id]")].find(element => element.dataset.entryId === id);
+      (entry?.querySelector<HTMLElement>("[data-edit]") ?? transcriptHeadingRef.current)?.focus();
+    }, 0);
   };
 
   const removeEntry = (entry: TranscriptEntry) => {
@@ -740,45 +875,44 @@ export function TranslatorExperience() {
 
   const clearAllLocalData = async () => {
     window.speechSynthesis?.cancel();
-    clearLocalSignRelayData();
+    // An example being recorded now must not be saved after everything was cleared.
+    captureGenerationRef.current++;
+    captureStateRef.current = "idle";
+    captureFramesRef.current = [];
+    setCalibrationState("idle");
+    const localCleared = clearLocalSignRelayData();
     setEntries([]);
     setEditingId(null);
     setHistory([]);
+    settingsRef.current = DEFAULT_SETTINGS;
     setSettings(DEFAULT_SETTINGS);
     sessionStartedRef.current = Date.now();
     try {
       await clearCalibrationTemplates();
-      setCalibrationTemplates([]);
-      setPrivacyMessage("Local transcripts, settings and personal signs were cleared from this browser.");
+      // Reflect storage, not an assumption: a save already committing finishes before the clear.
+      setCalibrationTemplates(await loadCalibrationTemplates().catch(() => []));
+      setPrivacyMessage(localCleared
+        ? "Transcripts, settings, personal signs and tour progress were cleared from this browser."
+        : "Personal signs were cleared, but saved transcripts and settings could not be removed from browser storage. Clear this site's data in your browser settings.");
     } catch {
       // Keep showing what is still stored rather than pretending it was deleted.
-      setPrivacyMessage("Transcripts and settings were cleared, but personal signs could not be deleted. Clear this site's data in your browser settings.");
+      setPrivacyMessage(localCleared
+        ? "Transcripts and settings were cleared, but personal signs could not be deleted. Clear this site's data in your browser settings."
+        : "Nothing could be removed from browser storage. Clear this site's data in your browser settings.");
     }
   };
 
-  if (step === "workspace" && selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental") {
+  if (step === "workspace" && (selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental"))) {
     return (
       <div className="app-shell">
         <SiteHeader />
-        <main>
+        <main className="workspace-page clip-workspace" id="main">
           <div className="special-workspace-language-bar">
             <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
           </div>
-          <BdslRecognizer onBack={returnHome} />
+          {selected === "rsl" ? <RslRecognizer onBack={returnHome} /> : <BdslRecognizer onBack={returnHome} />}
         </main>
-      </div>
-    );
-  }
-  if (step === "workspace" && selected === "rsl") {
-    return (
-      <div className="app-shell">
-        <SiteHeader />
-        <main>
-          <div className="special-workspace-language-bar">
-            <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
-          </div>
-          <RslRecognizer onBack={returnHome} />
-        </main>
+        <SiteFooter />
       </div>
     );
   }
@@ -787,17 +921,18 @@ export function TranslatorExperience() {
     const capability = capabilityStatus(selected);
     const status = recognitionStatus({ camera: cameraState, unavailable: recognitionUnavailable,
       handsVisible: detection.hands, motionReason, candidate, bufferSize });
+    const cameraBusy = cameraState === "requesting" || cameraState === "loading";
+    const examples = calibrationCounts.get(calibrationWord.gloss) ?? 0;
     return (
       <div className="app-shell">
-        <SurfaceMotion scene={`workspace-${selected}`} cursor={false} />
         <SiteHeader />
-        <main className="workspace-page">
+        <main className="workspace-page" id="main">
           <div className="workspace-topbar">
-            <button className="back-link" onClick={returnHome}>
-              Change language
+            <button type="button" className="back-link" onClick={returnHome}>
+              <ArrowLeft aria-hidden="true" size={16} />Change language
             </button>
             <div className="workspace-title">
-              <span className="language-code compact">{model.shortName}</span>
+              <span className="language-code">{model.shortName}</span>
               <div>
                 <h1>Live sign recognition</h1>
                 <p>{model.language}</p>
@@ -805,28 +940,27 @@ export function TranslatorExperience() {
             </div>
             <div className="workspace-topbar-actions">
               <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
-              <span className="local-badge">On-device processing</span>
+              <button type="button" className="button ghost small" onClick={() => setTourOpen(true)}>
+                <CircleHelp aria-hidden="true" size={16} />Take a tour
+              </button>
             </div>
           </div>
 
           <div className="honesty-banner" role="note">
-            <span className="honesty-label">Model status</span>
-            <p>{ASL_ONLY && <><strong>ASL demo build.</strong> Other language models are not included. </>}<strong>{capability.headline}</strong> {capability.evidence} Check every word before relying on it. <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
-            <button className="text-action" onClick={() => {
-              const panel = vocabularyRef.current;
-              if (!panel) return;
-              panel.open = true;
-              panel.querySelector("summary")?.focus({ preventScroll: true });
-              panel.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-            }}>Teach a sign</button>
+            <Info aria-hidden="true" size={18} />
+            <div>
+              <p>{ASL_ONLY && <span className="tag">ASL demo build · </span>}<strong>Research preview.</strong> Check every result.</p>
+              <details>
+                <summary>What this means <ChevronDown aria-hidden="true" size={14} /></summary>
+                <p>{ASL_ONLY && "Other language models are not included in this build. "}<strong>{capability.headline}</strong> {capability.evidence} <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
+              </details>
+            </div>
           </div>
 
           <div className="translator-grid">
-            <section className="camera-panel" aria-labelledby="camera-title">
+            <section className="camera-panel" aria-labelledby="camera-title" data-tour="camera">
               <div className="panel-heading">
-                <div>
-                  <h2 id="camera-title">Camera</h2>
-                </div>
+                <h2 id="camera-title">Camera</h2>
                 <StatusBadge active={cameraState === "active"} label={cameraMessage} />
               </div>
 
@@ -834,21 +968,20 @@ export function TranslatorExperience() {
                 <video ref={videoRef} muted playsInline aria-label="Mirrored live camera preview" />
                 <canvas ref={canvasRef} aria-hidden="true" />
                 {cameraState !== "active" && (
-                  <div className="camera-placeholder">
-                    <span className={`camera-placeholder-label ${cameraState === "loading" || cameraState === "requesting" ? "loading" : ""}`}>Camera</span>
-                    <h3>{cameraState === "loading" ? "Preparing your camera" : cameraState === "requesting" ? "Allow camera access" : cameraState === "idle" ? "Ready when you are" : "Camera unavailable"}</h3>
-                    <p>{cameraMessage}</p>
-                    {(cameraState === "denied" || cameraState === "error" || cameraState === "idle") && (
-                      <button className="button secondary small" onClick={requestCamera}>
-                        {cameraState === "idle" ? "Start camera" : "Retry camera"}
+                  <div className={`camera-placeholder ${cameraState}`}>
+                    <span className="camera-placeholder-icon" aria-hidden="true">
+                      {cameraState === "denied" || cameraState === "error" ? <CameraOff size={22} /> : <Camera size={22} />}
+                    </span>
+                    <h3>{cameraState === "loading" ? "Preparing hand tracking" : cameraState === "requesting" ? "Allow camera access" : cameraState === "idle" ? "Camera is off" : "Camera unavailable"}</h3>
+                    <p>{cameraState === "idle" ? "Video stays on this device." : cameraMessage}</p>
+                    {(cameraState === "denied" || cameraState === "error") && (
+                      <button type="button" className="button secondary small" onClick={() => void requestCamera()}>
+                        Retry camera
                       </button>
                     )}
                   </div>
                 )}
-                {cameraState === "active" && (
-                  <div className="camera-guidance">Keep your hands, face and shoulders in frame.</div>
-                )}
-                {calibrationState !== "idle" && calibrationState !== "saved" && calibrationState !== "error" && (
+                                {calibrationState !== "idle" && calibrationState !== "saved" && calibrationState !== "error" && (
                   <div className={`calibration-capture ${calibrationState}`} role="status" aria-live="assertive">
                     <span>{calibrationState === "countdown" ? countdown : calibrationState === "recording" ? "REC" : "···"}</span>
                     <strong>{calibrationState === "countdown" ? `Get ready: ${calibrationWord.text}` : calibrationState === "recording" ? `Sign ${calibrationWord.text}` : "Saving example"}</strong>
@@ -856,80 +989,64 @@ export function TranslatorExperience() {
                 )}
               </div>
 
-              <details className="workspace-disclosure camera-options">
-                <summary>Camera options</summary>
-              <div className="detection-grid" aria-label="Vision detection status">
-                <DetectionItem label="Camera" active={cameraState === "active"} />
-                <DetectionItem label="Person" active={detection.person} />
-                <DetectionItem label="Hands" active={detection.hands} />
-                <DetectionItem label="Face" active={detection.face} />
-                <DetectionItem label="Upper body" active={detection.pose} />
-              </div>
-
-              {perfMode && <p className="calibration-message perf-readout" data-perf>{perfReadout || "Collecting timings…"}</p>}
-              {visionSource && <p className="calibration-message">Hand tracking loaded {visionSource === "self-hosted" ? "from this site, so it does not depend on an external CDN" : "from the public CDN fallback"}.</p>}
-              <div className="camera-actions">
-                <label className="switch-row">
-                  <input
-                    type="checkbox"
-                    checked={settings.showOverlay}
-                    onChange={(event) => setSettings((current) => ({ ...current, showOverlay: event.target.checked }))}
-                  />
-                  <span>Show landmarks</span>
-                </label>
-              </div>
-              </details>
-              {perfMode && perfWarning && <p className="calibration-message error" role="status" data-perf-warning>{perfWarning}</p>}
               <div className="camera-session-actions">
-                <span>{cameraState === "active" ? "Camera on · video stays private" : "Video stays on this device"}</span>
-                <button className="button ghost small" onClick={cameraState === "active" || cameraState === "requesting" || cameraState === "loading" ? stopCamera : requestCamera}>
-                  {cameraState === "active" ? "Pause camera" : cameraState === "requesting" || cameraState === "loading" ? "Cancel" : "Start camera"}
+                <button type="button" ref={cameraButtonRef} className={`button ${cameraState === "active" || cameraBusy ? "secondary" : "primary"}`}
+                  onClick={cameraState === "active" || cameraBusy ? stopCamera : () => void requestCamera()}>
+                  {cameraState === "active" ? "Pause camera" : cameraBusy ? "Cancel" : "Start camera"}
                 </button>
               </div>
+              {perfMode && perfWarning && <p className="calibration-message error" role="status" data-perf-warning>{perfWarning}</p>}
+
+              <details className="workspace-disclosure camera-options">
+                <summary>Camera options <ChevronDown aria-hidden="true" size={16} /></summary>
+                <div className="disclosure-body">
+                  <label className="switch-row">
+                    <input type="checkbox" checked={settings.showOverlay} onChange={(event) => updateSettings({ showOverlay: event.target.checked })} />
+                    <span>Show hand landmarks on the preview</span>
+                  </label>
+                  <div className="detection-grid" aria-label="Vision detection status">
+                    <DetectionItem label="Camera" active={cameraState === "active"} />
+                    <DetectionItem label="Person" active={detection.person} />
+                    <DetectionItem label="Hands" active={detection.hands} />
+                    <DetectionItem label="Face" active={detection.face} />
+                    <DetectionItem label="Upper body" active={detection.pose} />
+                  </div>
+                  {visionSource && <p className="calibration-message">Hand tracking loaded {visionSource === "self-hosted" ? "from this site, so it does not depend on an external CDN" : "from the public CDN fallback"}.</p>}
+                  {perfMode && <p className="calibration-message perf-readout" data-perf>{perfReadout || "Collecting timings…"}</p>}
+                </div>
+              </details>
             </section>
 
-            <section className="transcript-panel" aria-labelledby="transcript-title">
+            <section className="transcript-panel" aria-labelledby="transcript-title" data-tour="transcript">
               <div className="panel-heading">
-                <div>
-                  <h2 id="transcript-title" ref={transcriptHeadingRef} tabIndex={-1}>Transcript</h2>
-                </div>
+                <h2 id="transcript-title" ref={transcriptHeadingRef} tabIndex={-1}>Transcript</h2>
                 <div className={`recognition-state ${status.tone}`} data-status={status.key} data-worker-state={recognitionState}>
-                  <span /> {status.chip}
+                  <span aria-hidden="true" /> {status.chip}
                 </div>
               </div>
 
               <div className="candidate-bar">
-                <div>
-                  <span className="candidate-label">{status.key === "checking-sign" ? "Possible match · not confirmed" : "Current sequence"}</span>
-                  <strong>{status.key === "checking-sign" ? candidate : status.detail}</strong>
-                </div>
-                <div className="confidence-ring" title="Match score, not a measured probability of correct translation" style={{ "--confidence": `${Math.round(confidence * 100)}%` } as React.CSSProperties}>
-                  <span aria-label={`Match score ${Math.round(confidence * 100)} out of 100`}>{Math.round(confidence * 100)}</span>
-                </div>
+                {status.key === "checking-sign" && <span className="candidate-label">Possible match · not confirmed</span>}
+                <strong>{status.key === "checking-sign" ? candidate : status.detail}</strong>
               </div>
-
-              <p className="calibration-message">Match score out of 100. It is not measured translation accuracy.</p>
               {recognitionFeedback && <p className="calibration-message">{recognitionFeedback}</p>}
               <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
               <p className="sr-only" role="status" aria-live="polite">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraState === "idle" ? "Camera off." : cameraMessage}</p>
               {recognitionUnavailable && (
-                <button className="button secondary small" onClick={() => workerRef.current?.restart()}>
-                  Restart recognition
+                <button type="button" className="button secondary small" onClick={() => workerRef.current?.restart()}>
+                  <RotateCcw aria-hidden="true" size={16} />Restart recognition
                 </button>
               )}
               <div className="transcript-body" aria-label="Confirmed words">
                 {!entries.length ? (
                   <div className="transcript-empty">
-                    <h3>Your words, here.</h3>
-                    <p>Complete each sign. Confident matches appear here.</p>
+                    <h3>Confirmed words appear here</h3>
+                    <button type="button" className="text-action" onClick={openVocabulary}><BookPlus aria-hidden="true" size={16} />Teach a sign</button>
                   </div>
                 ) : (
-                  <div className="transcript-list">
+                  <ol className="transcript-list">
                     {entries.map((entry) => (
-                      <article className="transcript-entry" key={entry.id}>
-                        <div className="entry-time">
-                          {new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </div>
+                      <li className="transcript-entry" key={entry.id} data-entry-id={entry.id}>
                         {editingId === entry.id ? (
                           <input
                             className="entry-editor"
@@ -938,204 +1055,221 @@ export function TranslatorExperience() {
                             autoFocus
                             onChange={(event) => setEntries((current) => current.map((item) => item.id === entry.id ? { ...item, text: event.target.value } : item))}
                             onBlur={() => finishEditing(entry.id)}
-                            onKeyDown={(event) => event.key === "Enter" && finishEditing(entry.id)}
+                            onKeyDown={(event) => event.key === "Enter" && finishEditing(entry.id, { restoreFocus: true })}
                             aria-label={`Edit ${entry.text}`}
                           />
                         ) : (
                           <p>{entry.text}</p>
                         )}
                         <div className="entry-actions">
-                          <span>{Math.round(entry.confidence * 100)}/100 {entry.source === "starter" ? "rule match" : entry.source === "personal" ? "template match" : "match score"} · {entry.gloss}</span>
-                          <button onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`}>Edit</button>
-                          <button onClick={() => removeEntry(entry)} aria-label={`Remove ${entry.text}`}>Remove</button>
+                          <button type="button" className="icon-button" data-edit onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`} title="Edit"><Pencil aria-hidden="true" size={16} /></button>
+                          <button type="button" className="icon-button" onClick={() => removeEntry(entry)} aria-label={`Remove ${entry.text}`} title="Remove"><X aria-hidden="true" size={16} /></button>
                         </div>
-                      </article>
+                      </li>
                     ))}
-                  </div>
+                  </ol>
                 )}
               </div>
 
               <div className="speech-controls">
                 <label className="switch-row prominent">
-                  <input
-                    type="checkbox"
-                    checked={settings.autoSpeak}
-                    onChange={(event) => setSettings((current) => ({ ...current, autoSpeak: event.target.checked }))}
-                  />
-                  <span><strong>Auto speak</strong></span>
+                  <input type="checkbox" checked={settings.autoSpeak} onChange={(event) => updateSettings({ autoSpeak: event.target.checked })} />
+                  <span>Speak each word</span>
                 </label>
                 <div className="speech-buttons">
-                  <button className="button secondary small" disabled={!entries.length} onClick={() => speak(entries.map((entry) => entry.text).join(" "))}>
-                    Speak
+                  <button type="button" className="button secondary small" disabled={!entries.length} onClick={() => {
+                    // Without the Web Speech API the button would otherwise do nothing at all.
+                    if (!("speechSynthesis" in window)) { setTranscriptMessage("Speech output is not available in this browser. The transcript can still be read or copied."); return; }
+                    speak(entries.map((entry) => entry.text).join(" "));
+                  }}>
+                    <Volume2 aria-hidden="true" size={16} />Speak
                   </button>
-                  <button className="button ghost small" onClick={() => window.speechSynthesis?.cancel()}>
-                    Stop
+                  <button type="button" className="button ghost small" onClick={() => window.speechSynthesis?.cancel()}>
+                    <Square aria-hidden="true" size={14} />Stop
                   </button>
                 </div>
               </div>
-              <details className="workspace-disclosure voice-options">
-                <summary>Voice settings</summary>
-                <div className="voice-ranges">
-                <label className="range-control">
-                  <span>Volume <strong>{Math.round(settings.volume * 100)}%</strong></span>
-                  <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => setSettings((current) => ({ ...current, volume: Number(event.target.value) }))} />
-                </label>
-                <label className="range-control">
-                  <span>Rate <strong>{settings.rate.toFixed(2)}×</strong></span>
-                  <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => setSettings((current) => ({ ...current, rate: Number(event.target.value) }))} />
-                </label>
-                </div>
-              </details>
 
               <div className="transcript-actions">
-                <button className="button ghost small" onClick={() => setShowHistory((current) => !current)}>
-                  History ({history.length})
+                <button type="button" className="button ghost small" disabled={!entries.length} onClick={() => void copyTranscript()}>
+                  <Copy aria-hidden="true" size={16} />Copy
                 </button>
-                <button className="button ghost small" disabled={!entries.length} onClick={() => void copyTranscript()}>
-                  Copy
+                <button type="button" className="button ghost small" disabled={!entries.length} onClick={clearTranscript}>
+                  <Save aria-hidden="true" size={16} />Save &amp; clear
                 </button>
-                <button className="button danger small" disabled={!entries.length} onClick={clearTranscript}>
-                  Save & clear
+                <button type="button" className="button ghost small" aria-expanded={showHistory} aria-controls="transcript-history" onClick={() => setShowHistory((current) => !current)}>
+                  <History aria-hidden="true" size={16} />History ({history.length})
                 </button>
               </div>
               {transcriptMessage && <p className="calibration-message" role="status">{transcriptMessage}</p>}
-
               {storageMessage && <p className="calibration-message" role="status">{storageMessage}</p>}
               {showHistory && (
-                <div className="history-drawer">
-                  <div className="history-heading"><strong>Local history</strong><button onClick={() => setShowHistory(false)} aria-label="Close history">Close</button></div>
-                  {!history.length ? <p>No saved sessions on this device.</p> : history.map((session) => (
+                <div className="history-drawer" id="transcript-history">
+                  <div className="history-heading"><strong>Saved on this device</strong><button type="button" className="icon-button" onClick={() => setShowHistory(false)} aria-label="Close history"><X aria-hidden="true" size={16} /></button></div>
+                  {!history.length ? <p>No saved transcripts yet. Save &amp; clear keeps the last eight here.</p> : history.map((session) => (
                     <div className="history-session" key={session.id}>
-                      <span>{new Date(session.createdAt).toLocaleString()}</span>
+                      <span>{new Date(session.createdAt).toLocaleString()} · {MODEL_ADAPTERS[session.language].shortName}</span>
                       <p>{session.entries.map((entry) => entry.text).join(" ")}</p>
                     </div>
                   ))}
                 </div>
               )}
+
+              <details className="workspace-disclosure voice-options">
+                <summary>Voice settings <ChevronDown aria-hidden="true" size={16} /></summary>
+                <div className="voice-ranges">
+                  <label className="range-control">
+                    <span>Volume <strong>{Math.round(settings.volume * 100)}%</strong></span>
+                    <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => updateSettings({ volume: Number(event.target.value) })} />
+                  </label>
+                  <label className="range-control">
+                    <span>Rate <strong>{settings.rate.toFixed(2)}×</strong></span>
+                    <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => updateSettings({ rate: Number(event.target.value) })} />
+                  </label>
+                  <p className="field-hint">Speech uses your browser or device voices. Some voices are online services that receive the text spoken.</p>
+                </div>
+              </details>
             </section>
           </div>
 
-          <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef}>
-            <summary><span>Personal vocabulary <small>{activeCustomCount} signs taught</small></span></summary>
-            <div className="calibration-heading">
-              <div>
-                <h2 id="calibration-title">Teach a {model.shortName} sign</h2>
-                <p>Choose a word, then record its complete sign two or three times. Examples stay on this device.</p>
-              </div>
-              <div className="calibration-progress" aria-label={`${activeCustomCount} personal words active`}>
-                <strong>{activeCustomCount}</strong><span> personal</span>
-              </div>
-            </div>
-
-            <div className="calibration-controls">
-              <div className="selected-word-card">
-                <div>
-                  <span>Selected word</span>
-                  <strong>{calibrationWord.text}</strong>
-                  <small>{calibrationCounts.get(calibrationWord.gloss) ?? 0} of 3 examples recorded</small>
+          <div className="workspace-secondary" data-tour="teach">
+            <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef} data-taught={trainedGlosses.size}>
+              <summary>
+                <span className="summary-title"><BookPlus aria-hidden="true" size={18} />Personal signs</span>
+                <ChevronDown aria-hidden="true" size={16} />
+              </summary>
+              <div className="calibration-body">
+                <div className="calibration-heading">
+                  <h2 id="calibration-title">Teach a {model.shortName} sign</h2>
+                  <p>Choose a word and record it two or three times. Video is not saved.</p>
                 </div>
-                <div className="selected-word-actions">
-                  <button className="button primary small" onClick={() => void recordCalibration()} disabled={calibrationState === "countdown" || calibrationState === "recording" || calibrationState === "saving"}>
-                    {cameraState === "active" ? "Record example" : "Start camera & record"}
-                  </button>
-                  {trainedGlosses.has(calibrationWord.gloss) && (
-                    <button className="button ghost small" onClick={() => void removeCalibration(calibrationWord.gloss)}>
-                      Remove
-                    </button>
+
+                <ol className="teach-steps">
+                  <li className="teach-step">
+                    <span className="teach-step-number" aria-hidden="true">1</span>
+                    <div className="custom-word-controls">
+                      <span className="custom-word-label">Choose a word</span>
+                      <div className="custom-word-input">
+                        <input
+                          value={customWordInput}
+                          maxLength={48}
+                          onChange={(event) => setCustomWordInput(event.target.value)}
+                          onKeyDown={(event) => event.key === "Enter" && selectCustomWord()}
+                          placeholder="Type a word, e.g. Pizza"
+                          aria-label="Word or short phrase to teach"
+                        />
+                        <button type="button" className="button secondary small" onClick={selectCustomWord} disabled={!customWordInput.trim()}>
+                          Select word
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                  <li className="teach-step">
+                    <span className="teach-step-number" aria-hidden="true">2</span>
+                    <div className="selected-word-card">
+                      <div>
+                        <strong>{calibrationWord.text}</strong>
+                        <small>{examples} of 3 examples recorded</small>
+                        <span className="example-meter" aria-hidden="true">{[0, 1, 2].map(i => <i key={i} className={i < examples ? "filled" : ""} />)}</span>
+                      </div>
+                      <div className="selected-word-actions">
+                        <button type="button" className="button primary small" onClick={() => void recordCalibration()} disabled={calibrationState === "countdown" || calibrationState === "recording" || calibrationState === "saving"}>
+                          {cameraState === "active" ? "Record example" : "Start camera & record"}
+                        </button>
+                        {trainedGlosses.has(calibrationWord.gloss) && (
+                          <button type="button" className="button ghost small" onClick={() => void removeCalibration(calibrationWord.gloss)}>
+                            <Trash2 aria-hidden="true" size={16} />Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                </ol>
+                <p className={`calibration-message ${calibrationState}`} role="status">{calibrationMessage}</p>
+
+                <div className="vocabulary-section">
+                  <div className="vocabulary-section-heading">
+                    <h3>{selected === "asl" ? "Your signs" : `Your signs and ${model.shortName} concepts`}</h3>
+                  </div>
+                  {showVocabularySearch && (
+                    <div className="custom-word-controls starter-library-search">
+                      <label className="search-field">
+                        <span className="sr-only">{selected === "asl" ? "Search taught ASL signs" : `Search built-in ${model.shortName} concepts`}</span>
+                        <input
+                          type="search"
+                          value={vocabularySearch}
+                          onChange={(event) => setVocabularySearch(event.target.value)}
+                          placeholder={selected === "asl" ? `Search your ${filteredCalibrationVocabulary.length.toLocaleString()} taught signs` : `Search ${model.vocabulary.length.toLocaleString()} concepts, e.g. doctor`}
+                          aria-label={selected === "asl" ? "Search taught ASL signs" : `Search built-in ${model.shortName} concepts`}
+                        />
+                      </label>
+                    </div>
+                  )}
+                  {visibleCalibrationVocabulary.length ? (
+                    <div className="vocabulary-grid" aria-label={`Personal ${model.shortName} vocabulary`}>
+                      {visibleCalibrationVocabulary.map((word) => {
+                        const exampleCount = calibrationCounts.get(word.gloss) ?? 0;
+                        return (
+                          <button
+                            type="button"
+                            key={word.gloss}
+                            aria-pressed={calibrationWord.gloss === word.gloss}
+                            className={`${calibrationWord.gloss === word.gloss ? "selected" : ""} ${exampleCount ? "trained" : ""}`}
+                            onClick={() => {
+                              captureGenerationRef.current++;
+                              setCalibrationWord(word);
+                              captureStateRef.current = "idle";
+                              setCalibrationState("idle");
+                              setCalibrationMessage(exampleCount ? `${word.text} is active. Add another example to improve consistency.` : `Record ${word.text} to activate it in your personal recognizer.`);
+                            }}
+                          >
+                            <span>{word.text}</span>
+                            {exampleCount > 0 && <span className="vocabulary-trained-label">Taught</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="empty-state">{vocabularySearch ? "No sign matches that search." : "No signs taught yet. Choose a word above and record it."}</p>
+                  )}
+                  {filteredCalibrationVocabulary.length > visibleCalibrationVocabulary.length && (
+                    <p className="calibration-message">Showing {visibleCalibrationVocabulary.length} of {filteredCalibrationVocabulary.length.toLocaleString()} words. Search to narrow the library.</p>
                   )}
                 </div>
               </div>
-            </div>
+            </details>
 
-            <div className="custom-word-controls">
-              <div>
-                <span className="custom-word-label">Type a word, then sign it</span>
-                <p>Type what you want SignRelay to say, select it, then record yourself signing it.</p>
+            <details className="workspace-disclosure privacy-disclosure">
+              <summary>
+                <span className="summary-title"><LockKeyhole aria-hidden="true" size={18} />Privacy &amp; data</span>
+                <ChevronDown aria-hidden="true" size={16} />
+              </summary>
+              <div className="disclosure-body">
+                <section className="privacy-strip" aria-labelledby="privacy-heading">
+                  <div>
+                    <h2 id="privacy-heading">Your camera stays private</h2>
+                    <p>Frames are analysed in this browser; video is never uploaded or stored. Transcripts, settings, personal signs and tour progress stay in this browser until you clear them.</p>
+                  </div>
+                  <button type="button" className="button danger small" onClick={() => void clearAllLocalData()}>Clear local data</button>
+                </section>
+                {privacyMessage && <p className="calibration-message" role="status">{privacyMessage}</p>}
+                <p className="model-detail-copy">{model.status === "experimental" ? `${model.automaticVocabularyCount.toLocaleString()} automatic ${model.shortName} test signs · ${model.version}. This is an isolated-sign research model, not a validated continuous sign-language interpreter.` : model.status === "preparing" ? `No shared automatic ${model.shortName} model is installed. Recognition uses only the private signs you teach.` : `${model.vocabulary.length.toLocaleString()} ${model.shortName} starter labels are available to teach. Labels are not pre-trained translations.`} Personal examples store normalised landmarks, never camera video.</p>
               </div>
-              <div className="custom-word-input">
-                <input
-                  value={customWordInput}
-                  maxLength={48}
-                  onChange={(event) => setCustomWordInput(event.target.value)}
-                  onKeyDown={(event) => event.key === "Enter" && selectCustomWord()}
-                  placeholder="e.g. Pizza"
-                  aria-label="Word or short phrase to teach"
-                />
-                <button className="button secondary small" onClick={selectCustomWord} disabled={!customWordInput.trim()}>
-                  Select word
-                </button>
-              </div>
-            </div>
-
-            {selected !== "asl" && (
-              <div className="custom-word-controls starter-library-search">
-                <div>
-                  <span className="custom-word-label">Search the {model.vocabulary.length.toLocaleString()} built-in concepts</span>
-                  <p>Choose a concept first, then record two or three examples of the sign you use for it.</p>
-                </div>
-                <div className="custom-word-input">
-                  <input
-                    value={vocabularySearch}
-                    onChange={(event) => setVocabularySearch(event.target.value)}
-                    placeholder="Search, e.g. doctor, travel, happy"
-                    aria-label={`Search built-in ${model.shortName} concepts`}
-                  />
-                </div>
-              </div>
-            )}
-
-            <p className={`calibration-message ${calibrationState}`} role="status">{calibrationMessage}</p>
-            <div className="vocabulary-grid" aria-label={`Personal ${model.shortName} vocabulary`}>
-              {visibleCalibrationVocabulary.map((word) => {
-                const exampleCount = calibrationCounts.get(word.gloss) ?? 0;
-                return (
-                  <button
-                    key={word.gloss}
-                    className={`${calibrationWord.gloss === word.gloss ? "selected" : ""} ${exampleCount ? "trained" : ""}`}
-                    onClick={() => {
-                      captureGenerationRef.current++;
-                      setCalibrationWord(word);
-                      captureStateRef.current = "idle";
-                      setCalibrationState("idle");
-                      setCalibrationMessage(exampleCount ? `${word.text} is active. Add another example to improve consistency.` : `Record ${word.text} to activate it in your personal recognizer.`);
-                    }}
-                  >
-                    <span>{word.text}</span>
-                    <small>{exampleCount ? `${exampleCount} example${exampleCount === 1 ? "" : "s"}` : word.category}</small>
-                    {exampleCount > 0 && <span className="vocabulary-trained-label">Taught</span>}
-                  </button>
-                );
-              })}
-            </div>
-            {filteredCalibrationVocabulary.length > visibleCalibrationVocabulary.length && (
-              <p className="calibration-message">Showing {visibleCalibrationVocabulary.length} of {filteredCalibrationVocabulary.length.toLocaleString()} words. Search to narrow the library.</p>
-            )}
-          </details>
-
-          <details className="workspace-disclosure privacy-disclosure">
-            <summary>Privacy &amp; model details</summary>
-            <p className="model-detail-copy">{model.status === "experimental" ? `${model.automaticVocabularyCount.toLocaleString()} automatic ${model.shortName} test signs · ${model.version}. This is an isolated-sign research model, not a validated continuous sign-language interpreter.` : model.status === "preparing" ? `No shared automatic ${model.shortName} model is installed. Recognition uses only the private signs you teach.` : `${model.vocabulary.length.toLocaleString()} ${model.shortName} starter labels are available to teach. Labels are not pre-trained translations.`} Personal examples store normalised landmarks, never camera video.</p>
-          <section className="privacy-strip" aria-labelledby="privacy-heading">
-            <div>
-              <h2 id="privacy-heading">Your camera stays private</h2>
-              <p>Frames are analysed in this browser. Raw video is not uploaded or stored. Settings and saved transcripts stay in local browser storage.</p>
-            </div>
-            <button className="button ghost small" onClick={() => void clearAllLocalData()}>Clear local data</button>
-          </section>
-          {privacyMessage && <p className="calibration-message" role="status">{privacyMessage}</p>}
-          </details>
+            </details>
+          </div>
         </main>
         <SiteFooter />
+        <OnboardingTour open={tourOpen} onClose={closeTour} />
       </div>
     );
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell home-shell">
       <SiteHeader />
-      <main>
-        {storageMessage && <p className="calibration-message" role="alert">{storageMessage}</p>}
-        <FigmaMakeLanding
+      <main id="main">
+        {storageMessage && <p className="notice error page-notice" role="alert">{storageMessage}</p>}
+        <Landing
           selected={selected}
           onSelect={selectLanguage}
           onStart={beginTranslation}
@@ -1157,15 +1291,15 @@ function WorkspaceLanguageSwitcher({
   const development = LANGUAGE_LIST.filter((language) => language.status !== "experimental");
 
   return (
-    <label className="workspace-language-switcher">
-      <span>Language</span>
-      <div className="workspace-language-select">
+    <label className="workspace-language-switcher" data-tour="language">
+      <span className="sr-only">Sign language</span>
+      <span className="workspace-language-select">
         <select
           value={selected}
           onChange={(event) => onChange(event.target.value as LanguageId)}
           aria-label="Change sign language"
         >
-          <optgroup label="Research models · live accuracy not measured">
+          <optgroup label="Automatic recognition · experimental">
             {automatic.map((language) => (
               <option key={language.id} value={language.id} disabled={!isLanguageAvailable(language.id)}>
                 {language.shortName} · {language.language}{isLanguageAvailable(language.id) ? "" : ` (${OUT_OF_PROFILE_LABEL.toLowerCase()})`}
@@ -1180,13 +1314,14 @@ function WorkspaceLanguageSwitcher({
             ))}
           </optgroup>
         </select>
-      </div>
+        <ChevronDown aria-hidden="true" size={16} />
+      </span>
     </label>
   );
 }
 
 function StatusBadge({ active, label }: { active: boolean; label: string }) {
-  return <span className={`status-badge ${active ? "active" : ""}`} title={label}><span />{active ? "Active" : label}</span>;
+  return <span className={`status-badge ${active ? "active" : ""}`} title={label}><span aria-hidden="true" />{active ? "Active" : label}</span>;
 }
 
 function DetectionItem({ label, active }: { label: string; active: boolean }) {

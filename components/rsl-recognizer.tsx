@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, Camera, ChevronDown, Search } from "lucide-react";
 import { RSL_FRAMES, RSL_LABELS, RSL_SIZE, rslLetterbox, type RslInput, type RslOutput, type RslPrediction } from "@/lib/rsl-video";
 
 type State = "idle" | "loading" | "ready" | "countdown" | "recording" | "processing" | "error";
@@ -121,27 +122,44 @@ export function RslRecognizer({ onBack }: { onBack: () => void }) {
   }
 
   const matches = RSL_LABELS.filter(label => label.toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru")));
-  return <section className="rsl-workspace" aria-labelledby="rsl-title">
-    <button className="button secondary small" onClick={() => { release(); onBack(); }}>Back to languages</button>
-    <p className="eyebrow">Pretrained · Russian Sign Language · experimental</p>
-    <h1 id="rsl-title">Recognize one RSL sign.</h1>
-    <p>967 word/phrase classes and 33 fingerspelling letters. No teaching or personal examples required.</p>
-    <p>This is a slow, isolated-sign research model—not real-time or sentence translation. First load: 141 MB. Camera frames stay in memory on this device and are never uploaded or saved.</p>
-    <video ref={video} autoPlay playsInline muted aria-label="Unmirrored camera preview; frame your face, torso and hands" style={{ width: "100%", maxWidth: 640, aspectRatio: "4 / 3", background: "#111", borderRadius: 16 }} />
-    <p role="status" aria-live="polite">{message}</p>
-    <div className="rsl-actions">
-      {(state === "idle" || state === "error") && <button className="button primary" onClick={start}>Start camera &amp; load model</button>}
-      {state === "ready" && <button className="button primary" onClick={recognize}>Recognize one sign</button>}
-      {state !== "idle" && state !== "error" && <button className="button secondary" onClick={stop}>Stop / cancel</button>}
+  const busy = state === "loading" || state === "processing";
+  return <section className="clip-recognizer rsl-workspace" aria-labelledby="rsl-title">
+    <div className="clip-header">
+      <button type="button" className="back-link" onClick={() => { release(); onBack(); }}><ArrowLeft aria-hidden="true" size={16} />Back to languages</button>
+      <p className="eyebrow">Russian Sign Language · One sign at a time · Experimental</p>
+      <h1 id="rsl-title">Recognize one RSL sign.</h1>
+      <p className="lead">967 word and phrase classes plus 33 fingerspelling letters, with no teaching required. A slow research model for isolated signs, not real-time or sentence translation.</p>
     </div>
-    {result && <div className="rsl-result"><h2 lang="ru">{result.label}</h2><p>Model score: {Math.round(result.confidence * 100)}%. This is not a measured accuracy or reliability guarantee.</p></div>}
-    <p>After the 3-second countdown, sign one complete word over about 2 seconds. Keep the full signing space visible. Don’t rely on suggestions for medical, legal or emergency communication.</p>
-    <details><summary>Browse the 1,000 trained sign classes</summary>
-      <label htmlFor="rsl-vocabulary">Search Russian labels</label>
-      <input id="rsl-vocabulary" value={search} onChange={event => setSearch(event.target.value)} type="search" />
-      <p>{matches.length} matches. Showing the first 50.</p>
-      <ul lang="ru">{matches.slice(0, 50).map((label, index) => <li key={`${label}-${index}`}>{label}</li>)}</ul>
-    </details>
-    <p><a href="/models">Model limitations</a> · <a href="/models/rsl1000-slovo/ATTRIBUTION.md">Slovo attribution and licence</a></p>
+    <div className="clip-layout">
+      <div className="clip-stage" data-state={state}>
+        <video ref={video} autoPlay playsInline muted aria-label="Unmirrored camera preview; frame your face, torso and hands" />
+        {(state === "idle" || state === "error") && <div className="clip-placeholder" aria-hidden="true"><Camera size={22} /><span>Camera off</span></div>}
+      </div>
+      <div className="clip-panel">
+        <p className={`clip-status ${state}${busy ? " busy" : ""}`} role="status" aria-live="polite">{message}</p>
+        <div className="rsl-actions">
+          {(state === "idle" || state === "error") && <button type="button" className="button primary" onClick={start}>Start camera &amp; load model</button>}
+          {state === "ready" && <button type="button" className="button primary" onClick={recognize}>Recognize one sign</button>}
+          {state !== "idle" && state !== "error" && <button type="button" className="button secondary" onClick={stop}>Stop / cancel</button>}
+        </div>
+        {result && <div className="rsl-result"><span className="candidate-label">Suggestion · check before using</span><h2 lang="ru">{result.label}</h2><p>Model score {Math.round(result.confidence * 100)} out of 100. This is not a measured accuracy or reliability guarantee.</p></div>}
+        <ol className="clip-steps">
+          <li>Start the camera. The first load downloads 141 MB of model weights.</li>
+          <li>After a 3-second countdown, sign one complete word over about 2 seconds.</li>
+          <li>Keep your face, upper body and both hands in the frame.</li>
+        </ol>
+        <p className="field-hint">Camera frames stay in memory on this device and are never uploaded or saved. Suggestions are not spoken or added to a transcript. Don’t rely on them for medical, legal or emergency communication.</p>
+        <details className="workspace-disclosure">
+          <summary>Browse the 1,000 trained sign classes <ChevronDown aria-hidden="true" size={16} /></summary>
+          <div className="disclosure-body">
+            <label className="search-field" htmlFor="rsl-vocabulary"><Search aria-hidden="true" size={16} /><span className="sr-only">Search Russian labels</span>
+              <input id="rsl-vocabulary" value={search} onChange={event => setSearch(event.target.value)} type="search" placeholder="Search Russian labels" /></label>
+            <p className="field-hint">{matches.length} matches. Showing the first 50.</p>
+            <ul className="clip-vocabulary" lang="ru">{matches.slice(0, 50).map((label, index) => <li key={`${label}-${index}`}>{label}</li>)}</ul>
+          </div>
+        </details>
+        <p className="clip-links"><a href="/models">Model limitations</a><a href="/models/rsl1000-slovo/ATTRIBUTION.md">Slovo attribution and licence</a></p>
+      </div>
+    </div>
   </section>;
 }

@@ -49,7 +49,7 @@ npm run build:firebase    # downloads and verifies the RSL model and the MediaPi
 npm start                 # serves out/ at http://localhost:3000 — no internet needed after this
 ```
 
-- Open `http://localhost:3000` in **desktop Chrome** (localhost counts as a secure origin, so the camera works). Choose American Sign Language, then Start translating, and allow the camera.
+- Open `http://localhost:3000` in **desktop Chrome** (localhost counts as a secure origin, so the camera works). Choose American Sign Language, then Start signing (since Sprint 7; on a fresh browser profile skip the first-run tour, then press Start camera), and allow the camera.
 - Open **Camera options**. It should say *"Hand tracking loaded from this site, so it does not depend on an external CDN."*
 - For timings, open `http://localhost:3000/?perf` and read the readout under Camera options (tracking p50/p95, recognition round trip, frames analysed/s).
 - Then unplug the network and repeat a few signs (MAN-3).

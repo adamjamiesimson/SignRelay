@@ -1,10 +1,13 @@
 import type { CalibrationTemplate, VisionFrame } from "./vision-types";
+import { packTemplates, type PackedTemplates } from "./template-transport";
+
+export { packTemplates, unpackTemplates, type PackedTemplates } from "./template-transport";
 
 export type TemplatePrediction = { label: string; text: string; confidence: number; margin?: number };
 export type MatchRequest = { type: "match"; id: number; generation: number; frames: VisionFrame[] };
-export type MatchInput = MatchRequest | { type: "configure"; kind: "personal" | "psl"; templates: CalibrationTemplate[] }
+export type MatchInput = MatchRequest | { type: "configure"; kind: "personal" | "psl"; templates: PackedTemplates }
   | { type: "cancel" };
-export type MatchOutput = { id: number; generation: number; prediction: TemplatePrediction | null; error?: string; phase?: "loading" | "matching" };
+export type MatchOutput = { id: number; generation: number; prediction: TemplatePrediction | null; error?: string; phase?: "loading" | "matching"; matchingMs?: number };
 type Port = Pick<Worker, "postMessage" | "terminate" | "onmessage" | "onerror" | "onmessageerror">;
 type ScheduledMatch = { request: MatchRequest; submittedAt: number };
 const MAX_RESULT_AGE_MS = 2500;
@@ -25,6 +28,8 @@ export class TemplateMatchingClient {
   private retryAfter = 0;
   private failures = 0;
   private closed = false;
+  private matchingMs: number | undefined;
+  takeTiming() { const value = this.matchingMs; this.matchingMs = undefined; return value; }
 
   constructor(private kind: "personal" | "psl",
     private onResult: (prediction: TemplatePrediction | null, timestamp: number) => void,
@@ -35,8 +40,14 @@ export class TemplateMatchingClient {
   configure(templates: CalibrationTemplate[] = []) {
     this.reset();
     this.templates = templates;
-    try { this.worker?.postMessage({ type: "configure", kind: this.kind, templates } satisfies MatchInput); }
-    catch { this.fail("Saved signs could not be sent to the matcher. Retrying shortly…"); }
+    try {
+      if (this.worker) this.postTemplates(this.worker);
+      // Start the personal matcher now, not on the first hand frame, so its
+      // set-up never delays a frame the signer is waiting on. PSL stays lazy:
+      // its references download only when PSL is actually used.
+      else if (this.kind === "personal" && templates.length && !this.closed
+        && performance.now() >= this.retryAfter) this.ensureWorker();
+    } catch { this.fail("Saved signs could not be sent to the matcher. Retrying shortly…"); }
   }
 
   submit(frames: VisionFrame[]) {
@@ -49,6 +60,7 @@ export class TemplateMatchingClient {
 
   reset() {
     this.generation++;
+    this.matchingMs = undefined;
     this.queued = null;
     this.newestTimestamp = -Infinity;
     // Keep the in-flight slot until it acknowledges cancellation. Otherwise
@@ -63,38 +75,48 @@ export class TemplateMatchingClient {
     if (this.closed || this.active || !this.queued || performance.now() < this.retryAfter) return;
     if (performance.now() - this.queued.submittedAt > MAX_RESULT_AGE_MS) { this.queued = null; return; }
     try {
-      if (!this.worker) {
-        const worker = this.createWorker();
-        this.worker = worker;
-        worker.onmessage = ({ data }: MessageEvent<MatchOutput>) => {
-          if (worker !== this.worker || data.id !== this.active?.request.id) return;
-          if (data.phase) {
-            if (data.generation === this.generation) this.armTimeout(data.phase === "loading" ? 400000 : 20000);
-            return;
-          }
-          const { request, submittedAt } = this.active;
-          this.clearTimer();
-          this.active = null;
-          if (data.generation === this.generation && request.generation === this.generation) {
-            if (data.error) { this.fail(data.error); return; }
-            const timestamp = request.frames.at(-1)!.timestamp;
-            if (this.newestTimestamp - timestamp <= MAX_RESULT_AGE_MS
-              && performance.now() - submittedAt <= MAX_RESULT_AGE_MS) this.onResult(data.prediction, timestamp);
-            this.failures = 0;
-          }
-          this.pump();
-        };
-        worker.onerror = worker.onmessageerror = () => {
-          if (worker === this.worker) this.fail("Template matching was interrupted. Retrying shortly…");
-        };
-        worker.postMessage({ type: "configure", kind: this.kind, templates: this.templates } satisfies MatchInput);
-      }
+      const worker = this.ensureWorker();
       this.active = this.queued;
       this.queued = null;
-      this.worker.postMessage(this.active.request);
+      worker.postMessage(this.active.request);
       // Includes first PSL download; never restarts the camera/model worker.
       this.armTimeout(120000);
     } catch { this.fail("Template matching could not start. Retrying shortly…"); }
+  }
+
+  private postTemplates(worker: Port) {
+    const templates = packTemplates(this.templates);
+    worker.postMessage({ type: "configure", kind: this.kind, templates } satisfies MatchInput, [templates.values.buffer]);
+  }
+
+  private ensureWorker() {
+    if (this.worker) return this.worker;
+    const worker = this.createWorker();
+    this.worker = worker;
+    worker.onmessage = ({ data }: MessageEvent<MatchOutput>) => {
+      if (worker !== this.worker || data.id !== this.active?.request.id) return;
+      if (data.phase) {
+        if (data.generation === this.generation) this.armTimeout(data.phase === "loading" ? 400000 : 20000);
+        return;
+      }
+      const { request, submittedAt } = this.active;
+      this.clearTimer();
+      this.active = null;
+      if (data.generation === this.generation && request.generation === this.generation) {
+        this.matchingMs = data.matchingMs;
+        if (data.error) { this.fail(data.error); return; }
+        const timestamp = request.frames.at(-1)!.timestamp;
+        if (this.newestTimestamp - timestamp <= MAX_RESULT_AGE_MS
+          && performance.now() - submittedAt <= MAX_RESULT_AGE_MS) this.onResult(data.prediction, timestamp);
+        this.failures = 0;
+      }
+      this.pump();
+    };
+    worker.onerror = worker.onmessageerror = () => {
+      if (worker === this.worker) this.fail("Template matching was interrupted. Retrying shortly…");
+    };
+    this.postTemplates(worker);
+    return worker;
   }
 
   private fail(message: string) {

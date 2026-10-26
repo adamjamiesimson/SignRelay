@@ -18,10 +18,18 @@ const h = await openRehearsal(executable, { extraInit: `
       if (node.textContent && last.get(node) !== node.textContent) window.__qa.announcements.push(node.textContent);
       last.set(node, node.textContent);
     }
-  }).observe(document, { subtree: true, childList: true, characterData: true });` });
+  }).observe(document, { subtree: true, childList: true, characterData: true });
+  // Order of speech calls, to pin the current auto-speak policy.
+  window.__qa.speech = [];
+  if (window.speechSynthesis) {
+    const speak = window.speechSynthesis.speak, cancel = window.speechSynthesis.cancel;
+    window.speechSynthesis.speak = utterance => { window.__qa.speech.push('speak:' + utterance.text); speak(utterance); };
+    window.speechSynthesis.cancel = () => { window.__qa.speech.push('cancel'); cancel(); };
+  }` });
 const checks = [];
 try {
-  await h.open();
+  // ?perf only adds the throughput readout, quoted if the rapid sequence fails.
+  await h.open("/?perf");
   await h.start();
 
   // Rapid words: 250 ms rests (the shortest that keeps all six in synthetic tests).
@@ -30,10 +38,20 @@ try {
   await until(async () => !(await h.playing()), "Rapid sequence did not finish", 600);
   await pause(1500);
   const words = await h.words();
-  assert.deepEqual(words, ["Hello", "Thank you", "Please", "Sorry", "Yes", "No"], "Rapid words in order, no duplicates");
+  // Below ~10 analysed frames/s a short stroke completion can reach the worker
+  // only once, and two-evidence confirmation then drops the word
+  // (docs/refinement/sprint-5/low-throughput.json). The readout tells a slow
+  // environment apart from a regression.
+  const throughput = await h.evaluate("document.querySelector('[data-perf]')?.textContent ?? ''");
+  assert.deepEqual(words, ["Hello", "Thank you", "Please", "Sorry", "Yes", "No"], `Rapid words in order, no duplicates (${throughput})`);
   const announced = await h.evaluate("window.__qa.announcements.filter(a => a.startsWith('Confirmed:'))");
   assert.deepEqual(announced, words.map(word => `Confirmed: ${word}`), "Each confirmed word is announced once in a polite live region");
   assert.deepEqual(await h.evaluate("window.__qa.spoken"), words, "Each word spoken once");
+  // Current policy (docs/refinement/sprint-5/speech-policy.md): each confirmed
+  // word cancels whatever is still being spoken, then speaks. Changing it must
+  // be a deliberate, documented decision.
+  assert.deepEqual(await h.evaluate("window.__qa.speech.filter(call => call.startsWith('speak:') || call === 'cancel').slice(-12)"),
+    words.flatMap(word => ["cancel", `speak:${word}`]), "Auto speak cancels the previous utterance before each confirmed word");
   checks.push({ check: "rapid words: order, single announcement, single speech", words: words.length });
 
   // Speech stops when the camera is paused.
@@ -68,7 +86,9 @@ try {
   await h.browser.send("Input.insertText", { text: " there" });
   await h.browser.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13, text: "\r" });
   await until(async () => (await h.words())[0] === "Hello there", "Keyboard edit was not saved");
-  checks.push({ check: "keyboard edit of a transcript entry" });
+  await until(() => h.evaluate("document.activeElement?.getAttribute('aria-label') === 'Edit Hello there'"),
+    "Saving an edit with Enter dropped keyboard focus instead of returning it to the entry", 20);
+  checks.push({ check: "keyboard edit of a transcript entry keeps focus on that entry" });
 
   // Touch targets on a phone viewport (WCAG 2.2 AA 2.5.8: at least 24×24 CSS px).
   await h.browser.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 3, mobile: true });
@@ -95,6 +115,7 @@ try {
   await key("Enter", "Enter", 13);
   await until(async () => !(await h.words()).includes("Thank you") && !(await h.words()).includes(""), "Emptied entry was kept");
   assert.deepEqual(await h.words(), ["Hello there", "Please", "Sorry", "Yes", "No"], "Only the emptied entry is removed");
+  await until(() => h.evaluate("document.activeElement?.id === 'transcript-title'"), "Focus is lost after an edit removes the entry", 20);
   checks.push({ check: "emptying an entry removes it" });
 
   // Removing an entry keeps keyboard focus in the transcript and says what happened.
@@ -123,5 +144,65 @@ try {
   const running = await h.evaluate("document.getAnimations().filter(a => a.playState === 'running').length");
   assert.equal(running, 0, "Animations keep running with prefers-reduced-motion: reduce");
   checks.push({ check: "prefers-reduced-motion stops CSS animations and transitions", running_by_default: runningByDefault, running_with_reduce: running });
+
+  // Preferences survive a reload (Auto speak was switched on above), and
+  // Clear local data leaves no settings record behind.
+  const storedSettings = () => h.evaluate("localStorage.getItem('signrelay.settings.v1')");
+  assert.equal(JSON.parse(await storedSettings())?.autoSpeak, true, "Reloading the page overwrote the saved Auto speak preference");
+  await h.start();
+  assert.equal(await h.evaluate("document.querySelector('.switch-row.prominent input').checked"), true, "Auto speak was not restored after a reload");
+  await h.click("Clear local data");
+  await until(async () => (await storedSettings()) === null, "Clear local data left the settings record in storage");
+  await pause(300);
+  assert.equal(await storedSettings(), null, "Settings were written back right after Clear local data");
+  await h.open();
+  await pause(300);
+  assert.equal(await storedSettings(), null, "Loading the page re-created a cleared settings record");
+  checks.push({ check: "settings persist across reloads and stay cleared after Clear local data" });
+
+  // Record pressed while the camera is still starting waits for it, rather
+  // than reporting that the camera is off.
+  await h.open();
+  await h.click("Start signing");
+  await h.click("Start camera & record");
+  await until(() => h.evaluate("!!document.querySelector('.calibration-capture.countdown, .calibration-capture.recording')"),
+    "Recording did not start after the camera finished starting");
+  assert.ok(!(await h.evaluate("document.body.textContent.includes('Start the camera before recording')")), "Record during camera start-up reported the camera as off");
+  checks.push({ check: "record pressed during camera start-up waits for the camera" });
+
+  // No page may scroll sideways on a small phone (WCAG 2.2 1.4.10 reflow).
+  const wide = [];
+  for (const width of [320, 375, 390, 820]) {
+    await h.browser.send("Emulation.setDeviceMetricsOverride", { width, height: 800, deviceScaleFactor: 2, mobile: true });
+    for (const path of ["/", "/languages", "/models", "/privacy", "/about", "/how-it-works", "/roadmap", "/terms"]) {
+      await h.browser.send("Page.navigate", { url: `${h.origin}${path}` });
+      await until(() => h.evaluate("document.readyState === 'complete'"), `${path} did not load`);
+      await pause(300);
+      const { scroll, viewport } = await h.evaluate("({ scroll: document.documentElement.scrollWidth, viewport: window.visualViewport.width })");
+      if (scroll > viewport + 1) wide.push(`${path} at ${width} px is ${scroll} px wide`);
+    }
+  }
+  // 200% text size (WCAG 1.4.4) at 390 px.
+  for (const path of ["/", "/languages", "/models", "/privacy", "/about", "/how-it-works", "/roadmap", "/terms"]) {
+    await h.browser.send("Page.navigate", { url: `${h.origin}${path}` });
+    await until(() => h.evaluate("document.readyState === 'complete'"), `${path} did not load`);
+    await h.evaluate("document.documentElement.style.fontSize = '200%'");
+    await pause(300);
+    const { scroll, viewport } = await h.evaluate("({ scroll: document.documentElement.scrollWidth, viewport: window.visualViewport.width })");
+    if (scroll > viewport + 1) wide.push(`${path} at 390 px with 200% text is ${scroll} px wide`);
+  }
+  // A 48-character custom word without spaces must wrap inside its card and message.
+  await h.open();
+  await h.start();
+  await h.evaluate(`(() => { const input = document.querySelector('[aria-label="Word or short phrase to teach"]');
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, 'Pneumonoultramicroscopicsilicovolcanoconiosisxyz');
+    input.dispatchEvent(new Event('input', { bubbles: true })); document.querySelector('#personal-vocabulary').open = true; })()`);
+  await h.click("Select word");
+  await pause(300);
+  const spilled = await h.evaluate("[...document.querySelectorAll('.selected-word-card strong, .calibration-message')].filter(e => e.scrollWidth > e.clientWidth + 2).map(e => e.className || e.tagName)");
+  if (spilled.length) wide.push(`long custom word spills out of ${spilled.join(", ")}`);
+  await h.browser.send("Emulation.clearDeviceMetricsOverride");
+  assert.deepEqual(wide, [], "Pages wider than a phone screen");
+  checks.push({ check: "no horizontal scrolling on 8 pages at 320, 375, 390 and 820 px, at 200% text, and with a 48-character word" });
   console.log(JSON.stringify({ passed: true, checks, environment: "headless Chromium, rehearsal build with synthetic landmarks; not an assistive-technology user test" }));
 } finally { await h.close(); }

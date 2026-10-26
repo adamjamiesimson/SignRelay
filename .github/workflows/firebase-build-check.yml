@@ -12,6 +12,12 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same pull request supersedes the running build. Pushes
+# to main are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -66,6 +72,26 @@ jobs:
           python training/verify_bdsl_browser_preprocessing.py work/bdsl401-research/clips
           node scripts/benchmark-bdsl401-wasm.mjs int8 work/bdsl401-weight-only/model.int8.onnx work/bdsl401-weight-only
           node scripts/install-bdsl-model.mjs
+
+      - name: Restore the verified RSL model from the CI cache
+        id: rsl-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: public/models/rsl1000-slovo/model.onnx
+          key: rsl-model-${{ hashFiles('public/models/rsl1000-slovo/manifest.json') }}
+
+      # External download with bounded retries. The size and SHA-256 are always
+      # checked, cached copy included. Exit 75: the host could not deliver the
+      # model (not a code failure). Exit 65: wrong bytes, refused (fail closed).
+      - name: Acquire and verify the RSL model (external download)
+        run: npm run install:rsl-model
+
+      - name: Save the verified RSL model to the CI cache
+        if: steps.rsl-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: public/models/rsl1000-slovo/model.onnx
+          key: ${{ steps.rsl-cache.outputs.cache-primary-key }}
 
       - name: Build Firebase static export
         run: npm run build:firebase

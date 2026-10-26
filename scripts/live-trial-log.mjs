@@ -9,7 +9,7 @@
 // never a holdout and never an accuracy figure. No video, landmarks, names or
 // camera labels are recorded.
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { pathToFileURL } from "node:url";
 import { validateTrials } from "./evaluation-metrics.mjs";
@@ -94,7 +94,9 @@ export function appendTrial(path, row) {
 /** Results must stay in the git-ignored folder so they cannot be committed by accident. */
 export function resultsPath(out, sessionId) {
   const path = resolve(out ?? `${RESULTS_DIR}/live-${new Date().toISOString().slice(0, 10)}-${sessionId}.jsonl`);
-  if (!path.startsWith(resolve(RESULTS_DIR) + "/")) throw new Error(`write results under ${RESULTS_DIR}/ (git-ignored), not ${out}`);
+  const child = relative(resolve(RESULTS_DIR), path);
+  if (!child || isAbsolute(child) || child === ".." || child.startsWith(`..${sep}`))
+    throw new Error(`write results under ${RESULTS_DIR}/ (git-ignored), not ${out}`);
   if (!path.endsWith(".jsonl")) throw new Error("the results file must end in .jsonl");
   return path;
 }

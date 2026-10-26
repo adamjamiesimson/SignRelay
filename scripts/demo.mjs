@@ -6,8 +6,9 @@
 //
 // The demo build needs network access once (npm ci and the pinned vision
 // models). After demo:prepare, serving and running it needs none.
-import { spawnSync } from "node:child_process";
+import { runCommandSync as spawnSync } from "./run-command.mjs";
 import { existsSync, readFileSync } from "node:fs";
+import { createServer } from "node:net";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -23,6 +24,21 @@ export function demoExportProblems(root = "out", verify = () => spawnSync("node"
   const result = verify();
   if (result.status !== 0) return [`runtime verification failed:\n${result.stdout}${result.stderr}`];
   return [];
+}
+
+/** Why demo:serve cannot use `port` on loopback, or null when it is free.
+ * Another program on that port (npm run dev, an older demo:serve) would keep
+ * answering at the advertised address, so the banner must not be printed.
+ * @param {string} port */
+export function portProblem(port, host = "127.0.0.1") {
+  return new Promise(resolve => {
+    const probe = createServer();
+    probe.once("error", error => resolve(error.code === "EADDRINUSE"
+      ? `Port ${port} on ${host} is already in use by another program, so http://${host}:${port}/ would not show this verified demo build. Stop that program (for example npm run dev or an earlier demo:serve), or run npm run demo:serve -- --port 3001.`
+      : `Cannot serve on ${host}:${port}: ${error.message}`));
+    try { probe.listen(Number(port), host, () => probe.close(() => resolve(null))); }
+    catch (error) { resolve(`Cannot serve on ${host}:${port}: ${error.message}`); }
+  });
 }
 
 /** What demo:serve prints. `real_video_evidence` is `{ outcome, evidence }` as
@@ -52,6 +68,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (problems.length) { console.error(problems.join("\n")); process.exit(1); }
     const manifest = JSON.parse(readFileSync("out/runtime-manifest.json", "utf8"));
     const port = rest.includes("--port") ? rest[rest.indexOf("--port") + 1] : "3000";
+    const busy = await portProblem(port);
+    if (busy) { console.error(busy); process.exit(1); }
     console.log(serveBanner(manifest, port));
     run("node", ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", port]);
   } else if (command === "check") {

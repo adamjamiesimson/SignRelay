@@ -60,14 +60,22 @@ export async function startChrome(executable, { forwardAssets = false, proxy = p
             responseHeaders: [{ name: "Content-Type", value: type }, { name: "Access-Control-Allow-Origin", value: "*" }] });
         })().catch(async error => { errors.push(String(error)); await send("Fetch.failRequest", { requestId, errorReason: "Failed" }).catch(() => {}); });
       }
-      if (message.method === "Network.requestWillBeSent") requestUrls.set(message.params.requestId, message.params.request.url);
-      if (message.method === "Network.loadingFailed") errors.push({ error: message.params.errorText, url: requestUrls.get(message.params.requestId) });
+      if (message.method === "Target.detachedFromTarget") {
+        // A terminated worker cannot reply. Release commands sent during a
+        // camera-stop race immediately instead of waiting the 180 s CDP limit.
+        for (const [key, task] of pending) if (task.sessionId === message.params.sessionId) {
+          clearTimeout(task.timer); pending.delete(key); task.reject(new Error("Worker target detached"));
+        }
+      }
+      const requestKey = `${message.sessionId ?? "page"}:${message.params?.requestId}`;
+      if (message.method === "Network.requestWillBeSent") requestUrls.set(requestKey, message.params.request.url);
+      if (message.method === "Network.loadingFailed") errors.push({ error: message.params.errorText, url: requestUrls.get(requestKey) });
       if (message.method === "Runtime.exceptionThrown") errors.push(message.params.exceptionDetails.exception?.description ?? message.params.exceptionDetails.text);
       for (const listener of listeners) listener(message);
     };
     const send = (method, params = {}, sessionId) => new Promise((resolve, reject) => {
       const key = ++id; const timer = setTimeout(() => { pending.delete(key); reject(new Error(`${method} timed out`)); }, 180000);
-      pending.set(key, { resolve, reject, timer }); socket.send(JSON.stringify({ id: key, method, params, sessionId }));
+      pending.set(key, { resolve, reject, timer, sessionId }); socket.send(JSON.stringify({ id: key, method, params, sessionId }));
     });
     const evaluate = async expression => {
       const value = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });

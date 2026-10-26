@@ -7,7 +7,8 @@ This repository is an engineering foundation, not a claim of full sign-language 
 ## What works now
 
 - Forty sign-language workspaces have separate identities; RSL and Bangla have separate pretrained clip-recognition modes.
-- Camera permission is requested only after language selection.
+- Camera permission is requested only when the person starts signing. On a first visit a four-step tour (language, camera, transcript, personal signs) opens instead and never starts the camera; it is remembered under `signrelay.onboarding.v1`, cleared by Clear local data and replayable from Take a tour, `/#tour` and the footer.
+- The homepage shows a hand-tracking illustration, labelled *Illustration · Not live*: hand-authored hand poses for the six demo words and one no-match, with no scores. It pauses off screen, in hidden tabs and on request, and is still under reduced motion.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
 - A Web Worker maintains an ordered temporal buffer for landmark recognition.
 - ASL, BSL and ISL include separate experimental browser models with 2,000, 1,064 and 263 isolated-sign outputs respectively.
@@ -24,6 +25,7 @@ This repository is an engineering foundation, not a claim of full sign-language 
 The October 2026 demo scope is six isolated ASL words: HELLO, THANK YOU, PLEASE, SORRY, YES and NO. When the recognizer is unsure it says so. The evidence is thin: on 11 previously seen development clips, 5 were correct, 0 wrong and 6 no-match; see [the dashboard](docs/evaluation/dashboard-2026-10-21.md). No new-signer, live-camera or false-positive measurement exists yet.
 
 - Demo script, setup, fallbacks and go/no-go: [docs/gitex/demo-package-2026-10-21.md](docs/gitex/demo-package-2026-10-21.md)
+- Operator kit for a real laptop, and the MAN-1/MAN-2, device and new-signer protocols: [docs/refinement/sprint-6/operator-kit.md](docs/refinement/sprint-6/operator-kit.md), [docs/refinement/sprint-6/field-test-protocols.md](docs/refinement/sprint-6/field-test-protocols.md)
 - Machine-checkable acceptance criteria: [docs/gitex/demo-contract.json](docs/gitex/demo-contract.json)
 - Integration report, current release status and the remaining manual checks: [docs/gitex/sprint-3/integration-report.md](docs/gitex/sprint-3/integration-report.md) and [docs/gitex/sprint-3/real-world-test-checklist.md](docs/gitex/sprint-3/real-world-test-checklist.md)
 
@@ -172,13 +174,14 @@ npm run demo:check -- /path/to/chrome
 npm run readiness -- --label final --browser /path/to/chrome --build rehearsal,asl-demo
 ```
 
-Browser smokes take a Chrome executable: `tests/workspace-browser-smoke.mjs`, `landmark-lifecycle-browser-smoke.mjs`, `rsl-`, `bdsl-` and `lse-browser-smoke.mjs` and `a11y-axe-smoke.mjs` need the full export; `offline-vision-smoke.mjs`, `offline-demo-strict-smoke.mjs`, `lifecycle-stress-smoke.mjs` and `fault-injection-smoke.mjs` need the ASL demo export; `gitex-rehearsal-smoke.mjs` and `transcript-a11y-smoke.mjs` need `npm run build:rehearsal`. Do not run a build while a smoke is using `out/`.
+Browser smokes take a Chrome executable: `tests/workspace-browser-smoke.mjs`, `landmark-lifecycle-browser-smoke.mjs`, `rsl-`, `bdsl-` and `lse-browser-smoke.mjs` and `a11y-axe-smoke.mjs` need the full export; `offline-vision-smoke.mjs`, `offline-demo-strict-smoke.mjs`, `lifecycle-stress-smoke.mjs` and `fault-injection-smoke.mjs` need the ASL demo export; `gitex-rehearsal-smoke.mjs`, `transcript-a11y-smoke.mjs`, `user-feedback-fault-smoke.mjs`, `personal-vocabulary-scale-smoke.mjs` and `onboarding-smoke.mjs` (first-visit tour, navigation, cookie choices, hero animation; optional axe-core path as a second argument) need `npm run build:rehearsal`. `consent-smoke.mjs` needs an export built with the placeholder `NEXT_PUBLIC_GA_MEASUREMENT_ID=G-SMOKETEST1` (see the file; never deploy it). Smokes that exercise the camera act as returning visitors (`tests/helpers/returning-visitor.mjs`). `scripts/benchmarks/hero-animation.mjs` records the illustration's frame cost. Do not run a build while a smoke is using `out/`.
 
 Every pull request runs:
 
 - **Core CI**: typecheck, tests, lint, workers, matching benchmarks, secret scan, dependency gate, asset policy;
 - **Firebase Static Build Check**: the full export with all of its browser smokes, then the strict `audit:security` gate in its own job;
 - **Offline ASL Demo and Rehearsal**: both demo profiles with the strict offline check (and its leak-detector self-test), rehearsal, transcript/accessibility, lifecycle-stress and fault-injection smokes;
+- **Analytics Consent Check**: an export with a placeholder measurement ID, checking that Google is not contacted before consent, after Reject, after withdrawal or under Global Privacy Control;
 - **ASL real-video pilot** when recognition code changes, and the private capture smoke when capture code changes.
 
 The asset policy blocks new tracked files over 20 MiB; the two existing reviewed large ONNX files are explicit legacy exceptions and cannot grow without failing CI. Synthetic and headless results are regression records. They are not live-camera accuracy or real-device performance.
@@ -228,8 +231,9 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 - Camera video is processed locally by default.
 - Raw video and biometric imagery are not uploaded or retained.
 - Landmark sequences exist briefly in memory; normalized personal templates are stored only when the user deliberately records them.
-- Transcript history and preferences are stored in local browser storage.
-- The translator includes a one-click local-data clear action.
+- Transcript history, preferences and tour progress are stored in local browser storage.
+- The translator includes a one-click local-data clear action (transcripts, settings, personal signs and tour progress).
+- No consent banner appears when no analytics is configured; with a measurement ID, analytics stays off until the visitor chooses Allow, and Reject is equally prominent. Every stored item is listed in the [Privacy Policy](app/privacy/page.tsx) and in [docs/refinement/sprint-7/privacy-audit.md](docs/refinement/sprint-7/privacy-audit.md).
 - There is no server-side training-data collection flow in this build.
 
 ## Known limitations

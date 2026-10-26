@@ -8,7 +8,7 @@
 // Each listed profile is built, then its browser smokes, rendered-export and
 // runtime checks run against that export. List asl-demo last to leave the
 // demo build in out/.
-import { spawnSync } from "node:child_process";
+import { runCommandSync as spawnSync } from "./run-command.mjs";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
@@ -19,7 +19,7 @@ const git = args => spawnSync("git", args, { encoding: "utf8" }).stdout.trim();
 export const BROWSER_SMOKES = {
   full: ["workspace-browser-smoke", "offline-vision-smoke", "lifecycle-stress-smoke", "fault-injection-smoke"],
   "asl-demo": ["offline-vision-smoke", "offline-demo-strict-smoke", "lifecycle-stress-smoke", "fault-injection-smoke"],
-  rehearsal: ["gitex-rehearsal-smoke", "transcript-a11y-smoke"],
+  rehearsal: ["gitex-rehearsal-smoke", "transcript-a11y-smoke", "user-feedback-fault-smoke", "personal-vocabulary-scale-smoke", "onboarding-smoke"],
 };
 
 /** Release is decided by people and evidence, never by green software checks alone. */
@@ -96,7 +96,9 @@ export function runtimeFingerprint() {
 export function compareReports(base, current) {
   const byId = new Map(base.checks.map(check => [check.id, check]));
   // A check that ran in the baseline but not now is reported, never silently dropped.
-  const ran = new Set(current.checks.map(check => check.id.split(":")[0]));
+  // Match a profile-qualified id exactly; an older baseline without profiles
+  // matches the unqualified name.
+  const ran = new Set(current.checks.flatMap(check => [check.id, check.id.split(":")[0]]));
   const missing = base.checks.filter(check => !ran.has(check.id)).map(check => ({ id: check.id, change: "not-run" }));
   return [...missing, ...current.checks.flatMap(check => {
     const before = byId.get(check.id) ?? byId.get(check.id.split(":")[0]);
