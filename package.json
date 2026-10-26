@@ -7,7 +7,7 @@
   },
   "scripts": {
     "install:ci": "npm ci",
-    "build:worker": "esbuild workers/recognition.worker.ts workers/template-matching.worker.ts workers/rsl.worker.ts workers/bdsl.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outdir=public/workers && node scripts/copy-onnx-runtime.mjs && node scripts/install-vision-assets.mjs --wasm-only",
+    "build:worker": "esbuild workers/recognition.worker.ts workers/template-matching.worker.ts workers/rsl.worker.ts workers/bdsl.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outdir=public/workers && esbuild workers/vision.worker.ts --bundle --format=iife --platform=browser --target=es2020 --outfile=public/workers/vision.worker.js && node scripts/copy-onnx-runtime.mjs && node scripts/install-vision-assets.mjs --wasm-only",
     "install:rsl-model": "node scripts/install-rsl-model.mjs",
     "dev": "npm run build:worker && node scripts/dev.mjs",
     "build": "npm run build:firebase",

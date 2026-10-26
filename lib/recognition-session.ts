@@ -33,6 +33,7 @@ export class RecognitionSession {
     private createWorker: () => Port,
     private onMessage: (message: WorkerMessage) => void,
     private readonly reportStatus: (status: SessionStatus) => void,
+    private readonly measure = false,
   ) {
     this.launch();
     this.watchdog = setInterval(() => {
@@ -144,7 +145,8 @@ export class RecognitionSession {
     this.stats.forwarded++;
     this.stats.lastQueueAgeMs = this.waiting.since - this.queuedAt;
     try {
-      this.worker.postMessage({ type: "frame", frame, frameId: this.waiting.id, session: this.session } satisfies WorkerInput);
+      this.worker.postMessage({ type: "frame", frame, frameId: this.waiting.id, session: this.session,
+        ...(this.measure ? { measure: true } : {}) } satisfies WorkerInput);
     } catch {
       this.recover("Recognition could not receive a frame. Restarting…");
     }

@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "baseline": "e63fffe64e6cc7136cf5191bd3beb07058c24200",
+    "date": "2026-10-25T05:48:51.583Z",
+    "cpu": "Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz",
+    "platform": "win32",
+    "arch": "x64",
+    "browser": {
+      "protocolVersion": "1.3",
+      "product": "Chrome/155.0.8059.86",
+      "revision": "@804d6b05f089b27af8342622a36558c49401a1d4",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+      "jsVersion": "15.5.35.25"
+    }
+  },
+  "results": [],
+  "phases": {
+    "stages": {
+      "asl2000": {
+        "count": 5,
+        "p50": 1275.0999999642372,
+        "p95": 1914.3999999761581
+      },
+      "personal6": {
+        "count": 5,
+        "p50": 16.30000001192093,
+        "p95": 33
+      },
+      "psl775": {
+        "count": 5,
+        "p50": 558.6999999880791,
+        "p95": 726.8000000119209
+      }
+    },
+    "note": "Five warm phase samples in an isolated browser page; includes cooperative yielding, excludes download. Kinematic fixtures and real model/reference assets, not sign-accuracy evidence or production worker end-to-end timing."
+  },
+  "errors": []
+}

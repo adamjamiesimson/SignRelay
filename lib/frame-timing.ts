@@ -1,5 +1,14 @@
 type Timed = { timestamp: number };
 
+/** Keep the complete longest personal-sign window regardless of camera FPS.
+ * A hard cap still bounds memory on malformed/high-frequency input. */
+export function appendObservation<T extends Timed>(frames: T[], frame: T) {
+  const previous = frames.at(-1);
+  if (previous && frame.timestamp <= previous.timestamp) frames.length = 0;
+  frames.push(frame);
+  while (frames.length > 300 || (frames.length > 1 && frame.timestamp - frames[0].timestamp > 4500)) frames.shift();
+}
+
 // A slow stream is still continuous. Estimate its cadence without letting one
 // long pause redefine what counts as continuous tracking.
 export function trackingGapLimit(frames: readonly Timed[]) {

@@ -13,6 +13,7 @@ import { recognizeLse300 } from "@/lib/lse300-runtime";
 import { TemplateMatchingClient, unpackTemplates, type TemplatePrediction } from "@/lib/template-matching-client";
 import { validHand } from "@/lib/asl-starter-recognition";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
+import { appendObservation } from "@/lib/frame-timing";
 
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
@@ -41,6 +42,7 @@ let modelProblem = false;
 let retryAfter = 0;
 let blockedStarter: string | null = null;
 let starterSeenAt = 0;
+let completedModelMs: number | undefined;
 
 let latestPersonal: TemplatePrediction | null = null;
 let personalTimestamp = 0;
@@ -81,6 +83,7 @@ function invalidatePrediction() {
 }
 
 function resetSession() {
+  completedModelMs = undefined;
   // In-flight requests from old sessions are invalidated by modelGeneration;
   // do not let their timers restart a newly selected language.
   for (const request of pending.values()) request.controller.abort();
@@ -104,6 +107,7 @@ function resetSession() {
 }
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
+  const processingStarted = performance.now();
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
     const { templates } = event.data;
@@ -130,8 +134,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     }
   }
   receivedFrames += 1;
-  frames.push(event.data.frame);
-  while (frames.length > (activeLanguage === "asl" ? 120 : 80)) frames.shift();
+  appendObservation(frames, event.data.frame);
   const hasHand = event.data.frame.hands.some(validHand);
   if (!hasHand && hadPersonalTracking) invalidatePersonal();
   hadPersonalTracking = hasHand;
@@ -170,12 +173,15 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
       lastInferenceAt = now;
       const generation = modelGeneration;
       const submittedAt = performance.now();
+      let inferenceStarted: number | undefined;
       classifier([...motion.sequence], { signal: request.controller.signal, onPhase: phase => {
         if (pending.get(language) !== request) return;
         request.phase = phase;
+        if (phase === "inference") inferenceStarted = performance.now();
         request.started = frames.at(-1)?.timestamp ?? now;
       } }).then((prediction) => {
         if (generation !== modelGeneration || request.controller.signal.aborted) return;
+        if (inferenceStarted !== undefined) completedModelMs = performance.now() - inferenceStarted;
         if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS
           || performance.now() - submittedAt > MAX_PREDICTION_AGE_MS) return;
         latestPrediction = prediction;
@@ -211,7 +217,10 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     candidate: result?.label ?? null, confidence: result?.confidence ?? 0,
     bufferSize: frames.length, feedback,
     source, motionReason: motion.reason,
+    ...(event.data.measure ? { processingMs: performance.now() - processingStarted,
+      modelMs: completedModelMs, personalMs: personalMatcher.takeTiming(), referenceMs: pslMatcher.takeTiming() } : {}),
   } satisfies WorkerMessage);
+  completedModelMs = undefined;
 
   if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
     candidateLabel = null;

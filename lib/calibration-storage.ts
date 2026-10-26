@@ -13,6 +13,7 @@ export function validCalibrationTemplate(value: unknown): value is CalibrationTe
     && typeof t.gloss === "string" && t.gloss.length > 0 && t.gloss.length <= 100
     && typeof t.text === "string" && t.text.length <= 100 && Number.isFinite(t.createdAt)
     && (t.language === undefined || isLanguageId(t.language))
+    && (t.normalization === undefined || t.normalization === "trajectory-v3")
     && Array.isArray(t.frames) && t.frames.length === 24
     && t.frames.every(row => Array.isArray(row) && [208, 240].includes(row.length) && row.every(Number.isFinite));
 }

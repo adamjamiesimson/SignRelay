@@ -7,7 +7,7 @@ export type TemplatePrediction = { label: string; text: string; confidence: numb
 export type MatchRequest = { type: "match"; id: number; generation: number; frames: VisionFrame[] };
 export type MatchInput = MatchRequest | { type: "configure"; kind: "personal" | "psl"; templates: PackedTemplates }
   | { type: "cancel" };
-export type MatchOutput = { id: number; generation: number; prediction: TemplatePrediction | null; error?: string; phase?: "loading" | "matching" };
+export type MatchOutput = { id: number; generation: number; prediction: TemplatePrediction | null; error?: string; phase?: "loading" | "matching"; matchingMs?: number };
 type Port = Pick<Worker, "postMessage" | "terminate" | "onmessage" | "onerror" | "onmessageerror">;
 type ScheduledMatch = { request: MatchRequest; submittedAt: number };
 const MAX_RESULT_AGE_MS = 2500;
@@ -28,6 +28,8 @@ export class TemplateMatchingClient {
   private retryAfter = 0;
   private failures = 0;
   private closed = false;
+  private matchingMs: number | undefined;
+  takeTiming() { const value = this.matchingMs; this.matchingMs = undefined; return value; }
 
   constructor(private kind: "personal" | "psl",
     private onResult: (prediction: TemplatePrediction | null, timestamp: number) => void,
@@ -58,6 +60,7 @@ export class TemplateMatchingClient {
 
   reset() {
     this.generation++;
+    this.matchingMs = undefined;
     this.queued = null;
     this.newestTimestamp = -Infinity;
     // Keep the in-flight slot until it acknowledges cancellation. Otherwise
@@ -100,6 +103,7 @@ export class TemplateMatchingClient {
       this.clearTimer();
       this.active = null;
       if (data.generation === this.generation && request.generation === this.generation) {
+        this.matchingMs = data.matchingMs;
         if (data.error) { this.fail(data.error); return; }
         const timestamp = request.frames.at(-1)!.timestamp;
         if (this.newestTimestamp - timestamp <= MAX_RESULT_AGE_MS

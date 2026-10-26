@@ -23,10 +23,11 @@ const pair = (summary: Summary) => summary ? `${summary.p50}/${summary.p95} ms` 
 /** The ?perf line. "dropped" counts camera frames superseded before they could
  * be forwarded because recognition was still busy (one in flight, one latest).
  * Optional fields are appended after the asset source. */
-export function formatPerfReadout({ tracking, roundTrip, queueWait, seconds, analysed, session, assets, recognition, hands }: {
+export function formatPerfReadout({ tracking, roundTrip, queueWait, seconds, analysed, session, assets, recognition, hands, stages, tracker }: {
   tracking: Summary; roundTrip: Summary; queueWait: Summary; seconds: number; analysed: number;
   session: { offered: number; forwarded: number; replaced: number } | null; assets: string | null;
   recognition?: { state: string; recoveries: number } | null; hands?: { seen: number; frames: number } | null;
+  stages?: Record<string, Summary>; tracker?: string;
 }) {
   const elapsed = Math.max(1, seconds);
   const dropped = session && session.offered ? `${session.replaced} dropped (${Math.round(100 * session.replaced / session.offered)}%)` : "— dropped";
@@ -34,7 +35,9 @@ export function formatPerfReadout({ tracking, roundTrip, queueWait, seconds, ana
     + ` · ${session ? (session.forwarded / elapsed).toFixed(1) : "—"} forwarded/s, ${dropped}`
     + ` · ${(analysed / elapsed).toFixed(1)} frames analysed/s · assets ${assets ?? "—"}`
     + (recognition ? ` · recognition ${recognition.state}, ${recognition.recoveries} ${recognition.recoveries === 1 ? "recovery" : "recoveries"}` : "")
-    + (hands ? ` · hand tracked in ${hands.frames ? Math.round(100 * hands.seen / hands.frames) : 0}% of frames` : "");
+    + (hands ? ` · hand tracked in ${hands.frames ? Math.round(100 * hands.seen / hands.frames) : 0}% of frames` : "")
+    + (tracker ? ` · tracker ${tracker}` : "")
+    + (stages ? Object.entries(stages).map(([name, summary]) => ` · ${name} ${pair(summary)}`).join("") : "");
 }
 
 /** Manual gate MAN-1 (docs/gitex/demo-contract.json): the demo laptop must

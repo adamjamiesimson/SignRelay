@@ -8,6 +8,19 @@ vi.mock("@mediapipe/tasks-vision", () => ({
 }));
 beforeEach(() => vi.resetAllMocks());
 describe("vision resources and capture cadence", () => {
+  it("falls back from GPU to CPU and releases partially loaded GPU models", async () => {
+    const part = () => ({ close: vi.fn() });
+    const face = part(), pose = part();
+    mocks.gesture.mockImplementation(async (_files, options) => {
+      if (options.baseOptions.delegate === "GPU") throw new Error("GPU unavailable");
+      return part();
+    });
+    mocks.face.mockResolvedValue(face); mocks.pose.mockResolvedValue(pose);
+    const { VisionEngine } = await import("../lib/vision-engine");
+    const engine = await VisionEngine.create(undefined, true);
+    expect(engine.delegate).toBe("CPU"); expect(engine.assetSource).toBe("self-hosted");
+    expect(face.close).toHaveBeenCalledOnce(); expect(pose.close).toHaveBeenCalledOnce(); engine.close();
+  });
   it("releases models that loaded when another model fails to start", async () => {
     const gesture = { close: vi.fn() }, pose = { close: vi.fn() };
     mocks.gesture.mockResolvedValue(gesture);
