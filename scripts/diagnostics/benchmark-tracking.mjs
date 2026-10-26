@@ -12,6 +12,7 @@ const { values } = parseArgs({ options: {
   chrome: { type: 'string' }, baseline: { type: 'string', default: 'HEAD' },
   'vision-assets': { type: 'string', default: 'public' },
   'phases-only': { type: 'boolean', default: false },
+  'cpu-profile': { type: 'boolean', default: false },
   out: { type: 'string', default: 'work/tracking-benchmark-results.json' },
 } });
 if (!values.chrome) throw new Error('Pass --chrome with the Chrome executable path.');
@@ -50,5 +51,17 @@ try {
   }
   const phases = await browser.evaluate('window.runRecognitionBenchmark()');
   console.log(JSON.stringify(phases));
-  await writeFile(values.out, JSON.stringify({ metadata, results, phases, errors: browser.errors }, null, 2));
+  let cpuProfile;
+  if (values['cpu-profile']) {
+    // Separate warm run: profiling overhead never changes the timing samples.
+    await browser.send('Profiler.enable');
+    await browser.send('Profiler.start');
+    const elapsedMs = await browser.evaluate('window.profileAslInference()');
+    const { profile } = await browser.send('Profiler.stop');
+    cpuProfile = { elapsedMs, runs: 5, sampleCount: profile.samples?.length ?? 0,
+      topSelfSamples: profile.nodes.filter(n => n.hitCount).sort((a, b) => b.hitCount - a.hitCount).slice(0, 15)
+        .map(n => ({ function: n.callFrame.functionName || '(anonymous)', samples: n.hitCount })),
+      note: 'Separate five warm ASL computations, sampling-profiler overhead included; no inference algorithm or thresholds changed.' };
+  }
+  await writeFile(values.out, JSON.stringify({ metadata, results, phases, cpuProfile, errors: browser.errors }, null, 2));
 } finally { await browser?.close(); server.close(); }

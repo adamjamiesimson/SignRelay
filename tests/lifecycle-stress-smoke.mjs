@@ -32,7 +32,7 @@ try {
     window.Worker = class extends NativeWorker {
       constructor(url, options) { super(url, options); this.__url = String(url); this.__alive = true; window.__qa.workers.push(this); }
       terminate() { this.__alive = false; return super.terminate(); }
-      postMessage(message, transfer) { if (message?.type === 'frame') window.__qa.frames++; return super.postMessage(message, transfer); }
+      postMessage(message, transfer) { if (message?.type === 'frame' && this.__url.includes('recognition.worker')) window.__qa.frames++; return super.postMessage(message, transfer); }
     };
   })();` });
   const button = text => `[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)})`;
@@ -42,6 +42,7 @@ try {
   const released = () => evaluate("window.__qa.tracks.length > 0 && window.__qa.tracks.every(t => t.readyState === 'ended')");
   const liveTracks = () => evaluate("window.__qa.tracks.filter(t => t.readyState === 'live').length");
   const aliveRecognition = () => evaluate("window.__qa.workers.filter(w => w.__alive && w.__url.includes('recognition.worker')).length");
+  const aliveTracking = () => evaluate("window.__qa.workers.filter(w => w.__alive && w.__url.includes('vision.worker')).length");
   const frames = () => evaluate("window.__qa.frames");
   const heapMb = async () => { await browser.send("HeapProfiler.collectGarbage").catch(() => {}); return evaluate("performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null"); };
   const report = { checks: [] };
@@ -59,10 +60,12 @@ try {
   for (let cycle = 0; cycle < 12; cycle++) {
     await click("Pause camera");
     await until(async () => await released() && await has("Start camera"), `Cycle ${cycle + 1}: camera not released`);
+    assert.equal(await aliveTracking(), 0, "Pause must terminate the tracking worker");
     const started = Date.now();
     await click("Start camera");
     await until(active, `Cycle ${cycle + 1}: camera did not restart`);
     cycleMs.push(Date.now() - started);
+    assert.equal(await aliveTracking(), 1, "Exactly one tracking worker after restart");
     assert.equal(await liveTracks(), 1, `Cycle ${cycle + 1}: more than one live camera track`);
   }
   assert.equal(await aliveRecognition(), 1, "Start/pause must not leak recognition workers");
@@ -78,6 +81,7 @@ try {
     await until(() => has("Start camera"), `Rapid toggle ${i + 1}: did not settle`);
     await pause(400);
     assert.equal(await liveTracks(), 0, `Rapid toggle ${i + 1}: a camera track stayed live after cancelling`);
+    assert.equal(await aliveTracking(), 0, "Cancelling startup must terminate its tracking worker");
     await click("Start camera");
     await until(active, `Rapid toggle ${i + 1}: camera did not restart`);
   }
@@ -119,6 +123,7 @@ try {
 
   await click("Pause camera");
   await until(released, "Final pause did not release the camera");
+  assert.equal(await aliveTracking(), 0, "Final pause must release the tracking worker");
   const heapEnd = await heapMb();
   report.heap_mb = { start: heapStart, end: heapEnd };
   if (heapStart !== null && heapEnd !== null) assert.ok(heapEnd - heapStart < 40, `JS heap grew by ${heapEnd - heapStart} MB across the stress run`);

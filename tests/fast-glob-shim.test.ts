@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -21,14 +21,15 @@ afterAll(() => rmSync(root, { recursive: true, force: true }));
 describe("reviewed fast-glob replacement", () => {
   it("is what @next/eslint-plugin-next resolves, so braces is never installed", () => {
     const plugin = createRequire(require.resolve("@next/eslint-plugin-next"));
-    expect(plugin.resolve("fast-glob")).toBe(require.resolve("../tooling/fast-glob-shim/index.cjs"));
+    expect(realpathSync(plugin.resolve("fast-glob"))).toBe(realpathSync(require.resolve("../tooling/fast-glob-shim/index.cjs")));
     const lock = JSON.parse(readFileSync("package-lock.json", "utf8"));
     for (const name of ["braces", "micromatch"]) expect(lock.packages[`node_modules/${name}`]).toBeUndefined();
     expect(lock.packages["node_modules/fast-glob"]).toMatchObject({ link: true, resolved: "tooling/fast-glob-shim" });
   });
 
   it("matches the plugin's onlyDirectories call like fast-glob (posix paths, no dot directories)", () => {
-    expect(shim.globSync(`${root}/apps/*`, { onlyDirectories: true }).sort()).toEqual([`${root}/apps/admin`, `${root}/apps/web`]);
+    const posixRoot = root.replaceAll("\\", "/");
+    expect(shim.globSync(`${root}/apps/*`, { onlyDirectories: true }).sort()).toEqual([`${posixRoot}/apps/admin`, `${posixRoot}/apps/web`]);
     expect(shim.globSync("apps/*/pages", { cwd: root, onlyDirectories: true }).sort()).toEqual(["apps/admin/pages", "apps/web/pages"]);
   });
 

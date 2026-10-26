@@ -7,13 +7,32 @@
 //   node tests/fault-injection-smoke.mjs /path/to/chrome
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { createServer, request } from "node:http";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+import { observeWorkerNetwork } from "../scripts/diagnostics/worker-network.mjs";
 import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 
 const executable = process.argv[2];
 if (!executable) throw new Error("Usage: node tests/fault-injection-smoke.mjs <chrome> (after building the export)");
-const port = 18500 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${port}`;
+const port = 18500 + Math.floor(Math.random() * 300);
 const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", String(port)], { stdio: "ignore" });
+// Worker CDP targets do not implement Fetch.fulfillRequest. A loopback fixture
+// serves bad model bytes to every execution context without changing out/.
+let corruptModel = false, corruptResponses = 0;
+const fixture = createServer((incoming, response) => {
+  if (corruptModel && incoming.url === "/vision/models/gesture_recognizer.task") {
+    corruptResponses++;
+    response.writeHead(200, { "Content-Type": "application/octet-stream", "Cache-Control": "no-store" });
+    response.end("corrupted model bytes"); return;
+  }
+  const upstream = request({ hostname: "127.0.0.1", port, path: incoming.url, method: incoming.method, headers: incoming.headers }, result => {
+    response.writeHead(result.statusCode, result.headers); result.pipe(response);
+  });
+  upstream.on("error", () => { response.writeHead(502); response.end(); });
+  incoming.pipe(upstream);
+});
+await new Promise(resolve => fixture.listen(0, "127.0.0.1", resolve));
+const origin = `http://127.0.0.1:${fixture.address().port}`;
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function until(check, reason, attempts = 300) {
   for (let i = 0; i < attempts; i++) { if (await check()) return; await pause(100); }
@@ -24,6 +43,7 @@ const results = [];
 try {
   await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } }, "No static server");
   browser = await startChrome(executable);
+  const network = await observeWorkerNetwork(browser);
   const evaluate = browser.evaluate;
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => {
     window.__qa = { tracks: [], workers: [], frames: 0, failWorkers: 0 };
@@ -39,7 +59,7 @@ try {
         super(url, options); this.__url = String(url); this.__alive = true; window.__qa.workers.push(this);
       }
       terminate() { this.__alive = false; return super.terminate(); }
-      postMessage(message, transfer) { if (message?.type === 'frame') window.__qa.frames++; return super.postMessage(message, transfer); }
+      postMessage(message, transfer) { if (message?.type === 'frame' && this.__url.includes('recognition.worker')) window.__qa.frames++; return super.postMessage(message, transfer); }
     };
   })();` });
   const button = text => `[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)})`;
@@ -59,6 +79,7 @@ try {
   };
 
   // 1. Worker crashes: two automatic restarts per minute, then a manual restart.
+  console.error("Fault check: Worker crashes: two automatic restarts per minute, then a manual restart.");
   await open();
   await until(active, "Camera did not start");
   await until(analysing, "No frames analysed before the crash");
@@ -79,6 +100,7 @@ try {
   results.push({ fault: "recognition worker crash x3", automatic_restarts: 2, then: "paused with Restart recognition; manual restart recovered" });
 
   // 2. Worker construction fails once.
+  console.error("Fault check: Worker construction fails once.");
   await click("Change language");
   await evaluate("window.__qa.failWorkers = 1");
   await click("Start signing");
@@ -87,35 +109,36 @@ try {
   results.push({ fault: "recognition worker fails to construct once", recovered: true });
 
   // 3. Missing tracking model (self-hosted and CDN both unavailable).
+  console.error("Fault check: Missing tracking model (self-hosted and CDN both unavailable).");
   await click("Pause camera");
-  await browser.send("Network.setBlockedURLs", { urls: ["*gesture_recognizer.task*"] });
-  await browser.send("Network.setCacheDisabled", { cacheDisabled: true });
+  await network.block(["*gesture_recognizer.task*", "*cdn.jsdelivr.net*", "*storage.googleapis.com*"]);
+  await network.disableCache(true);
   await open();
   await until(() => text("/tracking models could not load/"), "Missing model was not reported", 600);
   assert.equal(await liveTracks(), 0, "The camera must be released when tracking cannot start");
-  await browser.send("Network.setBlockedURLs", { urls: [] });
+  await network.block([]);
   await click((await has("Retry camera")) ? "Retry camera" : "Start camera");
   await until(active, "Did not recover once the model was available", 600);
   results.push({ fault: "missing gesture_recognizer.task", message: "tracking models could not load", camera_released: true, recovered: true });
 
   // 4. Corrupted tracking model bytes.
+  console.error("Fault check: Corrupted tracking model bytes.");
   await click("Pause camera");
-  await browser.send("Fetch.enable", { patterns: [{ urlPattern: "*gesture_recognizer.task*", requestStage: "Response" }] });
-  const detach = browser.onEvent(message => {
-    if (message.method !== "Fetch.requestPaused") return;
-    void browser.send("Fetch.fulfillRequest", { requestId: message.params.requestId, responseCode: 200,
-      responseHeaders: [{ name: "Content-Type", value: "application/octet-stream" }], body: Buffer.from("corrupted model bytes").toString("base64") });
-  });
+  corruptModel = true;
+  await network.block(["*cdn.jsdelivr.net*", "*storage.googleapis.com*"]);
   await open();
   await until(() => text("/tracking models could not load/"), "Corrupted model was not reported", 600);
   assert.equal(await liveTracks(), 0, "The camera must be released when the model is corrupted");
-  detach();
-  await browser.send("Fetch.disable");
+  assert.ok(corruptResponses > 0, "The tracker must actually receive corrupted model bytes");
+  corruptModel = false;
+  await network.block([]);
   await click((await has("Retry camera")) ? "Retry camera" : "Start camera");
   await until(active, "Did not recover once the model was intact", 600);
   results.push({ fault: "corrupted gesture_recognizer.task", message: "tracking models could not load", camera_released: true, recovered: true });
+  assert.deepEqual(network.failures, [], "Worker fault-injection instrumentation failed");
 
   // 5. Browser storage throws on every access.
+  console.error("Fault check: Browser storage throws on every access.");
   await click("Pause camera");
   await evaluate("sessionStorage.setItem('qa-storage-fails', '1')");
   await open();
@@ -129,4 +152,4 @@ try {
 } catch (error) {
   console.error(JSON.stringify({ results, errors: browser?.errors?.slice(-10) }));
   throw error;
-} finally { await browser?.close(); server.kill(); }
+} finally { await browser?.close(); fixture.closeAllConnections(); fixture.close(); server.kill(); }

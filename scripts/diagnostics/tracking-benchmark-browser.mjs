@@ -95,6 +95,11 @@ import { recognizeAsl1000 } from '../../lib/asl1000-runtime';
 import { recognizePersonalTemplateAsync, prepareCalibrationSequence } from '../../lib/personalized-recognition';
 import { recognizePsl776 } from '../../lib/psl776-runtime';
 import { makeSign } from '../../tests/fixtures/asl-motion';
+window.profileAslInference = async () => {
+  const frames = makeSign('SORRY'), started = performance.now();
+  for (let i = 0; i < 5; i++) await recognizeAsl1000(frames);
+  return performance.now() - started;
+};
 window.runRecognitionBenchmark = async () => {
   const frames = makeSign('SORRY');
   const templates = ['SORRY', 'THANK YOU'].flatMap(gloss => Array.from({ length: 3 }, (_, i) => ({

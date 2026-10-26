@@ -7,18 +7,21 @@ const span = (points: { x: number; y: number }[]) => Math.max(...points.map(p =>
 
 describe("homepage hand illustration", () => {
   it("draws two 21-point hands that stay inside the 400×300 frame", () => {
+    const invalid: Array<{ ms: number; side: number; x: number; y: number }> = [];
     for (let ms = 0; ms < LOOP_MS; ms += 40) {
       const { scene } = frameAt(ms);
       for (const [pose, side] of [[scene.dominant, 1], [scene.support, -1]] as const) {
         const points = handPoints(pose, side);
         expect(points).toHaveLength(21);
         for (const { x, y } of points) {
-          expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true);
-          expect(x).toBeGreaterThan(-10); expect(x).toBeLessThan(410);
-          expect(y).toBeGreaterThan(0); expect(y).toBeLessThan(330);
+          // Check every coordinate, but avoid constructing hundreds of
+          // thousands of assertion stacks in this exhaustive animation sweep.
+          if (!(Number.isFinite(x) && Number.isFinite(y) && x > -10 && x < 410 && y > 0 && y < 330))
+            invalid.push({ ms, side, x, y });
         }
       }
     }
+    expect(invalid).toEqual([]);
   });
 
   it("moves smoothly: no jump between consecutive 60 fps frames, across sign boundaries too", () => {

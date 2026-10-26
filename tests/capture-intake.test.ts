@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -77,7 +77,15 @@ describe("capture folder and intake file hardening", () => {
   it("refuses links, folders, hidden and unexpected files, and oversized sidecars before reading them", async () => {
     const outside = folder({ "secret.webm": webm(9) });
     const linked = folder({});
-    symlinkSync(join(outside, "secret.webm"), join(linked, "dev-20261017-p01-sign-1-1.webm"));
+    const link = join(linked, "dev-20261017-p01-sign-1-1.webm");
+    try { symlinkSync(join(outside, "secret.webm"), link); }
+    catch (error) {
+      if (process.platform !== "win32" || (error as NodeJS.ErrnoException).code !== "EPERM") throw error;
+      // Junctions need no Windows symlink privilege. Still exercise a real
+      // external symbolic link and the same fail-closed lstat boundary.
+      symlinkSync(outside, link, "junction");
+    }
+    expect(lstatSync(link).isSymbolicLink()).toBe(true);
     await expect(readCaptureDirectory(linked)).rejects.toThrow("not a regular file");
     const nested = folder({}); mkdirSync(join(nested, "sub"));
     await expect(readCaptureDirectory(nested)).rejects.toThrow("not a regular file");

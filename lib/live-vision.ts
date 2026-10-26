@@ -27,29 +27,38 @@ export class LiveVision {
   readonly timings: LiveVisionTiming = { capture: 0, hands: 0, auxiliary: 0, transport: 0, age: 0 };
   get busy() { return this.occupied || !!this.recovering; }
 
-  static async create(progress?: (message: string) => void, accelerated = true) {
+  static async create(progress?: (message: string) => void, accelerated = true, signal?: AbortSignal) {
+    signal?.throwIfAborted();
     const live = new LiveVision();
+    const abort = () => live.close();
+    signal?.addEventListener("abort", abort, { once: true });
     live.accelerated = accelerated;
     try {
       if (typeof Worker === "undefined" || typeof createImageBitmap === "undefined"
         || typeof OffscreenCanvas === "undefined") throw new Error("Worker tracking unavailable");
       try { await live.launch(progress); }
       catch (error) {
+        if (live.closed) throw error;
         live.lastError = String(error);
         live.worker?.terminate(); live.worker = null;
         live.accelerated = false;
         await live.launch(progress);
       }
     } catch (error) {
+      if (live.closed) throw error;
       live.lastError = String(error);
       live.worker?.terminate(); live.worker = null;
       await live.loadFallback(progress);
+    } finally {
+      signal?.removeEventListener("abort", abort);
     }
+    signal?.throwIfAborted();
     return live;
   }
 
   private async loadFallback(progress?: (message: string) => void) {
-    const engine = await VisionEngine.create(progress, this.accelerated);
+    // A stuck GPU call cannot be terminated on the compatibility/UI thread.
+    const engine = await VisionEngine.create(progress, false);
     if (this.closed) { engine.close(); return; }
     this.fallback = engine; this.mode = "main";
     this.assetSource = engine.assetSource; this.delegate = engine.delegate;
@@ -136,8 +145,9 @@ export class LiveVision {
         return frame;
       }
       if (!this.worker) throw new Error("Tracking unavailable. Restart the camera.");
+      const captureWorker = this.worker;
       const bitmap = await createImageBitmap(video);
-      if (this.closed || !this.worker) { bitmap.close(); return null; }
+      if (this.closed || this.worker !== captureWorker || this.recovering) { bitmap.close(); return null; }
       const posted = performance.now();
       return await new Promise<VisionFrame | null>((resolve, reject) => {
         this.pending = { resolve, reject, hands: onHands, started, capture: posted - started, posted };

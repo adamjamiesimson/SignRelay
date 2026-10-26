@@ -100,7 +100,7 @@ describe("template transport to the matcher", () => {
   it("round-trips every value exactly, including legacy 208-feature rows, -0 and non-finite values", () => {
     const legacy = example("legacy", "OLD", 2, 208);
     legacy.frames[3][5] = -0; legacy.frames[4][6] = Number.NaN;
-    const templates = [example("a", "BOOK", 1), legacy, { ...example("b", "BOOK", 3), language: undefined }];
+    const templates = [{ ...example("a", "BOOK", 1), normalization: "trajectory-v3" as const }, legacy, { ...example("b", "BOOK", 3), language: undefined }];
     const packed = packTemplates(templates);
     expect(packed.values).toBeInstanceOf(Float64Array);
     const restored = unpackTemplates(structuredClone(packed));

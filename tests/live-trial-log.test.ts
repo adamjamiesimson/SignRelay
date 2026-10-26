@@ -39,9 +39,12 @@ describe("live trial rows", () => {
   });
 
   it("only writes inside the git-ignored results folder", () => {
-    expect(resultsPath(undefined, "S01")).toMatch(/evaluation\/results\/live-\d{4}-\d{2}-\d{2}-S01\.jsonl$/);
+    expect(resultsPath(undefined, "S01").replaceAll("\\", "/")).toMatch(/evaluation\/results\/live-\d{4}-\d{2}-\d{2}-S01\.jsonl$/);
     expect(() => resultsPath("docs/live.jsonl", "S01")).toThrow(/git-ignored/);
     expect(() => resultsPath("evaluation/results/../../docs/live.jsonl", "S01")).toThrow(/git-ignored/);
+    expect(() => resultsPath(resolve("evaluation/results-backup/live.jsonl"), "S01")).toThrow(/git-ignored/);
+    expect(() => resultsPath(resolve("evaluation/results"), "S01")).toThrow(/git-ignored/);
+    expect(resultsPath(join("evaluation", "results", "nested", "live.jsonl"), "S01")).toBe(resolve("evaluation/results/nested/live.jsonl"));
     expect(() => resultsPath("evaluation/results/live.txt", "S01")).toThrow(/\.jsonl/);
     expect(readFileSync(".gitignore", "utf8")).toMatch(/^\/evaluation\/results\/$/m);
   });

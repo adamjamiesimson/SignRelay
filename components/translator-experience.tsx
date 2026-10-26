@@ -121,6 +121,7 @@ export function TranslatorExperience() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const engineRef = useRef<LiveVision | null>(null);
+  const visionAbortRef = useRef<AbortController | null>(null);
   const workerRef = useRef<RecognitionSession | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
@@ -359,6 +360,8 @@ export function TranslatorExperience() {
 
   const stopCamera = useCallback(() => {
     cameraGenerationRef.current++;
+    visionAbortRef.current?.abort();
+    visionAbortRef.current = null;
     captureGenerationRef.current++;
     cameraPendingRef.current = false;
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -426,6 +429,7 @@ export function TranslatorExperience() {
 
   useEffect(() => () => {
     cameraGenerationRef.current++;
+    visionAbortRef.current?.abort();
     captureGenerationRef.current++;
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     engineRef.current?.close();
@@ -595,9 +599,12 @@ export function TranslatorExperience() {
 
       setCameraState("loading");
       loadingVision = true;
+      const visionAbort = new AbortController();
+      visionAbortRef.current = visionAbort;
       const engine = await LiveVision.create(message => {
         if (generation === cameraGenerationRef.current) setCameraMessage(message);
-      });
+      }, true, visionAbort.signal);
+      if (visionAbortRef.current === visionAbort) visionAbortRef.current = null;
       if (generation !== cameraGenerationRef.current) { engine.close(); return; }
       engineRef.current = engine;
       setVisionSource(engine.assetSource);

@@ -25,6 +25,29 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 describe("bounded tracking lane", () => {
+  it("terminates startup immediately when the camera request is cancelled", async () => {
+    Port.hangGpu = true;
+    const controller = new AbortController();
+    const starting = LiveVision.create(undefined, true, controller.signal);
+    controller.abort();
+    await expect(starting).rejects.toThrow();
+    expect(Port.instances).toHaveLength(1);
+    expect(Port.instances[0].terminate).toHaveBeenCalledOnce();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+  it("discards a bitmap if the worker fails during asynchronous capture", async () => {
+    let finish!: (bitmap: ImageBitmap) => void;
+    vi.mocked(createImageBitmap).mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    const live = await LiveVision.create(), draw = vi.fn(), bitmap = { close: vi.fn() };
+    const pending = live.process({} as HTMLVideoElement, 1, draw);
+    Port.instances[0].onerror!();
+    finish(bitmap as unknown as ImageBitmap);
+    expect(await pending).toBeNull();
+    expect(bitmap.close).toHaveBeenCalledOnce();
+    expect(draw).not.toHaveBeenCalled();
+    expect(Port.instances[1].postMessage.mock.calls.every(([message]) => message.type === "init")).toBe(true);
+    live.close();
+  });
   it("terminates a GPU that hangs at warmup and starts a CPU worker before opening the lane", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     Port.hangGpu = true;
@@ -80,5 +103,6 @@ describe("bounded tracking lane", () => {
     mocks.create.mockResolvedValue({ close: vi.fn(), assetSource: "self-hosted", delegate: "CPU" });
     const live = await LiveVision.create();
     expect(live.mode).toBe("main"); expect(Port.instances).toHaveLength(0); live.close();
+    expect(mocks.create).toHaveBeenCalledWith(undefined, false);
   });
 });

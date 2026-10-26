@@ -8,7 +8,7 @@
 // Each listed profile is built, then its browser smokes, rendered-export and
 // runtime checks run against that export. List asl-demo last to leave the
 // demo build in out/.
-import { spawnSync } from "node:child_process";
+import { runCommandSync as spawnSync } from "./run-command.mjs";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";

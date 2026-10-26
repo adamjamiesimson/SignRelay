@@ -6,7 +6,7 @@
 //
 // The demo build needs network access once (npm ci and the pinned vision
 // models). After demo:prepare, serving and running it needs none.
-import { spawnSync } from "node:child_process";
+import { runCommandSync as spawnSync } from "./run-command.mjs";
 import { existsSync, readFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { join } from "node:path";
