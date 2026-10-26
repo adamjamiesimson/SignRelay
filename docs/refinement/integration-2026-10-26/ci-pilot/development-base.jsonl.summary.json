@@ -1,0 +1,182 @@
+{
+  "diagnostic_only": true,
+  "source_frame_step": true,
+  "reviewed_pilot": false,
+  "assets_fetched_via_node": true,
+  "browser_errors": [
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17313/aaaffc31-9716-4cb0-80c2-8db16faf6a6b"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17313/aaaffc31-9716-4cb0-80c2-8db16faf6a6b"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17313/2c9c5843-b5c8-49af-9f53-f2e3e76849c8"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17313/2c9c5843-b5c8-49af-9f53-f2e3e76849c8"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17313/344cadfb-1a94-40a9-9336-5ec994d6101e"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17313/344cadfb-1a94-40a9-9336-5ec994d6101e"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17313/ebb41081-ff56-4da3-b00e-cdb804052e8c"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17313/ebb41081-ff56-4da3-b00e-cdb804052e8c"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17313/16c4924f-ef73-41de-b3a1-93e5ec6cbc64"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17313/16c4924f-ef73-41de-b3a1-93e5ec6cbc64"
+    }
+  ],
+  "groups": [
+    {
+      "group": "asl/development",
+      "trials": 5,
+      "signed_trials": 5,
+      "correct": 2,
+      "signed_accuracy": 0.4,
+      "coverage": 0.4,
+      "precision_when_accepted": 1,
+      "wrong_accepted_trials": 0,
+      "abstentions": 3,
+      "signed_errors": 0,
+      "incorrect_acceptance_rate": 0,
+      "error_rate": 0,
+      "unique_recordings": 5,
+      "unique_participants": 4,
+      "sign_coverage": [
+        "HELLO",
+        "NO",
+        "PLEASE",
+        "THANK YOU",
+        "YES"
+      ],
+      "per_sign_recall": {
+        "HELLO": 0,
+        "NO": 1,
+        "PLEASE": 1,
+        "THANK YOU": 0,
+        "YES": 0
+      },
+      "confusion_matrix": {
+        "THANK YOU": {
+          "[ABSTAIN]": 1
+        },
+        "PLEASE": {
+          "PLEASE": 1
+        },
+        "HELLO": {
+          "[ABSTAIN]": 1
+        },
+        "YES": {
+          "[ABSTAIN]": 1
+        },
+        "NO": {
+          "NO": 1
+        }
+      },
+      "confusion_matrix_unit": "trials per distinct emitted label; multi-output/error cells may overlap",
+      "no_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "unknown_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "errors": 0,
+      "confusions": {},
+      "per_gloss": [
+        {
+          "gloss": "HELLO",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 35,
+            "frames_with_hands": 12
+          }
+        },
+        {
+          "gloss": "NO",
+          "trials": 1,
+          "correct": 1,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 51,
+            "frames_with_hands": 11
+          }
+        },
+        {
+          "gloss": "PLEASE",
+          "trials": 1,
+          "correct": 1,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 47,
+            "frames_with_hands": 15
+          }
+        },
+        {
+          "gloss": "THANK YOU",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 30,
+            "frames_with_hands": 6
+          }
+        },
+        {
+          "gloss": "YES",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 31,
+            "frames_with_hands": 5
+          }
+        }
+      ],
+      "holdout_verified": false
+    }
+  ]
+}

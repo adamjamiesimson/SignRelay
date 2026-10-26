@@ -1,0 +1,634 @@
+{
+  "code_commit": "b0cb1d193cbc24d9ce76cc72029b1436a930933a",
+  "collected_on": "2026-10-26",
+  "source": "GitHub Actions connector: run/job metadata and decoded job logs",
+  "workflows": [
+    {
+      "id": 40287458213,
+      "name": "Core CI",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/adamjamiesimson/SignRelay/actions/runs/40287458213",
+      "jobs": [
+        {
+          "id": 121454391690,
+          "name": "Typecheck, test, lint, worker, repo guard",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Checkout",
+              "conclusion": "success"
+            },
+            {
+              "name": "Setup Node",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Typecheck",
+              "conclusion": "success"
+            },
+            {
+              "name": "Unit and regression tests",
+              "conclusion": "success"
+            },
+            {
+              "name": "Lint",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build recognition workers",
+              "conclusion": "success"
+            },
+            {
+              "name": "Compare pre-optimization and bounded DTW (synthetic CPU baseline)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Benchmark matching isolation and actual PSL references",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check for accidental secrets",
+              "conclusion": "success"
+            },
+            {
+              "name": "Dependency advisories (production fail-closed, reviewed dev exceptions expire)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Enforce repository asset policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Setup Node",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Checkout",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 40287458234,
+      "name": "ASL Video Pilot (non-release)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/adamjamiesimson/SignRelay/actions/runs/40287458234",
+      "jobs": [
+        {
+          "id": 121454391356,
+          "name": "real-video-pilot",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install unchanged dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install generated-video control dependency",
+              "conclusion": "success"
+            },
+            {
+              "name": "Fetch only six licensed, SHA-256-frozen video clips",
+              "conclusion": "success"
+            },
+            {
+              "name": "Fetch frozen additional development recordings (never sealed holdout)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Restore the verified RSL model from the CI cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Acquire and verify the RSL model (external download)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Save the verified RSL model to the CI cache",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Build candidate local static export",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build ephemeral diagnostic (not a deployed route)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify decoded-frame stepping and preserve evidence after a forced failure",
+              "conclusion": "success"
+            },
+            {
+              "name": "Compile frozen pre-PR28 worker for paired comparison",
+              "conclusion": "success"
+            },
+            {
+              "name": "Replay base worker on actual video frames",
+              "conclusion": "success"
+            },
+            {
+              "name": "Replay candidate worker on identical videos",
+              "conclusion": "success"
+            },
+            {
+              "name": "Compare exact same clips and reject incomplete sessions",
+              "conclusion": "success"
+            },
+            {
+              "name": "Replay additional development positives with both workers",
+              "conclusion": "success"
+            },
+            {
+              "name": "Gate against the exact established baseline (all 11 trials)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Store derived metrics only — never participant video",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 40287458382,
+      "name": "Firebase Static Build Check",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/adamjamiesimson/SignRelay/actions/runs/40287458382",
+      "jobs": [
+        {
+          "id": 121454392066,
+          "name": "build",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Checkout",
+              "conclusion": "success"
+            },
+            {
+              "name": "Setup Node",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Recover the reviewed Spanish training artifact when weights are absent",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Verify recovered Spanish weights",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Set up reproducible Bangla model conversion when weights are absent",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Recover and verify the pinned Bangla model",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Restore the verified RSL model from the CI cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Acquire and verify the RSL model (external download)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Save the verified RSL model to the CI cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build Firebase static export",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify export",
+              "conclusion": "success"
+            },
+            {
+              "name": "Test recognition and model contracts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Lint application source",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify workspace switching, storage failures and delayed camera grants",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify cancelled model runs and cached session reuse in Chrome",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify Russian camera and model worker in headless Chrome",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify Bangla camera flow in headless Chrome",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify Spanish camera and model worker in headless Chrome",
+              "conclusion": "success"
+            },
+            {
+              "name": "Start ASL vision with CDNs blocked (self-hosted MediaPipe runtime)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Automated WCAG 2.x A/AA checks (axe-core, not added to the lockfile)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Secret scan, rendered export and fail-closed dependency gate",
+              "conclusion": "success"
+            },
+            {
+              "name": "Preserve browser evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload static export",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Setup Node",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Checkout",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 121456250665,
+          "name": "Strict dependency audit (release gate)",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/download-artifact@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "npm audit --audit-level=moderate, secret scan and exported pages",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 40287458125,
+      "name": "Private ASL Capture Browser Smoke",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/adamjamiesimson/SignRelay/actions/runs/40287458125",
+      "jobs": [
+        {
+          "id": 121454390719,
+          "name": "synthetic-capture",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install exact lockfile dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate capture slot contracts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Restore the verified RSL model from the CI cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Acquire and verify the RSL model (external download)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Save the verified RSL model to the CI cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build development export that includes the private capture route",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate no-upload, download, metadata and interruption controls",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 40287458153,
+      "name": "Analytics Consent Check",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/adamjamiesimson/SignRelay/actions/runs/40287458153",
+      "jobs": [
+        {
+          "id": 121454391233,
+          "name": "Consent before analytics, rejection and withdrawal",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build workers",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build an export with a placeholder measurement ID (not deployable)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Consent smoke in headless Chrome",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 40287458158,
+      "name": "Offline ASL Demo and Rehearsal",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/adamjamiesimson/SignRelay/actions/runs/40287458158",
+      "jobs": [
+        {
+          "id": 121454391121,
+          "name": "Offline demo, rehearsal and fault-injection smokes",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install exact lockfile dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Locate Chrome",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build rehearsal profile",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rehearsal - six signs, abstention, interruption, offline, speech, privacy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rehearsal - transcript, live regions, keyboard, touch targets, reduced motion",
+              "conclusion": "success"
+            },
+            {
+              "name": "User-facing outcomes under storage and speech faults",
+              "conclusion": "success"
+            },
+            {
+              "name": "Personal vocabulary at 30, 150 and 300 saved examples",
+              "conclusion": "success"
+            },
+            {
+              "name": "First-visit tour, navigation, cookie choices and hero animation (axe-core from the lockfile)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rehearsal - rendered export and runtime manifest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build ASL demo profile",
+              "conclusion": "success"
+            },
+            {
+              "name": "Demo - strict offline check (deny-all proxy)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Demo - the strict check's leak detector catches a planted request",
+              "conclusion": "success"
+            },
+            {
+              "name": "Demo - self-hosted vision with CDNs blocked",
+              "conclusion": "success"
+            },
+            {
+              "name": "Demo - camera and worker lifecycle stress",
+              "conclusion": "success"
+            },
+            {
+              "name": "Demo - missing and corrupt assets, storage failures, worker faults",
+              "conclusion": "success"
+            },
+            {
+              "name": "Demo - rendered export and runtime manifest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Preserve browser evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "unit_suites": [
+    {
+      "job": 121454391690,
+      "files": 92,
+      "passed": 946,
+      "failed": 0,
+      "skipped": 2,
+      "duration_s": 40.56
+    },
+    {
+      "job": 121454392066,
+      "files": 92,
+      "passed": 946,
+      "failed": 0,
+      "skipped": 2,
+      "duration_s": 54.24
+    }
+  ],
+  "secret_scan": {
+    "commits": 672,
+    "historical_text_blobs": 1888,
+    "findings": 0,
+    "scope": "All fetched Git refs and working tree; existing text-size/type policy unchanged."
+  },
+  "pilot": {
+    "artifact_id": 12634773576,
+    "artifact_sha256": "6c9496adb10f9915ed338e8b6010d091876354738211e586e76fc8917f9e7d56",
+    "worker_sha256": "4d1b5d73cace0cec3ae97f05d6bf10d6704fd8b3ad9aed5371824f82a103ca43",
+    "signed_trials": 11,
+    "correct": 5,
+    "wrong_accepted": 0,
+    "abstained": 6,
+    "errors": 0,
+    "baseline_gate_changes": 0,
+    "sealed_holdout_used": false
+  }
+}

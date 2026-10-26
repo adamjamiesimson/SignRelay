@@ -54,6 +54,24 @@
         "errors": 0
       },
       "baseline_gate": "scripts/baseline-gate.mjs ok (0 changes on all 11 established trials) in CI run 39761389921 on Sprint 4 commit 80a4395"
+    },
+    {
+      "worker_sha256": "4d1b5d73cace0cec3ae97f05d6bf10d6704fd8b3ad9aed5371824f82a103ca43",
+      "source_commit": "b0cb1d193cbc24d9ce76cc72029b1436a930933a",
+      "evidence": [
+        "docs/refinement/integration-2026-10-26/ci-pilot/candidate.jsonl",
+        "docs/refinement/integration-2026-10-26/ci-pilot/development-candidate.jsonl",
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/40287458234"
+      ],
+      "evidence_kind": "Unmodified per-trial CI artifact, downloaded and SHA-256 verified; same frozen development clips, not new or independently reviewed evidence.",
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "baseline_gate": "ok, zero changes or exceptions across all 11 established trials; see docs/refinement/integration-2026-10-26/ci-pilot/baseline-gate.json"
     }
   ]
 }

@@ -1,0 +1,285 @@
+{
+  "metadata": {
+    "baseline": "e63fffe64e6cc7136cf5191bd3beb07058c24200",
+    "date": "2026-10-26T06:43:49.562Z",
+    "cpu": "Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz",
+    "platform": "win32",
+    "arch": "x64",
+    "browser": {
+      "protocolVersion": "1.3",
+      "product": "Chrome/155.0.8059.86",
+      "revision": "@804d6b05f089b27af8342622a36558c49401a1d4",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+      "jsVersion": "15.5.35.25"
+    }
+  },
+  "results": [
+    {
+      "mode": "baseline",
+      "source": "self-hosted",
+      "delegate": "CPU",
+      "tracker": "main",
+      "seconds": 6.887399999976158,
+      "stages": {
+        "capture": {
+          "count": 0
+        },
+        "hands": {
+          "count": 20,
+          "p50": 123.09999996423721,
+          "p95": 228.9000000357628
+        },
+        "auxiliary": {
+          "count": 20,
+          "p50": 58.90000003576279,
+          "p95": 146.60000002384186
+        },
+        "transport": {
+          "count": 0
+        },
+        "overlay": {
+          "count": 20,
+          "p50": 0,
+          "p95": 0.10000002384185791
+        },
+        "age": {
+          "count": 20,
+          "p50": 187,
+          "p95": 368.2999999523163
+        },
+        "full": {
+          "count": 20,
+          "p50": 187,
+          "p95": 368.2999999523163
+        },
+        "rafGap": {
+          "count": 92,
+          "p50": 20.899999999999636,
+          "p95": 208.5
+        },
+        "classification": {
+          "count": 20,
+          "p50": 0.10000002384185791,
+          "p95": 0.2999999523162842
+        },
+        "communication": {
+          "count": 20,
+          "p50": 0.8999999761581421,
+          "p95": 1.800000011920929
+        }
+      },
+      "note": "Real inference on a generated no-hand canvas, not webcam/sign accuracy or sensor-to-photon latency."
+    },
+    {
+      "mode": "worker-cpu",
+      "source": "self-hosted",
+      "delegate": "CPU",
+      "tracker": "worker",
+      "lastError": null,
+      "seconds": 10.857599999964238,
+      "stages": {
+        "capture": {
+          "count": 20,
+          "p50": 0.19999998807907104,
+          "p95": 2.200000047683716
+        },
+        "hands": {
+          "count": 20,
+          "p50": 303.19999998807907,
+          "p95": 514.0999999642372
+        },
+        "auxiliary": {
+          "count": 20,
+          "p50": 153.70000004768372,
+          "p95": 300.10000002384186
+        },
+        "transport": {
+          "count": 20,
+          "p50": 0.800000011920929,
+          "p95": 3.599999964237213
+        },
+        "overlay": {
+          "count": 20,
+          "p50": 0,
+          "p95": 0.10000002384185791
+        },
+        "age": {
+          "count": 20,
+          "p50": 305.39999997615814,
+          "p95": 531.9000000357628
+        },
+        "full": {
+          "count": 20,
+          "p50": 413.9000000357628,
+          "p95": 793.1999999880791
+        },
+        "rafGap": {
+          "count": 525,
+          "p50": 16.700000000000728,
+          "p95": 21
+        },
+        "classification": {
+          "count": 20,
+          "p50": 0.30000001192092896,
+          "p95": 5.100000023841858
+        },
+        "communication": {
+          "count": 20,
+          "p50": 0.699999988079071,
+          "p95": 19.799999952316284
+        }
+      },
+      "note": "Real inference on a generated no-hand canvas, not webcam/sign accuracy or sensor-to-photon latency."
+    },
+    {
+      "mode": "candidate",
+      "source": "self-hosted",
+      "delegate": "CPU",
+      "tracker": "worker",
+      "lastError": "Error: Tracking warmup timed out",
+      "seconds": 6.557199999988079,
+      "stages": {
+        "capture": {
+          "count": 20,
+          "p50": 0.19999998807907104,
+          "p95": 0.40000003576278687
+        },
+        "hands": {
+          "count": 20,
+          "p50": 155.19999998807907,
+          "p95": 277.69999998807907
+        },
+        "auxiliary": {
+          "count": 20,
+          "p50": 86.20000004768372,
+          "p95": 172.39999997615814
+        },
+        "transport": {
+          "count": 20,
+          "p50": 0.6000000238418579,
+          "p95": 1.4000000357627869
+        },
+        "overlay": {
+          "count": 20,
+          "p50": 0,
+          "p95": 0.19999998807907104
+        },
+        "age": {
+          "count": 20,
+          "p50": 155.69999998807907,
+          "p95": 278.60000002384186
+        },
+        "full": {
+          "count": 20,
+          "p50": 221.69999998807907,
+          "p95": 376.4000000357628
+        },
+        "rafGap": {
+          "count": 253,
+          "p50": 20.89999999999418,
+          "p95": 21.19999999999709
+        },
+        "classification": {
+          "count": 20,
+          "p50": 0.19999998807907104,
+          "p95": 0.3999999761581421
+        },
+        "communication": {
+          "count": 20,
+          "p50": 0,
+          "p95": 1
+        }
+      },
+      "note": "Real inference on a generated no-hand canvas, not webcam/sign accuracy or sensor-to-photon latency."
+    }
+  ],
+  "phases": {
+    "stages": {
+      "asl2000": {
+        "count": 5,
+        "p50": 2116.100000023842,
+        "p95": 2880
+      },
+      "personal6": {
+        "count": 5,
+        "p50": 28.899999976158142,
+        "p95": 39.30000001192093
+      },
+      "psl775": {
+        "count": 5,
+        "p50": 786.5,
+        "p95": 1227.800000011921
+      }
+    },
+    "note": "Five warm phase samples in an isolated browser page; includes cooperative yielding, excludes download. Kinematic fixtures and real model/reference assets, not sign-accuracy evidence or production worker end-to-end timing."
+  },
+  "cpuProfile": {
+    "elapsedMs": 11857.599999964237,
+    "runs": 5,
+    "sampleCount": 7380,
+    "topSelfSamples": [
+      {
+        "function": "applyGraphLayer",
+        "samples": 6399
+      },
+      {
+        "function": "(idle)",
+        "samples": 791
+      },
+      {
+        "function": "applyGraphLayer",
+        "samples": 66
+      },
+      {
+        "function": "(garbage collector)",
+        "samples": 51
+      },
+      {
+        "function": "(program)",
+        "samples": 32
+      },
+      {
+        "function": "tgcnSteps",
+        "samples": 15
+      },
+      {
+        "function": "setTimeout",
+        "samples": 9
+      },
+      {
+        "function": "softmax",
+        "samples": 4
+      },
+      {
+        "function": "runMaterialisedTgcnCooperatively",
+        "samples": 4
+      },
+      {
+        "function": "applyGraphLayer",
+        "samples": 2
+      },
+      {
+        "function": "(anonymous)",
+        "samples": 1
+      },
+      {
+        "function": "prepareTgcnInput",
+        "samples": 1
+      },
+      {
+        "function": "openPosePoints",
+        "samples": 1
+      },
+      {
+        "function": "point",
+        "samples": 1
+      },
+      {
+        "function": "(anonymous)",
+        "samples": 1
+      }
+    ],
+    "note": "Separate five warm ASL computations, sampling-profiler overhead included; no inference algorithm or thresholds changed."
+  },
+  "errors": []
+}
