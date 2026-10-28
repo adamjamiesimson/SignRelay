@@ -48,6 +48,11 @@ on:
       - 'public/models/asl2000-tgcn/**'
       - '.github/workflows/asl-video-pilot.yml'
   workflow_dispatch:
+    inputs:
+      trace_development:
+        description: 'Also trace the development replay and upload aggregate counters only (no landmarks or video leave the runner)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -185,6 +190,32 @@ jobs:
           node scripts/baseline-gate.mjs \
             evaluation/derived/candidate.jsonl evaluation/derived/development-candidate.jsonl \
             | tee evaluation/derived/baseline-gate.json
+
+      # Opt-in only. Frame traces stay under ignored evaluation/raw on this
+      # runner; only the coordinate-free aggregate report is uploaded.
+      - name: Trace development replay and report aggregate stage counters
+        if: github.event_name == 'workflow_dispatch' && inputs.trace_development
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          npx esbuild scripts/diagnostics/asl-trace-report.ts --bundle --platform=node --format=esm \
+            --outfile=evaluation/raw/asl-trace-report.mjs --log-level=warning
+          for cohort in historical development; do
+            if [ "$cohort" = historical ]; then
+              manifest=docs/evaluation/popsign-project-holdout-manifest.json; extra=--reviewed-pilot
+            else
+              manifest=docs/evaluation/popsign-development-2026-10-16.json; extra=
+            fi
+            node scripts/run-recognition-video-evaluation.mjs "$chrome" "$manifest" \
+              "evaluation/raw/traced-$cohort.jsonl" --fetch-assets-via-node --capture-frames $extra \
+              | tee "evaluation/raw/traced-$cohort.log"
+            traces="$(grep -o 'evaluation/raw/recognition-traces/[0-9a-f-]*' "evaluation/raw/traced-$cohort.log" | head -1)"
+            test -d "$traces"
+            node evaluation/raw/asl-trace-report.mjs "$traces" "evaluation/raw/traced-$cohort.jsonl" \
+              "evaluation/derived/trace-report-$cohort.json" --model-probe
+            cat "evaluation/derived/trace-report-$cohort.json"
+          done
 
       - name: Store derived metrics only — never participant video
         if: always()

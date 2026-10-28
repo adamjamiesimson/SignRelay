@@ -154,13 +154,20 @@ export async function recognizeAsl1000(sequence: VisionFrame[], options: Inferen
   options.onPhase?.("inference");
   const input = prepareTgcnInput(sequence, model.manifest.sequenceLength);
   const logits = await runMaterialisedTgcnCooperatively(model, input, options.signal);
+  const { label, confidence, margin, accepted } = decideAsl2000(logits, model.labels);
+  if (!accepted) return null;
+  return { label, text: title(label), confidence, margin };
+}
+
+/** The production confidence/margin decision, shared with offline diagnostics. */
+export function decideAsl2000(logits: Float32Array, labels: string[]) {
   const probabilities = softmax(logits);
   const [best, runnerUp] = topTwo(probabilities);
   const confidence = probabilities[best];
   const margin = confidence - probabilities[runnerUp];
-  const label = model.labels[best];
-  if (!label || confidence < MODEL_MIN_CONFIDENCE || margin < MODEL_MIN_MARGIN) return null;
-  return { label, text: title(label), confidence, margin };
+  const label = labels[best];
+  const accepted = !(!label || confidence < MODEL_MIN_CONFIDENCE || margin < MODEL_MIN_MARGIN);
+  return { label, confidence, margin, accepted };
 }
 
 export function prepareTgcnInput(sequence: VisionFrame[], sequenceLength = 50) {
@@ -281,38 +288,65 @@ function* tgcnSteps(model: MaterialisedModel, input: Float32Array): Generator<vo
   return logits;
 }
 
+// Bit-identical to the straightforward float32 accumulation: each sum is the
+// previous float32 value plus an exact int8 × float32 product, rounded to
+// float32 after every addition in the original source order. Keeping eight
+// outputs in locals avoids a typed-array load and store per multiply.
 function applyGraphLayer(input: Float32Array, layer: MaterialisedLayer, nodes: number) {
-  const support = new Float32Array(nodes * layer.outputFeatures);
+  const { inputFeatures, outputFeatures, weight, weightScales, attention, attentionScales, normalScale, normalShift } = layer;
+  const fround = Math.fround;
+  const support = new Float32Array(nodes * outputFeatures);
+  const blocked = outputFeatures - outputFeatures % 8;
   for (let node = 0; node < nodes; node += 1) {
-    const inputOffset = node * layer.inputFeatures;
-    const outputOffset = node * layer.outputFeatures;
-    for (let source = 0; source < layer.inputFeatures; source += 1) {
-      const value = input[inputOffset + source];
-      const weightOffset = source * layer.outputFeatures;
-      for (let output = 0; output < layer.outputFeatures; output += 1) {
-        support[outputOffset + output] += value * layer.weight[weightOffset + output];
+    const inputOffset = node * inputFeatures;
+    const outputOffset = node * outputFeatures;
+    for (let output = 0; output < blocked; output += 8) {
+      let s0 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0, s5 = 0, s6 = 0, s7 = 0;
+      for (let source = 0, w = output; source < inputFeatures; source += 1, w += outputFeatures) {
+        const value = input[inputOffset + source];
+        s0 = fround(s0 + value * weight[w]);
+        s1 = fround(s1 + value * weight[w + 1]);
+        s2 = fround(s2 + value * weight[w + 2]);
+        s3 = fround(s3 + value * weight[w + 3]);
+        s4 = fround(s4 + value * weight[w + 4]);
+        s5 = fround(s5 + value * weight[w + 5]);
+        s6 = fround(s6 + value * weight[w + 6]);
+        s7 = fround(s7 + value * weight[w + 7]);
       }
+      const o = outputOffset + output;
+      support[o] = s0 * weightScales[output];
+      support[o + 1] = s1 * weightScales[output + 1];
+      support[o + 2] = s2 * weightScales[output + 2];
+      support[o + 3] = s3 * weightScales[output + 3];
+      support[o + 4] = s4 * weightScales[output + 4];
+      support[o + 5] = s5 * weightScales[output + 5];
+      support[o + 6] = s6 * weightScales[output + 6];
+      support[o + 7] = s7 * weightScales[output + 7];
     }
-    for (let output = 0; output < layer.outputFeatures; output += 1) {
-      support[outputOffset + output] *= layer.weightScales[output];
+    for (let output = blocked; output < outputFeatures; output += 1) {
+      let sum = 0;
+      for (let source = 0; source < inputFeatures; source += 1) {
+        sum = fround(sum + input[inputOffset + source] * weight[source * outputFeatures + output]);
+      }
+      support[outputOffset + output] = sum * weightScales[output];
     }
   }
 
-  const result = new Float32Array(nodes * layer.outputFeatures);
+  const result = new Float32Array(nodes * outputFeatures);
   for (let node = 0; node < nodes; node += 1) {
-    const outputOffset = node * layer.outputFeatures;
+    const outputOffset = node * outputFeatures;
     for (let sourceNode = 0; sourceNode < nodes; sourceNode += 1) {
-      const attention = layer.attention[node * nodes + sourceNode];
-      if (attention === 0) continue;
-      const supportOffset = sourceNode * layer.outputFeatures;
-      for (let output = 0; output < layer.outputFeatures; output += 1) {
-        result[outputOffset + output] += attention * support[supportOffset + output];
+      const weightValue = attention[node * nodes + sourceNode];
+      if (weightValue === 0) continue;
+      const supportOffset = sourceNode * outputFeatures;
+      for (let output = 0; output < outputFeatures; output += 1) {
+        result[outputOffset + output] += weightValue * support[supportOffset + output];
       }
     }
-    const attentionScale = layer.attentionScales[node];
-    for (let output = 0; output < layer.outputFeatures; output += 1) {
+    const attentionScale = attentionScales[node];
+    for (let output = 0; output < outputFeatures; output += 1) {
       const offset = outputOffset + output;
-      result[offset] = Math.tanh(result[offset] * attentionScale * layer.normalScale[offset] + layer.normalShift[offset]);
+      result[offset] = Math.tanh(result[offset] * attentionScale * normalScale[offset] + normalShift[offset]);
     }
   }
   return result;

@@ -49,6 +49,34 @@ describe("aggregate ASL development trace diagnostics", () => {
       interruptions_between_hand_episodes: 1, longest_interior_missing_hand_frames: 2 });
     expect(result.abstention_triage?.observed_signals).toContain("hand_visibility_interrupted");
   });
+  it("replays the worker motion gate and asks the model only about sequences the gate releases", () => {
+    const frames = makeSign("THANK YOU");
+    const { row } = fixture();
+    Object.assign(row, { frames: frames.length, analyses: frames.length, expected_gloss: "THANK YOU" });
+    const trace = { trial_id: row.trial_id, recording_sha256: row.recording_sha256,
+      row: { recording_sha256: row.recording_sha256, frames: frames.length, analyses: frames.length },
+      events: frames.flatMap(frame => [{ type: "frame" as const, frame },
+        { type: "worker" as const, message: { type: "analysis", state: "uncertain", candidate: null, confidence: 0,
+          bufferSize: 1, motionReason: "idle", feedback: "" } satisfies WorkerAnalysis }]) };
+    const asked: number[] = [];
+    const result = summarizeAslTrace(trace, row, sequence => {
+      asked.push(sequence.length);
+      return { label: "THANK YOU", confidence: 0.5, margin: 0.1, accepted: false };
+    });
+
+    // Every gate-released prefix, then the longest tracked episode once.
+    const gated = asked.length - 1;
+    expect(gated).toBeGreaterThan(0);
+    expect(asked.at(-1)).toBe(frames.length);
+    expect(result.model_gate_probe).toMatchObject({ ready_prefixes: gated, gated_decisions: gated,
+      gated_accepted_labels: {}, gated_top_labels: { "THANK YOU": gated }, gated_expected_top: gated,
+      ungated_longest_episode: { frames: frames.length, passes_gate: false, expected_top: true } });
+    // The constructed worker messages disagree with the replayed gate; the
+    // report must say so rather than present the replay as the worker.
+    expect(result.worker_motion_runs).toBe(`idle:${frames.length}`);
+    expect(result.replayed_motion_reasons_match_worker).toBe(false);
+    expect(JSON.stringify(result)).not.toMatch(/"(?:landmarks|face|pose|hands|x|y|z|events)":/);
+  });
   it("does not simulate an unconsumed history after a real confirmation", () => {
     const { trace, row } = fixture(); row.accepted_glosses = ["HELLO"];
     expect(summarizeAslTrace(trace, row).abstention_prefix_probe).toBeNull();
