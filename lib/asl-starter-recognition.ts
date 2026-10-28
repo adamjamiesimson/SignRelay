@@ -5,7 +5,7 @@ export type StarterPrediction = { label: string; text: string; confidence: numbe
 
 export function validHand(hand: HandObservation | undefined): hand is HandObservation {
   return !!hand && hand.landmarks.length === 21
-    && hand.landmarks.every(point => [point.x, point.y, point.z].every(Number.isFinite));
+    && hand.landmarks.every(point => Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z));
 }
 
 export const distance2 = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -40,12 +40,36 @@ function extended(hand: HandObservation, tip: number) {
     && distance2(p[tip], p[0]) > distance2(p[tip - 2], p[0]) * 1.08;
 }
 
-function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"]): Sample[] {
+/** Window-independent measurements of one observed hand. One analysis looks
+ * at the same frames through up to twelve windows; compute them once. */
+type HandFeatures = { reference: ReturnType<typeof bodyReference>; palm: number; open: number;
+  indexOpen: boolean; middleOpen: boolean; center: { x: number; y: number } };
+// Keyed by frame and hand: one hand object can be shared by frames that carry
+// different pose estimates, and the body reference depends on both.
+type FeatureCache = Map<VisionFrame, Map<HandObservation, HandFeatures>>;
+
+function handFeatures(frame: VisionFrame, hand: HandObservation, cache: FeatureCache): HandFeatures {
+  let byHand = cache.get(frame);
+  if (!byHand) cache.set(frame, byHand = new Map());
+  let features = byHand.get(hand);
+  if (!features) {
+    const indexOpen = extended(hand, 8), middleOpen = extended(hand, 12);
+    features = { reference: bodyReference(frame, hand), palm: handScale(hand), indexOpen, middleOpen,
+      open: Number(indexOpen) + Number(middleOpen) + Number(extended(hand, 16)) + Number(extended(hand, 20)),
+      center: [0, 5, 9, 13, 17].reduce((p, i) => ({
+        x: p.x + hand.landmarks[i].x / 5, y: p.y + hand.landmarks[i].y / 5,
+      }), { x: 0, y: 0 }) };
+    byHand.set(hand, features);
+  }
+  return features;
+}
+
+function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"], cache: FeatureCache = new Map()): Sample[] {
   const samples: Sample[] = [];
   const bodySamples = frames.flatMap(frame => {
     const hand = frame.hands.find(hand => hand.handedness === side && validHand(hand));
     if (!hand) return [];
-    const reference = bodyReference(frame, hand);
+    const { reference } = handFeatures(frame, hand, cache);
     return reference.tracked ? [{ time: frame.timestamp, reference }] : [];
   });
   const scales = bodySamples.map(sample => sample.reference.scale).sort((a, b) => a - b);
@@ -57,8 +81,10 @@ function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"]):
   for (const frame of frames) {
     const hand = frame.hands.find(hand => hand.handedness === side && validHand(hand));
     if (!hand) continue;
-    const currentReference = bodyReference(frame, hand);
-    const nearest = bodySamples.reduce<typeof bodySamples[number] | undefined>((best, sample) =>
+    const features = handFeatures(frame, hand, cache);
+    const currentReference = features.reference;
+    // The nearest tracked body is only needed when this frame lost the pose.
+    const nearest = currentReference.tracked ? undefined : bodySamples.reduce<typeof bodySamples[number] | undefined>((best, sample) =>
       !best || Math.abs(sample.time - frame.timestamp) < Math.abs(best.time - frame.timestamp) ? sample : best, undefined);
     const reference = currentReference.tracked ? currentReference : nearest?.reference ?? currentReference;
     const point = (p: Point): Point => ({ x: (p.x - reference.anchor.x) / reference.scale,
@@ -67,15 +93,12 @@ function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"]):
     const mouth = frame.face[3] ?? frame.pose[9] ?? nose;
     const faceNose = frame.face[1] ?? frame.pose[0];
     const mouthRadius = faceNose && mouth ? Math.min(distance2(faceNose, mouth) / reference.scale, 0.4) : undefined;
-    const center = [0, 5, 9, 13, 17].reduce((p, i) => ({
-      x: p.x + hand.landmarks[i].x / 5, y: p.y + hand.landmarks[i].y / 5,
-    }), { x: 0, y: 0 });
+    const { center, palm, open, indexOpen, middleOpen } = features;
     samples.push({ hand, circlePath: { x: center.x / pathScale, y: center.y / pathScale, z: 0 },
-      mouthRadius, time: frame.timestamp, scale: reference.scale, palm: handScale(hand),
+      mouthRadius, time: frame.timestamp, scale: reference.scale, palm,
       wrist: point(hand.landmarks[0]), tip: point(hand.landmarks[8]),
       nose: nose && point(nose), mouth: mouth && point(mouth),
-      open: [8, 12, 16, 20].filter(tip => extended(hand, tip)).length,
-      indexOpen: extended(hand, 8), middleOpen: extended(hand, 12),
+      open, indexOpen, middleOpen,
     });
   }
   // A brief dropped frame is tolerable; absent current hands and long gaps are not evidence.
@@ -103,11 +126,12 @@ export function analyzeAslStarter(sequence: VisionFrame[]) {
   let preferred: StarterPrediction | null = null;
   const labels = new Set<string>();
   const incompleteLabels = new Set<string>();
+  const features: FeatureCache = new Map();
   for (const duration of [650, 1100, 1700, 2600]) {
     for (const side of ["Right", "Left", "Unknown"] as const) {
       const recent = recentContinuousFrames(sequence, duration,
         frame => frame.hands.some(hand => hand.handedness === side && validHand(hand)));
-      const samples = samplesFor(recent, side);
+      const samples = samplesFor(recent, side, features);
       if (!samples.length) continue;
       const result = recognizeSamples(samples);
       // A completion veto removes permission to emit a word, not evidence of
