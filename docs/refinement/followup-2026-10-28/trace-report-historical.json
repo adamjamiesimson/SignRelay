@@ -1,0 +1,534 @@
+{
+  "diagnostic_only": true,
+  "trials": [
+    {
+      "trial_id": "hello-gtsignstudy4a.8031",
+      "recording_sha256": "c72b902e61fb6b97b5407fca80ed4d560bd9f5cd0f0dd79ab88712b3eb51e011",
+      "worker_sha256": "b454deb00b6e6aa4cba099e23bf96ed0a7ffd73058a2c725a6a16c610e3fa523",
+      "source_commit": "ca7d8b671a006d02357169479d39fc24c14627aa",
+      "expected_gloss": "HELLO",
+      "accepted_glosses": [],
+      "frames": 37,
+      "worker_analyses": 37,
+      "valid_hand_frames": 11,
+      "longest_consecutive_hand_frames": 11,
+      "first_hand_ms": 770,
+      "last_hand_ms": 1272,
+      "maximum_continuous_hand_span_ms": 502,
+      "starter_tracking_eligible_endpoints": 7,
+      "worker_motion_reasons": {
+        "hands": 26,
+        "idle": 5,
+        "moving": 6
+      },
+      "worker_motion_runs": "hands:16 idle:5 moving:6 hands:10",
+      "replayed_motion_reasons_match_worker": true,
+      "model_gate_probe": {
+        "ready_prefixes": 0,
+        "gated_decisions": 0,
+        "gated_accepted_labels": {},
+        "gated_top_labels": {},
+        "gated_expected_top": 0,
+        "ungated_longest_episode": {
+          "frames": 11,
+          "top_label": "DAWN",
+          "confidence": 0.335,
+          "margin": 0.152,
+          "passes_gate": false,
+          "expected_top": false
+        }
+      },
+      "worker_candidates": {
+        "HELLO": 1
+      },
+      "worker_candidate_sources": {
+        "starter": 1
+      },
+      "worker_ambiguity_analyses": 0,
+      "hand_continuity": {
+        "hand_tracking_episodes": 1,
+        "hand_visible_frames": 11,
+        "hand_visible_fraction": 0.2972972972972973,
+        "longest_hand_episode_frames": 11,
+        "longest_hand_episode_ms": 502,
+        "interruptions_between_hand_episodes": 0,
+        "longest_interior_missing_hand_frames": 0,
+        "leading_missing_hand_frames": 16,
+        "trailing_missing_hand_frames": 10,
+        "first_valid_hand_delay_ms": 770,
+        "last_valid_hand_to_end_ms": 502
+      },
+      "tracker_behavior": {
+        "source_frame_interval_ms": {
+          "median": 33,
+          "max": 67
+        },
+        "frames_with_one_hand": 11,
+        "frames_with_two_hands": 0,
+        "hand_reacquisitions": 0,
+        "reacquisition_delay_ms": null,
+        "interior_missing_runs_by_frames": {
+          "1": 0,
+          "2-3": 0,
+          "4-7": 0,
+          "8+": 0
+        },
+        "tracked_temporal_coverage": 0.283,
+        "single_hand_label_flickers": 0,
+        "single_hand_label_sustained_switches": 0,
+        "note": "Tracker observations only. A missing interval may be a rest, occlusion, framing or a tracker failure; a label switch may be a real hand change. Neither identifies stroke boundaries."
+      },
+      "candidate_continuity": {
+        "expected_candidate_analyses": 1,
+        "competing_candidate_analyses": 0,
+        "longest_consecutive_expected_candidate_analyses": 1
+      },
+      "abstention_prefix_probe": {
+        "labels": {
+          "HELLO": 1
+        },
+        "incomplete_labels": {},
+        "ambiguous_prefixes": 0
+      },
+      "note": "Aggregate development diagnostics. Missing-hand runs may include normal rests/occlusion and do not establish which part of a sign was lost. Starter prefix probes are not model inference. The model gate probe reruns the shipped ASL-2000 graph offline on development frames; it is not a new accuracy result and its ungated episode is not a production path.",
+      "abstention_triage": {
+        "primary_observation": "unconfirmed_proposal",
+        "observed_signals": [
+          "expected_word_proposed_not_confirmed",
+          "no_worker_motion_ready_analysis"
+        ],
+        "expected_proposal_analyses": 1,
+        "other_proposal_analyses": 0,
+        "incomplete_expected_geometry_probes": 0,
+        "next_review_check": "Check actual proposal spacing, motion boundaries and the existing confirmation sequence; do not bypass two-evidence confirmation.",
+        "uncertainty": "These are observations on publisher-labelled isolated-sign development footage, not proof of an incomplete human sign, tracking failure cause, or model accuracy. Stroke boundaries and variants require independent fluent review."
+      }
+    },
+    {
+      "trial_id": "hello-gtsignstudy4a.8033",
+      "recording_sha256": "b929cd2858bf5fa6ea3aa464aa958620eb5a537d7b4b3e8e105cc94995584a85",
+      "worker_sha256": "b454deb00b6e6aa4cba099e23bf96ed0a7ffd73058a2c725a6a16c610e3fa523",
+      "source_commit": "ca7d8b671a006d02357169479d39fc24c14627aa",
+      "expected_gloss": "HELLO",
+      "accepted_glosses": [
+        "HELLO"
+      ],
+      "frames": 35,
+      "worker_analyses": 35,
+      "valid_hand_frames": 9,
+      "longest_consecutive_hand_frames": 4,
+      "first_hand_ms": 569,
+      "last_hand_ms": 1240,
+      "maximum_continuous_hand_span_ms": 603,
+      "starter_tracking_eligible_endpoints": 4,
+      "worker_motion_reasons": {
+        "hands": 26,
+        "idle": 9
+      },
+      "worker_motion_runs": "hands:12 idle:4 hands:3 idle:2 hands:1 idle:2 hands:1 idle:1 hands:9",
+      "replayed_motion_reasons_match_worker": true,
+      "model_gate_probe": null,
+      "worker_candidates": {
+        "HELLO": 3
+      },
+      "worker_candidate_sources": {
+        "starter": 3
+      },
+      "worker_ambiguity_analyses": 0,
+      "hand_continuity": {
+        "hand_tracking_episodes": 4,
+        "hand_visible_frames": 9,
+        "hand_visible_fraction": 0.2571428571428571,
+        "longest_hand_episode_frames": 4,
+        "longest_hand_episode_ms": 168,
+        "interruptions_between_hand_episodes": 3,
+        "longest_interior_missing_hand_frames": 3,
+        "leading_missing_hand_frames": 12,
+        "trailing_missing_hand_frames": 9,
+        "first_valid_hand_delay_ms": 569,
+        "last_valid_hand_to_end_ms": 436
+      },
+      "tracker_behavior": {
+        "source_frame_interval_ms": {
+          "median": 34,
+          "max": 67
+        },
+        "frames_with_one_hand": 9,
+        "frames_with_two_hands": 0,
+        "hand_reacquisitions": 3,
+        "reacquisition_delay_ms": {
+          "min": 101,
+          "median": 101,
+          "max": 201
+        },
+        "interior_missing_runs_by_frames": {
+          "1": 2,
+          "2-3": 1,
+          "4-7": 0,
+          "8+": 0
+        },
+        "tracked_temporal_coverage": 0.16,
+        "single_hand_label_flickers": 0,
+        "single_hand_label_sustained_switches": 1,
+        "note": "Tracker observations only. A missing interval may be a rest, occlusion, framing or a tracker failure; a label switch may be a real hand change. Neither identifies stroke boundaries."
+      },
+      "candidate_continuity": {
+        "expected_candidate_analyses": 3,
+        "competing_candidate_analyses": 0,
+        "longest_consecutive_expected_candidate_analyses": 2
+      },
+      "abstention_prefix_probe": null,
+      "note": "Aggregate development diagnostics. Missing-hand runs may include normal rests/occlusion and do not establish which part of a sign was lost. Starter prefix probes are not model inference. The model gate probe reruns the shipped ASL-2000 graph offline on development frames; it is not a new accuracy result and its ungated episode is not a production path.",
+      "abstention_triage": null
+    },
+    {
+      "trial_id": "please-gtsignstudy4a.8031",
+      "recording_sha256": "e517287d60d2e8fde92c090b30a9850472fc7a867bce7ba631b3ae7bbe0f8fd5",
+      "worker_sha256": "b454deb00b6e6aa4cba099e23bf96ed0a7ffd73058a2c725a6a16c610e3fa523",
+      "source_commit": "ca7d8b671a006d02357169479d39fc24c14627aa",
+      "expected_gloss": "PLEASE",
+      "accepted_glosses": [
+        "PLEASE"
+      ],
+      "frames": 34,
+      "worker_analyses": 34,
+      "valid_hand_frames": 17,
+      "longest_consecutive_hand_frames": 17,
+      "first_hand_ms": 368,
+      "last_hand_ms": 1170,
+      "maximum_continuous_hand_span_ms": 802,
+      "starter_tracking_eligible_endpoints": 13,
+      "worker_motion_reasons": {
+        "hands": 17,
+        "idle": 10,
+        "moving": 7
+      },
+      "worker_motion_runs": "hands:8 idle:5 moving:7 idle:5 hands:9",
+      "replayed_motion_reasons_match_worker": false,
+      "model_gate_probe": null,
+      "worker_candidates": {
+        "PLEASE": 2
+      },
+      "worker_candidate_sources": {
+        "starter": 2
+      },
+      "worker_ambiguity_analyses": 0,
+      "hand_continuity": {
+        "hand_tracking_episodes": 1,
+        "hand_visible_frames": 17,
+        "hand_visible_fraction": 0.5,
+        "longest_hand_episode_frames": 17,
+        "longest_hand_episode_ms": 802,
+        "interruptions_between_hand_episodes": 0,
+        "longest_interior_missing_hand_frames": 0,
+        "leading_missing_hand_frames": 8,
+        "trailing_missing_hand_frames": 9,
+        "first_valid_hand_delay_ms": 368,
+        "last_valid_hand_to_end_ms": 468
+      },
+      "tracker_behavior": {
+        "source_frame_interval_ms": {
+          "median": 33,
+          "max": 67
+        },
+        "frames_with_one_hand": 14,
+        "frames_with_two_hands": 3,
+        "hand_reacquisitions": 0,
+        "reacquisition_delay_ms": null,
+        "interior_missing_runs_by_frames": {
+          "1": 0,
+          "2-3": 0,
+          "4-7": 0,
+          "8+": 0
+        },
+        "tracked_temporal_coverage": 0.49,
+        "single_hand_label_flickers": 0,
+        "single_hand_label_sustained_switches": 0,
+        "note": "Tracker observations only. A missing interval may be a rest, occlusion, framing or a tracker failure; a label switch may be a real hand change. Neither identifies stroke boundaries."
+      },
+      "candidate_continuity": {
+        "expected_candidate_analyses": 2,
+        "competing_candidate_analyses": 0,
+        "longest_consecutive_expected_candidate_analyses": 2
+      },
+      "abstention_prefix_probe": null,
+      "note": "Aggregate development diagnostics. Missing-hand runs may include normal rests/occlusion and do not establish which part of a sign was lost. Starter prefix probes are not model inference. The model gate probe reruns the shipped ASL-2000 graph offline on development frames; it is not a new accuracy result and its ungated episode is not a production path.",
+      "abstention_triage": null
+    },
+    {
+      "trial_id": "please-gtsignstudy4a.8033",
+      "recording_sha256": "36925d898229dc86a8b4a229f191ddaaa2ea081cd6083a9d4df690903e9832f6",
+      "worker_sha256": "b454deb00b6e6aa4cba099e23bf96ed0a7ffd73058a2c725a6a16c610e3fa523",
+      "source_commit": "ca7d8b671a006d02357169479d39fc24c14627aa",
+      "expected_gloss": "PLEASE",
+      "accepted_glosses": [
+        "PLEASE"
+      ],
+      "frames": 46,
+      "worker_analyses": 46,
+      "valid_hand_frames": 45,
+      "longest_consecutive_hand_frames": 45,
+      "first_hand_ms": 34,
+      "last_hand_ms": 2246,
+      "maximum_continuous_hand_span_ms": 2212,
+      "starter_tracking_eligible_endpoints": 37,
+      "worker_motion_reasons": {
+        "hands": 1,
+        "idle": 29,
+        "moving": 16
+      },
+      "worker_motion_runs": "hands:1 idle:5 moving:9 idle:3 moving:6 idle:21 moving:1",
+      "replayed_motion_reasons_match_worker": false,
+      "model_gate_probe": null,
+      "worker_candidates": {
+        "PLEASE": 2
+      },
+      "worker_candidate_sources": {
+        "starter": 2
+      },
+      "worker_ambiguity_analyses": 0,
+      "hand_continuity": {
+        "hand_tracking_episodes": 1,
+        "hand_visible_frames": 45,
+        "hand_visible_fraction": 0.9782608695652174,
+        "longest_hand_episode_frames": 45,
+        "longest_hand_episode_ms": 2212,
+        "interruptions_between_hand_episodes": 0,
+        "longest_interior_missing_hand_frames": 0,
+        "leading_missing_hand_frames": 1,
+        "trailing_missing_hand_frames": 0,
+        "first_valid_hand_delay_ms": 34,
+        "last_valid_hand_to_end_ms": 0
+      },
+      "tracker_behavior": {
+        "source_frame_interval_ms": {
+          "median": 34,
+          "max": 67
+        },
+        "frames_with_one_hand": 45,
+        "frames_with_two_hands": 0,
+        "hand_reacquisitions": 0,
+        "reacquisition_delay_ms": null,
+        "interior_missing_runs_by_frames": {
+          "1": 0,
+          "2-3": 0,
+          "4-7": 0,
+          "8+": 0
+        },
+        "tracked_temporal_coverage": 0.985,
+        "single_hand_label_flickers": 1,
+        "single_hand_label_sustained_switches": 2,
+        "note": "Tracker observations only. A missing interval may be a rest, occlusion, framing or a tracker failure; a label switch may be a real hand change. Neither identifies stroke boundaries."
+      },
+      "candidate_continuity": {
+        "expected_candidate_analyses": 2,
+        "competing_candidate_analyses": 0,
+        "longest_consecutive_expected_candidate_analyses": 2
+      },
+      "abstention_prefix_probe": null,
+      "note": "Aggregate development diagnostics. Missing-hand runs may include normal rests/occlusion and do not establish which part of a sign was lost. Starter prefix probes are not model inference. The model gate probe reruns the shipped ASL-2000 graph offline on development frames; it is not a new accuracy result and its ungated episode is not a production path.",
+      "abstention_triage": null
+    },
+    {
+      "trial_id": "thankyou-gtsignstudy4a.8033",
+      "recording_sha256": "64c641c6538fb247d66d15e416d577e854596978c1766222c94ce7fd0333fbd5",
+      "worker_sha256": "b454deb00b6e6aa4cba099e23bf96ed0a7ffd73058a2c725a6a16c610e3fa523",
+      "source_commit": "ca7d8b671a006d02357169479d39fc24c14627aa",
+      "expected_gloss": "THANK YOU",
+      "accepted_glosses": [],
+      "frames": 37,
+      "worker_analyses": 37,
+      "valid_hand_frames": 15,
+      "longest_consecutive_hand_frames": 15,
+      "first_hand_ms": 536,
+      "last_hand_ms": 1240,
+      "maximum_continuous_hand_span_ms": 704,
+      "starter_tracking_eligible_endpoints": 11,
+      "worker_motion_reasons": {
+        "hands": 22,
+        "idle": 5,
+        "moving": 10
+      },
+      "worker_motion_runs": "hands:11 idle:5 moving:10 hands:11",
+      "replayed_motion_reasons_match_worker": true,
+      "model_gate_probe": {
+        "ready_prefixes": 0,
+        "gated_decisions": 0,
+        "gated_accepted_labels": {},
+        "gated_top_labels": {},
+        "gated_expected_top": 0,
+        "ungated_longest_episode": {
+          "frames": 15,
+          "top_label": "EVERYDAY",
+          "confidence": 0.626,
+          "margin": 0.468,
+          "passes_gate": true,
+          "expected_top": false
+        }
+      },
+      "worker_candidates": {
+        "PLEASE": 1,
+        "THANK YOU": 1
+      },
+      "worker_candidate_sources": {
+        "starter": 2
+      },
+      "worker_ambiguity_analyses": 4,
+      "hand_continuity": {
+        "hand_tracking_episodes": 1,
+        "hand_visible_frames": 15,
+        "hand_visible_fraction": 0.40540540540540543,
+        "longest_hand_episode_frames": 15,
+        "longest_hand_episode_ms": 704,
+        "interruptions_between_hand_episodes": 0,
+        "longest_interior_missing_hand_frames": 0,
+        "leading_missing_hand_frames": 11,
+        "trailing_missing_hand_frames": 11,
+        "first_valid_hand_delay_ms": 536,
+        "last_valid_hand_to_end_ms": 536
+      },
+      "tracker_behavior": {
+        "source_frame_interval_ms": {
+          "median": 34,
+          "max": 67
+        },
+        "frames_with_one_hand": 15,
+        "frames_with_two_hands": 0,
+        "hand_reacquisitions": 0,
+        "reacquisition_delay_ms": null,
+        "interior_missing_runs_by_frames": {
+          "1": 0,
+          "2-3": 0,
+          "4-7": 0,
+          "8+": 0
+        },
+        "tracked_temporal_coverage": 0.396,
+        "single_hand_label_flickers": 0,
+        "single_hand_label_sustained_switches": 0,
+        "note": "Tracker observations only. A missing interval may be a rest, occlusion, framing or a tracker failure; a label switch may be a real hand change. Neither identifies stroke boundaries."
+      },
+      "candidate_continuity": {
+        "expected_candidate_analyses": 1,
+        "competing_candidate_analyses": 1,
+        "longest_consecutive_expected_candidate_analyses": 1
+      },
+      "abstention_prefix_probe": {
+        "labels": {
+          "PLEASE": 1,
+          "THANK YOU": 1
+        },
+        "incomplete_labels": {
+          "PLEASE": 5,
+          "THANK YOU": 5
+        },
+        "ambiguous_prefixes": 4
+      },
+      "note": "Aggregate development diagnostics. Missing-hand runs may include normal rests/occlusion and do not establish which part of a sign was lost. Starter prefix probes are not model inference. The model gate probe reruns the shipped ASL-2000 graph offline on development frames; it is not a new accuracy result and its ungated episode is not a production path.",
+      "abstention_triage": {
+        "primary_observation": "competing_proposals",
+        "observed_signals": [
+          "expected_word_proposed_not_confirmed",
+          "other_word_candidate_observed",
+          "incomplete_starter_geometry_probe_observed",
+          "worker_ambiguity_feedback_observed",
+          "no_worker_motion_ready_analysis"
+        ],
+        "expected_proposal_analyses": 1,
+        "other_proposal_analyses": 1,
+        "incomplete_expected_geometry_probes": 5,
+        "next_review_check": "Have a fluent reviewer check the sign variant and overlapping gesture geometry before modifying ambiguity rules.",
+        "uncertainty": "These are observations on publisher-labelled isolated-sign development footage, not proof of an incomplete human sign, tracking failure cause, or model accuracy. Stroke boundaries and variants require independent fluent review."
+      }
+    },
+    {
+      "trial_id": "thankyou-gtsignstudy4a.8031",
+      "recording_sha256": "a2a6e355acd076235ff7901a4fb6977da7ef64aa302db2ed4e0867e548c5b8d1",
+      "worker_sha256": "b454deb00b6e6aa4cba099e23bf96ed0a7ffd73058a2c725a6a16c610e3fa523",
+      "source_commit": "ca7d8b671a006d02357169479d39fc24c14627aa",
+      "expected_gloss": "THANK YOU",
+      "accepted_glosses": [],
+      "frames": 31,
+      "worker_analyses": 31,
+      "valid_hand_frames": 4,
+      "longest_consecutive_hand_frames": 4,
+      "first_hand_ms": 535,
+      "last_hand_ms": 668,
+      "maximum_continuous_hand_span_ms": 134,
+      "starter_tracking_eligible_endpoints": 0,
+      "worker_motion_reasons": {
+        "hands": 27,
+        "idle": 4
+      },
+      "worker_motion_runs": "hands:11 idle:4 hands:16",
+      "replayed_motion_reasons_match_worker": true,
+      "model_gate_probe": {
+        "ready_prefixes": 0,
+        "gated_decisions": 0,
+        "gated_accepted_labels": {},
+        "gated_top_labels": {},
+        "gated_expected_top": 0,
+        "ungated_longest_episode": null
+      },
+      "worker_candidates": {},
+      "worker_candidate_sources": {},
+      "worker_ambiguity_analyses": 0,
+      "hand_continuity": {
+        "hand_tracking_episodes": 1,
+        "hand_visible_frames": 4,
+        "hand_visible_fraction": 0.12903225806451613,
+        "longest_hand_episode_frames": 4,
+        "longest_hand_episode_ms": 134,
+        "interruptions_between_hand_episodes": 0,
+        "longest_interior_missing_hand_frames": 0,
+        "leading_missing_hand_frames": 11,
+        "trailing_missing_hand_frames": 16,
+        "first_valid_hand_delay_ms": 535,
+        "last_valid_hand_to_end_ms": 802
+      },
+      "tracker_behavior": {
+        "source_frame_interval_ms": {
+          "median": 33,
+          "max": 67
+        },
+        "frames_with_one_hand": 4,
+        "frames_with_two_hands": 0,
+        "hand_reacquisitions": 0,
+        "reacquisition_delay_ms": null,
+        "interior_missing_runs_by_frames": {
+          "1": 0,
+          "2-3": 0,
+          "4-7": 0,
+          "8+": 0
+        },
+        "tracked_temporal_coverage": 0.091,
+        "single_hand_label_flickers": 0,
+        "single_hand_label_sustained_switches": 0,
+        "note": "Tracker observations only. A missing interval may be a rest, occlusion, framing or a tracker failure; a label switch may be a real hand change. Neither identifies stroke boundaries."
+      },
+      "candidate_continuity": {
+        "expected_candidate_analyses": 0,
+        "competing_candidate_analyses": 0,
+        "longest_consecutive_expected_candidate_analyses": 0
+      },
+      "abstention_prefix_probe": {
+        "labels": {},
+        "incomplete_labels": {},
+        "ambiguous_prefixes": 0
+      },
+      "note": "Aggregate development diagnostics. Missing-hand runs may include normal rests/occlusion and do not establish which part of a sign was lost. Starter prefix probes are not model inference. The model gate probe reruns the shipped ASL-2000 graph offline on development frames; it is not a new accuracy result and its ungated episode is not a production path.",
+      "abstention_triage": {
+        "primary_observation": "sparse_hand_samples",
+        "observed_signals": [
+          "fewer_than_six_valid_hand_frames",
+          "no_basic_starter_eligible_endpoint",
+          "no_worker_motion_ready_analysis"
+        ],
+        "expected_proposal_analyses": 0,
+        "other_proposal_analyses": 0,
+        "incomplete_expected_geometry_probes": 0,
+        "next_review_check": "Review independently annotated stroke frames and whether tracking survives the handshape; do not lower model sample requirements.",
+        "uncertainty": "These are observations on publisher-labelled isolated-sign development footage, not proof of an incomplete human sign, tracking failure cause, or model accuracy. Stroke boundaries and variants require independent fluent review."
+      }
+    }
+  ]
+}

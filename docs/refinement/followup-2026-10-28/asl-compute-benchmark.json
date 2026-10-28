@@ -1,0 +1,254 @@
+{
+ "tool": "node scripts/diagnostics/benchmark-tracking.mjs --chrome <chromium> --phases-only",
+ "note": "Paired, interleaved runs on one machine with the same Chromium, real committed ASL-2000 weights, PSL references and the existing kinematic SORRY fixture. Each run: one discarded warmup then five warm samples per recognizer, including cooperative yielding and excluding download. Only the ASL-2000 graph code differs between sides; personal6 and psl775 are unchanged controls. The tool labels every run baseline=HEAD; the code field records what each side actually measured. Computation only: not end-to-end decisions, webcam latency or accuracy.",
+ "machine": {
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "platform": "linux",
+  "arch": "x64",
+  "vcpus": 4,
+  "browser": "Chrome/153.0.8010.12"
+ },
+ "output_equivalence": "tests/asl1000-runtime.test.ts pins SHA-256 of raw float32 logits from fc95a6f on seven inputs; passes on both sides.",
+ "runs": [
+  {
+   "pair": 1,
+   "side": "baseline",
+   "code": "lib/asl1000-runtime.ts at fc95a6f",
+   "date": "2026-10-28T08:04:32.037Z",
+   "stages": {
+    "asl2000": {
+     "count": 5,
+     "p50": 505.5999999999767,
+     "p95": 591.2999999999302
+    },
+    "personal6": {
+     "count": 5,
+     "p50": 3.599999999976717,
+     "p95": 4.700000000069849
+    },
+    "psl775": {
+     "count": 5,
+     "p50": 169,
+     "p95": 176.80000000004657
+    }
+   },
+   "errors": []
+  },
+  {
+   "pair": 1,
+   "side": "candidate",
+   "code": "lib/asl1000-runtime.ts at ed90363 (this branch)",
+   "date": "2026-10-28T08:04:51.360Z",
+   "stages": {
+    "asl2000": {
+     "count": 5,
+     "p50": 390.5999999999767,
+     "p95": 413
+    },
+    "personal6": {
+     "count": 5,
+     "p50": 3.699999999953434,
+     "p95": 3.900000000023283
+    },
+    "psl775": {
+     "count": 5,
+     "p50": 168.5,
+     "p95": 187.5
+    }
+   },
+   "errors": []
+  },
+  {
+   "pair": 2,
+   "side": "baseline",
+   "code": "lib/asl1000-runtime.ts at fc95a6f",
+   "date": "2026-10-28T08:04:39.232Z",
+   "stages": {
+    "asl2000": {
+     "count": 5,
+     "p50": 513.6999999999534,
+     "p95": 604.4000000000233
+    },
+    "personal6": {
+     "count": 5,
+     "p50": 3.300000000046566,
+     "p95": 3.699999999953434
+    },
+    "psl775": {
+     "count": 5,
+     "p50": 184.39999999990687,
+     "p95": 188.20000000006985
+    }
+   },
+   "errors": []
+  },
+  {
+   "pair": 2,
+   "side": "candidate",
+   "code": "lib/asl1000-runtime.ts at ed90363 (this branch)",
+   "date": "2026-10-28T08:04:56.932Z",
+   "stages": {
+    "asl2000": {
+     "count": 5,
+     "p50": 370.9000000000233,
+     "p95": 392.69999999995343
+    },
+    "personal6": {
+     "count": 5,
+     "p50": 3.8999999999068677,
+     "p95": 3.900000000023283
+    },
+    "psl775": {
+     "count": 5,
+     "p50": 174.80000000004657,
+     "p95": 207.70000000006985
+    }
+   },
+   "errors": []
+  },
+  {
+   "pair": 3,
+   "side": "baseline",
+   "code": "lib/asl1000-runtime.ts at fc95a6f",
+   "date": "2026-10-28T08:31:59.406Z",
+   "stages": {
+    "asl2000": {
+     "count": 5,
+     "p50": 533.5,
+     "p95": 605.8999999999069
+    },
+    "personal6": {
+     "count": 5,
+     "p50": 3.7000000001862645,
+     "p95": 26.199999999720603
+    },
+    "psl775": {
+     "count": 5,
+     "p50": 179.39999999990687,
+     "p95": 201.5
+    }
+   },
+   "errors": []
+  },
+  {
+   "pair": 3,
+   "side": "candidate",
+   "code": "lib/asl1000-runtime.ts at ed90363 (this branch)",
+   "date": "2026-10-28T08:32:05.662Z",
+   "stages": {
+    "asl2000": {
+     "count": 5,
+     "p50": 398.39999999990687,
+     "p95": 530.2999999998137
+    },
+    "personal6": {
+     "count": 5,
+     "p50": 3.5,
+     "p95": 4.2000000001862645
+    },
+    "psl775": {
+     "count": 5,
+     "p50": 186.3000000002794,
+     "p95": 207.89999999990687
+    }
+   },
+   "errors": []
+  },
+  {
+   "pair": 4,
+   "side": "baseline",
+   "code": "lib/asl1000-runtime.ts at fc95a6f",
+   "date": "2026-10-28T08:32:10.967Z",
+   "stages": {
+    "asl2000": {
+     "count": 5,
+     "p50": 530.4000000003725,
+     "p95": 533.1000000000931
+    },
+    "personal6": {
+     "count": 5,
+     "p50": 3.7000000001862645,
+     "p95": 4.100000000093132
+    },
+    "psl775": {
+     "count": 5,
+     "p50": 188.3000000002794,
+     "p95": 190.20000000018626
+    }
+   },
+   "errors": []
+  },
+  {
+   "pair": 4,
+   "side": "candidate",
+   "code": "lib/asl1000-runtime.ts at ed90363 (this branch)",
+   "date": "2026-10-28T08:32:17.006Z",
+   "stages": {
+    "asl2000": {
+     "count": 5,
+     "p50": 431.6999999997206,
+     "p95": 475.5
+    },
+    "personal6": {
+     "count": 5,
+     "p50": 4,
+     "p95": 4.600000000093132
+    },
+    "psl775": {
+     "count": 5,
+     "p50": 178.70000000018626,
+     "p95": 188.29999999981374
+    }
+   },
+   "errors": []
+  },
+  {
+   "pair": 5,
+   "side": "baseline",
+   "code": "lib/asl1000-runtime.ts at fc95a6f",
+   "date": "2026-10-28T08:32:22.382Z",
+   "stages": {
+    "asl2000": {
+     "count": 5,
+     "p50": 526.3000000002794,
+     "p95": 600.1999999997206
+    },
+    "personal6": {
+     "count": 5,
+     "p50": 3.8000000002793968,
+     "p95": 4.399999999906868
+    },
+    "psl775": {
+     "count": 5,
+     "p50": 206.5,
+     "p95": 242.3000000002794
+    }
+   },
+   "errors": []
+  },
+  {
+   "pair": 5,
+   "side": "candidate",
+   "code": "lib/asl1000-runtime.ts at ed90363 (this branch)",
+   "date": "2026-10-28T08:32:28.457Z",
+   "stages": {
+    "asl2000": {
+     "count": 5,
+     "p50": 423.10000000009313,
+     "p95": 443.1999999997206
+    },
+    "personal6": {
+     "count": 5,
+     "p50": 3.5,
+     "p95": 4.600000000093132
+    },
+    "psl775": {
+     "count": 5,
+     "p50": 187.5,
+     "p95": 216.39999999990687
+    }
+   },
+   "errors": []
+  }
+ ]
+}

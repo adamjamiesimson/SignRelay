@@ -72,6 +72,25 @@
         "errors": 0
       },
       "baseline_gate": "ok, zero changes or exceptions across all 11 established trials; see docs/refinement/integration-2026-10-26/ci-pilot/baseline-gate.json"
+    },
+    {
+      "worker_sha256": "b454deb00b6e6aa4cba099e23bf96ed0a7ffd73058a2c725a6a16c610e3fa523",
+      "source_commit": "ca7d8b671a006d02357169479d39fc24c14627aa",
+      "evidence": [
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/40656008104",
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/40656015750",
+        "docs/refinement/followup-2026-10-28/trace-report-historical.json",
+        "docs/refinement/followup-2026-10-28/trace-report-development.json"
+      ],
+      "evidence_kind": "CI pilot on the same frozen development clips; baseline gate output and per-cohort summaries read from the job log. The per-trial artifact (ID 12802166413, zip SHA-256 1f4b33b6c9a849886a89d5643af75c270e170de76111af918c1462375c3457ed) could not be downloaded from the authoring container (network policy) and is not committed. Not new or independently reviewed evidence.",
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "baseline_gate": "ok, zero changes or exceptions across all 11 established trials (run 40656008104, candidate_worker b454deb00b6e); the traced dispatch run 40656015750 gated identically"
     }
   ]
 }
