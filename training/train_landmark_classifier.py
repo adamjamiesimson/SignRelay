@@ -182,6 +182,13 @@ def main() -> None:
     overlap = (signers["train"] & signers["test"]) | (signers["val"] & signers["test"])
     test = [c for c in test if c["signer"] not in overlap]
     val = [c for c in val if c["signer"] not in signers["train"]]
+    if not val:
+        # No usable validation split: hold out a deterministic 15% of training
+        # signers for model selection, so selection never sees test signers.
+        ordered = sorted(signers["train"], key=lambda signer: hashlib.sha256(f"{SEED}:{signer}".encode()).hexdigest())
+        held = set(ordered[:max(1, len(ordered) * 15 // 100)])
+        val = [c for c in train if c["signer"] in held]
+        train = [c for c in train if c["signer"] not in held]
     words, other, unseen = vocabulary(sorted({c["sign"] for c in train}))
     labels = words + ["__other__"]
     class_of = {sign: i for i, sign in enumerate(words)}

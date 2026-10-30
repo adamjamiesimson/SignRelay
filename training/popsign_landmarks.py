@@ -102,7 +102,7 @@ def main() -> None:
                         pose=np.asarray(poses, dtype=np.float16).reshape(-1, 33, 3),
                         hands=np.asarray(hands, dtype=np.float16).reshape(-1, 2, 21, 2),
                         index=np.asarray(json.dumps(index)))
-    print(json.dumps({"split": args.split, "shard": args.shard, "signs": len(mine), "clips": len(index), "frames": offset}))
+    print(json.dumps({"split": args.split, "shard": args.shard, "signs": len(mine), "clips": len(index), "frames": offset}), flush=True)
     os._exit(0)  # MediaPipe 1.2 tasks crash in interpreter-shutdown finalisers
 
 

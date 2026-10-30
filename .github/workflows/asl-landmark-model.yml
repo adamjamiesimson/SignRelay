@@ -1,0 +1,124 @@
+name: ASL Landmark Model Candidate (non-release)
+
+# Sprint 8 replacement candidate: a signer-independent ASL classifier trained on
+# the landmarks SignRelay's own MediaPipe models produce, from PopSign ASL v1.0
+# (CC BY 4.0). Videos are fetched by byte range, reduced to landmarks on the
+# runner and deleted; only the trained model, its labels and evaluation report
+# are committed (to docs/, not to the app).
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - claude/festive-dirac-pbwx2j
+    paths:
+      - '.github/workflows/asl-landmark-model.yml'
+      - 'training/popsign_landmarks.py'
+      - 'training/train_landmark_classifier.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asl-landmark-model-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+  SSL_CERT_DIR: /etc/ssl/certs
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { split: train, shard: 0, shards: 10 }
+          - { split: train, shard: 1, shards: 10 }
+          - { split: train, shard: 2, shards: 10 }
+          - { split: train, shard: 3, shards: 10 }
+          - { split: train, shard: 4, shards: 10 }
+          - { split: train, shard: 5, shards: 10 }
+          - { split: train, shard: 6, shards: 10 }
+          - { split: train, shard: 7, shards: 10 }
+          - { split: train, shard: 8, shards: 10 }
+          - { split: train, shard: 9, shards: 10 }
+          - { split: test, shard: 0, shards: 5 }
+          - { split: test, shard: 1, shards: 5 }
+          - { split: test, shard: 2, shards: 5 }
+          - { split: test, shard: 3, shards: 5 }
+          - { split: test, shard: 4, shards: 5 }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install MediaPipe and the browser's pinned vision models
+        run: |
+          npm ci
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends libegl1 libgles2
+          python -m pip install --disable-pip-version-check numpy opencv-python-headless mediapipe
+          node scripts/install-vision-assets.mjs
+      - name: Extract landmarks (${{ matrix.split }} shard ${{ matrix.shard }})
+        run: |
+          signers=$([ "${{ matrix.split }}" = train ] && echo 24 || echo 10)
+          python training/popsign_landmarks.py landmarks --split ${{ matrix.split }} \
+            --shard ${{ matrix.shard }} --shards ${{ matrix.shards }} --signers "$signers"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: landmarks-${{ matrix.split }}-${{ matrix.shard }}
+          path: landmarks/
+          retention-days: 7
+
+  train:
+    needs: extract
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: landmarks-*
+          path: landmarks
+          merge-multiple: true
+      - name: Train and evaluate on unseen signers
+        run: |
+          ls -la landmarks
+          python -m pip install --disable-pip-version-check numpy onnx
+          python -m pip install --disable-pip-version-check torch --index-url https://download.pytorch.org/whl/cpu
+          python training/train_landmark_classifier.py landmarks candidate --epochs 60
+      - name: Commit the candidate and its report (not wired into the app)
+        if: github.event_name == 'push'
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          out="docs/evaluation/asl2000-sprint8/landmark-candidate/${GITHUB_RUN_ID}"
+          mkdir -p "$out"
+          cp candidate/report.json candidate/labels.json candidate/model.onnx "$out/"
+          gzip -9 -c candidate/test-predictions.jsonl > "$out/test-predictions.jsonl.gz"
+          git config user.name "signrelay-diagnostics"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$out"
+          git commit -m "eval: PopSign landmark candidate run ${GITHUB_RUN_ID}" -m "Source commit ${GITHUB_SHA}. Model, labels and unseen-signer report only."
+          for attempt in 1 2 3 4; do
+            git pull --rebase "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}" "${GITHUB_REF_NAME}" \
+              && git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}" "HEAD:${GITHUB_REF_NAME}" && break
+            sleep $((attempt * 5))
+          done
