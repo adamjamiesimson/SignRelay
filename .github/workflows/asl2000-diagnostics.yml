@@ -17,7 +17,7 @@ on:
     inputs:
       browser_clips:
         description: 'Maximum clips replayed in Chrome (condition C)'
-        default: '150'
+        default: '120'
   push:
     branches:
       - claude/festive-dirac-pbwx2j
@@ -47,6 +47,10 @@ jobs:
       # keypoints or landmarks) back to this diagnostics branch.
       contents: write
     env:
+      # signdata.cc.gatech.edu validates against the system CA store (as in
+      # asl-video-pilot.yml, which uses the system Python).
+      SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+      SSL_CERT_DIR: /etc/ssl/certs
       DATA: ${{ github.workspace }}/../wlasl-data
       WORK: ${{ github.workspace }}/evaluation/raw/asl2000-sprint8
       REPORTS: ${{ github.workspace }}/evaluation/derived/asl2000-sprint8
@@ -141,19 +145,23 @@ jobs:
           for clip in clips:
               if clip["id"] not in seen:
                   seen.add(clip["id"]); chosen.append(clip)
-          limit = int("${{ inputs.browser_clips || '150' }}")
+          limit = int("${{ inputs.browser_clips || '120' }}")
           chosen = chosen[:limit]
-          # PopSign: two signers per in-vocabulary sign, all out-of-vocabulary clips.
+          # PopSign: two signers per sign, in and out of vocabulary.
           popsign, per_sign = json.load(open(os.environ["WORK"] + "/popsign-clips.json")), {}
           for clip in popsign:
               per_sign[clip["gloss"]] = per_sign.get(clip["gloss"], 0) + 1
-              if clip["group"] == "popsign-oov" or per_sign[clip["gloss"]] <= 2:
+              if per_sign[clip["gloss"]] <= 2:
                   chosen.append({key: clip[key] for key in ("id", "file", "gloss", "group")})
           json.dump(chosen, open(os.environ["WORK"] + "/c-clips.json", "w"))
           print(len(chosen), "clips for the browser replay")
           EOF
+          # v1: the worker bundle shipped at the PR #46 head. candidate: this commit, rebuilt from source.
+          git show 6eb9c64a1ed33a3f2d64f62e4d5363bde824ffdb:public/workers/recognition.worker.js > public/workers/v1-recognition.worker.js
+          npm run build:worker
           node scripts/asl2000-eval/browser-run.mjs "$chrome" "$WORK/c-clips.json" "$WORK/c-captures" \
-            v1=/workers/recognition.worker.js --pause=0,1000 > "$REPORTS/condition-c-worker-log.jsonl"
+            v1=/workers/v1-recognition.worker.js candidate=/workers/recognition.worker.js --pause=1000 \
+            > "$REPORTS/condition-c-worker-log.jsonl"
           tail -5 "$REPORTS/condition-c-worker-log.jsonl"
           node "$WORK/bin/live-cases.mjs" "$WORK/c-captures" "$WORK/c-cases.jsonl" "$REPORTS/condition-c-outcomes.jsonl"
           python training/asl2000_conditions.py live \

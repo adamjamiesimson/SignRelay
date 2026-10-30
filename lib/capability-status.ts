@@ -1,4 +1,5 @@
 import { MODEL_ADAPTERS, type LanguageId } from "./model-adapters";
+import { ASL_VOCABULARY_COUNTS } from "./asl-vocabulary-status";
 
 /** What the product may claim for each workspace, from committed evidence
  * (docs/evaluation/dashboard-2026-10-21.md). Nothing here is a measured
@@ -15,7 +16,7 @@ export type Capability = {
 export function capabilityStatus(language: LanguageId): Capability {
   const model = MODEL_ADAPTERS[language];
   if (language === "asl") return { tier: "research-model", independentlyValidated: false,
-    headline: "Research preview. Six demo words use simple movement rules; a 2,000-sign research model runs alongside them.",
+    headline: `Research preview. Six demo words use simple movement rules. A research model holds ${ASL_VOCABULARY_COUNTS.installed.toLocaleString("en")} installed labels: ${ASL_VOCABULARY_COUNTS.experimental.toLocaleString("en")} have been recognised at least once on unseen signers' clips, and ${ASL_VOCABULARY_COUNTS.validated ? `${ASL_VOCABULARY_COUNTS.validated.toLocaleString("en")} passed` : "none has yet passed"} SignRelay's multi-signer check.`,
     evidence: "On 11 previously seen, publisher-labelled development clips: 5 correct, 0 wrong, 6 no-match (PLEASE 3/3, NO 1/1, HELLO 1/3, THANK YOU 0/3, YES 0/1; SORRY untested). Not tested on new signers, live cameras or non-signing movement." };
   if (language === "rsl" || language === "bdsl") return { tier: "clip-mode", independentlyValidated: false,
     headline: `Research preview. One sign per capture from a ${model.automaticVocabularyCount.toLocaleString()}-class model; suggestions are not added to a transcript.`,

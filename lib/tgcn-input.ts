@@ -16,8 +16,12 @@ import type { HandObservation, Point, VisionFrame } from "./vision-types";
 export type TgcnTemporal =
   /** Production v1: uniformly resample the whole segment to 50 samples. */
   | { mode: "stretch" }
-  /** Publisher protocol on a fixed-rate grid built from frame timestamps. */
-  | { mode: "publisher"; fps: number; copies: number };
+  /** Publisher protocol on a fixed-rate grid built from frame timestamps.
+   * "center" is the publisher's k_copies test sampling. "start" takes one
+   * window from the first frame, like a training window (random start, 50
+   * consecutive frames) that began at the movement onset: it keeps the start of
+   * the sign and drops a long settled tail, which only exists live. */
+  | { mode: "publisher"; fps: number; copies: number; anchor?: "center" | "start" };
 
 export type TgcnFraming = {
   /** Training-set medians, in the model's [-1, 1] coordinates. */
@@ -213,7 +217,9 @@ export function prepareTgcnWindows(sequence: VisionFrame[], options: TgcnInputOp
   } else {
     const grid = fixedRateIndices(times, options.temporal.fps);
     nodes = grid.map(index => nodes[index]);
-    windows = kCopiesIndices(nodes.length, sequenceLength, options.temporal.copies);
+    windows = options.temporal.anchor === "start"
+      ? [Array.from({ length: sequenceLength }, (_, index) => Math.min(index, nodes.length - 1))]
+      : kCopiesIndices(nodes.length, sequenceLength, options.temporal.copies);
   }
   return windows.map(window => {
     const result = new Float32Array(NODE_COUNT * features);

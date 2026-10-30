@@ -1,0 +1,9 @@
+{
+ "schema": 1,
+ "source": "not yet generated: run training/asl2000_vocabulary_status.py on a diagnostics run of the production input",
+ "productionInput": null,
+ "criteria": {},
+ "counts": {"installed": 2000, "evaluatedWords": 0, "experimental": 0, "validated": 0, "endToEndClips": 0, "medianModelMs": null},
+ "validated": [],
+ "experimental": []
+}

@@ -50,6 +50,7 @@ import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build
 import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
 import { formatPerfReadout, RollingTimer, ThroughputMonitor } from "@/lib/frame-perf";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
+import { ASL_VOCABULARY_COUNTS } from "@/lib/asl-vocabulary-status";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
 import type {
@@ -1270,7 +1271,9 @@ export function TranslatorExperience() {
                   <button type="button" className="button danger small" onClick={() => void clearAllLocalData()}>Clear local data</button>
                 </section>
                 {privacyMessage && <p className="calibration-message" role="status">{privacyMessage}</p>}
-                <p className="model-detail-copy">{model.status === "experimental" ? `${model.automaticVocabularyCount.toLocaleString()} automatic ${model.shortName} test signs · ${model.version}. This is an isolated-sign research model, not a validated continuous sign-language interpreter.` : model.status === "preparing" ? `No shared automatic ${model.shortName} model is installed. Recognition uses only the private signs you teach.` : `${model.vocabulary.length.toLocaleString()} ${model.shortName} starter labels are available to teach. Labels are not pre-trained translations.`} Personal examples store normalised landmarks, never camera video.</p>
+                <p className="model-detail-copy">{model.status === "experimental" ? model.id === "asl"
+                  ? `${ASL_VOCABULARY_COUNTS.installed.toLocaleString()} installed ASL labels; ${ASL_VOCABULARY_COUNTS.experimental.toLocaleString()} observed working at least once on unseen signers' clips; ${ASL_VOCABULARY_COUNTS.validated.toLocaleString()} independently validated · ${model.version}. An installed label is not a recognised sign. This is an isolated-sign research model, not a continuous sign-language interpreter.`
+                  : `${model.automaticVocabularyCount.toLocaleString()} automatic ${model.shortName} test signs · ${model.version}. This is an isolated-sign research model, not a validated continuous sign-language interpreter.` : model.status === "preparing" ? `No shared automatic ${model.shortName} model is installed. Recognition uses only the private signs you teach.` : `${model.vocabulary.length.toLocaleString()} ${model.shortName} starter labels are available to teach. Labels are not pre-trained translations.`} Personal examples store normalised landmarks, never camera video.</p>
               </div>
             </details>
           </div>

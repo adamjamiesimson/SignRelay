@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "r
 import { Check, Search } from "lucide-react";
 import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import { LANGUAGE_LIST, MODEL_ADAPTERS, type LanguageId, type ModelAdapter } from "@/lib/model-adapters";
+import { ASL_VOCABULARY_COUNTS } from "@/lib/asl-vocabulary-status";
 
 /** The seven workspaces with an installed shared model, in display order. */
 export const AUTOMATIC_IDS: LanguageId[] = ["asl", "bsl", "isl", "lse", "rsl", "bdsl", "psl"];
@@ -14,6 +15,8 @@ export function vocabularyLabel(language: ModelAdapter) {
   if (language.id === "rsl") return "1,000 classes";
   if (language.id === "bdsl") return "401 classes";
   if (language.id === "psl") return "775 reference signs";
+  // Installed labels are not recognised signs; show what has been observed.
+  if (language.id === "asl") return `${ASL_VOCABULARY_COUNTS.installed.toLocaleString("en")} labels · ${ASL_VOCABULARY_COUNTS.experimental.toLocaleString("en")} observed`;
   return `${language.automaticVocabularyCount.toLocaleString("en")} signs`;
 }
 export function modeLabel(language: ModelAdapter) {

@@ -1,6 +1,7 @@
 import type { InferenceOptions } from "./landmark-model-loader";
 import { downloadModelBytes } from "./model-download";
 import { yieldToTasks } from "./task-yield";
+import { NODE_COUNT, prepareTgcnWindows, type TgcnInputOptions } from "./tgcn-input";
 import type { Point, VisionFrame } from "./vision-types";
 
 type PackedArray = {
@@ -83,6 +84,51 @@ export type Asl1000Prediction = {
 const MODEL_MIN_CONFIDENCE = 0.62;
 const MODEL_MIN_MARGIN = 0.22;
 
+/**
+ * Model input, chosen from the Sprint 8 condition A/B/C evaluation
+ * (docs/evaluation/asl2000-sprint8). v1 erased both hands, because MediaPipe
+ * Tasks reports visibility 0 for every hand landmark, and stretched the whole
+ * segment to 50 samples; on the publisher's own keypoints that scored 0.0%
+ * top-1 against 22.4% for the publisher's protocol.
+ */
+export const ASL2000_INPUT: TgcnInputOptions = {
+  // Publisher frame rate, one 50-frame window from the movement onset.
+  temporal: { mode: "publisher", fps: 25, copies: 1, anchor: "start" },
+  // MediaPipe's labels matched the publisher's left/right slots on 89% of
+  // two-hand frames; the nearest pose wrist (OpenPose's own rule) on 96%.
+  hands: "pose-wrist",
+  // Interpolating short hand gaps gave no consistent benefit (condition B).
+  fillGapMs: 0,
+  // Medians of 300 publisher TRAIN-split clips (never test): neck position,
+  // shoulder width and eye height in model units. Webcam signers sit closer
+  // and higher than WLASL's signers.
+  framing: { neck: { x: 0.0243, y: -0.0054 }, shoulderWidth: 0.6474, eyeHeight: 0.4425 },
+  handVisibility: "ignore",
+};
+
+/** A window must contain observed hands on enough frames to be a sign at all.
+ * With no hand information the network still produces a confident winner
+ * (all-missing input: WOLF at 0.93), so confidence alone cannot reject it. */
+const MIN_HAND_FRAMES = 6;
+
+export function hasHandEvidence(window: Float32Array, sequenceLength = 50) {
+  const features = sequenceLength * 2;
+  let frames = 0, previous = "";
+  for (let frame = 0; frame < sequenceLength; frame++) {
+    let observed = false;
+    let signature = "";
+    for (let node = 13; node < NODE_COUNT && !observed; node++) {
+      if (window[node * features + frame * 2] !== -1) observed = true;
+    }
+    if (!observed) continue;
+    // Padding repeats the final frame; it is not new evidence.
+    for (let node = 13; node < NODE_COUNT; node++) signature += `${window[node * features + frame * 2]},`;
+    if (signature !== previous) frames++;
+    previous = signature;
+  }
+  return frames >= MIN_HAND_FRAMES;
+}
+
 let modelPromise: Promise<MaterialisedModel> | null = null;
 let loadController: AbortController | null = null;
 
@@ -153,8 +199,13 @@ export async function recognizeAsl1000(sequence: VisionFrame[], options: Inferen
   const model = await loadModel(options.signal);
   options.signal?.throwIfAborted();
   options.onPhase?.("inference");
-  const input = prepareTgcnInput(sequence, model.manifest.sequenceLength);
-  const logits = await runMaterialisedTgcnCooperatively(model, input, options.signal);
+  const windows = prepareTgcnWindows(sequence, ASL2000_INPUT, model.manifest.sequenceLength);
+  if (!windows.some(window => hasHandEvidence(window, model.manifest.sequenceLength))) return null;
+  const logits = new Float32Array(model.manifest.classes);
+  for (const window of windows) {
+    const windowLogits = await runMaterialisedTgcnCooperatively(model, window, options.signal);
+    for (let index = 0; index < logits.length; index++) logits[index] += windowLogits[index] / windows.length;
+  }
   const { label, confidence, margin, accepted } = decideAsl2000(logits, model.labels);
   if (!accepted) return null;
   return { label, text: title(label), confidence, margin };
@@ -171,6 +222,8 @@ export function decideAsl2000(logits: Float32Array, labels: string[]) {
   return { label, confidence, margin, accepted };
 }
 
+/** Production v1 input (hands erased by Tasks visibility 0, whole segment
+ * stretched). Kept as the reference for regression tests and old traces. */
 export function prepareTgcnInput(sequence: VisionFrame[], sequenceLength = 50) {
   const inputFeatures = sequenceLength * 2;
   const result = new Float32Array(55 * inputFeatures);

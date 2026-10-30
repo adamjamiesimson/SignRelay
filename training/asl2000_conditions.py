@@ -285,6 +285,9 @@ def variants_for(framing: dict | None) -> dict:
         "hands-stretch": {**base, "temporal": {"mode": "stretch"}},
         "hands-publisher4": {**base, "temporal": publisher},
         "hands-publisher1": {**base, "temporal": {**publisher, "copies": 1}},
+        "hands-start1": {**base, "temporal": {**publisher, "copies": 1, "anchor": "start"}},
+        "hands-start1-wrist": {**base, "temporal": {**publisher, "copies": 1, "anchor": "start"}, "hands": "pose-wrist"},
+        "hands-start1-wrist-fill": {**base, "temporal": {**publisher, "copies": 1, "anchor": "start"}, "hands": "pose-wrist", "fillGapMs": 240},
         "hands-publisher4-wrist": {**base, "temporal": publisher, "hands": "pose-wrist"},
         "hands-publisher4-wrist-fill": {**base, "temporal": publisher, "hands": "pose-wrist", "fillGapMs": 240},
         "hands-stretch-wrist-fill": {**base, "temporal": {"mode": "stretch"}, "hands": "pose-wrist", "fillGapMs": 240},
@@ -292,6 +295,8 @@ def variants_for(framing: dict | None) -> dict:
     if framing:
         target = {key: framing[key] for key in ("neck", "shoulderWidth", "eyeHeight")}
         variants["hands-publisher4-wrist-fill-framing"] = {**variants["hands-publisher4-wrist-fill"], "framing": target}
+        variants["hands-publisher4-wrist-framing"] = {**variants["hands-publisher4-wrist"], "framing": target}
+        variants["hands-start1-wrist-framing"] = {**variants["hands-start1-wrist"], "framing": target}
     return variants
 
 
@@ -533,6 +538,7 @@ def command_mediapipe(args: argparse.Namespace) -> None:
     writer = CaseWriter(args.workdir, "mediapipe")
     hand_fractions: list[float] = []
     clips: list[dict] = []
+    fits: list[dict] = []
     geometry, alignment, label_checks = [], {"identity": 0, "time": 0, "rejected": 0}, {"frames": 0, "label_matches_openpose": 0, "wrist_rule_matches_openpose": 0}
     seen = set()
     last_request: dict[str, float] = {}
@@ -567,19 +573,24 @@ def command_mediapipe(args: argparse.Namespace) -> None:
         else:
             alignment["rejected"] += 1
             continue
-        frames = []
+        frames, clip_geometry = [], []
         for k in range(start, end + 1):
             frame = tracker.frame(rgb[source_index(k)], (k - start) * 1000.0 / FPS)
             frames.append(frame)
             person = read_keypoints(archive, vid, k)
             if person:
-                geometry.extend(compare_geometry(person, frame, size))
+                clip_geometry.extend(compare_geometry(person, frame, size))
                 check_labels(person, frame, label_checks)
+        geometry.extend(clip_geometry)
+        fit = affine_fit(clip_geometry, source.get("bbox"), size)
+        if fit:
+            fits.append(fit)
         base = {"video_id": vid, "gloss": item["gloss"], "group": group, "target": target_of[item["gloss"]],
-                "frames": len(frames), "native_fps": native_fps, "hand_frames": sum(1 for f in frames if f["hands"])}
+                "signer": f"wlasl-{item['signer_id']}", "frames": len(frames), "native_fps": native_fps,
+                "hand_frames": sum(1 for f in frames if f["hands"])}
         writer.add(f"{vid}|mp", frames, base)
         hand_fractions.append(base["hand_frames"] / base["frames"])
-        clips.append({"id": vid, "file": str(path), "gloss": item["gloss"], "group": group})
+        clips.append({"id": vid, "file": str(path), "gloss": item["gloss"], "group": group, "signer": base["signer"]})
     writer.close()
     tracker.close()
     (args.workdir / "clips.json").write_text(json.dumps(clips, indent=1), encoding="utf-8")
@@ -598,6 +609,7 @@ def command_mediapipe(args: argparse.Namespace) -> None:
         "downloads": downloads, "frame_alignment": alignment, "clips_evaluated": len(writer.cases),
         "hand_frame_fraction": statistics.fmean(hand_fractions) if hand_fractions else None,
         "geometry_vs_publisher_openpose": summarize_geometry(geometry),
+        "publisher_coordinate_frame": summarize_fits(fits),
         "hand_assignment_vs_openpose": {**label_checks,
             "label_agreement": label_checks["label_matches_openpose"] / max(1, label_checks["frames"]),
             "wrist_rule_agreement": label_checks["wrist_rule_matches_openpose"] / max(1, label_checks["frames"])},
@@ -678,11 +690,12 @@ def command_live(args: argparse.Namespace) -> None:
         if worker != args.reference_worker:
             continue  # frames are identical across workers for the same pause
         target = target_of.get(clip["gloss"])
-        records.append({"video_id": clip_id, "gloss": clip["gloss"], "group": clip["group"], "target": target,
+        records.append({"video_id": clip_id, "gloss": clip["gloss"], "group": clip["group"], "target": target, "signer": clip.get("signer"),
                         "condition": f"C-{kind}-pause{pause}-{variant}",
                         **decide(model.logits(tensor).mean(axis=0), model.labels, target)})
     outcomes = [json.loads(line) for line in args.outcomes.read_text(encoding="utf-8").splitlines() if line.strip()]
     worker_summary: dict[str, dict] = {}
+    per_clip: list[dict] = []
     for outcome in outcomes:
         clip = clips[outcome["id"]]
         key = f"{outcome['worker']}-pause{outcome['pauseMs']}-{'oov' if clip['gloss'].startswith('OOV:') else 'in-vocab'}"
@@ -691,6 +704,10 @@ def command_live(args: argparse.Namespace) -> None:
                                                   "model_inferences": 0, "model_ms": [], "clips_with_motion_ready": 0,
                                                   "clips_where_model_ever_proposed_expected": 0, "hand_frame_fraction": []})
         summary["clips"] += 1
+        per_clip.append({"id": outcome["id"], "worker": outcome["worker"], "pauseMs": outcome["pauseMs"], "gloss": clip["gloss"],
+                         "group": clip["group"], "signer": clip.get("signer"), "error": outcome["error"],
+                         "confirmations": outcome["confirmations"], "model_inferences": outcome["model_inferences_completed"],
+                         "model_ms": outcome["model_inference_ms"], "hand_frames": outcome["hand_frames"], "frames": outcome["frames"]})
         if outcome["error"]:
             summary["errors"] += 1
             continue
@@ -719,6 +736,9 @@ def command_live(args: argparse.Namespace) -> None:
     negatives_by: dict[str, list[dict]] = {}
     for record in records:
         (by_condition if record["target"] is not None else negatives_by).setdefault(record["condition"], []).append(record)
+    with args.output.with_suffix(".clips.jsonl").open("w", encoding="utf-8") as handle:
+        for row in per_clip:
+            handle.write(json.dumps(row) + "\n")
     report = {"condition": "C", "clips": len(clips), "worker_outcomes": worker_summary,
               "summary": {condition: grouped(items) for condition, items in sorted(by_condition.items())},
               "out_of_vocabulary_false_positives": {condition: summarize_negatives(items) for condition, items in sorted(negatives_by.items())}}
@@ -749,6 +769,36 @@ def compare_geometry(person: dict, frame: dict, size: tuple[int, int]) -> list[d
             out.append({"point": f"{side}_hand_wrist", "op": (values[0] / 256, values[1] / 256),
                         "mp": (nearest["landmarks"][0]["x"], nearest["landmarks"][0]["y"]), "size": size})
     return out
+
+
+def affine_fit(rows: list[dict], bbox: list | None, size: tuple[int, int]) -> dict | None:
+    """Per clip: publisher coordinate (px/256) = a * MediaPipe coordinate + b,
+    per axis, from body points. Compared with the prediction if the publisher
+    had cropped each frame to WLASL's signer bounding box and scaled it to 256."""
+    body = [row for row in rows if not row["point"].endswith("hand_wrist")]
+    if len(body) < 20 or not size[0]:
+        return None
+    out = {}
+    for axis, (extent, low, high) in enumerate(((size[0], 0, 2), (size[1], 1, 3))):
+        mp = np.asarray([row["mp"][axis] for row in body]); op = np.asarray([row["op"][axis] for row in body])
+        if np.std(mp) < 1e-3:
+            return None
+        a, b = np.polyfit(mp, op, 1)
+        residual = np.median(np.abs(op - (a * mp + b)))
+        name = "xy"[axis]
+        out[f"{name}_scale"], out[f"{name}_offset"], out[f"{name}_residual"] = float(a), float(b), float(residual)
+        if bbox and len(bbox) == 4 and bbox[high] > bbox[low]:
+            out[f"{name}_scale_bbox_crop"] = extent / (bbox[high] - bbox[low])
+            out[f"{name}_offset_bbox_crop"] = -bbox[low] / (bbox[high] - bbox[low])
+    return out
+
+
+def summarize_fits(fits: list[dict]) -> dict:
+    if not fits:
+        return {}
+    keys = sorted({key for fit in fits for key in fit})
+    return {"clips": len(fits), "median": {key: round(statistics.median(f[key] for f in fits if key in f), 4) for key in keys},
+            "note": "Identity (scale 1, offset 0) means full-frame coordinates. Residual is the median per-clip error left after the best affine map, in [0, 1] frame units."}
 
 
 def summarize_geometry(rows: list[dict]) -> dict:
