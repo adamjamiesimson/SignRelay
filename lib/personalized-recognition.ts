@@ -80,8 +80,21 @@ export async function recognizePersonalTemplateAsync(
   return finishPersonalMatch([...matches.values()].map(({ template, distance }) => [template, distance] as const));
 }
 
+// finishPersonalMatch accepts at most 0.5 and vetoes a rival within 0.06.
+const ACCEPT_DISTANCE = 0.5;
+const RIVAL_MARGIN = 0.06;
+const MAX_RELEVANT_DISTANCE = ACCEPT_DISTANCE + RIVAL_MARGIN;
+// Keeps float rounding at the bound from pruning a distance that matters.
+const BOUND_TOLERANCE = 1e-9;
+
+/** A distance at or above (best so far + margin) can neither become the best
+ * nor veto it: the final best can only be lower. So the cutoff tightens as
+ * matches are found. Every distance that can affect the decision is still
+ * computed exactly; only irrelevant ones are reported as Infinity sooner.
+ */
 function* personalDistances(frames: VisionFrame[], templates: CalibrationTemplate[]) {
   if (!templates.length || frames.length < 8 || !frames.at(-1)?.hands.some(validHand)) return;
+  let best = Infinity;
   let previousLength = 0;
   for (const duration of [650, 1200, 2000, 3000, 4200]) {
     const recent = recentContinuousFrames(frames, duration, frame => frame.hands.some(validHand));
@@ -96,7 +109,9 @@ function* personalDistances(frames: VisionFrame[], templates: CalibrationTemplat
         candidate = compileDistanceSequence(prepareCalibrationSequence(recent, template.normalization));
         candidates.set(template.normalization, candidate);
       }
-      const distance = compiledSequenceDistance(candidate, cachedTemplateSequence(template.frames), 0.56);
+      const limit = Math.min(MAX_RELEVANT_DISTANCE, best + RIVAL_MARGIN + BOUND_TOLERANCE);
+      const distance = compiledSequenceDistance(candidate, cachedTemplateSequence(template.frames), limit);
+      if (distance < best) best = distance;
       yield [template, distance] as const;
     }
   }
@@ -110,7 +125,7 @@ function finishPersonalMatch(distances: Iterable<readonly [CalibrationTemplate, 
     }
   }
   const [best, rival] = [...matches.values()].sort((a, b) => a.distance - b.distance);
-  if (!best || best.distance > 0.5 || (rival && rival.distance - best.distance < 0.06)) return null;
+  if (!best || best.distance > ACCEPT_DISTANCE || (rival && rival.distance - best.distance < RIVAL_MARGIN)) return null;
   return { label: best.template.gloss, text: best.template.text,
     confidence: clamp(0.965 - best.distance * 0.24, 0, 0.96) };
 }
