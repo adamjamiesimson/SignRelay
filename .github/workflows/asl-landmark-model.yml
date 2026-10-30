@@ -24,7 +24,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # PopSign's server omits its intermediates. Complete the chain once (with
+  # verification against the system roots) instead of from fifteen jobs.
+  ca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Complete and verify the PopSign certificate chain
+        run: |
+          for attempt in 1 2 3 4 5 6 7 8; do
+            bash scripts/asl2000-eval/complete-ca-chain.sh signdata.cc.gatech.edu popsign-ca.pem && break
+            test "$attempt" -lt 8
+            sleep $(( attempt * 15 ))
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: popsign-ca
+          path: popsign-ca.pem
+          retention-days: 2
+
   extract:
+    needs: ca
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -63,16 +86,13 @@ jobs:
           sudo apt-get update && sudo apt-get install -y --no-install-recommends libegl1 libgles2
           python -m pip install --disable-pip-version-check numpy opencv-python-headless mediapipe
           node scripts/install-vision-assets.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: popsign-ca
+          path: ${{ runner.temp }}/ca
       - name: Extract landmarks (${{ matrix.split }} shard ${{ matrix.shard }})
         run: |
-          # Fifteen parallel jobs reach the same certificate issuer host: stagger and retry.
-          sleep $(( ${{ matrix.shard }} * 4 + (RANDOM % 8) ))
-          for attempt in 1 2 3 4 5 6; do
-            bash scripts/asl2000-eval/complete-ca-chain.sh signdata.cc.gatech.edu "$RUNNER_TEMP/popsign-ca.pem" && break
-            test "$attempt" -lt 6
-            sleep $(( attempt * 10 + (RANDOM % 10) ))
-          done
-          export SSL_CERT_FILE="$RUNNER_TEMP/popsign-ca.pem"
+          export SSL_CERT_FILE="$RUNNER_TEMP/ca/popsign-ca.pem"
           signers=$([ "${{ matrix.split }}" = train ] && echo 24 || echo 10)
           python training/popsign_landmarks.py landmarks --split ${{ matrix.split }} \
             --shard ${{ matrix.shard }} --shards ${{ matrix.shards }} --signers "$signers"
