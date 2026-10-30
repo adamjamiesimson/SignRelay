@@ -47,10 +47,6 @@ jobs:
       # keypoints or landmarks) back to this diagnostics branch.
       contents: write
     env:
-      # signdata.cc.gatech.edu validates against the system CA store (as in
-      # asl-video-pilot.yml, which uses the system Python).
-      SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
-      SSL_CERT_DIR: /etc/ssl/certs
       DATA: ${{ github.workspace }}/../wlasl-data
       WORK: ${{ github.workspace }}/evaluation/raw/asl2000-sprint8
       REPORTS: ${{ github.workspace }}/evaluation/derived/asl2000-sprint8
@@ -125,7 +121,11 @@ jobs:
             --workdir "$WORK/b" --output "$REPORTS/condition-b.json"
 
       - name: Condition P — PopSign ASL (CC BY 4.0) other signers, phones and out-of-vocabulary signs
+        # A PopSign outage must not skip the browser replay of the WLASL clips.
+        continue-on-error: true
         run: |
+          bash scripts/asl2000-eval/complete-ca-chain.sh signdata.cc.gatech.edu "$RUNNER_TEMP/popsign-ca.pem"
+          export SSL_CERT_FILE="$RUNNER_TEMP/popsign-ca.pem"
           python training/fetch_popsign_sample.py public/models/asl2000-tgcn/labels.json \
             "$DATA/popsign" "$WORK/popsign-clips.json" --split test --in-vocab 40 --signers 6
           python training/asl2000_conditions.py clips --clips "$WORK/popsign-clips.json" \
@@ -148,7 +148,8 @@ jobs:
           limit = int("${{ inputs.browser_clips || '120' }}")
           chosen = chosen[:limit]
           # PopSign: two signers per sign, in and out of vocabulary.
-          popsign, per_sign = json.load(open(os.environ["WORK"] + "/popsign-clips.json")), {}
+          path = os.environ["WORK"] + "/popsign-clips.json"
+          popsign, per_sign = (json.load(open(path)) if os.path.exists(path) else []), {}
           for clip in popsign:
               per_sign[clip["gloss"]] = per_sign.get(clip["gloss"], 0) + 1
               if per_sign[clip["gloss"]] <= 2:

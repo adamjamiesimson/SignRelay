@@ -14,6 +14,7 @@ on:
       - '.github/workflows/asl-landmark-model.yml'
       - 'training/popsign_landmarks.py'
       - 'training/train_landmark_classifier.py'
+      - 'scripts/asl2000-eval/complete-ca-chain.sh'
 
 permissions:
   contents: read
@@ -21,10 +22,6 @@ permissions:
 concurrency:
   group: asl-landmark-model-${{ github.ref }}
   cancel-in-progress: true
-
-env:
-  SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
-  SSL_CERT_DIR: /etc/ssl/certs
 
 jobs:
   extract:
@@ -68,6 +65,8 @@ jobs:
           node scripts/install-vision-assets.mjs
       - name: Extract landmarks (${{ matrix.split }} shard ${{ matrix.shard }})
         run: |
+          bash scripts/asl2000-eval/complete-ca-chain.sh signdata.cc.gatech.edu "$RUNNER_TEMP/popsign-ca.pem"
+          export SSL_CERT_FILE="$RUNNER_TEMP/popsign-ca.pem"
           signers=$([ "${{ matrix.split }}" = train ] && echo 24 || echo 10)
           python training/popsign_landmarks.py landmarks --split ${{ matrix.split }} \
             --shard ${{ matrix.shard }} --shards ${{ matrix.shards }} --signers "$signers"
