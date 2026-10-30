@@ -26,6 +26,7 @@ on:
       - 'training/asl2000_conditions.py'
       - 'training/tgcn_packed.py'
       - 'training/fetch_popsign_sample.py'
+      - 'scripts/asl2000-eval/complete-ca-chain.sh'
       - 'scripts/asl2000-eval/**'
       - 'lib/tgcn-input.ts'
       - 'lib/asl1000-runtime.ts'
