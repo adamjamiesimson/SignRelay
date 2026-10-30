@@ -533,7 +533,7 @@ def command_mediapipe(args: argparse.Namespace) -> None:
     writer = CaseWriter(args.workdir, "mediapipe")
     hand_fractions: list[float] = []
     clips: list[dict] = []
-    geometry, alignment, label_checks = [], [], {"identity": 0, "time": 0, "rejected": 0}, {"frames": 0, "label_matches_openpose": 0, "wrist_rule_matches_openpose": 0}
+    geometry, alignment, label_checks = [], {"identity": 0, "time": 0, "rejected": 0}, {"frames": 0, "label_matches_openpose": 0, "wrist_rule_matches_openpose": 0}
     seen = set()
     last_request: dict[str, float] = {}
     for group, item in selected_instances(sample):
@@ -607,6 +607,61 @@ def command_mediapipe(args: argparse.Namespace) -> None:
 
 
 # --------------------------------------------------------------------------
+# Other labelled clips (PopSign): MediaPipe on a 25 fps timeline, no OpenPose
+
+def summarize_negatives(records: list[dict]) -> dict:
+    accepted = [r for r in records if r["accepted"]]
+    return {"n": len(records), "gate_accepted_false_positives": len(accepted),
+            "false_positive_rate": round(len(accepted) / len(records), 4) if records else None,
+            "accepted_labels": sorted({r["prediction"] for r in accepted}),
+            "mean_top1_confidence": round(statistics.fmean(r["confidence"] for r in records), 4) if records else None}
+
+
+def command_clips(args: argparse.Namespace) -> None:
+    clips = json.loads(args.clips.read_text(encoding="utf-8"))
+    model = PackedTgcn(args.model)
+    target_of = {label: index for index, label in enumerate(model.labels)}
+    framing = json.loads(args.framing.read_text(encoding="utf-8"))["framing_target_from_train_split"] if args.framing else None
+    tracker = MediaPipeTracker(args.vision_models)
+    writer = CaseWriter(args.workdir, "clips")
+    for clip in clips:
+        rgb, native_fps, _ = decode(Path(clip["file"]))
+        if not rgb or not native_fps:
+            continue
+        duration = len(rgb) / native_fps
+        frames = [tracker.frame(rgb[min(round(t / FPS * native_fps), len(rgb) - 1)], t * 1000.0 / FPS)
+                  for t in range(int(duration * FPS))]
+        if len(frames) < 6:
+            continue
+        writer.add(f"{clip['id']}|mp", frames, {"video_id": clip["id"], "gloss": clip["gloss"], "group": clip["group"],
+                                                "signer": clip.get("signer"), "target": target_of.get(clip["gloss"]),
+                                                "hand_frames": sum(1 for f in frames if f["hands"]), "frames": len(frames)})
+    writer.close()
+    tracker.close()
+    variants = variants_for(framing)
+    windows = run_preprocess(args.node_preprocess, writer.path, variants, args.workdir, "clips")
+    records = []
+    for case in writer.cases:
+        for variant in variants:
+            records.append({**case["base"], "condition": f"P-mediapipe-{variant}",
+                            **decide(model.logits(windows[(case["id"], variant)]).mean(axis=0), model.labels, case["base"]["target"])})
+    positives = [r for r in records if r["target"] is not None]
+    negatives = [r for r in records if r["target"] is None]
+    by_condition: dict[str, list[dict]] = {}
+    for record in positives:
+        by_condition.setdefault(record["condition"], []).append(record)
+    negatives_by: dict[str, list[dict]] = {}
+    for record in negatives:
+        negatives_by.setdefault(record["condition"], []).append(record)
+    report = {"condition": "P (PopSign, MediaPipe, other signers and phones)", "clips": len(writer.cases),
+              "signers": len({c["base"]["signer"] for c in writer.cases}),
+              "summary": {condition: grouped(items) for condition, items in sorted(by_condition.items())},
+              "out_of_vocabulary_false_positives": {condition: summarize_negatives(items) for condition, items in sorted(negatives_by.items())}}
+    print(json.dumps(report["out_of_vocabulary_false_positives"], indent=1))
+    write_report(args.output, report, records)
+
+
+# --------------------------------------------------------------------------
 # Condition C
 
 def command_live(args: argparse.Namespace) -> None:
@@ -622,13 +677,15 @@ def command_live(args: argparse.Namespace) -> None:
         clip = clips[clip_id]
         if worker != args.reference_worker:
             continue  # frames are identical across workers for the same pause
-        records.append({"video_id": clip_id, "gloss": clip["gloss"], "group": clip["group"], "target": target_of[clip["gloss"]],
-                        "condition": f"C-{kind}-pause{pause}-{variant}", **score(model, tensor, target_of[clip["gloss"]])})
+        target = target_of.get(clip["gloss"])
+        records.append({"video_id": clip_id, "gloss": clip["gloss"], "group": clip["group"], "target": target,
+                        "condition": f"C-{kind}-pause{pause}-{variant}",
+                        **decide(model.logits(tensor).mean(axis=0), model.labels, target)})
     outcomes = [json.loads(line) for line in args.outcomes.read_text(encoding="utf-8").splitlines() if line.strip()]
     worker_summary: dict[str, dict] = {}
     for outcome in outcomes:
         clip = clips[outcome["id"]]
-        key = f"{outcome['worker']}-pause{outcome['pauseMs']}"
+        key = f"{outcome['worker']}-pause{outcome['pauseMs']}-{'oov' if clip['gloss'].startswith('OOV:') else 'in-vocab'}"
         summary = worker_summary.setdefault(key, {"clips": 0, "errors": 0, "correct_confirmed": 0, "wrong_confirmed": 0, "no_confirmation": 0,
                                                   "correct_by_source": {}, "wrong_by_source": {}, "clips_with_model_inference": 0,
                                                   "model_inferences": 0, "model_ms": [], "clips_with_motion_ready": 0,
@@ -659,10 +716,12 @@ def command_live(args: argparse.Namespace) -> None:
         fractions = summary.pop("hand_frame_fraction")
         summary["mean_hand_frame_fraction"] = round(statistics.fmean(fractions), 3) if fractions else None
     by_condition: dict[str, list[dict]] = {}
+    negatives_by: dict[str, list[dict]] = {}
     for record in records:
-        by_condition.setdefault(record["condition"], []).append(record)
+        (by_condition if record["target"] is not None else negatives_by).setdefault(record["condition"], []).append(record)
     report = {"condition": "C", "clips": len(clips), "worker_outcomes": worker_summary,
-              "summary": {condition: grouped(items) for condition, items in sorted(by_condition.items())}}
+              "summary": {condition: grouped(items) for condition, items in sorted(by_condition.items())},
+              "out_of_vocabulary_false_positives": {condition: summarize_negatives(items) for condition, items in sorted(negatives_by.items())}}
     write_report(args.output, report, records)
 
 
@@ -757,6 +816,14 @@ def main() -> None:
     media.add_argument("--videos", type=Path, required=True)
     media.add_argument("--vision-models", type=Path, default=Path("public/vision/models"))
     media.add_argument("--framing", type=Path, help="Condition A report with the train-split framing target")
+    other = sub.add_parser("clips")
+    other.add_argument("--clips", type=Path, required=True)
+    other.add_argument("--framing", type=Path)
+    other.add_argument("--model", type=Path, default=Path("public/models/asl2000-tgcn"))
+    other.add_argument("--vision-models", type=Path, default=Path("public/vision/models"))
+    other.add_argument("--node-preprocess", type=Path, required=True)
+    other.add_argument("--workdir", type=Path, required=True)
+    other.add_argument("--output", type=Path, required=True)
     live = sub.add_parser("live")
     live.add_argument("--cases", type=Path, required=True)
     live.add_argument("--outcomes", type=Path, required=True)
@@ -768,7 +835,7 @@ def main() -> None:
     live.add_argument("--workdir", type=Path, required=True)
     live.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    {"official": command_official, "mediapipe": command_mediapipe, "live": command_live}[args.command](args)
+    {"official": command_official, "mediapipe": command_mediapipe, "clips": command_clips, "live": command_live}[args.command](args)
 
 
 if __name__ == "__main__":
