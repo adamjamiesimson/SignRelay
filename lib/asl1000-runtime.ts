@@ -1,5 +1,6 @@
 import type { InferenceOptions } from "./landmark-model-loader";
 import { downloadModelBytes } from "./model-download";
+import { yieldToTasks } from "./task-yield";
 import type { Point, VisionFrame } from "./vision-types";
 
 type PackedArray = {
@@ -243,7 +244,7 @@ async function runMaterialisedTgcnCooperatively(model: MaterialisedModel, input:
     if (performance.now() - sliceStarted >= 12) {
       // Yield a task, not just a microtask: camera messages and session resets
       // must be handled before the remaining graph layers finish computing.
-      await new Promise<void>(resolve => setTimeout(resolve, 0));
+      await yieldToTasks();
       sliceStarted = performance.now();
     }
     signal?.throwIfAborted();

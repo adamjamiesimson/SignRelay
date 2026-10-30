@@ -1,2 +1,18 @@
+# LF on every platform. Worker bundles, manifests, reports and workflows are
+# hashed or compared byte for byte (evaluated-runtime registry, dashboard,
+# cohort locks); a CRLF checkout (core.autocrlf=true, the Windows default)
+# changes those bytes and breaks 12 tests.
+* text=auto eol=lf
 
 *.onnx binary
+*.bin binary
+*.gz binary
+*.task binary
+*.tflite binary
+*.wasm binary
+*.jpg binary
+*.png binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
