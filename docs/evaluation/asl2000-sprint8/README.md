@@ -116,3 +116,15 @@ Engineering already in place for this path:
 ## Related defect found, not changed: BSL hand confidence
 
 `lib/bsl1064-runtime.ts` passes `visibility ?? 1` as the third (confidence) channel of the BSL-1K Pose2Sign input. Because MediaPipe Tasks reports `visibility: 0` for hand landmarks, every BSL hand point reaches that model with **confidence 0**: positions present, but marked "not detected". This is the same root cause as the ASL defect, in a milder form, since BSL keeps the coordinates. It was not changed in this sprint. Changing BSL without a BSL evaluation would be a guess, and the brief asks to preserve the other languages as they are. The fix is a one-line change (treat hand landmarks as observed, as ASL now does), and it should be measured with the same harness on licensed BSL clips before it ships.
+
+## Model and browser performance
+
+| Measurement | Value | Where |
+|---|---|---|
+| Shipped JS int8 TGCN, one 50-frame window | median 439 ms, p90 442 ms (GitHub runner, Node 22); 445–522 ms (this container) | `runs/41064295875/condition-a.json` parity |
+| Same model in headless Chromium worker | warm median 294 ms; page and worker stay responsive during inference; cancellation works | `tests/cooperative-yield-browser-smoke.mjs` |
+| Same int8 weights exported to ONNX (`training/export_asl2000_onnx.py`), ONNX Runtime Web WASM, 1 thread | median 18.4 ms, p90 20.4 ms; max logit difference 1.7e-5, top-1 agreement 100% | local measurement |
+| Same, 4 threads | median 12 ms | local measurement |
+| ONNX file size | 6.69 MB (6.37 MB gzipped), about the same as the shipped 6.3 MB gz model | |
+
+Production keeps the JS runtime. It already completes within the worker's 2.5 s freshness window, and its cooperative cancellation is covered by tests. Inference latency was **not** what stopped recognition. The ORT Web path is a measured, ready option if inference frequency needs to rise, for example to run four publisher windows for about 70 ms.
