@@ -15183,7 +15183,7 @@ var MODEL_ADAPTERS = {
     version: "0.6.0-wlasl2000-pose-tgcn",
     dataset: "Official WLASL2000 OpenPose sequences and Pose-TGCN checkpoint; WLASL data are academic/computational and non-commercial only",
     speechLocale: "en-US",
-    summary: "A genuine local 2,000-sign ASL isolated-sign model. The live MediaPipe adapter remains experimental and is not unrestricted ASL translation."
+    summary: "A local research model with 2,000 installed ASL sign labels. Installed labels are not recognised signs: on SignRelay's own camera landmarks most of its answers are wrong, so only words with evaluation evidence are marked experimental or validated."
   },
   lse: {
     id: "lse",

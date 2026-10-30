@@ -92,3 +92,27 @@ On publisher keypoints with the official protocol, precision stays between 26% a
 The production confidence/margin gate and the decoder's two-consecutive rule are unchanged.
 
 Regression tests: `tests/asl2000-input.test.ts` covers Tasks-shaped hands, bit-identity of the v1 options, publisher `k_copies` golden values, the fixed-rate grid at 15 and 30 fps, and wrist assignment. `tests/asl2000-evidence-guard.test.ts` covers the all-missing WOLF output and a handless movement never being classified.
+
+## Path to 50, 100, 250, 500 and 2,000 reliable signs
+
+The evidence sets the strategy. The WLASL2000 checkpoint cannot be made reliable through thresholds or input tweaks: precision stays at about 36% on its own inputs and about 13% on MediaPipe input. Reliability has to come from a model trained on **SignRelay's own landmark representation**, from **many signers**, with a **trained rejection class**, and from an evaluation protocol that only counts unseen signers.
+
+| Stage | Vocabulary source (licence) | Model | Gate to pass before shipping |
+|---|---|---|---|
+| **50** | The predetermined first-50 list (owner checklist §3). Training uses PopSign ASL v1.0 where a word is covered (CC BY 4.0, phone recordings by many signers). Words PopSign lacks, such as COMPUTER, SCHOOL and WORK, need recordings collected under the existing consent workflow from at least 10 signers. | Landmark temporal CNN (this sprint's candidate architecture), ONNX in ORT Web, about 1 ms per inference | Every word passes the `validated` rule on ≥3 unseen live signers, with ≤1 false confirmation per 10 minutes of non-target signing and movement |
+| **100** | All PopSign signs that map to everyday English glosses, plus the collected words | The same, with more data per class | The same rule, plus a confusion review of near-identical signs (e.g. MOTHER/FATHER) |
+| **250** | All 250 PopSign signs. Optionally, after the owner accepts its terms, Google's ISLR landmark release (250 signs, 21 signers), which uses the same MediaPipe landmarks | The same model family, trained with signer-group k-fold | ≥85% top-1 on unseen signers at the operating threshold; false positives measured on held-out signs |
+| **500** | ASL Citizen (2,731 signs, 52 signers; licence acceptance needed), re-extracted with SignRelay's MediaPipe models | A larger temporal model (CNN + transformer); hierarchical rejection | Per-word validation for the 500 words with the most evidence; the rest stay "experimental" |
+| **2,000** | ASL Citizen (2,731 signs) plus WLASL training videos re-extracted with MediaPipe (C-UDA: non-commercial only) | The same; per-word calibration | Only per-word validated words are shown as validated. The rest stay labels, as the app now shows |
+
+Engineering already in place for this path:
+
+- `training/popsign_landmarks.py` extracts landmarks with the browser's exact MediaPipe models.
+- `training/train_landmark_classifier.py` trains with signer-held-out selection, a rejection class and never-seen-sign false-positive measurement.
+- `lib/landmark-sign-features.ts` is the browser feature port, tested equal to training within 1e-4.
+- `lib/asl-landmark-runtime.ts` runs the ORT Web model with a validation-chosen threshold.
+- `training/asl2000_vocabulary_status.py` derives per-word status mechanically from reports.
+
+## Related defect found, not changed: BSL hand confidence
+
+`lib/bsl1064-runtime.ts` passes `visibility ?? 1` as the third (confidence) channel of the BSL-1K Pose2Sign input. Because MediaPipe Tasks reports `visibility: 0` for hand landmarks, every BSL hand point reaches that model with **confidence 0**: positions present, but marked "not detected". This is the same root cause as the ASL defect, in a milder form, since BSL keeps the coordinates. It was not changed in this sprint. Changing BSL without a BSL evaluation would be a guess, and the brief asks to preserve the other languages as they are. The fix is a one-line change (treat hand landmarks as observed, as ASL now does), and it should be measured with the same harness on licensed BSL clips before it ships.

@@ -46,7 +46,7 @@ The [17 September handoff](docs/pretrained-expansion-2026-09-17.md) records the 
 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
-| ASL | Experimental | 2,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL2000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
+| ASL | Experimental | 2,000 installed WLASL labels (only evidence-backed words marked experimental/validated; see `/models`) + user-defined personal words | Quantised official WLASL2000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
 | BSL | Experimental | 1,064 automatic BSL-1K signs + unlimited signer-taught words | Official BSL-1K Pose2Sign model + personal DTW templates |
 | ISL | Experimental | 263 automatic INCLUDE signs + unlimited signer-taught words | Official AI4Bharat INCLUDE transformer + personal DTW templates |
 | RSL | Experimental, slow clip mode | 967 pretrained word/phrase classes + 33 fingerspelling letters | Official Slovo MViTv2-small-32-2 RGB ONNX; no personal recordings required |
@@ -74,7 +74,7 @@ Choose **Russian Sign Language** (search for RSL), enter its workspace, start th
 
 See [Slovo attribution and licence](public/models/rsl1000-slovo/ATTRIBUTION.md). The source uses a custom attribution/share-alike licence, not the application-code licence. Its benchmark results are not SignRelay live-camera accuracy. RSL has not received independent native-signer evaluation. This addition meets 400+ pretrained word/phrase classes for RSL; it does **not** establish 400+ pretrained signs for every workspace.
 
-The 2,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL2000 OpenPose sequences. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. BSL and ISL likewise use their own official isolated-sign checkpoints. Typed custom words activate only after the signer records personal examples; they do not alter a shared model. The remaining languages never borrow, relabel or fabricate a checkpoint.
+The ASL model is the official Pose-TGCN checkpoint trained on WLASL2000 OpenPose sequences, with 2,000 output labels; Sprint 8 measured 22% top-1 on its publisher's own test inputs and far less on SignRelay's live landmarks (docs/evaluation/asl2000-sprint8). The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. BSL and ISL likewise use their own official isolated-sign checkpoints. Typed custom words activate only after the signer records personal examples; they do not alter a shared model. The remaining languages never borrow, relabel or fabricate a checkpoint.
 
 ### PSL installation and use
 
@@ -238,7 +238,7 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 
 ## Known limitations
 
-- The installed ASL checkpoint is the official experimental 2,000-sign WLASL Pose-TGCN model. Its live MediaPipe input adapter and closed-set rejection gate must still be evaluated separately.
+- The installed ASL checkpoint is the official WLASL2000 Pose-TGCN model (2,000 labels). Sprint 8 found that SignRelay had been erasing both hands from its input and fixed it; even so, most words it accepts from live landmarks are wrong. See docs/evaluation/asl2000-sprint8.
 - Personal template matching is signer-specific and is not a substitute for a signer-independent ASL benchmark.
 - Performance varies with viewpoint, signing speed, hand dominance, occlusion and lighting.
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.
