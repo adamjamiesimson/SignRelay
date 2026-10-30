@@ -67,5 +67,7 @@ describe("ASL-2000 packed runtime", () => {
     }));
 
     expect(actual).toEqual(expected);
-  });
+    // Seven full inferences take ~6 s in Node on a 4 vCPU host, more under a
+    // parallel suite; the budget bounds a hang, the hashes check correctness.
+  }, 120000);
 });
