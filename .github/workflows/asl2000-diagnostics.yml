@@ -1,0 +1,150 @@
+name: ASL-2000 Recognition Diagnostics (non-release)
+
+# Sprint 8 root-cause evaluation of the shipped WLASL2000 Pose-TGCN.
+# A: publisher OpenPose keypoints (official checkpoint vs shipped int8 model,
+#    and the same keypoints through SignRelay's adapter variants).
+# B: the same WLASL test videos (direct, non-YouTube sources) through MediaPipe
+#    Tasks and SignRelay's adapter, plus geometry against the publisher's keypoints.
+# C: those clips replayed through the production vision engine and worker in
+#    Chrome, and the complete live frame sequences through the isolated evaluator.
+#
+# Data terms: WLASL C-UDA 1.0 (academic/computational use only), the same terms
+# under which the shipped checkpoint is used. Raw videos, keypoints and
+# landmarks stay on the runner; only aggregate metrics and per-instance
+# predictions (labels, ranks, scores) are printed and uploaded.
+on:
+  workflow_dispatch:
+    inputs:
+      browser_clips:
+        description: 'Maximum clips replayed in Chrome (condition C)'
+        default: '150'
+  push:
+    branches:
+      - claude/festive-dirac-pbwx2j
+    paths:
+      - '.github/workflows/asl2000-diagnostics.yml'
+      - 'training/asl2000_conditions.py'
+      - 'training/tgcn_packed.py'
+      - 'scripts/asl2000-eval/**'
+      - 'lib/tgcn-input.ts'
+      - 'lib/asl1000-runtime.ts'
+      - 'docs/evaluation/asl2000-sprint8/frozen-sample.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asl2000-diagnostics-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    env:
+      DATA: ${{ github.workspace }}/../wlasl-data
+      WORK: ${{ github.workspace }}/evaluation/raw/asl2000-sprint8
+      REPORTS: ${{ github.workspace }}/evaluation/derived/asl2000-sprint8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libegl1 libgles2
+          python -m pip install --disable-pip-version-check numpy opencv-python-headless mediapipe
+          node scripts/install-vision-assets.mjs
+          mkdir -p "$DATA" "$WORK" "$REPORTS"
+          df -h . "$DATA"
+
+      - name: Download publisher WLASL data (C-UDA; stays on this runner)
+        run: |
+          set -euo pipefail
+          cd "$DATA"
+          fetch() { curl -fL --retry 4 --retry-delay 10 -o "$1" "https://drive.usercontent.google.com/download?id=$2&export=download&confirm=t"; }
+          fetch archived.zip 1dzvocsaylRsjqaY4r_lyRihPZn0I6AA_
+          fetch splits.zip 16CWkbMLyEbdBkrxAPaxSXFP_aSxKzNN4
+          fetch pose.zip 1k5mfrc2g4ZEzzNjW6CEVjLvNTZcmPanB
+          curl -fL --retry 4 -o WLASL_v0.3.json https://raw.githubusercontent.com/dxli94/WLASL/master/start_kit/WLASL_v0.3.json
+          ls -la
+          unzip -q archived.zip -d checkpoints
+          unzip -q splits.zip -d splits
+          find checkpoints splits -maxdepth 3 | head -30
+          unzip -l pose.zip | head -5
+          python - <<'EOF'
+          import hashlib, json
+          frozen = json.load(open("${{ github.workspace }}/docs/evaluation/asl2000-sprint8/frozen-sample.json"))
+          actual = hashlib.sha256(open("WLASL_v0.3.json", "rb").read()).hexdigest()
+          assert actual == frozen["source_index"]["sha256"], "WLASL index differs from the one the sample was frozen against"
+          print("Frozen sample index verified", actual)
+          EOF
+
+      - name: Bundle the isolated evaluator (production TypeScript)
+        run: |
+          npx esbuild scripts/asl2000-eval/preprocess.ts scripts/asl2000-eval/infer.ts scripts/asl2000-eval/live-cases.ts \
+            --bundle --platform=node --format=esm --outdir="$WORK/bin" --out-extension:.js=.mjs
+
+      - name: Condition A — publisher keypoints
+        run: |
+          python training/asl2000_conditions.py official \
+            --split "$(find "$DATA/splits" -name asl2000.json | head -1)" \
+            --poses "$DATA/pose.zip" \
+            --checkpoint "$(find "$DATA/checkpoints" -path '*asl2000*' -name 'ckpt.pth' | head -1)" \
+            --node-preprocess "$WORK/bin/preprocess.mjs" --node-infer "$WORK/bin/infer.mjs" \
+            --workdir "$WORK/a" --output "$REPORTS/condition-a.json" --parity 32
+
+      - name: Condition B — the same test videos through MediaPipe
+        run: |
+          python training/asl2000_conditions.py mediapipe \
+            --split "$(find "$DATA/splits" -name asl2000.json | head -1)" \
+            --poses "$DATA/pose.zip" --index "$DATA/WLASL_v0.3.json" \
+            --videos "$DATA/videos" --framing "$REPORTS/condition-a.json" \
+            --node-preprocess "$WORK/bin/preprocess.mjs" \
+            --workdir "$WORK/b" --output "$REPORTS/condition-b.json"
+
+      - name: Condition C — live browser pipeline on the same clips
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v chromium)"
+          python - <<'EOF'
+          import json, os
+          clips = json.load(open(os.environ["WORK"] + "/b/clips.json"))
+          order = {"everyday": 0}
+          clips.sort(key=lambda c: (order.get(c["group"], 1 if c["group"].startswith("tier") else 2)))
+          seen, chosen = set(), []
+          for clip in clips:
+              if clip["id"] not in seen:
+                  seen.add(clip["id"]); chosen.append(clip)
+          limit = int("${{ inputs.browser_clips || '150' }}")
+          json.dump(chosen[:limit], open(os.environ["WORK"] + "/c-clips.json", "w"))
+          print(len(chosen[:limit]), "clips for the browser replay")
+          EOF
+          node scripts/asl2000-eval/browser-run.mjs "$chrome" "$WORK/c-clips.json" "$WORK/c-captures" \
+            v1=/workers/recognition.worker.js --pause=0,1000 > "$REPORTS/condition-c-worker-log.jsonl"
+          tail -5 "$REPORTS/condition-c-worker-log.jsonl"
+          node "$WORK/bin/live-cases.mjs" "$WORK/c-captures" "$WORK/c-cases.jsonl" "$REPORTS/condition-c-outcomes.jsonl"
+          python training/asl2000_conditions.py live \
+            --cases "$WORK/c-cases.jsonl" --outcomes "$REPORTS/condition-c-outcomes.jsonl" \
+            --clips "$WORK/c-clips.json" --framing "$REPORTS/condition-a.json" \
+            --node-preprocess "$WORK/bin/preprocess.mjs" \
+            --workdir "$WORK/c" --output "$REPORTS/condition-c.json"
+
+      - name: Upload derived reports (no media, keypoints or landmarks)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asl2000-sprint8-diagnostics
+          path: evaluation/derived/asl2000-sprint8/
+          retention-days: 30
