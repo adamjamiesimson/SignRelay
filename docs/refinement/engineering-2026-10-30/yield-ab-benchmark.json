@@ -1,0 +1,65 @@
+{
+  "benchmark": "tests/cooperative-yield-browser-smoke.mjs warm medians (module worker, real ASL-2000 weights and PSL 775 references, kinematic NO fixture)",
+  "baseline": "yieldToTasks replaced by setTimeout(0), identical to the previous code",
+  "candidate": "yieldToTasks (MessageChannel in browsers)",
+  "method": "Same probe, browser and host; only the yield primitive differs; runs alternate baseline/candidate. Each value is the median of 5 warm inferences (PSL: 5 of 6, first discarded).",
+  "host": {
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+    "vcpus": 4,
+    "browser": "Chromium (Playwright build 1243) headless"
+  },
+  "asl2000_ms": {
+    "baseline": [
+      645,
+      522,
+      570,
+      512,
+      736,
+      566,
+      601
+    ],
+    "candidate": [
+      468,
+      384,
+      425,
+      426,
+      404,
+      376,
+      419
+    ],
+    "baseline_median": 570,
+    "candidate_median": 419
+  },
+  "psl775_ms": {
+    "baseline": [
+      197,
+      167,
+      192
+    ],
+    "candidate": [
+      114,
+      107,
+      103
+    ],
+    "baseline_median": 192,
+    "candidate_median": 107
+  },
+  "under_page_message_load_asl2000_ms": {
+    "note": "single inference while the page posted a message every 2 ms",
+    "baseline": [
+      514,
+      730,
+      493,
+      604
+    ],
+    "candidate": [
+      401,
+      381,
+      406,
+      415
+    ]
+  },
+  "control": "A microtask 'yield' (Promise.resolve) failed the probe: 0 page messages handled during inference.",
+  "equivalence": "Arithmetic unchanged: golden logit SHA-256 tests pass; the probe requires identical output under load and after cancellations.",
+  "note": "Worker computation timing on this host, not webcam latency or device evidence."
+}
