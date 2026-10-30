@@ -1,6 +1,7 @@
 import { prepareCalibrationSequence, compileDistanceSequence, cachedTemplateSequence, compiledSequenceDistance, type MatchOptions } from "./personalized-recognition";
 import type { VisionFrame } from "./vision-types";
 import { downloadModelBytes } from "./model-download";
+import { yieldToTasks } from "./task-yield";
 
 export type Psl776Prediction = { label: string; text: string; confidence: number; margin: number };
 export type Psl776Template = { gloss: string; text: string; frames: number[][] };
@@ -83,7 +84,7 @@ export async function matchPslTemplates(sequence: VisionFrame[], templates: Psl7
       else if (!rival || distance < rival.distance) rival = { template, distance };
     }
     if (performance.now() - lastYield >= (options.sliceMs ?? 6)) {
-      await new Promise<void>(resolve => setTimeout(resolve, 0));
+      await yieldToTasks();
       options.signal?.throwIfAborted();
       lastYield = performance.now();
     }

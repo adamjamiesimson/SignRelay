@@ -1,6 +1,7 @@
 import type { CalibrationTemplate, Point, VisionFrame } from "./vision-types";
 import { validHand } from "./asl-starter-recognition";
 import { recentContinuousFrames } from "./frame-timing";
+import { yieldToTasks } from "./task-yield";
 
 export const CALIBRATION_SEQUENCE_LENGTH = 24;
 
@@ -71,7 +72,7 @@ export async function recognizePersonalTemplateAsync(
     options.signal?.throwIfAborted();
     if (distance < (matches.get(template.gloss)?.distance ?? Infinity)) matches.set(template.gloss, { template, distance });
     if (performance.now() - yielded >= (options.sliceMs ?? 6)) {
-      await new Promise<void>(resolve => setTimeout(resolve, 0));
+      await yieldToTasks();
       options.signal?.throwIfAborted();
       yielded = performance.now();
     }
