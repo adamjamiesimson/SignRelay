@@ -14,7 +14,7 @@ on:
       - '.github/workflows/asl-landmark-model.yml'
       - 'training/popsign_landmarks.py'
       - 'training/train_landmark_classifier.py'
-      - 'scripts/asl2000-eval/complete-ca-chain.sh'
+      - 'training/complete_popsign_chain.sh'
 
 permissions:
   contents: read
@@ -36,7 +36,7 @@ jobs:
       - name: Complete and verify the PopSign certificate chain
         run: |
           for attempt in 1 2 3 4 5 6 7 8; do
-            bash scripts/asl2000-eval/complete-ca-chain.sh signdata.cc.gatech.edu popsign-ca.pem && break
+            bash training/complete_popsign_chain.sh popsign-ca.pem && break
             test "$attempt" -lt 8
             sleep $(( attempt * 15 ))
           done
