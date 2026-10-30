@@ -25,6 +25,9 @@ This adds to [PR #45's checklist](../followup-2026-10-28/owner-checklist.md), wh
 
 ## Supervised device sessions (in addition to PR #45's list)
 
+Step-by-step procedures for each device, the `?perf` fields, model latency, the tracking-recovery trigger, personal signs, miss-stage codes and the results template are in the [manual-testing guide](manual-testing-guide.md).
+
+
 - [ ] **Tracking failure:** if tracking recovers mid-session (the `?perf` panel shows a recovery), confirm the hand overlay disappears immediately and no word is added from before the interruption. Record the device, build and worker hash.
 - [ ] **Personal signs:** with at least 100 saved examples, record the `?perf` `personal` time while signing a saved word, and confirm saved words are still recognized and near-identical words still abstain.
 - [ ] **RSL and Bangla:** one recognition each on a laptop, then Stop. Confirm no error appears and the camera light goes off.

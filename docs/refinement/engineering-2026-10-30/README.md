@@ -6,6 +6,13 @@ Draft [PR #46](https://github.com/adamjamiesimson/SignRelay/pull/46), branch `cl
 
 **One gate could not run.** The ASL video pilot (zero-new-wrong-acceptance gate) fails before evaluating anything, because the clip host's TLS chain stopped verifying on GitHub's runners. The same failure occurs on PR #45's previously passing head (see [§7](#7-blocked-the-asl-video-pilot)). This branch changes ASL-2000 scheduling, so its real-clip outcome is **unverified** until the pilot runs.
 
+**Follow-up documents:**
+
+- [Release status](release-status.md): blockers, separated from verified improvements
+- [Manual-testing guide](manual-testing-guide.md): Windows laptop, Android, iPhone
+- [Why THANK YOU and YES are still missed](thank-you-yes-investigation.md)
+- [Owner checklist](owner-checklist.md)
+
 ## How this sprint started
 
 An earlier Codex session started this brief but stopped before pushing; nothing it did reached GitHub. Its transcript named five leads. Each was re-derived from the code and reproduced here before any change, and nothing was taken on trust:
