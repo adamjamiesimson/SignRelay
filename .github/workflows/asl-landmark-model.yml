@@ -6,15 +6,10 @@ name: ASL Landmark Model Candidate (non-release)
 # runner and deleted; only the trained model, its labels and evaluation report
 # are committed (to docs/, not to the app).
 on:
+  # Manual only: from GitHub runners the PopSign host's certificate chain ends at
+  # "emSign Root TLS CA - G3", which does not verify against the runner's system
+  # roots (Sprint 8 report). Run where the chain verifies, or after the host is fixed.
   workflow_dispatch:
-  push:
-    branches:
-      - claude/festive-dirac-pbwx2j
-    paths:
-      - '.github/workflows/asl-landmark-model.yml'
-      - 'training/popsign_landmarks.py'
-      - 'training/train_landmark_classifier.py'
-      - 'training/complete_popsign_chain.sh'
 
 permissions:
   contents: read
