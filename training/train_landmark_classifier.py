@@ -38,6 +38,7 @@ SEQUENCE = 32
 POSE_POINTS = [0, 13, 14, 15, 16]
 FEATURES = 2 * (42 + 42 + 1) + len(POSE_POINTS) * 2
 SEED = 20261030
+TARGET_PRECISION = 0.9
 
 
 # ---------------------------------------------------------------- features
@@ -261,6 +262,25 @@ def main() -> None:
     def gate(r: dict, confidence: float) -> bool:
         return r["tracked"] and r["prediction"] != "__other__" and r["confidence"] >= confidence
 
+    # The operating threshold is chosen on validation signers only: the lowest
+    # confidence whose accepted predictions are at least TARGET_PRECISION correct,
+    # counting accepted 'other' and never-seen-sign clips as errors.
+    val_rows = predict(val)
+    threshold = 0.99
+    for candidate in [round(0.3 + 0.02 * i, 2) for i in range(35)]:
+        accepted = [r for r in val_rows if gate(r, candidate)]
+        if len(accepted) >= 20 and sum(r["prediction"] == r["sign"] for r in accepted) / len(accepted) >= TARGET_PRECISION:
+            threshold = candidate
+            break
+    accepted = [r for r in known if gate(r, threshold)]
+    operating = {"threshold_from_validation_signers": threshold, "target_precision": TARGET_PRECISION,
+                 "test_known_clips": len(known), "accepted": len(accepted),
+                 "correct": sum(r["prediction"] == r["sign"] for r in accepted),
+                 "wrong": sum(r["prediction"] != r["sign"] for r in accepted),
+                 "other_class_clips_accepted": sum(gate(r, threshold) for r in rejected_known),
+                 "never_seen_sign_clips_accepted": sum(gate(r, threshold) for r in never_seen),
+                 "never_seen_sign_clips": len(never_seen)}
+
     sweep = []
     for confidence in (0.3, 0.5, 0.6, 0.7, 0.8, 0.9):
         accepted = [r for r in known if gate(r, confidence)]
@@ -286,6 +306,7 @@ def main() -> None:
                  "top5": round(sum(r["sign"] in r.get("top5", []) for r in known) / max(1, len(known)), 4),
                  "other_class_clips": len(rejected_known), "never_seen_clips": len(never_seen)},
         "gate_sweep": sweep,
+        "operating_point": operating,
         "per_sign": {sign: {"clips": v["clips"], "top1": v["top1"], "signers": len(v["signers"]),
                             "wlasl_label": wlasl.get(re.sub(r"[^a-z0-9]", "", sign.lower()))}
                      for sign, v in sorted(per_sign.items())},
@@ -293,6 +314,11 @@ def main() -> None:
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "report.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
     (args.output / "labels.json").write_text(json.dumps(labels, indent=1) + "\n", encoding="utf-8")
+    (args.output / "metadata.json").write_text(json.dumps({
+        "model": "signrelay-popsign-landmark-candidate", "sequence": SEQUENCE, "features": FEATURES,
+        "classes": len(labels), "rejectLabel": "__other__", "threshold": threshold,
+        "dataset": "PopSign ASL v1.0 game split, CC BY 4.0 (Georgia Tech / Deaf Professional Arts Network)",
+        "featureSpec": "lib/landmark-sign-features.ts = training/train_landmark_classifier.py clip_features"}, indent=1) + "\n", encoding="utf-8")
     with (args.output / "test-predictions.jsonl").open("w", encoding="utf-8") as handle:
         for row in test_rows:
             handle.write(json.dumps(row) + "\n")

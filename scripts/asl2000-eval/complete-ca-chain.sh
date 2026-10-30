@@ -18,9 +18,12 @@ for level in 1 2 3 4; do
   issuer="$(openssl x509 -in "$current" -noout -ext authorityInfoAccess 2>/dev/null | sed -n 's/.*CA Issuers - URI:\(http[^ ]*\).*/\1/p' | head -1)"
   test -n "$issuer" || { echo "No AIA issuer at level $level" >&2; exit 1; }
   curl -fsSL --retry 3 -o "$work/$level.bin" "$issuer"
+  # Issuers are served as DER, PEM or a PKCS#7 bundle (.p7c) of cross-signs.
   openssl x509 -inform DER -in "$work/$level.bin" -out "$work/$level.pem" 2>/dev/null \
-    || openssl x509 -in "$work/$level.bin" -out "$work/$level.pem"
-  openssl x509 -in "$work/$level.pem" -noout -subject
+    || openssl x509 -in "$work/$level.bin" -out "$work/$level.pem" 2>/dev/null \
+    || openssl pkcs7 -inform DER -in "$work/$level.bin" -print_certs -out "$work/$level.pem" 2>/dev/null \
+    || openssl pkcs7 -in "$work/$level.bin" -print_certs -out "$work/$level.pem"
+  grep '^subject=' "$work/$level.pem" || openssl x509 -in "$work/$level.pem" -noout -subject
   cat "$work/$level.pem" >> "$work/chain.pem"
   current="$work/$level.pem"
 done

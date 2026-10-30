@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { prepareTgcnInput } from "../lib/asl1000-runtime";
+import { ASL2000_INPUT, prepareTgcnInput } from "../lib/asl1000-runtime";
 import {
   assignHands, fixedRateIndices, kCopiesIndices, PRODUCTION_V1_INPUT, prepareTgcnWindows, type TgcnInputOptions,
 } from "../lib/tgcn-input";
@@ -90,5 +90,23 @@ describe("ASL-2000 input construction", () => {
     // No pose wrists: keep the label.
     const noPose: VisionFrame = { timestamp: 0, hands: [near(0.31, "Left")], face: [], pose: [] };
     expect(assignHands(noPose, "pose-wrist")[0]).toBeDefined();
+  });
+
+  it("keeps a sign on the same model frames however long the signer pauses afterwards (production input)", () => {
+    // 1.2 s of movement at 30 fps, then a settled tail of 0.2 s or 2.0 s.
+    const sign = (tail: number) => Array.from({ length: Math.round((1.2 + tail) * 30) + 1 }, (_, i) => {
+      const t = Math.min(i / 30, 1.2);
+      return frame(i * 1000 / 30, [tasksHand("Right", 0.3 + t * 0.2, 0.5 - t * 0.1)],
+        { left: { x: 0.7, y: 0.6, z: 0 }, right: { x: 0.3 + t * 0.2, y: 0.5 - t * 0.1, z: 0 } });
+    });
+    const window = (frames: VisionFrame[], options = ASL2000_INPUT) => prepareTgcnWindows(frames, options)[0];
+    const short = window(sign(0.2)), long = window(sign(2.0));
+    // The first 31 model frames (1.2 s at 25 fps) carry the movement identically.
+    for (let node = 0; node < 55; node++) {
+      expect([...long.slice(node * 100, node * 100 + 62)]).toEqual([...short.slice(node * 100, node * 100 + 62)]);
+    }
+    // The v1 stretch moved the same movement to different model frames.
+    const stretched = (frames: VisionFrame[]) => prepareTgcnWindows(frames, { ...PRODUCTION_V1_INPUT, handVisibility: "ignore" })[0];
+    expect([...stretched(sign(2.0)).slice(34 * 100, 34 * 100 + 62)]).not.toEqual([...stretched(sign(0.2)).slice(34 * 100, 34 * 100 + 62)]);
   });
 });
