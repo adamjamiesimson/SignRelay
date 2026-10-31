@@ -1,77 +1,41 @@
-name: Fingerspelling data and model research
+name: Fingerspelling real-data CTC pilot
 on:
   push:
     branches: [codex/asl-fingerspelling-2026-10-31]
-    paths: ['.github/workflows/fingerspelling-data-research.yml', 'training/fingerspelling/**']
+    paths: ['.github/workflows/fingerspelling-data-research.yml', 'training/fingerspelling/**', 'scripts/diagnostics/fingerspelling-*']
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: fingerspelling-real-data-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
-  sources:
+  independent-ctc:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 100
+    env:
+      OMP_NUM_THREADS: '2'
+      OPENBLAS_NUM_THREADS: '1'
+      TF_CPP_MIN_LOG_LEVEL: '2'
+      PYTHONUNBUFFERED: '1'
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
-      - name: Public FSboard metadata and download access, verified TLS
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install CPU training environment
         run: |
-          python - <<'PY'
-          import urllib.request, urllib.error, json, hashlib, os, platform
-          print("COMPUTE", platform.platform(), "cpu", os.cpu_count())
-          for url in [
-            "https://www.kaggle.com/api/v1/datasets/view/googleai/fsboard",
-            "https://www.kaggle.com/api/v1/datasets/list/googleai/fsboard",
-            "https://www.kaggle.com/api/v1/datasets/download/googleai/fsboard/daun_v3/metadata/daun_v3-train.json",
-            "https://www.kaggle.com/api/v1/datasets/download/googleai/fsboard/daun_v3/metadata/daun_v3-validation.json",
-            "https://www.kaggle.com/api/v1/datasets/download/googleai/fsboard/daun_v3/metadata/daun_v3-test.json",
-          ]:
-            try:
-              with urllib.request.urlopen(url,timeout=45) as r:
-                b=r.read(64*1024*1024+1)
-                print("SOURCE",url,"status",r.status,"type",r.headers.get("Content-Type"),"bytes",len(b),"sha256",hashlib.sha256(b).hexdigest())
-                if len(b)>64*1024*1024: raise ValueError("bounded metadata size exceeded")
-                try: d=json.loads(b)
-                except Exception: print("NON-JSON",b[:100]);continue
-                if isinstance(d,list):
-                  print("RECORDS",len(d),"SCHEMA",list(d[0]) if d else [])
-                  if d: print("FIRST_SCHEMA",{k:type(v).__name__ for k,v in d[0].items()})
-                else:
-                  print("KEYS",list(d))
-                  for k in ["licenses","licenseName","currentVersionNumber","totalBytes","datasetFiles","nextPageToken"]:
-                    if k in d: print(k,str(d[k])[:14000])
-            except Exception as e: print("SOURCE-ERROR",url,type(e).__name__,str(e)[:150])
-          PY
-
-      - name: Install public data inspection clients
-        run: python -m pip install --disable-pip-version-check kagglehub==0.3.13 pyarrow==19.0.1 numpy==1.26.4
-      - name: Inspect exact public files and checkpoint provenance
-        run: |
-          python - <<'PY'
-          import urllib.request,urllib.parse,json,hashlib,os
-          import kagglehub
-          for path in ["LICENSE","convert_arrow_to_parquet.py","daun_v3/metadata/daun_v3-train.json","daun_v3/metadata/daun_v3-validation.json","daun_v3/metadata/daun_v3-test.json"]:
-            try:
-              p=kagglehub.dataset_download("googleai/fsboard/versions/13",path=path)
-              b=open(p,"rb").read()
-              print("FSBOARD-FILE",path,"bytes",len(b),"sha256",hashlib.sha256(b).hexdigest(),flush=True)
-              if path=="LICENSE": print(b.decode())
-              elif path.endswith(".py"): print(b.decode())
-              elif path.endswith(".json"):
-                d=json.loads(b);print("COUNT",len(d),"FIRST",d[0],flush=True)
-            except Exception as e: print("ERROR",path,type(e).__name__,str(e)[:180],flush=True)
-          for url in [
-            "https://www.kaggle.com/api/v1/datasets/view/sohier/529505295052950",
-            "https://www.kaggle.com/api/v1/datasets/list/sohier/529505295052950",
-            "https://huggingface.co/api/models/Skunk0/openglasses-fingerspelling-ctc",
-            "https://huggingface.co/Skunk0/openglasses-fingerspelling-ctc/resolve/main/LICENSE",
-            "https://www.kaggle.com/competitions/asl-fingerspelling/rules",
-          ]:
-            try:
-              with urllib.request.urlopen(url,timeout=45) as r: b=r.read(3*1024*1024)
-              if "rules" in url:
-                s=b.decode();print("RULES",len(s),"Apache",s.find("Apache"),"Open Source",s.find("Open Source"))
-                for term in ["Apache","license","rules"]:
-                  i=s.find(term);print("RULE",term,s[max(0,i-200):i+500])
-              else: print("PUBLIC",url,b.decode()[:24000])
-            except Exception as e: print("PUBLIC-ERROR",url,type(e).__name__,str(e)[:150])
-          PY
+          python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+          python -m pip install --disable-pip-version-check torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+      - name: Verify raw publisher clips; re-extract with pinned app task
+        run: python training/fingerspelling/prepare.py --train 512 --validation 64 --test 96 --workers 2
+      - name: Train independent small CTC; sealed signer-disjoint test; ONNX parity
+        run: python training/fingerspelling/train.py --epochs 100
+      - name: Preserve candidate and aggregate evidence only, never media/keypoints
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fsboard-independent-ctc-candidate
+          path: work/fingerspelling-candidate/
+          if-no-files-found: warn
+          retention-days: 14
