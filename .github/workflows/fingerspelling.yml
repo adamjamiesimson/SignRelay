@@ -20,5 +20,4 @@ jobs:
       - run: npm ci
       - name: Read installed Next.js authoring guide
         run: |
-          find node_modules/next/dist/docs -type f | head -30
-          cat node_modules/next/dist/docs/01-app/03-api-reference/01-directives/use-client.mdx
+          find node_modules/next/dist/docs -iname '*use-client*' -exec cat {} \;
