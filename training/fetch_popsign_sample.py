@@ -22,29 +22,12 @@ import hashlib
 import json
 import random
 import re
-import time
-import urllib.request
 from pathlib import Path
+
+from secure_download import get
 
 BASE = "https://signdata.cc.gatech.edu/data/popsign_v1_0/game"
 USER_AGENT = "SignRelay evaluation (CC BY 4.0 PopSign; low-rate range requests)"
-
-
-def get(url: str, start: int | None = None, size: int | None = None) -> bytes:
-    headers = {"User-Agent": USER_AGENT}
-    if start is not None:
-        headers["Range"] = f"bytes={start}-{start + size - 1}"
-    for attempt in range(4):
-        try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as response:
-                if start is not None and response.status != 206:
-                    raise ValueError("Source must honour byte ranges")
-                return response.read()
-        except Exception:  # noqa: BLE001 - bounded retry
-            if attempt == 3:
-                raise
-            time.sleep(2 ** attempt)
-    raise AssertionError
 
 
 def members(url: str, limit: int):
@@ -105,9 +88,8 @@ def main() -> None:
                     signers[signer] = (name, offset, size)
                 if len(signers) >= args.signers:
                     break
-        except Exception as error:  # noqa: BLE001 - record and continue
-            print(json.dumps({"sign": sign, "error": type(error).__name__}))
-            continue
+        except Exception as error:
+            raise RuntimeError(f"PopSign sample incomplete at {sign}: {error}") from error
         for signer, (name, offset, size) in signers.items():
             data = get(url, offset, size)
             if data[4:8] != b"ftyp":
@@ -120,6 +102,8 @@ def main() -> None:
                          "group": "popsign-in-vocab" if label else "popsign-oov", "signer": signer,
                          "source": url, "archive_member": name, "archive_offset": offset, "bytes": size,
                          "recording_sha256": digest, "license": "CC BY 4.0"})
+    if not rows:
+        raise RuntimeError("PopSign sample is empty; no evaluation manifest written")
     args.manifest.write_text(json.dumps(rows, indent=1), encoding="utf-8")
     print(json.dumps({"split": args.split, "archives": len(signs), "in_vocab_available": len(in_vocab), "in_vocab_chosen": len(chosen),
                       "oov_signs": oov, "clips": len(rows), "distinct_signers": len({row["signer"] for row in rows}),

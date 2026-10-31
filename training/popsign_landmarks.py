@@ -14,6 +14,7 @@ along time plus an index (sign, signer, member, frame offset, frame count).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -74,9 +75,8 @@ def main() -> None:
                         chosen[signer].append((name, start, size))
                     if len(chosen) >= args.signers and all(len(v) >= args.clips_per_signer for v in chosen.values()):
                         break
-            except Exception as error:  # noqa: BLE001 - record and continue
-                print(json.dumps({"sign": sign, "error": type(error).__name__}), flush=True)
-                continue
+            except Exception as error:
+                raise RuntimeError(f"Landmark shard incomplete at {sign}: {error}") from error
             for signer, clips in chosen.items():
                 for name, start, size in clips:
                     data = get(url, start, size)
@@ -93,15 +93,21 @@ def main() -> None:
                         pose, hand = frame_arrays(tracker.frame(rgb[min(round(k / FPS * native_fps), len(rgb) - 1)], k * 1000.0 / FPS))
                         poses.append(pose)
                         hands.append(hand)
-                    index.append({"sign": sign, "signer": signer, "member": name, "offset": offset, "frames": count})
+                    index.append({"sign": sign, "signer": signer, "member": name, "offset": offset, "frames": count,
+                                  "source": url, "archive_offset": start, "bytes": size,
+                                  "recording_sha256": hashlib.sha256(data).hexdigest(), "license": "CC BY 4.0"})
                     offset += count
             print(json.dumps({"sign": sign, "signers": len(chosen), "clips": sum(len(v) for v in chosen.values())}), flush=True)
     tracker.close()
+    if not index or not offset:
+        raise RuntimeError(f"Empty {args.split} shard {args.shard}; refusing to publish training artifact")
     args.output.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(args.output / f"{args.split}-{args.shard:02d}.npz",
+    artifact = args.output / f"{args.split}-{args.shard:02d}.npz"
+    np.savez_compressed(artifact,
                         pose=np.asarray(poses, dtype=np.float16).reshape(-1, 33, 3),
                         hands=np.asarray(hands, dtype=np.float16).reshape(-1, 2, 21, 2),
                         index=np.asarray(json.dumps(index)))
+    artifact.with_suffix(".sha256").write_text(hashlib.sha256(artifact.read_bytes()).hexdigest() + "\n", encoding="ascii")
     print(json.dumps({"split": args.split, "shard": args.shard, "signs": len(mine), "clips": len(index), "frames": offset}), flush=True)
     os._exit(0)  # MediaPipe 1.2 tasks crash in interpreter-shutdown finalisers
 

@@ -10,6 +10,14 @@ on:
   # "emSign Root TLS CA - G3", which does not verify against the runner's system
   # roots (Sprint 8 report). Run where the chain verifies, or after the host is fixed.
   workflow_dispatch:
+  # PRs exercise acquisition only; expensive candidate training remains manual.
+  pull_request:
+    paths:
+      - '.github/workflows/asl-landmark-model.yml'
+      - 'training/complete_popsign_chain.sh'
+      - 'scripts/asl2000-eval/complete-ca-chain.sh'
+      - 'training/secure_download.py'
+      - 'training/*landmark*.py'
 
 permissions:
   contents: read
@@ -23,26 +31,23 @@ jobs:
   # verification against the system roots) instead of from fifteen jobs.
   ca:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Complete and verify the PopSign certificate chain
-        run: |
-          for attempt in 1 2 3 4 5 6 7 8; do
-            bash training/complete_popsign_chain.sh popsign-ca.pem && break
-            test "$attempt" -lt 8
-            sleep $(( attempt * 15 ))
-          done
+        run: bash training/complete_popsign_chain.sh popsign-ca.pem
       - uses: actions/upload-artifact@v4
         with:
           name: popsign-ca
           path: popsign-ca.pem
           retention-days: 2
+          if-no-files-found: error
 
   extract:
     needs: ca
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -96,10 +101,11 @@ jobs:
           name: landmarks-${{ matrix.split }}-${{ matrix.shard }}
           path: landmarks/
           retention-days: 7
+          if-no-files-found: error
 
   train:
-    needs: extract
-    if: always()
+    needs: [ca, extract]
+    if: needs.ca.result == 'success' && needs.extract.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     permissions:
@@ -117,12 +123,22 @@ jobs:
           pattern: landmarks-*
           path: landmarks
           merge-multiple: true
+      - name: Validate complete, checksummed landmark shards
+        run: |
+          python -m pip install --disable-pip-version-check numpy
+          python training/validate_landmark_artifacts.py landmarks
       - name: Train and evaluate on unseen signers
         run: |
-          ls -la landmarks
           python -m pip install --disable-pip-version-check numpy onnx
           python -m pip install --disable-pip-version-check torch --index-url https://download.pytorch.org/whl/cpu
           python training/train_landmark_classifier.py landmarks candidate --epochs 60
+      - name: Store candidate only (never installed or deployed)
+        uses: actions/upload-artifact@v4
+        with:
+          name: asl-landmark-candidate
+          path: candidate/
+          if-no-files-found: error
+          retention-days: 7
       - name: Commit the candidate and its report (not wired into the app)
         if: github.event_name == 'push'
         env:

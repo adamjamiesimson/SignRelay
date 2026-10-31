@@ -34,6 +34,8 @@ from pathlib import Path
 
 import numpy as np
 
+from validate_landmark_artifacts import validate
+
 SEQUENCE = 32
 POSE_POINTS = [0, 13, 14, 15, 16]
 FEATURES = 2 * (42 + 42 + 1) + len(POSE_POINTS) * 2
@@ -174,6 +176,11 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=60)
     parser.add_argument("--wlasl-labels", type=Path, default=Path("public/models/asl2000-tgcn/labels.json"))
     args = parser.parse_args()
+    # Fail before importing torch or allocating training state.
+    try:
+        validate(args.landmarks)
+    except (ValueError, OSError, KeyError) as error:
+        parser.exit(1, f"Training blocked: {error}\n")
     import torch
 
     torch.manual_seed(SEED)

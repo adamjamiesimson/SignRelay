@@ -40,6 +40,16 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dataset acquisition and artifact regression tests
+        run: |
+          python -m pip install numpy
+          python -m unittest discover -s training -p 'test_secure_download.py' -v
+          python -m unittest discover -s training -p 'test_landmark_artifacts.py' -v
+          bash tests/ca-chain-regression.sh
+
       - name: Unit and regression tests
         run: npm test
 

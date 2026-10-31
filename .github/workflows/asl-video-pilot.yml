@@ -46,6 +46,10 @@ on:
       - 'lib/landmark-inference.ts'
       - 'lib/landmark-model-loader.ts'
       - 'public/models/asl2000-tgcn/**'
+      - 'training/secure_download.py'
+      - 'training/fetch_evaluation_clips.py'
+      - 'training/complete_popsign_chain.sh'
+      - 'scripts/asl2000-eval/complete-ca-chain.sh'
       - '.github/workflows/asl-video-pilot.yml'
   workflow_dispatch:
     inputs:
@@ -85,9 +89,15 @@ jobs:
           sudo apt-get install -y --no-install-recommends ffmpeg
 
       - name: Fetch only six licensed, SHA-256-frozen video clips
-        run: python3 training/fetch_evaluation_clips.py
+        env:
+          SSL_CERT_FILE: ${{ runner.temp }}/popsign-ca.pem
+        run: |
+          bash training/complete_popsign_chain.sh "$SSL_CERT_FILE"
+          python3 training/fetch_evaluation_clips.py
 
       - name: Fetch frozen additional development recordings (never sealed holdout)
+        env:
+          SSL_CERT_FILE: ${{ runner.temp }}/popsign-ca.pem
         run: python3 training/fetch_evaluation_clips.py docs/evaluation/popsign-development-2026-10-16.json
 
       - name: Restore the verified RSL model from the CI cache
