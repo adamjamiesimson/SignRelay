@@ -42,6 +42,10 @@ import {
   type LanguageId,
 } from "@/lib/model-adapters";
 import { isRecentDuplicate } from "@/lib/decoder";
+import { ASL_ALPHABET, FINGERSPELLING_MODEL, MAX_FINGERSPELLING_TEXT, editSpelling } from "@/lib/fingerspelling";
+import { FingerspellingCapture } from "@/lib/fingerspelling-capture";
+import { FingerspellingCtcSession } from "@/lib/fingerspelling-ctc-session";
+import { FINGERSPELLING_CTC_MODEL } from "@/lib/fingerspelling-model";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { LiveVision } from "@/lib/live-vision";
 import { RecognitionSession } from "@/lib/recognition-session";
@@ -80,6 +84,16 @@ const EMPTY_DETECTION: DetectionStatus = {
 
 export function TranslatorExperience() {
   const [step, setStep] = useState<Step>("welcome");
+  const [aslMode, setAslMode] = useState<"words" | "fingerspelling">("words");
+  const aslModeRef = useRef<"words" | "fingerspelling">("words");
+  const [spellingText, setSpellingText] = useState("");
+  const [spellingMessage, setSpellingMessage] = useState("");
+  const spellingInputRef = useRef<HTMLTextAreaElement>(null);
+  const spellingSessionRef = useRef<FingerspellingCtcSession | null>(null);
+  const spellingCaptureRef = useRef<FingerspellingCapture | null>(null);
+  const spellingTimerRef = useRef<number | null>(null);
+  const [spellingPhase, setSpellingPhase] = useState<"idle" | "loading" | "ready" | "capturing" | "processing" | "candidate" | "failed">("idle");
+  const [spellingCandidate, setSpellingCandidate] = useState("");
   const [selected, setSelected] = useState<LanguageId>("asl");
   const [cameraState, setCameraState] = useState<CameraState>("idle");
   const [cameraMessage, setCameraMessage] = useState("Camera is off");
@@ -258,6 +272,8 @@ export function TranslatorExperience() {
     sessionStartedRef.current = Date.now();
     workerRef.current?.postMessage({ type: "reset" });
     captureGenerationRef.current++;
+    aslModeRef.current = "words";
+    setAslMode("words");
     setSelected(language);
     const personalSign = createCustomVocabularyEntry("Personal sign")!;
     setCalibrationWord(personalSign);
@@ -292,6 +308,7 @@ export function TranslatorExperience() {
   }, [model.speechLocale]);
 
   const handleWorkerMessage = useCallback((message: WorkerMessage) => {
+    if (aslModeRef.current !== "words") return;
     if (message.type === "analysis") {
       if (perfMode) {
         perfRef.current.analysed++;
@@ -336,7 +353,7 @@ export function TranslatorExperience() {
   }, [speak, perfMode]);
 
   useEffect(() => {
-    if (step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
+    if (aslMode !== "words" || step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
     const worker = new RecognitionSession(
       () => new Worker("/workers/recognition.worker.js?v=tracking-temporal-3", { type: "module" }),
       handleWorkerMessage,
@@ -357,9 +374,58 @@ export function TranslatorExperience() {
       worker.terminate();
       workerRef.current = null;
     };
-  }, [step, selected, handleWorkerMessage, perfMode]);
+  }, [step, selected, aslMode, handleWorkerMessage, perfMode]);
+
+  const discardSpellingCapture = useCallback(() => {
+    if (spellingTimerRef.current !== null) window.clearTimeout(spellingTimerRef.current);
+    spellingCaptureRef.current = null; setSpellingCandidate("");
+    if (spellingSessionRef.current) spellingSessionRef.current.reset();
+    else setSpellingPhase("idle");
+  }, []);
+
+  useEffect(() => {
+    if (aslMode !== "fingerspelling" || selected !== "asl" || step !== "workspace" || cameraState !== "active") return;
+    let active = true;
+    const session = new FingerspellingCtcSession(
+      () => new Worker("/workers/fingerspelling.worker.js", { type: "module" }),
+      FINGERSPELLING_CTC_MODEL,
+      result => {
+        if (!active) return;
+        if (result.status === "no-hand" || !result.text.trim()) {
+          setSpellingCandidate(""); setSpellingPhase("ready");
+          setSpellingMessage("No text candidate. Try again with your hand clearly visible.");
+          return;
+        }
+        setSpellingCandidate(result.text); setSpellingPhase("candidate");
+        setSpellingMessage("Review the candidate before confirming. It may contain mistakes.");
+      },
+      state => {
+        if (!active) return;
+        if (state === "failed") {
+          spellingCaptureRef.current = null; setSpellingCandidate(""); setSpellingPhase("failed");
+          setSpellingMessage("Recognition is unavailable. Restart the camera to retry, or edit the draft below.");
+        } else if (state === "ready") setSpellingPhase("ready");
+        else if (state === "loading") { setSpellingCandidate(""); setSpellingMessage(""); setSpellingPhase("loading"); }
+        else setSpellingPhase("processing");
+      },
+    );
+    spellingSessionRef.current = session;
+    const visibility = () => { if (document.hidden) discardSpellingCapture(); };
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      document.removeEventListener("visibilitychange", visibility);
+      active = false; session.close();
+      if (spellingSessionRef.current === session) spellingSessionRef.current = null;
+      spellingCaptureRef.current = null;
+      if (spellingTimerRef.current !== null) window.clearTimeout(spellingTimerRef.current);
+    };
+  }, [aslMode, selected, step, cameraState, discardSpellingCapture]);
 
   const stopCamera = useCallback(() => {
+    spellingCaptureRef.current = null;
+    if (spellingTimerRef.current !== null) window.clearTimeout(spellingTimerRef.current);
+    spellingSessionRef.current?.close(); spellingSessionRef.current = null;
+    setSpellingCandidate(""); setSpellingPhase("idle");
     cameraGenerationRef.current++;
     visionAbortRef.current?.abort();
     visionAbortRef.current = null;
@@ -485,6 +551,7 @@ export function TranslatorExperience() {
   // The epoch is left alone so the failed frame still counts toward the
   // repeated-failure stop in the frame loop.
   const interruptTracking = useCallback(() => {
+    discardSpellingCapture();
     workerRef.current?.postMessage({ type: "reset" });
     const canvas = canvasRef.current;
     canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
@@ -492,7 +559,7 @@ export function TranslatorExperience() {
     setCandidate(null);
     setBufferSize(0);
     setMotionReason(null);
-  }, []);
+  }, [discardSpellingCapture]);
 
   const runFrameLoop = useCallback(() => {
     const video = videoRef.current;
@@ -534,6 +601,14 @@ export function TranslatorExperience() {
         if (!current()) return;
         const drawing = performance.now();
         drawOverlay(frame);
+        const capture = spellingCaptureRef.current;
+        if (capture && aslModeRef.current === "fingerspelling") {
+          try { capture.push(frame, video.videoWidth / video.videoHeight); }
+          catch {
+            discardSpellingCapture();
+            setSpellingMessage("Capture was interrupted. Please record the name again.");
+          }
+        }
         if (perfMode) {
           perfRef.current.overlay.record(performance.now() - drawing);
           perfRef.current.age.record(performance.now() - trackingStarted);
@@ -560,7 +635,7 @@ export function TranslatorExperience() {
         };
         setDetection(previous => Object.keys(nextDetection).every(key => previous[key as keyof DetectionStatus] === nextDetection[key as keyof DetectionStatus]) ? previous : nextDetection);
         if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
-        else workerRef.current?.postMessage({ type: "frame", frame });
+        else if (aslModeRef.current === "words") workerRef.current?.postMessage({ type: "frame", frame });
         frameErrorsRef.current = 0;
       })().catch(error => {
         if (!current()) return;
@@ -575,7 +650,7 @@ export function TranslatorExperience() {
       });
     }
     animationRef.current = requestAnimationFrame(frameLoopRef.current);
-  }, [drawOverlay, interruptTracking, stopCamera, perfMode]);
+  }, [drawOverlay, interruptTracking, stopCamera, perfMode, discardSpellingCapture]);
 
   useEffect(() => {
     frameLoopRef.current = runFrameLoop;
@@ -899,6 +974,7 @@ export function TranslatorExperience() {
     captureFramesRef.current = [];
     setCalibrationState("idle");
     const localCleared = clearLocalSignRelayData();
+    discardSpellingCapture(); setSpellingText(""); setSpellingMessage("");
     setEntries([]);
     setEditingId(null);
     setHistory([]);
@@ -919,6 +995,65 @@ export function TranslatorExperience() {
         : "Nothing could be removed from browser storage. Clear this site's data in your browser settings.");
     }
   };
+
+  function changeAslMode(mode: "words" | "fingerspelling") {
+    if (aslModeRef.current === mode) return;
+    // Block queued callbacks immediately; the effect terminates the worker.
+    // Returning to words creates a fresh session without clearing the transcript.
+    aslModeRef.current = mode;
+    discardSpellingCapture();
+    workerRef.current?.postMessage({ type: "reset" });
+    captureGenerationRef.current++;
+    captureFramesRef.current = [];
+    captureStateRef.current = "idle";
+    setCalibrationState("idle");
+    setCandidate(null); setBufferSize(0);
+    setRecognitionFeedback(""); setMotionReason(null);
+    window.speechSynthesis?.cancel();
+    setAslMode(mode);
+  }
+
+  function captureSpelling() {
+    setSpellingMessage(""); setSpellingCandidate("");
+    if (spellingPhase === "capturing") {
+      if (spellingTimerRef.current !== null) window.clearTimeout(spellingTimerRef.current);
+      const capture = spellingCaptureRef.current; spellingCaptureRef.current = null;
+      try {
+        if (!capture || !spellingSessionRef.current) throw new Error("Recognition is unavailable");
+        const input = capture.finish();
+        setSpellingPhase("processing");
+        spellingSessionRef.current.submit(input.features, input.frames);
+      } catch (error) {
+        setSpellingPhase("ready");
+        setSpellingMessage(error instanceof Error ? error.message : "Please record again.");
+      }
+      return;
+    }
+    const video = videoRef.current;
+    if (!video || !video.videoWidth || !spellingSessionRef.current) return;
+    const capture = new FingerspellingCapture(video.videoWidth / video.videoHeight);
+    spellingCaptureRef.current = capture; setSpellingPhase("capturing");
+    spellingTimerRef.current = window.setTimeout(() => {
+      if (spellingCaptureRef.current !== capture) return;
+      spellingCaptureRef.current = null; setSpellingPhase("ready");
+      setSpellingMessage("Capture reached 16 seconds. Please record a shorter name.");
+    }, 16000);
+  }
+
+  function confirmSpelling() {
+    if (spellingPhase !== "candidate" || !spellingCandidate.trim()) return;
+    setSpellingText(text => (text + spellingCandidate).slice(0, MAX_FINGERSPELLING_TEXT));
+    setSpellingCandidate(""); setSpellingPhase("ready"); setSpellingMessage("Candidate added. You can edit the draft.");
+    spellingInputRef.current?.focus();
+  }
+
+  function editSpellingText(action: "backspace" | "space" | "clear") {
+    if (["capturing", "processing", "candidate"].includes(spellingPhase)) discardSpellingCapture();
+    setSpellingText(text => editSpelling(text, action));
+    setSpellingMessage("");
+    window.speechSynthesis?.cancel();
+    spellingInputRef.current?.focus();
+  }
 
   if (step === "workspace" && (selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental"))) {
     return (
@@ -974,6 +1109,13 @@ export function TranslatorExperience() {
               </details>
             </div>
           </div>
+
+          {selected === "asl" && (
+            <div className="asl-mode-selector" role="group" aria-label="ASL recognition mode">
+              <button type="button" aria-pressed={aslMode === "words"} onClick={() => changeAslMode("words")}>Word Recognition</button>
+              <button type="button" aria-pressed={aslMode === "fingerspelling"} onClick={() => changeAslMode("fingerspelling")}>Fingerspelling</button>
+            </div>
+          )}
 
           <div className="translator-grid">
             <section className="camera-panel" aria-labelledby="camera-title" data-tour="camera">
@@ -1035,7 +1177,52 @@ export function TranslatorExperience() {
               </details>
             </section>
 
-            <section className="transcript-panel" aria-labelledby="transcript-title" data-tour="transcript">
+            {aslMode === "fingerspelling" && selected === "asl" && (
+              <section className="transcript-panel fingerspelling-panel" aria-labelledby="fingerspelling-title">
+                <div className="panel-heading"><h2 id="fingerspelling-title">Fingerspelling</h2></div>
+                <div className="spelling-candidate" aria-label="Sequence candidate">
+                  <strong style={{ fontSize: "1.5rem", overflowWrap: "anywhere", minWidth: 0 }}>{spellingCandidate || "—"}</strong>
+                  <p role="status">{spellingPhase === "capturing" ? "Recording your fingerspelling. Finish when the name is complete."
+                    : spellingPhase === "processing" ? "Recognising the captured sequence…"
+                    : spellingPhase === "loading" ? "Loading sequence recognition…"
+                    : FINGERSPELLING_MODEL.reason}</p>
+                </div>
+                <p className="calibration-message">Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Q and left-hand performance are unvalidated; other letters can also be wrong.</p>
+                <p className="sr-only" role="status">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraMessage}</p>
+                <label className="spelling-label" htmlFor="spelling-text">Composed text</label>
+                <textarea id="spelling-text" ref={spellingInputRef} value={spellingText}
+                  maxLength={MAX_FINGERSPELLING_TEXT} rows={4} spellCheck={false}
+                  placeholder="Your word or name" aria-describedby="spelling-help"
+                  onChange={event => { if (["capturing", "processing", "candidate"].includes(spellingPhase)) discardSpellingCapture(); setSpellingText(event.target.value); setSpellingMessage(""); window.speechSynthesis?.cancel(); }} />
+                <p id="spelling-help" className="field-hint">Editable draft · stays here when you switch modes · not saved after reload.</p>
+                <div className="spelling-actions" role="group" aria-label="Edit composed text">
+                  <button type="button" className="button secondary small"
+                    disabled={cameraState !== "active" || !["ready", "candidate", "capturing"].includes(spellingPhase)}
+                    onClick={captureSpelling}>{spellingPhase === "capturing" ? "Finish capture" : "Capture name"}</button>
+                  <button type="button" className="button ghost small" disabled={!["capturing", "processing"].includes(spellingPhase)}
+                    onClick={() => { discardSpellingCapture(); setSpellingMessage("Capture cancelled."); }}>Cancel capture</button>
+                  <button type="button" className="button secondary small" disabled={spellingPhase !== "candidate" || !spellingCandidate.trim() || spellingText.length >= MAX_FINGERSPELLING_TEXT}
+                    onClick={confirmSpelling}>Confirm text</button>
+                  <button type="button" className="button ghost small" disabled={!spellingText} onClick={() => editSpellingText("backspace")}>Backspace</button>
+                  <button type="button" className="button ghost small" disabled={spellingText.length >= MAX_FINGERSPELLING_TEXT} onClick={() => editSpellingText("space")}>Space</button>
+                  <button type="button" className="button ghost small" disabled={!spellingText} onClick={() => editSpellingText("clear")}>Clear</button>
+                  <button type="button" className="button secondary small" disabled={!spellingText.trim()} onClick={() => {
+                    if (!("speechSynthesis" in window)) { setSpellingMessage("Speech output is unavailable in this browser."); return; }
+                    speak(spellingText);
+                  }}>Speak</button>
+                  <button type="button" className="button ghost small" onClick={() => window.speechSynthesis?.cancel()}>Stop</button>
+                </div>
+                {spellingMessage && <p className="calibration-message" role="status">{spellingMessage}</p>}
+                <p className="field-hint">Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.</p>
+                <details className="workspace-disclosure spelling-reference">
+                  <summary>Alphabet &amp; first-use notes</summary>
+                  <p>{ASL_ALPHABET.join(" · ")}</p>
+                  <p>J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.</p>
+                  <p>No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation.</p>
+                </details>
+              </section>
+            )}
+            <section className="transcript-panel" hidden={aslMode === "fingerspelling"} aria-labelledby="transcript-title" data-tour="transcript">
               <div className="panel-heading">
                 <h2 id="transcript-title" ref={transcriptHeadingRef} tabIndex={-1}>Transcript</h2>
                 <div className={`recognition-state ${status.tone}`} data-status={status.key} data-worker-state={recognitionState}>
@@ -1151,7 +1338,7 @@ export function TranslatorExperience() {
           </div>
 
           <div className="workspace-secondary" data-tour="teach">
-            <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef} data-taught={trainedGlosses.size}>
+            <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef} data-taught={trainedGlosses.size} hidden={aslMode === "fingerspelling"}>
               <summary>
                 <span className="summary-title"><BookPlus aria-hidden="true" size={18} />Personal signs</span>
                 <ChevronDown aria-hidden="true" size={16} />

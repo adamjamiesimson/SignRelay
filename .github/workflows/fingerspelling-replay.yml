@@ -1,0 +1,63 @@
+name: Fingerspelling real-source app replay
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-replay.yml', 'scripts/diagnostics/fingerspelling-app-*', 'lib/fingerspelling-*', 'workers/fingerspelling.worker.ts', 'components/translator-experience.tsx']
+permissions:
+  contents: read
+jobs:
+  real-source-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1
+      - run: python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+      - name: Re-extract verified real held-out recordings
+        run: python scripts/diagnostics/fingerspelling-app-prepare.py
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0', cache: npm}
+      - run: npm ci
+      - name: Read installed Next client-component guide
+        run: |
+          python - <<'PY'
+          import pathlib
+          guides=list(pathlib.Path("node_modules/next/dist/docs").rglob("*use-client*"))
+          assert guides, "Installed Next guide missing"
+          for p in guides: print(p.read_text())
+          PY
+      - run: npm run build:rehearsal
+      - name: Real-source capture, worker, candidate and deliberate confirmation
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium)"
+          node scripts/diagnostics/fingerspelling-app-replay.mjs "$chrome"
+      - name: Verify native ONNX text for the exact app-captured inputs
+        run: |
+          python - <<'PY'
+          import json,numpy as np,onnxruntime as ort,pathlib
+          inputs=json.loads(pathlib.Path("work/fingerspelling-app/captured-inputs.json").read_text())
+          session=ort.InferenceSession("public/models/asl-fingerspelling/fsboard-pilot-v1.onnx",providers=["CPUExecutionProvider"])
+          vocab=json.loads(pathlib.Path("docs/fingerspelling/evidence/fsboard-v13-vocabulary.json").read_text())
+          for row in inputs:
+            x=np.asarray(row["features"],np.float32).reshape(1,row["frames"],66)
+            ids=session.run(None,{"features":x})[0][0].argmax(-1)
+            out=[];last=-1
+            for value in ids:
+              if value!=last and value:out.append(vocab[int(value)])
+              last=value
+            assert "".join(out)==row["prediction"],"Native/app captured text mismatch"
+          path=pathlib.Path("outputs/fingerspelling-app-real.json")
+          report=json.loads(path.read_text());report["nativeCapturedTextParity"]=True
+          path.write_text(json.dumps(report,indent=2))
+          print("NATIVE-APP-CAPTURE-PARITY",len(inputs))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fingerspelling-real-source-app-evidence
+          path: outputs/fingerspelling-app-real.json
+          if-no-files-found: warn

@@ -1,0 +1,1872 @@
+{
+  "kind": "real FSboard raw-video CTC pilot; not a webcam/release claim",
+  "dataset": "googleai/fsboard/versions/13",
+  "metadataSha256": {
+    "train": "f85cbf264a4bab08924f5c19c565d3e9b32d4161fabe3004adeb40dd1ba56cdc",
+    "validation": "d306aac4c80e7052492ebffdd01f2e8242d09755ff7243824e866360fb609648",
+    "test": "94f53f6c9d9199cbc50c5207a31a96d400734e49eac60d4a157fc515a587423b"
+  },
+  "taskSha256": "97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482",
+  "preprocessing": "dominant-hand-wrist-palm-width-v2",
+  "vocabulary": [
+    "<blank>",
+    " ",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z"
+  ],
+  "parameters": 123772,
+  "modelSha256": "fbf35592acd849bf3b6b5621a23465ed134ffbc6ab049fbbf8db75916177c29a",
+  "modelBytes": 497759,
+  "train": {
+    "sequences": 512,
+    "referenceCharacters": 6631,
+    "edits": 17,
+    "cer": 0.002563715879957774,
+    "exactMatches": 506,
+    "sequenceAccuracy": 0.98828125,
+    "counts": {
+      "correct": 6614,
+      "substitution": 6,
+      "deletion": 11
+    },
+    "perLetter": {
+      "S": {
+        "correct": 334,
+        "substitution": 1,
+        "deletion": 1
+      },
+      "A": {
+        "correct": 733,
+        "substitution": 1
+      },
+      "R": {
+        "correct": 532,
+        "deletion": 1
+      },
+      "E": {
+        "correct": 676,
+        "substitution": 1,
+        "deletion": 1
+      },
+      "T": {
+        "correct": 254
+      },
+      "N": {
+        "correct": 570
+      },
+      "O": {
+        "correct": 399
+      },
+      "C": {
+        "correct": 213
+      },
+      " ": {
+        "correct": 486,
+        "deletion": 1,
+        "substitution": 1
+      },
+      "G": {
+        "correct": 118,
+        "deletion": 1
+      },
+      "U": {
+        "correct": 147,
+        "substitution": 1
+      },
+      "J": {
+        "correct": 80
+      },
+      "D": {
+        "correct": 207,
+        "deletion": 1
+      },
+      "L": {
+        "correct": 383,
+        "deletion": 2
+      },
+      "K": {
+        "correct": 105
+      },
+      "I": {
+        "correct": 378
+      },
+      "B": {
+        "correct": 131
+      },
+      "W": {
+        "correct": 77,
+        "deletion": 1
+      },
+      "M": {
+        "correct": 174,
+        "deletion": 1
+      },
+      "V": {
+        "correct": 65,
+        "substitution": 1
+      },
+      "Y": {
+        "correct": 158
+      },
+      "Z": {
+        "correct": 45
+      },
+      "H": {
+        "correct": 187
+      },
+      "P": {
+        "correct": 83
+      },
+      "Q": {
+        "correct": 9
+      },
+      "X": {
+        "correct": 15
+      },
+      "F": {
+        "correct": 55,
+        "deletion": 1
+      }
+    },
+    "nativeInferenceMs": {
+      "median": 2.603792000059002,
+      "p95": 4.560614650074513
+    }
+  },
+  "validation": {
+    "sequences": 64,
+    "referenceCharacters": 835,
+    "edits": 217,
+    "cer": 0.25988023952095807,
+    "exactMatches": 2,
+    "sequenceAccuracy": 0.03125,
+    "counts": {
+      "deletion": 117,
+      "correct": 641,
+      "substitution": 77,
+      "insertion": 23
+    },
+    "perLetter": {
+      "O": {
+        "deletion": 11,
+        "correct": 44,
+        "substitution": 8
+      },
+      "D": {
+        "correct": 16,
+        "deletion": 1,
+        "substitution": 6
+      },
+      "A": {
+        "correct": 94,
+        "deletion": 2,
+        "substitution": 1
+      },
+      "R": {
+        "substitution": 4,
+        "correct": 47,
+        "deletion": 8
+      },
+      "L": {
+        "correct": 34,
+        "deletion": 7,
+        "substitution": 2
+      },
+      "C": {
+        "correct": 23,
+        "deletion": 2
+      },
+      " ": {
+        "deletion": 32,
+        "substitution": 18,
+        "correct": 22
+      },
+      "W": {
+        "correct": 8
+      },
+      "E": {
+        "substitution": 8,
+        "correct": 57,
+        "deletion": 13
+      },
+      "K": {
+        "correct": 14,
+        "substitution": 2
+      },
+      "N": {
+        "correct": 67,
+        "substitution": 1,
+        "deletion": 4
+      },
+      "I": {
+        "correct": 44,
+        "deletion": 3
+      },
+      "B": {
+        "correct": 15,
+        "deletion": 3,
+        "substitution": 1
+      },
+      "S": {
+        "correct": 37,
+        "deletion": 6,
+        "substitution": 3
+      },
+      "F": {
+        "correct": 8,
+        "substitution": 1
+      },
+      "P": {
+        "substitution": 1,
+        "deletion": 3,
+        "correct": 5
+      },
+      "M": {
+        "correct": 18,
+        "deletion": 3,
+        "substitution": 3
+      },
+      "U": {
+        "substitution": 4,
+        "correct": 9,
+        "deletion": 2
+      },
+      "T": {
+        "correct": 25,
+        "deletion": 5,
+        "substitution": 4
+      },
+      "H": {
+        "correct": 16,
+        "deletion": 3,
+        "substitution": 1
+      },
+      "G": {
+        "substitution": 3,
+        "deletion": 6,
+        "correct": 7
+      },
+      "Y": {
+        "correct": 19,
+        "deletion": 1,
+        "substitution": 1
+      },
+      "X": {
+        "substitution": 3,
+        "correct": 1
+      },
+      "J": {
+        "correct": 4,
+        "deletion": 1
+      },
+      "V": {
+        "correct": 6,
+        "substitution": 1,
+        "deletion": 1
+      },
+      "Q": {
+        "correct": 1
+      },
+      "Z": {
+        "substitution": 1
+      }
+    },
+    "nativeInferenceMs": {
+      "median": 2.5868504999380093,
+      "p95": 4.570330599972294
+    },
+    "predictions": [
+      {
+        "id": "04519d2f0da5df3a3dfb7558",
+        "reference": "LAKEWOOD COLORADO",
+        "prediction": "AKNWODCOLO UAD",
+        "rawPrediction": "AKNWODCOLO UAD",
+        "frames": 71,
+        "hand": "Right"
+      },
+      {
+        "id": "07364496f9dc3201e0a59424",
+        "reference": "SAN BERNARDINO CA",
+        "prediction": "SANBENARINOCA",
+        "rawPrediction": "SANBENARINOCA",
+        "frames": 41,
+        "hand": "Right"
+      },
+      {
+        "id": "0cc34fcf8254dd8379685f6b",
+        "reference": "FRESNO CA",
+        "prediction": "FBREOSNOCA",
+        "rawPrediction": "FBREOSNOCA",
+        "frames": 48,
+        "hand": "Right"
+      },
+      {
+        "id": "0eec27914de8070ceffc051f",
+        "reference": "PEMBROKE PINES FL",
+        "prediction": "MRKEHEINESFL",
+        "rawPrediction": "MRKEHEINESFL",
+        "frames": 31,
+        "hand": "Right"
+      },
+      {
+        "id": "11e7fba279db95a6495f3606",
+        "reference": "BENNETT BAUER",
+        "prediction": "EONNET BARER",
+        "rawPrediction": "EONNET BARER",
+        "frames": 32,
+        "hand": "Right"
+      },
+      {
+        "id": "1d63f0e58329eb187177c625",
+        "reference": "SANDI PUGH",
+        "prediction": "ANLI PUPH",
+        "rawPrediction": "ANLI PUPH",
+        "frames": 28,
+        "hand": "Right"
+      },
+      {
+        "id": "29fb30a995d8e2ebeafab006",
+        "reference": "HUMBERTO COMBS",
+        "prediction": "RMERTOCOMBS",
+        "rawPrediction": "RMERTOCOMBS",
+        "frames": 67,
+        "hand": "Right"
+      },
+      {
+        "id": "2a2863e0013670319fcfdf53",
+        "reference": "SANTA CLARITA CA",
+        "prediction": "SANTACGARITACA",
+        "rawPrediction": "SANTACGARITACA",
+        "frames": 63,
+        "hand": "Right"
+      },
+      {
+        "id": "2eb7b8632bf77995e89792e7",
+        "reference": "ROCHESTER NEW YORK",
+        "prediction": "ROC HESTERNNEWYERK",
+        "rawPrediction": "ROC HESTERNNEWYERK",
+        "frames": 105,
+        "hand": "Right"
+      },
+      {
+        "id": "2ed0988535d1ac417a59860a",
+        "reference": "SALEM OR",
+        "prediction": "EALA MEORU",
+        "rawPrediction": "EALA MEORU",
+        "frames": 50,
+        "hand": "Right"
+      },
+      {
+        "id": "2f1ddfa0a5631a9e595a6a1b",
+        "reference": "GARY ONEILL",
+        "prediction": "AYYONEIL",
+        "rawPrediction": "AYYONEIL",
+        "frames": 51,
+        "hand": "Left"
+      },
+      {
+        "id": "2fe986dfc9529babfa17804f",
+        "reference": "LOS ANGELES CA",
+        "prediction": "MAAN PELESCA",
+        "rawPrediction": "MAAN PELESCA",
+        "frames": 42,
+        "hand": "Right"
+      },
+      {
+        "id": "304617d7e77b711dbe0f0ee9",
+        "reference": "GARLAND TEXAS",
+        "prediction": "GARLANKDTOLA",
+        "rawPrediction": "GARLANKDTOLA",
+        "frames": 30,
+        "hand": "Right"
+      },
+      {
+        "id": "4302c7d7c67c43dddc3bd38f",
+        "reference": "ALPHONSO HUYNH",
+        "prediction": "ALPHNSO HRI",
+        "rawPrediction": "ALPHNSO HRI",
+        "frames": 29,
+        "hand": "Right"
+      },
+      {
+        "id": "45aedaf2829b5a6b29014089",
+        "reference": "JASON HENRY",
+        "prediction": "JASONHENRY",
+        "rawPrediction": "JASONHENRY",
+        "frames": 35,
+        "hand": "Right"
+      },
+      {
+        "id": "4eba4e0fef5da6d3eebd2f3c",
+        "reference": "MONTGOMERY AL",
+        "prediction": "ONTOMORYAL",
+        "rawPrediction": "ONTOMORYAL",
+        "frames": 103,
+        "hand": "Right"
+      },
+      {
+        "id": "4edc0bf4d33badd138142bc5",
+        "reference": "LYNN SNOW",
+        "prediction": "LYNSNEW",
+        "rawPrediction": "LYNSNEW",
+        "frames": 43,
+        "hand": "Left"
+      },
+      {
+        "id": "534aa8e5eb51359c9dd5a74e",
+        "reference": "KEIGEMINIIDH",
+        "prediction": "KEIGEMINIDH",
+        "rawPrediction": "KEIGEMINIDH",
+        "frames": 50,
+        "hand": "Right"
+      },
+      {
+        "id": "56bd0bed9de7c03e4220179c",
+        "reference": "RYAN ROSE",
+        "prediction": "RYAN GRUSE",
+        "rawPrediction": "RYAN GRUSE",
+        "frames": 55,
+        "hand": "Right"
+      },
+      {
+        "id": "575128fb84e1b5029cd16474",
+        "reference": "JURUPA VALLEY CA",
+        "prediction": "RR PAAVALEYYCA",
+        "rawPrediction": "RR PAAVALEYYCA",
+        "frames": 51,
+        "hand": "Right"
+      },
+      {
+        "id": "5f4d75bad01968801e58b243",
+        "reference": "SOLOMON DONALDSON",
+        "prediction": "SOLOMONDDONALDSON",
+        "rawPrediction": "SOLOMONDDONALDSON",
+        "frames": 96,
+        "hand": "Right"
+      },
+      {
+        "id": "5fb0751435644c33e0206c25",
+        "reference": "NORMAN OKLAHOMA",
+        "prediction": "NRMANOKLAHOMA",
+        "rawPrediction": "NRMANOKLAHOMA",
+        "frames": 60,
+        "hand": "Right"
+      },
+      {
+        "id": "66e511c1799053f45af5a46d",
+        "reference": "PASADENA TEXAS",
+        "prediction": "ASALDENATEZAS",
+        "rawPrediction": "ASALDENATEZAS",
+        "frames": 42,
+        "hand": "Right"
+      },
+      {
+        "id": "6d769794eb880c443494e501",
+        "reference": "BERNADETTE KIM",
+        "prediction": "ERNADOTTEOKI",
+        "rawPrediction": "ERNADOTTEOKI",
+        "frames": 61,
+        "hand": "Right"
+      },
+      {
+        "id": "6e89e570f8fc843499bfd18a",
+        "reference": "SHAMIKA CORONA",
+        "prediction": "HAOIKAC NA",
+        "rawPrediction": "HAOIKAC NA",
+        "frames": 31,
+        "hand": "Right"
+      },
+      {
+        "id": "713dcc18772616cfe17f3d90",
+        "reference": "VAN SUMMERS",
+        "prediction": "VAN CSUMERS",
+        "rawPrediction": "VAN CSUMERS",
+        "frames": 56,
+        "hand": "Right"
+      },
+      {
+        "id": "732a893844a15cf1a3b0cbc8",
+        "reference": "PAIGE WILKINSON",
+        "prediction": "PAJE WILKINSON",
+        "rawPrediction": "PAJE WILKINSON",
+        "frames": 78,
+        "hand": "Right"
+      },
+      {
+        "id": "76c32101ed4804406932777c",
+        "reference": "VISIITKAART",
+        "prediction": "RISIITKART",
+        "rawPrediction": "RISIITKART",
+        "frames": 42,
+        "hand": "Right"
+      },
+      {
+        "id": "81b3886493f562d7a586190f",
+        "reference": "BREE REYNA",
+        "prediction": "BREREYNA",
+        "rawPrediction": "BREREYNA",
+        "frames": 53,
+        "hand": "Right"
+      },
+      {
+        "id": "82e96bc7e3a86289b3810783",
+        "reference": "DINA STEVENS",
+        "prediction": "JINASTOEVENS",
+        "rawPrediction": "JINASTOEVENS",
+        "frames": 55,
+        "hand": "Right"
+      },
+      {
+        "id": "84db81b1f1516546ffa450a8",
+        "reference": "ELGIN ILLINOIS",
+        "prediction": "ELINILINOIS",
+        "rawPrediction": "ELINILINOIS",
+        "frames": 63,
+        "hand": "Right"
+      },
+      {
+        "id": "86fb820210fb01f6478b8fd5",
+        "reference": "DOMINIQUE ARROYO",
+        "prediction": "DOMINIQEARUWOYE",
+        "rawPrediction": "DOMINIQEARUWOYE",
+        "frames": 77,
+        "hand": "Right"
+      },
+      {
+        "id": "8b0c43c94ab949fef724a617",
+        "reference": "KERRY TATE",
+        "prediction": "HUURY ZTATE",
+        "rawPrediction": "HUURY ZTATE",
+        "frames": 58,
+        "hand": "Right"
+      },
+      {
+        "id": "8b318f640877142c503bb941",
+        "reference": "JESS MOSLEY",
+        "prediction": "JESSMOSLEY",
+        "rawPrediction": "JESSMOSLEY",
+        "frames": 95,
+        "hand": "Right"
+      },
+      {
+        "id": "96ea0248a4645c2fb0216f36",
+        "reference": "TORREY SIMON",
+        "prediction": "ORY SYIOAN",
+        "rawPrediction": "ORY SYIOAN",
+        "frames": 29,
+        "hand": "Right"
+      },
+      {
+        "id": "979ada6c7529b224668d6b59",
+        "reference": "LYNN MASSACHUSETTS",
+        "prediction": "LYN MASACUSETS",
+        "rawPrediction": "LYN MASACUSETS",
+        "frames": 58,
+        "hand": "Right"
+      },
+      {
+        "id": "9bed8926c28e3263ffa6e0ad",
+        "reference": "LEAGUE CITY TEXAS",
+        "prediction": "LLEAUECIYATEXAS",
+        "rawPrediction": "LLEAUECIYATEXAS",
+        "frames": 79,
+        "hand": "Right"
+      },
+      {
+        "id": "9c3b8819e0bf13b4ed6438a3",
+        "reference": "JANNA FRANCIS",
+        "prediction": "JANA FRANCIS",
+        "rawPrediction": "JANA FRANCIS",
+        "frames": 49,
+        "hand": "Right"
+      },
+      {
+        "id": "a060c25ee024c05f62268a8c",
+        "reference": "LOUIE BARRERA",
+        "prediction": "LEOUIE BARRA",
+        "rawPrediction": "LEOUIE BARRA",
+        "frames": 64,
+        "hand": "Right"
+      },
+      {
+        "id": "a2daaba450b30197d2872a75",
+        "reference": "JANA BEARD",
+        "prediction": "JANA BEARD",
+        "rawPrediction": "JANA BEARD",
+        "frames": 58,
+        "hand": "Left"
+      },
+      {
+        "id": "a7d59b504a188171fe6a73c7",
+        "reference": "SPENCER FERNANDEZ",
+        "prediction": "NCOUFERNANKDP",
+        "rawPrediction": "NCOUFERNANKDP",
+        "frames": 33,
+        "hand": "Right"
+      },
+      {
+        "id": "abd96fa94fc5a90c93d27221",
+        "reference": "HARTFORD CT",
+        "prediction": "ARA MORD CN",
+        "rawPrediction": "ARA MORD CN",
+        "frames": 50,
+        "hand": "Right"
+      },
+      {
+        "id": "b228d314da58048e9ea66a2c",
+        "reference": "CAMBRIDGE MA",
+        "prediction": "MBIDEMA",
+        "rawPrediction": "MBIDEMA",
+        "frames": 33,
+        "hand": "Right"
+      },
+      {
+        "id": "b4a0dfa0c0458baf668cbef8",
+        "reference": "ANTON ANDERSEN",
+        "prediction": "ANTON ANDERSN",
+        "rawPrediction": "ANTON ANDERSN",
+        "frames": 59,
+        "hand": "Right"
+      },
+      {
+        "id": "bada720260cdb5cfda1833db",
+        "reference": "SAVANNAH GA",
+        "prediction": "HSAVANNAHPGA",
+        "rawPrediction": "HSAVANNAHPGA",
+        "frames": 112,
+        "hand": "Right"
+      },
+      {
+        "id": "cba57368e0f5d7e1f29c8217",
+        "reference": "ANNETTE MAYS",
+        "prediction": "ANETEMAYS",
+        "rawPrediction": "ANETEMAYS",
+        "frames": 34,
+        "hand": "Right"
+      },
+      {
+        "id": "cdb0a49f4d0075a0d75ecaeb",
+        "reference": "OAKLAND CA",
+        "prediction": "MAKLANDCA",
+        "rawPrediction": "MAKLANDCA",
+        "frames": 38,
+        "hand": "Right"
+      },
+      {
+        "id": "d3f70745e250989f9147b873",
+        "reference": "INGLEWOOD CA",
+        "prediction": "INGLE WOODCA",
+        "rawPrediction": "INGLE WOODCA",
+        "frames": 46,
+        "hand": "Right"
+      },
+      {
+        "id": "d4994ce9f2b4e74fcc31743b",
+        "reference": "WILBERT IBARRA",
+        "prediction": "WILBERTTIBARRA",
+        "rawPrediction": "WILBERTTIBARRA",
+        "frames": 86,
+        "hand": "Right"
+      },
+      {
+        "id": "d8f53b5644c04ccfd4a18fc2",
+        "reference": "FABIAN OCHOA",
+        "prediction": "FABIAN OCHOA",
+        "rawPrediction": "FABIAN OCHOA",
+        "frames": 38,
+        "hand": "Right"
+      },
+      {
+        "id": "d98b8bc70b92dbe8a04d8298",
+        "reference": "OLIVIA BUCK",
+        "prediction": "OLIVNIA BUCK",
+        "rawPrediction": "OLIVNIA BUCK",
+        "frames": 71,
+        "hand": "Right"
+      },
+      {
+        "id": "da6cd33b87ba3198c1f81da7",
+        "reference": "HIALEAH FLORIDA",
+        "prediction": "HIALESH FLORITA",
+        "rawPrediction": "HIALESH FLORITA",
+        "frames": 41,
+        "hand": "Right"
+      },
+      {
+        "id": "dab594cfa7a84b95b54a7256",
+        "reference": "ARIC RILEY",
+        "prediction": "ARICRILEY",
+        "rawPrediction": "ARICRILEY",
+        "frames": 42,
+        "hand": "Right"
+      },
+      {
+        "id": "dbee50aa7db64811c6f55f3f",
+        "reference": "WENDELL BUCKLEY",
+        "prediction": "WNDL BUKY",
+        "rawPrediction": "WNDL BUKY",
+        "frames": 47,
+        "hand": "Right"
+      },
+      {
+        "id": "def7ca35d6a11feb9e2553cd",
+        "reference": "PETE MARTIN",
+        "prediction": "PTE MARTN",
+        "rawPrediction": "PTE MARTN",
+        "frames": 63,
+        "hand": "Right"
+      },
+      {
+        "id": "e2270faec6f3fe6d00527eed",
+        "reference": "COLUMBUS OHIO",
+        "prediction": "CLU BUSCOHIO",
+        "rawPrediction": "CLU BUSCOHIO",
+        "frames": 80,
+        "hand": "Right"
+      },
+      {
+        "id": "e32ae76231813e3f1f7e17a5",
+        "reference": "LONG BEACH CA",
+        "prediction": "LEONGBEACH CA",
+        "rawPrediction": "LEONGBEACH CA",
+        "frames": 69,
+        "hand": "Right"
+      },
+      {
+        "id": "e7a36f8f641154fe37e450e9",
+        "reference": "MARA DANIELS",
+        "prediction": "MARADANIELS",
+        "rawPrediction": "MARADANIELS",
+        "frames": 69,
+        "hand": "Right"
+      },
+      {
+        "id": "e957907e3a6101689c3cc97b",
+        "reference": "ARLINGTON TEXAS",
+        "prediction": "ARLINGTON  E PAS",
+        "rawPrediction": "ARLINGTON  E PAS",
+        "frames": 116,
+        "hand": "Right"
+      },
+      {
+        "id": "eac0b7b73e0abd24aa38073c",
+        "reference": "FARGO NORTH DAKOTA",
+        "prediction": "FARGN HKLAKTA",
+        "rawPrediction": "FARGN HKLAKTA",
+        "frames": 45,
+        "hand": "Right"
+      },
+      {
+        "id": "f2938a7aead6cef81105a7d7",
+        "reference": "NEW YORK NY",
+        "prediction": "NEWYORUKNY",
+        "rawPrediction": "NEWYORUKNY",
+        "frames": 49,
+        "hand": "Right"
+      },
+      {
+        "id": "f51829dd268fe93da26a8ace",
+        "reference": "HILLSBORO OR",
+        "prediction": "HILS BORUOORU",
+        "rawPrediction": "HILS BORUOORU",
+        "frames": 72,
+        "hand": "Right"
+      },
+      {
+        "id": "f77bef6ee479823e5f64a7bb",
+        "reference": "GENEVIEVE TORRES",
+        "prediction": "NEVIEETORE",
+        "rawPrediction": "NEVIEETORE",
+        "frames": 73,
+        "hand": "Left"
+      },
+      {
+        "id": "fe0b875ed0c946d227efd257",
+        "reference": "KIA FINLEY",
+        "prediction": "KIA FINL ",
+        "rawPrediction": "KIA FINL ",
+        "frames": 43,
+        "hand": "Left"
+      }
+    ]
+  },
+  "test": {
+    "sequences": 96,
+    "referenceCharacters": 1216,
+    "edits": 260,
+    "cer": 0.2138157894736842,
+    "exactMatches": 6,
+    "sequenceAccuracy": 0.0625,
+    "counts": {
+      "substitution": 90,
+      "correct": 1017,
+      "insertion": 61,
+      "deletion": 109
+    },
+    "perLetter": {
+      "X": {
+        "substitution": 5,
+        "correct": 1
+      },
+      "T": {
+        "substitution": 3,
+        "correct": 47,
+        "deletion": 5
+      },
+      " ": {
+        "correct": 51,
+        "deletion": 34,
+        "substitution": 16
+      },
+      "N": {
+        "correct": 81,
+        "substitution": 7,
+        "deletion": 4
+      },
+      "I": {
+        "correct": 63,
+        "substitution": 4,
+        "deletion": 4
+      },
+      "S": {
+        "correct": 49,
+        "deletion": 6,
+        "substitution": 2
+      },
+      "U": {
+        "substitution": 8,
+        "deletion": 4,
+        "correct": 8
+      },
+      "A": {
+        "correct": 139,
+        "deletion": 3,
+        "substitution": 4
+      },
+      "O": {
+        "correct": 68,
+        "deletion": 4,
+        "substitution": 4
+      },
+      "H": {
+        "correct": 32,
+        "deletion": 2,
+        "substitution": 2
+      },
+      "B": {
+        "correct": 20,
+        "deletion": 1,
+        "substitution": 1
+      },
+      "M": {
+        "correct": 22,
+        "deletion": 3,
+        "substitution": 1
+      },
+      "L": {
+        "correct": 66,
+        "deletion": 8,
+        "substitution": 3
+      },
+      "C": {
+        "correct": 41,
+        "deletion": 2
+      },
+      "G": {
+        "correct": 20,
+        "deletion": 2,
+        "substitution": 3
+      },
+      "R": {
+        "correct": 75,
+        "substitution": 8,
+        "deletion": 6
+      },
+      "E": {
+        "correct": 102,
+        "substitution": 3,
+        "deletion": 11
+      },
+      "K": {
+        "correct": 14,
+        "deletion": 2
+      },
+      "F": {
+        "correct": 13,
+        "substitution": 2,
+        "deletion": 1
+      },
+      "D": {
+        "correct": 39,
+        "deletion": 1,
+        "substitution": 1
+      },
+      "V": {
+        "deletion": 4,
+        "correct": 17,
+        "substitution": 1
+      },
+      "Y": {
+        "correct": 21,
+        "substitution": 6
+      },
+      "P": {
+        "correct": 8,
+        "substitution": 3,
+        "deletion": 1
+      },
+      "J": {
+        "correct": 6
+      },
+      "Z": {
+        "substitution": 1,
+        "correct": 3
+      },
+      "W": {
+        "correct": 11,
+        "substitution": 2
+      },
+      "Q": {
+        "deletion": 1
+      }
+    },
+    "nativeInferenceMs": {
+      "median": 2.697772500027895,
+      "p95": 3.907779750136342
+    },
+    "predictions": [
+      {
+        "id": "0923b985ca6dfe7b7bf227d0",
+        "reference": "AUSTIN TX",
+        "prediction": "ARESGIN GT",
+        "rawPrediction": "ARESGIN GT",
+        "frames": 49,
+        "hand": "Right"
+      },
+      {
+        "id": "0ce4c780a1e5a506dd453b27",
+        "reference": "COLUMBUS OHIO",
+        "prediction": "COLUMBSOHIO",
+        "rawPrediction": "COLUMBSOHIO",
+        "frames": 51,
+        "hand": "Right"
+      },
+      {
+        "id": "0fef7b331970a7f05df0fcf2",
+        "reference": "CHICAGO IL",
+        "prediction": "CHICAGOIL",
+        "rawPrediction": "CHICAGOIL",
+        "frames": 40,
+        "hand": "Right"
+      },
+      {
+        "id": "102376f02ae188e1df70922f",
+        "reference": "AURORA CO",
+        "prediction": "ARRORA CO",
+        "rawPrediction": "ARRORA CO",
+        "frames": 41,
+        "hand": "Right"
+      },
+      {
+        "id": "128992f7220b9a3af4aa85e1",
+        "reference": "ERICK BELTRAN",
+        "prediction": "ERICK BELTRANN",
+        "rawPrediction": "ERICK BELTRANN",
+        "frames": 65,
+        "hand": "Right"
+      },
+      {
+        "id": "162bfba98fe0f5df967ee567",
+        "reference": "LAKELAND FL",
+        "prediction": "LAKELANDFL",
+        "rawPrediction": "LAKELANDFL",
+        "frames": 46,
+        "hand": "Right"
+      },
+      {
+        "id": "18af25e2cf9d6e5313af3499",
+        "reference": "KARYN RIVERS",
+        "prediction": "KARVYN RIURS",
+        "rawPrediction": "KARVYN RIURS",
+        "frames": 72,
+        "hand": "Right"
+      },
+      {
+        "id": "194affb1f9a346b577adf2d4",
+        "reference": "TREVOR HAMPTON",
+        "prediction": "TREVORPHHAMZPTON",
+        "rawPrediction": "TREVORPHHAMZPTON",
+        "frames": 109,
+        "hand": "Right"
+      },
+      {
+        "id": "1a43303752ec81582ecafd22",
+        "reference": "ELIZABETH NJ",
+        "prediction": "BELISABETHNJ",
+        "rawPrediction": "BELISABETHNJ",
+        "frames": 75,
+        "hand": "Right"
+      },
+      {
+        "id": "1bdad69c316377d3419762d3",
+        "reference": "CINCINNATI OHIO",
+        "prediction": "CINCCINNATICOHICO",
+        "rawPrediction": "CINCCINNATICOHICO",
+        "frames": 72,
+        "hand": "Right"
+      },
+      {
+        "id": "25163a21c69723e2269d791a",
+        "reference": "CENTENNIAL CO",
+        "prediction": "CENTTE NIALCO",
+        "rawPrediction": "CENTTE NIALCO",
+        "frames": 53,
+        "hand": "Right"
+      },
+      {
+        "id": "255e1dd27f3b8d1eea981373",
+        "reference": "SHAYNA ORR",
+        "prediction": "LSHAYNA CCLORR",
+        "rawPrediction": "LSHAYNA CCLORR",
+        "frames": 72,
+        "hand": "Right"
+      },
+      {
+        "id": "25c145e5bd22414228c000a1",
+        "reference": "SILVIA ALVAREZ",
+        "prediction": "ASILVIA LAREZ",
+        "rawPrediction": "ASILVIA LAREZ",
+        "frames": 75,
+        "hand": "Right"
+      },
+      {
+        "id": "2fcdace3a7ee92b2f75ff5aa",
+        "reference": "TRACY POWELL",
+        "prediction": "TRACY POWEL",
+        "rawPrediction": "TRACY POWEL",
+        "frames": 47,
+        "hand": "Right"
+      },
+      {
+        "id": "30c6a6510112387499028b23",
+        "reference": "DWIGHT LIM",
+        "prediction": "DWIHTALLYMM",
+        "rawPrediction": "DWIHTALLYMM",
+        "frames": 89,
+        "hand": "Right"
+      },
+      {
+        "id": "31620c85334a948393081332",
+        "reference": "MENIFEE CA",
+        "prediction": "MENI FE CA",
+        "rawPrediction": "MENI FE CA",
+        "frames": 69,
+        "hand": "Right"
+      },
+      {
+        "id": "31f20f5893aa63a61bf0836d",
+        "reference": "JEREMEY CASTANEDA",
+        "prediction": "JEREMY CASTANEDA",
+        "rawPrediction": "JEREMY CASTANEDA",
+        "frames": 54,
+        "hand": "Right"
+      },
+      {
+        "id": "33590fc912dce89b3a547e17",
+        "reference": "POMPANO BEACH FL",
+        "prediction": "CO MPANO BEACHFL",
+        "rawPrediction": "CO MPANO BEACHFL",
+        "frames": 86,
+        "hand": "Right"
+      },
+      {
+        "id": "34766d097a25627bc21dd4a9",
+        "reference": "JACLYN BALL",
+        "prediction": "JACLYIN BAL",
+        "rawPrediction": "JACLYIN BAL",
+        "frames": 48,
+        "hand": "Right"
+      },
+      {
+        "id": "358108306afe03e70d19a944",
+        "reference": "SALVADOR ESQUIVEL",
+        "prediction": "SALLVADORESUIVELL",
+        "rawPrediction": "SALLVADORESUIVELL",
+        "frames": 135,
+        "hand": "Right"
+      },
+      {
+        "id": "3889af5dc6b865b681305d94",
+        "reference": "KAY DICKSON",
+        "prediction": "AYDICKSON",
+        "rawPrediction": "AYDICKSON",
+        "frames": 62,
+        "hand": "Right"
+      },
+      {
+        "id": "3a40dd440c53110025d6850b",
+        "reference": "CELESTE RUSH",
+        "prediction": "CELESTE RSH",
+        "rawPrediction": "CELESTE RSH",
+        "frames": 47,
+        "hand": "Right"
+      },
+      {
+        "id": "3b971a52a73bed76c90fbc5a",
+        "reference": "ROBIN ZHANG",
+        "prediction": "ROBIN ZSDZ HANG",
+        "rawPrediction": "ROBIN ZSDZ HANG",
+        "frames": 59,
+        "hand": "Right"
+      },
+      {
+        "id": "3e0b6a01b54b2c950e0c1d6b",
+        "reference": "WASHINGTON DC",
+        "prediction": "WASHINGTON DCC",
+        "rawPrediction": "WASHINGTON DCC",
+        "frames": 84,
+        "hand": "Right"
+      },
+      {
+        "id": "3e5e8a17bc8e678cf0bb82a3",
+        "reference": "IRVING TEXAS",
+        "prediction": "IRVIN GTEGAS",
+        "rawPrediction": "IRVIN GTEGAS",
+        "frames": 55,
+        "hand": "Right"
+      },
+      {
+        "id": "412c2acf4040621f21ecfc15",
+        "reference": "BRANDAN HULL",
+        "prediction": "CBRADAN HUL",
+        "rawPrediction": "CBRADAN HUL",
+        "frames": 64,
+        "hand": "Right"
+      },
+      {
+        "id": "47ea87ecec2af0b1ffdb63d0",
+        "reference": "TOLEDO OHIO",
+        "prediction": "TOELEDOOH",
+        "rawPrediction": "TOELEDOOH",
+        "frames": 41,
+        "hand": "Right"
+      },
+      {
+        "id": "48349c1327b246cacd69ef79",
+        "reference": "MADISON WISCONSIN",
+        "prediction": "ADISON WISCONSIN",
+        "rawPrediction": "ADISON WISCONSIN",
+        "frames": 87,
+        "hand": "Right"
+      },
+      {
+        "id": "4a31dd86757d30d7e80c2b45",
+        "reference": "DORIAN JEFFERSON",
+        "prediction": "LDORIANLJEFFFERSON",
+        "rawPrediction": "LDORIANLJEFFFERSON",
+        "frames": 87,
+        "hand": "Right"
+      },
+      {
+        "id": "50bba4b17e6638159f2ad147",
+        "reference": "WESTMINSTER CO",
+        "prediction": "WEST WMIHNSTERCO",
+        "rawPrediction": "WEST WMIHNSTERCO",
+        "frames": 69,
+        "hand": "Right"
+      },
+      {
+        "id": "5321720ac1584ee69defb1d7",
+        "reference": "NEW HAVEN CT",
+        "prediction": "NE WHAVENCT",
+        "rawPrediction": "NE WHAVENCT",
+        "frames": 69,
+        "hand": "Right"
+      },
+      {
+        "id": "57bf8fdc9a1447d345fbc0ae",
+        "reference": "KAYLA RHODES",
+        "prediction": "KAYLARHODES",
+        "rawPrediction": "KAYLARHODES",
+        "frames": 62,
+        "hand": "Right"
+      },
+      {
+        "id": "58386df96ac7f481ce41a605",
+        "reference": "JESSICA SHERMAN",
+        "prediction": "JESIASHEA BWMAN",
+        "rawPrediction": "JESIASHEA BWMAN",
+        "frames": 31,
+        "hand": "Right"
+      },
+      {
+        "id": "58e30118f018b376e9a60d4a",
+        "reference": "MARTA FRYE",
+        "prediction": "MARTA LLFFYE",
+        "rawPrediction": "MARTA LLFFYE",
+        "frames": 80,
+        "hand": "Right"
+      },
+      {
+        "id": "6310ffe8fd90a41fdf6478a6",
+        "reference": "BRYANT ACEVEDO",
+        "prediction": "BRIANT ACEUEDO",
+        "rawPrediction": "BRIANT ACEUEDO",
+        "frames": 68,
+        "hand": "Right"
+      },
+      {
+        "id": "64ec60c4de38e5aa708f5bb8",
+        "reference": "RUTH HOLMES",
+        "prediction": "RRRTH OLMEA",
+        "rawPrediction": "RRRTH OLMEA",
+        "frames": 50,
+        "hand": "Right"
+      },
+      {
+        "id": "65d16a3e82f09b92aaccd845",
+        "reference": "SHAWANDA BYRD",
+        "prediction": "SHAWANDA BYRUD",
+        "rawPrediction": "SHAWANDA BYRUD",
+        "frames": 78,
+        "hand": "Right"
+      },
+      {
+        "id": "676cece74dc3f7d096c81adf",
+        "reference": "PORTLAND OREGON",
+        "prediction": "KORTAND OREGON",
+        "rawPrediction": "KORTAND OREGON",
+        "frames": 52,
+        "hand": "Right"
+      },
+      {
+        "id": "6879fcc748c9655015c6abce",
+        "reference": "CHESAPEAKE VA",
+        "prediction": "CHA HEAKENEVA",
+        "rawPrediction": "CHA HEAKENEVA",
+        "frames": 56,
+        "hand": "Right"
+      },
+      {
+        "id": "691d3000e405bc0a8c00dc90",
+        "reference": "FORT LAUDERDALE FL",
+        "prediction": "FORT LAUDERALEFL",
+        "rawPrediction": "FORT LAUDERALEFL",
+        "frames": 82,
+        "hand": "Right"
+      },
+      {
+        "id": "6ab39a5b02d8b7ddddf6f943",
+        "reference": "ANAHEIM CA",
+        "prediction": "Y A EICAI",
+        "rawPrediction": "Y A EICAI",
+        "frames": 55,
+        "hand": "Right"
+      },
+      {
+        "id": "6ba8dbebae7c943f1ab4610a",
+        "reference": "EL PASO TX",
+        "prediction": "EL PASOTTX",
+        "rawPrediction": "EL PASOTTX",
+        "frames": 54,
+        "hand": "Right"
+      },
+      {
+        "id": "6befb92aee4dcad7bf6ed904",
+        "reference": "PLUSS",
+        "prediction": "PLUSS",
+        "rawPrediction": "PLUSS",
+        "frames": 40,
+        "hand": "Right"
+      },
+      {
+        "id": "6cd1239964a94fcc9b8eaff0",
+        "reference": "ESTEVAN WONG",
+        "prediction": "ESTEVAN WONG",
+        "rawPrediction": "ESTEVAN WONG",
+        "frames": 55,
+        "hand": "Right"
+      },
+      {
+        "id": "6e7f6137547ae6ad3fbdc8a9",
+        "reference": "LYNDA BOYD",
+        "prediction": "LINDA BOID",
+        "rawPrediction": "LINDA BOID",
+        "frames": 33,
+        "hand": "Right"
+      },
+      {
+        "id": "6eb42acf72c6f54eb92172b5",
+        "reference": "PASADENA TEXAS",
+        "prediction": "PASADENA TE AS",
+        "rawPrediction": "PASADENA TE AS",
+        "frames": 81,
+        "hand": "Right"
+      },
+      {
+        "id": "70f19f2e9309f1019729a91e",
+        "reference": "GINA PHAM",
+        "prediction": "GYNA   PHAMN",
+        "rawPrediction": "GYNA   PHAMN",
+        "frames": 64,
+        "hand": "Right"
+      },
+      {
+        "id": "7132575922b0c2123da36cec",
+        "reference": "SHERYL ROBERTS",
+        "prediction": "SHERYLROBERTS",
+        "rawPrediction": "SHERYLROBERTS",
+        "frames": 64,
+        "hand": "Right"
+      },
+      {
+        "id": "7722927f17bdd43794a2d9e6",
+        "reference": "TAYLORMDEVER",
+        "prediction": "TAYLORMDEVER",
+        "rawPrediction": "TAYLORMDEVER",
+        "frames": 56,
+        "hand": "Right"
+      },
+      {
+        "id": "78a748fabaccff85857fcc14",
+        "reference": "SUSANNA LINDSEY",
+        "prediction": "SUSANNALINDSEY",
+        "rawPrediction": "SUSANNALINDSEY",
+        "frames": 74,
+        "hand": "Right"
+      },
+      {
+        "id": "7d736e55f36582bb2fce07f9",
+        "reference": "BETH BARRETT",
+        "prediction": "LBET HL BAREZTT",
+        "rawPrediction": "LBET HL BAREZTT",
+        "frames": 79,
+        "hand": "Right"
+      },
+      {
+        "id": "80f156c9d6258eedbd82dc2f",
+        "reference": "NORMAN OK",
+        "prediction": "KNRMAN ONK",
+        "rawPrediction": "KNRMAN ONK",
+        "frames": 42,
+        "hand": "Right"
+      },
+      {
+        "id": "815d4f9cbf2703c67b05e26b",
+        "reference": "GREELEY CO",
+        "prediction": "GRELEY CO",
+        "rawPrediction": "GRELEY CO",
+        "frames": 30,
+        "hand": "Right"
+      },
+      {
+        "id": "818c1f5a9c9712f597460e2c",
+        "reference": "ADAM AVERY",
+        "prediction": "AKAM AVRI",
+        "rawPrediction": "AKAM AVRI",
+        "frames": 39,
+        "hand": "Right"
+      },
+      {
+        "id": "82c71c8fe6c87764648d2857",
+        "reference": "VALENCIA BARRY",
+        "prediction": "ALEANCYA ARL",
+        "rawPrediction": "ALEANCYA ARL",
+        "frames": 35,
+        "hand": "Right"
+      },
+      {
+        "id": "839dbc16ecf18728c50e141e",
+        "reference": "KENDALL RIOS",
+        "prediction": "KENDAL RIOS",
+        "rawPrediction": "KENDAL RIOS",
+        "frames": 43,
+        "hand": "Right"
+      },
+      {
+        "id": "843aa9ee64e973a753b46c02",
+        "reference": "CINDY ALI",
+        "prediction": "CINDYAALI",
+        "rawPrediction": "CINDYAALI",
+        "frames": 35,
+        "hand": "Right"
+      },
+      {
+        "id": "851c86978f5b2c7b340b5227",
+        "reference": "NEW HAVEN CT",
+        "prediction": "NE WHAVESNCT",
+        "rawPrediction": "NE WHAVESNCT",
+        "frames": 47,
+        "hand": "Right"
+      },
+      {
+        "id": "8eb6f698695f3a059b0e3e10",
+        "reference": "OCEANSIDE CA",
+        "prediction": "OCESAN SIDECA",
+        "rawPrediction": "OCESAN SIDECA",
+        "frames": 70,
+        "hand": "Right"
+      },
+      {
+        "id": "91c88b36b5d6cf644457208b",
+        "reference": "FORT LAUDERDALE FL",
+        "prediction": "FORTLAUDERDALE FLL",
+        "rawPrediction": "FORTLAUDERDALE FLL",
+        "frames": 81,
+        "hand": "Right"
+      },
+      {
+        "id": "9426742d2d40067a291762bd",
+        "reference": "ANN ARBOR MICHIGAN",
+        "prediction": "ANNARBOR SICHIGAN",
+        "rawPrediction": "ANNARBOR SICHIGAN",
+        "frames": 78,
+        "hand": "Right"
+      },
+      {
+        "id": "95d9e042cd44833e4dca0534",
+        "reference": "RACHELLE MENDOZA",
+        "prediction": "RACHELLEMENDOZA",
+        "rawPrediction": "RACHELLEMENDOZA",
+        "frames": 84,
+        "hand": "Right"
+      },
+      {
+        "id": "9af96e1cd8685f94c1c743f3",
+        "reference": "NATHANIAL WALTON",
+        "prediction": "ATHANIALWALTON",
+        "rawPrediction": "ATHANIALWALTON",
+        "frames": 76,
+        "hand": "Right"
+      },
+      {
+        "id": "a0e3fedeedee9d940e44905e",
+        "reference": "COLIN FARLEY",
+        "prediction": "COLIN MAHONEY",
+        "rawPrediction": "COLIN MAHONEY",
+        "frames": 57,
+        "hand": "Right"
+      },
+      {
+        "id": "a73332db941fe1bdc25474e2",
+        "reference": "EDINBURG TX",
+        "prediction": "EDIYN BGTZ",
+        "rawPrediction": "EDIYN BGTZ",
+        "frames": 45,
+        "hand": "Right"
+      },
+      {
+        "id": "ab3365e4acff9b84b598ffbe",
+        "reference": "SKELETAONA",
+        "prediction": "SKNELETAONA",
+        "rawPrediction": "SKNELETAONA",
+        "frames": 60,
+        "hand": "Right"
+      },
+      {
+        "id": "ad70b1c911ef246097363150",
+        "reference": "IRIS BARTLETT",
+        "prediction": "JRIS FBARTLETT",
+        "rawPrediction": "JRIS FBARTLETT",
+        "frames": 74,
+        "hand": "Right"
+      },
+      {
+        "id": "b359789f5ea0e3710b9db569",
+        "reference": "LOWELL MA",
+        "prediction": "LOWELL MA",
+        "rawPrediction": "LOWELL MA",
+        "frames": 39,
+        "hand": "Right"
+      },
+      {
+        "id": "b46a748541ff90edcaa9a5d6",
+        "reference": "ALFRED REYNA",
+        "prediction": "ALFREDREYNA",
+        "rawPrediction": "ALFREDREYNA",
+        "frames": 51,
+        "hand": "Right"
+      },
+      {
+        "id": "b5860c8667f7a50a8fe4903b",
+        "reference": "MACON GA",
+        "prediction": "MACON GA",
+        "rawPrediction": "MACON GA",
+        "frames": 40,
+        "hand": "Right"
+      },
+      {
+        "id": "c0ecdc69f09be4209e18707b",
+        "reference": "RALEIGH NC",
+        "prediction": "RALEIGHNC",
+        "rawPrediction": "RALEIGHNC",
+        "frames": 57,
+        "hand": "Right"
+      },
+      {
+        "id": "c1bee8852cdfd1a24942bc30",
+        "reference": "BREANNA ADKINS",
+        "prediction": "BREANA ADINS",
+        "rawPrediction": "BREANA ADINS",
+        "frames": 77,
+        "hand": "Right"
+      },
+      {
+        "id": "c4b43e17bb1a08902bf71445",
+        "reference": "RIALTO CALIFORNIA",
+        "prediction": "RIALTOCALIFORNIA",
+        "rawPrediction": "RIALTOCALIFORNIA",
+        "frames": 63,
+        "hand": "Right"
+      },
+      {
+        "id": "c6a17b15c77cf856f28204e9",
+        "reference": "EVANSVILLE INDIANA",
+        "prediction": "EVANVIL E INDIANA",
+        "rawPrediction": "EVANVIL E INDIANA",
+        "frames": 59,
+        "hand": "Right"
+      },
+      {
+        "id": "c9d6d3a28e33d18e64645db8",
+        "reference": "ELI NELSON",
+        "prediction": "EL NELSON",
+        "rawPrediction": "EL NELSON",
+        "frames": 59,
+        "hand": "Right"
+      },
+      {
+        "id": "cc4a0e442034c53ecc8e5ed1",
+        "reference": "GREG RIVERA",
+        "prediction": "GREG RIVERA",
+        "rawPrediction": "GREG RIVERA",
+        "frames": 53,
+        "hand": "Right"
+      },
+      {
+        "id": "cc51e2781365876edf590fca",
+        "reference": "TONY RANGEL",
+        "prediction": "TONIYRANTE",
+        "rawPrediction": "TONIYRANTE",
+        "frames": 42,
+        "hand": "Right"
+      },
+      {
+        "id": "cea2d1127030b8963a66d875",
+        "reference": "DEDRICK DAUGHERTY",
+        "prediction": "DEDRICKDAUGHERTY",
+        "rawPrediction": "DEDRICKDAUGHERTY",
+        "frames": 90,
+        "hand": "Right"
+      },
+      {
+        "id": "d157027efdd666c564eae1c2",
+        "reference": "RAINA ROSALES",
+        "prediction": "RANA OSAL",
+        "rawPrediction": "RANA OSAL",
+        "frames": 40,
+        "hand": "Right"
+      },
+      {
+        "id": "d15c88631c8f7e91ef4f3637",
+        "reference": "TOLEDO OHIO",
+        "prediction": "TTOLEDOO HIO",
+        "rawPrediction": "TTOLEDOO HIO",
+        "frames": 59,
+        "hand": "Right"
+      },
+      {
+        "id": "d40d5a74d8ab99d19a18b92c",
+        "reference": "CLIFTON NIXON",
+        "prediction": "FITNNIONN",
+        "rawPrediction": "FITNNIONN",
+        "frames": 44,
+        "hand": "Right"
+      },
+      {
+        "id": "dde30028bf78f074b9158368",
+        "reference": "EVERETT WA",
+        "prediction": "EWM",
+        "rawPrediction": "EWM",
+        "frames": 48,
+        "hand": "Right"
+      },
+      {
+        "id": "df03046ac64c4f9ac70de1a8",
+        "reference": "BRAIN CLARK",
+        "prediction": "BRIANCLTARKN",
+        "rawPrediction": "BRIANCLTARKN",
+        "frames": 45,
+        "hand": "Right"
+      },
+      {
+        "id": "e20ebc3fefeaf3fd102e0127",
+        "reference": "ELVIS AGUIRRE",
+        "prediction": "ELVI AGIRE",
+        "rawPrediction": "ELVI AGIRE",
+        "frames": 49,
+        "hand": "Right"
+      },
+      {
+        "id": "e6c8d319b2cfea7e996089de",
+        "reference": "GARDEN GROVE CA",
+        "prediction": "GARDEN GROVECA",
+        "rawPrediction": "GARDEN GROVECA",
+        "frames": 51,
+        "hand": "Right"
+      },
+      {
+        "id": "e74ba2464b8072c52bd234f1",
+        "reference": "KRISTOPHER MAHONEY",
+        "prediction": "KISKERMAHNMEY",
+        "rawPrediction": "KISKERMAHNMEY",
+        "frames": 42,
+        "hand": "Right"
+      },
+      {
+        "id": "eb987f66b29c8bb518036975",
+        "reference": "TALLAHASSEE FL",
+        "prediction": "TALAHASEFL",
+        "rawPrediction": "TALAHASEFL",
+        "frames": 51,
+        "hand": "Right"
+      },
+      {
+        "id": "ebc3f077342f6559b6c543d3",
+        "reference": "LOUISVILLE KY",
+        "prediction": "LORIS VIL KY",
+        "rawPrediction": "LORIS VIL KY",
+        "frames": 57,
+        "hand": "Right"
+      },
+      {
+        "id": "ed59f707576f46c14fb1f005",
+        "reference": "JAY MATHEWS",
+        "prediction": "JAYMATHEWS",
+        "rawPrediction": "JAYMATHEWS",
+        "frames": 55,
+        "hand": "Right"
+      },
+      {
+        "id": "ef5424e9666bead3e8050aa4",
+        "reference": "MURFREESBORO TN",
+        "prediction": "MMUFRESBORODAN",
+        "rawPrediction": "MMUFRESBORODAN",
+        "frames": 122,
+        "hand": "Right"
+      },
+      {
+        "id": "f24de24a533dfe6d9867a555",
+        "reference": "OMAHA NEBRASKA",
+        "prediction": "COMAANE BBASKA",
+        "rawPrediction": "COMAANE BBASKA",
+        "frames": 93,
+        "hand": "Right"
+      },
+      {
+        "id": "f7b7ecc9a20a7265233144a3",
+        "reference": "GREELEY COLORADO",
+        "prediction": "RELEY CLOUADO",
+        "rawPrediction": "RELEY CLOUADO",
+        "frames": 85,
+        "hand": "Right"
+      },
+      {
+        "id": "f8ef7faf8ab41fbdc05b4cf8",
+        "reference": "LANSING MI",
+        "prediction": "LANSIN GMI",
+        "rawPrediction": "LANSIN GMI",
+        "frames": 41,
+        "hand": "Right"
+      },
+      {
+        "id": "fcf378c6e16673256f1fea3c",
+        "reference": "RICARDO CARPENTER",
+        "prediction": "RICARDO CARPENTE",
+        "rawPrediction": "RICARDO CARPENTE",
+        "frames": 61,
+        "hand": "Right"
+      },
+      {
+        "id": "ff45089d93cd8891c31c19c0",
+        "reference": "AUGUSTA GEORGIA",
+        "prediction": "ARGRSTA GEORGIA",
+        "rawPrediction": "ARGRSTA GEORGIA",
+        "frames": 73,
+        "hand": "Right"
+      },
+      {
+        "id": "ffbe990c1ac78166c5bff98b",
+        "reference": "AMANDA BAUTISTA",
+        "prediction": "ADA BAY",
+        "rawPrediction": "ADA BAY",
+        "frames": 86,
+        "hand": "Right"
+      }
+    ]
+  },
+  "negativeProxy": {
+    "source": "real intervals outside publisher annotation; not manually validated non-sign movement",
+    "clips": 112,
+    "rawNonemptyPredictions": 11,
+    "rawInsertedCharacters": 21
+  },
+  "nativeOnnxParity": [
+    {
+      "id": "0923b985ca6dfe7b7bf227d0",
+      "maxAbsLogitError": 6.198883056640625e-06,
+      "sameDecodedText": true
+    },
+    {
+      "id": "0ce4c780a1e5a506dd453b27",
+      "maxAbsLogitError": 8.58306884765625e-06,
+      "sameDecodedText": true
+    },
+    {
+      "id": "0fef7b331970a7f05df0fcf2",
+      "maxAbsLogitError": 6.67572021484375e-06,
+      "sameDecodedText": true
+    },
+    {
+      "id": "102376f02ae188e1df70922f",
+      "maxAbsLogitError": 6.67572021484375e-06,
+      "sameDecodedText": true
+    },
+    {
+      "id": "128992f7220b9a3af4aa85e1",
+      "maxAbsLogitError": 6.318092346191406e-06,
+      "sameDecodedText": true
+    },
+    {
+      "id": "162bfba98fe0f5df967ee567",
+      "maxAbsLogitError": 5.7220458984375e-06,
+      "sameDecodedText": true
+    },
+    {
+      "id": "18af25e2cf9d6e5313af3499",
+      "maxAbsLogitError": 7.62939453125e-06,
+      "sameDecodedText": true
+    },
+    {
+      "id": "194affb1f9a346b577adf2d4",
+      "maxAbsLogitError": 7.62939453125e-06,
+      "sameDecodedText": true
+    }
+  ],
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 3.9489705115556717,
+      "validationCer": 1.0,
+      "elapsedSeconds": 2.296867843999962
+    },
+    {
+      "epoch": 11,
+      "loss": 1.268033204600215,
+      "validationCer": 0.46107784431137727,
+      "elapsedSeconds": 22.97606347299984
+    },
+    {
+      "epoch": 21,
+      "loss": 0.5647345092147589,
+      "validationCer": 0.3065868263473054,
+      "elapsedSeconds": 43.688215793999916
+    },
+    {
+      "epoch": 31,
+      "loss": 0.27956621209159493,
+      "validationCer": 0.2838323353293413,
+      "elapsedSeconds": 64.34839277899982
+    },
+    {
+      "epoch": 41,
+      "loss": 0.13486618897877634,
+      "validationCer": 0.27904191616766466,
+      "elapsedSeconds": 85.14795447099982
+    },
+    {
+      "epoch": 51,
+      "loss": 0.07494153827428818,
+      "validationCer": 0.28023952095808385,
+      "elapsedSeconds": 106.03055694199998
+    },
+    {
+      "epoch": 61,
+      "loss": 0.06577349756844342,
+      "validationCer": 0.27904191616766466,
+      "elapsedSeconds": 127.19448086800003
+    },
+    {
+      "epoch": 71,
+      "loss": 0.022671166138025,
+      "validationCer": 0.25988023952095807,
+      "elapsedSeconds": 147.61985985499996
+    },
+    {
+      "epoch": 81,
+      "loss": 0.01613154484948609,
+      "validationCer": 0.2694610778443114,
+      "elapsedSeconds": 168.2065572869999
+    },
+    {
+      "epoch": 91,
+      "loss": 0.012205978608108126,
+      "validationCer": 0.27305389221556886,
+      "elapsedSeconds": 189.11714012799985
+    },
+    {
+      "epoch": 100,
+      "loss": 0.23827429162338376,
+      "validationCer": 0.2694610778443114,
+      "elapsedSeconds": 207.80231972699994
+    }
+  ],
+  "trainingSeconds": 210.56704421899985,
+  "environment": {
+    "python": "3.11.17",
+    "torch": "2.5.1+cpu",
+    "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+    "cpuCount": 4,
+    "torchThreads": 2
+  },
+  "signerCounts": {
+    "test": 15,
+    "train": 94,
+    "validation": 15
+  },
+  "selectedCounts": {
+    "test": 96,
+    "train": 512,
+    "validation": 64
+  },
+  "evaluatedCounts": {
+    "test": 96,
+    "train": 512,
+    "validation": 64
+  },
+  "release": "NO-GO until useful held-out accuracy, calibrated abstention and live preprocessing parity are established"
+}

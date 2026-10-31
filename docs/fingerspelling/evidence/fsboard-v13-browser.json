@@ -1,0 +1,137 @@
+{
+  "passed": true,
+  "protocol": {
+    "acceptedOldResults": 0,
+    "latestText": "ARESGIN GT"
+  },
+  "kind": "real held-out features, not webcam performance",
+  "loadMs": 685.8000000000466,
+  "results": [
+    {
+      "id": "0923b985ca6dfe7b7bf227d0",
+      "reference": "AUSTIN TX",
+      "prediction": "ARESGIN GT",
+      "frames": 49,
+      "maxAbsLogitError": 0.000010251998901367188,
+      "maxAbsFeatureError": 2.384185791015625e-7,
+      "inferenceMs": [
+        1.2000000001862645,
+        1,
+        1.0999999998603016,
+        1.0999999998603016,
+        1.1000000000931323
+      ]
+    },
+    {
+      "id": "0ce4c780a1e5a506dd453b27",
+      "reference": "COLUMBUS OHIO",
+      "prediction": "COLUMBSOHIO",
+      "frames": 51,
+      "maxAbsLogitError": 0.000006198883056640625,
+      "maxAbsFeatureError": 4.76837158203125e-7,
+      "inferenceMs": [
+        1.3999999999068677,
+        1.3999999999068677,
+        1.1000000000931323,
+        0.9000000001396984,
+        1.1000000000931323
+      ]
+    },
+    {
+      "id": "0fef7b331970a7f05df0fcf2",
+      "reference": "CHICAGO IL",
+      "prediction": "CHICAGOIL",
+      "frames": 40,
+      "maxAbsLogitError": 0.00000667572021484375,
+      "maxAbsFeatureError": 1.1920928955078125e-7,
+      "inferenceMs": [
+        1.1999999999534339,
+        1.3000000000465661,
+        1.1999999999534339,
+        1.1999999999534339,
+        1.1999999999534339
+      ]
+    },
+    {
+      "id": "102376f02ae188e1df70922f",
+      "reference": "AURORA CO",
+      "prediction": "ARRORA CO",
+      "frames": 41,
+      "maxAbsLogitError": 0.00000667572021484375,
+      "maxAbsFeatureError": 1.1920928955078125e-7,
+      "inferenceMs": [
+        1.3999999999068677,
+        1.1999999999534339,
+        1.1999999999534339,
+        1.2000000001862645,
+        1.3000000000465661
+      ]
+    },
+    {
+      "id": "128992f7220b9a3af4aa85e1",
+      "reference": "ERICK BELTRAN",
+      "prediction": "ERICK BELTRANN",
+      "frames": 65,
+      "maxAbsLogitError": 0.000008761882781982422,
+      "maxAbsFeatureError": 2.384185791015625e-7,
+      "inferenceMs": [
+        1.6999999999534339,
+        1.6000000000931323,
+        1.5,
+        1.6999999999534339,
+        1.5999999998603016
+      ]
+    },
+    {
+      "id": "162bfba98fe0f5df967ee567",
+      "reference": "LAKELAND FL",
+      "prediction": "LAKELANDFL",
+      "frames": 46,
+      "maxAbsLogitError": 0.0000095367431640625,
+      "maxAbsFeatureError": 1.1920928955078125e-7,
+      "inferenceMs": [
+        1.3999999999068677,
+        1.4000000001396984,
+        1.4000000001396984,
+        1.4000000001396984,
+        1.1999999999534339
+      ]
+    },
+    {
+      "id": "18af25e2cf9d6e5313af3499",
+      "reference": "KARYN RIVERS",
+      "prediction": "KARVYN RIURS",
+      "frames": 72,
+      "maxAbsLogitError": 0.000014066696166992188,
+      "maxAbsFeatureError": 2.384185791015625e-7,
+      "inferenceMs": [
+        1.1000000000931323,
+        1.0999999998603016,
+        1,
+        1,
+        1.1000000000931323
+      ]
+    },
+    {
+      "id": "194affb1f9a346b577adf2d4",
+      "reference": "TREVOR HAMPTON",
+      "prediction": "TREVORPHHAMZPTON",
+      "frames": 109,
+      "maxAbsLogitError": 0.000012874603271484375,
+      "maxAbsFeatureError": 2.384185791015625e-7,
+      "inferenceMs": [
+        1.5999999998603016,
+        1.5,
+        1.5,
+        1.5,
+        1.3999999999068677
+      ]
+    }
+  ],
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+  "modelSha256": "fbf35592acd849bf3b6b5621a23465ed134ffbc6ab049fbbf8db75916177c29a",
+  "measuredSequences": 8,
+  "measuredInferences": 40,
+  "medianInferenceMs": 1.2000000001862645,
+  "p95InferenceMs": 1.6999999999534339
+}
