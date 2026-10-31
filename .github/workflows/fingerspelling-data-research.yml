@@ -1,0 +1,43 @@
+name: Fingerspelling data and model research
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-data-research.yml', 'training/fingerspelling/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Public FSboard metadata and download access, verified TLS
+        run: |
+          python - <<'PY'
+          import urllib.request, urllib.error, json, hashlib, os, platform
+          print("COMPUTE", platform.platform(), "cpu", os.cpu_count())
+          for url in [
+            "https://www.kaggle.com/api/v1/datasets/view/googleai/fsboard",
+            "https://www.kaggle.com/api/v1/datasets/list/googleai/fsboard",
+            "https://www.kaggle.com/api/v1/datasets/download/googleai/fsboard/daun_v3/metadata/daun_v3-train.json",
+            "https://www.kaggle.com/api/v1/datasets/download/googleai/fsboard/daun_v3/metadata/daun_v3-validation.json",
+            "https://www.kaggle.com/api/v1/datasets/download/googleai/fsboard/daun_v3/metadata/daun_v3-test.json",
+          ]:
+            try:
+              with urllib.request.urlopen(url,timeout=45) as r:
+                b=r.read(64*1024*1024+1)
+                print("SOURCE",url,"status",r.status,"type",r.headers.get("Content-Type"),"bytes",len(b),"sha256",hashlib.sha256(b).hexdigest())
+                if len(b)>64*1024*1024: raise ValueError("bounded metadata size exceeded")
+                try: d=json.loads(b)
+                except Exception: print("NON-JSON",b[:100]);continue
+                if isinstance(d,list):
+                  print("RECORDS",len(d),"SCHEMA",list(d[0]) if d else [])
+                  if d: print("FIRST_SCHEMA",{k:type(v).__name__ for k,v in d[0].items()})
+                else:
+                  print("KEYS",list(d))
+                  for k in ["licenses","licenseName","currentVersionNumber","totalBytes","datasetFiles","nextPageToken"]:
+                    if k in d: print(k,str(d[k])[:14000])
+            except Exception as e: print("SOURCE-ERROR",url,type(e).__name__,str(e)[:150])
+          PY
