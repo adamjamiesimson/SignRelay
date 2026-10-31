@@ -1,10 +1,10 @@
-/** Alphabet IDs are not recognition coverage. No model is installed by this sprint. */
+/** Alphabet IDs are not recognition coverage. See the measured sequence pilot report. */
 export const ASL_ALPHABET = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"] as readonly string[];
 export type Letter = string;
 export const FINGERSPELLING_MODEL = Object.freeze({
-  status: "blocked" as const,
+  status: "experimental-sequence" as const,
   supportedLetters: Object.freeze([] as string[]),
-  reason: "Alphabet recognition is unavailable: no verified fingerspelling model is installed.",
+  reason: "Experimental sequence recognition: review and confirm every candidate. Complete A–Z reliability is not established.",
 });
 
 export function letterAt(index: number, labels: readonly string[]): string | null {

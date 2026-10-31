@@ -1,5 +1,5 @@
 // Remote headless Chromium with fake camera and synthetic WORD fixtures.
-// Tests software behavior only. No alphabet model or real signer is involved.
+// Tests software behavior only. No real signer or recognition-accuracy measurement is involved.
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { fixtures, openRehearsal, pause, until } from "./rehearsal-harness.mjs";
@@ -27,12 +27,12 @@ try {
   await until(() => h.evaluate("!!document.querySelector('#spelling-text')"), "No spelling workspace");
   await until(() => h.evaluate("window.__qa.wordTerminations > 0"), "Word worker still running");
   assert.equal(await h.evaluate("document.querySelector('.transcript-panel:not(.fingerspelling-panel)').hidden"), true);
-  assert.match(await h.evaluate("document.querySelector('.spelling-candidate').textContent"), /no verified fingerspelling model/);
-  assert.equal(await h.evaluate("[...document.querySelectorAll('.spelling-actions button')].find(b=>b.textContent==='Confirm letter').disabled"), true);
+  assert.match(await h.evaluate("document.querySelector('.spelling-candidate').textContent"), /Experimental sequence recognition/);
+  assert.equal(await h.evaluate("[...document.querySelectorAll('.spelling-actions button')].find(b=>b.textContent==='Confirm text').disabled"), true);
   assert.deepEqual(await h.words(), words);
   assert.equal(await h.evaluate("window.__qa.tracks.length"), stream, "Mode switch reacquired camera");
   assert.equal(await h.active(), true);
-  checks.push("word default; unavailable model; mode isolates transcript and terminates word worker without stopping camera");
+  checks.push("word default; explicit sequence confirmation; mode isolates transcript and terminates word worker without stopping camera");
 
   await h.evaluate("document.querySelector('#spelling-text').focus()");
   await h.browser.send("Input.insertText", { text: "HELLO" });
@@ -99,5 +99,5 @@ try {
   assert.equal(await denied.evaluate("document.querySelector('#spelling-text').value"),"");
   checks.push("permission denial and retry recovery in spelling mode");
 } finally { await denied.close(); }
-writeFileSync("outputs/fingerspelling-browser.json",JSON.stringify({kind:"software-only; fake camera; alphabet recognition unavailable",checks},null,2));
+writeFileSync("outputs/fingerspelling-browser.json",JSON.stringify({kind:"software-only; fake camera; no signing-accuracy claim",checks},null,2));
 console.log(JSON.stringify({checks,passed:checks.length}));

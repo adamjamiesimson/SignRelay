@@ -1,3 +1,5 @@
+> **Follow-up: real inference now exists as an experimental sequence pilot.** See [measured recognition, provenance, browser parity and reproduction commands](SEQUENCE-PILOT.md). The report below is the historical interface-only sprint, not the current recognition coverage.
+
 # ASL fingerspelling sprint — blocked recognition, isolated text workspace
 
 **Release recommendation: NO-GO. No ASL alphabet classifier is installed or enabled.**

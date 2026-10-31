@@ -22,8 +22,8 @@ describe("alphabet metadata (not recognition coverage)", () => {
     expect(letterAt(0, ["HELLO"])).toBeNull();
     expect(letterAt(0, ["blank"])).toBeNull();
   });
-  it("does not expose installed or supported alphabet weights", () => {
-    expect(FINGERSPELLING_MODEL.status).toBe("blocked");
+  it("keeps the unvalidated frame-letter controller disabled beside the sequence pilot", () => {
+    expect(FINGERSPELLING_MODEL.status).toBe("experimental-sequence");
     expect(FINGERSPELLING_MODEL.supportedLetters).toEqual([]);
     const c = make(FINGERSPELLING_MODEL.supportedLetters);
     for (const letter of ASL_ALPHABET) { hold(c, letter); expect(c.commit(400)).toBeNull(); }
