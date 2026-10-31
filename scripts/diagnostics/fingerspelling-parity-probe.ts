@@ -40,7 +40,7 @@ self.onmessage = async ({data}) => {
           session.submit(features,sample.features.length);
           // The run is in a separate worker. Terminating it cancels WASM even
           // when its own event loop cannot process a reset message.
-          setTimeout(()=>{reset=true;session.reset();session.submit(features,sample.features.length);session.submit(features,sample.features.length);session.submit(features,sample.features.length);},0);
+          reset=true;session.reset();session.submit(features,sample.features.length);session.submit(features,sample.features.length);session.submit(features,sample.features.length);
         }
       });
     });

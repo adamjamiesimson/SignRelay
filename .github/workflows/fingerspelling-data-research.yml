@@ -8,7 +8,7 @@ permissions:
   contents: read
 concurrency:
   group: fingerspelling-real-data-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   independent-ctc:
     runs-on: ubuntu-latest

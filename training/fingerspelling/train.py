@@ -52,13 +52,10 @@ def load(root):
   z=np.load(path,allow_pickle=False);x=z["features"].astype(np.float32);ref=row["phrase"]
   repeats=sum(a==b for a,b in zip(ref,ref[1:]))
   row=dict(row)
-  if len(x)<len(ref)+repeats or row["visibleFrames"]<len(ref):continue
+  if row["split"]=="train" and (len(x)<len(ref)+repeats or row["visibleFrames"]<len(ref)):continue
   splits[row["split"]].append((x,ref,row))
-  # Only training-side outside-annotation segments become proxy blank examples.
-  if row["split"]=="train":
-   for name in ("negative_before","negative_after"):
-    neg=z[name].astype(np.float32)
-    if len(neg)>=4:splits["train"].append((neg,"",{**row,"negative":name}))
+  # Outside-annotation intervals are retained for diagnostic evaluation only.
+  # They are not manually reviewed negatives and must not become training labels.
  return manifest,splits
 
 def evaluate(model,rows,include_rows=False):
@@ -67,10 +64,12 @@ def evaluate(model,rows,include_rows=False):
  with torch.no_grad():
   for x,ref,row in rows:
    started=time.perf_counter();lp=model(torch.from_numpy(x)[None])[0].numpy();timings.append((time.perf_counter()-started)*1000)
-   hyp=decode(lp);ec,lc=alignment(ref,hyp);errors.update(ec)
+   hyp=decode(lp);raw_hyp=hyp
+   if not np.any(x[:,65]):hyp=""
+   ec,lc=alignment(ref,hyp);errors.update(ec)
    for char,v in lc.items():letters[char].update(v)
    total+=len(ref);exact+=int(ref==hyp)
-   if include_rows:details.append({"id":row["id"],"reference":ref,"prediction":hyp,"frames":len(x),"hand":row["side"]})
+   if include_rows:details.append({"id":row["id"],"reference":ref,"prediction":hyp,"rawPrediction":raw_hyp,"frames":len(x),"hand":row["side"]})
  e=errors["substitution"]+errors["deletion"]+errors["insertion"]
  return {"sequences":len(rows),"referenceCharacters":total,"edits":e,"cer":e/total if total else None,
   "exactMatches":exact,"sequenceAccuracy":exact/len(rows) if rows else None,"counts":dict(errors),
@@ -147,6 +146,8 @@ def main():
   "nativeOnnxParity":parity,"history":history,"trainingSeconds":time.monotonic()-start,
   "environment":{"python":platform.python_version(),"torch":torch.__version__,"platform":platform.platform(),"cpuCount":os.cpu_count(),"torchThreads":torch.get_num_threads()},
   "signerCounts":{s:len({r[2]["signer"] for r in rows}) for s,rows in splits.items()},
+  "selectedCounts":dict(collections.Counter(r["split"] for r in manifest["rows"])),
+  "evaluatedCounts":{s:len(rows) for s,rows in splits.items()},
   "release":"NO-GO until useful held-out accuracy, calibrated abstention and live preprocessing parity are established"}
  (out/"report.json").write_text(json.dumps(report,indent=2))
  (out/"provenance.json").write_text(json.dumps(manifest,indent=2))
