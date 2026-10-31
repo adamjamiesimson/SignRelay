@@ -45,4 +45,13 @@ if bash "$repo/training/complete_popsign_chain.sh" "$work/result.pem"; then
   echo 'Wrong hostname unexpectedly passed' >&2; exit 1
 fi
 test ! -e result.pem
-echo 'CA chain regression passed: anchored chain, omitted intermediate recovery, unrelated-root rejection, hostname rejection, stale-output removal.'
+# Even a locally configured old trust store must not resurrect emSign G3.
+openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj '/CN=emSign Root TLS CA - G3' -keyout old.key -out old.pem >/dev/null 2>&1
+openssl x509 -req -in leaf.csr -CA old.pem -CAkey old.key -CAcreateserial -days 1 -extfile leaf.ext -out peer.pem >/dev/null 2>&1
+export SIGNRELAY_SYSTEM_CA_FILE="$work/old.pem"
+unset SIGNRELAY_CA_INTERMEDIATES
+if bash "$repo/training/complete_popsign_chain.sh" "$work/result.pem"; then
+  echo 'Distrusted hierarchy unexpectedly restored' >&2; exit 1
+fi
+test ! -e result.pem
+echo 'CA chain regression passed: anchored chain, omitted intermediate recovery, unrelated-root rejection, hostname rejection, stale-output removal, distrust preserved.'

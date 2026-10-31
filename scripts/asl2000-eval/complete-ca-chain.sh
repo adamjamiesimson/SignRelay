@@ -22,11 +22,31 @@ if ! timeout 25 openssl s_client -connect "$host:443" -servername "$host" -CAfil
 fi
 awk '/BEGIN CERTIFICATE/{n++} n==1 {print} /END CERTIFICATE/ && n==1 {exit}' "$work/peer" > "$work/leaf.pem"
 awk '/BEGIN CERTIFICATE/{n++} n>1 && /BEGIN CERTIFICATE/,/END CERTIFICATE/ {print}' "$work/peer" > "$work/chain.pem"
+# The current outage is also a root-program distrust incident, not merely AIA
+# availability. Never reconstruct this removed hierarchy using an old runner
+# root store or a manually supplied cross-sign. Publisher reissuance is needed.
+# https://blog.google/security/protecting-chrome-and-android-users-from-compromised-emudhra-intermediate-ca-certificates/
+allowed_certificate() {
+  if openssl x509 -in "$1" -noout -subject -issuer -nameopt RFC2253 \
+      | grep -Eq 'CN=emSign (ECC Root CA - G3|Root TLS CA - G3)(,|$)'; then
+    echo 'PopSign uses the distrusted emSign G3 hierarchy. Publisher must reissue under an unaffected hierarchy; do not restore this root or cross-sign. Frozen licensed local clips remain usable with --clip-cache.' >&2
+    return 1
+  fi
+}
+allowed_chain() {
+  allowed_certificate "$work/leaf.pem" || return 1
+  if [ -s "$work/chain.pem" ]; then
+    awk -v dir="$work" '/BEGIN CERTIFICATE/{n++; active=1} active {print > (dir "/check-" n ".pem")} /END CERTIFICATE/{active=0}' "$work/chain.pem"
+    for certificate in "$work"/check-*.pem; do allowed_certificate "$certificate" || return 1; done
+  fi
+}
 # Administrator-provided INTERMEDIATES remain untrusted input to verification.
 if [ -n "${SIGNRELAY_CA_INTERMEDIATES:-}" ]; then
   cat "$SIGNRELAY_CA_INTERMEDIATES" >> "$work/chain.pem"
 fi
+if ! allowed_chain; then exit 78; fi
 verifies() {
+  allowed_chain || return 1
   args=()
   if [ -s "$work/chain.pem" ]; then args=(-untrusted "$work/chain.pem"); fi
   openssl verify -purpose sslserver -verify_hostname "$host" -CAfile "$roots" "${args[@]}" "$work/leaf.pem"
@@ -50,12 +70,13 @@ for level in 1 2 3 4; do
     echo 'AIA response is not a supported certificate' >&2; break
   fi
   cat "$work/$level.pem" >> "$work/chain.pem"
+  if ! allowed_chain; then exit 78; fi
   current="$work/$level.pem"
 done
 if ! verifies; then
   openssl x509 -in "$work/leaf.pem" -noout -issuer -subject -dates >&2
   echo "PopSign chain cannot anchor to $roots. No CA bundle or data accepted." >&2
-  echo 'Repair upstream intermediates, update runner ca-certificates through the OS, or provide reviewed cross-signed intermediates via SIGNRELAY_CA_INTERMEDIATES. Do not trust the leaf or add an unverified root.' >&2
+  echo 'Repair/reissue the upstream certificate under an unaffected trusted hierarchy. For unrelated missing-intermediate failures only, SIGNRELAY_CA_INTERMEDIATES supplies untrusted candidates. Never restore a distrusted root or cross-sign.' >&2
   exit 78
 fi
 # Do not promote unrelated certificates supplied by a peer/AIA bundle into
