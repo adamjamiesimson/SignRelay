@@ -2,7 +2,7 @@ name: Fingerspelling real-data CTC pilot
 on:
   push:
     branches: [codex/asl-fingerspelling-2026-10-31]
-    paths: ['.github/workflows/fingerspelling-data-research.yml', 'training/fingerspelling/**', 'scripts/diagnostics/fingerspelling-*']
+    paths: ['training/fingerspelling/**']
   workflow_dispatch:
 permissions:
   contents: read

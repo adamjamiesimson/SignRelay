@@ -35,13 +35,13 @@ self.onmessage = async ({data}) => {
     const sample=await (await fetch("/real/0.json")).json();
     const features=new Float32Array(sample.features.flat());
     const protocol=await new Promise<{acceptedOldResults:number;latestText:string}>((resolve,reject)=>{
-      let session:FingerspellingCtcSession,reset=false,oldResults=0;
+      let reset=false,oldResults=0;
       const timer=setTimeout(()=>{session.close();reject(new Error("Worker cancellation timeout"));},120000);
-      session=new FingerspellingCtcSession(()=>new Worker("/worker.js",{type:"module"}),data.contract,result=>{
+      const session=new FingerspellingCtcSession(()=>new Worker("/worker.js",{type:"module"}),data.contract,result=>{
         if(!reset)oldResults++;
         if(result.requestId===4){clearTimeout(timer);session.close();resolve({acceptedOldResults:oldResults,latestText:result.text});}
       },state=>{
-        if(state==="failed"){clearTimeout(timer);session.close();reject(new Error("Worker protocol failed"));return;}
+        if(state==="failed"){clearTimeout(timer);reject(new Error("Worker protocol failed"));return;}
         if(state==="ready"&&!reset){
           session.submit(features,sample.features.length);
           // The run is in a separate worker. Terminating it cancels WASM even
