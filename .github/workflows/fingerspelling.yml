@@ -1,0 +1,24 @@
+name: Fingerspelling isolated verification
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - name: Read installed Next.js authoring guide
+        run: |
+          find node_modules/next/dist/docs -type f | head -30
+          cat node_modules/next/dist/docs/01-app/03-api-reference/01-directives/use-client.mdx
