@@ -386,7 +386,6 @@ export function TranslatorExperience() {
   useEffect(() => {
     if (aslMode !== "fingerspelling" || selected !== "asl" || step !== "workspace" || cameraState !== "active") return;
     let active = true;
-    setSpellingCandidate(""); setSpellingMessage("");
     const session = new FingerspellingCtcSession(
       () => new Worker("/workers/fingerspelling.worker.js", { type: "module" }),
       FINGERSPELLING_CTC_MODEL,
@@ -406,7 +405,7 @@ export function TranslatorExperience() {
           spellingCaptureRef.current = null; setSpellingCandidate(""); setSpellingPhase("failed");
           setSpellingMessage("Recognition is unavailable. Restart the camera to retry, or edit the draft below.");
         } else if (state === "ready") setSpellingPhase("ready");
-        else if (state === "loading") setSpellingPhase("loading");
+        else if (state === "loading") { setSpellingCandidate(""); setSpellingMessage(""); setSpellingPhase("loading"); }
         else setSpellingPhase("processing");
       },
     );
@@ -419,7 +418,6 @@ export function TranslatorExperience() {
       if (spellingSessionRef.current === session) spellingSessionRef.current = null;
       spellingCaptureRef.current = null;
       if (spellingTimerRef.current !== null) window.clearTimeout(spellingTimerRef.current);
-      setSpellingCandidate(""); setSpellingPhase("idle");
     };
   }, [aslMode, selected, step, cameraState, discardSpellingCapture]);
 

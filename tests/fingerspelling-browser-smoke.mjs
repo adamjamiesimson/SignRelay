@@ -27,6 +27,7 @@ try {
   await until(() => h.evaluate("!!document.querySelector('#spelling-text')"), "No spelling workspace");
   await until(() => h.evaluate("window.__qa.wordTerminations > 0"), "Word worker still running");
   assert.equal(await h.evaluate("document.querySelector('.transcript-panel:not(.fingerspelling-panel)').hidden"), true);
+  await until(() => h.evaluate("[...document.querySelectorAll('.spelling-actions button')].some(b=>b.textContent==='Capture name'&&!b.disabled)"), "Sequence model did not load");
   assert.match(await h.evaluate("document.querySelector('.spelling-candidate').textContent"), /Experimental sequence recognition/);
   assert.equal(await h.evaluate("[...document.querySelectorAll('.spelling-actions button')].find(b=>b.textContent==='Confirm text').disabled"), true);
   assert.deepEqual(await h.words(), words);
