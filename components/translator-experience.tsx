@@ -42,6 +42,7 @@ import {
   type LanguageId,
 } from "@/lib/model-adapters";
 import { isRecentDuplicate } from "@/lib/decoder";
+import { ASL_ALPHABET, FINGERSPELLING_MODEL, MAX_FINGERSPELLING_TEXT, editSpelling } from "@/lib/fingerspelling";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { LiveVision } from "@/lib/live-vision";
 import { RecognitionSession } from "@/lib/recognition-session";
@@ -80,6 +81,11 @@ const EMPTY_DETECTION: DetectionStatus = {
 
 export function TranslatorExperience() {
   const [step, setStep] = useState<Step>("welcome");
+  const [aslMode, setAslMode] = useState<"words" | "fingerspelling">("words");
+  const aslModeRef = useRef<"words" | "fingerspelling">("words");
+  const [spellingText, setSpellingText] = useState("");
+  const [spellingMessage, setSpellingMessage] = useState("");
+  const spellingInputRef = useRef<HTMLTextAreaElement>(null);
   const [selected, setSelected] = useState<LanguageId>("asl");
   const [cameraState, setCameraState] = useState<CameraState>("idle");
   const [cameraMessage, setCameraMessage] = useState("Camera is off");
@@ -258,6 +264,8 @@ export function TranslatorExperience() {
     sessionStartedRef.current = Date.now();
     workerRef.current?.postMessage({ type: "reset" });
     captureGenerationRef.current++;
+    aslModeRef.current = "words";
+    setAslMode("words");
     setSelected(language);
     const personalSign = createCustomVocabularyEntry("Personal sign")!;
     setCalibrationWord(personalSign);
@@ -292,6 +300,7 @@ export function TranslatorExperience() {
   }, [model.speechLocale]);
 
   const handleWorkerMessage = useCallback((message: WorkerMessage) => {
+    if (aslModeRef.current !== "words") return;
     if (message.type === "analysis") {
       if (perfMode) {
         perfRef.current.analysed++;
@@ -336,7 +345,7 @@ export function TranslatorExperience() {
   }, [speak, perfMode]);
 
   useEffect(() => {
-    if (step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
+    if (aslMode !== "words" || step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
     const worker = new RecognitionSession(
       () => new Worker("/workers/recognition.worker.js?v=tracking-temporal-3", { type: "module" }),
       handleWorkerMessage,
@@ -357,7 +366,7 @@ export function TranslatorExperience() {
       worker.terminate();
       workerRef.current = null;
     };
-  }, [step, selected, handleWorkerMessage, perfMode]);
+  }, [step, selected, aslMode, handleWorkerMessage, perfMode]);
 
   const stopCamera = useCallback(() => {
     cameraGenerationRef.current++;
@@ -560,7 +569,7 @@ export function TranslatorExperience() {
         };
         setDetection(previous => Object.keys(nextDetection).every(key => previous[key as keyof DetectionStatus] === nextDetection[key as keyof DetectionStatus]) ? previous : nextDetection);
         if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
-        else workerRef.current?.postMessage({ type: "frame", frame });
+        else if (aslModeRef.current === "words") workerRef.current?.postMessage({ type: "frame", frame });
         frameErrorsRef.current = 0;
       })().catch(error => {
         if (!current()) return;
@@ -899,6 +908,7 @@ export function TranslatorExperience() {
     captureFramesRef.current = [];
     setCalibrationState("idle");
     const localCleared = clearLocalSignRelayData();
+    setSpellingText(""); setSpellingMessage("");
     setEntries([]);
     setEditingId(null);
     setHistory([]);
@@ -919,6 +929,29 @@ export function TranslatorExperience() {
         : "Nothing could be removed from browser storage. Clear this site's data in your browser settings.");
     }
   };
+
+  function changeAslMode(mode: "words" | "fingerspelling") {
+    if (aslModeRef.current === mode) return;
+    // Block queued callbacks immediately; the effect terminates the worker.
+    // Returning to words creates a fresh session without clearing the transcript.
+    aslModeRef.current = mode;
+    workerRef.current?.postMessage({ type: "reset" });
+    captureGenerationRef.current++;
+    captureFramesRef.current = [];
+    captureStateRef.current = "idle";
+    setCalibrationState("idle");
+    setCandidate(null); setConfidence(0); setBufferSize(0);
+    setRecognitionFeedback(""); setMotionReason(null);
+    window.speechSynthesis?.cancel();
+    setAslMode(mode);
+  }
+
+  function editSpellingText(action: "backspace" | "space" | "clear") {
+    setSpellingText(text => editSpelling(text, action));
+    setSpellingMessage("");
+    window.speechSynthesis?.cancel();
+    spellingInputRef.current?.focus();
+  }
 
   if (step === "workspace" && (selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental"))) {
     return (
@@ -974,6 +1007,13 @@ export function TranslatorExperience() {
               </details>
             </div>
           </div>
+
+          {selected === "asl" && (
+            <div className="asl-mode-selector" role="group" aria-label="ASL recognition mode">
+              <button type="button" aria-pressed={aslMode === "words"} onClick={() => changeAslMode("words")}>Word Recognition</button>
+              <button type="button" aria-pressed={aslMode === "fingerspelling"} onClick={() => changeAslMode("fingerspelling")}>Fingerspelling</button>
+            </div>
+          )}
 
           <div className="translator-grid">
             <section className="camera-panel" aria-labelledby="camera-title" data-tour="camera">
@@ -1035,7 +1075,43 @@ export function TranslatorExperience() {
               </details>
             </section>
 
-            <section className="transcript-panel" aria-labelledby="transcript-title" data-tour="transcript">
+            {aslMode === "fingerspelling" && selected === "asl" && (
+              <section className="transcript-panel fingerspelling-panel" aria-labelledby="fingerspelling-title">
+                <div className="panel-heading"><h2 id="fingerspelling-title">Fingerspelling</h2></div>
+                <div className="spelling-candidate" aria-label="Current detected letter: none">
+                  <strong aria-hidden="true">—</strong>
+                  <p role="status">{FINGERSPELLING_MODEL.reason}</p>
+                </div>
+                <p className="calibration-message">Hand tracking is available. A–Z recognition, including moving J and Z, is not enabled in this preview. Type or edit text below.</p>
+                <p className="sr-only" role="status">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraMessage}</p>
+                <label className="spelling-label" htmlFor="spelling-text">Composed text</label>
+                <textarea id="spelling-text" ref={spellingInputRef} value={spellingText}
+                  maxLength={MAX_FINGERSPELLING_TEXT} rows={4} spellCheck={false}
+                  placeholder="Your word or name" aria-describedby="spelling-help"
+                  onChange={event => { setSpellingText(event.target.value); setSpellingMessage(""); window.speechSynthesis?.cancel(); }} />
+                <p id="spelling-help" className="field-hint">Editable draft · stays here when you switch modes · not saved after reload.</p>
+                <div className="spelling-actions" role="group" aria-label="Edit composed text">
+                  <button type="button" className="button secondary small" disabled title="Recognition requires a verified model">Confirm letter</button>
+                  <button type="button" className="button ghost small" disabled={!spellingText} onClick={() => editSpellingText("backspace")}>Backspace</button>
+                  <button type="button" className="button ghost small" disabled={spellingText.length >= MAX_FINGERSPELLING_TEXT} onClick={() => editSpellingText("space")}>Space</button>
+                  <button type="button" className="button ghost small" disabled={!spellingText} onClick={() => editSpellingText("clear")}>Clear</button>
+                  <button type="button" className="button secondary small" disabled={!spellingText.trim()} onClick={() => {
+                    if (!("speechSynthesis" in window)) { setSpellingMessage("Speech output is unavailable in this browser."); return; }
+                    speak(spellingText);
+                  }}>Speak</button>
+                  <button type="button" className="button ghost small" onClick={() => window.speechSynthesis?.cancel()}>Stop</button>
+                </div>
+                {spellingMessage && <p className="calibration-message" role="status">{spellingMessage}</p>}
+                <p className="field-hint">Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.</p>
+                <details className="workspace-disclosure spelling-reference">
+                  <summary>Alphabet &amp; first-use notes</summary>
+                  <p>{ASL_ALPHABET.join(" · ")}</p>
+                  <p>J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.</p>
+                  <p>No letter will be inserted or spoken automatically. Recognition needs a licensed, verified model and signer evaluation before it can be enabled.</p>
+                </details>
+              </section>
+            )}
+            <section className="transcript-panel" hidden={aslMode === "fingerspelling"} aria-labelledby="transcript-title" data-tour="transcript">
               <div className="panel-heading">
                 <h2 id="transcript-title" ref={transcriptHeadingRef} tabIndex={-1}>Transcript</h2>
                 <div className={`recognition-state ${status.tone}`} data-status={status.key} data-worker-state={recognitionState}>
@@ -1151,7 +1227,7 @@ export function TranslatorExperience() {
           </div>
 
           <div className="workspace-secondary" data-tour="teach">
-            <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef} data-taught={trainedGlosses.size}>
+            <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef} data-taught={trainedGlosses.size} hidden={aslMode === "fingerspelling"}>
               <summary>
                 <span className="summary-title"><BookPlus aria-hidden="true" size={18} />Personal signs</span>
                 <ChevronDown aria-hidden="true" size={16} />
