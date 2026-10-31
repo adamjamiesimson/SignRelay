@@ -940,7 +940,7 @@ export function TranslatorExperience() {
     captureFramesRef.current = [];
     captureStateRef.current = "idle";
     setCalibrationState("idle");
-    setCandidate(null); setConfidence(0); setBufferSize(0);
+    setCandidate(null); setBufferSize(0);
     setRecognitionFeedback(""); setMotionReason(null);
     window.speechSynthesis?.cancel();
     setAslMode(mode);
