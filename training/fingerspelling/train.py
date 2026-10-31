@@ -136,7 +136,9 @@ def main():
  # Runner-only real features for browser parity; never part of uploaded artifact.
  real_dir=root/"browser";real_dir.mkdir(exist_ok=True)
  for i,(x,ref,row) in enumerate(real):
-  (real_dir/f"{i}.json").write_text(json.dumps({"features":x.tolist(),"native":model(torch.from_numpy(x)[None])[0].detach().tolist(),"reference":ref,"id":row["id"]}))
+  raw=np.load(row["file"],allow_pickle=False)["raw"]
+  raw_json=[[[float(v) if np.isfinite(v) else None for v in point] for point in frame] for frame in raw]
+  (real_dir/f"{i}.json").write_text(json.dumps({"features":x.tolist(),"raw":raw_json,"aspect":row["aspect"],"side":row["side"],"native":model(torch.from_numpy(x)[None])[0].detach().tolist(),"reference":ref,"id":row["id"]}))
  report={"kind":"real FSboard raw-video CTC pilot; not a webcam/release claim","dataset":"googleai/fsboard/versions/13",
   "metadataSha256":manifest["metadataSha256"],"taskSha256":manifest["taskSha256"],
   "preprocessing":manifest["features"],"vocabulary":VOCAB,"parameters":sum(p.numel() for p in model.parameters()),

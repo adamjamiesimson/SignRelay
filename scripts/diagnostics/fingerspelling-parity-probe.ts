@@ -1,4 +1,5 @@
 // Real held-out FSboard features are served only by the remote local QA server.
+import { normalizeFingerspellingHand } from "../../lib/fingerspelling-features";
 import { FingerspellingCtcSession } from "../../lib/fingerspelling-ctc-session";
 import { FingerspellingCtcRuntime } from "../../lib/fingerspelling-ctc-runtime";
 self.onmessage = async ({data}) => {
@@ -12,7 +13,12 @@ self.onmessage = async ({data}) => {
         const response=await fetch("/real/"+i+".json");
         if(!response.ok) throw new Error("Missing real held-out sample");
         const sample=await response.json();
-        const features=new Float32Array(sample.features.flat());
+        const nativeFeatures=new Float32Array(sample.features.flat());
+        const raw=new Float32Array(sample.raw.flat(2).map((v:number|null)=>v===null?NaN:v));
+        const features=normalizeFingerspellingHand(raw,sample.features.length,sample.side,sample.aspect);
+        let featureError=0;
+        for(let j=0;j<features.length;j++)featureError=Math.max(featureError,Math.abs(features[j]-nativeFeatures[j]));
+        if(featureError>1e-4)throw new Error("Real preprocessing parity failed: "+featureError);
         let maxError=0;
         const native=sample.native.flat() as number[];
         const value=await model.predict(features,sample.features.length,logits=>{
@@ -23,7 +29,7 @@ self.onmessage = async ({data}) => {
         for(let run=0;run<5;run++) timings.push((await model.predict(features,sample.features.length)).inferenceMs);
         if(maxError>1e-3) throw new Error("Browser/native logit parity mismatch: "+maxError);
         results.push({id:sample.id,reference:sample.reference,prediction:value.text,frames:sample.features.length,
-          maxAbsLogitError:maxError,inferenceMs:timings});
+          maxAbsLogitError:maxError,maxAbsFeatureError:featureError,inferenceMs:timings});
       }
     } finally { await model.close(); }
     const sample=await (await fetch("/real/0.json")).json();

@@ -89,20 +89,24 @@ def extract(job):
    if not ok: break
  cap.release()
  arrays={k:np.asarray(v) for k,v in hands.items()}
- side=max(arrays,key=lambda k:np.isfinite(arrays[k]).all(axis=(1,2)).sum())
- raw=arrays[side]; t=np.asarray(timestamps)
+ t=np.asarray(timestamps)
  start=record["annotationStartTimeS"]-record["clipStartTimeS"]
  end=record["annotationEndTimeS"]-record["clipStartTimeS"]
  keep=(t>=start)&(t<=end)
- x=features(raw,side,aspect)
+ if not keep.any(): raise ValueError("No sampled frames inside publisher annotation")
+ side=max(arrays,key=lambda k:np.isfinite(arrays[k][keep]).all(axis=(1,2)).sum())
+ raw=arrays[side]
+ # The origin is the first valid wrist INSIDE the inference sequence. It must
+ # not depend on unseen pre-annotation context.
+ x=features(raw[keep],side,aspect)
  name=sha(filename.encode())[:24]
  dest=pathlib.Path(root)/split/(name+".npz");dest.parent.mkdir(parents=True,exist_ok=True)
  # Outside publisher annotation is a proxy negative, not manually reviewed no-sign data.
- pre=x[t < start-.2]; post=x[t > end+.2]
- np.savez_compressed(dest,features=x[keep],negative_before=pre,negative_after=post)
+ pre=features(raw[t < start-.2],side,aspect); post=features(raw[t > end+.2],side,aspect)
+ np.savez_compressed(dest,features=x,raw=raw[keep],negative_before=pre,negative_after=post)
  row={"id":name,"file":str(dest),"source":filename,"split":split,"signer":record["signerId"],
   "phrase":record["phrase"].upper(),"rawSha256":fingerprint,"rawBytes":record["clipFileSize"],
-  "frames":int(keep.sum()),"visibleFrames":int((x[keep,65]>0).sum()),"side":side,
+  "frames":int(keep.sum()),"visibleFrames":int((x[:,65]>0).sum()),"side":side,
   "fps":fps,"sampleFps":fps/step,"aspect":aspect,"extractionSeconds":time.monotonic()-started,
   "taskSha256":TASK_SHA,"featureSha256":sha(dest.read_bytes())}
  # Raw licensed videos stay on the runner only, and are released after extraction.
@@ -148,7 +152,7 @@ def main():
    if i%16==0: print("EXTRACTED",i+1,"/",len(jobs),flush=True)
  results.sort(key=lambda x:(x["split"],x["id"]))
  manifest={"dataset":"googleai/fsboard","version":13,"license":"CC BY 4.0","metadataSha256":META,
-  "mediapipeVersion":"0.10.35","taskSha256":TASK_SHA,"features":"dominant-hand-wrist-palm-width-v1","rows":results}
+  "mediapipeVersion":"0.10.35","taskSha256":TASK_SHA,"features":"dominant-hand-wrist-palm-width-v2","attribution":"Google / Deaf Professional Arts Network, FSboard, CC BY 4.0, https://www.kaggle.com/datasets/googleai/fsboard","rows":results}
  (root/"manifest.json").write_text(json.dumps(manifest,indent=2))
  print("PREPARED",len(results),flush=True)
 if __name__=="__main__":main()
