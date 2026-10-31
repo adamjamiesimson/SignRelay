@@ -13,6 +13,15 @@ name: ASL-2000 Recognition Diagnostics (non-release)
 # landmarks stay on the runner; only aggregate metrics and per-instance
 # predictions (labels, ranks, scores) are printed and uploaded.
 on:
+  # A short, fail-closed source check on PRs; full research stays opt-in/push
+  # on its existing research branch and never runs on a schedule.
+  pull_request:
+    paths:
+      - '.github/workflows/asl2000-diagnostics.yml'
+      - 'training/secure_download.py'
+      - 'training/fetch_popsign_sample.py'
+      - 'training/complete_popsign_chain.sh'
+      - 'scripts/asl2000-eval/complete-ca-chain.sh'
   workflow_dispatch:
     inputs:
       browser_clips:
@@ -26,6 +35,8 @@ on:
       - 'training/asl2000_conditions.py'
       - 'training/tgcn_packed.py'
       - 'training/fetch_popsign_sample.py'
+      - 'training/secure_download.py'
+      - 'training/complete_popsign_chain.sh'
       - 'scripts/asl2000-eval/complete-ca-chain.sh'
       - 'scripts/asl2000-eval/**'
       - 'lib/tgcn-input.ts'
@@ -40,7 +51,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  popsign-source-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify PopSign trust and bounded directory retrieval
+        run: |
+          bash training/complete_popsign_chain.sh "$RUNNER_TEMP/popsign-ca.pem"
+          export SSL_CERT_FILE="$RUNNER_TEMP/popsign-ca.pem"
+          PYTHONPATH=training python -c 'from secure_download import get; print("Verified listing bytes:", len(get("https://signdata.cc.gatech.edu/data/popsign_v1_0/game/test/")))'
+
   diagnostics:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 340
     permissions:
@@ -122,10 +151,11 @@ jobs:
             --workdir "$WORK/b" --output "$REPORTS/condition-b.json"
 
       - name: Condition P — PopSign ASL (CC BY 4.0) other signers, phones and out-of-vocabulary signs
+        id: popsign
         # A PopSign outage must not skip the browser replay of the WLASL clips.
         continue-on-error: true
         run: |
-          bash scripts/asl2000-eval/complete-ca-chain.sh signdata.cc.gatech.edu "$RUNNER_TEMP/popsign-ca.pem"
+          bash training/complete_popsign_chain.sh "$RUNNER_TEMP/popsign-ca.pem"
           export SSL_CERT_FILE="$RUNNER_TEMP/popsign-ca.pem"
           python training/fetch_popsign_sample.py public/models/asl2000-tgcn/labels.json \
             "$DATA/popsign" "$WORK/popsign-clips.json" --split test --in-vocab 40 --signers 6
@@ -171,6 +201,24 @@ jobs:
             --clips "$WORK/c-clips.json" --framing "$REPORTS/condition-a.json" \
             --node-preprocess "$WORK/bin/preprocess.mjs" \
             --workdir "$WORK/c" --output "$REPORTS/condition-c.json"
+
+      - name: Store derived reports (no media, keypoints or landmarks)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asl2000-diagnostics-derived
+          path: |
+            evaluation/derived/asl2000-sprint8/*.json
+            evaluation/derived/asl2000-sprint8/*.jsonl
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Report blocked PopSign condition after independent WLASL diagnostics
+        if: always() && steps.popsign.outcome == 'failure'
+        run: |
+          echo '## Condition P blocked' >> "$GITHUB_STEP_SUMMARY"
+          echo 'PopSign acquisition/evaluation failed. Independent WLASL reports are retained; this run is incomplete and cannot validate release.' >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
       - name: Commit derived reports to this branch (no media, keypoints or landmarks)
         if: always() && github.event_name == 'push'
