@@ -41,3 +41,37 @@ jobs:
                     if k in d: print(k,str(d[k])[:14000])
             except Exception as e: print("SOURCE-ERROR",url,type(e).__name__,str(e)[:150])
           PY
+
+      - name: Install public data inspection clients
+        run: python -m pip install --disable-pip-version-check kagglehub==0.3.13 pyarrow==19.0.1 numpy==1.26.4
+      - name: Inspect exact public files and checkpoint provenance
+        run: |
+          python - <<'PY'
+          import urllib.request,urllib.parse,json,hashlib,os
+          import kagglehub
+          for path in ["LICENSE","convert_arrow_to_parquet.py","daun_v3/metadata/daun_v3-train.json","daun_v3/metadata/daun_v3-validation.json","daun_v3/metadata/daun_v3-test.json"]:
+            try:
+              p=kagglehub.dataset_download("googleai/fsboard/versions/13",path=path)
+              b=open(p,"rb").read()
+              print("FSBOARD-FILE",path,"bytes",len(b),"sha256",hashlib.sha256(b).hexdigest(),flush=True)
+              if path=="LICENSE": print(b.decode())
+              elif path.endswith(".py"): print(b.decode())
+              elif path.endswith(".json"):
+                d=json.loads(b);print("COUNT",len(d),"FIRST",d[0],flush=True)
+            except Exception as e: print("ERROR",path,type(e).__name__,str(e)[:180],flush=True)
+          for url in [
+            "https://www.kaggle.com/api/v1/datasets/view/sohier/529505295052950",
+            "https://www.kaggle.com/api/v1/datasets/list/sohier/529505295052950",
+            "https://huggingface.co/api/models/Skunk0/openglasses-fingerspelling-ctc",
+            "https://huggingface.co/Skunk0/openglasses-fingerspelling-ctc/resolve/main/LICENSE",
+            "https://www.kaggle.com/competitions/asl-fingerspelling/rules",
+          ]:
+            try:
+              with urllib.request.urlopen(url,timeout=45) as r: b=r.read(3*1024*1024)
+              if "rules" in url:
+                s=b.decode();print("RULES",len(s),"Apache",s.find("Apache"),"Open Source",s.find("Open Source"))
+                for term in ["Apache","license","rules"]:
+                  i=s.find(term);print("RULE",term,s[max(0,i-200):i+500])
+              else: print("PUBLIC",url,b.decode()[:24000])
+            except Exception as e: print("PUBLIC-ERROR",url,type(e).__name__,str(e)[:150])
+          PY
