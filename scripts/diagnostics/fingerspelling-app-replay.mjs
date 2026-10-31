@@ -19,7 +19,7 @@ try{
  const words=await h.words(),spoken=await h.evaluate("window.__qa.spoken.length");
  for(const sample of samples){
   // Match the real recording aspect for landmark replay; pixels remain fake.
-  await h.evaluate(`Object.defineProperty(document.querySelector("video"),"videoWidth",{configurable:true,value:${sample.aspect*1000}});Object.defineProperty(document.querySelector("video"),"videoHeight",{configurable:true,value:1000});`);
+  await h.evaluate(`Object.defineProperty(document.querySelector("video"),"videoWidth",{configurable:true,value:${sample.aspect*1000}});Object.defineProperty(document.querySelector("video"),"videoHeight",{configurable:true,value:1000}); true`);
   await h.click("Capture name");await h.play(sample.frames);
   await until(async()=>!(await h.playing()),"Real source replay did not finish");
   await h.click("Finish capture");
@@ -51,4 +51,7 @@ try{
   passed:true,results,checks:["actual captured sequence -> actual worker -> candidate -> deliberate text confirmation",
   "no automatic composition or speech","confirmation consumes candidate","cancel removes candidate","word transcript preserved","same-origin requests only"]},null,2));
  console.log("REAL-APP-INTEGRATION",JSON.stringify(results));
+}catch(error){
+ console.error("REAL-APP-FAIL",await h.evaluate("JSON.stringify({candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent),buttons:[...document.querySelectorAll('.spelling-actions button')].map(b=>({text:b.textContent,disabled:b.disabled}))})"));
+ throw error;
 }finally{await h.close();}
