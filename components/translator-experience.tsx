@@ -605,7 +605,7 @@ export function TranslatorExperience() {
         drawOverlay(frame);
         const capture = spellingCaptureRef.current;
         if (capture && aslModeRef.current === "fingerspelling") {
-          try { capture.push(frame); }
+          try { capture.push(frame, video.videoWidth / video.videoHeight); }
           catch {
             discardSpellingCapture();
             setSpellingMessage("Capture was interrupted. Please record the name again.");
@@ -1050,7 +1050,7 @@ export function TranslatorExperience() {
   }
 
   function editSpellingText(action: "backspace" | "space" | "clear") {
-    discardSpellingCapture();
+    if (["capturing", "processing", "candidate"].includes(spellingPhase)) discardSpellingCapture();
     setSpellingText(text => editSpelling(text, action));
     setSpellingMessage("");
     window.speechSynthesis?.cancel();
@@ -1189,13 +1189,13 @@ export function TranslatorExperience() {
                     : spellingPhase === "loading" ? "Loading sequence recognition…"
                     : FINGERSPELLING_MODEL.reason}</p>
                 </div>
-                <p className="calibration-message">Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Q is unvalidated; other letters can also be wrong.</p>
+                <p className="calibration-message">Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Q and left-hand performance are unvalidated; other letters can also be wrong.</p>
                 <p className="sr-only" role="status">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraMessage}</p>
                 <label className="spelling-label" htmlFor="spelling-text">Composed text</label>
                 <textarea id="spelling-text" ref={spellingInputRef} value={spellingText}
                   maxLength={MAX_FINGERSPELLING_TEXT} rows={4} spellCheck={false}
                   placeholder="Your word or name" aria-describedby="spelling-help"
-                  onChange={event => { discardSpellingCapture(); setSpellingText(event.target.value); setSpellingMessage(""); window.speechSynthesis?.cancel(); }} />
+                  onChange={event => { if (["capturing", "processing", "candidate"].includes(spellingPhase)) discardSpellingCapture(); setSpellingText(event.target.value); setSpellingMessage(""); window.speechSynthesis?.cancel(); }} />
                 <p id="spelling-help" className="field-hint">Editable draft · stays here when you switch modes · not saved after reload.</p>
                 <div className="spelling-actions" role="group" aria-label="Edit composed text">
                   <button type="button" className="button secondary small"

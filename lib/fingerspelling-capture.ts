@@ -9,7 +9,8 @@ export class FingerspellingCapture {
   constructor(private aspect:number) {
     if(!Number.isFinite(aspect)||aspect<=0)throw new Error("Camera dimensions unavailable");
   }
-  push(frame:VisionFrame) {
+  push(frame:VisionFrame, aspect=this.aspect) {
+    if(!Number.isFinite(aspect)||Math.abs(aspect-this.aspect)>1e-6)throw new Error("Camera orientation changed; record again");
     const last=this.samples.at(-1);
     if(!Number.isFinite(frame.timestamp)||(last&&frame.timestamp<=last.time))return;
     if(this.samples.length>=512)throw new Error("Capture is too long; record again");
