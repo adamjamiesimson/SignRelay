@@ -31,6 +31,8 @@ try{
   const input=await h.evaluate("window.__qa.ctcInputs.at(-1)");
   const worker=await h.evaluate("window.__qa.ctcResults.at(-1)");
   assert.equal(worker.text,prediction);
+  assert.equal(worker.status,"uncertain","Research candidate was presented as qualified");
+  assert.match(await h.evaluate("document.querySelector('.fingerspelling-panel').textContent"),/No validated acceptance threshold/);
   inputs.push({...input,prediction,id:sample.id});
   await h.click("Confirm text");
   assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),prediction);
@@ -47,7 +49,7 @@ try{
  mkdirSync("outputs",{recursive:true});
  writeFileSync("work/fingerspelling-app/captured-inputs.json",JSON.stringify(inputs));
  writeFileSync("outputs/fingerspelling-app-real.json",JSON.stringify({kind:"two selected real held-out landmark replays; fake camera; not a new accuracy estimate",
-  modelSha256:"fbf35592acd849bf3b6b5621a23465ed134ffbc6ab049fbbf8db75916177c29a",
+  modelSha256:"26e640751c91f3cfba5aa7e3af43abb1e322c58f7a0c9fc7ae04fefe9ad74c41",
   passed:true,results,checks:["actual captured sequence -> actual worker -> candidate -> deliberate text confirmation",
   "no automatic composition or speech","confirmation consumes candidate","cancel removes candidate","word transcript preserved","same-origin requests only"]},null,2));
  console.log("REAL-APP-INTEGRATION",JSON.stringify(results));

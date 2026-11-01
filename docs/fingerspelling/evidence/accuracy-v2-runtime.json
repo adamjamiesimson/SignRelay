@@ -1,0 +1,167 @@
+{
+  "url": "/models/asl-fingerspelling/fsboard-accuracy-v2.onnx",
+  "bytes": 523322,
+  "sha256": "26e640751c91f3cfba5aa7e3af43abb1e322c58f7a0c9fc7ae04fefe9ad74c41",
+  "featureVersion": "v3",
+  "features": 132,
+  "presenceIndex": 130,
+  "decoder": "beam8",
+  "calibration": {
+    "kind": "L2 logistic exact-sequence correctness; conditional on fingerspelling input",
+    "means": [
+      -0.16991522036871326,
+      -0.6846964431186704,
+      0.08769601759684939,
+      0.5063098328204201,
+      0.29456856912297735,
+      0.878819698950423,
+      0.09717177319225882
+    ],
+    "standardDeviations": [
+      0.07861712299852626,
+      0.2776376375884291,
+      0.027816010763388323,
+      0.10363138817324773,
+      0.075572819812916,
+      0.11210265325160754,
+      0.08967215742350418
+    ],
+    "intercept": -2.4757288778835194,
+    "coefficients": [
+      0.5823877926115402,
+      0.09347728616890563,
+      -0.8638976169804821,
+      -0.8693663708597967,
+      -0.7333021417587321,
+      0.14478476843189136,
+      -0.001032711615512405
+    ],
+    "fitSequences": 189,
+    "fitCorrect": 26,
+    "fitSigners": 3,
+    "featureOrder": [
+      "meanEmitLogP",
+      "minEmitLogP",
+      "meanEntropyNormalized",
+      "blankArgmaxFraction",
+      "charactersPerFrame",
+      "visibleFraction",
+      "longestMissingFraction"
+    ]
+  },
+  "policy": {
+    "threshold": null,
+    "policy": {
+      "minimumTextLength": 3,
+      "maximumTextLength": 32,
+      "minVisibleFraction": 0.6,
+      "minFrames": 13,
+      "maxFrames": 320,
+      "minimumPolicyAccepted": 20,
+      "targetWilsonLower": 0.8,
+      "thresholdGrid": [
+        0.5,
+        0.55,
+        0.6,
+        0.65,
+        0.7,
+        0.75,
+        0.8,
+        0.85,
+        0.9,
+        0.95
+      ]
+    },
+    "grid": [
+      {
+        "threshold": 0.5,
+        "accepted": 23,
+        "correct": 17,
+        "accuracy": 0.7391304347826086,
+        "wilson95": [
+          0.5352960945624944,
+          0.8745155411075104
+        ]
+      },
+      {
+        "threshold": 0.55,
+        "accepted": 13,
+        "correct": 11,
+        "accuracy": 0.8461538461538461,
+        "wilson95": [
+          0.5776482949136899,
+          0.9567427368172621
+        ]
+      },
+      {
+        "threshold": 0.6,
+        "accepted": 8,
+        "correct": 7,
+        "accuracy": 0.875,
+        "wilson95": [
+          0.5291051942301386,
+          0.9775830911367038
+        ]
+      },
+      {
+        "threshold": 0.65,
+        "accepted": 4,
+        "correct": 4,
+        "accuracy": 1.0,
+        "wilson95": [
+          0.5100999795960008,
+          1
+        ]
+      },
+      {
+        "threshold": 0.7,
+        "accepted": 3,
+        "correct": 3,
+        "accuracy": 1.0,
+        "wilson95": [
+          0.43849391955098227,
+          1
+        ]
+      },
+      {
+        "threshold": 0.75,
+        "accepted": 2,
+        "correct": 2,
+        "accuracy": 1.0,
+        "wilson95": [
+          0.34237195288961925,
+          1
+        ]
+      },
+      {
+        "threshold": 0.8,
+        "accepted": 0,
+        "correct": 0,
+        "accuracy": null,
+        "wilson95": null
+      },
+      {
+        "threshold": 0.85,
+        "accepted": 0,
+        "correct": 0,
+        "accuracy": null,
+        "wilson95": null
+      },
+      {
+        "threshold": 0.9,
+        "accepted": 0,
+        "correct": 0,
+        "accuracy": null,
+        "wilson95": null
+      },
+      {
+        "threshold": 0.95,
+        "accepted": 0,
+        "correct": 0,
+        "accuracy": null,
+        "wilson95": null
+      }
+    ],
+    "scope": "Exploratory threshold selection on three held-out policy signers; Wilson bounds are diagnostics, not a simultaneous or signer-independent guarantee"
+  }
+}

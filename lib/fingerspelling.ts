@@ -4,7 +4,7 @@ export type Letter = string;
 export const FINGERSPELLING_MODEL = Object.freeze({
   status: "experimental-sequence" as const,
   supportedLetters: Object.freeze([] as string[]),
-  reason: "Experimental sequence recognition: review and confirm every candidate. Complete A–Z reliability is not established.",
+  reason: "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
 });
 
 export function letterAt(index: number, labels: readonly string[]): string | null {

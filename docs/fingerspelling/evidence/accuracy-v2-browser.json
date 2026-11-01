@@ -1,0 +1,450 @@
+{
+  "kind": "paired actual WASM inference, same eight real sequences, fresh Chrome profiles per model; not webcam latency",
+  "models": {
+    "baseline": {
+      "modelSha256": "fbf35592acd849bf3b6b5621a23465ed134ffbc6ab049fbbf8db75916177c29a",
+      "featureVersion": "v2",
+      "decoder": "greedy",
+      "measuredInferences": 40,
+      "loadMs": 647.2999999999884,
+      "medianInferenceMs": 1,
+      "p95InferenceMs": 1.5999999999912689,
+      "medianProcessingMs": 1.2000000000116415,
+      "p95ProcessingMs": 26.39999999999418,
+      "memory": {
+        "before": {
+          "processes": 13,
+          "pssKiB": 382465,
+          "rssKiB": 1200560,
+          "scope": "Linux Chrome process tree; PSS apportions shared pages; not a physical-device or WASM-only allocation measurement"
+        },
+        "afterLoad": {
+          "processes": 13,
+          "pssKiB": 503293,
+          "rssKiB": 1332628,
+          "scope": "Linux Chrome process tree; PSS apportions shared pages; not a physical-device or WASM-only allocation measurement"
+        },
+        "afterInference": {
+          "processes": 13,
+          "pssKiB": 514474,
+          "rssKiB": 1344764,
+          "scope": "Linux Chrome process tree; PSS apportions shared pages; not a physical-device or WASM-only allocation measurement"
+        }
+      },
+      "results": [
+        {
+          "id": "010e297fac8ee242126853ac",
+          "reference": "LONI VANCE",
+          "rawPrediction": "LONI VANCE",
+          "displayPrediction": "LONI VANCE",
+          "status": "candidate",
+          "frames": 63,
+          "inferenceMs": [
+            1.0999999999912689,
+            1.2000000000116415,
+            1.3999999999941792,
+            1.5,
+            1.1999999999970896
+          ],
+          "processingMs": [
+            1.5999999999912689,
+            1.4000000000087311,
+            1.5999999999912689,
+            1.6000000000058208,
+            1.3999999999941792
+          ]
+        },
+        {
+          "id": "067201bed26f9de890862034",
+          "reference": "KENT WA",
+          "rawPrediction": "UKMEONTWA",
+          "displayPrediction": "UKMEONTWA",
+          "status": "candidate",
+          "frames": 33,
+          "inferenceMs": [
+            0.8000000000029104,
+            0.7999999999883585,
+            0.6999999999970896,
+            0.7000000000116415,
+            0.6999999999970896
+          ],
+          "processingMs": [
+            0.9000000000087311,
+            0.7999999999883585,
+            0.6999999999970896,
+            0.8000000000029104,
+            0.8000000000029104
+          ]
+        },
+        {
+          "id": "0aaf3e8c1ddbf401a4604873",
+          "reference": "ROCHESTER NEW YORK",
+          "rawPrediction": "RR UOCHSNO WYIOR",
+          "displayPrediction": "RR UOCHSNO WYIOR",
+          "status": "candidate",
+          "frames": 74,
+          "inferenceMs": [
+            1.5,
+            1.4000000000087311,
+            1.3999999999941792,
+            1.5999999999912689,
+            1.6999999999970896
+          ],
+          "processingMs": [
+            1.6000000000058208,
+            1.5,
+            1.5,
+            26.39999999999418,
+            1.9000000000087311
+          ]
+        },
+        {
+          "id": "1198ccf5e25426055b05bb57",
+          "reference": "MAREN FRANKLIN",
+          "rawPrediction": "AREN FRANLIS",
+          "displayPrediction": "AREN FRANLIS",
+          "status": "candidate",
+          "frames": 41,
+          "inferenceMs": [
+            0.6000000000058208,
+            0.5,
+            0.7000000000116415,
+            0.5999999999912689,
+            0.5
+          ],
+          "processingMs": [
+            0.6999999999970896,
+            0.5,
+            0.7000000000116415,
+            0.5999999999912689,
+            0.5
+          ]
+        },
+        {
+          "id": "148203648bbe1534bfe2fcb9",
+          "reference": "YSCRLPANITOM",
+          "rawPrediction": "YSCRLPPANITOM",
+          "displayPrediction": "YSCRLPPANITOM",
+          "status": "candidate",
+          "frames": 92,
+          "inferenceMs": [
+            1.5,
+            1.1000000000058208,
+            1,
+            1,
+            1.3000000000029104
+          ],
+          "processingMs": [
+            1.5,
+            1.1999999999970896,
+            1.2000000000116415,
+            1.0999999999912689,
+            1.5
+          ]
+        },
+        {
+          "id": "18a4b2a890a6edad0b466eb3",
+          "reference": "PEMBROKE PINES FLORIDA",
+          "rawPrediction": "EMBOKEOONS FLAARI",
+          "displayPrediction": "EMBOKEOONS FLAARI",
+          "status": "candidate",
+          "frames": 107,
+          "inferenceMs": [
+            1.0999999999912689,
+            1.1999999999970896,
+            1.3000000000029104,
+            1.3999999999941792,
+            1.3999999999941792
+          ],
+          "processingMs": [
+            1.3000000000029104,
+            1.3000000000029104,
+            1.3999999999941792,
+            1.3999999999941792,
+            1.5
+          ]
+        },
+        {
+          "id": "04d9b6fb5dc79695edc423c1",
+          "reference": "ATLANTA GEORGIA",
+          "rawPrediction": "ATLANTA GSORGA",
+          "displayPrediction": "ATLANTA GSORGA",
+          "status": "candidate",
+          "frames": 55,
+          "inferenceMs": [
+            0.6999999999970896,
+            0.7000000000116415,
+            0.6000000000058208,
+            0.7000000000116415,
+            0.6000000000058208
+          ],
+          "processingMs": [
+            0.6999999999970896,
+            0.8000000000029104,
+            0.6999999999970896,
+            0.8000000000029104,
+            0.6999999999970896
+          ]
+        },
+        {
+          "id": "1a26f3e631f9003c2bb73a51",
+          "reference": "CECILIA VILLANUEVA",
+          "rawPrediction": "CECILIAVILLANUEVA",
+          "displayPrediction": "CECILIAVILLANUEVA",
+          "status": "candidate",
+          "frames": 83,
+          "inferenceMs": [
+            0.8999999999941792,
+            1,
+            1.2000000000116415,
+            1,
+            0.8999999999941792
+          ],
+          "processingMs": [
+            1,
+            28.79999999998836,
+            1.2000000000116415,
+            1,
+            1
+          ]
+        }
+      ],
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    },
+    "improved": {
+      "modelSha256": "26e640751c91f3cfba5aa7e3af43abb1e322c58f7a0c9fc7ae04fefe9ad74c41",
+      "featureVersion": "v3",
+      "decoder": "beam8",
+      "measuredInferences": 40,
+      "loadMs": 478.8999999999942,
+      "medianInferenceMs": 1.0999999999912689,
+      "p95InferenceMs": 1.5,
+      "medianProcessingMs": 2.3999999999941792,
+      "p95ProcessingMs": 3.6000000000058208,
+      "memory": {
+        "before": {
+          "processes": 13,
+          "pssKiB": 388865,
+          "rssKiB": 1223340,
+          "scope": "Linux Chrome process tree; PSS apportions shared pages; not a physical-device or WASM-only allocation measurement"
+        },
+        "afterLoad": {
+          "processes": 13,
+          "pssKiB": 508795,
+          "rssKiB": 1355364,
+          "scope": "Linux Chrome process tree; PSS apportions shared pages; not a physical-device or WASM-only allocation measurement"
+        },
+        "afterInference": {
+          "processes": 13,
+          "pssKiB": 525919,
+          "rssKiB": 1373716,
+          "scope": "Linux Chrome process tree; PSS apportions shared pages; not a physical-device or WASM-only allocation measurement"
+        }
+      },
+      "results": [
+        {
+          "id": "010e297fac8ee242126853ac",
+          "reference": "LONI VANCE",
+          "rawPrediction": "LONI VANCE",
+          "displayPrediction": "LONI VANCE",
+          "status": "uncertain",
+          "frames": 63,
+          "maxAbsFeatureError": 2.384185791015625e-7,
+          "maxAbsLogitError": 0.00000858306884765625,
+          "probabilityError": 6.587965508120242e-7,
+          "inferenceMs": [
+            1.3000000000029104,
+            1.2999999999883585,
+            1.0999999999912689,
+            1,
+            1
+          ],
+          "processingMs": [
+            2.6000000000058208,
+            2.3999999999941792,
+            2.099999999991269,
+            2.2000000000116415,
+            2.099999999991269
+          ]
+        },
+        {
+          "id": "067201bed26f9de890862034",
+          "reference": "KENT WA",
+          "rawPrediction": "KEONN WA",
+          "displayPrediction": "KEONN WA",
+          "status": "uncertain",
+          "frames": 33,
+          "maxAbsFeatureError": 5.960464477539063e-8,
+          "maxAbsLogitError": 0.00000762939453125,
+          "probabilityError": 3.198505445223265e-8,
+          "inferenceMs": [
+            0.6999999999970896,
+            0.6000000000058208,
+            0.6999999999970896,
+            0.6000000000058208,
+            0.5
+          ],
+          "processingMs": [
+            1.3999999999941792,
+            1.1000000000058208,
+            1.1999999999970896,
+            1.2000000000116415,
+            1.3999999999941792
+          ]
+        },
+        {
+          "id": "0aaf3e8c1ddbf401a4604873",
+          "reference": "ROCHESTER NEW YORK",
+          "rawPrediction": "RROCHESTER NOWYORK",
+          "displayPrediction": "RROCHESTER NOWYORK",
+          "status": "uncertain",
+          "frames": 74,
+          "maxAbsFeatureError": 3.5762786865234375e-7,
+          "maxAbsLogitError": 0.00000667572021484375,
+          "probabilityError": 7.715089991866542e-8,
+          "inferenceMs": [
+            1.3999999999941792,
+            1.5,
+            1.3999999999941792,
+            1.5,
+            1.3000000000029104
+          ],
+          "processingMs": [
+            3.3000000000029104,
+            3.400000000008731,
+            3.5,
+            3.099999999991269,
+            3.400000000008731
+          ]
+        },
+        {
+          "id": "1198ccf5e25426055b05bb57",
+          "reference": "MAREN FRANKLIN",
+          "rawPrediction": "MAREN FRANLIN",
+          "displayPrediction": "MAREN FRANLIN",
+          "status": "uncertain",
+          "frames": 41,
+          "maxAbsFeatureError": 1.1920928955078125e-7,
+          "maxAbsLogitError": 0.00000476837158203125,
+          "probabilityError": 2.2590799919619542e-7,
+          "inferenceMs": [
+            0.9000000000087311,
+            0.8000000000029104,
+            0.8999999999941792,
+            0.8000000000029104,
+            1
+          ],
+          "processingMs": [
+            1.9000000000087311,
+            1.8000000000029104,
+            2,
+            1.9000000000087311,
+            2
+          ]
+        },
+        {
+          "id": "148203648bbe1534bfe2fcb9",
+          "reference": "YSCRLPANITOM",
+          "rawPrediction": "YSCRL PANITOM",
+          "displayPrediction": "YSCRL PANITOM",
+          "status": "uncertain",
+          "frames": 92,
+          "maxAbsFeatureError": 2.384185791015625e-7,
+          "maxAbsLogitError": 0.00000762939453125,
+          "probabilityError": 2.0734523009657835e-7,
+          "inferenceMs": [
+            1.8000000000029104,
+            1.1999999999970896,
+            1.2000000000116415,
+            1.0999999999912689,
+            1.3999999999941792
+          ],
+          "processingMs": [
+            3.1999999999970896,
+            2.6999999999970896,
+            2.6000000000058208,
+            2.599999999991269,
+            3.099999999991269
+          ]
+        },
+        {
+          "id": "18a4b2a890a6edad0b466eb3",
+          "reference": "PEMBROKE PINES FLORIDA",
+          "rawPrediction": "EMBROKENS FLAOARID",
+          "displayPrediction": "EMBROKENS FLAOARID",
+          "status": "uncertain",
+          "frames": 107,
+          "maxAbsFeatureError": 2.384185791015625e-7,
+          "maxAbsLogitError": 0.00000762939453125,
+          "probabilityError": 2.9330831102791777e-7,
+          "inferenceMs": [
+            1.4000000000087311,
+            1.3000000000029104,
+            1.3000000000029104,
+            1.5,
+            1.2999999999883585
+          ],
+          "processingMs": [
+            4,
+            2.900000000008731,
+            3.5,
+            3.6000000000058208,
+            2.7999999999883585
+          ]
+        },
+        {
+          "id": "04d9b6fb5dc79695edc423c1",
+          "reference": "ATLANTA GEORGIA",
+          "rawPrediction": "ATLANTA GEORGIA",
+          "displayPrediction": "ATLANTA GEORGIA",
+          "status": "uncertain",
+          "frames": 55,
+          "maxAbsFeatureError": 2.384185791015625e-7,
+          "maxAbsLogitError": 0.000006198883056640625,
+          "probabilityError": 3.626668937384281e-8,
+          "inferenceMs": [
+            0.6999999999970896,
+            0.8000000000029104,
+            0.6000000000058208,
+            0.5999999999912689,
+            0.5999999999912689
+          ],
+          "processingMs": [
+            1.6999999999970896,
+            1.5,
+            1.5,
+            1.3999999999941792,
+            1.5
+          ]
+        },
+        {
+          "id": "1a26f3e631f9003c2bb73a51",
+          "reference": "CECILIA VILLANUEVA",
+          "rawPrediction": "CECILIA VILLANUEVA",
+          "displayPrediction": "CECILIA VILLANUEVA",
+          "status": "uncertain",
+          "frames": 83,
+          "maxAbsFeatureError": 1.1920928955078125e-7,
+          "maxAbsLogitError": 0.0000057220458984375,
+          "probabilityError": 3.935787711850658e-7,
+          "inferenceMs": [
+            1,
+            1.1999999999970896,
+            1.3999999999941792,
+            1.1000000000058208,
+            1
+          ],
+          "processingMs": [
+            2.2999999999883585,
+            3,
+            2.6999999999970896,
+            2.3999999999941792,
+            2.6999999999970896
+          ]
+        }
+      ],
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    }
+  },
+  "acceptanceMode": "research review-only; the fixed calibration admission rule accepts nothing"
+}

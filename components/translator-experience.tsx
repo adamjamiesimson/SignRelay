@@ -393,11 +393,11 @@ export function TranslatorExperience() {
         if (!active) return;
         if (result.status === "no-hand" || !result.text.trim()) {
           setSpellingCandidate(""); setSpellingPhase("ready");
-          setSpellingMessage("No text candidate. Try again with your hand clearly visible.");
+          setSpellingMessage(result.abstentionReason ?? "No text candidate. Try again with your hand clearly visible.");
           return;
         }
         setSpellingCandidate(result.text); setSpellingPhase("candidate");
-        setSpellingMessage("Review the candidate before confirming. It may contain mistakes.");
+        setSpellingMessage(result.abstentionReason ?? "Review the candidate before confirming. It may contain mistakes.");
       },
       state => {
         if (!active) return;
@@ -1068,7 +1068,7 @@ export function TranslatorExperience() {
     }
     const video = videoRef.current;
     if (!video || !video.videoWidth || !spellingSessionRef.current) return;
-    const capture = new FingerspellingCapture(video.videoWidth / video.videoHeight);
+    const capture = new FingerspellingCapture(video.videoWidth / video.videoHeight, FINGERSPELLING_CTC_MODEL.featureVersion ?? "v2");
     spellingCaptureRef.current = capture; setSpellingPhase("capturing");
     spellingTimerRef.current = window.setTimeout(() => {
       if (spellingCaptureRef.current !== capture) return;
@@ -1224,7 +1224,7 @@ export function TranslatorExperience() {
                     : spellingPhase === "loading" ? "Loading sequence recognition…"
                     : FINGERSPELLING_MODEL.reason}</p>
                 </div>
-                <p className="calibration-message">Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Q and left-hand performance are unvalidated; other letters can also be wrong.</p>
+                <p className="calibration-message">Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Q has only two held-out examples; left-hand coverage is limited. Check every character.</p>
                 <p className="sr-only" role="status">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraMessage}</p>
                 <label className="spelling-label" htmlFor="spelling-text">Composed text</label>
                 <textarea id="spelling-text" ref={spellingInputRef} value={spellingText}
