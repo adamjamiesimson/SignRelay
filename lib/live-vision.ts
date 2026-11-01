@@ -16,6 +16,7 @@ export class LiveVision {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private closed = false;
   private occupied = false;
+  private captureCanvas: OffscreenCanvas | null = null;
   private recovering: Promise<void> | null = null;
   private accelerated = true;
   private trackingProfile: "words" | "fingerspelling" = "words";
@@ -155,7 +156,22 @@ export class LiveVision {
       }
       if (!this.worker) throw new Error("Tracking unavailable. Restart the camera.");
       const captureWorker = this.worker;
-      const bitmap = await createImageBitmap(video);
+      let bitmap: ImageBitmap;
+      if (this.trackingProfile === "fingerspelling") {
+        const sourceWidth = "videoWidth" in video ? video.videoWidth : video.width;
+        const sourceHeight = "videoHeight" in video ? video.videoHeight : video.height;
+        const factor = Math.min(1, 640 / Math.max(sourceWidth, sourceHeight));
+        const width = Math.round(sourceWidth * factor), height = Math.round(sourceHeight * factor);
+        if (!this.captureCanvas || this.captureCanvas.width !== width || this.captureCanvas.height !== height) {
+          this.captureCanvas = new OffscreenCanvas(width, height);
+        }
+        const context = this.captureCanvas.getContext("2d", { willReadFrequently: true });
+        if (!context) throw new Error("Camera RGB capture unavailable");
+        // Snapshot decoded pixels, avoiding video-backed texture orientation/format.
+        // The word-recognition producer retains its existing direct bitmap path.
+        context.drawImage(video, 0, 0, width, height);
+        bitmap = await createImageBitmap(context.getImageData(0, 0, width, height));
+      } else bitmap = await createImageBitmap(video);
       if (this.closed || this.worker !== captureWorker || this.recovering) { bitmap.close(); return null; }
       const posted = performance.now();
       return await new Promise<VisionFrame | null>((resolve, reject) => {
@@ -168,6 +184,7 @@ export class LiveVision {
   }
 
   close() {
+    this.captureCanvas = null;
     this.closed = true; clearTimeout(this.timer);
     this.cancelStartup?.(new Error("Tracking closed")); this.cancelStartup = null;
     this.worker?.terminate(); this.worker = null;

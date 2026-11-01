@@ -16,6 +16,15 @@ with mp.tasks.vision.GestureRecognizer.create_from_options(options) as model:
   all_hashes.append(hashlib.sha256(rgb.tobytes()).hexdigest())
   result=model.recognize_for_video(mp.Image(image_format=mp.ImageFormat.SRGB,data=np.ascontiguousarray(rgb)),round(row["timestamp"]))
   observed[row["timestamp"]]=[{"side":h[0].category_name,"score":h[0].score} for h in result.handedness]
+visual=[]
+capture_times={r["timestamp"] for r in value["captureFrames"]}
+complex_rows=[r for r in value["rows"] if r["timestamp"] in capture_times and "png" in r]
+for index in sorted({len(complex_rows)//3,2*len(complex_rows)//3}):
+ if complex_rows:
+  row=complex_rows[index];bgr=cv2.imdecode(np.frombuffer(base64.b64decode(row["png"]),np.uint8),cv2.IMREAD_COLOR)
+  ok,jpeg=cv2.imencode(".jpg",cv2.resize(bgr,(320,180)),[cv2.IMWRITE_JPEG_QUALITY,65]);assert ok
+  visual.append(base64.b64encode(jpeg).decode())
+print("ACTUAL-WORKER-RGB-VISUAL",json.dumps({"id":example,"jpeg":visual}),flush=True)
 native=[];browser=[]
 for frame in value["captureFrames"]:
  native.extend(h["side"] for h in observed[frame["timestamp"]]);browser.extend(h["side"] for h in frame["quality"])
