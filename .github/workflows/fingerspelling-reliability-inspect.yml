@@ -1,0 +1,33 @@
+name: Fingerspelling reliability dependency and trust inspection
+on:
+  push:
+    branches: [codex/fingerspelling-reliability-2026-11-01]
+    paths: ['.github/workflows/fingerspelling-reliability-inspect.yml']
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0', cache: npm}
+      - run: npm ci
+      - name: Inspect exact dependency paths and compatible fixes without changing source
+        run: |
+          mkdir -p work/reliability-inspect
+          npm audit --json > work/reliability-inspect/audit-before.json || test "$?" -eq 1
+          npm ls minimatch --all > work/reliability-inspect/chains.txt || true
+          npm audit fix --package-lock-only --ignore-scripts > work/reliability-inspect/compatible-fix.txt 2>&1 || true
+          npm audit --json > work/reliability-inspect/audit-compatible.json || test "$?" -eq 1
+          node --input-type=module <<'JS'
+          import {readFileSync} from "node:fs";
+          for(const name of ["before","compatible"]){
+            const r=JSON.parse(readFileSync("work/reliability-inspect/audit-"+name+".json","utf8"));
+            console.log("AUDIT-INSPECTION",name,JSON.stringify({totals:r.metadata.vulnerabilities,roots:Object.fromEntries(Object.entries(r.vulnerabilities).filter(([,v])=>v.via.some(x=>typeof x==="object")))}));
+          }
+          console.log(readFileSync("work/reliability-inspect/chains.txt","utf8"));
+          console.log(readFileSync("work/reliability-inspect/compatible-fix.txt","utf8"));
+          JS
+      - uses: actions/upload-artifact@v4
+        with: {name: reliability-dependency-inspection, path: work/reliability-inspect}
