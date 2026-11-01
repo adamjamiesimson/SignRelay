@@ -17,7 +17,7 @@ def detector():
  return mp.tasks.vision.GestureRecognizer.create_from_options(mp.tasks.vision.GestureRecognizerOptions(
   base_options=mp.tasks.BaseOptions(model_asset_path=str(root/"gesture.task")),running_mode=mp.tasks.vision.RunningMode.VIDEO,
   num_hands=2,min_hand_detection_confidence=.55,min_hand_presence_confidence=.55,min_tracking_confidence=.55,
-  canned_gestures_classifier_options=mp.tasks.components.processors.ClassifierOptions(score_threshold=.55)))
+  canned_gesture_classifier_options=mp.tasks.components.processors.ClassifierOptions(score_threshold=.55)))
 def observe(frames,timestamps,mirror):
  result=[]
  with detector() as model:
