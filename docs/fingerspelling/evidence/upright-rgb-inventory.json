@@ -1,0 +1,20 @@
+{
+  "rgbPolicy": "display-matrix-v1",
+  "planSha256": "56d12a13b86ca92d94e397c4cc65fe7f55d8a154d8a6b56a3f42b25a483217e7",
+  "roles": {
+    "cal_fit": 192,
+    "cal_policy": 192,
+    "challenge": 96,
+    "final": 384,
+    "left_final": 32,
+    "dev": 256,
+    "train": 4096
+  },
+  "displayRotationDegrees": {
+    "90": 4790,
+    "0": 458
+  },
+  "decodedDisplayShapes": {
+    "[360, 640]": 5248
+  }
+}

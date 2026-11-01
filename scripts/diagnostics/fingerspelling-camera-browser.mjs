@@ -6,6 +6,7 @@ import {resolve} from "node:path";
 import {openRehearsal,until} from "../../tests/rehearsal-harness.mjs";
 const example=process.argv[3]||"6befb92aee4dcad7bf6ed904",root="work/fingerspelling-camera/"+example;
 const source=JSON.parse(readFileSync(root+"/source.json","utf8"));
+const modelContract=JSON.parse(readFileSync("docs/fingerspelling/evidence/upright-runtime.json","utf8"));
 const diagnostic=process.argv[4]==="diagnostic";
 if(diagnostic)writeFileSync("out/workers/fingerspelling-vision.worker.debug.js",`
  importScripts("/workers/fingerspelling-vision.worker.js");
@@ -129,7 +130,7 @@ try{
  assert.deepEqual(await h.words(),[]);assert.equal(await h.evaluate("window.__signrelayRehearsal.playing"),false);
  const frames=snapshot.frames,dt=frames.slice(1).map((f,i)=>f.timestamp-frames[i].timestamp),times=frames.map(f=>f.handsMs).sort((a,b)=>a-b),ages=frames.map(f=>f.received-f.timestamp).sort((a,b)=>a-b);
  const report={kind:"one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
- source,sourceOnset:onset,captureStart:started,captureEnd:finished,modelSha256:"26e640751c91f3cfba5aa7e3af43abb1e322c58f7a0c9fc7ae04fefe9ad74c41",
+ source,sourceOnset:onset,captureStart:started,captureEnd:finished,modelSha256:modelContract.sha256,
  reference:source.reference,prediction:displayed.text,exact:displayed.text===source.reference,status:result.status,
  frames:input.frames,observedCaptureFps:(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),maxFrameGapMs:Math.max(...dt),
  captureWallMs:snapshot.finished-snapshot.started,finishToWorkerResultMs:result.received-snapshot.finished,finishToDomCandidateMs:displayed.at-snapshot.finished,finishToNextAnimationFrameMs:displayed.nextFrameAt-snapshot.finished,

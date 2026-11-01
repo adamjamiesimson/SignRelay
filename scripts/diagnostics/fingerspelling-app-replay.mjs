@@ -49,7 +49,7 @@ try{
  mkdirSync("outputs",{recursive:true});
  writeFileSync("work/fingerspelling-app/captured-inputs.json",JSON.stringify(inputs));
  writeFileSync("outputs/fingerspelling-app-real.json",JSON.stringify({kind:"two selected real held-out landmark replays; fake camera; not a new accuracy estimate",
-  modelSha256:"26e640751c91f3cfba5aa7e3af43abb1e322c58f7a0c9fc7ae04fefe9ad74c41",
+  modelSha256:"34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
   passed:true,results,checks:["actual captured sequence -> actual worker -> candidate -> deliberate text confirmation",
   "no automatic composition or speech","confirmation consumes candidate","cancel removes candidate","word transcript preserved","same-origin requests only"]},null,2));
  console.log("REAL-APP-INTEGRATION",JSON.stringify(results));

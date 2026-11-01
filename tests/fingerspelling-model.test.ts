@@ -10,7 +10,7 @@ function artifact(contract:{url:string;bytes:number;sha256:string}){
 describe("installed research artifacts (software integrity, not recognition accuracy)",()=>{
  it("pins the evaluated motion model and its non-qualifying calibration policy",()=>{
   artifact(FINGERSPELLING_CTC_MODEL);
-  const report=JSON.parse(readFileSync(new URL("../docs/fingerspelling/evidence/accuracy-v2-final.json",import.meta.url),"utf8"));
+  const report=JSON.parse(readFileSync(new URL("../docs/fingerspelling/evidence/upright-final.json",import.meta.url),"utf8"));
   expect(report.selection.modelSha256).toBe(FINGERSPELLING_CTC_MODEL.sha256);
   expect(report.runtime.calibration.means).toEqual(FINGERSPELLING_CTC_MODEL.calibration?.means);
   expect(FINGERSPELLING_CTC_MODEL.policy?.threshold).toBe(null);

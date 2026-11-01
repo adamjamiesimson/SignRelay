@@ -1,0 +1,1576 @@
+{
+  "scope": "29 predetermined source-labelled/AI-contact-sheet-reviewed real video intervals; five sources/two conservative source groups, physical identities unverified. Not a population FPR.",
+  "all": {
+    "previousModelStructuralCandidateFalseAccepts": 6,
+    "windows": 29,
+    "baselineRawNonempty": 14,
+    "selectedRawNonempty": 29,
+    "baselineStructuralCandidateFalseAccepts": 6,
+    "selectedStructuralCandidateFalseAccepts": 6,
+    "selectedQualifiedCandidateFalseAccepts": 0
+  },
+  "visibleActionSubset": {
+    "previousModelStructuralCandidateFalseAccepts": 5,
+    "windows": 15,
+    "baselineRawNonempty": 8,
+    "selectedRawNonempty": 15,
+    "baselineStructuralCandidateFalseAccepts": 5,
+    "selectedStructuralCandidateFalseAccepts": 5,
+    "selectedQualifiedCandidateFalseAccepts": 0
+  },
+  "perSource": {
+    "asl-lexical": {
+      "previousModelStructuralCandidateFalseAccepts": 2,
+      "windows": 2,
+      "baselineRawNonempty": 2,
+      "selectedRawNonempty": 2,
+      "baselineStructuralCandidateFalseAccepts": 2,
+      "selectedStructuralCandidateFalseAccepts": 2,
+      "selectedQualifiedCandidateFalseAccepts": 0
+    },
+    "cdc-clean": {
+      "previousModelStructuralCandidateFalseAccepts": 1,
+      "windows": 5,
+      "baselineRawNonempty": 5,
+      "selectedRawNonempty": 5,
+      "baselineStructuralCandidateFalseAccepts": 1,
+      "selectedStructuralCandidateFalseAccepts": 1,
+      "selectedQualifiedCandidateFalseAccepts": 0
+    },
+    "cdc-hygiene": {
+      "previousModelStructuralCandidateFalseAccepts": 2,
+      "windows": 5,
+      "baselineRawNonempty": 4,
+      "selectedRawNonempty": 5,
+      "baselineStructuralCandidateFalseAccepts": 2,
+      "selectedStructuralCandidateFalseAccepts": 2,
+      "selectedQualifiedCandidateFalseAccepts": 0
+    },
+    "cdc-items": {
+      "previousModelStructuralCandidateFalseAccepts": 1,
+      "windows": 8,
+      "baselineRawNonempty": 3,
+      "selectedRawNonempty": 8,
+      "baselineStructuralCandidateFalseAccepts": 1,
+      "selectedStructuralCandidateFalseAccepts": 1,
+      "selectedQualifiedCandidateFalseAccepts": 0
+    },
+    "cdc-mask": {
+      "previousModelStructuralCandidateFalseAccepts": 0,
+      "windows": 9,
+      "baselineRawNonempty": 0,
+      "selectedRawNonempty": 9,
+      "baselineStructuralCandidateFalseAccepts": 0,
+      "selectedStructuralCandidateFalseAccepts": 0,
+      "selectedQualifiedCandidateFalseAccepts": 0
+    }
+  },
+  "rows": [
+    {
+      "id": "cdc-clean-0",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-clean",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "ordinary-handwashing",
+      "start": 4,
+      "end": 7,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 17,
+      "aspect": 1.3333333333333333,
+      "file": "work/negatives/cdc-clean-0.npz",
+      "featureSha256": "a49ecdc921fbbc61717f6877a4ca14bedeaa0602b43c781a0aef6a041e67f2dc",
+      "sourceSha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "handwashing",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "H",
+        "rawPrediction": "H",
+        "structuralEligible": false,
+        "visibleFraction": 0.37777777777777777,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "O",
+        "rawPrediction": "O",
+        "structuralEligible": false,
+        "visibleFraction": 0.37777777777777777,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "LLEAHBSS",
+        "rawPrediction": "LLEAHBSS",
+        "structuralEligible": false,
+        "visibleFraction": 0.37777777777777777,
+        "frames": 45,
+        "estimatedExactProbability": 6.74751665508066e-08,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-clean-1",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-clean",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "ordinary-handwashing",
+      "start": 7,
+      "end": 10,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 20,
+      "aspect": 1.3333333333333333,
+      "file": "work/negatives/cdc-clean-1.npz",
+      "featureSha256": "aae846a52be15b642ffde8d5e9366b90c868bbb41c13b57ad72129e4f20dd024",
+      "sourceSha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "handwashing",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "AC MEER",
+        "rawPrediction": "AC MEER",
+        "structuralEligible": false,
+        "visibleFraction": 0.4444444444444444,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "A",
+        "rawPrediction": "A",
+        "structuralEligible": false,
+        "visibleFraction": 0.4444444444444444,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "NCR IESA",
+        "rawPrediction": "NCR IESA",
+        "structuralEligible": false,
+        "visibleFraction": 0.4444444444444444,
+        "frames": 45,
+        "estimatedExactProbability": 2.7601336688333797e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-clean-2",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-clean",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "ordinary-handwashing",
+      "start": 10,
+      "end": 13,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 13,
+      "aspect": 1.3333333333333333,
+      "file": "work/negatives/cdc-clean-2.npz",
+      "featureSha256": "d694202374cb4ddb2143c080338f7ab6bf6c6af768960d96c9e18eadbfb29634",
+      "sourceSha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "handwashing-to-drying-scene-cut",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "EEEAO",
+        "rawPrediction": "EEEAO",
+        "structuralEligible": false,
+        "visibleFraction": 0.28888888888888886,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "S",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.28888888888888886,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "JASSS",
+        "rawPrediction": "JASSS",
+        "structuralEligible": false,
+        "visibleFraction": 0.28888888888888886,
+        "frames": 45,
+        "estimatedExactProbability": 4.183881539842174e-06,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-clean-3",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-clean",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "ordinary-handwashing",
+      "start": 13,
+      "end": 16,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 23,
+      "aspect": 1.3333333333333333,
+      "file": "work/negatives/cdc-clean-3.npz",
+      "featureSha256": "19504fbec5435fb2a932164064d5b370b718ac9ffe81d57c30fc6cb3a01390fe",
+      "sourceSha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "handwashing-to-paper-towel-scene-cut",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "OAOX",
+        "rawPrediction": "OAOX",
+        "structuralEligible": false,
+        "visibleFraction": 0.5111111111111111,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "V W",
+        "rawPrediction": "V W",
+        "structuralEligible": false,
+        "visibleFraction": 0.5111111111111111,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "TRAN ",
+        "rawPrediction": "TRAN ",
+        "structuralEligible": false,
+        "visibleFraction": 0.5111111111111111,
+        "frames": 45,
+        "estimatedExactProbability": 3.0556331044210184e-06,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-clean-4",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-clean",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "ordinary-handwashing",
+      "start": 16,
+      "end": 19,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 34,
+      "aspect": 1.3333333333333333,
+      "file": "work/negatives/cdc-clean-4.npz",
+      "featureSha256": "1cfba5c8ffd27edaf20518fc273dd5292be6040e332cb7b37fd86444ca72caa7",
+      "sourceSha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "hand-drying",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "B BY",
+        "rawPrediction": "B BY",
+        "structuralEligible": true,
+        "visibleFraction": 0.7555555555555555,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "HWV",
+        "rawPrediction": "HWV",
+        "structuralEligible": true,
+        "visibleFraction": 0.7555555555555555,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "AOH",
+        "rawPrediction": "AOH",
+        "structuralEligible": true,
+        "visibleFraction": 0.7555555555555555,
+        "frames": 45,
+        "estimatedExactProbability": 0.0009679369102239108,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-items-0",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-items",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "clothing-and-personal-items",
+      "start": 5,
+      "end": 8,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-items-0.npz",
+      "featureSha256": "fb5c56993252563130fe88401570b47ea4ee68998831f35471f96d2f1b1340f3",
+      "sourceSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "no-visible-hands-static-items",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-items-1",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-items",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "clothing-and-personal-items",
+      "start": 8,
+      "end": 11,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-items-1.npz",
+      "featureSha256": "87a300fceff2f67348d47a7c2770aad41ff7567e5cc587ea7073b82e82e936c9",
+      "sourceSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "no-visible-hands-static-items",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-items-2",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-items",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "clothing-and-personal-items",
+      "start": 11,
+      "end": 14,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-items-2.npz",
+      "featureSha256": "5747b46b07773e6f9827dd9f5568da556adc84c218478a7bf1678ebbe76e032d",
+      "sourceSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "no-visible-hands-static-items",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-items-3",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-items",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "clothing-and-personal-items",
+      "start": 14,
+      "end": 17,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-items-3.npz",
+      "featureSha256": "f4c582646218c155c0bb026d4ece0ad775fe72ccb2e4de2856de31bc7879f3f2",
+      "sourceSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "no-visible-hands-static-items",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-items-4",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-items",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "clothing-and-personal-items",
+      "start": 17,
+      "end": 20,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 5,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-items-4.npz",
+      "featureSha256": "efd441ea8ac729b3b06d2f535a6cdf5f15458e237d1a7ef762df42d8cce6c773",
+      "sourceSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "scene-change-to-resting-person",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "TOOB",
+        "rawPrediction": "TOOB",
+        "structuralEligible": false,
+        "visibleFraction": 0.1111111111111111,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": " B",
+        "rawPrediction": " B",
+        "structuralEligible": false,
+        "visibleFraction": 0.1111111111111111,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "TTE",
+        "rawPrediction": "TTE",
+        "structuralEligible": false,
+        "visibleFraction": 0.1111111111111111,
+        "frames": 45,
+        "estimatedExactProbability": 1.2461202362607792e-05,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-items-5",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-items",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "clothing-and-personal-items",
+      "start": 20,
+      "end": 23,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 37,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-items-5.npz",
+      "featureSha256": "e624ae90203403d4eef2cb8b274b04623c6f028a458d602c315ea3a64a983a25",
+      "sourceSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "jewellery-ear-face-adjustment",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "RSAS L",
+        "rawPrediction": "RSAS L",
+        "structuralEligible": true,
+        "visibleFraction": 0.8222222222222222,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": " SMMESSO",
+        "rawPrediction": " SMMESSO",
+        "structuralEligible": true,
+        "visibleFraction": 0.8222222222222222,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "IA ST",
+        "rawPrediction": "IA ST",
+        "structuralEligible": true,
+        "visibleFraction": 0.8222222222222222,
+        "frames": 45,
+        "estimatedExactProbability": 0.0005574287539249465,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-items-6",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-items",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "clothing-and-personal-items",
+      "start": 23,
+      "end": 26,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 1,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-items-6.npz",
+      "featureSha256": "ee824f43492bbbdb511094f22acaf111a9da49fff4badf9d0f986fbcb5f2e2fe",
+      "sourceSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "clothing-jewellery-adjustment",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "SS",
+        "rawPrediction": "SS",
+        "structuralEligible": false,
+        "visibleFraction": 0.022222222222222223,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "J",
+        "rawPrediction": "J",
+        "structuralEligible": false,
+        "visibleFraction": 0.022222222222222223,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "SSS",
+        "rawPrediction": "SSS",
+        "structuralEligible": false,
+        "visibleFraction": 0.022222222222222223,
+        "frames": 45,
+        "estimatedExactProbability": 0.0010480441358658161,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-items-7",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-items",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "clothing-and-personal-items",
+      "start": 26,
+      "end": 29,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-items-7.npz",
+      "featureSha256": "3ae4f337496e41431099185c94ca8df8815d61c36330a29c8f825881d59404d4",
+      "sourceSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "hands-resting",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-hygiene-0",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-hygiene",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "ordinary-hand-rubbing",
+      "start": 3,
+      "end": 6,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-hygiene-0.npz",
+      "featureSha256": "c21eed5bf3092fffdeac93d14062258a4316e00c476a12e8e68587f34518e953",
+      "sourceSha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "intro-interview-scene-cuts-no-hands",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-hygiene-1",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-hygiene",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "ordinary-hand-rubbing",
+      "start": 6,
+      "end": 9,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 10,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-hygiene-1.npz",
+      "featureSha256": "5ac90f66cfec2151358e2ca099cc9734ccf318bd7690670c8c65373e9a76518b",
+      "sourceSha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "resting-to-soap-dispenser-scene-cut",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "NC",
+        "rawPrediction": "NC",
+        "structuralEligible": false,
+        "visibleFraction": 0.2222222222222222,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "CE",
+        "rawPrediction": "CE",
+        "structuralEligible": false,
+        "visibleFraction": 0.2222222222222222,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "EY",
+        "rawPrediction": "EY",
+        "structuralEligible": false,
+        "visibleFraction": 0.2222222222222222,
+        "frames": 45,
+        "estimatedExactProbability": 3.197631901391125e-06,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-hygiene-2",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-hygiene",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "ordinary-hand-rubbing",
+      "start": 9,
+      "end": 12,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 29,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-hygiene-2.npz",
+      "featureSha256": "8c5220eb0f56682894e8352867f08bcca1942f5328b9fef1cb2985953aaa5ace",
+      "sourceSha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "soap-dispensing-to-rubbing-scene-cut",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "JE ",
+        "rawPrediction": "JE ",
+        "structuralEligible": true,
+        "visibleFraction": 0.6444444444444445,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "OOO",
+        "rawPrediction": "OOO",
+        "structuralEligible": true,
+        "visibleFraction": 0.6444444444444445,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "RGAEEEAA",
+        "rawPrediction": "RGAEEEAA",
+        "structuralEligible": true,
+        "visibleFraction": 0.6444444444444445,
+        "frames": 45,
+        "estimatedExactProbability": 1.3389874873647882e-05,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-hygiene-3",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-hygiene",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "ordinary-hand-rubbing",
+      "start": 12,
+      "end": 15,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 40,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-hygiene-3.npz",
+      "featureSha256": "c127a5028b1879264729b96bd34fc71aeccea29e800f9e45894c033f582b8a43",
+      "sourceSha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "ordinary-hand-rubbing",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "AS B",
+        "rawPrediction": "AS B",
+        "structuralEligible": true,
+        "visibleFraction": 0.8888888888888888,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "BWC",
+        "rawPrediction": "BWC",
+        "structuralEligible": true,
+        "visibleFraction": 0.8888888888888888,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "SE",
+        "rawPrediction": "SE",
+        "structuralEligible": true,
+        "visibleFraction": 0.8888888888888888,
+        "frames": 45,
+        "estimatedExactProbability": 0.0006646873025789304,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-hygiene-4",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-hygiene",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "ordinary-hand-rubbing",
+      "start": 15,
+      "end": 18,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 11,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-hygiene-4.npz",
+      "featureSha256": "701773729a69b9499dca18a6135f7bf5a35bb8e290f4a09c21d7cf022dc7b9ef",
+      "sourceSha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "hand-rubbing-to-interview-scene-cut",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.24444444444444444,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "HWBW",
+        "rawPrediction": "HWBW",
+        "structuralEligible": false,
+        "visibleFraction": 0.24444444444444444,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "S",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.24444444444444444,
+        "frames": 45,
+        "estimatedExactProbability": 2.5665910734113977e-11,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-mask-0",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-mask",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "face-touching-and-mask-adjustment",
+      "start": 5,
+      "end": 8,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-mask-0.npz",
+      "featureSha256": "fb5c56993252563130fe88401570b47ea4ee68998831f35471f96d2f1b1340f3",
+      "sourceSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "interview-to-static-items-scene-cut",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-mask-1",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-mask",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "face-touching-and-mask-adjustment",
+      "start": 8,
+      "end": 11,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-mask-1.npz",
+      "featureSha256": "87a300fceff2f67348d47a7c2770aad41ff7567e5cc587ea7073b82e82e936c9",
+      "sourceSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "static-items-to-person-scene-cut",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-mask-2",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-mask",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "face-touching-and-mask-adjustment",
+      "start": 11,
+      "end": 14,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-mask-2.npz",
+      "featureSha256": "5747b46b07773e6f9827dd9f5568da556adc84c218478a7bf1678ebbe76e032d",
+      "sourceSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "mask-fitting-wide-to-close-scene-cut",
+      "visibleActionAcrossReviewedFrames": false,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-mask-3",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-mask",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "face-touching-and-mask-adjustment",
+      "start": 14,
+      "end": 17,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 1,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-mask-3.npz",
+      "featureSha256": "47e5fabcb2a8ed8673dd11e33dff8aaaa1ad2d2528d8fa6e96f30eefdd6a1f0b",
+      "sourceSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "mask-face-adjustment",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "MS",
+        "rawPrediction": "MS",
+        "structuralEligible": false,
+        "visibleFraction": 0.022222222222222223,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.022222222222222223,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "S",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.022222222222222223,
+        "frames": 45,
+        "estimatedExactProbability": 1.5921688342609625e-10,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-mask-4",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-mask",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "face-touching-and-mask-adjustment",
+      "start": 17,
+      "end": 20,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-mask-4.npz",
+      "featureSha256": "529227cc0ccf9620e6b7bdf70e9d2ec5e2426b9edec2fcb12cd1fba29a31953d",
+      "sourceSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "mask-face-adjustment",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-mask-5",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-mask",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "face-touching-and-mask-adjustment",
+      "start": 20,
+      "end": 23,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-mask-5.npz",
+      "featureSha256": "4c6a8f563542a36241b0bb4e46ad82d4e7ab691b756c00d75ebc6ac5aa3a47a6",
+      "sourceSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "mask-face-adjustment",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-mask-6",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-mask",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "face-touching-and-mask-adjustment",
+      "start": 23,
+      "end": 26,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-mask-6.npz",
+      "featureSha256": "7b1bcbd097934427627a39f69751572bd29c50f9c1d9da4c2989590647094ab7",
+      "sourceSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "mask-face-adjustment",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-mask-7",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-mask",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "face-touching-and-mask-adjustment",
+      "start": 26,
+      "end": 29,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-mask-7.npz",
+      "featureSha256": "3ae4f337496e41431099185c94ca8df8815d61c36330a29c8f825881d59404d4",
+      "sourceSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "mask-face-adjustment",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "cdc-mask-8",
+      "sourceGroup": "cdc-collection",
+      "sourceId": "cdc-mask",
+      "signer": "identity-unverified:cdc-collection",
+      "reference": "",
+      "category": "face-touching-and-mask-adjustment",
+      "start": 29,
+      "end": 32,
+      "side": "Left",
+      "frames": 45,
+      "visibleFrames": 0,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/cdc-mask-8.npz",
+      "featureSha256": "d03e2476fa8ff65c616439f53f822c2c151022925824a53625b9f96c0467cfd2",
+      "sourceSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "mask-face-adjustment",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "",
+        "rawPrediction": "",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "",
+        "rawPrediction": "S",
+        "structuralEligible": false,
+        "visibleFraction": 0.0,
+        "frames": 45,
+        "estimatedExactProbability": 2.1119424425935394e-09,
+        "qualified": false
+      }
+    },
+    {
+      "id": "asl-lexical-0",
+      "sourceGroup": "asl-demo",
+      "sourceId": "asl-lexical",
+      "signer": "identity-unverified:asl-demo",
+      "reference": "",
+      "category": "lexical-ASL-not-fingerspelling",
+      "start": 6,
+      "end": 9.5,
+      "side": "Right",
+      "frames": 53,
+      "visibleFrames": 47,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/asl-lexical-0.npz",
+      "featureSha256": "f86ac33004bd5d7f88502f6d974eff5c0ff94c5c05f0b87e5eeff8a337be17f6",
+      "sourceSha256": "9130e2a5d01c31a2da08f2e0d1c96f74ae86f72a8abff18d441bb05023bcc3ef",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "lexical-ASL-visual-deaf-american-captioned",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "KZTH",
+        "rawPrediction": "KZTH",
+        "structuralEligible": true,
+        "visibleFraction": 0.8867924528301887,
+        "frames": 53
+      },
+      "baseline": {
+        "prediction": "HTTY",
+        "rawPrediction": "HTTY",
+        "structuralEligible": true,
+        "visibleFraction": 0.8867924528301887,
+        "frames": 53
+      },
+      "selected": {
+        "prediction": "HTHE",
+        "rawPrediction": "HTHE",
+        "structuralEligible": true,
+        "visibleFraction": 0.8867924528301887,
+        "frames": 53,
+        "estimatedExactProbability": 0.013588924508938303,
+        "qualified": false
+      }
+    },
+    {
+      "id": "asl-lexical-1",
+      "sourceGroup": "asl-demo",
+      "sourceId": "asl-lexical",
+      "signer": "identity-unverified:asl-demo",
+      "reference": "",
+      "category": "lexical-ASL-not-fingerspelling",
+      "start": 9.5,
+      "end": 12.5,
+      "side": "Right",
+      "frames": 45,
+      "visibleFrames": 37,
+      "aspect": 1.7777777777777777,
+      "file": "work/negatives/asl-lexical-1.npz",
+      "featureSha256": "ecee92eddc137569aa5d51abbf52c2a54d19402492fd6368937fc12f4388943b",
+      "sourceSha256": "9130e2a5d01c31a2da08f2e0d1c96f74ae86f72a8abff18d441bb05023bcc3ef",
+      "reviewStatus": "pending visual review; source action metadata + ASL captions",
+      "reviewedCategory": "lexical-ASL-question-captioned",
+      "visibleActionAcrossReviewedFrames": true,
+      "previousModel": {
+        "prediction": "L",
+        "rawPrediction": "L",
+        "structuralEligible": true,
+        "visibleFraction": 0.8222222222222222,
+        "frames": 45
+      },
+      "baseline": {
+        "prediction": "B",
+        "rawPrediction": "B",
+        "structuralEligible": true,
+        "visibleFraction": 0.8222222222222222,
+        "frames": 45
+      },
+      "selected": {
+        "prediction": "PGA",
+        "rawPrediction": "PGA",
+        "structuralEligible": true,
+        "visibleFraction": 0.8222222222222222,
+        "frames": 45,
+        "estimatedExactProbability": 0.005672148421780001,
+        "qualified": false
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "cdc-clean",
+      "file": "Clean hands short.webm",
+      "bytes": 4172129,
+      "sha1": "086c61006e3b38bb0aed44d8f5e8b25ba6989bf5",
+      "license": "Public domain mark 1.0; US federal work",
+      "author": "Centers for Disease Control and Prevention",
+      "category": "ordinary-handwashing",
+      "windows": [
+        [
+          4,
+          7
+        ],
+        [
+          7,
+          10
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          13,
+          16
+        ],
+        [
+          16,
+          19
+        ]
+      ],
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Clean_hands_short.webm",
+      "sourceGroup": "cdc-collection",
+      "use": "evaluation only; never model fitting or threshold tuning",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/89/Clean_hands_short.webm?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3"
+    },
+    {
+      "id": "cdc-items",
+      "file": "Donning PPE- Remove Personal Clothing and Items CDC03.webm",
+      "bytes": 866339,
+      "sha1": "fa4c9ea6f9e55d858a62f79737b2ef3ef8c436d4",
+      "license": "CC BY-SA 4.0",
+      "author": "CDC, VRT ticket 2014112210011257",
+      "category": "clothing-and-personal-items",
+      "windows": [
+        [
+          5,
+          8
+        ],
+        [
+          8,
+          11
+        ],
+        [
+          11,
+          14
+        ],
+        [
+          14,
+          17
+        ],
+        [
+          17,
+          20
+        ],
+        [
+          20,
+          23
+        ],
+        [
+          23,
+          26
+        ],
+        [
+          26,
+          29
+        ]
+      ],
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm",
+      "sourceGroup": "cdc-collection",
+      "use": "evaluation only; never model fitting or threshold tuning",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574"
+    },
+    {
+      "id": "cdc-hygiene",
+      "file": "Donning PPE- Perform Hand Hygiene CDC05.webm",
+      "bytes": 874340,
+      "sha1": "371f2e7381cf496001483122a8c17b3959a997ac",
+      "license": "CC BY-SA 4.0",
+      "author": "CDC, VRT ticket 2014112210011257",
+      "category": "ordinary-hand-rubbing",
+      "windows": [
+        [
+          3,
+          6
+        ],
+        [
+          6,
+          9
+        ],
+        [
+          9,
+          12
+        ],
+        [
+          12,
+          15
+        ],
+        [
+          15,
+          18
+        ]
+      ],
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Perform_Hand_Hygiene_CDC05.webm",
+      "sourceGroup": "cdc-collection",
+      "use": "evaluation only; never model fitting or threshold tuning",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Donning_PPE-_Perform_Hand_Hygiene_CDC05.webm?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9"
+    },
+    {
+      "id": "cdc-mask",
+      "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+      "bytes": 1697383,
+      "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+      "license": "CC BY-SA 4.0",
+      "author": "CDC, VRT ticket 2014112210011257",
+      "category": "face-touching-and-mask-adjustment",
+      "windows": [
+        [
+          5,
+          8
+        ],
+        [
+          8,
+          11
+        ],
+        [
+          11,
+          14
+        ],
+        [
+          14,
+          17
+        ],
+        [
+          17,
+          20
+        ],
+        [
+          20,
+          23
+        ],
+        [
+          23,
+          26
+        ],
+        [
+          26,
+          29
+        ],
+        [
+          29,
+          32
+        ]
+      ],
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+      "sourceGroup": "cdc-collection",
+      "use": "evaluation only; never model fitting or threshold tuning",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/6/64/Donning_PPE-_Put_on_N95_Respirator_CDC09.webm?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1"
+    },
+    {
+      "id": "asl-lexical",
+      "file": "American Sign Language demo - Travis Dougherty.ogv",
+      "bytes": 8262854,
+      "sha1": "eb3b81b969ae9cc7cc29941a5872fb4c9f2e26f3",
+      "license": "CC BY-SA 3.0",
+      "author": "Fuzheado (Andrew Lih); signer Travis Dougherty",
+      "category": "lexical-ASL-not-fingerspelling",
+      "windows": [
+        [
+          6,
+          9.5
+        ],
+        [
+          9.5,
+          12.5
+        ]
+      ],
+      "annotationSource": "https://commons.wikimedia.org/wiki/TimedText:American_Sign_Language_demo_-_Travis_Dougherty.ogv.en.srt",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:American_Sign_Language_demo_-_Travis_Dougherty.ogv",
+      "sourceGroup": "asl-demo",
+      "use": "evaluation only; never model fitting or threshold tuning",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/6/64/American_Sign_Language_demo_-_Travis_Dougherty.ogv?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sha256": "9130e2a5d01c31a2da08f2e0d1c96f74ae86f72a8abff18d441bb05023bcc3ef"
+    }
+  ],
+  "review": {
+    "reviewer": "Codex visual review of five timestamped frames per interval, combined with published action descriptions and ASL captions; no physical identity or expert lexical annotation",
+    "sheetSha256": {
+      "cdc-clean": "22f6c32da2acafe403d11511e79fc70bcc3f2be7177d44f74f5dfd31281641d1",
+      "cdc-items": "d385413bbb7ea0f57ca41c273827a4d2b4fef3ed7d9d79b7d729465af6a58467",
+      "cdc-hygiene": "333840dd7fb574862c5bf692245819dbdf552d545597c2717c89a3d0e761122c",
+      "cdc-mask": "4497a2b40345751cfbfbed2b8120a8e9eee22be4ef84bb6170ba79d77ecb7a3d",
+      "asl-lexical": "3242de5793b563dbeaae76afc5ff3a4ba331c812b4d009686c7493be320c5efb"
+    },
+    "allIntervalsRetained": true,
+    "categories": {
+      "cdc-clean-0": "handwashing",
+      "cdc-clean-1": "handwashing",
+      "cdc-clean-2": "handwashing-to-drying-scene-cut",
+      "cdc-clean-3": "handwashing-to-paper-towel-scene-cut",
+      "cdc-clean-4": "hand-drying",
+      "cdc-items-0": "no-visible-hands-static-items",
+      "cdc-items-1": "no-visible-hands-static-items",
+      "cdc-items-2": "no-visible-hands-static-items",
+      "cdc-items-3": "no-visible-hands-static-items",
+      "cdc-items-4": "scene-change-to-resting-person",
+      "cdc-items-5": "jewellery-ear-face-adjustment",
+      "cdc-items-6": "clothing-jewellery-adjustment",
+      "cdc-items-7": "hands-resting",
+      "cdc-hygiene-0": "intro-interview-scene-cuts-no-hands",
+      "cdc-hygiene-1": "resting-to-soap-dispenser-scene-cut",
+      "cdc-hygiene-2": "soap-dispensing-to-rubbing-scene-cut",
+      "cdc-hygiene-3": "ordinary-hand-rubbing",
+      "cdc-hygiene-4": "hand-rubbing-to-interview-scene-cut",
+      "cdc-mask-0": "interview-to-static-items-scene-cut",
+      "cdc-mask-1": "static-items-to-person-scene-cut",
+      "cdc-mask-2": "mask-fitting-wide-to-close-scene-cut",
+      "cdc-mask-3": "mask-face-adjustment",
+      "cdc-mask-4": "mask-face-adjustment",
+      "cdc-mask-5": "mask-face-adjustment",
+      "cdc-mask-6": "mask-face-adjustment",
+      "cdc-mask-7": "mask-face-adjustment",
+      "cdc-mask-8": "mask-face-adjustment",
+      "asl-lexical-0": "lexical-ASL-visual-deaf-american-captioned",
+      "asl-lexical-1": "lexical-ASL-question-captioned"
+    },
+    "actionVisibleThroughoutReviewedFrames": [
+      "cdc-clean-0",
+      "cdc-clean-1",
+      "cdc-clean-4",
+      "cdc-items-5",
+      "cdc-items-6",
+      "cdc-items-7",
+      "cdc-hygiene-3",
+      "cdc-mask-3",
+      "cdc-mask-4",
+      "cdc-mask-5",
+      "cdc-mask-6",
+      "cdc-mask-7",
+      "cdc-mask-8",
+      "asl-lexical-0",
+      "asl-lexical-1"
+    ],
+    "caveat": "Small convenience sample, edited instructional sources, no independent human review, source groups are not verified distinct people. Never pooled into a population false-accept estimate."
+  }
+}

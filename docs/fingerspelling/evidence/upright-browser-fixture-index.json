@@ -1,0 +1,66 @@
+[
+  {
+    "id": "007a59f48e14dd0b23782b71",
+    "role": "final",
+    "signer": "9fc2",
+    "sourceSplit": "test",
+    "reference": "EDINBURG TX",
+    "rawSha256": "c18df6b9fab738bd74dfd56e8d085e44a4c91882c2e9d3d5696e6e4216af6591"
+  },
+  {
+    "id": "0755ce630b2fb7c824b4691a",
+    "role": "final",
+    "signer": "9fc2",
+    "sourceSplit": "test",
+    "reference": "LAS VEGAS NV",
+    "rawSha256": "8596ab0463b8932ad5d9d1878ef8a10b13d145cc073b08487572e70f6d74464a"
+  },
+  {
+    "id": "0b21e5c185ba8e2389d1dea4",
+    "role": "final",
+    "signer": "a1ba",
+    "sourceSplit": "test",
+    "reference": "RENITA CAMPOS",
+    "rawSha256": "69fb81f130fb28b04eb83639ec04d5c98dc6b39b64dd89a13eb1208104214c8d"
+  },
+  {
+    "id": "10d4fde911c3f68b7873f684",
+    "role": "final",
+    "signer": "df0c",
+    "sourceSplit": "test",
+    "reference": "NEWPORT NEWS VA",
+    "rawSha256": "a43b0f40fd50ca2eeb9cd42488fa3f94cb6cba4d63a6a69c7c55db4e047c3413"
+  },
+  {
+    "id": "1689c984d87b969f72a8cadc",
+    "role": "final",
+    "signer": "3ca7",
+    "sourceSplit": "test",
+    "reference": "FORT WAYNE INDIANA",
+    "rawSha256": "d1785d1e2474e99c938ea464d1b5f42e84942dcb4e00624533452a2992981d81"
+  },
+  {
+    "id": "1c0a1eeaddc997bc0563aab6",
+    "role": "final",
+    "signer": "b5c1",
+    "sourceSplit": "test",
+    "reference": "KANSAS CITY KS",
+    "rawSha256": "7808c487cdaa61a556729569c19967c34f998a0f1262e42fdf9e1462954e79fa"
+  },
+  {
+    "id": "164650016581817f52803ab7",
+    "role": "left_final",
+    "signer": "1c15",
+    "sourceSplit": "validation",
+    "reference": "CHESAPEAKE VA",
+    "rawSha256": "cb4eda23c6c37ef904bda581050bf19f1078400b43e06594668e00503b0518bf"
+  },
+  {
+    "id": "47b36e3fa22f13b5bdb304f9",
+    "role": "left_final",
+    "signer": "1c15",
+    "sourceSplit": "validation",
+    "reference": "MICHAEL CAMACHO",
+    "rawSha256": "f36a56a94d9268397f9f06e63b2f37b46dd5ca629603ce8ee2c775eaeafc2bf9"
+  }
+]

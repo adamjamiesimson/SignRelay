@@ -1,0 +1,18 @@
+{
+  "criterion": "fixed architecture/beam8 from prior development selection; orientation-correct RGB; checkpoint by new dev greedy CER",
+  "experiment": "motion_gru_v3",
+  "decoder": "beam8",
+  "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+  "modelBytes": 523322,
+  "spec": {
+    "kind": "gru",
+    "features": "v3",
+    "inputs": 132,
+    "width": 96,
+    "dropout": 0.2
+  },
+  "planSha256": "56d12a13b86ca92d94e397c4cc65fe7f55d8a154d8a6b56a3f42b25a483217e7",
+  "rgbPolicy": "display-matrix-v1",
+  "devCer": 0.12798026856673062,
+  "sealedDataRead": false
+}
