@@ -1233,7 +1233,7 @@ export function TranslatorExperience() {
                     : spellingPhase === "loading" ? "Loading sequence recognition…"
                     : FINGERSPELLING_MODEL.reason}</p>
                 </div>
-                <p className="calibration-message">Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Q has only two held-out examples; left-hand coverage is limited. Check every character.</p>
+                <p className="calibration-message">Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.</p>
                 <p className="sr-only" role="status">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraMessage}</p>
                 <label className="spelling-label" htmlFor="spelling-text">Composed text</label>
                 <textarea id="spelling-text" ref={spellingInputRef} value={spellingText}

@@ -1,0 +1,34 @@
+name: Fingerspelling frozen training reproduction smoke
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-upright-reproduce.yml']
+permissions: {contents: read, actions: read}
+jobs:
+  frozen-artifact-reproduction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 41285144707
+          name: upright-selected-frozen
+          path: work/upright-models/motion_gru_v3
+      - run: python training/fingerspelling/upright/freeze.py
+      - name: Verify identical frozen selection and unchanged evaluated weights
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,py_compile
+          root=pathlib.Path("work/upright-selected")
+          s=json.loads((root/"selection.json").read_text())
+          pinned=json.loads(pathlib.Path("docs/fingerspelling/evidence/upright-selection.json").read_text())
+          assert s==pinned
+          assert hashlib.sha256((root/"model.onnx").read_bytes()).hexdigest()=="34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b"
+          for p in pathlib.Path("training/fingerspelling/upright").glob("*.py"):py_compile.compile(str(p),doraise=True)
+          print("FROZEN-REPRODUCTION-SUCCESS",json.dumps(s))
+          PY
