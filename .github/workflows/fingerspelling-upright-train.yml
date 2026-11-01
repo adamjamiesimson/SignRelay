@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Never train on partial or failed corrected data
+      - name: Require all eight completed corrected data shards (restart after bounded wait expired)
         env: {GH_TOKEN: "${{ github.token }}"}
         shell: python
         run: |
@@ -27,7 +27,7 @@ jobs:
     needs: require-complete-cache
     runs-on: ubuntu-latest
     timeout-minutes: 75
-    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', PYTHONUNBUFFERED: '1'}
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', PYTHONUNBUFFERED: '1', ACCURACY_PLAN_SHA256: '56d12a13b86ca92d94e397c4cc65fe7f55d8a154d8a6b56a3f42b25a483217e7'}
     steps:
       - uses: actions/checkout@v4
         with: {persist-credentials: false}
