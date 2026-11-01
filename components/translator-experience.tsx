@@ -378,7 +378,7 @@ export function TranslatorExperience() {
 
   const discardSpellingCapture = useCallback(() => {
     if (spellingTimerRef.current !== null) window.clearTimeout(spellingTimerRef.current);
-    spellingCaptureRef.current = null; setSpellingCandidate("");
+    spellingCaptureRef.current?.dispose();spellingCaptureRef.current = null; setSpellingCandidate("");
     if (spellingSessionRef.current) spellingSessionRef.current.reset();
     else setSpellingPhase("idle");
   }, []);
@@ -589,7 +589,7 @@ export function TranslatorExperience() {
       return;
     }
 
-    const interval = engine.profile === "fingerspelling" ? 1000 / 15 - .5 : 33;
+    const interval = engine.profile === "fingerspelling" ? 0 : 33;
     if (!engine.busy && engine.frameAvailable && now - lastFrameRef.current >= interval && video.currentTime !== lastVideoTimeRef.current) {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
@@ -1059,31 +1059,39 @@ export function TranslatorExperience() {
     switchTrackingProfile();
   }
 
-  function captureSpelling() {
-    setSpellingMessage(""); setSpellingCandidate("");
-    if (spellingPhase === "capturing") {
-      if (spellingTimerRef.current !== null) window.clearTimeout(spellingTimerRef.current);
-      const capture = spellingCaptureRef.current; spellingCaptureRef.current = null;
+  async function captureSpelling() {
+    setSpellingMessage("");setSpellingCandidate("");
+    if(spellingPhase==="capturing"){
+      if(spellingTimerRef.current!==null)window.clearTimeout(spellingTimerRef.current);
+      const capture=spellingCaptureRef.current,session=spellingSessionRef.current,video=videoRef.current;
+      const cutoff=performance.now();
+      setSpellingPhase("processing");
       try {
-        if (!capture || !spellingSessionRef.current) throw new Error("Recognition is unavailable");
-        const input = capture.finish();
-        setSpellingPhase("processing");
-        spellingSessionRef.current.submit(input.features, input.frames);
-      } catch (error) {
-        setSpellingPhase("ready");
-        setSpellingMessage(error instanceof Error ? error.message : "Please record again.");
+        if(!capture||!session||!video)throw new Error("Recognition is unavailable");
+        capture.seal(cutoff);
+        await engineRef.current?.drain(video,cutoff,frame=>{
+          if(spellingCaptureRef.current===capture)capture.push(frame,video.videoWidth/video.videoHeight);
+        });
+        if(spellingCaptureRef.current!==capture||spellingSessionRef.current!==session)return;
+        spellingCaptureRef.current=null;
+        const input=capture.finish();capture.dispose();
+        session.submit(input.features,input.frames);
+      }catch(error){
+        if(spellingCaptureRef.current===capture)spellingCaptureRef.current=null;
+        capture?.dispose();setSpellingPhase("ready");
+        setSpellingMessage(error instanceof Error?error.message:"Please record again.");
       }
       return;
     }
-    const video = videoRef.current;
-    if (!video || !video.videoWidth || !spellingSessionRef.current) return;
-    const capture = new FingerspellingCapture(video.videoWidth / video.videoHeight, FINGERSPELLING_CTC_MODEL.featureVersion ?? "v2");
-    spellingCaptureRef.current = capture; setSpellingPhase("capturing");
-    spellingTimerRef.current = window.setTimeout(() => {
-      if (spellingCaptureRef.current !== capture) return;
-      spellingCaptureRef.current = null; setSpellingPhase("ready");
+    const video=videoRef.current;
+    if(!video||!video.videoWidth||!spellingSessionRef.current)return;
+    const capture=new FingerspellingCapture(video.videoWidth/video.videoHeight,FINGERSPELLING_CTC_MODEL.featureVersion??"v2",performance.now());
+    spellingCaptureRef.current=capture;setSpellingPhase("capturing");
+    spellingTimerRef.current=window.setTimeout(()=>{
+      if(spellingCaptureRef.current!==capture)return;
+      capture.dispose();spellingCaptureRef.current=null;setSpellingPhase("ready");
       setSpellingMessage("Capture reached 16 seconds. Please record a shorter name.");
-    }, 16000);
+    },16000);
   }
 
   function confirmSpelling() {

@@ -1,10 +1,13 @@
 import { VisionEngine, type VisionTimings } from "./vision-engine";
+import { FingerspellingSamplingClock } from "./fingerspelling-sampling";
 import type { VisionFrame } from "./vision-types";
 
+export type CapturedVisionFrame = VisionFrame & { capturedAt:number; mediaSlot:number; presentedFrames:number };
 export type LiveVisionTiming = VisionTimings & { capture: number; transport: number; age: number };
 type Pending = {
   resolve: (frame: VisionFrame | null) => void; reject: (error: Error) => void;
   hands: (frame: VisionFrame) => void; started: number; capture: number; posted: number;
+  metadata?:{mediaSlot:number;presentedFrames:number};
 };
 
 /** Capture only when the lane is free. Busy calls drop their source, not queue
@@ -19,26 +22,61 @@ export class LiveVision {
   private sourceVideo: HTMLVideoElement | null = null;
   private frameCallback: number | null = null;
   private decodedFrame: VideoFrameCallbackMetadata | null = null;
-  private capturedFrame = -1;
+  private sampling = new FingerspellingSamplingClock();
+  private snapshot: { bitmap:ImageBitmap; timestamp:number; capturedAt:number; mediaSlot:number; presentedFrames:number } | null = null;
+  private snapshotCanvas:OffscreenCanvas | null = null;
+  private snapshotError:Error | null = null;
+  private draining = false;
+  private idleWaiters:(()=>void)[]=[];
   private frameClockOffset: number | null = null;
   get frameAvailable() {
-    return this.trackingProfile === "words" || !this.sourceVideo
-      || (!!this.decodedFrame && this.decodedFrame.presentedFrames !== this.capturedFrame);
+    return this.trackingProfile==="words" || (!this.draining && (!!this.snapshot || !!this.snapshotError || !this.sourceVideo));
   }
-  private watchDecodedFrames(video: HTMLVideoElement) {
-    if (this.sourceVideo === video) return;
-    if (typeof video.requestVideoFrameCallback !== "function") throw new Error("Fingerspelling requires decoded video timestamps");
-    if (this.sourceVideo && this.frameCallback !== null) this.sourceVideo.cancelVideoFrameCallback(this.frameCallback);
-    this.sourceVideo = video; this.decodedFrame = null; this.capturedFrame = -1; this.frameClockOffset = null;
-    const observe: VideoFrameRequestCallback = (_now, metadata) => {
-      if (this.closed || this.sourceVideo !== video) return;
-      if (Number.isFinite(metadata.mediaTime) && metadata.mediaTime >= 0) {
-        this.decodedFrame = metadata;
-        this.frameClockOffset ??= metadata.expectedDisplayTime - metadata.mediaTime * 1000;
+  private watchDecodedFrames(video:HTMLVideoElement) {
+    if(this.sourceVideo===video)return;
+    if(typeof video.requestVideoFrameCallback!=="function")throw new Error("Fingerspelling requires decoded video timestamps");
+    if(this.sourceVideo&&this.frameCallback!==null)this.sourceVideo.cancelVideoFrameCallback(this.frameCallback);
+    this.snapshot?.bitmap.close();this.snapshot=null;this.sourceVideo=video;
+    this.sampling=new FingerspellingSamplingClock();this.frameClockOffset=null;this.snapshotError=null;
+    const observe:VideoFrameRequestCallback=(_now,metadata)=>{
+      if(this.closed||this.sourceVideo!==video)return;
+      if(!this.draining&&Number.isFinite(metadata.mediaTime)&&metadata.mediaTime>=0){
+        this.decodedFrame=metadata;
+        this.frameClockOffset??=metadata.expectedDisplayTime-metadata.mediaTime*1000;
+        const slot=this.sampling.take(metadata.mediaTime);
+        if(slot!==null){
+          try {
+            const ratio=Math.min(1,640/video.videoWidth,640/video.videoHeight);
+            const w=Math.max(1,Math.round(video.videoWidth*ratio)),h=Math.max(1,Math.round(video.videoHeight*ratio));
+            this.snapshotCanvas??=new OffscreenCanvas(w,h);
+            if(this.snapshotCanvas.width!==w||this.snapshotCanvas.height!==h){this.snapshotCanvas.width=w;this.snapshotCanvas.height=h;}
+            const ctx=this.snapshotCanvas.getContext("2d");
+            if(!ctx)throw new Error("Decoded-frame snapshot unavailable");
+            const capturedAt=performance.now();
+            ctx.drawImage(video,0,0,w,h);
+            // Synchronous snapshot in the callback associates pixels with THIS
+            // decoded timestamp; createImageBitmap(video) after await does not.
+            const bitmap=this.snapshotCanvas.transferToImageBitmap();
+            if(this.snapshot){this.snapshot.bitmap.close();this.stats.replaced++;}
+            this.snapshot={bitmap,timestamp:metadata.mediaTime*1000+this.frameClockOffset,capturedAt,mediaSlot:slot,presentedFrames:metadata.presentedFrames};
+            this.stats.sampled++;
+          } catch(error){this.snapshotError=error instanceof Error?error:new Error(String(error));}
+        }
       }
-      this.frameCallback = video.requestVideoFrameCallback(observe);
+      this.frameCallback=video.requestVideoFrameCallback(observe);
     };
-    this.frameCallback = video.requestVideoFrameCallback(observe);
+    this.frameCallback=video.requestVideoFrameCallback(observe);
+  }
+  private whenIdle() {return this.occupied?new Promise<void>(resolve=>this.idleWaiters.push(resolve)):Promise.resolve();}
+  /** Stop sampling, complete the in-flight frame and the single bounded snapshot.
+   * The caller seals its capture at cutoff BEFORE awaiting; later pixels are excluded. */
+  async drain(video:HTMLVideoElement,cutoff:number,onHands:(frame:VisionFrame)=>void) {
+    if(this.trackingProfile!=="fingerspelling")return;
+    this.draining=true;
+    try {
+      await this.whenIdle();
+      if(this.snapshot&&this.snapshot.capturedAt<=cutoff&&!this.closed)await this.process(video,performance.now(),onHands);
+    } finally {this.draining=false;}
   }
   private recovering: Promise<void> | null = null;
   private accelerated = true;
@@ -48,7 +86,7 @@ export class LiveVision {
   assetSource: VisionEngine["assetSource"] = "self-hosted";
   delegate: "GPU" | "CPU" = "CPU";
   mode: "worker" | "main" = "worker";
-  readonly stats = { dropped: 0, recoveries: 0 };
+  readonly stats = { dropped: 0, recoveries: 0, sampled:0, replaced:0, stale:0 };
   lastError: string | null = null;
   /** Called once per worker failure, before recovery starts. Hands already
    * painted by that worker are no longer current, and a failure during
@@ -130,16 +168,20 @@ export class LiveVision {
         if (data.type === "hands") {
           this.timings.hands = data.handsMs;
           this.timings.age = performance.now() - pending.started;
-          pending.hands(data.frame);
+          pending.hands(this.withCaptureMetadata(data.frame,pending));
         } else if (data.type === "result") {
           clearTimeout(this.timer);
           Object.assign(this.timings, data.timings, { capture: pending.capture,
             transport: Math.max(0, performance.now() - pending.posted - data.timings.hands - data.timings.auxiliary) });
-          this.pending = null; pending.resolve(data.frame);
+          this.pending = null; pending.resolve(this.withCaptureMetadata(data.frame,pending));
         }
       };
       worker.postMessage({ type: "init", accelerated: this.accelerated });
     });
+  }
+
+  private withCaptureMetadata(frame:VisionFrame,pending:Pending) {
+    return this.trackingProfile==="fingerspelling"?{...frame,capturedAt:pending.started,...pending.metadata}:frame;
   }
 
   private fail(error: Error) {
@@ -166,7 +208,7 @@ export class LiveVision {
     if (this.closed) return null;
     if (this.busy) { this.stats.dropped++; return null; }
     this.occupied = true;
-    const started = performance.now();
+    let started = performance.now();
     try {
       if (this.fallback) {
         // A synchronous callback cannot paint until this thread yields. Report
@@ -179,30 +221,33 @@ export class LiveVision {
       }
       if (!this.worker) throw new Error("Tracking unavailable. Restart the camera.");
       const captureWorker = this.worker;
-      let frameTimestamp = timestamp;
-      if (this.trackingProfile === "fingerspelling") {
-        if (!("videoWidth" in video)) throw new Error("Fingerspelling requires a video source");
+      let frameTimestamp=timestamp,metadata:Pending["metadata"],bitmap:ImageBitmap;
+      if(this.trackingProfile==="fingerspelling"){
+        if(!("videoWidth" in video))throw new Error("Fingerspelling requires a video source");
         this.watchDecodedFrames(video);
-        const frame = this.decodedFrame;
-        if (!frame || this.frameClockOffset === null || frame.presentedFrames === this.capturedFrame) return null;
-        this.capturedFrame = frame.presentedFrames;
-        frameTimestamp = frame.mediaTime * 1000 + this.frameClockOffset;
-      }
-      const bitmap = await createImageBitmap(video);
+        if(this.snapshotError)throw this.snapshotError;
+        const sample=this.snapshot;this.snapshot=null;
+        if(!sample)return null;
+        if(performance.now()-sample.capturedAt>200){sample.bitmap.close();this.stats.stale++;return null;}
+        bitmap=sample.bitmap;frameTimestamp=sample.timestamp;started=sample.capturedAt;
+        metadata={mediaSlot:sample.mediaSlot,presentedFrames:sample.presentedFrames};
+      }else bitmap=await createImageBitmap(video);
       if (this.closed || this.worker !== captureWorker || this.recovering) { bitmap.close(); return null; }
       const posted = performance.now();
       return await new Promise<VisionFrame | null>((resolve, reject) => {
-        this.pending = { resolve, reject, hands: onHands, started, capture: posted - started, posted };
+        this.pending = { resolve, reject, hands: onHands, started, capture: posted - started, posted, metadata };
         this.timer = setTimeout(() => this.fail(new Error("Tracking frame timed out")), 8000);
         try { this.worker!.postMessage({ type: "frame", bitmap, timestamp: frameTimestamp }, [bitmap]); }
         catch (error) { bitmap.close(); clearTimeout(this.timer); this.fail(error as Error); }
       });
-    } finally { this.occupied = false; }
+    } finally { this.occupied = false; this.idleWaiters.splice(0).forEach(resolve=>resolve()); }
   }
 
   close() {
     if (this.sourceVideo && this.frameCallback !== null) this.sourceVideo.cancelVideoFrameCallback(this.frameCallback);
+    this.snapshot?.bitmap.close();this.snapshot=null;this.snapshotCanvas=null;
     this.sourceVideo = null; this.decodedFrame = null; this.frameCallback = null;
+    this.idleWaiters.splice(0).forEach(resolve=>resolve());
     this.closed = true; clearTimeout(this.timer);
     this.cancelStartup?.(new Error("Tracking closed")); this.cancelStartup = null;
     this.worker?.terminate(); this.worker = null;

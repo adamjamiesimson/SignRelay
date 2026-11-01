@@ -1,20 +1,35 @@
 import type { VisionFrame, HandObservation } from "./vision-types";
 import { normalizeFingerspellingHand, normalizeFingerspellingMotion } from "./fingerspelling-features";
 
-type Sample = { time:number; hands:HandObservation[] };
+type Sample = { time:number; capturedAt:number; hands:HandObservation[] };
 /** Explicit bounded sequence capture. These are input-quality gates, not
  * calibrated rejection of non-sign movement or a recognition confidence. */
 export class FingerspellingCapture {
   private samples:Sample[]=[];
-  constructor(private aspect:number, private featureVersion:"v2"|"v3"="v2") {
+  private endAt=Infinity;
+  constructor(private aspect:number, private featureVersion:"v2"|"v3"="v2",private startAt=-Infinity) {
     if(!Number.isFinite(aspect)||aspect<=0)throw new Error("Camera dimensions unavailable");
   }
   push(frame:VisionFrame, aspect=this.aspect) {
     if(!Number.isFinite(aspect)||Math.abs(aspect-this.aspect)>1e-6)throw new Error("Camera orientation changed; record again");
+    const capturedAt=(frame as VisionFrame&{capturedAt?:number}).capturedAt??frame.timestamp;
+    if(capturedAt<this.startAt||capturedAt>this.endAt)return;
     const last=this.samples.at(-1);
     if(!Number.isFinite(frame.timestamp)||(last&&frame.timestamp<=last.time))return;
     if(this.samples.length>=512)throw new Error("Capture is too long; record again");
-    this.samples.push({time:frame.timestamp,hands:frame.hands.map(h=>({...h,landmarks:h.landmarks.map(p=>({...p}))}))});
+    this.samples.push({time:frame.timestamp,capturedAt,hands:frame.hands.map(h=>({...h,landmarks:h.landmarks.map(p=>({...p}))}))});
+  }
+  seal(endAt:number) {if(!Number.isFinite(endAt))throw new Error("Invalid capture boundary");this.endAt=endAt;}
+  dispose() {this.samples=[];}
+  diagnostics() {
+    const s=this.samples,t=s.map(x=>x.time),gaps=t.slice(1).map((v,i)=>v-t[i]),visible=s.map(x=>x.hands.some(h=>h.landmarks.length===21&&h.landmarks.every(p=>[p.x,p.y,p.z].every(Number.isFinite))));
+    const duration=s.length>1?t.at(-1)!-t[0]:0;
+    let longestMissingMs=0,missingStart:number|null=null;
+    for(let i=0;i<s.length;i++){if(!visible[i])missingStart??=t[i];else if(missingStart!==null){longestMissingMs=Math.max(longestMissingMs,t[i]-missingStart);missingStart=null;}}
+    if(missingStart!==null)longestMissingMs=Math.max(longestMissingMs,t.at(-1)!-missingStart);
+    return {frames:s.length,durationMs:duration,observedFps:duration?(s.length-1)*1000/duration:0,
+      maxFrameGapMs:Math.max(0,...gaps),visibleFrames:visible.filter(Boolean).length,missingFrames:visible.filter(x=>!x).length,longestMissingMs,
+      relativeFrameMs:t.map(v=>Math.round((v-t[0])*1000)/1000)};
   }
   finish() {
     const samples=this.samples;
