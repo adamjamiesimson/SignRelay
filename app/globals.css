@@ -258,3 +258,13 @@ details[open] > summary > svg:last-child { transform: rotate(180deg); }
   .asl-mode-selector button { flex: 1; padding-inline: 8px; }
   .spelling-actions .button { flex: 1 1 auto; min-height: 44px; }
 }
+
+/* Local opt-in research panel: existing surfaces, typography and green controls. */
+.research-test {display:grid;gap:14px;margin-top:14px;min-width:0;}
+.research-test fieldset {border:1px solid var(--line);padding:12px;min-width:0;display:grid;gap:10px;}
+.research-test label {display:block;line-height:1.5;}
+.research-test input[type="checkbox"] {width:18px;height:18px;vertical-align:middle;margin-right:8px;accent-color:var(--accent);}
+.research-test select,.research-test input:not([type="checkbox"]),#spelling-candidate-edit {display:block;width:100%;max-width:100%;min-height:44px;background:var(--surface);color:var(--text);border:1px solid var(--line-2);border-radius:var(--radius);padding:10px;font:inherit;}
+.research-context {display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;}
+.research-test li {overflow-wrap:anywhere;margin:8px 0;}
+.research-test ol {padding-left:22px;}

@@ -47,6 +47,7 @@ import { FingerspellingCapture } from "@/lib/fingerspelling-capture";
 import { FingerspellingCtcSession } from "@/lib/fingerspelling-ctc-session";
 import { FINGERSPELLING_CTC_MODEL } from "@/lib/fingerspelling-model";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
+import { RESEARCH_PROMPTS,makeResearchTrial,exportResearchMetrics,researchSummary,type ResearchContext,type ResearchDraft,type ResearchPending,type ResearchTrial,type ResearchOutcome } from "@/lib/fingerspelling-research";
 import { LiveVision } from "@/lib/live-vision";
 import { RecognitionSession } from "@/lib/recognition-session";
 import { recognitionStatus } from "@/lib/recognition-status";
@@ -94,6 +95,25 @@ export function TranslatorExperience() {
   const spellingTimerRef = useRef<number | null>(null);
   const [spellingPhase, setSpellingPhase] = useState<"idle" | "loading" | "ready" | "capturing" | "processing" | "candidate" | "failed">("idle");
   const [spellingCandidate, setSpellingCandidate] = useState("");
+  const [researchOpen,setResearchOpen]=useState(false);
+  const [researchConsent,setResearchConsent]=useState(false);
+  const researchConsentRef=useRef(false);
+  const researchDraftRef=useRef<ResearchDraft|null>(null);
+  const [researchPrompt,setResearchPrompt]=useState("anna");
+  const [researchTruth,setResearchTruth]=useState("ANNA");
+  const [researchContext,setResearchContext]=useState<ResearchContext>({device:"other",hand:"Right",light:"front-lit",speed:"usual"});
+  const [researchPending,setResearchPending]=useState<ResearchPending|null>(null);
+  const [researchTrials,setResearchTrials]=useState<ResearchTrial[]>([]);
+  const [researchConfirmed,setResearchConfirmed]=useState(false);
+  const [researchIssue,setResearchIssue]=useState<ResearchTrial["issue"]>("none");
+  const [researchExportConsent,setResearchExportConsent]=useState(false);
+  const [researchMessage,setResearchMessage]=useState("");
+  const finishResearch=useCallback((outcome:ResearchOutcome,prediction="",inferenceMs:number|null=null)=>{
+    const draft=researchDraftRef.current;researchDraftRef.current=null;
+    if(!draft||!researchConsentRef.current)return;
+    setResearchPending({...draft,prediction,outcome,inferenceMs,finishToResultMs:draft.finishedAt?performance.now()-draft.finishedAt:null});
+    setResearchConfirmed(false);
+  },[]);
   const [selected, setSelected] = useState<LanguageId>("asl");
   const [cameraState, setCameraState] = useState<CameraState>("idle");
   const [cameraMessage, setCameraMessage] = useState("Camera is off");
@@ -378,10 +398,12 @@ export function TranslatorExperience() {
 
   const discardSpellingCapture = useCallback(() => {
     if (spellingTimerRef.current !== null) window.clearTimeout(spellingTimerRef.current);
+    if(researchDraftRef.current)researchDraftRef.current.quality=spellingCaptureRef.current?.diagnostics();
+    finishResearch("cancelled");
     spellingCaptureRef.current?.dispose();spellingCaptureRef.current = null; setSpellingCandidate("");
     if (spellingSessionRef.current) spellingSessionRef.current.reset();
     else setSpellingPhase("idle");
-  }, []);
+  }, [finishResearch]);
 
   useEffect(() => {
     if (aslMode !== "fingerspelling" || selected !== "asl" || step !== "workspace" || cameraState !== "active") return;
@@ -391,6 +413,7 @@ export function TranslatorExperience() {
       FINGERSPELLING_CTC_MODEL,
       result => {
         if (!active) return;
+        finishResearch(result.status==="no-hand"||!result.text.trim()?"abstained":"candidate",result.text,result.inferenceMs);
         if (result.status === "no-hand" || !result.text.trim()) {
           setSpellingCandidate(""); setSpellingPhase("ready");
           setSpellingMessage(result.abstentionReason ?? "No text candidate. Try again with your hand clearly visible.");
@@ -402,6 +425,7 @@ export function TranslatorExperience() {
       state => {
         if (!active) return;
         if (state === "failed") {
+          finishResearch("technical-failure");
           spellingCaptureRef.current = null; setSpellingCandidate(""); setSpellingPhase("failed");
           setSpellingMessage("Recognition is unavailable. Restart the camera to retry, or edit the draft below.");
         } else if (state === "ready") setSpellingPhase("ready");
@@ -419,9 +443,10 @@ export function TranslatorExperience() {
       spellingCaptureRef.current = null;
       if (spellingTimerRef.current !== null) window.clearTimeout(spellingTimerRef.current);
     };
-  }, [aslMode, selected, step, cameraState, discardSpellingCapture]);
+  }, [aslMode, selected, step, cameraState, discardSpellingCapture, finishResearch]);
 
   const stopCamera = useCallback(() => {
+    finishResearch("cancelled");spellingCaptureRef.current?.dispose();
     spellingCaptureRef.current = null;
     if (spellingTimerRef.current !== null) window.clearTimeout(spellingTimerRef.current);
     spellingSessionRef.current?.close(); spellingSessionRef.current = null;
@@ -452,7 +477,7 @@ export function TranslatorExperience() {
     captureStateRef.current = "idle";
     captureFramesRef.current = [];
     setCalibrationState("idle");
-  }, []);
+  }, [finishResearch]);
 
   const changeWorkspaceLanguage = (language: LanguageId) => {
     if (language === selected) return;
@@ -1065,6 +1090,7 @@ export function TranslatorExperience() {
       if(spellingTimerRef.current!==null)window.clearTimeout(spellingTimerRef.current);
       const capture=spellingCaptureRef.current,session=spellingSessionRef.current,video=videoRef.current;
       const cutoff=performance.now();
+      if(researchDraftRef.current)researchDraftRef.current.finishedAt=cutoff;
       setSpellingPhase("processing");
       try {
         if(!capture||!session||!video)throw new Error("Recognition is unavailable");
@@ -1074,24 +1100,51 @@ export function TranslatorExperience() {
         });
         if(spellingCaptureRef.current!==capture||spellingSessionRef.current!==session)return;
         spellingCaptureRef.current=null;
-        const telemetry=capture.diagnostics(),input=capture.finish();capture.dispose();
+        const telemetry=capture.diagnostics();
+        if(researchDraftRef.current)researchDraftRef.current.quality=telemetry;
+        const input=capture.finish();capture.dispose();
         session.submit(input.features,input.frames,telemetry);
       }catch(error){
         if(spellingCaptureRef.current===capture)spellingCaptureRef.current=null;
-        capture?.dispose();setSpellingPhase("ready");
+        if(researchDraftRef.current)researchDraftRef.current.quality=capture?.diagnostics();
+        finishResearch("quality-rejected");capture?.dispose();setSpellingPhase("ready");
         setSpellingMessage(error instanceof Error?error.message:"Please record again.");
       }
       return;
     }
     const video=videoRef.current;
     if(!video||!video.videoWidth||!spellingSessionRef.current)return;
+    if(researchConsentRef.current){researchDraftRef.current={promptId:researchPrompt,startedAt:performance.now(),context:{...researchContext}};setResearchPending(null);setResearchMessage("");setResearchConfirmed(false);}
     const capture=new FingerspellingCapture(video.videoWidth/video.videoHeight,FINGERSPELLING_CTC_MODEL.featureVersion??"v2",performance.now());
     spellingCaptureRef.current=capture;setSpellingPhase("capturing");
     spellingTimerRef.current=window.setTimeout(()=>{
       if(spellingCaptureRef.current!==capture)return;
-      capture.dispose();spellingCaptureRef.current=null;setSpellingPhase("ready");
+      if(researchDraftRef.current)researchDraftRef.current.quality=capture.diagnostics();
+      finishResearch("quality-rejected");capture.dispose();spellingCaptureRef.current=null;setSpellingPhase("ready");
       setSpellingMessage("Capture reached 16 seconds. Please record a shorter name.");
     },16000);
+  }
+
+
+  function endResearch() {
+    researchConsentRef.current=false;researchDraftRef.current=null;setResearchConsent(false);
+    setResearchPending(null);setResearchTrials([]);setResearchTruth("");setResearchExportConsent(false);setResearchMessage("");
+    discardSpellingCapture();
+  }
+  function saveResearchResult() {
+    if(!researchConsentRef.current||!researchPending||!researchConfirmed||researchTrials.length>=100)return;
+    try {
+      const trial=makeResearchTrial(researchPending,researchTruth,researchIssue);
+      setResearchTrials(rows=>[...rows,trial]);setResearchPending(null);setResearchConfirmed(false);setResearchMessage("Saved in this tab.");
+    }catch(error){setResearchMessage(error instanceof Error?error.message:"Unable to save result");}
+  }
+  function downloadResearch() {
+    try {
+      const payload=exportResearchMetrics(researchTrials,researchExportConsent,FINGERSPELLING_CTC_MODEL.sha256);
+      const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:"application/json"})),a=document.createElement("a");
+      a.href=url;a.download="signrelay-test-metrics.json";a.click();window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+      setResearchMessage("Downloaded text-free metrics. Review the file before sharing it.");
+    }catch(error){setResearchMessage(error instanceof Error?error.message:"Export unavailable");}
   }
 
   function confirmSpelling() {
@@ -1243,6 +1296,8 @@ export function TranslatorExperience() {
                 </div>
                 <p className="calibration-message">Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.</p>
                 <p className="sr-only" role="status">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraMessage}</p>
+                <label className="spelling-label" htmlFor="spelling-candidate-edit">Candidate for review</label>
+                <input id="spelling-candidate-edit" value={spellingCandidate} maxLength={MAX_FINGERSPELLING_TEXT} disabled={spellingPhase!=="candidate"} autoComplete="off" spellCheck={false} onChange={e=>setSpellingCandidate(e.target.value)} />
                 <label className="spelling-label" htmlFor="spelling-text">Composed text</label>
                 <textarea id="spelling-text" ref={spellingInputRef} value={spellingText}
                   maxLength={MAX_FINGERSPELLING_TEXT} rows={4} spellCheck={false}
@@ -1268,6 +1323,55 @@ export function TranslatorExperience() {
                 </div>
                 {spellingMessage && <p className="calibration-message" role="status">{spellingMessage}</p>}
                 <p className="field-hint">Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.</p>
+
+                <details className="workspace-disclosure spelling-reference" open={researchOpen} onToggle={event=>{
+                  const open=event.currentTarget.open;setResearchOpen(open);
+                  if(!open&&researchConsentRef.current)endResearch();
+                }}>
+                  <summary>Optional webcam testing</summary>
+                  <div className="research-test" data-research-test>
+                    <p>Research-only. Results stay in this tab. Camera images and landmarks are not uploaded or saved. Closing this panel clears the local test session.</p>
+                    <label><input type="checkbox" checked={researchConsent} onChange={event=>{
+                      researchConsentRef.current=event.target.checked;setResearchConsent(event.target.checked);
+                      if(!event.target.checked)endResearch();
+                    }} /> I choose to run local webcam tests and record their metrics in this tab.</label>
+                    {researchConsent&&<>
+                      <fieldset disabled={spellingPhase==="capturing"||spellingPhase==="processing"}>
+                        <legend>Test setup</legend>
+                        <label htmlFor="research-prompt">Action</label>
+                        <select id="research-prompt" value={researchPrompt} onChange={event=>{
+                          setResearchPrompt(event.target.value);setResearchTruth(RESEARCH_PROMPTS.find(p=>p.id===event.target.value)?.text??"");setResearchPending(null);setResearchConfirmed(false);
+                        }}>{RESEARCH_PROMPTS.map(p=><option key={p.id} value={p.id}>{p.kind==="positive"?p.text:p.id==="rest"?"No hands":p.id==="wave"?"Wave":p.id==="wash"?"Handwashing":p.id==="clothing"?"Adjust clothing":"Other signing"}</option>)}</select>
+                        <div className="research-context">
+                          <label>Device<select aria-label="Test device" value={researchContext.device} onChange={e=>setResearchContext(c=>({...c,device:e.target.value as ResearchContext["device"]}))}>{["other","Windows","Mac","Android","iPhone"].map(x=><option key={x}>{x}</option>)}</select></label>
+                          <label>Hand<select aria-label="Test hand" value={researchContext.hand} onChange={e=>setResearchContext(c=>({...c,hand:e.target.value as ResearchContext["hand"]}))}>{["Right","Left","both"].map(x=><option key={x}>{x}</option>)}</select></label>
+                          <label>Lighting<select aria-label="Test lighting" value={researchContext.light} onChange={e=>setResearchContext(c=>({...c,light:e.target.value as ResearchContext["light"]}))}>{["front-lit","dim","back-lit"].map(x=><option key={x}>{x}</option>)}</select></label>
+                          <label>Speed<select aria-label="Test speed" value={researchContext.speed} onChange={e=>setResearchContext(c=>({...c,speed:e.target.value as ResearchContext["speed"]}))}>{["usual","slow","fast"].map(x=><option key={x}>{x}</option>)}</select></label>
+                        </div>
+                      </fieldset>
+                      <p><strong>{RESEARCH_PROMPTS.find(p=>p.id===researchPrompt)?.instruction}</strong> Use Capture name and Finish capture above. Keep every failed or unexpected result.</p>
+                      {researchPending&&<div data-research-result>
+                        <p>Raw prediction: <strong data-research-prediction>{researchPending.prediction||"No text"}</strong> · {researchPending.outcome}</p>
+                        <p>{researchPending.quality?.frames??0} frames · {researchPending.quality?.observedFps.toFixed(1)??"—"} fps · {researchPending.quality?.missingFrames??0} missing hand observations · maximum gap {researchPending.quality?.maxFrameGapMs.toFixed(1)??"—"} ms · result after Finish {researchPending.finishToResultMs?.toFixed(1)??"—"} ms</p>
+                        {RESEARCH_PROMPTS.find(p=>p.id===researchPending.promptId)?.kind==="positive"&&<label htmlFor="research-truth">What did you actually fingerspell?<input id="research-truth" value={researchTruth} maxLength={32} autoComplete="off" spellCheck={false} onChange={e=>{setResearchTruth(e.target.value);setResearchConfirmed(false);}} /></label>}
+                        <label><input id="research-confirm-truth" type="checkbox" checked={researchConfirmed} onChange={e=>setResearchConfirmed(e.target.checked)} /> {RESEARCH_PROMPTS.find(p=>p.id===researchPending.promptId)?.kind==="positive"?"The corrected text matches what I signed.":"I performed the selected action without fingerspelling."}</label>
+                        <label>Report a problem<select id="research-issue" value={researchIssue} onChange={e=>setResearchIssue(e.target.value as ResearchTrial["issue"])}>
+                          <option value="none">No problem reported</option><option value="incorrect">Incorrect text</option><option value="missing">Missing recognition</option><option value="unexpected">Unexpected recognition</option><option value="tracking">Tracking or capture problem</option>
+                        </select></label>
+                        <button type="button" className="button secondary small" disabled={!researchConfirmed||researchTrials.length>=100} onClick={saveResearchResult}>Save local result</button>
+                      </div>}
+                      <p data-research-summary>{researchTrials.length}/100 local results · positives producing text {researchSummary(researchTrials).positiveCandidates}/{researchSummary(researchTrials).positive} · negative actions producing text {researchSummary(researchTrials).negativeCandidates}/{researchSummary(researchTrials).negative} · technical failures {researchSummary(researchTrials).technicalFailures}</p>
+                      {!!researchTrials.length&&<details><summary>Review local results</summary><ol>{researchTrials.map((t,i)=><li key={i}>{RESEARCH_PROMPTS.find(p=>p.id===t.promptId)?.instruction} — {t.prediction||"No text"}; actual: {t.truth||"no letters expected"}; {t.outcome}; {t.issue}</li>)}</ol></details>}
+                      <label><input id="research-export-consent" type="checkbox" checked={researchExportConsent} onChange={e=>setResearchExportConsent(e.target.checked)} /> Include only text-free metrics in a file I choose to download. No video, landmarks, names, device identifiers or absolute timestamps.</label>
+                      <div className="spelling-actions">
+                        <button type="button" className="button secondary small" disabled={!researchExportConsent||!researchTrials.length} onClick={downloadResearch}>Download test metrics</button>
+                        <button type="button" className="button ghost small" onClick={endResearch}>End testing and clear results</button>
+                      </div>
+                    </>}
+                    {researchMessage&&<p role="status">{researchMessage}</p>}
+                  </div>
+                </details>
+
                 <details className="workspace-disclosure spelling-reference">
                   <summary>Alphabet &amp; first-use notes</summary>
                   <p>{ASL_ALPHABET.join(" · ")}</p>
