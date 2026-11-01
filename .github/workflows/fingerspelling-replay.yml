@@ -35,21 +35,31 @@ jobs:
         run: |
           chrome="$(command -v google-chrome || command -v chromium)"
           node scripts/diagnostics/fingerspelling-app-replay.mjs "$chrome"
-      - name: Keep both previously selected real recordings, including quality abstentions
+      - name: Fixed held-out RGB recordings and known regressions, retaining every abstention
         run: |
-          for example in 6befb92aee4dcad7bf6ed904 6cd1239964a94fcc9b8eaff0; do
+          python scripts/diagnostics/fingerspelling-camera-cases.py
+          while IFS= read -r example; do
             python scripts/diagnostics/fingerspelling-camera-prepare.py "$example"
             node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)" "$example"
             python scripts/diagnostics/fingerspelling-camera-onnx.py "$example"
-          done
+          done < work/fingerspelling-camera/cases.txt
       - name: Require actual RGB inference on at least one case; preserve every case result
         run: |
           python - <<'PY'
-          import json,pathlib
+          import json,pathlib,sys
+          sys.path.insert(0,"training/fingerspelling/accuracy")
+          from metrics import summarize
           rows=[json.loads(p.read_text()) for p in pathlib.Path("outputs").glob("fingerspelling-recorded-camera-*.json")]
-          assert len(rows)==2,"Every selected case must be retained"
+          cases=json.loads(pathlib.Path("work/fingerspelling-camera/cases.json").read_text())
+          assert len(rows)==len(cases),"Every selected case must be retained"
           inferred=[r for r in rows if r.get("status")=="uncertain" and r.get("prediction")]
-          report={"kind":"two selected known recordings through actual RGB camera path; not an accuracy estimate","cases":rows,"casesWithActualInference":len(inferred),"qualityAbstentions":sum(r["status"]=="abstained-quality" for r in rows)}
+          def metric(group):
+           return summarize([{"reference":r["source"]["reference"],"prediction":r.get("prediction","")} for r in group])
+          report={"kind":"fixed genuine RGB virtual-camera cases; empty predictions count as deletions; physical webcams unmeasured",
+           "cases":rows,"casesWithActualInference":len(inferred),"qualityAbstentions":sum(r["status"]=="abstained-quality" for r in rows),
+           "knownRegressionMetrics":metric([r for r in rows if r["source"].get("caseRole","known-regression")=="known-regression"]),
+           "heldOutMetrics":metric([r for r in rows if r["source"].get("caseRole") in ("final","left_final")]),
+           "scope":"Held-out cases are the fixed first-six-final/two-left export fixtures, selected independently of predictions; small convenience subset, not population accuracy."}
           pathlib.Path("outputs/fingerspelling-recorded-camera.json").write_text(json.dumps(report,indent=2))
           print("RGB-CAMERA-COVERAGE",len(inferred),"/",len(rows))
           assert inferred,"No genuine RGB inference succeeded"
@@ -59,7 +69,10 @@ jobs:
           python - <<'PY'
           import json,numpy as np,onnxruntime as ort,pathlib
           inputs=json.loads(pathlib.Path("work/fingerspelling-app/captured-inputs.json").read_text())
-          session=ort.InferenceSession("public/models/asl-fingerspelling/fsboard-accuracy-v2.onnx",providers=["CPUExecutionProvider"])
+          contract=pathlib.Path("docs/fingerspelling/evidence/upright-runtime.json")
+          if not contract.exists():contract=pathlib.Path("docs/fingerspelling/evidence/accuracy-v2-runtime.json")
+          runtime=json.loads(contract.read_text())
+          session=ort.InferenceSession("public"+runtime["url"],providers=["CPUExecutionProvider"])
           import sys
           sys.path.insert(0,"training/fingerspelling/accuracy")
           from metrics import beam
