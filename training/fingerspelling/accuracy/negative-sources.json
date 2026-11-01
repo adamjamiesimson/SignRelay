@@ -1,0 +1,189 @@
+[
+  {
+    "id": "cdc-clean",
+    "file": "Clean hands short.webm",
+    "bytes": 4172129,
+    "sha1": "086c61006e3b38bb0aed44d8f5e8b25ba6989bf5",
+    "license": "Public domain mark 1.0; US federal work",
+    "author": "Centers for Disease Control and Prevention",
+    "category": "ordinary-handwashing",
+    "windows": [
+      [
+        4,
+        7
+      ],
+      [
+        7,
+        10
+      ],
+      [
+        10,
+        13
+      ],
+      [
+        13,
+        16
+      ],
+      [
+        16,
+        19
+      ]
+    ],
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Clean_hands_short.webm",
+    "sourceGroup": "cdc-collection",
+    "use": "evaluation only; never model fitting or threshold tuning"
+  },
+  {
+    "id": "cdc-items",
+    "file": "Donning PPE- Remove Personal Clothing and Items CDC03.webm",
+    "bytes": 866339,
+    "sha1": "fa4c9ea6f9e55d858a62f79737b2ef3ef8c436d4",
+    "license": "CC BY-SA 4.0",
+    "author": "CDC, VRT ticket 2014112210011257",
+    "category": "clothing-and-personal-items",
+    "windows": [
+      [
+        5,
+        8
+      ],
+      [
+        8,
+        11
+      ],
+      [
+        11,
+        14
+      ],
+      [
+        14,
+        17
+      ],
+      [
+        17,
+        20
+      ],
+      [
+        20,
+        23
+      ],
+      [
+        23,
+        26
+      ],
+      [
+        26,
+        29
+      ]
+    ],
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm",
+    "sourceGroup": "cdc-collection",
+    "use": "evaluation only; never model fitting or threshold tuning"
+  },
+  {
+    "id": "cdc-hygiene",
+    "file": "Donning PPE- Perform Hand Hygiene CDC05.webm",
+    "bytes": 874340,
+    "sha1": "371f2e7381cf496001483122a8c17b3959a997ac",
+    "license": "CC BY-SA 4.0",
+    "author": "CDC, VRT ticket 2014112210011257",
+    "category": "ordinary-hand-rubbing",
+    "windows": [
+      [
+        3,
+        6
+      ],
+      [
+        6,
+        9
+      ],
+      [
+        9,
+        12
+      ],
+      [
+        12,
+        15
+      ],
+      [
+        15,
+        18
+      ]
+    ],
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Perform_Hand_Hygiene_CDC05.webm",
+    "sourceGroup": "cdc-collection",
+    "use": "evaluation only; never model fitting or threshold tuning"
+  },
+  {
+    "id": "cdc-mask",
+    "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+    "bytes": 1697383,
+    "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+    "license": "CC BY-SA 4.0",
+    "author": "CDC, VRT ticket 2014112210011257",
+    "category": "face-touching-and-mask-adjustment",
+    "windows": [
+      [
+        5,
+        8
+      ],
+      [
+        8,
+        11
+      ],
+      [
+        11,
+        14
+      ],
+      [
+        14,
+        17
+      ],
+      [
+        17,
+        20
+      ],
+      [
+        20,
+        23
+      ],
+      [
+        23,
+        26
+      ],
+      [
+        26,
+        29
+      ],
+      [
+        29,
+        32
+      ]
+    ],
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+    "sourceGroup": "cdc-collection",
+    "use": "evaluation only; never model fitting or threshold tuning"
+  },
+  {
+    "id": "asl-lexical",
+    "file": "American Sign Language demo - Travis Dougherty.ogv",
+    "bytes": 8262854,
+    "sha1": "eb3b81b969ae9cc7cc29941a5872fb4c9f2e26f3",
+    "license": "CC BY-SA 3.0",
+    "author": "Fuzheado (Andrew Lih); signer Travis Dougherty",
+    "category": "lexical-ASL-not-fingerspelling",
+    "windows": [
+      [
+        6,
+        9.5
+      ],
+      [
+        9.5,
+        12.5
+      ]
+    ],
+    "annotationSource": "https://commons.wikimedia.org/wiki/TimedText:American_Sign_Language_demo_-_Travis_Dougherty.ogv.en.srt",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:American_Sign_Language_demo_-_Travis_Dougherty.ogv",
+    "sourceGroup": "asl-demo",
+    "use": "evaluation only; never model fitting or threshold tuning"
+  }
+]

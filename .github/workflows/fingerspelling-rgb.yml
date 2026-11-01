@@ -1,0 +1,49 @@
+name: Fingerspelling RGB parity and licensed negatives
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-rgb.yml', 'scripts/diagnostics/fingerspelling-rgb-*', 'scripts/diagnostics/fingerspelling-negative-prepare.py', 'training/fingerspelling/accuracy/negative-sources.json']
+permissions: {contents: read}
+jobs:
+  rgb-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env: {OMP_NUM_THREADS: '1', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1
+      - run: python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+      - run: python scripts/diagnostics/fingerspelling-rgb-prepare.py
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0', cache: npm}
+      - run: npm ci
+      - run: node scripts/install-vision-assets.mjs --wasm-only
+      - run: node scripts/diagnostics/fingerspelling-rgb-browser.mjs "$(command -v google-chrome)"
+      - run: python scripts/diagnostics/fingerspelling-rgb-compare.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: accuracy-identical-rgb-evidence
+          path: outputs/fingerspelling-rgb-parity.json
+          retention-days: 14
+  licensed-negatives:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env: {OMP_NUM_THREADS: '1', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1
+      - run: python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+      - run: python scripts/diagnostics/fingerspelling-negative-prepare.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: accuracy-real-action-negatives
+          path: |
+            work/negatives/manifest.json
+            work/negatives/*.npz
+          retention-days: 14
