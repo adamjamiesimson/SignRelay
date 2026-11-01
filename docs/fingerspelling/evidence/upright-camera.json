@@ -1,0 +1,1183 @@
+{
+  "sourceCommit": "075546f0382e82ef41c8e8dee01034c750bb5dff",
+  "runId": 41299001840,
+  "kind": "fixed genuine RGB virtual-camera recordings through actual CPU tracking and production CTC worker; not physical-webcam accuracy",
+  "cases": [
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "6befb92aee4dcad7bf6ed904",
+        "reference": "PLUSS",
+        "signer": "515f",
+        "caseRole": "known-regression",
+        "rawSha256": "0b0fa8ab4d0ab972951b3104b7fec509d0bcd2142eee6d64db422ef42e6ab5f3",
+        "rawBytes": 5233634,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "1815000/60427",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.8951109999999289,
+        "annotationEndSeconds": 3.562110999999959,
+        "virtualCameraSha256": "a6527d45cc6e873fe245700ac8aa21b1197cf70de33caa15c78acf9ff44e8325"
+      },
+      "sourceOnset": {
+        "time": 15.981547,
+        "variance": 2139.4159643855746
+      },
+      "captureStart": {
+        "time": 16.88077,
+        "perf": 17340.399999999994
+      },
+      "captureEnd": {
+        "time": 19.547238,
+        "perf": 20009.100000000006
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "PLUSS",
+      "prediction": "PLUSS",
+      "exact": true,
+      "status": "uncertain",
+      "frames": 38,
+      "observedCaptureFps": 14.230780177523215,
+      "maxFrameGapMs": 100.06500000000233,
+      "captureWallMs": 2666.5,
+      "finishToWorkerResultMs": 33.29999999998836,
+      "finishToDomCandidateMs": 34.79999999998836,
+      "finishToNextAnimationFrameMs": 49.79999999998836,
+      "inferenceMs": 28,
+      "processingMs": 30,
+      "trackingMs": {
+        "median": 55.60000000000582,
+        "p95": 81.19999999998254
+      },
+      "frameAgeMs": {
+        "median": 79.02300000000832,
+        "p95": 121.95000000000437
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "aspectRatio": 0.5625,
+        "deviceId": "1c347ae10d95146b1a665761440aa28c35532424354452f817e407ca5ae81b7c",
+        "frameRate": 30,
+        "groupId": "3df9ee23ebb65ff3e599ebaf7a38fda65a4a26627a01ddd7aec826308743534c",
+        "height": 640,
+        "resizeMode": "none",
+        "width": 360
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "6befb92aee4dcad7bf6ed904",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "captureStartToDomCandidateMs": 2701.2999999999884
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "6cd1239964a94fcc9b8eaff0",
+        "reference": "ESTEVAN WONG",
+        "signer": "26de",
+        "caseRole": "known-regression",
+        "rawSha256": "50924480931c7bb5eb5be65940301cae2486b87551eb3227661abf1c364091f9",
+        "rawBytes": 5072036,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "3630000/120889",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.2565670000000182,
+        "annotationEndSeconds": 3.8895669999999427,
+        "virtualCameraSha256": "8915464951890ee2e6a7d3c5e004ca20612bc61be319c5f04a3f443499a0c1d1"
+      },
+      "sourceOnset": {
+        "time": 15.968886,
+        "variance": 2481.22024197055
+      },
+      "captureStart": {
+        "time": 16.234741,
+        "perf": 16646.099999999977
+      },
+      "captureEnd": {
+        "time": 19.867947,
+        "perf": 20282
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "ESTEVAN WONG",
+      "prediction": "ESTEVAN WONG",
+      "exact": true,
+      "status": "uncertain",
+      "frames": 54,
+      "observedCaptureFps": 14.999844341237957,
+      "maxFrameGapMs": 66.83499999999913,
+      "captureWallMs": 3633.1999999999825,
+      "finishToWorkerResultMs": 28.70000000001164,
+      "finishToDomCandidateMs": 30.10000000000582,
+      "finishToNextAnimationFrameMs": 33.20000000001164,
+      "inferenceMs": 21.800000000017462,
+      "processingMs": 24.89999999999418,
+      "trackingMs": {
+        "median": 54.69999999998254,
+        "p95": 56.79999999998836
+      },
+      "frameAgeMs": {
+        "median": 74.15999999998166,
+        "p95": 76.45399999999063
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "aspectRatio": 0.5625,
+        "deviceId": "2b0b5cf2c45ee3a9a07066b196c992a4a543fc0d207aafce8055e41f354eadef",
+        "frameRate": 30,
+        "groupId": "697bae39211206ae6a6054029bbe8b227f6f5a0ff7ad5517fbdf67c3311713bc",
+        "height": 640,
+        "resizeMode": "none",
+        "width": 360
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "6cd1239964a94fcc9b8eaff0",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "captureStartToDomCandidateMs": 3663.2999999999884
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "007a59f48e14dd0b23782b71",
+        "reference": "EDINBURG TX",
+        "signer": "9fc2",
+        "caseRole": "final",
+        "rawSha256": "c18df6b9fab738bd74dfd56e8d085e44a4c91882c2e9d3d5696e6e4216af6591",
+        "rawBytes": 5048200,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "90000/3011",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.8067220000000077,
+        "annotationEndSeconds": 3.3507219999999904,
+        "virtualCameraSha256": "87d7e55ea196cb5875c6e1522c0966ffaf94501650fd2f1774196d6b617f9e69"
+      },
+      "sourceOnset": {
+        "time": 15.972276,
+        "variance": 4071.733409154258
+      },
+      "captureStart": {
+        "time": 16.788037,
+        "perf": 17182
+      },
+      "captureEnd": {
+        "time": 19.337939,
+        "perf": 19734.20000000001
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "EDINBURG TX",
+      "prediction": "EDIN BURGTX",
+      "exact": false,
+      "status": "uncertain",
+      "frames": 38,
+      "observedCaptureFps": 14.606227937687478,
+      "maxFrameGapMs": 99.99500000000262,
+      "captureWallMs": 2550,
+      "finishToWorkerResultMs": 26.5,
+      "finishToDomCandidateMs": 27.60000000000582,
+      "finishToNextAnimationFrameMs": 34,
+      "inferenceMs": 21.20000000001164,
+      "processingMs": 23.10000000000582,
+      "trackingMs": {
+        "median": 54.29999999998836,
+        "p95": 81.60000000000582
+      },
+      "frameAgeMs": {
+        "median": 60.51000000001659,
+        "p95": 104.33100000002014
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "aspectRatio": 0.5625,
+        "deviceId": "95e8e417dc0c6b02bbd64f86cd3a19238faa80797fe883f8c8fe5312903fb682",
+        "frameRate": 30,
+        "groupId": "fbb9f4a82029a16fd9b3e1ad13703a0b0d17e5d3730c71b668bdcf59f8e72d15",
+        "height": 640,
+        "resizeMode": "none",
+        "width": 360
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "007a59f48e14dd0b23782b71",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "captureStartToDomCandidateMs": 2577.600000000006
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "0755ce630b2fb7c824b4691a",
+        "reference": "LAS VEGAS NV",
+        "signer": "9fc2",
+        "caseRole": "final",
+        "rawSha256": "8596ab0463b8932ad5d9d1878ef8a10b13d145cc073b08487572e70f6d74464a",
+        "rawBytes": 5158116,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "907500/30361",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.20333300000004328,
+        "annotationEndSeconds": 3.7803330000000415,
+        "virtualCameraSha256": "db71e3aeb3c1f3308608d72f8a21d6be40d8b5e0b5ebbfd579479f91025afe1b"
+      },
+      "sourceOnset": {
+        "time": 15.967092,
+        "variance": 7269.448106553951
+      },
+      "captureStart": {
+        "time": 16.184057,
+        "perf": 16601.899999999994
+      },
+      "captureEnd": {
+        "time": 19.749633,
+        "perf": 20170.199999999983
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "LAS VEGAS NV",
+      "prediction": "LAS VEGAS NV",
+      "exact": true,
+      "status": "uncertain",
+      "frames": 53,
+      "observedCaptureFps": 14.857287185075526,
+      "maxFrameGapMs": 100.01900000000023,
+      "captureWallMs": 3565.600000000006,
+      "finishToWorkerResultMs": 26.599999999976717,
+      "finishToDomCandidateMs": 27.89999999999418,
+      "finishToNextAnimationFrameMs": 33.19999999998254,
+      "inferenceMs": 20.60000000000582,
+      "processingMs": 22.800000000017462,
+      "trackingMs": {
+        "median": 55.80000000001746,
+        "p95": 61.79999999998836
+      },
+      "frameAgeMs": {
+        "median": 56.43499999997948,
+        "p95": 62.72699999998804
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "aspectRatio": 0.5625,
+        "deviceId": "13c98771e06f168710bd2bed81e3d1fce8b364819aff6da4b03461d0668c458a",
+        "frameRate": 30,
+        "groupId": "d31ba3b0e782ad29e4cfea3c3bafde7cc628a68bfed61ba2b9fca52211d1ee68",
+        "height": 640,
+        "resizeMode": "none",
+        "width": 360
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "0755ce630b2fb7c824b4691a",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "captureStartToDomCandidateMs": 3593.5
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "0b21e5c185ba8e2389d1dea4",
+        "reference": "RENITA CAMPOS",
+        "signer": "a1ba",
+        "caseRole": "final",
+        "rawSha256": "69fb81f130fb28b04eb83639ec04d5c98dc6b39b64dd89a13eb1208104214c8d",
+        "rawBytes": 8930410,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "4747500/159037",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.25909999999998945,
+        "annotationEndSeconds": 6.959099999999992,
+        "virtualCameraSha256": "f9524f0c7dd81268ffcb1f7ee0bac7f59972fc48e7681fb5fe388c1a28476789"
+      },
+      "sourceOnset": {
+        "time": 15.968797,
+        "variance": 2997.8561676820445
+      },
+      "captureStart": {
+        "time": 16.234608,
+        "perf": 16624.699999999983
+      },
+      "captureEnd": {
+        "time": 22.9343,
+        "perf": 23327.5
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "RENITA CAMPOS",
+      "prediction": "RENITA CAMPOS",
+      "exact": true,
+      "status": "uncertain",
+      "frames": 99,
+      "observedCaptureFps": 14.774054950439076,
+      "maxFrameGapMs": 100.00700000000143,
+      "captureWallMs": 6699.700000000012,
+      "finishToWorkerResultMs": 29.699999999953434,
+      "finishToDomCandidateMs": 31,
+      "finishToNextAnimationFrameMs": 33.399999999965075,
+      "inferenceMs": 21.400000000023283,
+      "processingMs": 25.100000000034925,
+      "trackingMs": {
+        "median": 54,
+        "p95": 66.39999999996508
+      },
+      "frameAgeMs": {
+        "median": 73.49200000001292,
+        "p95": 91.83700000001409
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "aspectRatio": 0.5625,
+        "deviceId": "fb64a4d065259c32b6babe1cc205e98f32b54b464d57e36ea4463f8d95bfbbc0",
+        "frameRate": 30,
+        "groupId": "784821c516b1700df4706d39099b74928809ac16c9f95147608177fc8e20882f",
+        "height": 640,
+        "resizeMode": "none",
+        "width": 360
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "0b21e5c185ba8e2389d1dea4",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "captureStartToDomCandidateMs": 6730.700000000012
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "10d4fde911c3f68b7873f684",
+        "reference": "NEWPORT NEWS VA",
+        "signer": "df0c",
+        "caseRole": "final",
+        "rawSha256": "a43b0f40fd50ca2eeb9cd42488fa3f94cb6cba4d63a6a69c7c55db4e047c3413",
+        "rawBytes": 6312718,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "4530000/151091",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.0775780000000168,
+        "annotationEndSeconds": 4.655578000000105,
+        "virtualCameraSha256": "2350b4e54c3d8b46cce4dd2ca1e65ac3dcc161f0a58e1657eb5c48740c1d98db"
+      },
+      "sourceOnset": {
+        "time": 15.973926,
+        "variance": 5281.6786503210715
+      },
+      "captureStart": {
+        "time": 16.057151,
+        "perf": 16465.20000000001
+      },
+      "captureEnd": {
+        "time": 20.63963,
+        "perf": 21049.900000000023
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "NEWPORT NEWS VA",
+      "prediction": "NEWGPOUTHNEWSVA",
+      "exact": false,
+      "status": "uncertain",
+      "frames": 65,
+      "observedCaptureFps": 14.117853636240719,
+      "maxFrameGapMs": 100.04600000000573,
+      "captureWallMs": 4582.399999999965,
+      "finishToWorkerResultMs": 31.29999999998836,
+      "finishToDomCandidateMs": 32.70000000001164,
+      "finishToNextAnimationFrameMs": 33.40000000002328,
+      "inferenceMs": 24.900000000023283,
+      "processingMs": 27.800000000046566,
+      "trackingMs": {
+        "median": 54.5,
+        "p95": 80.59999999997672
+      },
+      "frameAgeMs": {
+        "median": 55.07599999998638,
+        "p95": 81.68400000000838
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "aspectRatio": 0.5625,
+        "deviceId": "104720b99ac1e033fc111ac83237f5a4ab9fad4fea5b70933329cdb6639e9067",
+        "frameRate": 30,
+        "groupId": "add8fb157baea55ef799f1cb4037dbaeb91709cd4ae4f8dd27a1bad28169e115",
+        "height": 640,
+        "resizeMode": "none",
+        "width": 360
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "10d4fde911c3f68b7873f684",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "captureStartToDomCandidateMs": 4615.099999999977
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "1689c984d87b969f72a8cadc",
+        "reference": "FORT WAYNE INDIANA",
+        "signer": "3ca7",
+        "caseRole": "final",
+        "rawSha256": "d1785d1e2474e99c938ea464d1b5f42e84942dcb4e00624533452a2992981d81",
+        "rawBytes": 10093156,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "903750/30097",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.893799999999942,
+        "annotationEndSeconds": 7.576799999999935,
+        "virtualCameraSha256": "606c47fd596ab7b4e501ad3d4460c9def5b2c61f80f8910f405bbf83deba34d6"
+      },
+      "sourceOnset": {
+        "time": 15.975229,
+        "variance": 2999.9675413532277
+      },
+      "captureStart": {
+        "time": 16.87442,
+        "perf": 17266.600000000035
+      },
+      "captureEnd": {
+        "time": 23.557505,
+        "perf": 23952.70000000001
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "FORT WAYNE INDIANA",
+      "prediction": "FORTWAINNINDFORTWAINEINDIANA",
+      "exact": false,
+      "status": "uncertain",
+      "frames": 100,
+      "observedCaptureFps": 14.924716113808948,
+      "maxFrameGapMs": 99.8440000000046,
+      "captureWallMs": 6683.199999999953,
+      "finishToWorkerResultMs": 30.20000000001164,
+      "finishToDomCandidateMs": 31.300000000046566,
+      "finishToNextAnimationFrameMs": 33.20000000001164,
+      "inferenceMs": 22.300000000046566,
+      "processingMs": 26,
+      "trackingMs": {
+        "median": 54.5,
+        "p95": 58.70000000001164
+      },
+      "frameAgeMs": {
+        "median": 79.97000000000844,
+        "p95": 84.51299999999901
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "aspectRatio": 0.5625,
+        "deviceId": "3f019d470bb038916ab4defff2d6ebfbbc08df675350d2a0acc72e6389e1ddd6",
+        "frameRate": 30,
+        "groupId": "7f64f9fdb5e76a5accb03d6fc7ff8e8145e70b2f52c20df040e12412e3ee51bc",
+        "height": 640,
+        "resizeMode": "none",
+        "width": 360
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "1689c984d87b969f72a8cadc",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "captureStartToDomCandidateMs": 6714.5
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "1c0a1eeaddc997bc0563aab6",
+        "reference": "KANSAS CITY KS",
+        "signer": "b5c1",
+        "caseRole": "final",
+        "rawSha256": "7808c487cdaa61a556729569c19967c34f998a0f1262e42fdf9e1462954e79fa",
+        "rawBytes": 7711570,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "16290000/545389",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.5156219999999934,
+        "annotationEndSeconds": 5.437622000000005,
+        "virtualCameraSha256": "4f0a5a1cec2efb283fde3d5541cb551ea5bae6d9ba5523cc7fe922cf444f0716"
+      },
+      "sourceOnset": {
+        "time": 15.983064,
+        "variance": 3554.3991283944833
+      },
+      "captureStart": {
+        "time": 16.515949,
+        "perf": 16921.099999999977
+      },
+      "captureEnd": {
+        "time": 21.431676,
+        "perf": 21839.599999999977
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "KANSAS CITY KS",
+      "prediction": "KANSAS CITYKS",
+      "exact": false,
+      "status": "uncertain",
+      "frames": 73,
+      "observedCaptureFps": 14.998518896258988,
+      "maxFrameGapMs": 67.33299999999872,
+      "captureWallMs": 4915.699999999953,
+      "finishToWorkerResultMs": 31.400000000023283,
+      "finishToDomCandidateMs": 32.600000000034925,
+      "finishToNextAnimationFrameMs": 33.300000000046566,
+      "inferenceMs": 24.300000000046566,
+      "processingMs": 27.20000000001164,
+      "trackingMs": {
+        "median": 54.5,
+        "p95": 57.20000000001164
+      },
+      "frameAgeMs": {
+        "median": 38.58299999998417,
+        "p95": 41.3829999999798
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "aspectRatio": 0.5625,
+        "deviceId": "75b46bf96ef7f53e9cdd7a676d914232bf24388b5d9efb43f97417bf9a76d7f9",
+        "frameRate": 30,
+        "groupId": "8bc63c17d6bb1d7c8fc31677288362f5e83c92724cd1fec158476bb89c723805",
+        "height": 640,
+        "resizeMode": "none",
+        "width": 360
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "1c0a1eeaddc997bc0563aab6",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "captureStartToDomCandidateMs": 4948.299999999988
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "164650016581817f52803ab7",
+        "reference": "CHESAPEAKE VA",
+        "signer": "1c15",
+        "caseRole": "left_final",
+        "rawSha256": "cb4eda23c6c37ef904bda581050bf19f1078400b43e06594668e00503b0518bf",
+        "rawBytes": 5166274,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "1210000/42193",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.22904400000004443,
+        "annotationEndSeconds": 4.029043999999999,
+        "virtualCameraSha256": "d4a424540c2b168a1b19c68bbe7389844f99eaa2b064e5174326173fa1b5eb50"
+      },
+      "sourceOnset": {
+        "time": 15.975907,
+        "variance": 5858.762256931146
+      },
+      "captureStart": {
+        "time": 16.209167,
+        "perf": 16607.70000000001
+      },
+      "captureEnd": {
+        "time": 20.008645,
+        "perf": 20409.899999999965
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "CHESAPEAKE VA",
+      "prediction": "CHESAQEA KEVA",
+      "exact": false,
+      "status": "uncertain",
+      "frames": 55,
+      "observedCaptureFps": 14.59472476376139,
+      "maxFrameGapMs": 99.99000000000524,
+      "captureWallMs": 3799.5,
+      "finishToWorkerResultMs": 30.600000000034925,
+      "finishToDomCandidateMs": 32,
+      "finishToNextAnimationFrameMs": 33.90000000002328,
+      "inferenceMs": 23.099999999976717,
+      "processingMs": 26.20000000001164,
+      "trackingMs": {
+        "median": 54.79999999998836,
+        "p95": 79.79999999998836
+      },
+      "frameAgeMs": {
+        "median": 66.30300000001444,
+        "p95": 93.44700000001467
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "aspectRatio": 0.5625,
+        "deviceId": "bf1f9c582d25bc677f59e654b3e1725b0ab58dc148278ab132722d765880dc6b",
+        "frameRate": 30,
+        "groupId": "bae99ac9e863a998fe3c159684da908ab0258ff8bf51f7f46b7e7df936f56cce",
+        "height": 640,
+        "resizeMode": "none",
+        "width": 360
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "164650016581817f52803ab7",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "captureStartToDomCandidateMs": 3831.5
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "47b36e3fa22f13b5bdb304f9",
+        "reference": "MICHAEL CAMACHO",
+        "signer": "1c15",
+        "caseRole": "left_final",
+        "rawSha256": "f36a56a94d9268397f9f06e63b2f37b46dd5ca629603ce8ee2c775eaeafc2bf9",
+        "rawBytes": 7609182,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "8145000/272291",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.47511099999996986,
+        "annotationEndSeconds": 5.525110999999924,
+        "virtualCameraSha256": "21e717cd93a4f7104ec738c007c77d394736ff48c3eedda73f6dee89f8b16897"
+      },
+      "sourceOnset": {
+        "time": 15.975155,
+        "variance": 4202.767575111004
+      },
+      "captureStart": {
+        "time": 16.45779,
+        "perf": 16872.70000000001
+      },
+      "captureEnd": {
+        "time": 21.507522,
+        "perf": 21924.900000000023
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "MICHAEL CAMACHO",
+      "prediction": "MICHAEL CAMACHO",
+      "exact": true,
+      "status": "uncertain",
+      "frames": 75,
+      "observedCaptureFps": 14.800242723980668,
+      "maxFrameGapMs": 100.04000000000087,
+      "captureWallMs": 5049.700000000012,
+      "finishToWorkerResultMs": 27.600000000034925,
+      "finishToDomCandidateMs": 28.79999999998836,
+      "finishToNextAnimationFrameMs": 33.29999999998836,
+      "inferenceMs": 20.70000000001164,
+      "processingMs": 24,
+      "trackingMs": {
+        "median": 54.199999999953434,
+        "p95": 67.29999999998836
+      },
+      "frameAgeMs": {
+        "median": 39.5669999999991,
+        "p95": 66.08100000001286
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "aspectRatio": 0.5625,
+        "deviceId": "7c17d072c89503f1c572398c8af53e1cb0969d9d919ec7954677b58be89daef7",
+        "frameRate": 30,
+        "groupId": "28c8dd721abc96680b0c28acaa9afc056566ba7dd01a5e8602fcd517648f67d2",
+        "height": 640,
+        "resizeMode": "none",
+        "width": 360
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "47b36e3fa22f13b5bdb304f9",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "captureStartToDomCandidateMs": 5078.5
+    }
+  ],
+  "casesWithActualInference": 10,
+  "qualityAbstentions": 0,
+  "heldOutMetrics": {
+    "sequences": 8,
+    "characters": 111,
+    "edits": 24,
+    "cer": 0.21621621621621623,
+    "exact": 3,
+    "signers": 6
+  },
+  "knownRegressionMetrics": {
+    "sequences": 2,
+    "characters": 17,
+    "edits": 0,
+    "cer": 0,
+    "exact": 2,
+    "signers": 2
+  },
+  "scope": "First complete run of unchanged predetermined first-six-final/two-left fixtures plus two known regressions; small convenience subset. Earlier partial attempt is separately retained; repeat run is separately reported.",
+  "matchedNativeFixtureMetrics": {
+    "sequences": 8,
+    "characters": 111,
+    "edits": 23,
+    "exact": 3,
+    "cer": 0.2072072072072072
+  }
+}

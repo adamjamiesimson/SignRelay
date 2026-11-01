@@ -1,0 +1,18 @@
+{
+  "baseline": "953825e0ff0dce35ce732c0ced449e5d4fc3561f",
+  "audited": "075546f0382e82ef41c8e8dee01034c750bb5dff",
+  "baselineBlobs": 838,
+  "protectedBlobs": 804,
+  "changedProtected": [],
+  "unexpectedAdded": [],
+  "baselineModelUnchanged": true,
+  "scope": "All baseline blobs outside explicit fingerspelling/live-vision/UI/tooling allowance; original model separately checked; package dependencies separately inspected",
+  "dependenciesSame": true,
+  "devDependenciesSame": true,
+  "changedPackageScripts": [
+    "build:worker"
+  ],
+  "compiledWordRecognitionWorkerSha256": "ec7b6d01b89467339b1a957c1f8714d8a4044a23b24a751ad4fe2a403a7aa557",
+  "validatedRuntimeCommit": "bb6d30f677b643449d15947452b75f532e1a9dbc",
+  "note": "After this audit, only a warning string and standalone reproduction smoke were added; final evidence commit is documentation-only."
+}

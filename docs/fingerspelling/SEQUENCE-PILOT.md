@@ -1,3 +1,5 @@
+> **Historical 512-clip pilot.** Current weights, display-orientation corrections, expanded data, fresh evaluation and complete RGB evidence are in [ACCURACY-SPRINT.md](ACCURACY-SPRINT.md). Earlier metrics below use their original cohort/preprocessing and are not current webcam accuracy.
+
 # Genuine sequence-inference pilot — 31 October 2026
 
 This follow-up to draft PR #48 trains and exports a real recogniser. It is an experimental sequence candidate, not validated webcam recognition. The historical interface report described interface-only work; its zero-coverage status is superseded only by the measured evidence here.

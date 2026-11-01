@@ -1,10 +1,16 @@
-> **Follow-up: real inference now exists as an experimental sequence pilot.** See [measured recognition, provenance, browser parity and reproduction commands](SEQUENCE-PILOT.md). The report below is the historical interface-only sprint, not the current recognition coverage.
+# ASL fingerspelling: current research inference
 
-# ASL fingerspelling sprint — blocked recognition, isolated text workspace
+The [accuracy and real-world reliability report](ACCURACY-SPRINT.md) is the current engineering record. An independently trained, display-aware CTC model is active in the isolated fingerspelling worker and produces real sequence candidates from camera-tracked hands.
 
-**Release recommendation: NO-GO. No ASL alphabet classifier is installed or enabled.**
-This change is independently useful engineering groundwork, not a functioning webcam fingerspelling recognizer.
-The final objective remains incomplete. Manually typing HELLO is not recognition evidence.
+Fresh native-landmark final: **11.76% CER / 135 of 384 exact** on 15 training-disjoint signers. Full RGB virtual-camera subset: **3/8 exact, 21.62% CER**, repeat **2/8, 24.32% CER**; physical-webcam accuracy remains unmeasured. Ordinary actions still create false candidates and calibration has no qualifying threshold. **Research-only: every candidate requires review and deliberate confirmation.**
+
+The report includes model/data provenance and hashes, per-letter/sequence results, real negatives, native/browser parity, actual capture latency, reproduction commands, rollback and remaining CI blockers. PR #48 stays draft.
+
+---
+
+## Historical interface-only sprint
+
+The following report records the earlier zero-recognition interface implementation. Its status is historical; it is not the current recognition result.
 
 ## Integration and dependency review
 
