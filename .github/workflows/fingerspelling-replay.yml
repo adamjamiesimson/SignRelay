@@ -39,8 +39,8 @@ jobs:
         run: |
           for example in 6befb92aee4dcad7bf6ed904 6cd1239964a94fcc9b8eaff0; do
             python scripts/diagnostics/fingerspelling-camera-prepare.py "$example"
-            node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)" "$example" diagnostic
-            python scripts/diagnostics/fingerspelling-camera-native.py "$example"
+            node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)" "$example"
+            python scripts/diagnostics/fingerspelling-camera-onnx.py "$example"
           done
       - name: Require actual RGB inference on at least one case; preserve every case result
         run: |

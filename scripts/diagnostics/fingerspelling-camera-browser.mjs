@@ -41,13 +41,22 @@ const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-vid
     if(this.ctc&&e.data.type==='result')window.__recorded.results.push({...e.data,received:performance.now()});
    });
   }
-  postMessage(data,...rest){if(this.ctc&&data.type==='predict')window.__recorded.inputs.push({at:performance.now(),frames:data.frames,featureCount:data.features.length});return super.postMessage(data,...rest);}
+  postMessage(data,...rest){if(this.ctc&&data.type==='predict')window.__recorded.inputs.push({at:performance.now(),frames:data.frames,featureCount:data.features.length,features:Array.from(data.features)});return super.postMessage(data,...rest);}
  };
 `});
 try{
  await h.open("/?perf");await h.start();await h.click("Fingerspelling");
  await until(()=>h.evaluate("[...document.querySelectorAll('button')].some(b=>b.textContent==='Capture name'&&!b.disabled)"),"Research model failed to load");
  assert.equal(await h.evaluate("window.__signrelayRehearsal.playing"),false,"Landmark substitution must remain inactive");
+ await h.evaluate(`(()=>{
+  const strong=document.querySelector('.spelling-candidate strong');
+  const observer=new MutationObserver(()=>{
+   if(window.__recorded.finished&&strong.textContent.trim()&&strong.textContent!=='—'){
+    window.__recorded.domCandidateAt=performance.now();
+    requestAnimationFrame(()=>window.__recorded.nextFrameAt=performance.now());observer.disconnect();
+   }
+  });observer.observe(strong,{childList:true,subtree:true,characterData:true});
+ })()`);
  // Observe the actual video transition from the flat preamble to the known recording.
  const onset=await h.evaluate(`new Promise((resolve,reject)=>{
   const video=document.querySelector('video'),canvas=document.createElement('canvas');canvas.width=32;canvas.height=18;
@@ -106,8 +115,9 @@ try{
   console.log("ACTUAL-RGB-CAMERA-ABSTENTION",JSON.stringify(report));
  }else{
  await until(()=>h.evaluate("document.querySelector('.spelling-candidate strong')?.textContent!=='—'"),"No candidate was displayed");
- const displayed=await h.evaluate("({text:document.querySelector('.spelling-candidate strong').textContent,at:performance.now()})");
+ const displayed=await h.evaluate("({text:document.querySelector('.spelling-candidate strong').textContent,at:window.__recorded.domCandidateAt,nextFrameAt:window.__recorded.nextFrameAt,observedAt:performance.now()})");
  const result=snapshot.results.at(-1),input=snapshot.inputs.at(-1);
+ writeFileSync(root+"/actual-captured-features.json",JSON.stringify({...input,prediction:result.text}));
  assert.equal(displayed.text,result.text);assert.equal(result.status,"uncertain");
  assert.ok(snapshot.delegates.length&&snapshot.delegates.every(d=>d==="CPU"));
  assert.equal(input.featureCount,input.frames*132);assert.equal(snapshot.frames.length,input.frames);
@@ -122,7 +132,7 @@ try{
  source,sourceOnset:onset,captureStart:started,captureEnd:finished,modelSha256:"26e640751c91f3cfba5aa7e3af43abb1e322c58f7a0c9fc7ae04fefe9ad74c41",
  reference:source.reference,prediction:displayed.text,exact:displayed.text===source.reference,status:result.status,
  frames:input.frames,observedCaptureFps:(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),maxFrameGapMs:Math.max(...dt),
- captureWallMs:snapshot.finished-snapshot.started,finishToWorkerResultMs:result.received-snapshot.finished,finishToDisplayedResultMs:displayed.at-snapshot.finished,
+ captureWallMs:snapshot.finished-snapshot.started,finishToWorkerResultMs:result.received-snapshot.finished,finishToDomCandidateMs:displayed.at-snapshot.finished,finishToNextAnimationFrameMs:displayed.nextFrameAt-snapshot.finished,
  inferenceMs:result.inferenceMs,processingMs:result.processingMs,trackingMs:{median:times[Math.floor(times.length*.5)],p95:times[Math.floor(times.length*.95)]},
  frameAgeMs:{median:ages[Math.floor(ages.length*.5)],p95:ages[Math.floor(ages.length*.95)]},
  userAgent:await h.evaluate("navigator.userAgent"),trackSettings:await h.evaluate("document.querySelector('video').srcObject.getVideoTracks()[0].getSettings()"),
@@ -130,5 +140,5 @@ try{
  mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
  console.log("ACTUAL-RGB-CAMERA-RESULT",JSON.stringify(report));
  }
-}catch(error){console.error("ACTUAL-RGB-CAMERA-FAIL",await h.evaluate("JSON.stringify({tracking:{...window.__recorded,contact:undefined,pixels:undefined},candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)})"));throw error;
+}catch(error){console.error("ACTUAL-RGB-CAMERA-FAIL",await h.evaluate("JSON.stringify({tracking:{...window.__recorded,inputs:window.__recorded.inputs.map(i=>({...i,features:undefined})),contact:undefined,pixels:undefined},candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)})"));throw error;
 }finally{await h.close();}
