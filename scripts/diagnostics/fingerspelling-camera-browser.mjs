@@ -109,10 +109,20 @@ try{
   assert.equal(await h.evaluate("window.__qa.spoken.length"),0);
   const frames=snapshot.frames;
   const report={kind:"selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
-   source,sourceOnset:onset,captureStart:started,captureEnd:finished,status:"abstained-quality",actualInference:false,
+   source,sourceOnset:onset,captureStart:started,captureEnd:finished,status:"abstained-quality",actualInference:false,modelSha256:modelContract.sha256,prediction:"",
    observedFrames:frames.length,visibleFrames:frames.filter(f=>f.hasHand).length,categoryQuality:frames.map(f=>f.quality),
    observedCaptureFps:(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),messages,
    checks:["no model prediction claimed","quality rejection retained","empty draft and confirmation disabled"]};
+  mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
+  console.log("ACTUAL-RGB-CAMERA-ABSTENTION",JSON.stringify(report));
+ }else if(snapshot.results.at(-1).status==="no-hand"||!snapshot.results.at(-1).text.trim()){
+  const result=snapshot.results.at(-1),input=snapshot.inputs.at(-1);
+  if(input)writeFileSync(root+"/actual-captured-features.json",JSON.stringify({...input,prediction:result.text}));
+  assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),"");
+  assert.equal(await h.evaluate("window.__qa.spoken.length"),0);
+  const report={source,modelSha256:modelContract.sha256,status:"abstained-model",prediction:"",reference:source.reference,actualInference:result.inferenceMs>0,inferenceMs:result.inferenceMs,
+   frames:input?.frames,captureTelemetry:input?.captureTelemetry,observedCaptureFps:input?.captureTelemetry?.observedFps,
+   reason:result.abstentionReason,checks:["empty prediction retained","no automatic composition or speech"]};
   mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
   console.log("ACTUAL-RGB-CAMERA-ABSTENTION",JSON.stringify(report));
  }else{

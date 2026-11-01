@@ -1114,7 +1114,7 @@ export function TranslatorExperience() {
     }
     const video=videoRef.current;
     if(!video||!video.videoWidth||!spellingSessionRef.current)return;
-    if(researchConsentRef.current){researchDraftRef.current={promptId:researchPrompt,startedAt:performance.now(),context:{...researchContext}};setResearchPending(null);setResearchMessage("");setResearchConfirmed(false);}
+    if(researchConsentRef.current){researchDraftRef.current={promptId:researchPrompt,startedAt:performance.now(),context:{...researchContext}};setResearchPending(null);setResearchMessage("");setResearchConfirmed(false);setResearchIssue("none");}
     const capture=new FingerspellingCapture(video.videoWidth/video.videoHeight,FINGERSPELLING_CTC_MODEL.featureVersion??"v2",performance.now());
     spellingCaptureRef.current=capture;setSpellingPhase("capturing");
     spellingTimerRef.current=window.setTimeout(()=>{
@@ -1307,7 +1307,7 @@ export function TranslatorExperience() {
                 <div className="spelling-actions" role="group" aria-label="Edit composed text">
                   <button type="button" className="button secondary small"
                     disabled={cameraState !== "active" || !["ready", "candidate", "capturing"].includes(spellingPhase)}
-                    onClick={captureSpelling}>{spellingPhase === "capturing" ? "Finish capture" : "Capture name"}</button>
+                    onClick={captureSpelling}>{spellingPhase === "capturing" ? (researchConsent ? "Finish test" : "Finish capture") : (researchConsent ? "Start test" : "Capture name")}</button>
                   <button type="button" className="button ghost small" disabled={!["capturing", "processing"].includes(spellingPhase)}
                     onClick={() => { discardSpellingCapture(); setSpellingMessage("Capture cancelled."); }}>Cancel capture</button>
                   <button type="button" className="button secondary small" disabled={spellingPhase !== "candidate" || !spellingCandidate.trim() || spellingText.length >= MAX_FINGERSPELLING_TEXT}
@@ -1349,7 +1349,7 @@ export function TranslatorExperience() {
                           <label>Speed<select aria-label="Test speed" value={researchContext.speed} onChange={e=>setResearchContext(c=>({...c,speed:e.target.value as ResearchContext["speed"]}))}>{["usual","slow","fast"].map(x=><option key={x}>{x}</option>)}</select></label>
                         </div>
                       </fieldset>
-                      <p><strong>{RESEARCH_PROMPTS.find(p=>p.id===researchPrompt)?.instruction}</strong> Use Capture name and Finish capture above. Keep every failed or unexpected result.</p>
+                      <p><strong>{RESEARCH_PROMPTS.find(p=>p.id===researchPrompt)?.instruction}</strong> Use Start test and Finish test above. Keep every failed or unexpected result.</p>
                       {researchPending&&<div data-research-result>
                         <p>Raw prediction: <strong data-research-prediction>{researchPending.prediction||"No text"}</strong> · {researchPending.outcome}</p>
                         <p>{researchPending.quality?.frames??0} frames · {researchPending.quality?.observedFps.toFixed(1)??"—"} fps · {researchPending.quality?.missingFrames??0} missing hand observations · maximum gap {researchPending.quality?.maxFrameGapMs.toFixed(1)??"—"} ms · result after Finish {researchPending.finishToResultMs?.toFixed(1)??"—"} ms</p>
