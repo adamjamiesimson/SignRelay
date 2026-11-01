@@ -16,7 +16,30 @@ export class LiveVision {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private closed = false;
   private occupied = false;
-  private captureCanvas: OffscreenCanvas | null = null;
+  private sourceVideo: HTMLVideoElement | null = null;
+  private frameCallback: number | null = null;
+  private decodedFrame: VideoFrameCallbackMetadata | null = null;
+  private capturedFrame = -1;
+  private frameClockOffset: number | null = null;
+  get frameAvailable() {
+    return this.trackingProfile === "words" || !this.sourceVideo
+      || (!!this.decodedFrame && this.decodedFrame.presentedFrames !== this.capturedFrame);
+  }
+  private watchDecodedFrames(video: HTMLVideoElement) {
+    if (this.sourceVideo === video) return;
+    if (typeof video.requestVideoFrameCallback !== "function") throw new Error("Fingerspelling requires decoded video timestamps");
+    if (this.sourceVideo && this.frameCallback !== null) this.sourceVideo.cancelVideoFrameCallback(this.frameCallback);
+    this.sourceVideo = video; this.decodedFrame = null; this.capturedFrame = -1; this.frameClockOffset = null;
+    const observe: VideoFrameRequestCallback = (_now, metadata) => {
+      if (this.closed || this.sourceVideo !== video) return;
+      if (Number.isFinite(metadata.mediaTime) && metadata.mediaTime >= 0) {
+        this.decodedFrame = metadata;
+        this.frameClockOffset ??= metadata.expectedDisplayTime - metadata.mediaTime * 1000;
+      }
+      this.frameCallback = video.requestVideoFrameCallback(observe);
+    };
+    this.frameCallback = video.requestVideoFrameCallback(observe);
+  }
   private recovering: Promise<void> | null = null;
   private accelerated = true;
   private trackingProfile: "words" | "fingerspelling" = "words";
@@ -156,35 +179,30 @@ export class LiveVision {
       }
       if (!this.worker) throw new Error("Tracking unavailable. Restart the camera.");
       const captureWorker = this.worker;
-      let bitmap: ImageBitmap;
+      let frameTimestamp = timestamp;
       if (this.trackingProfile === "fingerspelling") {
-        const sourceWidth = "videoWidth" in video ? video.videoWidth : video.width;
-        const sourceHeight = "videoHeight" in video ? video.videoHeight : video.height;
-        const factor = Math.min(1, 640 / Math.max(sourceWidth, sourceHeight));
-        const width = Math.round(sourceWidth * factor), height = Math.round(sourceHeight * factor);
-        if (!this.captureCanvas || this.captureCanvas.width !== width || this.captureCanvas.height !== height) {
-          this.captureCanvas = new OffscreenCanvas(width, height);
-        }
-        const context = this.captureCanvas.getContext("2d", { willReadFrequently: true });
-        if (!context) throw new Error("Camera RGB capture unavailable");
-        // Snapshot decoded pixels, avoiding video-backed texture orientation/format.
-        // The word-recognition producer retains its existing direct bitmap path.
-        context.drawImage(video, 0, 0, width, height);
-        bitmap = await createImageBitmap(context.getImageData(0, 0, width, height));
-      } else bitmap = await createImageBitmap(video);
+        if (!("videoWidth" in video)) throw new Error("Fingerspelling requires a video source");
+        this.watchDecodedFrames(video);
+        const frame = this.decodedFrame;
+        if (!frame || this.frameClockOffset === null || frame.presentedFrames === this.capturedFrame) return null;
+        this.capturedFrame = frame.presentedFrames;
+        frameTimestamp = frame.mediaTime * 1000 + this.frameClockOffset;
+      }
+      const bitmap = await createImageBitmap(video);
       if (this.closed || this.worker !== captureWorker || this.recovering) { bitmap.close(); return null; }
       const posted = performance.now();
       return await new Promise<VisionFrame | null>((resolve, reject) => {
         this.pending = { resolve, reject, hands: onHands, started, capture: posted - started, posted };
         this.timer = setTimeout(() => this.fail(new Error("Tracking frame timed out")), 8000);
-        try { this.worker!.postMessage({ type: "frame", bitmap, timestamp }, [bitmap]); }
+        try { this.worker!.postMessage({ type: "frame", bitmap, timestamp: frameTimestamp }, [bitmap]); }
         catch (error) { bitmap.close(); clearTimeout(this.timer); this.fail(error as Error); }
       });
     } finally { this.occupied = false; }
   }
 
   close() {
-    this.captureCanvas = null;
+    if (this.sourceVideo && this.frameCallback !== null) this.sourceVideo.cancelVideoFrameCallback(this.frameCallback);
+    this.sourceVideo = null; this.decodedFrame = null; this.frameCallback = null;
     this.closed = true; clearTimeout(this.timer);
     this.cancelStartup?.(new Error("Tracking closed")); this.cancelStartup = null;
     this.worker?.terminate(); this.worker = null;

@@ -590,7 +590,7 @@ export function TranslatorExperience() {
     }
 
     const interval = engine.profile === "fingerspelling" ? 1000 / 15 - .5 : 33;
-    if (!engine.busy && now - lastFrameRef.current >= interval && video.currentTime !== lastVideoTimeRef.current) {
+    if (!engine.busy && engine.frameAvailable && now - lastFrameRef.current >= interval && video.currentTime !== lastVideoTimeRef.current) {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
       const generation = cameraGenerationRef.current;
@@ -648,6 +648,15 @@ export function TranslatorExperience() {
           setCameraState("error");
           setCameraMessage("Hand tracking stopped. Start the camera again to reload tracking.");
           return;
+        }
+      }).finally(() => {
+        // A CPU hand result may arrive just after the next animation tick.
+        // Snapshot the next decoded frame immediately when the 15-Hz interval
+        // is due, rather than losing another display tick. Word scheduling stays unchanged.
+        if (engine.profile === "fingerspelling" && current() && engine.frameAvailable
+          && performance.now() - lastFrameRef.current >= interval) {
+          if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
+          frameLoopRef.current();
         }
       });
     }
