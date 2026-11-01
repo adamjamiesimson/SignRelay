@@ -43,7 +43,7 @@ def main():
  seed=20261101;torch.set_num_threads(2);torch.manual_seed(seed);random.seed(seed);np.random.seed(seed)
  root=pathlib.Path("work/upright");out=pathlib.Path("work/upright-models")/args.experiment;out.mkdir(parents=True,exist_ok=True)
  manifests,splits=load_development(root);spec=SPECS[args.experiment]
- assert {m["sourceCommit"] for m in manifests}=={"94d22b0dee20c5762f14f00e4554a0c869d81ec8"}
+ assert {m["sourceCommit"] for m in manifests}=={os.environ.get("UPRIGHT_CACHE_SOURCE","94d22b0dee20c5762f14f00e4554a0c869d81ec8")}
  assert all(r[2]["rgbPolicy"]=="display-matrix-v1" for rows in splits.values() for r in rows)
  selected=len(splits["train"]);train=[]
  for raw,times,row in splits["train"]:
