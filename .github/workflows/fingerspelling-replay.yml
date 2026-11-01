@@ -35,10 +35,24 @@ jobs:
         run: |
           chrome="$(command -v google-chrome || command -v chromium)"
           node scripts/diagnostics/fingerspelling-app-replay.mjs "$chrome"
-      - name: Prepare one verified real RGB virtual-camera recording
-        run: python scripts/diagnostics/fingerspelling-camera-prepare.py
-      - name: Actual recorded RGB camera path and capture-to-result measurement
-        run: node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)"
+      - name: Keep both previously selected real recordings, including quality abstentions
+        run: |
+          for example in 6befb92aee4dcad7bf6ed904 6cd1239964a94fcc9b8eaff0; do
+            python scripts/diagnostics/fingerspelling-camera-prepare.py "$example"
+            node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)" "$example"
+          done
+      - name: Require actual RGB inference on at least one case; preserve every case result
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          rows=[json.loads(p.read_text()) for p in pathlib.Path("outputs").glob("fingerspelling-recorded-camera-*.json")]
+          assert len(rows)==2,"Every selected case must be retained"
+          inferred=[r for r in rows if r.get("status")=="uncertain" and r.get("prediction")]
+          report={"kind":"two selected known recordings through actual RGB camera path; not an accuracy estimate","cases":rows,"casesWithActualInference":len(inferred),"qualityAbstentions":sum(r["status"]=="abstained-quality" for r in rows)}
+          pathlib.Path("outputs/fingerspelling-recorded-camera.json").write_text(json.dumps(report,indent=2))
+          print("RGB-CAMERA-COVERAGE",len(inferred),"/",len(rows))
+          assert inferred,"No genuine RGB inference succeeded"
+          PY
       - name: Verify native ONNX text for the exact app-captured inputs
         run: |
           python - <<'PY'

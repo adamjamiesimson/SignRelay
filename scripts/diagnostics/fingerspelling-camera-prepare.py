@@ -3,9 +3,11 @@ import hashlib,json,pathlib,subprocess,sys
 import kagglehub
 sys.path.insert(0,"training/fingerspelling")
 from prepare import metadata
-root=pathlib.Path("work/fingerspelling-camera");root.mkdir(parents=True,exist_ok=True)
+example=sys.argv[1] if len(sys.argv)>1 else "6befb92aee4dcad7bf6ed904"
+assert example in ("6befb92aee4dcad7bf6ed904","6cd1239964a94fcc9b8eaff0")
+root=pathlib.Path("work/fingerspelling-camera")/example;root.mkdir(parents=True,exist_ok=True)
 old=json.loads(pathlib.Path("docs/fingerspelling/evidence/fsboard-v13-provenance.json").read_text())
-source=next(r for r in old["rows"] if r["id"]=="6befb92aee4dcad7bf6ed904")
+source=next(r for r in old["rows"] if r["id"]==example)
 record=next(r for r in metadata("test") if r["clipFilename"]==source["source"])
 path=pathlib.Path(kagglehub.dataset_download("googleai/fsboard/versions/13",path="daun_v3/video_clips/daun_v3-test/"+source["source"]))
 blob=path.read_bytes()

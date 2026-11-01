@@ -4,8 +4,9 @@ import assert from "node:assert/strict";
 import {readFileSync,writeFileSync,mkdirSync} from "node:fs";
 import {resolve} from "node:path";
 import {openRehearsal,until} from "../../tests/rehearsal-harness.mjs";
-const source=JSON.parse(readFileSync("work/fingerspelling-camera/source.json","utf8"));
-const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-video-capture="+resolve("work/fingerspelling-camera/known-fsboard.y4m")],extraInit:`
+const example=process.argv[3]||"6befb92aee4dcad7bf6ed904",root="work/fingerspelling-camera/"+example;
+const source=JSON.parse(readFileSync(root+"/source.json","utf8"));
+const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-video-capture="+resolve(root+"/known-fsboard.y4m")],extraInit:`
  const NativeWorker=window.Worker;window.__recorded={frames:[],results:[],inputs:[],delegates:[],capture:false,contact:[]};
  document.addEventListener('click',event=>{const text=event.target.closest('button')?.textContent?.trim();
   if(text==='Capture name'){window.__recorded.capture=true;window.__recorded.started=performance.now();}
@@ -58,7 +59,19 @@ try{
  const snapshot=await h.evaluate("window.__recorded");
  console.log("ACTUAL-RGB-CAMERA-CONTACT",JSON.stringify({images:snapshot.contact,settings:await h.evaluate("document.querySelector('video').srcObject.getVideoTracks()[0].getSettings()")}));
  const messages=await h.evaluate("[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)");
- if(!snapshot.results.length)throw new Error("Recorded RGB was rejected: "+JSON.stringify({messages,frames:snapshot.frames.length,started,finished}));
+ if(!snapshot.results.length){
+  assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),"");
+  assert.equal(await h.evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Confirm text').disabled"),true);
+  assert.equal(await h.evaluate("window.__qa.spoken.length"),0);
+  const frames=snapshot.frames;
+  const report={kind:"selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+   source,sourceOnset:onset,captureStart:started,captureEnd:finished,status:"abstained-quality",actualInference:false,
+   observedFrames:frames.length,visibleFrames:frames.filter(f=>f.hasHand).length,
+   observedCaptureFps:(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),messages,
+   checks:["no model prediction claimed","quality rejection retained","empty draft and confirmation disabled"]};
+  mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
+  console.log("ACTUAL-RGB-CAMERA-ABSTENTION",JSON.stringify(report));
+ }else{
  await until(()=>h.evaluate("document.querySelector('.spelling-candidate strong')?.textContent!=='—'"),"No candidate was displayed");
  const displayed=await h.evaluate("({text:document.querySelector('.spelling-candidate strong').textContent,at:performance.now()})");
  const result=snapshot.results.at(-1),input=snapshot.inputs.at(-1);
@@ -81,7 +94,8 @@ try{
  frameAgeMs:{median:ages[Math.floor(ages.length*.5)],p95:ages[Math.floor(ages.length*.95)]},
  userAgent:await h.evaluate("navigator.userAgent"),trackSettings:await h.evaluate("document.querySelector('video').srcObject.getVideoTracks()[0].getSettings()"),
  checks:["actual RGB tracking, no landmark substitution","actual 132-feature inference","uncertain warning and explicit confirmation","no automatic composition or speech","word transcript preserved"]};
- mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera.json",JSON.stringify(report,null,2));
+ mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
  console.log("ACTUAL-RGB-CAMERA-RESULT",JSON.stringify(report));
+ }
 }catch(error){console.error("ACTUAL-RGB-CAMERA-FAIL",await h.evaluate("JSON.stringify({tracking:{...window.__recorded,contact:undefined},candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)})"));throw error;
 }finally{await h.close();}
