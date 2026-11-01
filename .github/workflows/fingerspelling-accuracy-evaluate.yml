@@ -20,7 +20,7 @@ jobs:
           github-token: ${{ github.token }}
           run-id: 41274581796
       - name: Freeze the predeclared minimum-development-CER selection
-        run: python training/fingerspelling/accuracy/select.py
+        run: python training/fingerspelling/accuracy/choose_model.py
       - uses: actions/upload-artifact@v4
         with:
           name: accuracy-selected-dev-only

@@ -57,6 +57,7 @@ try {
   await h.click("Fingerspelling"); assert.equal(await text(), "HELLO ");
   checks.push("both drafts survive repeated mode switches");
 
+  await until(h.active, "Tracking profile switch did not finish");
   for (let i=0;i<3;i++) {
     await h.click("Pause camera"); assert.equal(await text(), "HELLO ");
     await h.click("Start camera"); await until(h.active, "Camera restart failed");

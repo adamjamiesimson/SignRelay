@@ -589,7 +589,8 @@ export function TranslatorExperience() {
       return;
     }
 
-    if (!engine.busy && now - lastFrameRef.current >= 33 && video.currentTime !== lastVideoTimeRef.current) {
+    const interval = engine.profile === "fingerspelling" ? 1000 / 15 - .5 : 33;
+    if (!engine.busy && now - lastFrameRef.current >= interval && video.currentTime !== lastVideoTimeRef.current) {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
       const generation = cameraGenerationRef.current;
