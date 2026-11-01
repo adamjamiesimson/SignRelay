@@ -47,8 +47,7 @@ self.onmessage=async({data}:MessageEvent)=>{
    self.postMessage({type:"progress",message:"Loading hand tracking"});
    const files=await FilesetResolver.forVisionTasks(LOCAL_WASM_PATH);
    model=await GestureRecognizer.createFromOptions(files,{baseOptions:{modelAssetBuffer:await reviewedTask(),delegate:"CPU"},
-    canvas:new OffscreenCanvas(1,1),runningMode:"VIDEO",numHands:2,minHandDetectionConfidence:.55,minHandPresenceConfidence:.55,minTrackingConfidence:.55,
-    cannedGesturesClassifierOptions:{scoreThreshold:.55}});
+    canvas:new OffscreenCanvas(1,1),runningMode:"VIDEO",numHands:2,minHandDetectionConfidence:.55,minHandPresenceConfidence:.55,minTrackingConfidence:.55});
    self.postMessage({type:"warming"});const surface=new OffscreenCanvas(256,256);const context=surface.getContext("2d")!;
    context.fillStyle="#20242c";context.fillRect(0,0,256,256);
    const probe=surface.transferToImageBitmap();try{model.recognizeForVideo(probe,1);}finally{probe.close();}

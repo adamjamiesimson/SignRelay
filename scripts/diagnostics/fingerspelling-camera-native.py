@@ -1,6 +1,8 @@
 """Same actual camera RGB bytes in native CPU Tasks, including pre-capture history."""
 import base64,collections,hashlib,json,pathlib,sys
 import cv2,mediapipe as mp,numpy as np
+sys.path.insert(0,"training/fingerspelling/upright")
+from upright_video import frames as display_frames
 example=sys.argv[1];root=pathlib.Path("work/fingerspelling-camera")/example
 value=json.loads((root/"actual-camera-pixels.json").read_text())
 options=mp.tasks.vision.GestureRecognizerOptions(base_options=mp.tasks.BaseOptions(model_asset_path="work/fingerspelling-app/gesture.task"),
@@ -67,6 +69,16 @@ with mp.tasks.vision.GestureRecognizer.create_from_options(options) as task:
    reference_total+=1;reference_visible+=bool(result.hand_landmarks);reference_categories.extend(h[0].category_name for h in result.handedness)
 cap.release()
 variants["original-source-native-reset"]={"frames":reference_total,"visibleFrames":reference_visible,"categories":dict(collections.Counter(reference_categories))}
+display_reference=[];display_categories=[];display_visible=display_total=0
+with mp.tasks.vision.GestureRecognizer.create_from_options(options) as task:
+ for seconds,rgb,info in display_frames(root/"verified-source.mp4"):
+  if display_reference and seconds-display_reference[-1][0]<1/15-1e-6:continue
+  display_reference.append((seconds,rgb))
+  result=task.recognize_for_video(mp.Image(image_format=mp.ImageFormat.SRGB,data=np.ascontiguousarray(rgb)),round(seconds*1000))
+  if value["source"]["annotationStartSeconds"]<=seconds<=value["source"]["annotationEndSeconds"]:
+   display_total+=1;display_visible+=bool(result.hand_landmarks);display_categories.extend(h[0].category_name for h in result.handedness)
+variants["display-oriented-source-native-reset"]={"frames":display_total,"visibleFrames":display_visible,"categories":dict(collections.Counter(display_categories))}
+reference_frames=[rgb for _,rgb in display_reference]
 reference_thumbs=[cv2.resize(rgb,(32,18)).astype(np.float32) for rgb in reference_frames]
 diffs=[]
 for row in value["rows"][first_complex:]:
