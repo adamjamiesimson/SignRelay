@@ -2,7 +2,7 @@ name: Fingerspelling real-source app replay
 on:
   push:
     branches: [codex/asl-fingerspelling-2026-10-31]
-    paths: ['.github/workflows/fingerspelling-replay.yml', 'scripts/diagnostics/fingerspelling-app-*', 'lib/fingerspelling-*', 'workers/fingerspelling.worker.ts', 'components/translator-experience.tsx']
+    paths: ['.github/workflows/fingerspelling-replay.yml', 'scripts/diagnostics/fingerspelling-app-*', 'scripts/diagnostics/fingerspelling-camera-*', 'lib/fingerspelling-*', 'workers/fingerspelling.worker.ts', 'components/translator-experience.tsx']
 permissions:
   contents: read
 jobs:
@@ -35,6 +35,10 @@ jobs:
         run: |
           chrome="$(command -v google-chrome || command -v chromium)"
           node scripts/diagnostics/fingerspelling-app-replay.mjs "$chrome"
+      - name: Prepare one verified real RGB virtual-camera recording
+        run: python scripts/diagnostics/fingerspelling-camera-prepare.py
+      - name: Actual recorded RGB camera path and capture-to-result measurement
+        run: node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)"
       - name: Verify native ONNX text for the exact app-captured inputs
         run: |
           python - <<'PY'
@@ -58,5 +62,7 @@ jobs:
         if: always()
         with:
           name: fingerspelling-real-source-app-evidence
-          path: outputs/fingerspelling-app-real.json
+          path: |
+            outputs/fingerspelling-app-real.json
+            outputs/fingerspelling-recorded-camera.json
           if-no-files-found: warn
