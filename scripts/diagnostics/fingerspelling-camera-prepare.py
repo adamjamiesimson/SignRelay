@@ -13,6 +13,7 @@ path=pathlib.Path(kagglehub.dataset_download("googleai/fsboard/versions/13",path
 blob=path.read_bytes()
 assert len(blob)==record["clipFileSize"] and hashlib.md5(blob,usedforsecurity=False).hexdigest()==record["clipFileMd5"]
 assert hashlib.sha256(blob).hexdigest()==source["rawSha256"]
+(root/"verified-source.mp4").write_bytes(blob)
 lead=16
 subprocess.run(["ffmpeg","-hide_banner","-loglevel","error","-y","-f","lavfi","-i","color=c=0x20242c:s=640x360:r=30:d="+str(lead),
  "-i",str(path),"-f","lavfi","-i","color=c=0x20242c:s=640x360:r=30:d=4",
