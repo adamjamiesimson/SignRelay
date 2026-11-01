@@ -1,6 +1,7 @@
 // Actual recorded RGB -> getUserMedia -> production CPU tracker -> capture -> CTC -> confirm.
 // No landmark substitution. This is one selected integration case, not physical webcam accuracy.
 import assert from "node:assert/strict";
+import {createHash} from "node:crypto";
 import {readFileSync,writeFileSync,mkdirSync} from "node:fs";
 import {resolve} from "node:path";
 import {openRehearsal,until} from "../../tests/rehearsal-harness.mjs";
@@ -42,7 +43,7 @@ const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-vid
     if(this.ctc&&e.data.type==='result')window.__recorded.results.push({...e.data,received:performance.now()});
    });
   }
-  postMessage(data,...rest){if(this.ctc&&data.type==='predict')window.__recorded.inputs.push({at:performance.now(),frames:data.frames,featureCount:data.features.length,features:Array.from(data.features)});return super.postMessage(data,...rest);}
+  postMessage(data,...rest){if(this.ctc&&data.type==='predict')window.__recorded.inputs.push({at:performance.now(),frames:data.frames,featureCount:data.features.length,features:Array.from(data.features),captureTelemetry:data.captureTelemetry||null});return super.postMessage(data,...rest);}
  };
 `});
 try{
@@ -121,7 +122,7 @@ try{
  writeFileSync(root+"/actual-captured-features.json",JSON.stringify({...input,prediction:result.text}));
  assert.equal(displayed.text,result.text);assert.equal(result.status,"uncertain");
  assert.ok(snapshot.delegates.length&&snapshot.delegates.every(d=>d==="CPU"));
- assert.equal(input.featureCount,input.frames*132);assert.equal(snapshot.frames.length,input.frames);
+ assert.equal(input.featureCount,input.frames*132);if(input.captureTelemetry)assert.equal(input.captureTelemetry.frames,input.frames);else assert.equal(snapshot.frames.length,input.frames);
  assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),"","Text was inserted automatically");
  assert.equal(await h.evaluate("window.__qa.spoken.length"),0,"Text spoke automatically");
  await h.click("Confirm text");
@@ -132,7 +133,8 @@ try{
  const report={kind:"one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
  source,sourceOnset:onset,captureStart:started,captureEnd:finished,modelSha256:modelContract.sha256,
  reference:source.reference,prediction:displayed.text,exact:displayed.text===source.reference,status:result.status,
- frames:input.frames,observedCaptureFps:(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),maxFrameGapMs:Math.max(...dt),
+ frames:input.frames,inputSha256:createHash("sha256").update(Buffer.from(new Float32Array(input.features).buffer)).digest("hex"),captureTelemetry:input.captureTelemetry,trackingReportedFrames:frames.length,
+ observedCaptureFps:input.captureTelemetry?.observedFps??(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),maxFrameGapMs:input.captureTelemetry?.maxFrameGapMs??Math.max(...dt),
  captureWallMs:snapshot.finished-snapshot.started,finishToWorkerResultMs:result.received-snapshot.finished,finishToDomCandidateMs:displayed.at-snapshot.finished,finishToNextAnimationFrameMs:displayed.nextFrameAt-snapshot.finished,
  inferenceMs:result.inferenceMs,processingMs:result.processingMs,trackingMs:{median:times[Math.floor(times.length*.5)],p95:times[Math.floor(times.length*.95)]},
  frameAgeMs:{median:ages[Math.floor(ages.length*.5)],p95:ages[Math.floor(ages.length*.95)]},

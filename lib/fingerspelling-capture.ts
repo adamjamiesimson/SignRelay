@@ -61,3 +61,5 @@ export class FingerspellingCapture {
     return {features:this.featureVersion==="v3"?normalizeFingerspellingMotion(hands[side],times,frames,side,this.aspect):normalizeFingerspellingHand(hands[side],frames,side,this.aspect),frames};
   }
 }
+
+export type CaptureDiagnostics=ReturnType<FingerspellingCapture["diagnostics"]>;

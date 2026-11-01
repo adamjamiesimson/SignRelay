@@ -1074,8 +1074,8 @@ export function TranslatorExperience() {
         });
         if(spellingCaptureRef.current!==capture||spellingSessionRef.current!==session)return;
         spellingCaptureRef.current=null;
-        const input=capture.finish();capture.dispose();
-        session.submit(input.features,input.frames);
+        const telemetry=capture.diagnostics(),input=capture.finish();capture.dispose();
+        session.submit(input.features,input.frames,telemetry);
       }catch(error){
         if(spellingCaptureRef.current===capture)spellingCaptureRef.current=null;
         capture?.dispose();setSpellingPhase("ready");

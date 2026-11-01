@@ -1,3 +1,4 @@
+import type { CaptureDiagnostics } from "./fingerspelling-capture";
 import type { CtcContract, CtcResult } from "./fingerspelling-ctc-runtime";
 
 type Port = Pick<Worker,"postMessage"|"terminate"|"onmessage"|"onerror"|"onmessageerror">;
@@ -12,16 +13,16 @@ export class FingerspellingCtcSession {
   private waiting = false;
   private closed = false;
   private nextId = 0;
-  private latest: {features:Float32Array;frames:number;requestId:number} | null = null;
+  private latest: {features:Float32Array;frames:number;requestId:number;captureTelemetry?:CaptureDiagnostics} | null = null;
   private timer: ReturnType<typeof setTimeout> | undefined;
   constructor(private createWorker:()=>Port, private contract:CtcContract,
     private onResult:(result:CtcResult & {requestId:number})=>void,
     private onStatus:(state:"loading"|"ready"|"running"|"failed",message?:string)=>void) {
     this.launch();
   }
-  submit(features:Float32Array,frames:number) {
+  submit(features:Float32Array,frames:number,captureTelemetry?:CaptureDiagnostics) {
     if (this.closed) return;
-    this.latest={features,frames,requestId:++this.nextId};this.pump();
+    this.latest={features,frames,requestId:++this.nextId,captureTelemetry};this.pump();
   }
   reset() {
     if (this.closed) return;
