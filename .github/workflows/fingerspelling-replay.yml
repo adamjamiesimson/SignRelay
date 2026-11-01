@@ -1,0 +1,98 @@
+name: Fingerspelling real-source app replay
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-replay.yml', 'scripts/diagnostics/fingerspelling-app-*', 'scripts/diagnostics/fingerspelling-camera-*', 'lib/fingerspelling-*', 'workers/fingerspelling.worker.ts', 'workers/fingerspelling-vision.worker.ts', 'components/translator-experience.tsx']
+permissions:
+  contents: read
+jobs:
+  real-source-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - run: python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+      - name: Re-extract verified real held-out recordings
+        run: python scripts/diagnostics/fingerspelling-app-prepare.py
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0', cache: npm}
+      - run: npm ci
+      - name: Read installed Next client-component guide
+        run: |
+          python - <<'PY'
+          import pathlib
+          guides=list(pathlib.Path("node_modules/next/dist/docs").rglob("*use-client*"))
+          assert guides, "Installed Next guide missing"
+          for p in guides: print(p.read_text())
+          PY
+      - run: npm run build:rehearsal
+      - name: Real-source capture, worker, candidate and deliberate confirmation
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium)"
+          node scripts/diagnostics/fingerspelling-app-replay.mjs "$chrome"
+      - name: Fixed held-out RGB recordings and known regressions, retaining every abstention
+        run: |
+          python scripts/diagnostics/fingerspelling-camera-cases.py
+          mapfile -t camera_cases < work/fingerspelling-camera/cases.txt
+          for example in "${camera_cases[@]}"; do
+            python scripts/diagnostics/fingerspelling-camera-prepare.py "$example" </dev/null
+            node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)" "$example" </dev/null
+            python scripts/diagnostics/fingerspelling-camera-onnx.py "$example" </dev/null
+          done
+      - name: Require actual RGB inference on at least one case; preserve every case result
+        run: |
+          python - <<'PY'
+          import json,pathlib,sys
+          sys.path.insert(0,"training/fingerspelling/accuracy")
+          from metrics import summarize
+          rows=[json.loads(p.read_text()) for p in pathlib.Path("outputs").glob("fingerspelling-recorded-camera-*.json")]
+          cases=json.loads(pathlib.Path("work/fingerspelling-camera/cases.json").read_text())
+          assert len(rows)==len(cases),"Every selected case must be retained"
+          inferred=[r for r in rows if r.get("status")=="uncertain" and r.get("prediction")]
+          def metric(group):
+           return summarize([{"reference":r["source"]["reference"],"prediction":r.get("prediction","")} for r in group])
+          report={"kind":"fixed genuine RGB virtual-camera cases; empty predictions count as deletions; physical webcams unmeasured",
+           "cases":rows,"casesWithActualInference":len(inferred),"qualityAbstentions":sum(r["status"]=="abstained-quality" for r in rows),
+           "knownRegressionMetrics":metric([r for r in rows if r["source"].get("caseRole","known-regression")=="known-regression"]),
+           "heldOutMetrics":metric([r for r in rows if r["source"].get("caseRole") in ("final","left_final")]),
+           "scope":"Held-out cases are the fixed first-six-final/two-left export fixtures, selected independently of predictions; small convenience subset, not population accuracy."}
+          pathlib.Path("outputs/fingerspelling-recorded-camera.json").write_text(json.dumps(report,indent=2))
+          print("RGB-CAMERA-COVERAGE",len(inferred),"/",len(rows))
+          assert inferred,"No genuine RGB inference succeeded"
+          PY
+      - name: Verify native ONNX text for the exact app-captured inputs
+        run: |
+          python - <<'PY'
+          import json,numpy as np,onnxruntime as ort,pathlib
+          inputs=json.loads(pathlib.Path("work/fingerspelling-app/captured-inputs.json").read_text())
+          contract=pathlib.Path("docs/fingerspelling/evidence/upright-runtime.json")
+          if not contract.exists():contract=pathlib.Path("docs/fingerspelling/evidence/accuracy-v2-runtime.json")
+          runtime=json.loads(contract.read_text())
+          session=ort.InferenceSession("public"+runtime["url"],providers=["CPUExecutionProvider"])
+          import sys
+          sys.path.insert(0,"training/fingerspelling/accuracy")
+          from metrics import beam
+          vocab=json.loads(pathlib.Path("docs/fingerspelling/evidence/fsboard-v13-vocabulary.json").read_text())
+          for row in inputs:
+            x=np.asarray(row["features"],np.float32).reshape(1,row["frames"],132)
+            logits=session.run(None,{"features":x})[0][0]
+            assert beam(logits)==row["prediction"],"Native/app captured text mismatch"
+          path=pathlib.Path("outputs/fingerspelling-app-real.json")
+          report=json.loads(path.read_text());report["nativeCapturedTextParity"]=True
+          path.write_text(json.dumps(report,indent=2))
+          print("NATIVE-APP-CAPTURE-PARITY",len(inputs))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fingerspelling-real-source-app-evidence
+          path: |
+            outputs/fingerspelling-app-real.json
+            outputs/fingerspelling-recorded-camera.json
+            outputs/camera-native-*.json
+          if-no-files-found: warn

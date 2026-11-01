@@ -1,0 +1,1 @@
+export const CTC_VOCABULARY = ["<blank>", ..." ABCDEFGHIJKLMNOPQRSTUVWXYZ"];

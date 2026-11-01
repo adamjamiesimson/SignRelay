@@ -36,13 +36,13 @@ export async function fixtures() {
 }
 
 /** `returning: false` opens the site as a first-time visitor, who sees the tour. */
-export async function openRehearsal(executable, { extraInit = "", returning = true } = {}) {
+export async function openRehearsal(executable, { extraInit = "", returning = true, extraArgs = [] } = {}) {
   const manifest = JSON.parse(readFileSync("out/runtime-manifest.json", "utf8"));
   if (manifest.profile !== "rehearsal") throw new Error(`out/ is the ${manifest.profile} build; run npm run build:rehearsal first`);
   const port = 18700 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${port}`;
   const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", String(port)], { stdio: "ignore" });
   await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } }, "No static server");
-  const browser = await startChrome(executable);
+  const browser = await startChrome(executable, {extraArgs});
   const pageRequests = [];
   browser.onEvent(message => { if (message.method === "Network.requestWillBeSent") pageRequests.push(message.params.request.url); });
   if (returning) await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });

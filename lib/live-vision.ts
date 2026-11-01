@@ -16,8 +16,34 @@ export class LiveVision {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private closed = false;
   private occupied = false;
+  private sourceVideo: HTMLVideoElement | null = null;
+  private frameCallback: number | null = null;
+  private decodedFrame: VideoFrameCallbackMetadata | null = null;
+  private capturedFrame = -1;
+  private frameClockOffset: number | null = null;
+  get frameAvailable() {
+    return this.trackingProfile === "words" || !this.sourceVideo
+      || (!!this.decodedFrame && this.decodedFrame.presentedFrames !== this.capturedFrame);
+  }
+  private watchDecodedFrames(video: HTMLVideoElement) {
+    if (this.sourceVideo === video) return;
+    if (typeof video.requestVideoFrameCallback !== "function") throw new Error("Fingerspelling requires decoded video timestamps");
+    if (this.sourceVideo && this.frameCallback !== null) this.sourceVideo.cancelVideoFrameCallback(this.frameCallback);
+    this.sourceVideo = video; this.decodedFrame = null; this.capturedFrame = -1; this.frameClockOffset = null;
+    const observe: VideoFrameRequestCallback = (_now, metadata) => {
+      if (this.closed || this.sourceVideo !== video) return;
+      if (Number.isFinite(metadata.mediaTime) && metadata.mediaTime >= 0) {
+        this.decodedFrame = metadata;
+        this.frameClockOffset ??= metadata.expectedDisplayTime - metadata.mediaTime * 1000;
+      }
+      this.frameCallback = video.requestVideoFrameCallback(observe);
+    };
+    this.frameCallback = video.requestVideoFrameCallback(observe);
+  }
   private recovering: Promise<void> | null = null;
   private accelerated = true;
+  private trackingProfile: "words" | "fingerspelling" = "words";
+  get profile() { return this.trackingProfile; }
   private cancelStartup: ((error: Error) => void) | null = null;
   assetSource: VisionEngine["assetSource"] = "self-hosted";
   delegate: "GPU" | "CPU" = "CPU";
@@ -31,12 +57,13 @@ export class LiveVision {
   readonly timings: LiveVisionTiming = { capture: 0, hands: 0, auxiliary: 0, transport: 0, age: 0 };
   get busy() { return this.occupied || !!this.recovering; }
 
-  static async create(progress?: (message: string) => void, accelerated = true, signal?: AbortSignal) {
+  static async create(progress?: (message: string) => void, accelerated = true, signal?: AbortSignal, profile: "words" | "fingerspelling" = "words") {
     signal?.throwIfAborted();
     const live = new LiveVision();
     const abort = () => live.close();
     signal?.addEventListener("abort", abort, { once: true });
-    live.accelerated = accelerated;
+    live.trackingProfile = profile;
+    live.accelerated = profile === "words" && accelerated;
     try {
       if (typeof Worker === "undefined" || typeof createImageBitmap === "undefined"
         || typeof OffscreenCanvas === "undefined") throw new Error("Worker tracking unavailable");
@@ -61,6 +88,7 @@ export class LiveVision {
   }
 
   private async loadFallback(progress?: (message: string) => void) {
+    if (this.trackingProfile === "fingerspelling") throw new Error("Fingerspelling hand tracking requires a working tracking worker");
     // A stuck GPU call cannot be terminated on the compatibility/UI thread.
     const engine = await VisionEngine.create(progress, false);
     if (this.closed) { engine.close(); return; }
@@ -73,7 +101,7 @@ export class LiveVision {
       if (this.closed) { reject(new Error("Tracking closed")); return; }
       this.cancelStartup = reject;
       // Classic bundle is intentional: MediaPipe's WASM loader uses importScripts.
-      const worker = new Worker("/workers/vision.worker.js");
+      const worker = new Worker(this.trackingProfile === "fingerspelling" ? "/workers/fingerspelling-vision.worker.js" : "/workers/vision.worker.js");
       this.worker = worker;
       let ready = false;
       const fail = (message: string) => {
@@ -151,19 +179,30 @@ export class LiveVision {
       }
       if (!this.worker) throw new Error("Tracking unavailable. Restart the camera.");
       const captureWorker = this.worker;
+      let frameTimestamp = timestamp;
+      if (this.trackingProfile === "fingerspelling") {
+        if (!("videoWidth" in video)) throw new Error("Fingerspelling requires a video source");
+        this.watchDecodedFrames(video);
+        const frame = this.decodedFrame;
+        if (!frame || this.frameClockOffset === null || frame.presentedFrames === this.capturedFrame) return null;
+        this.capturedFrame = frame.presentedFrames;
+        frameTimestamp = frame.mediaTime * 1000 + this.frameClockOffset;
+      }
       const bitmap = await createImageBitmap(video);
       if (this.closed || this.worker !== captureWorker || this.recovering) { bitmap.close(); return null; }
       const posted = performance.now();
       return await new Promise<VisionFrame | null>((resolve, reject) => {
         this.pending = { resolve, reject, hands: onHands, started, capture: posted - started, posted };
         this.timer = setTimeout(() => this.fail(new Error("Tracking frame timed out")), 8000);
-        try { this.worker!.postMessage({ type: "frame", bitmap, timestamp }, [bitmap]); }
+        try { this.worker!.postMessage({ type: "frame", bitmap, timestamp: frameTimestamp }, [bitmap]); }
         catch (error) { bitmap.close(); clearTimeout(this.timer); this.fail(error as Error); }
       });
     } finally { this.occupied = false; }
   }
 
   close() {
+    if (this.sourceVideo && this.frameCallback !== null) this.sourceVideo.cancelVideoFrameCallback(this.frameCallback);
+    this.sourceVideo = null; this.decodedFrame = null; this.frameCallback = null;
     this.closed = true; clearTimeout(this.timer);
     this.cancelStartup?.(new Error("Tracking closed")); this.cancelStartup = null;
     this.worker?.terminate(); this.worker = null;

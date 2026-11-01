@@ -1,0 +1,105 @@
+name: Fingerspelling corrected-orientation train and fresh evaluation
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-upright-train.yml']
+permissions: {contents: read, actions: read}
+jobs:
+  require-complete-cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Require all eight completed corrected data shards (restart after bounded wait expired)
+        env: {GH_TOKEN: "${{ github.token }}"}
+        shell: python
+        run: |
+          import json,os,time,urllib.request
+          for attempt in range(80):
+           request=urllib.request.Request("https://api.github.com/repos/adamjamiesimson/SignRelay/actions/runs/41281739421",headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json"})
+           with urllib.request.urlopen(request,timeout=45) as response:run=json.load(response)
+           print("UPRIGHT-CACHE-STATE",run["status"],run["conclusion"],flush=True)
+           if run["status"]=="completed":
+            assert run["conclusion"]=="success","Do not train on failed/partial cache"
+            break
+           time.sleep(30)
+          else:raise RuntimeError("Bounded cache wait expired")
+  train-fixed:
+    needs: require-complete-cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', PYTHONUNBUFFERED: '1', ACCURACY_PLAN_SHA256: '56d12a13b86ca92d94e397c4cc65fe7f55d8a154d8a6b56a3f42b25a483217e7'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: |
+          python -m pip install --disable-pip-version-check numpy==1.26.4 onnx==1.17.0 onnxruntime==1.20.1
+          python -m pip install --disable-pip-version-check torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: upright-development-*
+          merge-multiple: true
+          path: work/upright
+          github-token: ${{ github.token }}
+          run-id: 41281739421
+      - run: python training/fingerspelling/upright/train.py --experiment motion_gru_v3 --epochs 80 --batch 32
+      - name: Freeze the unchanged architecture and decoder before opening calibration/final
+        shell: python
+        run: |
+          import hashlib,json,pathlib,shutil
+          root=pathlib.Path("work/upright-models/motion_gru_v3");out=pathlib.Path("work/upright-selected");out.mkdir(parents=True)
+          r=json.loads((root/"report.json").read_text())
+          assert not r["sealedRolesRead"] and r["rgbPolicy"]=="display-matrix-v1"
+          selection={"criterion":"fixed architecture/beam8 from prior development selection; orientation-correct RGB; checkpoint by new dev greedy CER",
+           "experiment":r["experiment"],"decoder":"beam8","modelSha256":r["modelSha256"],"modelBytes":r["modelBytes"],"spec":r["spec"],"planSha256":r["planSha256"],"rgbPolicy":"display-matrix-v1","devCer":r["dev"]["beam8"]["cer"],"sealedDataRead":False}
+          for name in ("model.onnx","model.pt","report.json"):shutil.copy2(root/name,out/name)
+          (out/"selection.json").write_text(json.dumps(selection,indent=2))
+          print("UPRIGHT-SELECTED-BEFORE-FINAL",json.dumps(selection),flush=True)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: upright-selected-frozen
+          path: work/upright-selected/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: upright-training-checkpoints
+          path: work/upright-models/
+          retention-days: 14
+  final-once:
+    needs: train-fixed
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: |
+          python -m pip install --disable-pip-version-check numpy==1.26.4 onnxruntime==1.20.1
+          python -m pip install --disable-pip-version-check torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+      - uses: actions/download-artifact@v4
+        with: {name: upright-selected-frozen, path: work/upright-selected}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: upright-*
+          merge-multiple: true
+          path: work/upright
+          github-token: ${{ github.token }}
+          run-id: 41281739421
+      - uses: actions/download-artifact@v4
+        with:
+          name: accuracy-real-action-negatives
+          path: work/negatives
+          github-token: ${{ github.token }}
+          run-id: 41274194932
+      - name: Fit new held-signer calibration, then open fresh final once
+        run: python training/fingerspelling/upright/evaluate.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: upright-final-evidence-and-browser-inputs
+          path: work/upright-evaluation/
+          retention-days: 14

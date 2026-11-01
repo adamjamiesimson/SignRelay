@@ -1,0 +1,66 @@
+name: Fingerspelling controlled accuracy experiments
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-accuracy-train.yml', 'training/fingerspelling/accuracy/train.py', 'training/fingerspelling/accuracy/models.py', 'training/fingerspelling/accuracy/features.py', 'training/fingerspelling/accuracy/metrics.py']
+permissions: {contents: read, actions: read}
+concurrency:
+  group: accuracy-training-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  cache-ready:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Require the complete immutable data run; never train on partial shards
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: |
+          python -u - <<'PY'
+          import json,os,time,urllib.request
+          url="https://api.github.com/repos/adamjamiesimson/SignRelay/actions/runs/41273157940"
+          for attempt in range(40):
+            request=urllib.request.Request(url,headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json"})
+            with urllib.request.urlopen(request,timeout=45) as response:run=json.load(response)
+            print("CACHE-STATE",run["status"],run["conclusion"],flush=True)
+            if run["status"]=="completed":
+              assert run["conclusion"]=="success","Cache run failed; no partial-data training"
+              break
+            time.sleep(30)
+          else:raise RuntimeError("Bounded cache wait expired")
+          PY
+  train:
+    needs: cache-ready
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix: {experiment: [expanded_gru_v2, motion_gru_v3, motion_tcn_v3]}
+    env:
+      OMP_NUM_THREADS: '2'
+      OPENBLAS_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+      ACCURACY_PLAN_SHA256: '9fe08dfacb247f5bb74f16da54a2f712322210ce8de5b4b64f06c17ddd2ee339'
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: |
+          python -m pip install --disable-pip-version-check numpy==1.26.4 onnx==1.17.0 onnxruntime==1.20.1
+          python -m pip install --disable-pip-version-check torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: accuracy-development-*
+          merge-multiple: true
+          path: work/accuracy
+          github-token: ${{ github.token }}
+          run-id: 41273157940
+      - name: Controlled budget, regularisation, checkpoints and dev-only early stopping
+        run: python training/fingerspelling/accuracy/train.py --experiment ${{ matrix.experiment }} --epochs 80 --batch 32
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accuracy-candidate-${{ matrix.experiment }}
+          path: work/accuracy-models/${{ matrix.experiment }}/
+          if-no-files-found: warn
+          retention-days: 14

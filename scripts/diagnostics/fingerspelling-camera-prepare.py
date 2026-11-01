@@ -1,0 +1,37 @@
+"""One known published clip -> real RGB virtual camera, not a new accuracy set."""
+import gzip,hashlib,json,pathlib,re,subprocess,sys
+import kagglehub
+sys.path.insert(0,"training/fingerspelling")
+from prepare import metadata
+sys.path.insert(0,"training/fingerspelling/upright")
+from upright_video import inspect
+example=sys.argv[1] if len(sys.argv)>1 else "6befb92aee4dcad7bf6ed904"
+assert re.fullmatch("[0-9a-f]{24}",example)
+root=pathlib.Path("work/fingerspelling-camera")/example;root.mkdir(parents=True,exist_ok=True)
+old=json.loads(pathlib.Path("docs/fingerspelling/evidence/fsboard-v13-provenance.json").read_text())
+sources=old["rows"]
+provenance=pathlib.Path("docs/fingerspelling/evidence/upright-provenance.json.gz")
+if provenance.exists():sources+=json.loads(gzip.decompress(provenance.read_bytes()))["rows"]
+source=next(r for r in sources if r["id"]==example)
+split=source.get("sourceSplit",source.get("split"))
+record=next(r for r in metadata(split) if r["clipFilename"]==source["source"])
+path=pathlib.Path(kagglehub.dataset_download("googleai/fsboard/versions/13",path="daun_v3/video_clips/daun_v3-"+split+"/"+source["source"]))
+blob=path.read_bytes()
+assert len(blob)==record["clipFileSize"] and hashlib.md5(blob,usedforsecurity=False).hexdigest()==record["clipFileMd5"]
+assert hashlib.sha256(blob).hexdigest()==source["rawSha256"]
+(root/"verified-source.mp4").write_bytes(blob)
+info,_=inspect(path)
+width,height=info["width"],info["height"]
+lead=16
+subprocess.run(["ffmpeg","-hide_banner","-loglevel","error","-y","-f","lavfi","-i","color=c=0x20242c:s="+str(width)+"x"+str(height)+":r=30:d="+str(lead),
+ "-i",str(path),"-f","lavfi","-i","color=c=0x20242c:s="+str(width)+"x"+str(height)+":r=30:d=4",
+ "-filter_complex","[0:v]setsar=1[a];[1:v]scale="+str(width)+":"+str(height)+":flags=bilinear,fps=30,format=yuv420p,setsar=1[b];[2:v]setsar=1[c];[a][b][c]concat=n=3:v=1:a=0[out]",
+ "-map","[out]","-r","30","-pix_fmt","yuv420p",str(root/"known-fsboard.y4m")],check=True)
+with (root/"known-fsboard.y4m").open("rb") as stream:header=stream.readline(4096).decode("ascii")
+assert " F30:1 " in header,header
+config={"y4mHeader":header.strip(),"id":source["id"],"reference":source.get("reference",source.get("phrase")),"signer":source["signer"],"caseRole":source.get("role","known-regression"),"rawSha256":source["rawSha256"],"rawBytes":len(blob),"dataset":"googleai/fsboard/versions/13","license":"CC BY 4.0",
+ "conversion":"display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks","displayDimensions":[width,height],"sourceDisplayMetadata":info["stream"],
+ "annotationStartSeconds":record["annotationStartTimeS"]-record["clipStartTimeS"],"annotationEndSeconds":record["annotationEndTimeS"]-record["clipStartTimeS"],
+ "virtualCameraSha256":hashlib.sha256((root/"known-fsboard.y4m").read_bytes()).hexdigest()}
+(root/"source.json").write_text(json.dumps(config));path.unlink()
+print("RECORDED-CAMERA-SOURCE",json.dumps(config),flush=True)

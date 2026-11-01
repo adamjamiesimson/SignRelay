@@ -1,0 +1,64 @@
+name: Fingerspelling isolated verification
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: fingerspelling-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build:worker
+      - run: npm run repo:guard
+      - name: Synthetic controller microbenchmark (not webcam performance)
+        run: |
+          mkdir -p outputs
+          npx esbuild scripts/benchmarks/fingerspelling.ts --bundle --platform=node --format=esm --outfile=/tmp/fingerspelling-benchmark.mjs
+          node /tmp/fingerspelling-benchmark.mjs | tee outputs/fingerspelling-benchmark.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fingerspelling-controller-evidence
+          path: outputs/fingerspelling-benchmark.json
+          if-no-files-found: warn
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - name: Build existing rehearsal profile (no deployment)
+        run: npm run build:rehearsal
+      - name: Verify text workspace on remote fake camera
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium)"
+          test -n "$chrome"
+          node tests/fingerspelling-browser-smoke.mjs "$chrome"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fingerspelling-software-evidence
+          path: outputs/fingerspelling-*
+          if-no-files-found: warn

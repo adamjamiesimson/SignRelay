@@ -1,0 +1,38 @@
+{
+  "kind": "two selected genuine FSboard held-out landmark replays through the capture UI; fake camera; not an unbiased accuracy estimate or RGB/webcam validation",
+  "sourceRun": "https://github.com/adamjamiesimson/SignRelay/actions/runs/41214804872",
+  "sourceCommit": "d5b6040b23b486a8e6f2341b4b0d076b66a88665",
+  "artifact": {
+    "id": 13046669793,
+    "sha256": "1a014da70b92891ad539d379166d7fad5c92a5730f881667711d0310e8306484"
+  },
+  "modelSha256": "fbf35592acd849bf3b6b5621a23465ed134ffbc6ab049fbbf8db75916177c29a",
+  "cameraAspect": "fake video dimensions mapped to each source recording aspect for raw-landmark normalization",
+  "results": [
+    {
+      "id": "6befb92aee4dcad7bf6ed904",
+      "reference": "PLUSS",
+      "prediction": "PLUSS",
+      "exact": true,
+      "frames": 40,
+      "rawSha256": "0b0fa8ab4d0ab972951b3104b7fec509d0bcd2142eee6d64db422ef42e6ab5f3"
+    },
+    {
+      "id": "6cd1239964a94fcc9b8eaff0",
+      "reference": "ESTEVAN WONG",
+      "prediction": "ESTEVAN WONG",
+      "exact": true,
+      "frames": 55,
+      "rawSha256": "50924480931c7bb5eb5be65940301cae2486b87551eb3227661abf1c364091f9"
+    }
+  ],
+  "nativeCapturedTextParity": true,
+  "checks": [
+    "real captured sequence -> actual worker -> candidate -> deliberate text confirmation",
+    "no automatic composition or speech",
+    "confirmation consumes candidate",
+    "cancel removes candidate",
+    "word transcript preserved",
+    "same-origin requests only"
+  ]
+}

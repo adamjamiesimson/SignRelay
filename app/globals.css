@@ -239,3 +239,22 @@ details[open] > summary > svg:last-child { transform: rotate(180deg); }
   transform: translateY(-160%); transition: transform var(--fast) var(--ease);
 }
 .skip-link:focus-visible { transform: none; text-decoration: none; }
+
+/* Isolated ASL text workspace; reuse the existing neutral/green tokens. */
+.asl-mode-selector { display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
+.asl-mode-selector button { min-height: 44px; padding: 10px 18px; color: var(--text-2); border: 0; border-bottom: 2px solid transparent; background: transparent; cursor: pointer; font: inherit; }
+.asl-mode-selector button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.transcript-panel[hidden], .vocabulary-disclosure[hidden] { display: none; }
+.spelling-candidate { display: flex; gap: 20px; align-items: center; padding: 16px 0; }
+.spelling-candidate strong { font-size: 3.5rem; color: var(--accent); line-height: 1; }
+.spelling-candidate p { color: var(--text-2); }
+.spelling-label { display: block; margin: 18px 0 8px; font-weight: 600; }
+.fingerspelling-panel textarea { min-height: 150px; padding: 14px; font-size: 1.5rem; line-height: 1.5; resize: vertical; }
+.spelling-actions .button { min-height: 44px; }
+.spelling-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.spelling-reference { margin-top: 20px; }
+.spelling-reference p { overflow-wrap: anywhere; color: var(--text-2); margin-top: 12px; }
+@media (max-width: 600px) {
+  .asl-mode-selector button { flex: 1; padding-inline: 8px; }
+  .spelling-actions .button { flex: 1 1 auto; min-height: 44px; }
+}

@@ -1,0 +1,241 @@
+{
+  "status": "NO-GO",
+  "model": null,
+  "realSignerEvaluation": "pending",
+  "letters": [
+    {
+      "letter": "A",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "B",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "C",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "D",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "E",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "F",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "G",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "H",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "I",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "J",
+      "kind": "dynamic",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "K",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "L",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "M",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "N",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "O",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "P",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "Q",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "R",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "S",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "T",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "U",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "V",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "W",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "X",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "Y",
+      "kind": "primarily-static",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    },
+    {
+      "letter": "Z",
+      "kind": "dynamic",
+      "supported": false,
+      "evaluatedExamples": 0,
+      "accuracy": null,
+      "falsePositiveRate": null,
+      "latencyMs": null
+    }
+  ]
+}

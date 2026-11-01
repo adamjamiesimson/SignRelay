@@ -1,0 +1,23 @@
+{
+  "version": "fsboard-upright-v1",
+  "seed": 20261101,
+  "shards": 8,
+  "trainTarget": 4096,
+  "devTarget": 256,
+  "calFitTarget": 192,
+  "calPolicyTarget": 192,
+  "finalTarget": 384,
+  "leftTarget": 32,
+  "challengeTarget": 96,
+  "frozenDataset": "googleai/fsboard/versions/13",
+  "finalLeftSigner": "1c15",
+  "eligibility": {
+    "minCharacters": 3,
+    "maxCharacters": 32,
+    "minSeconds": 1,
+    "maxSeconds": 16,
+    "maxBytes": 41943040
+  },
+  "note": "Display-matrix-aware RGB via FFmpeg, no aspect stretching. Every previous pilot/accuracy clip is excluded from all held-out roles. Frozen architecture/hyperparameters; new final clips remain sealed.",
+  "rgbPolicy": "display-matrix-v1"
+}

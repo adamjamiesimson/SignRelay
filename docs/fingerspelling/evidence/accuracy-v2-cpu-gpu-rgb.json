@@ -1,0 +1,394 @@
+{
+  "kind": "identical lossless real RGB / identical decoded timestamps / reset task per sequence and mirror variant",
+  "tasksVersion": "0.10.35",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+  "results": [
+    {
+      "id": "6befb92aee4dcad7bf6ed904",
+      "delegate": "CPU",
+      "variant": "original",
+      "reference": "PLUSS",
+      "rgbFrames": 60,
+      "pairedHands": 19,
+      "sameReturnedCategory": 19,
+      "onlyNativeHands": 1,
+      "onlyBrowserHands": 1,
+      "bothEmptyFrames": 39,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.0015462907166598299,
+        "p95": 0.007928405102472365,
+        "max": 0.01339010352318184
+      },
+      "xyPixelError": {
+        "mean": 0.4971591024826356,
+        "p95": 2.667021789491873,
+        "max": 6.362661442901467
+      },
+      "featureMaxAbsDifference": 1.2498079538345337,
+      "nativeReturnedCategory": "Right",
+      "browserReturnedCategory": "Right",
+      "baselineNativeExtractionText": "PPLUSS",
+      "baselineBrowserExtractionText": "PPLUSS",
+      "sameDecodedText": true,
+      "browserTaskMs": {
+        "median": 38.89999999999418,
+        "p95": 59.41499999999432
+      }
+    },
+    {
+      "id": "6befb92aee4dcad7bf6ed904",
+      "delegate": "CPU",
+      "variant": "mirrored",
+      "reference": "PLUSS",
+      "rgbFrames": 60,
+      "pairedHands": 26,
+      "sameReturnedCategory": 26,
+      "onlyNativeHands": 0,
+      "onlyBrowserHands": 0,
+      "bothEmptyFrames": 34,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.0026853179934943003,
+        "p95": 0.010915609264743819,
+        "max": 0.041645284037593155
+      },
+      "xyPixelError": {
+        "mean": 0.9201008954880175,
+        "p95": 4.5487131885056105,
+        "max": 12.786662884677833
+      },
+      "featureMaxAbsDifference": 0.20332777500152588,
+      "nativeReturnedCategory": "Left",
+      "browserReturnedCategory": "Left",
+      "baselineNativeExtractionText": "PLUS",
+      "baselineBrowserExtractionText": "PLUS",
+      "sameDecodedText": true,
+      "browserTaskMs": {
+        "median": 40.000000000007276,
+        "p95": 59.12500000000582
+      }
+    },
+    {
+      "id": "0734c6e2935387a393872afd",
+      "delegate": "CPU",
+      "variant": "original",
+      "reference": "ZACKERY DUARTE",
+      "rgbFrames": 59,
+      "pairedHands": 45,
+      "sameReturnedCategory": 45,
+      "onlyNativeHands": 0,
+      "onlyBrowserHands": 0,
+      "bothEmptyFrames": 14,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.0004242417248879043,
+        "p95": 0.001089958512840524,
+        "max": 0.0028948535727219347
+      },
+      "xyPixelError": {
+        "mean": 0.12454324608718212,
+        "p95": 0.35747732141779054,
+        "max": 1.1406482910554028
+      },
+      "featureMaxAbsDifference": 0.008256256580352783,
+      "nativeReturnedCategory": "Left",
+      "browserReturnedCategory": "Left",
+      "baselineNativeExtractionText": "ZACKERY DUARTE",
+      "baselineBrowserExtractionText": "ZACKERY DUARTE",
+      "sameDecodedText": true,
+      "browserTaskMs": {
+        "median": 41,
+        "p95": 61.440000000002264
+      }
+    },
+    {
+      "id": "0734c6e2935387a393872afd",
+      "delegate": "CPU",
+      "variant": "mirrored",
+      "reference": "ZACKERY DUARTE",
+      "rgbFrames": 59,
+      "pairedHands": 43,
+      "sameReturnedCategory": 43,
+      "onlyNativeHands": 0,
+      "onlyBrowserHands": 0,
+      "bothEmptyFrames": 16,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.0002657549795598079,
+        "p95": 0.0006810808088334075,
+        "max": 0.0015337429727115084
+      },
+      "xyPixelError": {
+        "mean": 0.08413139786433763,
+        "p95": 0.2158506579746603,
+        "max": 0.5458616006741355
+      },
+      "featureMaxAbsDifference": 0.0059168338775634766,
+      "nativeReturnedCategory": "Right",
+      "browserReturnedCategory": "Right",
+      "baselineNativeExtractionText": "ZACKERY DUARTE",
+      "baselineBrowserExtractionText": "ZACKERY DUARTE",
+      "sameDecodedText": true,
+      "browserTaskMs": {
+        "median": 40.60000000000582,
+        "p95": 48.820000000005514
+      }
+    },
+    {
+      "id": "008bffd06997b048421181de",
+      "delegate": "CPU",
+      "variant": "original",
+      "reference": "KELLEE DEJESUS",
+      "rgbFrames": 88,
+      "pairedHands": 62,
+      "sameReturnedCategory": 62,
+      "onlyNativeHands": 0,
+      "onlyBrowserHands": 1,
+      "bothEmptyFrames": 26,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.0014661360409979425,
+        "p95": 0.005423970884334932,
+        "max": 0.030326548551106922
+      },
+      "xyPixelError": {
+        "mean": 0.4155237211670631,
+        "p95": 1.3527771711183356,
+        "max": 14.967696148458185
+      },
+      "featureMaxAbsDifference": 0.1213151216506958,
+      "nativeReturnedCategory": "Right",
+      "browserReturnedCategory": "Right",
+      "baselineNativeExtractionText": "KELLEE DEJESUS",
+      "baselineBrowserExtractionText": "KELLEE DEJESUS",
+      "sameDecodedText": true,
+      "browserTaskMs": {
+        "median": 39.89999999999418,
+        "p95": 56.260000000005675
+      }
+    },
+    {
+      "id": "008bffd06997b048421181de",
+      "delegate": "CPU",
+      "variant": "mirrored",
+      "reference": "KELLEE DEJESUS",
+      "rgbFrames": 88,
+      "pairedHands": 64,
+      "sameReturnedCategory": 64,
+      "onlyNativeHands": 0,
+      "onlyBrowserHands": 0,
+      "bothEmptyFrames": 25,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.0007658565610890702,
+        "p95": 0.002286048735226835,
+        "max": 0.012519432022580998
+      },
+      "xyPixelError": {
+        "mean": 0.21764258363907452,
+        "p95": 0.6545403264243849,
+        "max": 7.954137249595092
+      },
+      "featureMaxAbsDifference": 0.0497208833694458,
+      "nativeReturnedCategory": "Left",
+      "browserReturnedCategory": "Left",
+      "baselineNativeExtractionText": "KKELLEE DEJESUS",
+      "baselineBrowserExtractionText": "KKELLEE DEJESUS",
+      "sameDecodedText": true,
+      "browserTaskMs": {
+        "median": 40.05000000000291,
+        "p95": 57.9950000000048
+      }
+    },
+    {
+      "id": "6befb92aee4dcad7bf6ed904",
+      "delegate": "GPU",
+      "variant": "original",
+      "reference": "PLUSS",
+      "rgbFrames": 60,
+      "pairedHands": 19,
+      "sameReturnedCategory": 19,
+      "onlyNativeHands": 1,
+      "onlyBrowserHands": 4,
+      "bothEmptyFrames": 38,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.00526512921688456,
+        "p95": 0.013837353473298026,
+        "max": 0.026348269881651735
+      },
+      "xyPixelError": {
+        "mean": 2.050632025579185,
+        "p95": 4.571852526982098,
+        "max": 9.712434155965504
+      },
+      "featureMaxAbsDifference": 1.3637887239456177,
+      "nativeReturnedCategory": "Right",
+      "browserReturnedCategory": "Right",
+      "baselineNativeExtractionText": "PPLUSS",
+      "baselineBrowserExtractionText": "PPLUSS",
+      "sameDecodedText": true,
+      "browserTaskMs": {
+        "median": 516.5999999999985,
+        "p95": 766.4399999999972
+      }
+    },
+    {
+      "id": "6befb92aee4dcad7bf6ed904",
+      "delegate": "GPU",
+      "variant": "mirrored",
+      "reference": "PLUSS",
+      "rgbFrames": 60,
+      "pairedHands": 24,
+      "sameReturnedCategory": 24,
+      "onlyNativeHands": 2,
+      "onlyBrowserHands": 0,
+      "bothEmptyFrames": 34,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.006485212463191347,
+        "p95": 0.017072667280915194,
+        "max": 0.06336819773253195
+      },
+      "xyPixelError": {
+        "mean": 2.505118639180477,
+        "p95": 6.2759868580484754,
+        "max": 31.293173839910832
+      },
+      "featureMaxAbsDifference": 1.5681700706481934,
+      "nativeReturnedCategory": "Left",
+      "browserReturnedCategory": "Left",
+      "baselineNativeExtractionText": "PLUS",
+      "baselineBrowserExtractionText": "PLLUSSS",
+      "sameDecodedText": false,
+      "browserTaskMs": {
+        "median": 517.75,
+        "p95": 791.3899999999834
+      }
+    },
+    {
+      "id": "0734c6e2935387a393872afd",
+      "delegate": "GPU",
+      "variant": "original",
+      "reference": "ZACKERY DUARTE",
+      "rgbFrames": 59,
+      "pairedHands": 43,
+      "sameReturnedCategory": 43,
+      "onlyNativeHands": 2,
+      "onlyBrowserHands": 0,
+      "bothEmptyFrames": 14,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.0021476031949883407,
+        "p95": 0.00546740444183294,
+        "max": 0.01590815650863683
+      },
+      "xyPixelError": {
+        "mean": 0.692962080132154,
+        "p95": 1.7098812378355104,
+        "max": 7.0700167008749055
+      },
+      "featureMaxAbsDifference": 1.168911099433899,
+      "nativeReturnedCategory": "Left",
+      "browserReturnedCategory": "Left",
+      "baselineNativeExtractionText": "ZACKERY DUARTE",
+      "baselineBrowserExtractionText": "ZAACKERY DUARTE",
+      "sameDecodedText": false,
+      "browserTaskMs": {
+        "median": 524.4000000000233,
+        "p95": 777.5800000000017
+      }
+    },
+    {
+      "id": "0734c6e2935387a393872afd",
+      "delegate": "GPU",
+      "variant": "mirrored",
+      "reference": "ZACKERY DUARTE",
+      "rgbFrames": 59,
+      "pairedHands": 43,
+      "sameReturnedCategory": 43,
+      "onlyNativeHands": 0,
+      "onlyBrowserHands": 0,
+      "bothEmptyFrames": 16,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.0018365415281209512,
+        "p95": 0.004356902475078593,
+        "max": 0.022484316211251847
+      },
+      "xyPixelError": {
+        "mean": 0.6074656260571213,
+        "p95": 1.3921418519331215,
+        "max": 8.057956697997788
+      },
+      "featureMaxAbsDifference": 0.06200897693634033,
+      "nativeReturnedCategory": "Right",
+      "browserReturnedCategory": "Right",
+      "baselineNativeExtractionText": "ZACKERY DUARTE",
+      "baselineBrowserExtractionText": "ZACKERY DUARTE",
+      "sameDecodedText": true,
+      "browserTaskMs": {
+        "median": 528.7999999999884,
+        "p95": 542.499999999997
+      }
+    },
+    {
+      "id": "008bffd06997b048421181de",
+      "delegate": "GPU",
+      "variant": "original",
+      "reference": "KELLEE DEJESUS",
+      "rgbFrames": 88,
+      "pairedHands": 62,
+      "sameReturnedCategory": 62,
+      "onlyNativeHands": 0,
+      "onlyBrowserHands": 0,
+      "bothEmptyFrames": 26,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.0031077649133239155,
+        "p95": 0.008264892257178948,
+        "max": 0.034202458049338615
+      },
+      "xyPixelError": {
+        "mean": 0.9246041168977732,
+        "p95": 2.368611710688235,
+        "max": 13.660613758653165
+      },
+      "featureMaxAbsDifference": 0.11305660009384155,
+      "nativeReturnedCategory": "Right",
+      "browserReturnedCategory": "Right",
+      "baselineNativeExtractionText": "KELLEE DEJESUS",
+      "baselineBrowserExtractionText": "KELLEE DEJESUS",
+      "sameDecodedText": true,
+      "browserTaskMs": {
+        "median": 519.75,
+        "p95": 778.5349999999961
+      }
+    },
+    {
+      "id": "008bffd06997b048421181de",
+      "delegate": "GPU",
+      "variant": "mirrored",
+      "reference": "KELLEE DEJESUS",
+      "rgbFrames": 88,
+      "pairedHands": 64,
+      "sameReturnedCategory": 64,
+      "onlyNativeHands": 0,
+      "onlyBrowserHands": 0,
+      "bothEmptyFrames": 25,
+      "normalizedXyzEuclideanError": {
+        "mean": 0.004867246246859477,
+        "p95": 0.02161901251411888,
+        "max": 0.08456021957622403
+      },
+      "xyPixelError": {
+        "mean": 1.586207643346062,
+        "p95": 6.585656277141472,
+        "max": 49.58056134304345
+      },
+      "featureMaxAbsDifference": 0.22488892078399658,
+      "nativeReturnedCategory": "Left",
+      "browserReturnedCategory": "Left",
+      "baselineNativeExtractionText": "KKELLEE DEJESUS",
+      "baselineBrowserExtractionText": "KKELLEE DEJESUS",
+      "sameDecodedText": true,
+      "browserTaskMs": {
+        "median": 524.2999999999884,
+        "p95": 775.3100000000005
+      }
+    }
+  ],
+  "scope": "Numeric image-landmark and returned-category comparison. GPU may be software-rendered. No physical handedness or physical webcam claim.",
+  "downstreamComparison": "Both extracted arrays use the identical Python v2 normalization and native baseline ONNX, isolating extraction from JS features/runtime."
+}

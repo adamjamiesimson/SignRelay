@@ -1,0 +1,8 @@
+# Training-only environment; app lockfile/security gates remain unchanged.
+kagglehub==0.3.13
+mediapipe==0.10.35
+numpy==1.26.4
+opencv-contrib-python==4.11.0.86
+onnx==1.17.0
+onnxruntime==1.20.1
+# Install torch from the official CPU wheel index in the workflow.

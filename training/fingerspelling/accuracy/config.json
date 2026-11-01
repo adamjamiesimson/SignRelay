@@ -1,0 +1,22 @@
+{
+  "version": "fsboard-accuracy-v2",
+  "seed": 20261101,
+  "shards": 8,
+  "trainTarget": 4096,
+  "devTarget": 256,
+  "calFitTarget": 192,
+  "calPolicyTarget": 192,
+  "finalTarget": 384,
+  "leftTarget": 64,
+  "challengeTarget": 96,
+  "frozenDataset": "googleai/fsboard/versions/13",
+  "finalLeftSigner": "1c15",
+  "eligibility": {
+    "minCharacters": 3,
+    "maxCharacters": 32,
+    "minSeconds": 1,
+    "maxSeconds": 16,
+    "maxBytes": 41943040
+  },
+  "note": "Final clips exclude every published pilot clip. All release signers were already represented by the prior sprint, so novel-to-project signers are unavailable; final signers remain disjoint from training and calibration."
+}
