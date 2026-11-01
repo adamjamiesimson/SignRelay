@@ -6,7 +6,7 @@ let model:FingerspellingCtcRuntime|null=null;
 self.onmessage=async({data}:MessageEvent)=>{
  try{
   if(data.type==="protocol"){
-   const sample=await(await fetch("/real/0.json")).json(),features=new Float32Array(sample.features.flat());
+   const sample=await(await fetch("/real/"+(data.fixtureIndex??0)+".json")).json(),features=new Float32Array(sample.features.flat());
    const protocol=await new Promise<{acceptedOldResults:number;latestText:string}>((resolve,reject)=>{
     let reset=false,oldResults=0;
     const timer=setTimeout(()=>{session.close();reject(new Error("Actual worker reset timeout"));},120000);
@@ -35,6 +35,13 @@ self.onmessage=async({data}:MessageEvent)=>{
    const native=new Float32Array(sample.features.flat());let featureError=0;
    if(!baseline)for(let j=0;j<features.length;j++)featureError=Math.max(featureError,Math.abs(features[j]-native[j]));
    if(featureError>2e-4)throw new Error("Real v3 preprocessing mismatch "+featureError);
+   let visible=false;for(let t=0;t<frames;t++)if(features[t*model.inputFeatures+model.presenceIndex]===1)visible=true;
+   if(!visible){
+    const guarded=await model.predict(features,frames);
+    if(guarded.status!=="no-hand"||guarded.text||guarded.inferenceMs!==0)throw new Error("Empty-input guard failed");
+    results.push({id:sample.id,reference:sample.reference,frames,guardOnly:true,status:guarded.status,displayPrediction:"",inferenceMs:[],processingMs:[]});
+    continue;
+   }
    const reference=sample.logits.flat() as number[];let logitError=0,rawText="",observed=false;
    const result=await model.predict(features,frames,logits=>{
     observed=true;

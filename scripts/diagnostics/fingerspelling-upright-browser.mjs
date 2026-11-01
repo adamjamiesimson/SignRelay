@@ -49,7 +49,8 @@ try{
   const loaded=await request({type:"load",contract:current});assert.equal(loaded.ok,true,JSON.stringify(loaded));const afterLoad=memory();
   const result=await request({type:label==="baseline"?"runBaseline":"run",contract:current,baselineExpected});assert.equal(result.ok,true,JSON.stringify(result));const afterInference=memory();
   const inference=result.results.flatMap(r=>r.inferenceMs).sort((a,b)=>a-b),processing=result.results.flatMap(r=>r.processingMs).sort((a,b)=>a-b);
-  const protocol=await request({type:"protocol",contract:current});assert.equal(protocol.ok,true,JSON.stringify(protocol));assert.equal(protocol.protocol.acceptedOldResults,0);assert.equal(protocol.protocol.latestText,result.results[0].displayPrediction);
+  const fixtureIndex=result.results.findIndex(r=>!r.guardOnly);assert.ok(fixtureIndex>=0,"No genuine inference cases");
+  const protocol=await request({type:"protocol",contract:current,fixtureIndex});assert.equal(protocol.ok,true,JSON.stringify(protocol));assert.equal(protocol.protocol.acceptedOldResults,0);assert.equal(protocol.protocol.latestText,result.results[fixtureIndex].displayPrediction);
   measured[label]={protocol:protocol.protocol,modelSha256:current.sha256,featureVersion:current.featureVersion,decoder:current.decoder,measuredInferences:inference.length,
    loadMs:loaded.loadMs,medianInferenceMs:inference[Math.floor(inference.length*.5)],p95InferenceMs:inference[Math.floor(inference.length*.95)],
    medianProcessingMs:processing[Math.floor(processing.length*.5)],p95ProcessingMs:processing[Math.floor(processing.length*.95)],
