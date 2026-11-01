@@ -1,0 +1,50 @@
+name: Fingerspelling display-aware browser inference
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-upright-browser.yml']
+permissions: {contents: read, actions: read}
+jobs:
+  require-frozen-evaluation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - env: {GH_TOKEN: "${{ github.token }}"}
+        shell: python
+        run: |
+          import json,os,time,urllib.request
+          for attempt in range(60):
+           request=urllib.request.Request("https://api.github.com/repos/adamjamiesimson/SignRelay/actions/runs/41285144707",headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json"})
+           with urllib.request.urlopen(request,timeout=45) as response:r=json.load(response)
+           print("FROZEN-UPRIGHT-EVAL",r["status"],r["conclusion"],flush=True)
+           if r["status"]=="completed":
+            assert r["conclusion"]=="success","Frozen evaluation must succeed"
+            break
+           time.sleep(20)
+          else:raise RuntimeError("Bounded frozen-evaluation wait expired")
+  paired-real-wasm:
+    needs: require-frozen-evaluation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0', cache: npm}
+      - run: npm ci
+      - run: node scripts/copy-onnx-runtime.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: upright-final-evidence-and-browser-inputs
+          path: work/upright-evaluation
+          github-token: ${{ github.token }}
+          run-id: 41285144707
+      - name: Genuine features, native logits, beam, calibration, actual worker reset and paired memory
+        run: node scripts/diagnostics/fingerspelling-upright-browser.mjs "$(command -v google-chrome)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: upright-paired-browser-evidence
+          path: work/upright-evaluation/browser-report.json
+          if-no-files-found: warn
+          retention-days: 14
