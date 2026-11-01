@@ -38,11 +38,12 @@ jobs:
       - name: Fixed held-out RGB recordings and known regressions, retaining every abstention
         run: |
           python scripts/diagnostics/fingerspelling-camera-cases.py
-          while IFS= read -r example; do
-            python scripts/diagnostics/fingerspelling-camera-prepare.py "$example"
-            node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)" "$example"
-            python scripts/diagnostics/fingerspelling-camera-onnx.py "$example"
-          done < work/fingerspelling-camera/cases.txt
+          mapfile -t camera_cases < work/fingerspelling-camera/cases.txt
+          for example in "${camera_cases[@]}"; do
+            python scripts/diagnostics/fingerspelling-camera-prepare.py "$example" </dev/null
+            node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)" "$example" </dev/null
+            python scripts/diagnostics/fingerspelling-camera-onnx.py "$example" </dev/null
+          done
       - name: Require actual RGB inference on at least one case; preserve every case result
         run: |
           python - <<'PY'
