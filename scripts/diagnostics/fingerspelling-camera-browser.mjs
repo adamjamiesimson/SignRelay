@@ -6,15 +6,33 @@ import {resolve} from "node:path";
 import {openRehearsal,until} from "../../tests/rehearsal-harness.mjs";
 const example=process.argv[3]||"6befb92aee4dcad7bf6ed904",root="work/fingerspelling-camera/"+example;
 const source=JSON.parse(readFileSync(root+"/source.json","utf8"));
+const diagnostic=process.argv[4]==="diagnostic";
+if(diagnostic)writeFileSync("out/workers/fingerspelling-vision.worker.debug.js",`
+ importScripts("/workers/fingerspelling-vision.worker.js");
+ const production=self.onmessage;let canvas;
+ self.onmessage=async event=>{
+  if(event.data.type==="frame"){
+   const bitmap=event.data.bitmap,w=bitmap.width,h=bitmap.height;
+   if(!canvas||canvas.width!==w||canvas.height!==h)canvas=new OffscreenCanvas(w,h);
+   const ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.drawImage(bitmap,0,0);
+   const pixels=ctx.getImageData(0,0,w,h).data;let flat=true;
+   for(let i=4;i<pixels.length;i++)if(pixels[i]!==pixels[i%4]){flat=false;break;}
+   if(flat)self.postMessage({type:"diagnostic-pixels",timestamp:event.data.timestamp,width:w,height:h,flat:[...pixels.slice(0,4)]});
+   else self.postMessage({type:"diagnostic-pixels",timestamp:event.data.timestamp,width:w,height:h,rgba:pixels},[pixels.buffer]);
+  }
+  await production(event);
+ };
+`);
 const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-video-capture="+resolve(root+"/known-fsboard.y4m")],extraInit:`
- const NativeWorker=window.Worker;window.__recorded={frames:[],results:[],inputs:[],delegates:[],capture:false,contact:[]};
+ const NativeWorker=window.Worker;window.__recorded={frames:[],results:[],inputs:[],delegates:[],capture:false,contact:[],pixels:[]};
  document.addEventListener('click',event=>{const text=event.target.closest('button')?.textContent?.trim();
   if(text==='Capture name'){window.__recorded.capture=true;window.__recorded.started=performance.now();}
   if(text==='Finish capture'){window.__recorded.capture=false;window.__recorded.finished=performance.now();}
  },true);
  window.Worker=class extends NativeWorker{
-  constructor(url,options){super(url,options);this.ctc=String(url).includes('fingerspelling.worker');this.tracker=String(url).includes('fingerspelling-vision.worker');
+  constructor(url,options){const tracker=String(url).includes('fingerspelling-vision.worker');super(tracker&&${diagnostic}?'/workers/fingerspelling-vision.worker.debug.js':url,options);this.ctc=String(url).includes('fingerspelling.worker');this.tracker=tracker;
    this.addEventListener('message',e=>{
+    if(e.data.type==='diagnostic-pixels')window.__recorded.pixels.push(e.data);
     if(this.tracker&&e.data.type==='ready')window.__recorded.delegates.push(e.data.delegate);
     if(this.tracker&&e.data.type==='hands'&&window.__recorded.capture){
      window.__recorded.frames.push({timestamp:e.data.frame.timestamp,received:performance.now(),handsMs:e.data.handsMs,hasHand:e.data.frame.hands.length>0,quality:e.data.frame.hands.map(h=>({side:h.handedness,points:h.landmarks.length,finite:h.landmarks.every(p=>[p.x,p.y,p.z].every(Number.isFinite))}))});
@@ -56,7 +74,22 @@ try{
  const started=await clickAt(onset.time+source.annotationStartSeconds,"Capture name");
  const finished=await clickAt(onset.time+source.annotationEndSeconds,"Finish capture");
  await until(()=>h.evaluate("window.__recorded.results.length>0 || [...document.querySelectorAll('.fingerspelling-panel p')].some(p=>/too slow|interrupted|Keep one hand|1–16 seconds/.test(p.textContent))"),"No inference or quality rejection");
- const snapshot=await h.evaluate("window.__recorded");
+ const snapshot=await h.evaluate("({...window.__recorded,pixels:undefined})");
+ if(diagnostic){
+  const pixels=await h.evaluate(`(async()=>{
+   const rows=[];
+   for(const row of window.__recorded.pixels){
+    if(row.flat){rows.push(row);continue;}
+    const canvas=new OffscreenCanvas(row.width,row.height),ctx=canvas.getContext('2d');
+    ctx.putImageData(new ImageData(row.rgba,row.width,row.height),0,0);
+    const bytes=new Uint8Array(await(await canvas.convertToBlob({type:'image/png'})).arrayBuffer());let text='';
+    for(let i=0;i<bytes.length;i+=8192)text+=String.fromCharCode(...bytes.subarray(i,i+8192));
+    rows.push({timestamp:row.timestamp,width:row.width,height:row.height,png:btoa(text)});
+   }
+   return rows;
+  })()`);
+  writeFileSync(root+"/actual-camera-pixels.json",JSON.stringify({source,rows:pixels,captureFrames:snapshot.frames}));
+ }
  console.log("ACTUAL-RGB-CAMERA-CONTACT",JSON.stringify({images:snapshot.contact,settings:await h.evaluate("document.querySelector('video').srcObject.getVideoTracks()[0].getSettings()")}));
  const messages=await h.evaluate("[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)");
  if(!snapshot.results.length){
@@ -97,5 +130,5 @@ try{
  mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
  console.log("ACTUAL-RGB-CAMERA-RESULT",JSON.stringify(report));
  }
-}catch(error){console.error("ACTUAL-RGB-CAMERA-FAIL",await h.evaluate("JSON.stringify({tracking:{...window.__recorded,contact:undefined},candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)})"));throw error;
+}catch(error){console.error("ACTUAL-RGB-CAMERA-FAIL",await h.evaluate("JSON.stringify({tracking:{...window.__recorded,contact:undefined,pixels:undefined},candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)})"));throw error;
 }finally{await h.close();}
