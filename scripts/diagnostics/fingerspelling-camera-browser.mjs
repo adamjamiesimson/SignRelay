@@ -162,9 +162,7 @@ try{
  if(research){
   await until(()=>h.evaluate("!!document.querySelector('[data-research-result]')"),"Local research result missing");
   assert.equal(await h.evaluate("document.querySelector('[data-research-prediction]').textContent"),displayed.text);
-  await h.evaluate("document.querySelector('#research-truth').focus()");
-  await h.browser.send("Input.dispatchKeyEvent",{type:"keyDown",key:"a",code:"KeyA",modifiers:2});
-  await h.browser.send("Input.dispatchKeyEvent",{type:"keyUp",key:"a",code:"KeyA",modifiers:2});
+  await h.evaluate("document.querySelector('#research-truth').focus();document.querySelector('#research-truth').select()");
   await h.browser.send("Input.insertText",{text:source.reference});
   await h.evaluate("document.querySelector('#research-confirm-truth').click()");
   await h.click("Save local result");
