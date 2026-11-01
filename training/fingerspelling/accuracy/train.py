@@ -12,6 +12,7 @@ def load_development(root):
  if len(paths)!=8:raise ValueError("Require all eight successful development shards")
  manifests=[json.loads(p.read_text()) for p in paths]
  if len({m["planSha256"] for m in manifests})!=1:raise ValueError("Mixed frozen plans")
+ if os.environ.get("ACCURACY_PLAN_SHA256",manifests[0]["planSha256"])!=manifests[0]["planSha256"]:raise ValueError("Wrong frozen data plan")
  rows=[r for m in manifests for r in m["rows"]]
  if any(r["role"] not in ("train","dev") for r in rows):raise ValueError("Sealed role in training input")
  if len({r["id"] for r in rows})!=len(rows):raise ValueError("Duplicate cache rows")
