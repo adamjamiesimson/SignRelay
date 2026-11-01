@@ -22,23 +22,24 @@ async function reviewedTask(){
 }
 function handFrame(bitmap:ImageBitmap,timestamp:number):{frame:VisionFrame;handsMs:number}{
  if(!model||!Number.isFinite(timestamp)||timestamp<=lastTimestamp)throw new Error("Invalid hand tracking frame");
- lastTimestamp=timestamp;let input=bitmap;
- try{
-  const longest=Math.max(bitmap.width,bitmap.height);
-  if(longest>640){
-   const width=Math.round(bitmap.width*640/longest),height=Math.round(bitmap.height*640/longest);
-   if(!resize||resize.width!==width||resize.height!==height)resize=new OffscreenCanvas(width,height);
-   const context=resize.getContext("2d");if(!context)throw new Error("Hand resize surface unavailable");
-   context.drawImage(bitmap,0,0,width,height);input=resize.transferToImageBitmap();
-  }
-  const started=performance.now();const value=model.recognizeForVideo(input,timestamp);const handsMs=performance.now()-started;
+ lastTimestamp=timestamp;
+ const started=performance.now();
+ const longest=Math.max(bitmap.width,bitmap.height),factor=Math.min(1,640/longest);
+ const width=Math.round(bitmap.width*factor),height=Math.round(bitmap.height*factor);
+ if(!resize||resize.width!==width||resize.height!==height)resize=new OffscreenCanvas(width,height);
+ const context=resize.getContext("2d",{willReadFrequently:true});if(!context)throw new Error("Hand RGB surface unavailable");
+ // Canonical RGBA pixels for video-backed ImageBitmaps as well as PNG bitmaps.
+ // Training consumes decoded RGB arrays; do not rely on opaque video texture layout.
+ context.drawImage(bitmap,0,0,width,height);
+ const pixels=context.getImageData(0,0,width,height);
+ const value=model.recognizeForVideo(pixels,timestamp);const handsMs=performance.now()-started;
   const frame:VisionFrame={timestamp,hands:value.landmarks.map((points,i)=>{
    const label=value.handedness[i]?.[0]?.categoryName;
    return {landmarks:points.map(p=>({x:p.x,y:p.y,z:p.z})),handedness:label==="Left"||label==="Right"?label:"Unknown",
     gesture:"None",gestureScore:0};
   }),face:[],pose:[]};
   return {frame,handsMs};
- }finally{if(input!==bitmap)input.close();}
+
 }
 self.onmessage=async({data}:MessageEvent)=>{
  try{

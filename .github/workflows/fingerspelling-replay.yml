@@ -2,7 +2,7 @@ name: Fingerspelling real-source app replay
 on:
   push:
     branches: [codex/asl-fingerspelling-2026-10-31]
-    paths: ['.github/workflows/fingerspelling-replay.yml', 'scripts/diagnostics/fingerspelling-app-*', 'scripts/diagnostics/fingerspelling-camera-*', 'lib/fingerspelling-*', 'workers/fingerspelling.worker.ts', 'components/translator-experience.tsx']
+    paths: ['.github/workflows/fingerspelling-replay.yml', 'scripts/diagnostics/fingerspelling-app-*', 'scripts/diagnostics/fingerspelling-camera-*', 'lib/fingerspelling-*', 'workers/fingerspelling.worker.ts', 'workers/fingerspelling-vision.worker.ts', 'components/translator-experience.tsx']
 permissions:
   contents: read
 jobs:

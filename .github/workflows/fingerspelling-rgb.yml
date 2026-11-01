@@ -2,7 +2,7 @@ name: Fingerspelling production CPU RGB parity
 on:
   push:
     branches: [codex/asl-fingerspelling-2026-10-31]
-    paths: ['.github/workflows/fingerspelling-rgb.yml', 'scripts/diagnostics/fingerspelling-rgb-*', 'scripts/diagnostics/fingerspelling-negative-prepare.py', 'training/fingerspelling/accuracy/negative-sources.json']
+    paths: ['.github/workflows/fingerspelling-rgb.yml', 'scripts/diagnostics/fingerspelling-rgb-*', 'workers/fingerspelling-vision.worker.ts', 'scripts/diagnostics/fingerspelling-negative-prepare.py', 'training/fingerspelling/accuracy/negative-sources.json']
 permissions: {contents: read}
 jobs:
   rgb-parity:
