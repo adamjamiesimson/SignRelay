@@ -6,7 +6,7 @@ import {resolve} from "node:path";
 import {openRehearsal,until} from "../../tests/rehearsal-harness.mjs";
 const source=JSON.parse(readFileSync("work/fingerspelling-camera/source.json","utf8"));
 const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-video-capture="+resolve("work/fingerspelling-camera/known-fsboard.y4m")],extraInit:`
- const NativeWorker=window.Worker;window.__recorded={frames:[],results:[],inputs:[],delegates:[],capture:false};
+ const NativeWorker=window.Worker;window.__recorded={frames:[],results:[],inputs:[],delegates:[],capture:false,contact:[]};
  document.addEventListener('click',event=>{const text=event.target.closest('button')?.textContent?.trim();
   if(text==='Capture name'){window.__recorded.capture=true;window.__recorded.started=performance.now();}
   if(text==='Finish capture'){window.__recorded.capture=false;window.__recorded.finished=performance.now();}
@@ -15,7 +15,10 @@ const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-vid
   constructor(url,options){super(url,options);this.ctc=String(url).includes('fingerspelling.worker');this.tracker=String(url).includes('fingerspelling-vision.worker');
    this.addEventListener('message',e=>{
     if(this.tracker&&e.data.type==='ready')window.__recorded.delegates.push(e.data.delegate);
-    if(this.tracker&&e.data.type==='hands'&&window.__recorded.capture)window.__recorded.frames.push({timestamp:e.data.frame.timestamp,received:performance.now(),handsMs:e.data.handsMs,hasHand:e.data.frame.hands.length>0});
+    if(this.tracker&&e.data.type==='hands'&&window.__recorded.capture){
+     window.__recorded.frames.push({timestamp:e.data.frame.timestamp,received:performance.now(),handsMs:e.data.handsMs,hasHand:e.data.frame.hands.length>0});
+     if(window.__recorded.frames.length%12===0){const canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;canvas.getContext('2d').drawImage(document.querySelector('video'),0,0,320,180);window.__recorded.contact.push(canvas.toDataURL('image/jpeg',.6));}
+    }
     if(this.ctc&&e.data.type==='result')window.__recorded.results.push({...e.data,received:performance.now()});
    });
   }
@@ -53,6 +56,7 @@ try{
  const finished=await clickAt(onset.time+source.annotationEndSeconds,"Finish capture");
  await until(()=>h.evaluate("window.__recorded.results.length>0 || [...document.querySelectorAll('.fingerspelling-panel p')].some(p=>/too slow|interrupted|Keep one hand|1–16 seconds/.test(p.textContent))"),"No inference or quality rejection");
  const snapshot=await h.evaluate("window.__recorded");
+ console.log("ACTUAL-RGB-CAMERA-CONTACT",JSON.stringify({images:snapshot.contact,settings:await h.evaluate("document.querySelector('video').srcObject.getVideoTracks()[0].getSettings()")}));
  const messages=await h.evaluate("[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)");
  if(!snapshot.results.length)throw new Error("Recorded RGB was rejected: "+JSON.stringify({messages,frames:snapshot.frames.length,started,finished}));
  await until(()=>h.evaluate("document.querySelector('.spelling-candidate strong')?.textContent!=='—'"),"No candidate was displayed");
@@ -79,5 +83,5 @@ try{
  checks:["actual RGB tracking, no landmark substitution","actual 132-feature inference","uncertain warning and explicit confirmation","no automatic composition or speech","word transcript preserved"]};
  mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera.json",JSON.stringify(report,null,2));
  console.log("ACTUAL-RGB-CAMERA-RESULT",JSON.stringify(report));
-}catch(error){console.error("ACTUAL-RGB-CAMERA-FAIL",await h.evaluate("JSON.stringify({tracking:window.__recorded,candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)})"));throw error;
+}catch(error){console.error("ACTUAL-RGB-CAMERA-FAIL",await h.evaluate("JSON.stringify({tracking:{...window.__recorded,contact:undefined},candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)})"));throw error;
 }finally{await h.close();}

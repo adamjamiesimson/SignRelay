@@ -15,8 +15,10 @@ lead=16
 subprocess.run(["ffmpeg","-hide_banner","-loglevel","error","-y","-f","lavfi","-i","color=c=0x20242c:s=640x360:r=30:d="+str(lead),
  "-i",str(path),"-f","lavfi","-i","color=c=0x20242c:s=640x360:r=30:d=4",
  "-filter_complex","[0:v]setsar=1[a];[1:v]scale=640:360:flags=bilinear,fps=30,format=yuv420p,setsar=1[b];[2:v]setsar=1[c];[a][b][c]concat=n=3:v=1:a=0[out]",
- "-map","[out]","-pix_fmt","yuv420p",str(root/"known-fsboard.y4m")],check=True)
-config={"id":source["id"],"reference":source["phrase"],"rawSha256":source["rawSha256"],"rawBytes":len(blob),"dataset":"googleai/fsboard/versions/13","license":"CC BY 4.0",
+ "-map","[out]","-r","30","-pix_fmt","yuv420p",str(root/"known-fsboard.y4m")],check=True)
+with (root/"known-fsboard.y4m").open("rb") as stream:header=stream.readline(4096).decode("ascii")
+assert " F30:1 " in header,header
+config={"y4mHeader":header.strip(),"id":source["id"],"reference":source["phrase"],"rawSha256":source["rawSha256"],"rawBytes":len(blob),"dataset":"googleai/fsboard/versions/13","license":"CC BY 4.0",
  "conversion":"original decoded recording; bilinear 640x360, 30 fps, YUV420p, 16-second flat preamble and 4-second tail; no synthetic signing or injected landmarks",
  "annotationStartSeconds":record["annotationStartTimeS"]-record["clipStartTimeS"],"annotationEndSeconds":record["annotationEndTimeS"]-record["clipStartTimeS"],
  "virtualCameraSha256":hashlib.sha256((root/"known-fsboard.y4m").read_bytes()).hexdigest()}
