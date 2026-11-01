@@ -73,7 +73,7 @@ try{
  })`);
  const started=await clickAt(onset.time+source.annotationStartSeconds,"Capture name");
  const finished=await clickAt(onset.time+source.annotationEndSeconds,"Finish capture");
- await until(()=>h.evaluate("window.__recorded.results.length>0 || [...document.querySelectorAll('.fingerspelling-panel p')].some(p=>/too slow|interrupted|Keep one hand|1–16 seconds/.test(p.textContent))"),"No inference or quality rejection");
+ await until(()=>h.evaluate("window.__recorded.results.length>0 || [...document.querySelectorAll('p.calibration-message[role=\"status\"]')].some(p=>/too slow|interrupted|Keep one hand|1–16 seconds/.test(p.textContent))"),"No inference or quality rejection");
  const snapshot=await h.evaluate("({...window.__recorded,pixels:undefined})");
  if(diagnostic){
   const pixels=await h.evaluate(`(async()=>{
