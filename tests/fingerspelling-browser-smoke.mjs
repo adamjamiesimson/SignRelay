@@ -8,9 +8,9 @@ if (!executable) throw new Error("Pass Chrome executable");
 mkdirSync("outputs", { recursive: true });
 const h = await openRehearsal(executable, { extraInit: `
   const NativeWorker = window.Worker;
-  window.__qa.wordWorkers = 0; window.__qa.wordTerminations = 0;
+  window.__qa.wordWorkers = 0; window.__qa.wordTerminations = 0; window.__qa.fingerTrackingDelegates = [];
   window.Worker = class extends NativeWorker {
-    constructor(url, options) { super(url, options); this.isWord = String(url).includes('recognition.worker'); if(this.isWord) window.__qa.wordWorkers++; }
+    constructor(url, options) { super(url, options); this.isWord = String(url).includes('recognition.worker'); if(this.isWord) window.__qa.wordWorkers++; if(String(url).includes('fingerspelling-vision.worker')) this.addEventListener('message',e=>{if(e.data.type==='ready')window.__qa.fingerTrackingDelegates.push(e.data.delegate);}); }
     terminate() { if(this.isWord) window.__qa.wordTerminations++; return super.terminate(); }
   };
 ` });
@@ -29,6 +29,7 @@ try {
   assert.equal(await h.evaluate("document.querySelector('.transcript-panel:not(.fingerspelling-panel)').hidden"), true);
   await until(() => h.evaluate("[...document.querySelectorAll('.spelling-actions button')].some(b=>b.textContent==='Capture name'&&!b.disabled)"), "Sequence model did not load");
   assert.match(await h.evaluate("document.querySelector('.spelling-candidate').textContent"), /Experimental sequence recognition/);
+  assert.ok(await h.evaluate("window.__qa.fingerTrackingDelegates.length>0 && window.__qa.fingerTrackingDelegates.every(v=>v==='CPU')"), "Fingerspelling did not use the dedicated CPU tracking contract");
   assert.equal(await h.evaluate("[...document.querySelectorAll('.spelling-actions button')].find(b=>b.textContent==='Confirm text').disabled"), true);
   assert.deepEqual(await h.words(), words);
   assert.equal(await h.evaluate("window.__qa.tracks.length"), stream, "Mode switch reacquired camera");

@@ -18,6 +18,8 @@ export class LiveVision {
   private occupied = false;
   private recovering: Promise<void> | null = null;
   private accelerated = true;
+  private trackingProfile: "words" | "fingerspelling" = "words";
+  get profile() { return this.trackingProfile; }
   private cancelStartup: ((error: Error) => void) | null = null;
   assetSource: VisionEngine["assetSource"] = "self-hosted";
   delegate: "GPU" | "CPU" = "CPU";
@@ -31,12 +33,13 @@ export class LiveVision {
   readonly timings: LiveVisionTiming = { capture: 0, hands: 0, auxiliary: 0, transport: 0, age: 0 };
   get busy() { return this.occupied || !!this.recovering; }
 
-  static async create(progress?: (message: string) => void, accelerated = true, signal?: AbortSignal) {
+  static async create(progress?: (message: string) => void, accelerated = true, signal?: AbortSignal, profile: "words" | "fingerspelling" = "words") {
     signal?.throwIfAborted();
     const live = new LiveVision();
     const abort = () => live.close();
     signal?.addEventListener("abort", abort, { once: true });
-    live.accelerated = accelerated;
+    live.trackingProfile = profile;
+    live.accelerated = profile === "words" && accelerated;
     try {
       if (typeof Worker === "undefined" || typeof createImageBitmap === "undefined"
         || typeof OffscreenCanvas === "undefined") throw new Error("Worker tracking unavailable");
@@ -61,6 +64,7 @@ export class LiveVision {
   }
 
   private async loadFallback(progress?: (message: string) => void) {
+    if (this.trackingProfile === "fingerspelling") throw new Error("Fingerspelling hand tracking requires a working tracking worker");
     // A stuck GPU call cannot be terminated on the compatibility/UI thread.
     const engine = await VisionEngine.create(progress, false);
     if (this.closed) { engine.close(); return; }
@@ -73,7 +77,7 @@ export class LiveVision {
       if (this.closed) { reject(new Error("Tracking closed")); return; }
       this.cancelStartup = reject;
       // Classic bundle is intentional: MediaPipe's WASM loader uses importScripts.
-      const worker = new Worker("/workers/vision.worker.js");
+      const worker = new Worker(this.trackingProfile === "fingerspelling" ? "/workers/fingerspelling-vision.worker.js" : "/workers/vision.worker.js");
       this.worker = worker;
       let ready = false;
       const fail = (message: string) => {

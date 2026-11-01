@@ -462,6 +462,7 @@ export function TranslatorExperience() {
     const enteringSpecialRecognizer = language === "rsl" || language === "bdsl";
     const leavingSharedRecognizer = selected !== "rsl" && selected !== "bdsl";
     if (enteringSpecialRecognizer && leavingSharedRecognizer) stopCamera();
+    else switchTrackingProfile();
 
     workerRef.current?.postMessage({ type: "reset" });
     setCandidate(null);
@@ -628,7 +629,7 @@ export function TranslatorExperience() {
           if (frame.hands.length) perfRef.current.handFrames++;
         }
         const nextDetection = {
-          person: frame.face.length > 0 || frame.pose.length > 0,
+          person: frame.face.length > 0 || frame.pose.length > 0 || (aslModeRef.current === "fingerspelling" && frame.hands.length > 0),
           hands: frame.hands.length > 0,
           face: frame.face.length > 0,
           pose: frame.pose.length > 0,
@@ -655,6 +656,16 @@ export function TranslatorExperience() {
   useEffect(() => {
     frameLoopRef.current = runFrameLoop;
   }, [runFrameLoop]);
+
+  const createCameraVision = useCallback(async (progress: (message: string) => void, signal: AbortSignal): Promise<LiveVision> => {
+    for (;;) {
+      signal.throwIfAborted();
+      const profile = aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words";
+      const engine = await LiveVision.create(progress, profile === "words", signal, profile);
+      if (profile === (aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words")) return engine;
+      engine.close();
+    }
+  }, []);
 
   const openCamera = useCallback(async () => {
     if (cameraPendingRef.current || engineRef.current) return;
@@ -693,9 +704,9 @@ export function TranslatorExperience() {
       loadingVision = true;
       const visionAbort = new AbortController();
       visionAbortRef.current = visionAbort;
-      const engine = await LiveVision.create(message => {
+      const engine = await createCameraVision(message => {
         if (generation === cameraGenerationRef.current) setCameraMessage(message);
-      }, true, visionAbort.signal);
+      }, visionAbort.signal);
       if (visionAbortRef.current === visionAbort) visionAbortRef.current = null;
       if (generation !== cameraGenerationRef.current) { engine.close(); return; }
       engineRef.current = engine;
@@ -725,7 +736,7 @@ export function TranslatorExperience() {
     } finally {
       if (generation === cameraGenerationRef.current) cameraPendingRef.current = false;
     }
-  }, [interruptTracking, stopCamera]);
+  }, [interruptTracking, stopCamera, createCameraVision]);
 
   // A second caller (e.g. Record while the camera is still starting) waits for
   // the request already in progress instead of seeing the camera as off.
@@ -996,6 +1007,30 @@ export function TranslatorExperience() {
     }
   };
 
+  function switchTrackingProfile() {
+    const previous = engineRef.current;
+    if (!previous || cameraPendingRef.current) return;
+    const desired = aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words";
+    if (previous.profile === desired) return;
+    const generation = cameraGenerationRef.current;
+    trackingEpochRef.current++;
+    interruptTracking(); previous.close(); engineRef.current = null;
+    const controller = new AbortController(); visionAbortRef.current?.abort(); visionAbortRef.current = controller;
+    setCameraState("loading"); setCameraMessage("Loading hand tracking");
+    void createCameraVision(message => {
+      if (generation === cameraGenerationRef.current && !controller.signal.aborted) setCameraMessage(message);
+    }, controller.signal).then(engine => {
+      if (generation !== cameraGenerationRef.current || controller.signal.aborted) { engine.close(); return; }
+      engineRef.current = engine;
+      engine.onInterrupt = () => { if (engineRef.current === engine) interruptTracking(); };
+      setVisionSource(engine.assetSource); cameraProgressRef.current = performance.now();
+      lastVideoTimeRef.current = -1; setCameraState("active"); setCameraMessage("Camera and vision models active");
+    }).catch(() => {
+      if (generation !== cameraGenerationRef.current || controller.signal.aborted) return;
+      stopCamera(); setCameraState("error"); setCameraMessage("Hand tracking could not restart. Start the camera again to retry.");
+    }).finally(() => { if (visionAbortRef.current === controller) visionAbortRef.current = null; });
+  }
+
   function changeAslMode(mode: "words" | "fingerspelling") {
     if (aslModeRef.current === mode) return;
     // Block queued callbacks immediately; the effect terminates the worker.
@@ -1011,6 +1046,7 @@ export function TranslatorExperience() {
     setRecognitionFeedback(""); setMotionReason(null);
     window.speechSynthesis?.cancel();
     setAslMode(mode);
+    switchTrackingProfile();
   }
 
   function captureSpelling() {
