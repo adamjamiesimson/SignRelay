@@ -1099,13 +1099,13 @@ export function TranslatorExperience() {
           if(spellingCaptureRef.current===capture)capture.push(frame,video.videoWidth/video.videoHeight);
         });
         if(spellingCaptureRef.current!==capture||spellingSessionRef.current!==session)return;
-        spellingCaptureRef.current=null;
         const telemetry=capture.diagnostics();
         if(researchDraftRef.current)researchDraftRef.current.quality=telemetry;
-        const input=capture.finish();capture.dispose();
+        const input=capture.finish();capture.dispose();spellingCaptureRef.current=null;
         session.submit(input.features,input.frames,telemetry);
       }catch(error){
-        if(spellingCaptureRef.current===capture)spellingCaptureRef.current=null;
+        if(spellingCaptureRef.current!==capture||spellingSessionRef.current!==session){capture?.dispose();return;}
+        spellingCaptureRef.current=null;
         if(researchDraftRef.current)researchDraftRef.current.quality=capture?.diagnostics();
         finishResearch("quality-rejected");capture?.dispose();setSpellingPhase("ready");
         setSpellingMessage(error instanceof Error?error.message:"Please record again.");

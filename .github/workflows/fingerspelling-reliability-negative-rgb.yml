@@ -68,3 +68,5 @@ jobs:
         with:
           name: reliability-negative-rgb-${{ matrix.variant }}
           path: implementation/outputs/reliability-rgb.json
+
+# Commons VFR containers are validated using decoded PTS, independently of the FSboard source FPS guard.

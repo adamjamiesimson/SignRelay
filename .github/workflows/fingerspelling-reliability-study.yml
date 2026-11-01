@@ -37,3 +37,5 @@ jobs:
           bash training/complete_popsign_chain.sh "$RUNNER_TEMP/popsign-ca.pem"
           export SSL_CERT_FILE="$RUNNER_TEMP/popsign-ca.pem"
           PYTHONPATH=training python -c 'from secure_download import get; print("Verified listing bytes:",len(get("https://signdata.cc.gatech.edu/data/popsign_v1_0/game/test/")))'
+
+# Download interception reads the local Blob directly and retains the production CSP.

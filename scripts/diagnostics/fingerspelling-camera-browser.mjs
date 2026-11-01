@@ -27,9 +27,10 @@ if(diagnostic)writeFileSync("out/workers/fingerspelling-vision.worker.debug.js",
  };
 `);
 const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-video-capture="+resolve(root+"/known-fsboard.y4m")],extraInit:`
- const exportClick=HTMLAnchorElement.prototype.click;
+ const exportClick=HTMLAnchorElement.prototype.click,nativeObjectURL=URL.createObjectURL.bind(URL);
+ const exportBlobs=new Map();URL.createObjectURL=blob=>{const url=nativeObjectURL(blob);exportBlobs.set(url,blob);return url;};
  window.__researchDownloads=[];
- HTMLAnchorElement.prototype.click=function(){if(this.download==="signrelay-test-metrics.json")fetch(this.href).then(r=>r.text()).then(text=>window.__researchDownloads.push(text));else exportClick.call(this);};
+ HTMLAnchorElement.prototype.click=function(){if(this.download==="signrelay-test-metrics.json")exportBlobs.get(this.href).text().then(text=>window.__researchDownloads.push(text));else exportClick.call(this);};
  const NativeWorker=window.Worker;window.__recorded={frames:[],results:[],inputs:[],delegates:[],capture:false,contact:[],pixels:[]};
  document.addEventListener('click',event=>{const text=event.target.closest('button')?.textContent?.trim();
   if(text==='Capture name'||text==='Start test'){window.__recorded.capture=true;window.__recorded.started=performance.now();}
@@ -184,6 +185,7 @@ try{
   assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),displayed.text,"Ending research erased the deliberately confirmed draft");
   await h.browser.send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   assert.equal(await h.evaluate("document.documentElement.scrollWidth<=innerWidth"),true,"Mobile horizontal overflow");
+  assert.deepEqual(h.nonLoopback(),[],"Unexpected external page request during local study");
   const shot=await h.browser.send("Page.captureScreenshot",{format:"png"});
   if(shot.data)console.log("RESEARCH-SCREENSHOT",shot.data);
   console.log("RESEARCH-CONSENT-CHECKS",JSON.stringify({passed:8,kind:"Software/privacy workflow on one genuine recorded RGB source; not participant/physical-camera validation",source:source.id,checks:["opt-in initially off","real result and user-corrected truth","explicit truth confirmation","local save","separate export consent","text-free file schema","withdrawal clears study state and preserves confirmed composition","390px no overflow"]}));
