@@ -1,0 +1,45 @@
+name: Fingerspelling display-oriented verified data
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-upright-data.yml', 'training/fingerspelling/upright/data.py', 'training/fingerspelling/upright/upright_video.py', 'training/fingerspelling/upright/config.json']
+permissions: {contents: read}
+concurrency:
+  group: upright-data-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix: {shard: [0,1,2,3,4,5,6,7]}
+    env: {OMP_NUM_THREADS: '1', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - run: python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+      - name: Display-aware RGB, source integrity, fresh held-out clips
+        run: python training/fingerspelling/upright/data.py --shard ${{ matrix.shard }} --shards 8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: upright-development-${{ matrix.shard }}
+          path: |
+            work/upright/development/manifest-*.json
+            work/upright/train/*.npz
+            work/upright/dev/*.npz
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: upright-sealed-${{ matrix.shard }}
+          path: |
+            work/upright/sealed/manifest-*.json
+            work/upright/cal_fit/*.npz
+            work/upright/cal_policy/*.npz
+            work/upright/final/*.npz
+            work/upright/left_final/*.npz
+            work/upright/challenge/*.npz
+          retention-days: 14
