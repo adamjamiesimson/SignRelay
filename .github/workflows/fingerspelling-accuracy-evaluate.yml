@@ -1,0 +1,74 @@
+name: Fingerspelling locked selection and fresh final evaluation
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-accuracy-evaluate.yml']
+permissions: {contents: read, actions: read}
+jobs:
+  select-dev-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: accuracy-candidate-*
+          path: work/candidates
+          github-token: ${{ github.token }}
+          run-id: 41274581796
+      - name: Freeze the predeclared minimum-development-CER selection
+        run: python training/fingerspelling/accuracy/select.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: accuracy-selected-dev-only
+          path: work/accuracy-selected/
+          retention-days: 14
+  final-evaluation:
+    needs: select-dev-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: |
+          python -m pip install --disable-pip-version-check numpy==1.26.4 onnxruntime==1.20.1
+          python -m pip install --disable-pip-version-check torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+      - uses: actions/download-artifact@v4
+        with: {name: accuracy-selected-dev-only, path: work/accuracy-selected}
+      - name: Open held-out calibration and final artifacts only after selection
+        uses: actions/download-artifact@v4
+        with:
+          pattern: accuracy-sealed-*
+          merge-multiple: true
+          path: work/accuracy
+          github-token: ${{ github.token }}
+          run-id: 41273157940
+      - name: Preserve complete source provenance; no model selection below this point
+        uses: actions/download-artifact@v4
+        with:
+          pattern: accuracy-development-*
+          merge-multiple: true
+          path: work/accuracy
+          github-token: ${{ github.token }}
+          run-id: 41273157940
+      - uses: actions/download-artifact@v4
+        with:
+          name: accuracy-real-action-negatives
+          path: work/negatives
+          github-token: ${{ github.token }}
+          run-id: 41274194932
+      - name: Fit held-signer confidence, freeze threshold, evaluate fresh final once
+        run: python training/fingerspelling/accuracy/evaluate.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accuracy-final-evidence-and-browser-inputs
+          path: work/accuracy-evaluation/
+          if-no-files-found: warn
+          retention-days: 14
