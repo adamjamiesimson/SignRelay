@@ -33,6 +33,7 @@ jobs:
           python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
           npm ci
           cp ../harness/scripts/diagnostics/fingerspelling-camera-browser.mjs scripts/diagnostics/fingerspelling-camera-browser.mjs
+          cp ../harness/scripts/diagnostics/fingerspelling-camera-onnx.py scripts/diagnostics/fingerspelling-camera-onnx.py
           cp ../harness/scripts/diagnostics/fingerspelling-reliability-negative-camera.py scripts/diagnostics/fingerspelling-reliability-negative-camera.py
       - run: npm run build:rehearsal
         working-directory: implementation
@@ -45,6 +46,7 @@ jobs:
             python scripts/diagnostics/fingerspelling-reliability-negative-camera.py "$example" </dev/null
             node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)" "$example" </dev/null
             python scripts/diagnostics/fingerspelling-camera-onnx.py "$example" </dev/null
+            python -c 'import pathlib,sys; (pathlib.Path("work/fingerspelling-camera")/sys.argv[1]/"known-fsboard.y4m").unlink()' "$example"
           done
       - name: Preserve complete denominator, timing and model identity
         if: always()

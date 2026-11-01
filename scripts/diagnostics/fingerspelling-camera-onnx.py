@@ -13,7 +13,13 @@ else:runtime=json.loads(pathlib.Path("docs/fingerspelling/evidence/accuracy-v2-r
 model=pathlib.Path("public"+runtime["url"]);assert hashlib.sha256(model.read_bytes()).hexdigest()==runtime["sha256"]
 row=json.loads(path.read_text());x=np.asarray(row["features"],np.float32).reshape(1,row["frames"],132)
 session=ort.InferenceSession(str(model),providers=["CPUExecutionProvider"])
-prediction=beam(session.run(None,{"features":x})[0][0]);assert prediction==row["prediction"],"Actual RGB native/browser captured-input text mismatch"
-result={"id":example,"measured":True,"nativeCapturedTextParity":True,"frames":row["frames"],"prediction":prediction,"modelSha256":runtime["sha256"]}
+raw_prediction=beam(session.run(None,{"features":x})[0][0])
+rules=runtime["policy"]["policy"]
+assert runtime["policy"]["threshold"] is None,"Re-audit native policy parity if calibration changes"
+visible=float((x[0,:,130]==1).mean())
+eligible=rules["minFrames"]<=row["frames"]<=rules["maxFrames"] and visible>=rules["minVisibleFraction"] and rules["minimumTextLength"]<=len(raw_prediction)<=rules["maximumTextLength"]
+prediction=raw_prediction if eligible else ""
+assert prediction==row["prediction"],"Actual RGB native/browser captured-input text/policy mismatch"
+result={"id":example,"measured":True,"nativeCapturedTextParity":True,"frames":row["frames"],"prediction":prediction,"nativeRawPrediction":raw_prediction,"nativeStructuralEligible":eligible,"modelSha256":runtime["sha256"]}
 file=pathlib.Path("outputs")/("fingerspelling-recorded-camera-"+example+".json");report=json.loads(file.read_text());report.update(result);file.write_text(json.dumps(report,indent=2))
 print("RGB-NATIVE-CAPTURE-PARITY",json.dumps(result),flush=True)

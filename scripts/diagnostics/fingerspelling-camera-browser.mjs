@@ -9,6 +9,7 @@ const example=process.argv[3]||"6befb92aee4dcad7bf6ed904",root="work/fingerspell
 const source=JSON.parse(readFileSync(root+"/source.json","utf8"));
 const modelContract=JSON.parse(readFileSync("docs/fingerspelling/evidence/upright-runtime.json","utf8"));
 const diagnostic=process.argv[4]==="diagnostic";
+const research=process.argv[4]==="research",captureLabel=research?"Start test":"Capture name",finishLabel=research?"Finish test":"Finish capture";
 if(diagnostic)writeFileSync("out/workers/fingerspelling-vision.worker.debug.js",`
  importScripts("/workers/fingerspelling-vision.worker.js");
  const production=self.onmessage;let canvas;
@@ -26,10 +27,13 @@ if(diagnostic)writeFileSync("out/workers/fingerspelling-vision.worker.debug.js",
  };
 `);
 const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-video-capture="+resolve(root+"/known-fsboard.y4m")],extraInit:`
+ const exportClick=HTMLAnchorElement.prototype.click;
+ window.__researchDownloads=[];
+ HTMLAnchorElement.prototype.click=function(){if(this.download==="signrelay-test-metrics.json")fetch(this.href).then(r=>r.text()).then(text=>window.__researchDownloads.push(text));else exportClick.call(this);};
  const NativeWorker=window.Worker;window.__recorded={frames:[],results:[],inputs:[],delegates:[],capture:false,contact:[],pixels:[]};
  document.addEventListener('click',event=>{const text=event.target.closest('button')?.textContent?.trim();
-  if(text==='Capture name'){window.__recorded.capture=true;window.__recorded.started=performance.now();}
-  if(text==='Finish capture'){window.__recorded.capture=false;window.__recorded.finished=performance.now();}
+  if(text==='Capture name'||text==='Start test'){window.__recorded.capture=true;window.__recorded.started=performance.now();}
+  if(text==='Finish capture'||text==='Finish test'){window.__recorded.capture=false;window.__recorded.finished=performance.now();}
  },true);
  window.Worker=class extends NativeWorker{
   constructor(url,options){const tracker=String(url).includes('fingerspelling-vision.worker');super(tracker&&${diagnostic}?'/workers/fingerspelling-vision.worker.debug.js':url,options);this.ctc=String(url).includes('fingerspelling.worker');this.tracker=tracker;
@@ -48,7 +52,8 @@ const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-vid
 `});
 try{
  await h.open("/?perf");await h.start();await h.click("Fingerspelling");
- await until(()=>h.evaluate("[...document.querySelectorAll('button')].some(b=>b.textContent==='Capture name'&&!b.disabled)"),"Research model failed to load");
+ if(research){await h.evaluate("document.querySelector('[data-research-test]').parentElement.open=true");await until(()=>h.evaluate("!!document.querySelector('[data-research-test] input[type=checkbox]')"),"No research consent");assert.equal(await h.evaluate("document.querySelector('[data-research-test] input[type=checkbox]').checked"),false);await h.evaluate("document.querySelector('[data-research-test] input[type=checkbox]').click()");}
+ await until(()=>h.evaluate("[...document.querySelectorAll('button')].some(b=>b.textContent==="+JSON.stringify(captureLabel)+"&&!b.disabled)"),"Research model failed to load");
  assert.equal(await h.evaluate("window.__signrelayRehearsal.playing"),false,"Landmark substitution must remain inactive");
  await h.evaluate(`(()=>{
   const strong=document.querySelector('.spelling-candidate strong');
@@ -82,8 +87,8 @@ try{
    requestAnimationFrame(tick);
   }tick();
  })`);
- const started=await clickAt(onset.time+source.annotationStartSeconds,"Capture name");
- const finished=await clickAt(onset.time+source.annotationEndSeconds,"Finish capture");
+ const started=await clickAt(onset.time+source.annotationStartSeconds,captureLabel);
+ const finished=await clickAt(onset.time+source.annotationEndSeconds,finishLabel);
  await until(()=>h.evaluate("window.__recorded.results.length>0 || [...document.querySelectorAll('p.calibration-message[role=\"status\"]')].some(p=>/too slow|interrupted|Keep one hand|1–16 seconds/.test(p.textContent))"),"No inference or quality rejection");
  const snapshot=await h.evaluate("({...window.__recorded,pixels:undefined})");
  if(diagnostic){
@@ -152,6 +157,38 @@ try{
  checks:["actual RGB tracking, no landmark substitution","actual 132-feature inference","uncertain warning and explicit confirmation","no automatic composition or speech","word transcript preserved"]};
  mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
  console.log("ACTUAL-RGB-CAMERA-RESULT",JSON.stringify(report));
+
+ if(research){
+  await until(()=>h.evaluate("!!document.querySelector('[data-research-result]')"),"Local research result missing");
+  assert.equal(await h.evaluate("document.querySelector('[data-research-prediction]').textContent"),displayed.text);
+  await h.evaluate("document.querySelector('#research-truth').focus()");
+  await h.browser.send("Input.dispatchKeyEvent",{type:"keyDown",key:"a",code:"KeyA",modifiers:2});
+  await h.browser.send("Input.dispatchKeyEvent",{type:"keyUp",key:"a",code:"KeyA",modifiers:2});
+  await h.browser.send("Input.insertText",{text:source.reference});
+  await h.evaluate("document.querySelector('#research-confirm-truth').click()");
+  await h.click("Save local result");
+  await until(()=>h.evaluate("document.querySelector('[data-research-summary]').textContent.includes('1/100')"),"Local result was not saved");
+  assert.equal(await h.evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Download test metrics').disabled"),true);
+  await h.evaluate("document.querySelector('#research-export-consent').click()");
+  await h.click("Download test metrics");
+  await until(()=>h.evaluate("window.__researchDownloads.length===1"),"Explicit local download missing");
+  const data=JSON.parse(await h.evaluate("window.__researchDownloads[0]"));
+  assert.equal(data.trials.length,1);assert.equal(data.textIncluded,false);
+  assert.equal(data.trials[0].referenceCharacters,source.reference.length);
+  const serialized=JSON.stringify(data);
+  assert.ok(!serialized.includes(source.reference)&&!serialized.includes(displayed.text),"Export leaked local text");
+  for(const key of ["prediction","truth","startedAt","finishedAt","landmarks","deviceId","userAgent"])assert.ok(!serialized.includes('"'+key+'"'),"Unexpected identifying export field "+key);
+  await h.click("End testing and clear results");
+  assert.equal(await h.evaluate("document.querySelector('[data-research-test] input[type=checkbox]').checked"),false);
+  assert.equal(await h.evaluate("document.querySelector('[data-research-result]')===null"),true);
+  assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),displayed.text,"Ending research erased the deliberately confirmed draft");
+  await h.browser.send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  assert.equal(await h.evaluate("document.documentElement.scrollWidth<=innerWidth"),true,"Mobile horizontal overflow");
+  const shot=await h.browser.send("Page.captureScreenshot",{format:"png"});
+  if(shot.data)console.log("RESEARCH-SCREENSHOT",shot.data);
+  console.log("RESEARCH-CONSENT-CHECKS",JSON.stringify({passed:8,kind:"Software/privacy workflow on one genuine recorded RGB source; not participant/physical-camera validation",source:source.id,checks:["opt-in initially off","real result and user-corrected truth","explicit truth confirmation","local save","separate export consent","text-free file schema","withdrawal clears study state and preserves confirmed composition","390px no overflow"]}));
+ }
+
  }
 }catch(error){console.error("ACTUAL-RGB-CAMERA-FAIL",await h.evaluate("JSON.stringify({tracking:{...window.__recorded,inputs:window.__recorded.inputs.map(i=>({...i,features:undefined})),contact:undefined,pixels:undefined},candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)})"));throw error;
 }finally{await h.close();}
