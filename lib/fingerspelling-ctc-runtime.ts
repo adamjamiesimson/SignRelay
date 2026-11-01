@@ -126,9 +126,9 @@ export class FingerspellingCtcRuntime {
           &&result.text.length>=rules.minimumTextLength&&result.text.length<=rules.maximumTextLength;
         if(!structurallyEligible)return {text:"",uncalibratedScore:0,inferenceMs,status:"uncertain",estimatedExactProbability,abstentionReason:"Capture is outside the evaluated quality or text-length range.",processingMs:performance.now()-start};
         const qualified=estimatedExactProbability!==undefined&&policy.threshold!==null&&estimatedExactProbability>=policy.threshold;
-        if(!qualified){
+        if(policy.reviewOnly||!qualified){
           return {...result,text:policy.reviewOnly?result.text:"",inferenceMs,status:"uncertain",estimatedExactProbability,
-            abstentionReason:policy.threshold===null?"Uncertain capture. No validated acceptance threshold is available; check every character before confirming.":"Uncertain capture. Review carefully or recapture.",processingMs:performance.now()-start};
+            abstentionReason:policy.reviewOnly&&qualified?"Research-only candidate. Conditional text confidence does not establish rejection of ordinary hand movement; check every character.":policy.threshold===null?"Uncertain capture. No validated acceptance threshold is available; check every character before confirming.":"Uncertain capture. Review carefully or recapture.",processingMs:performance.now()-start};
         }
       }
       return {...result,inferenceMs,status:"candidate",estimatedExactProbability,processingMs:performance.now()-start};
