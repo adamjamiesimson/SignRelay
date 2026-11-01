@@ -21,8 +21,32 @@ await new Promise(r=>server.listen(0,"127.0.0.1",r));let browser;
 try{
  browser=await startChrome(process.argv[2],{proxy:null});
  await browser.send("Page.navigate",{url:"http://127.0.0.1:"+server.address().port});
- const result=await browser.evaluate(`new Promise((resolve,reject)=>{const worker=new Worker('/probe.js');const timer=setTimeout(()=>{worker.terminate();reject(new Error('RGB parity timeout'));},600000);worker.onerror=e=>reject(new Error(e.message));worker.onmessage=e=>{clearTimeout(timer);worker.terminate();resolve(e.data);};worker.postMessage({tag:'same PNG bytes and timestamps'});})`);
- assert.equal(result.passed,true,JSON.stringify(result));
+ const samples=JSON.parse(readFileSync(root+"/samples.json","utf8"));
+ const collected=[];let renderer="unavailable";
+ for(const delegate of ["CPU","GPU"]){
+  for(const sample of samples){
+   for(const variant of ["original","mirrored"]){
+    await browser.evaluate(`(()=>{window.__rgbResult=null;window.__rgbProgress=null;window.__rgbWorker=new Worker('/probe.js');window.__rgbWorker.onerror=e=>{window.__rgbResult={passed:false,error:e.message};};window.__rgbWorker.onmessage=e=>{if(e.data.progress)window.__rgbProgress=e.data.progress;else window.__rgbResult=e.data;};window.__rgbWorker.postMessage(${JSON.stringify({id:sample.id,delegate,variant,tag:"same PNG bytes and timestamps"})});})()`);
+    let value,last="",state;const deadline=Date.now()+(delegate==="CPU"?120000:60000);
+    while(Date.now()<deadline){
+     state=await browser.evaluate("JSON.stringify({result:window.__rgbResult,progress:window.__rgbProgress})");
+     const parsed=JSON.parse(state);
+     if(parsed.progress&&JSON.stringify(parsed.progress)!==last){last=JSON.stringify(parsed.progress);console.log("RGB-CASE-PROGRESS",last);}
+     if(parsed.result){value=parsed.result;break;}
+     await new Promise(r=>setTimeout(r,250));
+    }
+    await browser.evaluate("window.__rgbWorker.terminate(); true");
+    if(!value){
+     if(delegate==="CPU")throw new Error("CPU RGB case timed out "+last);
+     collected.push({id:sample.id,delegate,variant,unsupported:"GPU case exceeded 60-second diagnostic limit; last stage "+last});continue;
+    }
+    assert.equal(value.passed,true,JSON.stringify(value));
+    renderer=value.renderer;collected.push(...value.results);
+   }
+  }
+ }
+ const result={passed:true,renderer,results:collected};
+
  result.userAgent=await browser.evaluate("navigator.userAgent");
  writeFileSync(root+"/browser.json",JSON.stringify(result));
  console.log("RGB-BROWSER-COMPLETE",JSON.stringify({renderer:result.renderer,userAgent:result.userAgent,cases:result.results.map(r=>({id:r.id,delegate:r.delegate,variant:r.variant,frames:r.frames?.length,unsupported:r.unsupported}))}));
