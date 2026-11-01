@@ -47,7 +47,7 @@ export function exportResearchMetrics(trials:ResearchTrial[],consent:boolean,mod
     context:{device:["Windows","Mac","Android","iPhone","other"].includes(t.context.device)?t.context.device:"other",hand:["Right","Left","both"].includes(t.context.hand)?t.context.hand:"both",light:["front-lit","dim","back-lit"].includes(t.context.light)?t.context.light:"front-lit",speed:["usual","slow","fast"].includes(t.context.speed)?t.context.speed:"usual"},
     outcome:t.outcome,issue:t.issue,candidateShown:t.candidateShown,exact:t.exact,edits:t.edits,referenceCharacters:t.characters,predictedCharacters:t.prediction.length,
     finishToResultMs:number(t.finishToResultMs),inferenceMs:number(t.inferenceMs),
-    tracking:q?{frames:q.frames,visibleFrames:q.visibleFrames,missingFrames:q.missingFrames,observedFps:number(q.observedFps),durationMs:number(q.durationMs),maxFrameGapMs:number(q.maxFrameGapMs),longestMissingMs:number(q.longestMissingMs),relativeFrameMs:q.relativeFrameMs.slice(0,512).map(number)}:null};
+    tracking:q?{frames:q.frames,dominantReturnedCategory:q.dominantSide,leftFrames:q.leftFrames,rightFrames:q.rightFrames,visibleFrames:q.visibleFrames,missingFrames:q.missingFrames,observedFps:number(q.observedFps),durationMs:number(q.durationMs),maxFrameGapMs:number(q.maxFrameGapMs),longestMissingMs:number(q.longestMissingMs),relativeFrameMs:q.relativeFrameMs.slice(0,512).map(number)}:null};
   })};
 }
 export function researchSummary(trials:ResearchTrial[]){

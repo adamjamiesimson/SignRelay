@@ -22,12 +22,15 @@ export class FingerspellingCapture {
   seal(endAt:number) {if(!Number.isFinite(endAt))throw new Error("Invalid capture boundary");this.endAt=endAt;}
   dispose() {this.samples=[];}
   diagnostics() {
-    const s=this.samples,t=s.map(x=>x.time),gaps=t.slice(1).map((v,i)=>v-t[i]),visible=s.map(x=>x.hands.some(h=>h.landmarks.length===21&&h.landmarks.every(p=>[p.x,p.y,p.z].every(Number.isFinite))));
+    const s=this.samples,t=s.map(x=>x.time),gaps=t.slice(1).map((v,i)=>v-t[i]);
+    const valid=(h:HandObservation)=>h.landmarks.length===21&&h.landmarks.every(p=>[p.x,p.y,p.z].every(Number.isFinite));
+    const leftFrames=s.filter(x=>x.hands.some(h=>h.handedness==="Left"&&valid(h))).length,rightFrames=s.filter(x=>x.hands.some(h=>h.handedness==="Right"&&valid(h))).length;
+    const dominantSide=leftFrames>=rightFrames?"Left":"Right",visible=s.map(x=>x.hands.some(h=>h.handedness===dominantSide&&valid(h)));
     const duration=s.length>1?t.at(-1)!-t[0]:0;
     let longestMissingMs=0,missingStart:number|null=null;
     for(let i=0;i<s.length;i++){if(!visible[i])missingStart??=t[i];else if(missingStart!==null){longestMissingMs=Math.max(longestMissingMs,t[i]-missingStart);missingStart=null;}}
     if(missingStart!==null)longestMissingMs=Math.max(longestMissingMs,t.at(-1)!-missingStart);
-    return {frames:s.length,durationMs:duration,observedFps:duration?(s.length-1)*1000/duration:0,
+    return {frames:s.length,dominantSide,leftFrames,rightFrames,durationMs:duration,observedFps:duration?(s.length-1)*1000/duration:0,
       maxFrameGapMs:Math.max(0,...gaps),visibleFrames:visible.filter(Boolean).length,missingFrames:visible.filter(x=>!x).length,longestMissingMs,
       relativeFrameMs:t.map(v=>Math.round((v-t[0])*1000)/1000)};
   }
