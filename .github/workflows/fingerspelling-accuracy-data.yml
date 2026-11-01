@@ -1,0 +1,45 @@
+name: Fingerspelling expanded real-data cache
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-accuracy-data.yml', 'training/fingerspelling/accuracy/data.py', 'training/fingerspelling/accuracy/config.json']
+permissions: {contents: read}
+concurrency:
+  group: accuracy-data-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix: {shard: [0, 1, 2, 3, 4, 5, 6, 7]}
+    env: {OMP_NUM_THREADS: '1', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1
+      - run: python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+      - name: Verify and extract bounded shard with decoded timestamps
+        run: python training/fingerspelling/accuracy/data.py --shard ${{ matrix.shard }} --shards 8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: accuracy-development-${{ matrix.shard }}
+          path: |
+            work/accuracy/development/manifest-*.json
+            work/accuracy/train/*.npz
+            work/accuracy/dev/*.npz
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: accuracy-sealed-${{ matrix.shard }}
+          path: |
+            work/accuracy/sealed/manifest-*.json
+            work/accuracy/cal_fit/*.npz
+            work/accuracy/cal_policy/*.npz
+            work/accuracy/final/*.npz
+            work/accuracy/left_final/*.npz
+            work/accuracy/challenge/*.npz
+          retention-days: 14
