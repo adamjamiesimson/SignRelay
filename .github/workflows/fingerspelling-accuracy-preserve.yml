@@ -1,0 +1,43 @@
+name: Preserve reviewed accuracy model and evidence as unreferenced blobs
+on:
+  push:
+    branches: [codex/asl-fingerspelling-2026-10-31]
+    paths: ['.github/workflows/fingerspelling-accuracy-preserve.yml']
+permissions: {contents: read, actions: read}
+jobs:
+  preserve-frozen-artifact:
+    runs-on: ubuntu-latest
+    permissions: {contents: write, actions: read}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: accuracy-final-evidence-and-browser-inputs
+          path: frozen
+          github-token: ${{ github.token }}
+          run-id: 41276657740
+      - name: Check frozen provenance and create blobs only (never update refs)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import base64,hashlib,json,os,pathlib,urllib.request
+          root=pathlib.Path("frozen")
+          report=json.loads((root/"report.json").read_text())
+          assert report["sourceCommit"]=="ba6c881d70dec7ba23af1a2eee54032d6abc7abe"
+          model=(root/"model.onnx").read_bytes()
+          assert len(model)==523322 and hashlib.sha256(model).hexdigest()=="26e640751c91f3cfba5aa7e3af43abb1e322c58f7a0c9fc7ae04fefe9ad74c41"
+          assert report["roles"]["final"]["selected"]["cer"]==647/5216
+          assert len(report["predictions"]["final"]["selected"])==384
+          assert report["runtime"]["policy"]["threshold"] is None
+          paths={"model.onnx":"public/models/asl-fingerspelling/fsboard-accuracy-v2.onnx",
+           "report.json":"docs/fingerspelling/evidence/accuracy-v2-final.json",
+           "runtime.json":"docs/fingerspelling/evidence/accuracy-v2-runtime.json",
+           "selection.json":"docs/fingerspelling/evidence/accuracy-v2-selection.json",
+           "negatives.json":"docs/fingerspelling/evidence/accuracy-v2-negatives.json",
+           "provenance.json.gz":"docs/fingerspelling/evidence/accuracy-v2-provenance.json.gz"}
+          for filename,target in paths.items():
+           blob=(root/filename).read_bytes()
+           request=urllib.request.Request("https://api.github.com/repos/adamjamiesimson/SignRelay/git/blobs",data=json.dumps({"encoding":"base64","content":base64.b64encode(blob).decode()}).encode(),headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json","Content-Type":"application/json"},method="POST")
+           with urllib.request.urlopen(request,timeout=60) as response:value=json.load(response)
+           print("REVIEWED-ACCURACY-BLOB",json.dumps({"path":target,"sha":value["sha"],"bytes":len(blob),"sha256":hashlib.sha256(blob).hexdigest()}),flush=True)
+          print("REVIEWED-RUNTIME",json.dumps(report["runtime"]),flush=True)

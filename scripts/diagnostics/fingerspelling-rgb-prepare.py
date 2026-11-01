@@ -51,6 +51,6 @@ for source in chosen:
  samples.append({"id":source["id"],"reference":record["phrase"].upper(),"rawSha256":source["rawSha256"],"returnedCategoryInPilot":source["side"],
   "width":images[0].shape[1],"height":images[0].shape[0],"aspect":images[0].shape[1]/images[0].shape[0],
   "annotationStartMs":1000*(record["annotationStartTimeS"]-record["clipStartTimeS"]),"annotationEndMs":1000*(record["annotationEndTimeS"]-record["clipStartTimeS"]),
-  "timestamps":timestamps,"urls":urls,"native":{"original":observe(images,timestamps,False),"mirrored":observe(images,timestamps,True)}})
+  "timestamps":timestamps,"urls":urls,"pixelSha256":{variant:[hashlib.sha256(np.ascontiguousarray(rgb[:,::-1] if variant=="mirrored" else rgb).tobytes()).hexdigest() for rgb in images] for variant in ("original","mirrored")},"native":{"original":observe(images,timestamps,False),"mirrored":observe(images,timestamps,True)}})
 (root/"samples.json").write_text(json.dumps(samples))
 print("RGB-SOURCES",json.dumps([{k:s[k] for k in ("id","reference","rawSha256","returnedCategoryInPilot","width","height")} for s in samples]),flush=True)

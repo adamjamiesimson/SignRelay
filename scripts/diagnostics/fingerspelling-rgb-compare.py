@@ -20,6 +20,7 @@ for case in browser["results"]:
  if "unsupported" in case:rows.append({k:case[k] for k in ("id","delegate","variant","unsupported")});continue
  sample=samples[case["id"]];native=sample["native"][case["variant"]];other=case["frames"]
  assert len(native)==len(other)==len(sample["timestamps"])
+ assert case["pixelVerifiedFrames"]==len(native),"Decoded RGB pixels were not verified for every frame"
  errors=[];pixels=[];categories=matched=only_native=only_browser=both_empty=0
  for a,b in zip(native,other):
   unused=set(range(len(b)))
@@ -35,7 +36,7 @@ for case in browser["results"]:
  a,sa=pack(native,mask);b,sb=pack(other,mask);times=stamps[mask]/1000
  xa=encode(a,times,sa,sample["aspect"],"v2");xb=encode(b,times,sb,sample["aspect"],"v2")
  ha=greedy(model.run(None,{"features":xa[None]})[0][0]);hb=greedy(model.run(None,{"features":xb[None]})[0][0])
- row={"id":case["id"],"delegate":case["delegate"],"variant":case["variant"],"reference":sample["reference"],"rgbFrames":len(native),
+ row={"id":case["id"],"delegate":case["delegate"],"variant":case["variant"],"reference":sample["reference"],"rgbFrames":len(native),"pixelVerifiedFrames":case["pixelVerifiedFrames"],"timestampOffsetMs":case.get("timestampOffsetMs",0),
   "pairedHands":matched,"sameReturnedCategory":categories,"onlyNativeHands":only_native,"onlyBrowserHands":only_browser,"bothEmptyFrames":both_empty,
   "normalizedXyzEuclideanError":{"mean":float(np.mean(errors)) if errors else None,"p95":float(np.percentile(errors,95)) if errors else None,"max":max(errors) if errors else None},
   "xyPixelError":{"mean":float(np.mean(pixels)) if pixels else None,"p95":float(np.percentile(pixels,95)) if pixels else None,"max":max(pixels) if pixels else None},

@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { FingerspellingCtcRuntime, CTC_MAX_FRAMES, CTC_FEATURES, type CtcContract } from "../lib/fingerspelling-ctc-runtime";
+import { FingerspellingCtcRuntime, CTC_MAX_FRAMES, type CtcContract } from "../lib/fingerspelling-ctc-runtime";
 
 let runtime: FingerspellingCtcRuntime | null = null;
 let epoch = 0, busy = false;
@@ -39,7 +39,7 @@ self.onmessage = async ({data}: MessageEvent) => {
   }
   if (data.type === "predict" && runtime) {
     if (!(data.features instanceof Float32Array) || !Number.isInteger(data.frames)
-      || data.frames < 1 || data.frames > CTC_MAX_FRAMES || data.features.length !== data.frames*CTC_FEATURES
+      || data.frames < 1 || data.frames > CTC_MAX_FRAMES || data.features.length !== data.frames*runtime.inputFeatures
       || !Number.isSafeInteger(data.requestId) || data.epoch !== epoch) return;
     // One native run plus one replaceable latest sequence. No frame backlog.
     queued = {features:data.features,frames:data.frames,requestId:data.requestId,epoch};
