@@ -3,6 +3,8 @@ import base64,hashlib,json,math,pathlib,sys,urllib.request
 import cv2,mediapipe as mp,numpy as np,kagglehub
 sys.path.insert(0,"training/fingerspelling")
 from prepare import metadata,TASK_URL,TASK_SHA
+sys.path.insert(0,"training/fingerspelling/upright")
+from upright_video import frames as display_frames
 root=pathlib.Path("work/rgb");root.mkdir(parents=True,exist_ok=True)
 with urllib.request.urlopen(TASK_URL,timeout=45) as response:task=response.read(8373441)
 assert len(task)==8373440 and hashlib.sha256(task).hexdigest()==TASK_SHA
@@ -16,8 +18,7 @@ meta={s:{r["clipFilename"]:r for r in metadata(s)} for s in {r["split"] for r in
 def detector():
  return mp.tasks.vision.GestureRecognizer.create_from_options(mp.tasks.vision.GestureRecognizerOptions(
   base_options=mp.tasks.BaseOptions(model_asset_path=str(root/"gesture.task")),running_mode=mp.tasks.vision.RunningMode.VIDEO,
-  num_hands=2,min_hand_detection_confidence=.55,min_hand_presence_confidence=.55,min_tracking_confidence=.55,
-  canned_gesture_classifier_options=mp.tasks.components.processors.ClassifierOptions(score_threshold=.55)))
+  num_hands=2,min_hand_detection_confidence=.55,min_hand_presence_confidence=.55,min_tracking_confidence=.55))
 def observe(frames,timestamps,mirror):
  result=[]
  with detector() as model:
@@ -33,22 +34,17 @@ for source in chosen:
  data=path.read_bytes()
  assert len(data)==record["clipFileSize"] and hashlib.md5(data,usedforsecurity=False).hexdigest()==record["clipFileMd5"]
  assert hashlib.sha256(data).hexdigest()==source["rawSha256"]
- cap=cv2.VideoCapture(str(path));images=[];timestamps=[];urls=[];next_at=0;previous=-1
+ images=[];timestamps=[];urls=[];next_at=0;previous=-1
  output=root/"images"/source["id"];output.mkdir(parents=True,exist_ok=True)
- while True:
-  ok,bgr=cap.read()
-  if not ok:break
-  t=cap.get(cv2.CAP_PROP_POS_MSEC)/1000
+ for t,rgb,info in display_frames(path):
   assert t>previous;previous=t
   if t+1e-6<next_at:continue
   next_at=(math.floor(t*15+1e-6)+1)/15
-  h,w=bgr.shape[:2]
-  if max(h,w)>640:bgr=cv2.resize(bgr,(round(w*640/max(h,w)),round(h*640/max(h,w))))
-  rgb=cv2.cvtColor(bgr,cv2.COLOR_BGR2RGB);images.append(rgb);timestamps.append(round(t*1000))
-  filename=str(len(images)-1)+".png";assert cv2.imwrite(str(output/filename),bgr)
+  images.append(rgb);timestamps.append(round(t*1000))
+  filename=str(len(images)-1)+".png";assert cv2.imwrite(str(output/filename),cv2.cvtColor(rgb,cv2.COLOR_RGB2BGR))
   urls.append("/rgb/images/"+source["id"]+"/"+filename)
- cap.release();path.unlink()
- samples.append({"id":source["id"],"reference":record["phrase"].upper(),"rawSha256":source["rawSha256"],"returnedCategoryInPilot":source["side"],
+ path.unlink()
+ samples.append({"id":source["id"],"reference":record["phrase"].upper(),"rawSha256":source["rawSha256"],"rgbPolicy":"display-matrix-v1","returnedCategoryInPilot":source["side"],
   "width":images[0].shape[1],"height":images[0].shape[0],"aspect":images[0].shape[1]/images[0].shape[0],
   "annotationStartMs":1000*(record["annotationStartTimeS"]-record["clipStartTimeS"]),"annotationEndMs":1000*(record["annotationEndTimeS"]-record["clipStartTimeS"]),
   "timestamps":timestamps,"urls":urls,"pixelSha256":{variant:[hashlib.sha256(np.ascontiguousarray(rgb[:,::-1] if variant=="mirrored" else rgb).tobytes()).hexdigest() for rgb in images] for variant in ("original","mirrored")},"native":{"original":observe(images,timestamps,False),"mirrored":observe(images,timestamps,True)}})

@@ -48,8 +48,7 @@ self.onmessage=async({data}:MessageEvent)=>{
      try{
       self.postMessage({progress:{id:sample.id,delegate,variant,stage:"creating-task"}});
       model=await GestureRecognizer.createFromOptions(files,{baseOptions:{modelAssetPath:"/vision/models/gesture_recognizer.task",delegate},
-       canvas:new OffscreenCanvas(1,1),runningMode:"VIDEO",numHands:2,minHandDetectionConfidence:.55,minHandPresenceConfidence:.55,minTrackingConfidence:.55,
-       cannedGesturesClassifierOptions:{scoreThreshold:.55}});
+       canvas:new OffscreenCanvas(1,1),runningMode:"VIDEO",numHands:2,minHandDetectionConfidence:.55,minHandPresenceConfidence:.55,minTrackingConfidence:.55});
       self.postMessage({progress:{id:sample.id,delegate,variant,stage:"task-ready",total:sample.urls.length}});
       const frames=[];const timings=[];
       for(let i=0;i<sample.urls.length;i++){
