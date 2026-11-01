@@ -17,7 +17,7 @@ const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-vid
    this.addEventListener('message',e=>{
     if(this.tracker&&e.data.type==='ready')window.__recorded.delegates.push(e.data.delegate);
     if(this.tracker&&e.data.type==='hands'&&window.__recorded.capture){
-     window.__recorded.frames.push({timestamp:e.data.frame.timestamp,received:performance.now(),handsMs:e.data.handsMs,hasHand:e.data.frame.hands.length>0});
+     window.__recorded.frames.push({timestamp:e.data.frame.timestamp,received:performance.now(),handsMs:e.data.handsMs,hasHand:e.data.frame.hands.length>0,quality:e.data.frame.hands.map(h=>({side:h.handedness,points:h.landmarks.length,finite:h.landmarks.every(p=>[p.x,p.y,p.z].every(Number.isFinite))}))});
      if(window.__recorded.frames.length%12===0){const canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;canvas.getContext('2d').drawImage(document.querySelector('video'),0,0,320,180);window.__recorded.contact.push(canvas.toDataURL('image/jpeg',.6));}
     }
     if(this.ctc&&e.data.type==='result')window.__recorded.results.push({...e.data,received:performance.now()});
@@ -66,7 +66,7 @@ try{
   const frames=snapshot.frames;
   const report={kind:"selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
    source,sourceOnset:onset,captureStart:started,captureEnd:finished,status:"abstained-quality",actualInference:false,
-   observedFrames:frames.length,visibleFrames:frames.filter(f=>f.hasHand).length,
+   observedFrames:frames.length,visibleFrames:frames.filter(f=>f.hasHand).length,categoryQuality:frames.map(f=>f.quality),
    observedCaptureFps:(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),messages,
    checks:["no model prediction claimed","quality rejection retained","empty draft and confirmation disabled"]};
   mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
