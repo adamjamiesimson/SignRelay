@@ -41,3 +41,5 @@ jobs:
 # Download interception reads the local Blob directly and retains the production CSP.
 
 # Use explicit input selection for corrected truth instead of a platform-dependent shortcut.
+
+# Verify consent/export for abstention outcomes too; these are positive failures, not recognition success.

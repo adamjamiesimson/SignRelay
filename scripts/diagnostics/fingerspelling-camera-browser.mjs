@@ -159,9 +159,12 @@ try{
  mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
  console.log("ACTUAL-RGB-CAMERA-RESULT",JSON.stringify(report));
 
+
+ }
  if(research){
+  const rawStudyPrediction=snapshot.results.at(-1)?.text?.trim()||"",confirmedDraftBeforeEnding=await h.evaluate("document.querySelector('#spelling-text').value");
   await until(()=>h.evaluate("!!document.querySelector('[data-research-result]')"),"Local research result missing");
-  assert.equal(await h.evaluate("document.querySelector('[data-research-prediction]').textContent"),displayed.text);
+  assert.equal(await h.evaluate("document.querySelector('[data-research-prediction]').textContent"),rawStudyPrediction||"No text");
   await h.evaluate("document.querySelector('#research-truth').focus();document.querySelector('#research-truth').select()");
   await h.browser.send("Input.insertText",{text:source.reference});
   await h.evaluate("document.querySelector('#research-confirm-truth').click()");
@@ -175,12 +178,12 @@ try{
   assert.equal(data.trials.length,1);assert.equal(data.textIncluded,false);
   assert.equal(data.trials[0].referenceCharacters,source.reference.length);
   const serialized=JSON.stringify(data);
-  assert.ok(!serialized.includes(source.reference)&&!serialized.includes(displayed.text),"Export leaked local text");
+  assert.ok(!serialized.includes(source.reference)&&(!rawStudyPrediction||!serialized.includes(rawStudyPrediction)),"Export leaked local text");
   for(const key of ["prediction","truth","startedAt","finishedAt","landmarks","deviceId","userAgent"])assert.ok(!serialized.includes('"'+key+'"'),"Unexpected identifying export field "+key);
   await h.click("End testing and clear results");
   assert.equal(await h.evaluate("document.querySelector('[data-research-test] input[type=checkbox]').checked"),false);
   assert.equal(await h.evaluate("document.querySelector('[data-research-result]')===null"),true);
-  assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),displayed.text,"Ending research erased the deliberately confirmed draft");
+  assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),confirmedDraftBeforeEnding,"Ending research erased the deliberately confirmed draft");
   await h.browser.send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   assert.equal(await h.evaluate("document.documentElement.scrollWidth<=innerWidth"),true,"Mobile horizontal overflow");
   assert.deepEqual(h.nonLoopback(),[],"Unexpected external page request during local study");
@@ -189,6 +192,5 @@ try{
   console.log("RESEARCH-CONSENT-CHECKS",JSON.stringify({passed:8,kind:"Software/privacy workflow on one genuine recorded RGB source; not participant/physical-camera validation",source:source.id,checks:["opt-in initially off","real result and user-corrected truth","explicit truth confirmation","local save","separate export consent","text-free file schema","withdrawal clears study state and preserves confirmed composition","390px no overflow"]}));
  }
 
- }
 }catch(error){console.error("ACTUAL-RGB-CAMERA-FAIL",await h.evaluate("JSON.stringify({tracking:{...window.__recorded,inputs:window.__recorded.inputs.map(i=>({...i,features:undefined})),contact:undefined,pixels:undefined},candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)})"));throw error;
 }finally{await h.close();}

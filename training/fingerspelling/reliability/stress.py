@@ -13,8 +13,9 @@ assert hashlib.sha256(model.read_bytes()).hexdigest()==contract["sha256"]
 session=ort.InferenceSession(str(model),providers=["CPUExecutionProvider"]);rows=[]
 for file in sorted((root/"browser").glob("*.json")):
  sample=json.loads(file.read_text())
- assert sample["id"] in index and sample["rawSha256"]==index[sample["id"]]["rawSha256"]
+ assert sample["id"] in index and sample["reference"]==index[sample["id"]]["reference"]
  raw=np.asarray(sample["raw"],dtype=np.float32);times=np.asarray(sample["times"],dtype=np.float64)
+ assert np.allclose(encode(raw,times,sample["side"],sample["aspect"],"v3"),np.asarray(sample["features"],np.float32),atol=2e-4),"Frozen feature contract mismatch"
  for variant in ("original","drop-every-fifth","missing-five-observations","gap-three-observations","mirror-and-returned-category-swap"):
   r=raw.copy();t=times.copy();side=sample["side"]
   if variant=="drop-every-fifth":keep=np.arange(len(r))%5!=4;r=r[keep];t=t[keep]
