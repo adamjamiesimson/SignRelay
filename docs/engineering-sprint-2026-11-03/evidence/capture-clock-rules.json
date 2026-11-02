@@ -27,7 +27,12 @@
           "NO": 8
         }
       },
-      "runsWithDifferentWords": 0
+      "runsWithDifferentWords": 0,
+      "intervalsBelow75Ms": {
+        "intervals": 951,
+        "pickup-tick": 949,
+        "capture-time": 946
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -53,7 +58,12 @@
           "NO": 8
         }
       },
-      "runsWithDifferentWords": 0
+      "runsWithDifferentWords": 0,
+      "intervalsBelow75Ms": {
+        "intervals": 1318,
+        "pickup-tick": 1316,
+        "capture-time": 1310
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -79,7 +89,12 @@
           "YES": 2
         }
       },
-      "runsWithDifferentWords": 2
+      "runsWithDifferentWords": 2,
+      "intervalsBelow75Ms": {
+        "intervals": 642,
+        "pickup-tick": 171,
+        "capture-time": 282
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -105,7 +120,12 @@
           "NO": 8
         }
       },
-      "runsWithDifferentWords": 1
+      "runsWithDifferentWords": 1,
+      "intervalsBelow75Ms": {
+        "intervals": 884,
+        "pickup-tick": 226,
+        "capture-time": 372
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -129,7 +149,12 @@
           "NO": 8
         }
       },
-      "runsWithDifferentWords": 0
+      "runsWithDifferentWords": 0,
+      "intervalsBelow75Ms": {
+        "intervals": 469,
+        "pickup-tick": 0,
+        "capture-time": 33
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -155,7 +180,12 @@
           "YES": 1
         }
       },
-      "runsWithDifferentWords": 0
+      "runsWithDifferentWords": 0,
+      "intervalsBelow75Ms": {
+        "intervals": 656,
+        "pickup-tick": 0,
+        "capture-time": 46
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -180,7 +210,12 @@
           "PLEASE": 4
         }
       },
-      "runsWithDifferentWords": 1
+      "runsWithDifferentWords": 1,
+      "intervalsBelow75Ms": {
+        "intervals": 353,
+        "pickup-tick": 0,
+        "capture-time": 3
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -204,7 +239,12 @@
           "SORRY": 3
         }
       },
-      "runsWithDifferentWords": 0
+      "runsWithDifferentWords": 0,
+      "intervalsBelow75Ms": {
+        "intervals": 490,
+        "pickup-tick": 0,
+        "capture-time": 3
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -230,7 +270,12 @@
           "NO": 8
         }
       },
-      "runsWithDifferentWords": 0
+      "runsWithDifferentWords": 0,
+      "intervalsBelow75Ms": {
+        "intervals": 828,
+        "pickup-tick": 812,
+        "capture-time": 828
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -256,7 +301,12 @@
           "NO": 8
         }
       },
-      "runsWithDifferentWords": 0
+      "runsWithDifferentWords": 0,
+      "intervalsBelow75Ms": {
+        "intervals": 1152,
+        "pickup-tick": 1121,
+        "capture-time": 1152
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -281,7 +331,12 @@
           "NO": 8
         }
       },
-      "runsWithDifferentWords": 3
+      "runsWithDifferentWords": 3,
+      "intervalsBelow75Ms": {
+        "intervals": 638,
+        "pickup-tick": 167,
+        "capture-time": 448
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -307,7 +362,12 @@
           "NO": 8
         }
       },
-      "runsWithDifferentWords": 1
+      "runsWithDifferentWords": 1,
+      "intervalsBelow75Ms": {
+        "intervals": 881,
+        "pickup-tick": 220,
+        "capture-time": 610
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -333,7 +393,12 @@
           "YES": 1
         }
       },
-      "runsWithDifferentWords": 1
+      "runsWithDifferentWords": 1,
+      "intervalsBelow75Ms": {
+        "intervals": 471,
+        "pickup-tick": 0,
+        "capture-time": 134
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -359,7 +424,12 @@
           "YES": 1
         }
       },
-      "runsWithDifferentWords": 0
+      "runsWithDifferentWords": 0,
+      "intervalsBelow75Ms": {
+        "intervals": 656,
+        "pickup-tick": 0,
+        "capture-time": 183
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -383,7 +453,12 @@
           "PLEASE": 4
         }
       },
-      "runsWithDifferentWords": 1
+      "runsWithDifferentWords": 1,
+      "intervalsBelow75Ms": {
+        "intervals": 352,
+        "pickup-tick": 0,
+        "capture-time": 11
+      }
     },
     {
       "kind": "positive six-word sequence",
@@ -407,7 +482,12 @@
           "NO": 4
         }
       },
-      "runsWithDifferentWords": 0
+      "runsWithDifferentWords": 0,
+      "intervalsBelow75Ms": {
+        "intervals": 488,
+        "pickup-tick": 0,
+        "capture-time": 17
+      }
     },
     {
       "kind": "synthetic everyday-movement controls",

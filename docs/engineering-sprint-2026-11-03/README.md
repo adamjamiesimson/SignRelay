@@ -4,6 +4,8 @@
 
 **Summary.** I found and fixed one defect in the camera pipeline. Fingerspelling sometimes tracked the pixels of one camera frame under the previous frame's timestamp. In a matched A/B, mismatches fell from **11/316 (3.5 %) to 0/334** tracked frames. I also found that word mode stamps frames with the animation tick at which the tracking lane became free, not with the capture time. The capture-time fix for word mode is implemented and measured, but it is **off by default**: synthetic evidence shows it is not neutral for the hand-written ASL starter rules. A new fingerprint and replay toolchain names the first pipeline stage (schedule → observations → features → logits → output) at which two runs diverge. **No model, weight, threshold, decoder rule, vocabulary, feature extractor or saved-data format changed. Recognition accuracy has not been improved or re-measured on real signers.**
 
+> **Follow-up validation (licensed recorded RGB, MediaPipe determinism, word-timing root cause):** [validation/README.md](validation/README.md). The capture fix showed **no measurable recognition change** against the exact PR #50 head on any exposed catalog. Run-to-run variability was traced to capture scheduling; tracking, inference and decoding are deterministic for identical input.
+
 All measurements below are headless Chromium 153 on Linux x86_64 with CPU tracking and a synthetic fake camera. None of them is physical-webcam, GPU, mobile or signer evidence.
 
 ## 1. What changed in production code
@@ -67,7 +69,7 @@ Interval error compares consecutive tracked timestamps with the true source inte
 |---|---:|---:|
 | Positive confirmations, all cells (max 768) | 603 | 594 |
 | YES confirmations (max 128) | **51** | **43** |
-| Runs whose confirmed words differ | — | 11 / 128 |
+| Runs whose confirmed words differ | — | 10 / 128 (corrected; first published as 11 by an arithmetic error) |
 | Synthetic everyday-movement false confirmations (4 conditions × 33 cases) | 12, 10, 12, 9 | 12, 10, 12, 9 (identical) |
 
 The differences occur only at tracking times of 80 ms or more and concentrate on YES. The starter rules evaluate fixed 650/1100/1700/2600 ms windows and were evidently tuned on the pick-up clock, which the rehearsal and throughput harnesses also reproduce: `RehearsalScript.next(now)` re-stamps held frames with the loop time. Truthful timing does not reduce false triggers and loses some synthetic YES. **Word mode therefore keeps its established clock by default.** Real-signer evidence is needed before changing it. Separately, these synthetic controls show the existing rules confirm THANK YOU or HELLO on 9–12 of 33 everyday-movement cases. That is pre-existing behaviour, and every candidate still requires the word pipeline's two-evidence confirmation.

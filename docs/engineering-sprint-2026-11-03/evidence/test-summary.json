@@ -2,19 +2,81 @@
  "schema": 1,
  "environment": "Linux x86_64, Node 22.23.4, headless Chromium 153 (Playwright build 1243), local container; not CI",
  "unit": {
-  "baseline_d8cfefc": {"files": 108, "passed": 1038, "failed": 0, "skipped": 2},
-  "final": {"files": 111, "passed": 1058, "failed": 0, "skipped": 3},
-  "skipped": ["asl-experiments full comparison (RUN_EXPERIMENTS=1)", "asl-low-throughput report writer (RUN_LOW_THROUGHPUT_REPORT=1)", "capture-clock-rules report writer (RUN_CAPTURE_CLOCK_REPORT=1; executed separately: 3/3 passed, writes evidence/capture-clock-rules.json)"],
-  "new_files": {"tests/decoded-frame-capture.test.ts": 12, "tests/pipeline-fingerprint.test.ts": 6, "tests/capture-clock-rules.test.ts": "2 + 1 opt-in"},
+  "baseline_d8cfefc": {
+   "files": 108,
+   "passed": 1038,
+   "failed": 0,
+   "skipped": 2
+  },
+  "final": {
+   "files": 111,
+   "passed": 1058,
+   "failed": 0,
+   "skipped": 3
+  },
+  "skipped": [
+   "asl-experiments full comparison (RUN_EXPERIMENTS=1)",
+   "asl-low-throughput report writer (RUN_LOW_THROUGHPUT_REPORT=1)",
+   "capture-clock-rules report writer (RUN_CAPTURE_CLOCK_REPORT=1; executed separately: 3/3 passed, writes evidence/capture-clock-rules.json)"
+  ],
+  "new_files": {
+   "tests/decoded-frame-capture.test.ts": 12,
+   "tests/pipeline-fingerprint.test.ts": 6,
+   "tests/capture-clock-rules.test.ts": "2 + 1 opt-in"
+  },
   "against_base_live_vision": "6/12 decoded-frame-capture tests fail on d8cfefc lib/live-vision.ts; only the fingerspelling own-timestamp test reproduces the defect itself, the rest exercise new fallback/opt-in API. The mid-stream fallback test fails when its lattice-reset guard is removed."
  },
- "static": {"typecheck": "pass", "lint": "pass (0 problems)", "repo:guard": "pass", "test:rendered": "2/2 pass", "build:worker": "pass (inside build:rehearsal)", "build:rehearsal": "pass; recognition worker SHA-256 matches committed"},
- "browser_smokes_on_rehearsal_export": {
-  "pre_guard_export": ["fingerspelling-browser-smoke", "gitex-rehearsal-smoke", "lifecycle-stress-smoke", "fault-injection-smoke", "user-feedback-fault-smoke", "transcript-a11y-smoke", "cooperative-yield-browser-smoke", "offline-vision-smoke", "personal-vocabulary-scale-smoke", "onboarding-smoke (axe)", "a11y-axe-smoke"],
-  "final_head_export": ["fingerspelling-browser-smoke", "lifecycle-stress-smoke", "fault-injection-smoke", "gitex-rehearsal-smoke"],
-  "result": "all exit 0",
-  "not_run_locally": ["bdsl/rsl/lse/landmark-lifecycle/workspace smokes needing the full multilingual build", "consent-smoke", "offline-demo-strict-smoke", "field-test and evaluation-failure smokes"]
+ "static": {
+  "typecheck": "pass",
+  "lint": "pass (0 problems)",
+  "repo:guard": "pass",
+  "test:rendered": "2/2 pass",
+  "build:worker": "pass (inside build:rehearsal)",
+  "build:rehearsal": "pass; recognition worker SHA-256 matches committed"
  },
- "final_head_probe": {"fingerspelling_30fps": "2 runs, 233 tracked, 0 pixel/timestamp mismatches, interval error p95 0.32/0.73 ms", "words_15fps_default": "1 run, jitter p95 31.2 ms, interval error p95 47.3 ms: unchanged pick-up-tick behaviour as intended"},
- "dependency_gate": {"audit:deps": "exit 1 (expected): 16 moderate development findings, 0 production; unchanged"}
+ "browser_smokes_on_rehearsal_export": {
+  "pre_guard_export": [
+   "fingerspelling-browser-smoke",
+   "gitex-rehearsal-smoke",
+   "lifecycle-stress-smoke",
+   "fault-injection-smoke",
+   "user-feedback-fault-smoke",
+   "transcript-a11y-smoke",
+   "cooperative-yield-browser-smoke",
+   "offline-vision-smoke",
+   "personal-vocabulary-scale-smoke",
+   "onboarding-smoke (axe)",
+   "a11y-axe-smoke"
+  ],
+  "final_head_export": [
+   "fingerspelling-browser-smoke",
+   "lifecycle-stress-smoke",
+   "fault-injection-smoke",
+   "gitex-rehearsal-smoke"
+  ],
+  "result": "all exit 0",
+  "not_run_locally": [
+   "bdsl/rsl/lse/landmark-lifecycle/workspace smokes needing the full multilingual build",
+   "consent-smoke",
+   "offline-demo-strict-smoke",
+   "field-test and evaluation-failure smokes"
+  ]
+ },
+ "final_head_probe": {
+  "fingerspelling_30fps": "2 runs, 233 tracked, 0 pixel/timestamp mismatches, interval error p95 0.32/0.73 ms",
+  "words_15fps_default": "1 run, jitter p95 31.2 ms, interval error p95 47.3 ms: unchanged pick-up-tick behaviour as intended"
+ },
+ "dependency_gate": {
+  "audit:deps": "exit 1 (expected): 16 moderate development findings, 0 production; unchanged"
+ },
+ "validation_sprint": {
+  "unit": {
+   "files": 112,
+   "passed": 1061,
+   "failed": 0,
+   "skipped": 3,
+   "new": "tests/diagnostic-privacy-boundary.test.ts (3)"
+  },
+  "static": "typecheck, lint, repo:guard, test:rendered 2/2, audit:secrets 0 findings: pass"
+ }
 }
