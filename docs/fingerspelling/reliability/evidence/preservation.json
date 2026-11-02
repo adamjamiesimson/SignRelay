@@ -1,0 +1,11 @@
+{
+  "baseline": "d89cff666fe7a4981fb01a8b460a65a9abd3065e",
+  "audited": "23cee81d8e64cfdc09a84847df29acee35823257",
+  "protectedFiles": 904,
+  "unexpectedChanges": [],
+  "unexpectedAdded": [],
+  "originalCssPrefixUnchanged": true,
+  "modelAssetsUnchanged": true,
+  "baselineAccuracyReportUnchanged": true,
+  "lockfileUnchanged": true
+}
