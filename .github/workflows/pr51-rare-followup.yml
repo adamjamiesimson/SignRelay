@@ -1,0 +1,50 @@
+name: PR 51 rare-letter follow-up
+# Pre-registered follow-up: run 1 showed 0 fewer / 3 more paired edits for the
+# candidate on mirrored Q/J/Z / returned-Left cases (not significant). Four more
+# matched repeats per view decide whether that is reproducible. Same protocol
+# as pr51-recorded-validation.yml; exposed regression recordings only.
+on:
+  push:
+    branches: [claude/charming-thompson-2aql9w]
+    paths: ['.github/workflows/pr51-rare-followup.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        kind: [rare-mirrored, rare-original]
+        repeat: [3, 4, 5, 6]
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: harness}
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: baseline, ref: 'd8cfefcd2953bac3a2de10722b1ca4f03cfca5a0'}
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: candidate}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - run: python -m pip install --disable-pip-version-check -r harness/training/fingerspelling/requirements.txt
+      - name: Identical lockfile and tracker worker in both implementations
+        run: |
+          cmp baseline/package-lock.json candidate/package-lock.json
+          cmp baseline/workers/fingerspelling-vision.worker.ts candidate/workers/fingerspelling-vision.worker.ts
+          for implementation in baseline candidate; do
+            (cd "$implementation" && npm ci && npm run build:rehearsal)
+          done
+      - name: Alternate every predetermined RGB input on this runner
+        env: {REPEAT: '${{ matrix.repeat }}', CATALOG: '${{ matrix.kind }}'}
+        run: python harness/scripts/diagnostics/sprint-paired-replay.py "$CATALOG" "$(command -v google-chrome)" --baseline baseline --candidate candidate --out outputs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr51-${{ matrix.kind }}-${{ matrix.repeat }}
+          path: outputs/*.json
+          retention-days: 14
