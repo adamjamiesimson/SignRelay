@@ -1,0 +1,5372 @@
+{
+  "variant": "baseline",
+  "repeat": 1,
+  "candidateSource": "099f8f05c2a7c9ae8ae1804ff50dde3ba0a4da39",
+  "baselineSource": "d89cff666fe7a4981fb01a8b460a65a9abd3065e",
+  "caseCount": 29,
+  "completed": 29,
+  "cases": [
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-items-1",
+        "sourceId": "cdc-items",
+        "start": 8,
+        "end": 11,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-items",
+          "file": "Donning PPE- Remove Personal Clothing and Items CDC03.webm",
+          "bytes": 866339,
+          "sha1": "fa4c9ea6f9e55d858a62f79737b2ef3ef8c436d4",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "clothing-and-personal-items",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+        "rawBytes": 866339,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 813,
+          "duration": 33.867,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "2860c96777508789e876bdaaa4a18af41d3f07b1c1b10cf2e6e14d63958e3ad3",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.972501,
+        "variance": 2802.8568190586284
+      },
+      "captureStart": {
+        "time": 15.973784,
+        "perf": 16495.899999999994
+      },
+      "captureEnd": {
+        "time": 18.987874,
+        "perf": 19511.399999999994
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 45,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.999996590909872,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-items-4",
+        "sourceId": "cdc-items",
+        "start": 17,
+        "end": 20,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-items",
+          "file": "Donning PPE- Remove Personal Clothing and Items CDC03.webm",
+          "bytes": 866339,
+          "sha1": "fa4c9ea6f9e55d858a62f79737b2ef3ef8c436d4",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "clothing-and-personal-items",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+        "rawBytes": 866339,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 813,
+          "duration": 33.867,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "08362f2474bafa1f7da09f2afa381793f578e68dc7dc0fd42af8ef6bb520b496",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.982758,
+        "variance": 2805.5223752036254
+      },
+      "captureStart": {
+        "time": 15.984064,
+        "perf": 16485.400000000023
+      },
+      "captureEnd": {
+        "time": 18.998011,
+        "perf": 19501.300000000047
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 43,
+      "visibleFrames": 3,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ]
+      ],
+      "observedCaptureFps": 14.6515597457466,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-hygiene-4",
+        "sourceId": "cdc-hygiene",
+        "start": 15,
+        "end": 18,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-hygiene",
+          "file": "Donning PPE- Perform Hand Hygiene CDC05.webm",
+          "bytes": 874340,
+          "sha1": "371f2e7381cf496001483122a8c17b3959a997ac",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "ordinary-hand-rubbing",
+          "windows": [
+            [
+              3,
+              6
+            ],
+            [
+              6,
+              9
+            ],
+            [
+              9,
+              12
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              15,
+              18
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Perform_Hand_Hygiene_CDC05.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9",
+        "rawBytes": 874340,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 480,
+          "duration": 19.978,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "0c357facd0ff893daee5c8e7b4094346d38b13daeb560d72884dd24913dffe18",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.968796,
+        "variance": 1653.1619616850658
+      },
+      "captureStart": {
+        "time": 15.970167,
+        "perf": 16472.300000000047
+      },
+      "captureEnd": {
+        "time": 18.984086,
+        "perf": 19487.70000000001
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 40,
+      "visibleFrames": 14,
+      "categoryQuality": [
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 13.146163427036246,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "id": "cdc-clean-4",
+        "sourceId": "cdc-clean",
+        "start": 16,
+        "end": 19,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-clean",
+          "file": "Clean hands short.webm",
+          "bytes": 4172129,
+          "sha1": "086c61006e3b38bb0aed44d8f5e8b25ba6989bf5",
+          "license": "Public domain mark 1.0; US federal work",
+          "author": "Centers for Disease Control and Prevention",
+          "category": "ordinary-handwashing",
+          "windows": [
+            [
+              4,
+              7
+            ],
+            [
+              7,
+              10
+            ],
+            [
+              10,
+              13
+            ],
+            [
+              13,
+              16
+            ],
+            [
+              16,
+              19
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Clean_hands_short.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "Public domain mark 1.0; US federal work",
+        "rawSha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3",
+        "rawBytes": 4172129,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          480,
+          360
+        ],
+        "sourceStream": {
+          "width": 480,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "30000/1001",
+          "avg_frame_rate": "30000/1001"
+        },
+        "sourcePts": {
+          "frames": 689,
+          "duration": 22.956,
+          "minimumStep": 0.0329999999999977
+        },
+        "virtualCameraSha256": "9845bedf856e9e375ae0b156d688d3da593877ea244a9b890222bda3015251f0",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.975382,
+        "variance": 1916.699651438188
+      },
+      "captureStart": {
+        "time": 15.976796,
+        "perf": 16469.29999999999
+      },
+      "captureEnd": {
+        "time": 18.990943,
+        "perf": 19485.79999999999
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "",
+      "prediction": "AOA",
+      "exact": false,
+      "status": "uncertain",
+      "frames": 39,
+      "inputSha256": "53b2679dc20d5bd9d007c01081275ce45b489b603c88aeea176c08131a7a52b4",
+      "captureTelemetry": null,
+      "trackingReportedFrames": 39,
+      "observedCaptureFps": 13.103656126959265,
+      "maxFrameGapMs": 133.3139999999985,
+      "captureWallMs": 3014.100000000006,
+      "finishToWorkerResultMs": 31.20000000001164,
+      "finishToDomCandidateMs": 32.60000000000582,
+      "finishToNextAnimationFrameMs": 33.30000000001746,
+      "inferenceMs": 25.599999999976717,
+      "processingMs": 27.79999999998836,
+      "trackingMs": {
+        "median": 71.79999999998836,
+        "p95": 104.29999999998836
+      },
+      "frameAgeMs": {
+        "median": 74.6869999999908,
+        "p95": 104.3469999999943
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "width": 480,
+        "height": 360,
+        "aspectRatio": 1.3333333333333333,
+        "frameRate": 30,
+        "resizeMode": "none"
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "cdc-clean-4",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "nativeRawPrediction": "AOA",
+      "nativeStructuralEligible": true
+    },
+    {
+      "source": {
+        "id": "cdc-hygiene-2",
+        "sourceId": "cdc-hygiene",
+        "start": 9,
+        "end": 12,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-hygiene",
+          "file": "Donning PPE- Perform Hand Hygiene CDC05.webm",
+          "bytes": 874340,
+          "sha1": "371f2e7381cf496001483122a8c17b3959a997ac",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "ordinary-hand-rubbing",
+          "windows": [
+            [
+              3,
+              6
+            ],
+            [
+              6,
+              9
+            ],
+            [
+              9,
+              12
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              15,
+              18
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Perform_Hand_Hygiene_CDC05.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9",
+        "rawBytes": 874340,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 480,
+          "duration": 19.978,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "390304fcbdcd8d1b3fabef09b99e0091ce1f7248c1d953590e5ab657d8133da1",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "status": "abstained-model",
+      "prediction": "",
+      "reference": "",
+      "actualInference": true,
+      "inferenceMs": 26.70000000001164,
+      "frames": 39,
+      "captureTelemetry": null,
+      "reason": "Capture is outside the evaluated quality or text-length range.",
+      "checks": [
+        "empty prediction retained",
+        "no automatic composition or speech"
+      ],
+      "id": "cdc-hygiene-2",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "nativeRawPrediction": "Y",
+      "nativeStructuralEligible": false
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-mask-4",
+        "sourceId": "cdc-mask",
+        "start": 17,
+        "end": 20,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-mask",
+          "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+          "bytes": 1697383,
+          "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "face-touching-and-mask-adjustment",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ],
+            [
+              29,
+              32
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+        "rawBytes": 1697383,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 895,
+          "duration": 37.287,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "e406ba9dc44fee870c8062fed5bf16129542f07c01c8f7638be8dd17119b2971",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.978922,
+        "variance": 1369.5679946710916
+      },
+      "captureStart": {
+        "time": 15.980257,
+        "perf": 16476.599999999977
+      },
+      "captureEnd": {
+        "time": 18.994255,
+        "perf": 19491.899999999907
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 41,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 13.636365185950579,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-mask-5",
+        "sourceId": "cdc-mask",
+        "start": 20,
+        "end": 23,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-mask",
+          "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+          "bytes": 1697383,
+          "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "face-touching-and-mask-adjustment",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ],
+            [
+              29,
+              32
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+        "rawBytes": 1697383,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 895,
+          "duration": 37.287,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "a4ce12562861683c49d1523df9f4d56d5680e369cacdae583e964a960f57c81a",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.970147,
+        "variance": 1684.4007600174555
+      },
+      "captureStart": {
+        "time": 15.971469,
+        "perf": 16476.699999999953
+      },
+      "captureEnd": {
+        "time": 18.985411,
+        "perf": 19492
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 42,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.302473595366266,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-mask-6",
+        "sourceId": "cdc-mask",
+        "start": 23,
+        "end": 26,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-mask",
+          "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+          "bytes": 1697383,
+          "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "face-touching-and-mask-adjustment",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ],
+            [
+              29,
+              32
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+        "rawBytes": 1697383,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 895,
+          "duration": 37.287,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "e58dd0b7643f47df58351c7f035544f550d3d7e4f7f103058b8e373ff72f3a5c",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.977949,
+        "variance": 1400.9280143497454
+      },
+      "captureStart": {
+        "time": 15.979495,
+        "perf": 16487.699999999953
+      },
+      "captureEnd": {
+        "time": 18.992671,
+        "perf": 19502.099999999977
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 45,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.666916004238736,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-clean-2",
+        "sourceId": "cdc-clean",
+        "start": 10,
+        "end": 13,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-clean",
+          "file": "Clean hands short.webm",
+          "bytes": 4172129,
+          "sha1": "086c61006e3b38bb0aed44d8f5e8b25ba6989bf5",
+          "license": "Public domain mark 1.0; US federal work",
+          "author": "Centers for Disease Control and Prevention",
+          "category": "ordinary-handwashing",
+          "windows": [
+            [
+              4,
+              7
+            ],
+            [
+              7,
+              10
+            ],
+            [
+              10,
+              13
+            ],
+            [
+              13,
+              16
+            ],
+            [
+              16,
+              19
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Clean_hands_short.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "Public domain mark 1.0; US federal work",
+        "rawSha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3",
+        "rawBytes": 4172129,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          480,
+          360
+        ],
+        "sourceStream": {
+          "width": 480,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "30000/1001",
+          "avg_frame_rate": "30000/1001"
+        },
+        "sourcePts": {
+          "frames": 689,
+          "duration": 22.956,
+          "minimumStep": 0.0329999999999977
+        },
+        "virtualCameraSha256": "20af68b5497c9ba5fcf0fdeba26c4f1f98a35737664d5f294505e0355bc70568",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.969176,
+        "variance": 1677.7706069422857
+      },
+      "captureStart": {
+        "time": 15.970619,
+        "perf": 16470.699999999983
+      },
+      "captureEnd": {
+        "time": 18.984546,
+        "perf": 19485.899999999994
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 40,
+      "visibleFrames": 8,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 13.145924139927894,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-items-0",
+        "sourceId": "cdc-items",
+        "start": 5,
+        "end": 8,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-items",
+          "file": "Donning PPE- Remove Personal Clothing and Items CDC03.webm",
+          "bytes": 866339,
+          "sha1": "fa4c9ea6f9e55d858a62f79737b2ef3ef8c436d4",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "clothing-and-personal-items",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+        "rawBytes": 866339,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 813,
+          "duration": 33.867,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "bc79c27e48769f2158b84e8a08d5e9acc98214b19d0dec02f583b7c8a50a5e0b",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.969965,
+        "variance": 2803.704073096169
+      },
+      "captureStart": {
+        "time": 15.971297,
+        "perf": 16485.29999999999
+      },
+      "captureEnd": {
+        "time": 18.986482,
+        "perf": 19501.899999999994
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 45,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.999991477277574,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "id": "asl-lexical-1",
+        "sourceId": "asl-lexical",
+        "start": 9.5,
+        "end": 12.5,
+        "reference": "",
+        "signer": "identity-unverified:asl-demo",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "asl-lexical",
+          "file": "American Sign Language demo - Travis Dougherty.ogv",
+          "bytes": 8262854,
+          "sha1": "eb3b81b969ae9cc7cc29941a5872fb4c9f2e26f3",
+          "license": "CC BY-SA 3.0",
+          "author": "Fuzheado (Andrew Lih); signer Travis Dougherty",
+          "category": "lexical-ASL-not-fingerspelling",
+          "windows": [
+            [
+              6,
+              9.5
+            ],
+            [
+              9.5,
+              12.5
+            ]
+          ],
+          "annotationSource": "https://commons.wikimedia.org/wiki/TimedText:American_Sign_Language_demo_-_Travis_Dougherty.ogv.en.srt",
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:American_Sign_Language_demo_-_Travis_Dougherty.ogv",
+          "sourceGroup": "asl-demo",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 3.0",
+        "rawSha256": "9130e2a5d01c31a2da08f2e0d1c96f74ae86f72a8abff18d441bb05023bcc3ef",
+        "rawBytes": 8262854,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 960,
+          "height": 540,
+          "r_frame_rate": "30000/1001",
+          "avg_frame_rate": "30000/1001"
+        },
+        "sourcePts": {
+          "frames": 1353,
+          "duration": 45.111733,
+          "minimumStep": 0.03336599999999734
+        },
+        "virtualCameraSha256": "afd6335a9cb657ab04720635b21ef6590f4f0a00360ffc70d3458606fc3a8918",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.969232,
+        "variance": 3189.880963528282
+      },
+      "captureStart": {
+        "time": 15.970627,
+        "perf": 16467.5
+      },
+      "captureEnd": {
+        "time": 18.984656,
+        "perf": 19483.79999999993
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "",
+      "prediction": "PGA",
+      "exact": false,
+      "status": "uncertain",
+      "frames": 36,
+      "inputSha256": "9d6de09aae37ec0e362d798ad60c7008dfdea807173170b3159ae6924e5cca81",
+      "captureTelemetry": null,
+      "trackingReportedFrames": 36,
+      "observedCaptureFps": 12.353099586806456,
+      "maxFrameGapMs": 133.354000000003,
+      "captureWallMs": 3014.0999999999767,
+      "finishToWorkerResultMs": 33.70000000006985,
+      "finishToDomCandidateMs": 35.10000000009313,
+      "finishToNextAnimationFrameMs": 50,
+      "inferenceMs": 27.599999999976717,
+      "processingMs": 30.199999999953434,
+      "trackingMs": {
+        "median": 68.5,
+        "p95": 106.59999999997672
+      },
+      "frameAgeMs": {
+        "median": 78.73899999990681,
+        "p95": 121.33799999997791
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "width": 640,
+        "height": 360,
+        "aspectRatio": 1.7777777777777777,
+        "frameRate": 30,
+        "resizeMode": "none"
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "asl-lexical-1",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "nativeRawPrediction": "PGA",
+      "nativeStructuralEligible": true
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-mask-7",
+        "sourceId": "cdc-mask",
+        "start": 26,
+        "end": 29,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-mask",
+          "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+          "bytes": 1697383,
+          "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "face-touching-and-mask-adjustment",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ],
+            [
+              29,
+              32
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+        "rawBytes": 1697383,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 895,
+          "duration": 37.287,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "4829c01c07f7cfd4e85960bc4d86e665239b245f74f7d27cd0ad764460afaf37",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.970387,
+        "variance": 1675.6931785301094
+      },
+      "captureStart": {
+        "time": 15.971749,
+        "perf": 16459.800000000047
+      },
+      "captureEnd": {
+        "time": 18.9856,
+        "perf": 19475.5
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 45,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 15.000252276970096,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-items-2",
+        "sourceId": "cdc-items",
+        "start": 11,
+        "end": 14,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-items",
+          "file": "Donning PPE- Remove Personal Clothing and Items CDC03.webm",
+          "bytes": 866339,
+          "sha1": "fa4c9ea6f9e55d858a62f79737b2ef3ef8c436d4",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "clothing-and-personal-items",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+        "rawBytes": 866339,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 813,
+          "duration": 33.867,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "22a731efb5c0554fd74d1427ccb122fa93eede03ac58e9439394637ea4a8640b",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.968507,
+        "variance": 2814.1119671103406
+      },
+      "captureStart": {
+        "time": 15.969887,
+        "perf": 16493.5
+      },
+      "captureEnd": {
+        "time": 18.983982,
+        "perf": 19509
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 46,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.99997500004168,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-mask-3",
+        "sourceId": "cdc-mask",
+        "start": 14,
+        "end": 17,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-mask",
+          "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+          "bytes": 1697383,
+          "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "face-touching-and-mask-adjustment",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ],
+            [
+              29,
+              32
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+        "rawBytes": 1697383,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 895,
+          "duration": 37.287,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "4e0a2259ca47b3ce18e8c056bc0c7ad1dc9d50676b2a61f3b382d7adfe657555",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.972149,
+        "variance": 2027.2859640239767
+      },
+      "captureStart": {
+        "time": 15.973676,
+        "perf": 16474
+      },
+      "captureEnd": {
+        "time": 18.987037,
+        "perf": 19489
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 44,
+      "visibleFrames": 1,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.659117562031923,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-mask-0",
+        "sourceId": "cdc-mask",
+        "start": 5,
+        "end": 8,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-mask",
+          "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+          "bytes": 1697383,
+          "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "face-touching-and-mask-adjustment",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ],
+            [
+              29,
+              32
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+        "rawBytes": 1697383,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 895,
+          "duration": 37.287,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "3f35f0ecc3a02993aa9608fc6c08b588641c6705d25fc567e65a9fd0684be92d",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.969752,
+        "variance": 919.0366589372243
+      },
+      "captureStart": {
+        "time": 15.971183,
+        "perf": 16462.399999999965
+      },
+      "captureEnd": {
+        "time": 18.984967,
+        "perf": 19477.70000000001
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 45,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.83160399078014,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "asl-lexical-0",
+        "sourceId": "asl-lexical",
+        "start": 6,
+        "end": 9.5,
+        "reference": "",
+        "signer": "identity-unverified:asl-demo",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "asl-lexical",
+          "file": "American Sign Language demo - Travis Dougherty.ogv",
+          "bytes": 8262854,
+          "sha1": "eb3b81b969ae9cc7cc29941a5872fb4c9f2e26f3",
+          "license": "CC BY-SA 3.0",
+          "author": "Fuzheado (Andrew Lih); signer Travis Dougherty",
+          "category": "lexical-ASL-not-fingerspelling",
+          "windows": [
+            [
+              6,
+              9.5
+            ],
+            [
+              9.5,
+              12.5
+            ]
+          ],
+          "annotationSource": "https://commons.wikimedia.org/wiki/TimedText:American_Sign_Language_demo_-_Travis_Dougherty.ogv.en.srt",
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:American_Sign_Language_demo_-_Travis_Dougherty.ogv",
+          "sourceGroup": "asl-demo",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 3.0",
+        "rawSha256": "9130e2a5d01c31a2da08f2e0d1c96f74ae86f72a8abff18d441bb05023bcc3ef",
+        "rawBytes": 8262854,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3.5,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 960,
+          "height": 540,
+          "r_frame_rate": "30000/1001",
+          "avg_frame_rate": "30000/1001"
+        },
+        "sourcePts": {
+          "frames": 1353,
+          "duration": 45.111733,
+          "minimumStep": 0.03336599999999734
+        },
+        "virtualCameraSha256": "0ca2c181d310620ab19979441bef3a0dcd1b6c111aca10bd953ba2486e9a2979",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.977484,
+        "variance": 3113.3526180984295
+      },
+      "captureStart": {
+        "time": 15.978916,
+        "perf": 16481.199999999953
+      },
+      "captureEnd": {
+        "time": 19.49291,
+        "perf": 19996.300000000047
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 40,
+      "visibleFrames": 38,
+      "categoryQuality": [
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ]
+      ],
+      "observedCaptureFps": 11.359396449052662,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Tracking is too slow; try better lighting or another device",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-clean-0",
+        "sourceId": "cdc-clean",
+        "start": 4,
+        "end": 7,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-clean",
+          "file": "Clean hands short.webm",
+          "bytes": 4172129,
+          "sha1": "086c61006e3b38bb0aed44d8f5e8b25ba6989bf5",
+          "license": "Public domain mark 1.0; US federal work",
+          "author": "Centers for Disease Control and Prevention",
+          "category": "ordinary-handwashing",
+          "windows": [
+            [
+              4,
+              7
+            ],
+            [
+              7,
+              10
+            ],
+            [
+              10,
+              13
+            ],
+            [
+              13,
+              16
+            ],
+            [
+              16,
+              19
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Clean_hands_short.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "Public domain mark 1.0; US federal work",
+        "rawSha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3",
+        "rawBytes": 4172129,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          480,
+          360
+        ],
+        "sourceStream": {
+          "width": 480,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "30000/1001",
+          "avg_frame_rate": "30000/1001"
+        },
+        "sourcePts": {
+          "frames": 689,
+          "duration": 22.956,
+          "minimumStep": 0.0329999999999977
+        },
+        "virtualCameraSha256": "d16707629f8db1d37aa3975cd5c37c3258303369ae317f1c65ddf2e5548e7401",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.932283,
+        "variance": 1910.3136520490298
+      },
+      "captureStart": {
+        "time": 15.933878,
+        "perf": 17342.70000000001
+      },
+      "captureEnd": {
+        "time": 18.947786,
+        "perf": 20358.300000000017
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 36,
+      "visibleFrames": 16,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 12.352837993941447,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-mask-2",
+        "sourceId": "cdc-mask",
+        "start": 11,
+        "end": 14,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-mask",
+          "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+          "bytes": 1697383,
+          "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "face-touching-and-mask-adjustment",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ],
+            [
+              29,
+              32
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+        "rawBytes": 1697383,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 895,
+          "duration": 37.287,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "591daec3f70e32a0828269ac42e3bc5be2bf9fced519186220422b2ac16f5301",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.982733,
+        "variance": 307.62480575920927
+      },
+      "captureStart": {
+        "time": 15.984038,
+        "perf": 16478.29999999993
+      },
+      "captureEnd": {
+        "time": 18.998243,
+        "perf": 19493.79999999993
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 45,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 15.000068182128102,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-items-6",
+        "sourceId": "cdc-items",
+        "start": 23,
+        "end": 26,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-items",
+          "file": "Donning PPE- Remove Personal Clothing and Items CDC03.webm",
+          "bytes": 866339,
+          "sha1": "fa4c9ea6f9e55d858a62f79737b2ef3ef8c436d4",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "clothing-and-personal-items",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+        "rawBytes": 866339,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 813,
+          "duration": 33.867,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "f69053b3118550235d82ba9cf19a9da24a707ce497e8cca70586c3a52ebd57b2",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.96992,
+        "variance": 1742.3731885369489
+      },
+      "captureStart": {
+        "time": 15.971492,
+        "perf": 16482.599999999977
+      },
+      "captureEnd": {
+        "time": 18.98508,
+        "perf": 19497.5
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 44,
+      "visibleFrames": 1,
+      "categoryQuality": [
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.658852702734483,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-clean-3",
+        "sourceId": "cdc-clean",
+        "start": 13,
+        "end": 16,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-clean",
+          "file": "Clean hands short.webm",
+          "bytes": 4172129,
+          "sha1": "086c61006e3b38bb0aed44d8f5e8b25ba6989bf5",
+          "license": "Public domain mark 1.0; US federal work",
+          "author": "Centers for Disease Control and Prevention",
+          "category": "ordinary-handwashing",
+          "windows": [
+            [
+              4,
+              7
+            ],
+            [
+              7,
+              10
+            ],
+            [
+              10,
+              13
+            ],
+            [
+              13,
+              16
+            ],
+            [
+              16,
+              19
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Clean_hands_short.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "Public domain mark 1.0; US federal work",
+        "rawSha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3",
+        "rawBytes": 4172129,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          480,
+          360
+        ],
+        "sourceStream": {
+          "width": 480,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "30000/1001",
+          "avg_frame_rate": "30000/1001"
+        },
+        "sourcePts": {
+          "frames": 689,
+          "duration": 22.956,
+          "minimumStep": 0.0329999999999977
+        },
+        "virtualCameraSha256": "527d55cd5651d7a17962e2f40f287c913bff6794c13f69cda48331fa50c99e30",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.967454,
+        "variance": 974.8473504881731
+      },
+      "captureStart": {
+        "time": 15.969867,
+        "perf": 16435.79999999999
+      },
+      "captureEnd": {
+        "time": 18.982795,
+        "perf": 19450.399999999994
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 39,
+      "visibleFrames": 25,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ]
+      ],
+      "observedCaptureFps": 12.954599922749676,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-items-7",
+        "sourceId": "cdc-items",
+        "start": 26,
+        "end": 29,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-items",
+          "file": "Donning PPE- Remove Personal Clothing and Items CDC03.webm",
+          "bytes": 866339,
+          "sha1": "fa4c9ea6f9e55d858a62f79737b2ef3ef8c436d4",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "clothing-and-personal-items",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+        "rawBytes": 866339,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 813,
+          "duration": 33.867,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "151112de3182f90fbc999bff78bc3fb09bf400d43a20c490d1eff718f2a4b59a",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.970176,
+        "variance": 1665.4245511697845
+      },
+      "captureStart": {
+        "time": 15.971503,
+        "perf": 16471.70000000001
+      },
+      "captureEnd": {
+        "time": 18.986459,
+        "perf": 19487.899999999965
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 45,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 15.000451718148335,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-hygiene-0",
+        "sourceId": "cdc-hygiene",
+        "start": 3,
+        "end": 6,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-hygiene",
+          "file": "Donning PPE- Perform Hand Hygiene CDC05.webm",
+          "bytes": 874340,
+          "sha1": "371f2e7381cf496001483122a8c17b3959a997ac",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "ordinary-hand-rubbing",
+          "windows": [
+            [
+              3,
+              6
+            ],
+            [
+              6,
+              9
+            ],
+            [
+              9,
+              12
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              15,
+              18
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Perform_Hand_Hygiene_CDC05.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9",
+        "rawBytes": 874340,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 480,
+          "duration": 19.978,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "5241ede970056e5c8738aa62aa435e6fafaa2bec5b406cc85c2d8d6069fe6930",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.968318,
+        "variance": 276.6859447337192
+      },
+      "captureStart": {
+        "time": 15.969834,
+        "perf": 16466
+      },
+      "captureEnd": {
+        "time": 18.983278,
+        "perf": 19480.600000000035
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 45,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.83167898314009,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-items-3",
+        "sourceId": "cdc-items",
+        "start": 14,
+        "end": 17,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-items",
+          "file": "Donning PPE- Remove Personal Clothing and Items CDC03.webm",
+          "bytes": 866339,
+          "sha1": "fa4c9ea6f9e55d858a62f79737b2ef3ef8c436d4",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "clothing-and-personal-items",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+        "rawBytes": 866339,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 813,
+          "duration": 33.867,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "5e6082185326e8eb6c36866e0602888cfe077a41abc1c1507d6e1f49c0649cb2",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.968498,
+        "variance": 2816.2449118950444
+      },
+      "captureStart": {
+        "time": 15.969804,
+        "perf": 16461.79999999999
+      },
+      "captureEnd": {
+        "time": 18.984926,
+        "perf": 19478.20000000001
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 45,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.99990965963503,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "source": {
+        "id": "cdc-hygiene-3",
+        "sourceId": "cdc-hygiene",
+        "start": 12,
+        "end": 15,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-hygiene",
+          "file": "Donning PPE- Perform Hand Hygiene CDC05.webm",
+          "bytes": 874340,
+          "sha1": "371f2e7381cf496001483122a8c17b3959a997ac",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "ordinary-hand-rubbing",
+          "windows": [
+            [
+              3,
+              6
+            ],
+            [
+              6,
+              9
+            ],
+            [
+              9,
+              12
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              15,
+              18
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Perform_Hand_Hygiene_CDC05.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9",
+        "rawBytes": 874340,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 480,
+          "duration": 19.978,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "1ef0f27a997c0775973aa71c008944d4d8c863eab110fb3a081b580ca60c48c0",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "status": "abstained-model",
+      "prediction": "",
+      "reference": "",
+      "actualInference": true,
+      "inferenceMs": 26.199999999953434,
+      "frames": 39,
+      "captureTelemetry": null,
+      "reason": "Capture is outside the evaluated quality or text-length range.",
+      "checks": [
+        "empty prediction retained",
+        "no automatic composition or speech"
+      ],
+      "id": "cdc-hygiene-3",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "nativeRawPrediction": "EN",
+      "nativeStructuralEligible": false
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-mask-1",
+        "sourceId": "cdc-mask",
+        "start": 8,
+        "end": 11,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-mask",
+          "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+          "bytes": 1697383,
+          "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "face-touching-and-mask-adjustment",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ],
+            [
+              29,
+              32
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+        "rawBytes": 1697383,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 895,
+          "duration": 37.287,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "f71689875fa77cd8222ed09353b6915a251787e13e385cece2face298f3d154d",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.967104,
+        "variance": 416.8118235060647
+      },
+      "captureStart": {
+        "time": 15.968491,
+        "perf": 16448
+      },
+      "captureEnd": {
+        "time": 18.982242,
+        "perf": 19463.20000000007
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 45,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.666999118646704,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "id": "cdc-items-5",
+        "sourceId": "cdc-items",
+        "start": 20,
+        "end": 23,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-items",
+          "file": "Donning PPE- Remove Personal Clothing and Items CDC03.webm",
+          "bytes": 866339,
+          "sha1": "fa4c9ea6f9e55d858a62f79737b2ef3ef8c436d4",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "clothing-and-personal-items",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Remove_Personal_Clothing_and_Items_CDC03.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "87ec21f8e9dae3b0d9e3f0ae6f98b09c0ef57d788dd6acbafa3441b2937a2574",
+        "rawBytes": 866339,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 813,
+          "duration": 33.867,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "6f91793a7e9f6ccd98b4cc2ff9f22ece2420c1d4abd6e4d8a2f603c5992ac37b",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.968779,
+        "variance": 1694.753858024742
+      },
+      "captureStart": {
+        "time": 15.970089,
+        "perf": 16484.29999999999
+      },
+      "captureEnd": {
+        "time": 18.984371,
+        "perf": 19500.79999999999
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "",
+      "prediction": "ASEE",
+      "exact": false,
+      "status": "uncertain",
+      "frames": 39,
+      "inputSha256": "f426d5c57ba2144711c312935b6cee4b83cf91d4937c3bcdee75c969b045f05e",
+      "captureTelemetry": null,
+      "trackingReportedFrames": 39,
+      "observedCaptureFps": 13.25608061650544,
+      "maxFrameGapMs": 133.34000000000015,
+      "captureWallMs": 3014.2999999999884,
+      "finishToWorkerResultMs": 30.20000000001164,
+      "finishToDomCandidateMs": 31.79999999998836,
+      "finishToNextAnimationFrameMs": 33.29999999998836,
+      "inferenceMs": 24.600000000034925,
+      "processingMs": 26.800000000046566,
+      "trackingMs": {
+        "median": 67.90000000002328,
+        "p95": 105.09999999997672
+      },
+      "frameAgeMs": {
+        "median": 72.93099999998958,
+        "p95": 110.18599999997969
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "width": 640,
+        "height": 360,
+        "aspectRatio": 1.7777777777777777,
+        "frameRate": 30,
+        "resizeMode": "none"
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "cdc-items-5",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "nativeRawPrediction": "ASEE",
+      "nativeStructuralEligible": true
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-clean-1",
+        "sourceId": "cdc-clean",
+        "start": 7,
+        "end": 10,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-clean",
+          "file": "Clean hands short.webm",
+          "bytes": 4172129,
+          "sha1": "086c61006e3b38bb0aed44d8f5e8b25ba6989bf5",
+          "license": "Public domain mark 1.0; US federal work",
+          "author": "Centers for Disease Control and Prevention",
+          "category": "ordinary-handwashing",
+          "windows": [
+            [
+              4,
+              7
+            ],
+            [
+              7,
+              10
+            ],
+            [
+              10,
+              13
+            ],
+            [
+              13,
+              16
+            ],
+            [
+              16,
+              19
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Clean_hands_short.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "Public domain mark 1.0; US federal work",
+        "rawSha256": "b6afe16e598ec730d92185308220298f48a0b0865f7bacb39f5d34eecd61bbf3",
+        "rawBytes": 4172129,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          480,
+          360
+        ],
+        "sourceStream": {
+          "width": 480,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "30000/1001",
+          "avg_frame_rate": "30000/1001"
+        },
+        "sourcePts": {
+          "frames": 689,
+          "duration": 22.956,
+          "minimumStep": 0.0329999999999977
+        },
+        "virtualCameraSha256": "489ee32ecbcf7700a7be413b0572916c3638b1dec10d67d0af978debacb9f531",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.968044,
+        "variance": 1444.1161905088156
+      },
+      "captureStart": {
+        "time": 15.969421,
+        "perf": 16574.5
+      },
+      "captureEnd": {
+        "time": 18.983711,
+        "perf": 19590.300000000017
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 34,
+      "visibleFrames": 27,
+      "categoryQuality": [
+        [],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Right",
+            "points": 21,
+            "finite": true
+          }
+        ]
+      ],
+      "observedCaptureFps": 11.379377051520645,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Tracking is too slow; try better lighting or another device",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-hygiene-1",
+        "sourceId": "cdc-hygiene",
+        "start": 6,
+        "end": 9,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-hygiene",
+          "file": "Donning PPE- Perform Hand Hygiene CDC05.webm",
+          "bytes": 874340,
+          "sha1": "371f2e7381cf496001483122a8c17b3959a997ac",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "ordinary-hand-rubbing",
+          "windows": [
+            [
+              3,
+              6
+            ],
+            [
+              6,
+              9
+            ],
+            [
+              9,
+              12
+            ],
+            [
+              12,
+              15
+            ],
+            [
+              15,
+              18
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Perform_Hand_Hygiene_CDC05.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "eec2f057d85c1754bab7b6a901a28f17c05d3be8659195184c2f4f55466880d9",
+        "rawBytes": 874340,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 480,
+          "duration": 19.978,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "d8ebbfa9fa42a9ee72c668c6f085680ae221e0ac29d942e5a98d2b45977c4cc4",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.981444,
+        "variance": 1574.5311210644031
+      },
+      "captureStart": {
+        "time": 15.982904,
+        "perf": 16452.5
+      },
+      "captureEnd": {
+        "time": 18.996616,
+        "perf": 19467.599999999977
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 43,
+      "visibleFrames": 8,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          },
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ],
+        [
+          {
+            "side": "Left",
+            "points": 21,
+            "finite": true
+          }
+        ]
+      ],
+      "observedCaptureFps": 14.651063981196398,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    },
+    {
+      "kind": "selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
+      "source": {
+        "id": "cdc-mask-8",
+        "sourceId": "cdc-mask",
+        "start": 29,
+        "end": 32,
+        "reference": "",
+        "signer": "identity-unverified:cdc-collection",
+        "caseRole": "regression-negative",
+        "source": {
+          "id": "cdc-mask",
+          "file": "Donning PPE- Put on N95 Respirator CDC09.webm",
+          "bytes": 1697383,
+          "sha1": "56329305b61076af06a6e55e1e0c04dc460ed6f6",
+          "license": "CC BY-SA 4.0",
+          "author": "CDC, VRT ticket 2014112210011257",
+          "category": "face-touching-and-mask-adjustment",
+          "windows": [
+            [
+              5,
+              8
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              11,
+              14
+            ],
+            [
+              14,
+              17
+            ],
+            [
+              17,
+              20
+            ],
+            [
+              20,
+              23
+            ],
+            [
+              23,
+              26
+            ],
+            [
+              26,
+              29
+            ],
+            [
+              29,
+              32
+            ]
+          ],
+          "sourcePage": "https://commons.wikimedia.org/wiki/File:Donning_PPE-_Put_on_N95_Respirator_CDC09.webm",
+          "sourceGroup": "cdc-collection",
+          "use": "evaluation only; never model fitting or threshold tuning"
+        },
+        "dataset": "Wikimedia Commons frozen action windows; evaluation only",
+        "license": "CC BY-SA 4.0",
+        "rawSha256": "b544c9d235002c14dd7651c9095b80c8771bfabf9122fcf031f9a706155626a1",
+        "rawBytes": 1697383,
+        "annotationStartSeconds": 0,
+        "annotationEndSeconds": 3,
+        "displayDimensions": [
+          640,
+          360
+        ],
+        "sourceStream": {
+          "width": 640,
+          "height": 360,
+          "sample_aspect_ratio": "1:1",
+          "r_frame_rate": "24000/1001",
+          "avg_frame_rate": "1000/1"
+        },
+        "sourcePts": {
+          "frames": 895,
+          "duration": 37.287,
+          "minimumStep": 0.04099999999999682
+        },
+        "virtualCameraSha256": "93985ff49a96569ad2af64776c18579da39e6bcb4978ea791f3e524fbbe08df4",
+        "review": "source action metadata/captions + previous five-frame AI review; not independent expert temporal labels"
+      },
+      "sourceOnset": {
+        "time": 15.981849,
+        "variance": 1715.2815018432848
+      },
+      "captureStart": {
+        "time": 15.983249,
+        "perf": 16476.199999999953
+      },
+      "captureEnd": {
+        "time": 18.997183,
+        "perf": 19491.899999999907
+      },
+      "status": "abstained-quality",
+      "actualInference": false,
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "prediction": "",
+      "observedFrames": 44,
+      "visibleFrames": 0,
+      "categoryQuality": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "observedCaptureFps": 14.494424365734087,
+      "messages": [
+        "Experimental sequence recognition · research only: every candidate is uncertain. Review and confirm every character. Complete A–Z reliability is not established.",
+        "Capture a name for 1–16 seconds, then finish and review the candidate. Keep one hand visible and include movement for J/Z and repeated letters. Research-only: every candidate is uncertain. Rare-letter and physical-handedness coverage remain limited. Check every character.",
+        "Camera on. Hand tracking is running.",
+        "Editable draft · stays here when you switch modes · not saved after reload.",
+        "Keep one hand clearly visible throughout the name",
+        "Speech uses your existing volume and rate settings. Device voices may send spoken text to an online service.",
+        "A · B · C · D · E · F · G · H · I · J · K · L · M · N · O · P · Q · R · S · T · U · V · W · X · Y · Z",
+        "J and Z require movement. Similar handshapes need careful evaluation. This list is an alphabet reference, not a list of supported letters.",
+        "No text is inserted or spoken automatically. This small sequence pilot was trained independently on licensed FSboard data. Webcam accuracy and rejection of ordinary hand movement still need validation."
+      ],
+      "checks": [
+        "no model prediction claimed",
+        "quality rejection retained",
+        "empty draft and confirmation disabled"
+      ]
+    }
+  ],
+  "kind": "Previously exposed regression recordings, not a new final cohort or physical-camera validation"
+}

@@ -1,0 +1,20 @@
+{
+  "sourceCommit": "4d1a7b8a7e79db18a202907b9c1964daacbfaff4",
+  "runId": 41332586469,
+  "advisory": "https://github.com/advisories/GHSA-g3hv-75wg-m249",
+  "before": {
+    "moderate": 16,
+    "production": 0
+  },
+  "afterCompatibleFixAttempt": {
+    "moderate": 16,
+    "production": 0
+  },
+  "reportedFix": {
+    "package": "eslint",
+    "version": "4.0.0",
+    "isSemVerMajor": true
+  },
+  "publishedMinimatchPatch": "11.0.1",
+  "decision": "No compatible automatic fix; no forced downgrade, blanket major override, exception or gate change adopted"
+}

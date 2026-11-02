@@ -50,7 +50,7 @@ jobs:
           ids+=["164650016581817f52803ab7","47b36e3fa22f13b5bdb304f9"]
           root=pathlib.Path("work/fingerspelling-camera");root.mkdir(parents=True,exist_ok=True)
           (root/"cases.json").write_text(json.dumps([{"id":id} for id in ids]))
-          (root/"cases.txt").write_text("\\n".join(ids)+"\\n")
+          (root/"cases.txt").write_text("\n".join(ids)+"\n")
           print("PREDECLARED-RARE-MIRROR-CASES",json.dumps(ids))
           PY
           mapfile -t cases < work/fingerspelling-camera/cases.txt
