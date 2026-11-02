@@ -40,6 +40,7 @@ def outcome(row):
     stages = {**(telemetry.get("fingerprints") or {}), **{k: v for k, v in (r.get("resultFingerprints") or {}).items() if k != "schedule" and k != "observations"}}
     return {"technical": False, "reference": reference.strip().upper(), "text": text, "candidate": bool(text),
             "status": r.get("status"), "input": r.get("inputSha256"), "fps": r.get("observedCaptureFps"),
+            "trackMedian": (r.get("trackingMs") or {}).get("median"), "trackP95": (r.get("trackingMs") or {}).get("p95"),
             "gap": r.get("maxFrameGapMs"), "latency": r.get("finishToDomCandidateMs"), "worker": r.get("finishToWorkerResultMs"),
             "inference": r.get("inferenceMs"), "frames": r.get("frames") or r.get("observedFrames"), "stages": stages}
 
@@ -65,6 +66,9 @@ def summarize(catalog, variant):
          "qualityAbstentions": sum(o["status"] == "abstained-quality" for o in ok), "modelAbstentions": sum(o["status"] == "abstained-model" for o in ok),
          "finishToCandidateMs": {"median": quantile([o["latency"] for o in ok if o["latency"] is not None], .5), "p95": quantile([o["latency"] for o in ok if o["latency"] is not None], .95)},
          "observedCaptureHzMedian": quantile([o["fps"] for o in ok if o["fps"]], .5),
+         "trackingMsMedianOfCaptures": quantile([o["trackMedian"] for o in ok if o.get("trackMedian") is not None], .5),
+         "trackingMsP95OfCaptures": quantile([o["trackP95"] for o in ok if o.get("trackP95") is not None], .5),
+         "observedCaptureHzP10": quantile([o["fps"] for o in ok if o["fps"]], .1),
          "maxFrameGapMsMedian": quantile([o["gap"] for o in ok if o["gap"] is not None], .5)}
     if positive:
         s["exact"] = sum(o["text"] == o["reference"] for o in ok)
@@ -94,7 +98,7 @@ def summarize(catalog, variant):
         s["repeatDivergenceStage"] = dict(divergence)
     return s
 
-result = {"kind": "Exposed recorded RGB regressions; same runner, alternating PR #50 baseline (d8cfefc) and PR #51 candidate per case. Not a fresh final cohort and not physical-webcam evidence.",
+result = {"kind": "Exposed recorded RGB regressions; same runner, alternating baseline and candidate per case (exact source SHAs under each variant). Not a fresh final cohort and not physical-webcam evidence.",
           "metrics": "CER = Levenshtein edits / reference characters (internal spaces included); candidates are displayed uncertain texts requiring confirmation", "catalogs": {}}
 for catalog in ["positive", "negative", "rare-original", "rare-mirrored"]:
     result["catalogs"][catalog] = {v: summarize(catalog, v) for v in ["baseline", "candidate"]}

@@ -1,0 +1,32 @@
+name: Tracking sprint - tracker variants on licensed frames
+# Lockstep per-variant cost, landmark parity and decoded outcome on the
+# production 15 Hz schedule. Exposed regression clips; frames never leave the runner.
+on:
+  push:
+    branches: [claude/charming-thompson-2aql9w-tracking]
+    paths: ['.github/workflows/tracking-sprint-variants.yml', 'scripts/diagnostics/tracker-variants-rgb.ts', 'workers/fingerspelling-vision.worker.ts']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  variants:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env: {OMP_NUM_THREADS: '1', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - run: python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+      - name: Verified licensed frames (runner-local; never uploaded)
+        run: python scripts/diagnostics/tracking-determinism-prepare.py
+      - run: npm ci && npm run build:rehearsal
+      - run: lscpu | head -20
+      - name: Lockstep tracker variants
+        run: node scripts/diagnostics/run-tracker-variants.mjs "$(command -v google-chrome)" outputs/tracker-variants-rgb.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: tracking-sprint-variants, path: outputs/tracker-variants-rgb.json, retention-days: 14}
