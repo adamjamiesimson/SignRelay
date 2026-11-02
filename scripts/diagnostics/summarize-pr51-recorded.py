@@ -98,7 +98,7 @@ def summarize(catalog, variant):
         s["repeatDivergenceStage"] = dict(divergence)
     return s
 
-result = {"kind": "Exposed recorded RGB regressions; same runner, alternating PR #50 baseline (d8cfefc) and PR #51 candidate per case. Not a fresh final cohort and not physical-webcam evidence.",
+result = {"kind": "Exposed recorded RGB regressions; same runner, alternating baseline and candidate per case (exact source SHAs under each variant). Not a fresh final cohort and not physical-webcam evidence.",
           "metrics": "CER = Levenshtein edits / reference characters (internal spaces included); candidates are displayed uncertain texts requiring confirmation", "catalogs": {}}
 for catalog in ["positive", "negative", "rare-original", "rare-mirrored"]:
     result["catalogs"][catalog] = {v: summarize(catalog, v) for v in ["baseline", "candidate"]}
