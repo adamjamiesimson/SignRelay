@@ -4,7 +4,7 @@ regressions (Kaggle googleai/fsboard v13, MD5 + SHA-256 checked). Frames and
 the sample index stay under git-ignored work/ on the runner; never upload them.
 
 The cases are the already-exposed regression catalog (10 positive) plus the
-five frozen #49 Q/J/Z / returned-Left cases. No case is chosen from results.
+five frozen #49 Q/J/Z / returned-Left cases (13 unique clips). No case is chosen from results.
 """
 import gzip, hashlib, json, pathlib, sys
 import cv2, kagglehub, numpy as np
@@ -17,8 +17,9 @@ RARE = ["164650016581817f52803ab7", "10ed939b4682a892fb626193", "47b36e3fa22f13b
 root = pathlib.Path("work/determinism"); (root / "frames").mkdir(parents=True, exist_ok=True)
 positive = [{"id": "6befb92aee4dcad7bf6ed904", "role": "known-regression"}, {"id": "6cd1239964a94fcc9b8eaff0", "role": "known-regression"}]
 positive += [{"id": r["id"], "role": r["role"]} for r in json.loads(pathlib.Path("docs/fingerspelling/evidence/upright-browser-fixture-index.json").read_text())]
-cases = positive + [{"id": i, "role": "rare-regression"} for i in RARE]
-assert len(cases) == 15 and len({c["id"] for c in cases}) == 15
+# Two frozen rare cases are also positive-catalog cases; each clip runs once.
+cases = positive + [{"id": i, "role": "rare-regression"} for i in RARE if i not in {c["id"] for c in positive}]
+assert len(positive) == 10 and len(cases) == len({c["id"] for c in cases}) == 13
 sources = json.loads(pathlib.Path("docs/fingerspelling/evidence/fsboard-v13-provenance.json").read_text())["rows"]
 sources += json.loads(gzip.decompress(pathlib.Path("docs/fingerspelling/evidence/upright-provenance.json.gz").read_bytes()))["rows"]
 meta = {}
