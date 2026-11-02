@@ -26,10 +26,10 @@ import { createSession, replayData } from "./replay-fingerspelling-trace";
 import { firstDivergentStage, fingerprintObservations, type StageFingerprints } from "../../lib/pipeline-fingerprint";
 import type { HandObservation } from "../../lib/vision-types";
 
-type Frame = { ms: number; png: string; rgbSha256: string };
-type Sample = { index: number; role: string; rare: boolean; reference: string; annotationStartMs: number; annotationEndMs: number; width: number; height: number; nativeFps: number; frames: Frame[] };
-type Step = { i: number; ts: number };
-type Tracked = { hands: HandObservation[]; handsMs: number }[];
+export type Frame = { ms: number; png: string; rgbSha256: string };
+export type Sample = { index: number; role: string; rare: boolean; reference: string; annotationStartMs: number; annotationEndMs: number; width: number; height: number; nativeFps: number; frames: Frame[] };
+export type Step = { i: number; ts: number };
+export type Tracked = { hands: HandObservation[]; handsMs: number }[];
 const OFFSET = 1000; // tracker timestamps must exceed its warm-up probe time
 
 export function schedules(sample: Sample, mirroredVariants: boolean) {
@@ -62,7 +62,7 @@ const levenshtein = (a: string, b: string) => {
 };
 
 /** Per-frame landmark agreement on the frames two schedules share. */
-function compareFrames(a: { steps: Step[]; tracked: Tracked }, b: { steps: Step[]; tracked: Tracked }, after?: number) {
+export function compareFrames(a: { steps: Step[]; tracked: Tracked }, b: { steps: Step[]; tracked: Tracked }, after?: number) {
   const byIndex = new Map(b.steps.map((s, k) => [s.i, b.tracked[k]]));
   let compared = 0, identical = 0, detectionMismatch = 0, maxDelta = 0, firstIdenticalAfter: number | null = null, bothDetected = 0;
   a.steps.forEach((s, k) => {
