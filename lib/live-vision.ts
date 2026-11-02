@@ -186,6 +186,9 @@ export class LiveVision {
 
   private fail(error: Error) {
     this.lastError = error.message;
+    // Pixels captured before a tracking fault belong to the interrupted
+    // observation stream, even if CPU recovery completes within the age limit.
+    this.snapshot?.bitmap.close(); this.snapshot = null; this.snapshotError = null;
     this.worker?.terminate(); this.worker = null;
     this.stats.recoveries++;
     // A failed GPU context must not be selected again during recovery.
