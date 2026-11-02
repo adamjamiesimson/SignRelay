@@ -72,7 +72,19 @@ The native parity helper initially compared raw decoding with post-policy empty 
 
 The gap variant exceeds the existing 200 ms maximum gap and abstains on every positive. This is appropriate reporting of unsupported input, **not a successful recognition/rejection result**. Mirror-coordinate equality checks feature canonicalisation, not MediaPipe extraction from mirrored pixels or physical-left generalisation.
 
-RARE_MIRROR_PENDING
+### Actual rare-letter and mirrored RGB regressions
+
+[Twenty complete RGB captures](https://github.com/adamjamiesimson/SignRelay/actions/runs/41381371612): the first lexicographic previously exposed challenge ID containing each Q/J/Z, plus both known returned-Left export cases; originals and horizontal RGB mirrors through both implementations. Selection used reference letters and IDs, never prediction scores. These are five distinct recordings and derived mirrors, not twenty independent signers or new final examples.
+
+| Implementation | RGB input | Exact | CER | Candidate coverage |
+|---|---|---:|---:|---:|
+| baseline | original | 3/5 | 6.06% (4/66) | 5/5 |
+| candidate | original | 3/5 | 7.58% (5/66) | 5/5 |
+| baseline | mirrored | 3/5 | 3.03% (2/66) | 5/5 |
+| candidate | mirrored | 3/5 | 4.55% (3/66) | 5/5 |
+
+All twenty post-policy captured-input predictions match native ONNX. JUDSON SOTO is exact in all four conditions. GREGORY QUINN becomes HREGORY QIUINN in the candidate's original view; SIERRA ESPARZA becomes SIERRA OSPAPRZA in its mirrored view. Actual RGB mirroring therefore does not inherit the mathematical invariance of mirrored landmarks. The tiny Q/J/Z samples and returned-Left examples do not establish A–Z or physical-left reliability. Their full outputs, source hashes and transformation flags are retained in the four mirror reports.
+
 
 ## Working local testing interface
 

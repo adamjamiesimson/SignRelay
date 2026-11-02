@@ -1,0 +1,601 @@
+{
+  "variant": "baseline",
+  "mirror": "mirrored",
+  "candidateSource": "515aa37dccc57bea239bad9b4f6fc03d8781ba26",
+  "baselineSource": "d89cff666fe7a4981fb01a8b460a65a9abd3065e",
+  "caseCount": 5,
+  "completed": 5,
+  "cases": [
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "164650016581817f52803ab7",
+        "reference": "CHESAPEAKE VA",
+        "signer": "1c15",
+        "caseRole": "left_final",
+        "rawSha256": "cb4eda23c6c37ef904bda581050bf19f1078400b43e06594668e00503b0518bf",
+        "rawBytes": 5166274,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "1210000/42193",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.22904400000004443,
+        "annotationEndSeconds": 4.029043999999999,
+        "virtualCameraSha256": "fdc778a914a4fb93713be0fef12ec082e32f8bdd7eee9253b4bec0c3ad2087ee",
+        "horizontalMirror": true,
+        "evaluationScope": "Previously exposed challenge and returned-category regression; mirrored frames are derived from the same real recording, not independent signers"
+      },
+      "sourceOnset": {
+        "time": 15.979326,
+        "variance": 5856.113787280927
+      },
+      "captureStart": {
+        "time": 16.212346,
+        "perf": 16575.29999999999
+      },
+      "captureEnd": {
+        "time": 20.011845,
+        "perf": 20376.099999999977
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "CHESAPEAKE VA",
+      "prediction": "CHESAPEAKEVA",
+      "exact": false,
+      "status": "uncertain",
+      "frames": 57,
+      "inputSha256": "c317d15c8dedeb179b6c51d82f25b78cc7a8f3d1d5d86e814da37273d6ae87ba",
+      "captureTelemetry": null,
+      "trackingReportedFrames": 57,
+      "observedCaptureFps": 15.002279810735526,
+      "maxFrameGapMs": 67.54899999999907,
+      "captureWallMs": 3799.2999999999884,
+      "finishToWorkerResultMs": 24.900000000023283,
+      "finishToDomCandidateMs": 26.300000000046566,
+      "finishToNextAnimationFrameMs": 33.20000000001164,
+      "inferenceMs": 20.099999999976717,
+      "processingMs": 22,
+      "trackingMs": {
+        "median": 39.90000000002328,
+        "p95": 56.29999999998836
+      },
+      "frameAgeMs": {
+        "median": 70.79599999999846,
+        "p95": 86.3189999999995
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "width": 360,
+        "height": 640,
+        "aspectRatio": 0.5625,
+        "frameRate": 30
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "164650016581817f52803ab7",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "nativeRawPrediction": "CHESAPEAKEVA",
+      "nativeStructuralEligible": true
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "10ed939b4682a892fb626193",
+        "reference": "SIERRA ESPARZA",
+        "signer": "515f",
+        "caseRole": "challenge",
+        "rawSha256": "b9bd87b000a3b6cf5ac26d11cb15093ae8fe99febbd50584d2e6297b6fae5094",
+        "rawBytes": 7489250,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "2715000/90403",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.12442200000003822,
+        "annotationEndSeconds": 5.702422000000013,
+        "virtualCameraSha256": "ef220c32d7ffe2ae14257fc245579d807ab2327146a02050af88b13babb65185",
+        "horizontalMirror": true,
+        "evaluationScope": "Previously exposed challenge and returned-category regression; mirrored frames are derived from the same real recording, not independent signers"
+      },
+      "sourceOnset": {
+        "time": 15.978572,
+        "variance": 2270.8461368178596
+      },
+      "captureStart": {
+        "time": 16.11125,
+        "perf": 16473.79999999999
+      },
+      "captureEnd": {
+        "time": 21.694249,
+        "perf": 22058.899999999994
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "SIERRA ESPARZA",
+      "prediction": "SIERRA ESPARZ",
+      "exact": false,
+      "status": "uncertain",
+      "frames": 84,
+      "inputSha256": "940dec13a3f2189fed6a7703f3eb4851a32560fd548b7f727d92101a250fffd5",
+      "captureTelemetry": null,
+      "trackingReportedFrames": 84,
+      "observedCaptureFps": 14.91039302897809,
+      "maxFrameGapMs": 99.46500000000378,
+      "captureWallMs": 5583,
+      "finishToWorkerResultMs": 21.39999999999418,
+      "finishToDomCandidateMs": 22.599999999976717,
+      "finishToNextAnimationFrameMs": 33.39999999999418,
+      "inferenceMs": 15.299999999988358,
+      "processingMs": 18.199999999982538,
+      "trackingMs": {
+        "median": 38.80000000001746,
+        "p95": 56
+      },
+      "frameAgeMs": {
+        "median": 51.58299999999508,
+        "p95": 70.19099999999162
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "width": 360,
+        "height": 640,
+        "aspectRatio": 0.5625,
+        "frameRate": 30
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "10ed939b4682a892fb626193",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "nativeRawPrediction": "SIERRA ESPARZ",
+      "nativeStructuralEligible": true
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "47b36e3fa22f13b5bdb304f9",
+        "reference": "MICHAEL CAMACHO",
+        "signer": "1c15",
+        "caseRole": "left_final",
+        "rawSha256": "f36a56a94d9268397f9f06e63b2f37b46dd5ca629603ce8ee2c775eaeafc2bf9",
+        "rawBytes": 7609182,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "8145000/272291",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.47511099999996986,
+        "annotationEndSeconds": 5.525110999999924,
+        "virtualCameraSha256": "167abc8d5bb85fef8b988541b46d921c9194c57aca9406485db03dce61121df7",
+        "horizontalMirror": true,
+        "evaluationScope": "Previously exposed challenge and returned-category regression; mirrored frames are derived from the same real recording, not independent signers"
+      },
+      "sourceOnset": {
+        "time": 15.977852,
+        "variance": 4201.629098816433
+      },
+      "captureStart": {
+        "time": 16.460425,
+        "perf": 16839.70000000001
+      },
+      "captureEnd": {
+        "time": 21.51086,
+        "perf": 21892.5
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "MICHAEL CAMACHO",
+      "prediction": "MICHAEL CAMACHO",
+      "exact": true,
+      "status": "uncertain",
+      "frames": 76,
+      "inputSha256": "e86f03c703fa509bf1792b69628d42498aab3adf51d1c94e57aa224bd7b38d1e",
+      "captureTelemetry": null,
+      "trackingReportedFrames": 76,
+      "observedCaptureFps": 15.000099000653414,
+      "maxFrameGapMs": 67.00900000000183,
+      "captureWallMs": 5050.5,
+      "finishToWorkerResultMs": 21.79999999998836,
+      "finishToDomCandidateMs": 23.20000000001164,
+      "finishToNextAnimationFrameMs": 32.5,
+      "inferenceMs": 16,
+      "processingMs": 18.20000000001164,
+      "trackingMs": {
+        "median": 39.20000000001164,
+        "p95": 56.399999999965075
+      },
+      "frameAgeMs": {
+        "median": 23.374000000014348,
+        "p95": 40.41800000002331
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "width": 360,
+        "height": 640,
+        "aspectRatio": 0.5625,
+        "frameRate": 30
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "47b36e3fa22f13b5bdb304f9",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "nativeRawPrediction": "MICHAEL CAMACHO",
+      "nativeStructuralEligible": true
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "032cf1f7a7b86bdec79412b9",
+        "reference": "GREGORY QUINN",
+        "signer": "df0c",
+        "caseRole": "challenge",
+        "rawSha256": "74bd99c3d0bd8c4e86d01be75d47b7e5d0cdb4fe332ef3d4b84480f5ef30cfb9",
+        "rawBytes": 6313670,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "3397500/113263",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.3736109999999968,
+        "annotationEndSeconds": 4.932610999999994,
+        "virtualCameraSha256": "343a556eb97f0fc6f8b66f8fd58f47bddcbf98d41e5a75c4455caddbf15b04b6",
+        "horizontalMirror": true,
+        "evaluationScope": "Previously exposed challenge and returned-category regression; mirrored frames are derived from the same real recording, not independent signers"
+      },
+      "sourceOnset": {
+        "time": 15.946629,
+        "variance": 5658.805940018447
+      },
+      "captureStart": {
+        "time": 16.329118,
+        "perf": 17438.29999999999
+      },
+      "captureEnd": {
+        "time": 20.879591,
+        "perf": 21991
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "GREGORY QUINN",
+      "prediction": "GREGORY QUINN",
+      "exact": true,
+      "status": "uncertain",
+      "frames": 68,
+      "inputSha256": "e78192069c90972a51fb22bc4dce76e7dfa382bc2d1414d3efdf50df1ad01e24",
+      "captureTelemetry": null,
+      "trackingReportedFrames": 68,
+      "observedCaptureFps": 15.00008283627835,
+      "maxFrameGapMs": 99.96999999999753,
+      "captureWallMs": 4550.400000000023,
+      "finishToWorkerResultMs": 21.199999999982538,
+      "finishToDomCandidateMs": 22.5,
+      "finishToNextAnimationFrameMs": 32.69999999998254,
+      "inferenceMs": 16.199999999982538,
+      "processingMs": 18.099999999976717,
+      "trackingMs": {
+        "median": 39.09999999997672,
+        "p95": 58.30000000001746
+      },
+      "frameAgeMs": {
+        "median": 23.177999999981694,
+        "p95": 43.58499999999185
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "width": 360,
+        "height": 640,
+        "aspectRatio": 0.5625,
+        "frameRate": 30
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "032cf1f7a7b86bdec79412b9",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "nativeRawPrediction": "GREGORY QUINN",
+      "nativeStructuralEligible": true
+    },
+    {
+      "kind": "one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
+      "source": {
+        "y4mHeader": "YUV4MPEG2 W360 H640 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG",
+        "id": "02f5e0ef7897ad962de7cca5",
+        "reference": "JUDSON SOTO",
+        "signer": "a1ba",
+        "caseRole": "challenge",
+        "rawSha256": "5e0ca93f5595366ae5298f07c2ef06cd1cfd4adefc35cae9831749bc960c9a0a",
+        "rawBytes": 8860006,
+        "dataset": "googleai/fsboard/versions/13",
+        "license": "CC BY 4.0",
+        "conversion": "display-matrix-aware, aspect-preserving, max side 640; 30 fps YUV420p; flat preamble/tail; no synthetic signing or injected landmarks",
+        "displayDimensions": [
+          360,
+          640
+        ],
+        "sourceDisplayMetadata": {
+          "width": 3264,
+          "height": 1836,
+          "avg_frame_rate": "6330000/211601",
+          "start_time": "0.000000",
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "eng",
+            "handler_name": "VideoHandle",
+            "vendor_id": "[0][0][0][0]"
+          },
+          "side_data_list": [
+            {
+              "side_data_type": "Display Matrix",
+              "displaymatrix": "\n00000000:            0      -65536           0\n00000001:        65536           0           0\n00000002:            0           0  1073741824\n",
+              "rotation": 90
+            }
+          ]
+        },
+        "annotationStartSeconds": 0.7465669999999704,
+        "annotationEndSeconds": 6.780566999999962,
+        "virtualCameraSha256": "dc1231f45d813857a6f904ad9d654fd0a166a26f14db9ab56a17e8d8d9dbd06d",
+        "horizontalMirror": true,
+        "evaluationScope": "Previously exposed challenge and returned-category regression; mirrored frames are derived from the same real recording, not independent signers"
+      },
+      "sourceOnset": {
+        "time": 15.975031,
+        "variance": 2707.527090567117
+      },
+      "captureStart": {
+        "time": 16.724168,
+        "perf": 17088.5
+      },
+      "captureEnd": {
+        "time": 22.757218,
+        "perf": 23124
+      },
+      "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+      "reference": "JUDSON SOTO",
+      "prediction": "JUDSON SOTO",
+      "exact": true,
+      "status": "uncertain",
+      "frames": 91,
+      "inputSha256": "a82b6fc853eb169f218bdaa3a5ea6faee2efbd42980443683c406114fcf68b8c",
+      "captureTelemetry": null,
+      "trackingReportedFrames": 91,
+      "observedCaptureFps": 14.917402343225556,
+      "maxFrameGapMs": 99.99100000000908,
+      "captureWallMs": 6033,
+      "finishToWorkerResultMs": 21.10000000000582,
+      "finishToDomCandidateMs": 22.10000000000582,
+      "finishToNextAnimationFrameMs": 34.10000000000582,
+      "inferenceMs": 15.39999999999418,
+      "processingMs": 17.699999999982538,
+      "trackingMs": {
+        "median": 39,
+        "p95": 48.39999999999418
+      },
+      "frameAgeMs": {
+        "median": 39.42899999997462,
+        "p95": 43.432999999975436
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "trackSettings": {
+        "width": 360,
+        "height": 640,
+        "aspectRatio": 0.5625,
+        "frameRate": 30
+      },
+      "checks": [
+        "actual RGB tracking, no landmark substitution",
+        "actual 132-feature inference",
+        "uncertain warning and explicit confirmation",
+        "no automatic composition or speech",
+        "word transcript preserved"
+      ],
+      "id": "02f5e0ef7897ad962de7cca5",
+      "measured": true,
+      "nativeCapturedTextParity": true,
+      "nativeRawPrediction": "JUDSON SOTO",
+      "nativeStructuralEligible": true
+    }
+  ],
+  "kind": "Previously exposed regression recordings, not a new final cohort or physical-camera validation"
+}
