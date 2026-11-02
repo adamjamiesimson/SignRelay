@@ -17,7 +17,7 @@ export function capabilityStatus(language: LanguageId): Capability {
   const model = MODEL_ADAPTERS[language];
   if (language === "asl") return { tier: "research-model", independentlyValidated: false,
     headline: `Research preview. Six demo words use simple movement rules. A research model holds ${ASL_VOCABULARY_COUNTS.installed.toLocaleString("en")} installed labels: ${ASL_VOCABULARY_COUNTS.experimental.toLocaleString("en")} have been recognised at least once on unseen signers' clips, and ${ASL_VOCABULARY_COUNTS.validated ? `${ASL_VOCABULARY_COUNTS.validated.toLocaleString("en")} passed` : "none has yet passed"} SignRelay's multi-signer check.`,
-    evidence: "On 11 previously seen, publisher-labelled development clips: 5 correct, 0 wrong, 6 no-match (PLEASE 3/3, NO 1/1, HELLO 1/3, THANK YOU 0/3, YES 0/1; SORRY untested). Not tested on new signers, live cameras or non-signing movement." };
+    evidence: "Earlier research version. On 11 previously seen, publisher-labelled development clips: 5 correct, 0 wrong, 6 no-match (PLEASE 3/3, NO 1/1, HELLO 1/3, THANK YOU 0/3, YES 0/1; SORRY untested). These results do not validate this version. Recorded-sign checks for the current word recognizer are still blocked; new signers, live cameras and non-signing movement remain untested." };
   if (language === "rsl" || language === "bdsl") return { tier: "clip-mode", independentlyValidated: false,
     headline: `Research preview. One sign per capture from a ${model.automaticVocabularyCount.toLocaleString()}-class model; suggestions are not added to a transcript.`,
     evidence: "Published dataset results only. SignRelay live-camera accuracy has not been measured." };
