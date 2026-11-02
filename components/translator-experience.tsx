@@ -697,6 +697,9 @@ export function TranslatorExperience() {
       signal.throwIfAborted();
       const profile = aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words";
       const engine = await LiveVision.create(progress, profile === "words", signal, profile);
+      // Diagnostics only (?perf&captureClock=capture): opt-in word-mode capture-time stamps.
+      const query = new URLSearchParams(window.location.search);
+      if (query.has("perf") && query.get("captureClock") === "capture") engine.wordClockPolicy = "capture-time";
       if (profile === (aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words")) return engine;
       engine.close();
     }

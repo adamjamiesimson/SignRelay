@@ -1,5 +1,6 @@
 import { VisionEngine, type VisionTimings } from "./vision-engine";
 import { FingerspellingSamplingClock } from "./fingerspelling-sampling";
+import { MediaTrackingClock, OwnFrameSource } from "./decoded-frame";
 import type { VisionFrame } from "./vision-types";
 
 export type CapturedVisionFrame = VisionFrame & { capturedAt:number; mediaSlot:number; presentedFrames:number };
@@ -29,6 +30,23 @@ export class LiveVision {
   private draining = false;
   private idleWaiters:(()=>void)[]=[];
   private frameClockOffset: number | null = null;
+  private lastCallbackMediaTime = -Infinity;
+  private ownClockActive = false;
+  private lastSampleTimestamp = -Infinity;
+  private lastWordTimestamp = -Infinity;
+  /** Pixels and capture time from one immutable frame when WebCodecs allows. */
+  private ownFrames = new OwnFrameSource();
+  private wordMediaClock = new MediaTrackingClock();
+  /**
+   * Word-mode timestamp policy. "capture-time" stamps each frame with its own
+   * decoded-frame interval; "pickup-tick" (default, unchanged) stamps it with
+   * the animation tick at which the tracking lane became free. Matched
+   * synthetic evidence showed capture-time is not neutral for the starter
+   * rules (fewer YES confirmations at >=80 ms tracking; identical negative
+   * controls), so it stays opt-in until real-signer evidence exists.
+   * See docs/engineering-sprint-2026-11-03.
+   */
+  wordClockPolicy: "pickup-tick" | "capture-time" = "pickup-tick";
   get frameAvailable() {
     return this.trackingProfile==="words" || (!this.draining && (!!this.snapshot || !!this.snapshotError || !this.sourceVideo));
   }
@@ -38,34 +56,51 @@ export class LiveVision {
     if(this.sourceVideo&&this.frameCallback!==null)this.sourceVideo.cancelVideoFrameCallback(this.frameCallback);
     this.snapshot?.bitmap.close();this.snapshot=null;this.sourceVideo=video;
     this.sampling=new FingerspellingSamplingClock();this.frameClockOffset=null;this.snapshotError=null;
+    this.ownFrames=new OwnFrameSource();this.lastCallbackMediaTime=-Infinity;
     const observe:VideoFrameRequestCallback=(_now,metadata)=>{
       if(this.closed||this.sourceVideo!==video)return;
       if(!this.draining&&Number.isFinite(metadata.mediaTime)&&metadata.mediaTime>=0){
         this.decodedFrame=metadata;
-        this.frameClockOffset??=metadata.expectedDisplayTime-metadata.mediaTime*1000;
-        const slot=this.sampling.take(metadata.mediaTime);
-        if(slot!==null){
-          try {
-            const ratio=Math.min(1,640/video.videoWidth,640/video.videoHeight);
-            const w=Math.max(1,Math.round(video.videoWidth*ratio)),h=Math.max(1,Math.round(video.videoHeight*ratio));
-            this.snapshotCanvas??=new OffscreenCanvas(w,h);
-            if(this.snapshotCanvas.width!==w||this.snapshotCanvas.height!==h){this.snapshotCanvas.width=w;this.snapshotCanvas.height=h;}
-            const ctx=this.snapshotCanvas.getContext("2d");
-            if(!ctx)throw new Error("Decoded-frame snapshot unavailable");
-            const capturedAt=performance.now();
-            ctx.drawImage(video,0,0,w,h);
-            // Synchronous snapshot in the callback associates pixels with THIS
-            // decoded timestamp; createImageBitmap(video) after await does not.
-            const bitmap=this.snapshotCanvas.transferToImageBitmap();
-            if(this.snapshot){this.snapshot.bitmap.close();this.stats.replaced++;}
-            this.snapshot={bitmap,timestamp:metadata.mediaTime*1000+this.frameClockOffset,capturedAt,mediaSlot:slot,presentedFrames:metadata.presentedFrames};
-            this.stats.sampled++;
-          } catch(error){this.snapshotError=error instanceof Error?error:new Error(String(error));}
-        }
+        this.sampleDecodedFrame(video,metadata);
       }
       this.frameCallback=video.requestVideoFrameCallback(observe);
     };
     this.frameCallback=video.requestVideoFrameCallback(observe);
+  }
+  private sampleDecodedFrame(video:HTMLVideoElement,metadata:VideoFrameCallbackMetadata) {
+    // The element can already show a newer frame than this metadata describes;
+    // take the timestamp from the pixels' own frame when WebCodecs allows.
+    const advanced=metadata.mediaTime>this.lastCallbackMediaTime;this.lastCallbackMediaTime=metadata.mediaTime;
+    const own=this.ownFrames.take(video,advanced);
+    // Falling back mid-stream may change media-clock domain (other engines):
+    // restart the lattice and offset rather than stall on earlier slots.
+    if(this.ownClockActive&&!own){this.sampling=new FingerspellingSamplingClock();this.frameClockOffset=null;}
+    this.ownClockActive=!!own;
+    try {
+      const mediaSeconds=own?own.mediaMs/1000:metadata.mediaTime;
+      this.frameClockOffset??=metadata.expectedDisplayTime-mediaSeconds*1000;
+      const timestamp=mediaSeconds*1000+this.frameClockOffset;
+      // The tracker rejects non-increasing times as a fault; never send one.
+      if(own?.repeat||timestamp<=this.lastSampleTimestamp)return;
+      const slot=this.sampling.take(mediaSeconds);
+      if(slot===null)return;
+      const ratio=Math.min(1,640/video.videoWidth,640/video.videoHeight);
+      const w=Math.max(1,Math.round(video.videoWidth*ratio)),h=Math.max(1,Math.round(video.videoHeight*ratio));
+      this.snapshotCanvas??=new OffscreenCanvas(w,h);
+      if(this.snapshotCanvas.width!==w||this.snapshotCanvas.height!==h){this.snapshotCanvas.width=w;this.snapshotCanvas.height=h;}
+      const ctx=this.snapshotCanvas.getContext("2d");
+      if(!ctx)throw new Error("Decoded-frame snapshot unavailable");
+      const capturedAt=performance.now();
+      ctx.drawImage(own?.frame??video,0,0,w,h);
+      // Synchronous snapshot in the callback associates pixels with THIS
+      // decoded timestamp; createImageBitmap(video) after await does not.
+      const bitmap=this.snapshotCanvas.transferToImageBitmap();
+      if(this.snapshot){this.snapshot.bitmap.close();this.stats.replaced++;}
+      this.snapshot={bitmap,timestamp,capturedAt,mediaSlot:slot,presentedFrames:metadata.presentedFrames};
+      this.lastSampleTimestamp=timestamp;
+      this.stats.sampled++;
+    } catch(error){this.snapshotError=error instanceof Error?error:new Error(String(error));}
+    finally {own?.frame.close();}
   }
   private whenIdle() {return this.occupied?new Promise<void>(resolve=>this.idleWaiters.push(resolve)):Promise.resolve();}
   /** Stop sampling, complete the in-flight frame and the single bounded snapshot.
@@ -86,7 +121,12 @@ export class LiveVision {
   assetSource: VisionEngine["assetSource"] = "self-hosted";
   delegate: "GPU" | "CPU" = "CPU";
   mode: "worker" | "main" = "worker";
-  readonly stats = { dropped: 0, recoveries: 0, sampled:0, replaced:0, stale:0 };
+  readonly stats = { dropped: 0, recoveries: 0, sampled:0, replaced:0, stale:0, repeated:0 };
+  /** Whether tracked frames carry their own decoded-frame timestamps. */
+  get frameClock(): "decoded-frame" | "callback" | "pickup-tick" {
+    if (this.trackingProfile === "words" && this.wordClockPolicy === "pickup-tick") return "pickup-tick";
+    return this.ownFrames.available ? "decoded-frame" : "callback";
+  }
   lastError: string | null = null;
   /** Called once per worker failure, before recovery starts. Hands already
    * painted by that worker are no longer current, and a failure during
@@ -236,7 +276,22 @@ export class LiveVision {
         if(performance.now()-sample.capturedAt>200){sample.bitmap.close();this.stats.stale++;return null;}
         bitmap=sample.bitmap;frameTimestamp=sample.timestamp;started=sample.capturedAt;
         metadata={mediaSlot:sample.mediaSlot,presentedFrames:sample.presentedFrames};
-      }else bitmap=await createImageBitmap(video);
+      }else{
+        // Opt-in: stamp each frame with its own capture interval rather than
+        // the animation tick at which the tracking lane became free.
+        const own=this.wordClockPolicy==="capture-time"&&"videoWidth" in video?this.ownFrames.take(video,true):null;
+        if(own?.repeat){own.frame.close();this.stats.repeated++;return null;}
+        if(own){
+          frameTimestamp=this.wordMediaClock.map(own.mediaMs,timestamp);
+          try {bitmap=await createImageBitmap(own.frame);} finally {own.frame.close();}
+        }else{
+          // Opt-in policy whose WebCodecs path is unavailable: keep tick times,
+          // but never below a capture-time stamp already sent to the tracker.
+          if(this.wordClockPolicy==="capture-time")frameTimestamp=Math.max(timestamp,this.lastWordTimestamp+1);
+          bitmap=await createImageBitmap(video);
+        }
+        if(this.wordClockPolicy==="capture-time")this.lastWordTimestamp=frameTimestamp;
+      }
       if (this.closed || this.worker !== captureWorker || this.recovering) { bitmap.close(); return null; }
       const posted = performance.now();
       return await new Promise<VisionFrame | null>((resolve, reject) => {
