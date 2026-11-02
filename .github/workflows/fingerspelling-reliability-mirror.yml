@@ -33,6 +33,7 @@ jobs:
           python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
           npm ci
           cp ../harness/scripts/diagnostics/fingerspelling-camera-browser.mjs scripts/diagnostics/fingerspelling-camera-browser.mjs
+          cp ../harness/scripts/diagnostics/fingerspelling-camera-onnx.py scripts/diagnostics/fingerspelling-camera-onnx.py
           cp ../harness/scripts/diagnostics/fingerspelling-reliability-mirror.py scripts/diagnostics/fingerspelling-reliability-mirror.py
       - run: npm run build:rehearsal
         working-directory: implementation
@@ -42,7 +43,7 @@ jobs:
           python - <<'PY'
           import json,pathlib
           d=json.load(open("docs/fingerspelling/evidence/upright-final.json"))
-          rows=sorted(d["predictions"]["challenge"],key=lambda r:r["id"])
+          rows=sorted(d["predictions"]["challenge"]["selected"],key=lambda r:r["id"])
           ids=[]
           for letter in "QJZ":
            r=next(r for r in rows if letter in r["reference"])
