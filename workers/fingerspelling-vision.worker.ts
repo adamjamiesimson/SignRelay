@@ -7,7 +7,14 @@ import type {VisionFrame} from "../lib/vision-types";
  * "landmarker": HandLandmarker on the identical palm-detector/landmark weights
  * taken from the same verified bundle; fingerspelling never reads gestures. */
 export type TrackerEngine="gesture"|"landmarker";
-export const DEFAULT_TRACKER:{engine:TrackerEngine;numHands:1|2}={engine:"gesture",numHands:2};
+/** One hand: MediaPipe re-runs palm detection on EVERY frame while fewer than
+ * numHands hands are tracked, so two hands cost ~72 ms/frame on the CI CPU
+ * (13.7% of frames inside the 66.7 ms 15 Hz budget) versus ~35 ms with one
+ * (95.4%). On 13 licensed clips in lockstep the tracked hand's landmarks were
+ * bit-identical and every decoded output was identical; fingerspelling uses a
+ * single dominant hand. Word mode keeps two hands (VisionEngine).
+ * Evidence: docs/tracking-sprint/README.md. Previous: {engine:"gesture",numHands:2}. */
+export const DEFAULT_TRACKER:{engine:TrackerEngine;numHands:1|2}={engine:"landmarker",numHands:1};
 let model:GestureRecognizer|HandLandmarker|null=null;
 let resize:OffscreenCanvas|null=null;
 let lastTimestamp=1;
@@ -61,8 +68,8 @@ self.onmessage=async({data}:MessageEvent)=>{
  try{
   if(data.type==="init"){
    self.postMessage({type:"progress",message:"Loading hand tracking"});
-   const engine:TrackerEngine=data.engine==="landmarker"?"landmarker":DEFAULT_TRACKER.engine;
-   const numHands=data.numHands===1?1:DEFAULT_TRACKER.numHands;
+   const engine:TrackerEngine=data.engine==="gesture"||data.engine==="landmarker"?data.engine:DEFAULT_TRACKER.engine;
+   const numHands=data.numHands===1||data.numHands===2?data.numHands:DEFAULT_TRACKER.numHands;
    const files=await FilesetResolver.forVisionTasks(LOCAL_WASM_PATH);
    const bundle=await reviewedTask();
    const options={canvas:new OffscreenCanvas(1,1),runningMode:"VIDEO" as const,numHands,
