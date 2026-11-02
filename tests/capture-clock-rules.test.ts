@@ -109,7 +109,20 @@ describe("word rules under the capture clock and the pick-up clock", () => {
         for (const word of a) tally["pickup-tick"][word] = (tally["pickup-tick"][word] ?? 0) + 1;
         for (const word of b) tally["capture-time"][word] = (tally["capture-time"][word] ?? 0) + 1;
       }
-      rows.push({ kind: "positive six-word sequence", cameraFps, trackingMeanMs: trackingMs, restMs: rest, runs: seeds.length, confirmations: tally, runsWithDifferentWords: disagreements });
+      // How often consecutive tracked frames are under the YES rule's 75 ms
+      // stable-ending window. The pick-up clock stretches every interval to the
+      // lane's busy time, so two samples can "span" 75 ms that were not observed.
+      const below = { "pickup-tick": 0, "capture-time": 0 }; let intervals = 0;
+      for (const seed of seeds) {
+        const picked = schedule(source(ASL_DEMO_WORDS, rest), { cameraFps, trackingMs, seed });
+        for (let k = 1; k < picked.length; k++) {
+          intervals++;
+          if (picked[k].tick - picked[k - 1].tick < 75) below["pickup-tick"]++;
+          if (picked[k].capture - picked[k - 1].capture < 75) below["capture-time"]++;
+        }
+      }
+      rows.push({ kind: "positive six-word sequence", cameraFps, trackingMeanMs: trackingMs, restMs: rest, runs: seeds.length, confirmations: tally, runsWithDifferentWords: disagreements,
+        intervalsBelow75Ms: { intervals, "pickup-tick": below["pickup-tick"], "capture-time": below["capture-time"] } });
     }
     for (const cameraFps of [30, 15]) for (const trackingMs of [50, 110]) {
       const triggers = { "pickup-tick": 0, "capture-time": 0 } as Record<string, number>;
