@@ -1,0 +1,38 @@
+name: PR 51 recorded-RGB summary
+# Summarises a finished pr51-recorded-validation run inside CI and prints the
+# identifier- and text-free aggregate (artifact blobs are not reachable from
+# the engineering environment). Ledgers are downloaded to the runner only.
+on:
+  push:
+    branches: [claude/charming-thompson-2aql9w]
+    paths: ['.github/workflows/pr51-recorded-summary.yml', 'scripts/diagnostics/summarize-pr51-recorded.py']
+  workflow_dispatch:
+permissions: {contents: read, actions: read}
+env:
+  PAIRED_RUN: '41421199003'
+  DETERMINISM_RUN: '41421547592'
+  FOLLOWUP_RUN: '41425230204'
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/download-artifact@v4
+        with: {run-id: '${{ env.PAIRED_RUN }}', github-token: '${{ github.token }}', pattern: 'pr51-*', path: ledgers}
+      - uses: actions/download-artifact@v4
+        with: {run-id: '${{ env.FOLLOWUP_RUN }}', github-token: '${{ github.token }}', pattern: 'pr51-rare-*', path: ledgers}
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with: {run-id: '${{ env.DETERMINISM_RUN }}', github-token: '${{ github.token }}', name: pr51-tracking-determinism, path: determinism}
+      - name: Aggregate (no identifiers, references, predictions or landmarks)
+        run: |
+          find ledgers -name '*.json' -exec sha256sum {} + | sed 's#ledgers/##' | sort -k2
+          python scripts/diagnostics/summarize-pr51-recorded.py ledgers outputs/pr51-recorded-summary.json > /dev/null
+          echo "PR51-RECORDED-SUMMARY-BEGIN"; python -c "import json;print(json.dumps(json.load(open('outputs/pr51-recorded-summary.json'))))"; echo "PR51-RECORDED-SUMMARY-END"
+          if [ -f determinism/tracking-determinism-rgb.json ]; then echo "PR51-DETERMINISM-BEGIN"; python -c "import json;print(json.dumps(json.load(open('determinism/tracking-determinism-rgb.json'))))"; echo "PR51-DETERMINISM-END"; fi
+      - uses: actions/upload-artifact@v4
+        with: {name: pr51-recorded-summary, path: outputs/pr51-recorded-summary.json, retention-days: 30}

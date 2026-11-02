@@ -1,13 +1,16 @@
 import * as ort from "onnxruntime-web";
 import {CTC_VOCABULARY} from "./fingerspelling-vocabulary";
 import {visualBeam,visualConfidenceFeatures,exactSequenceProbability,type SequenceCalibration} from "./fingerspelling-decoding";
+import {fingerprintFloat32,fingerprintText,type StageFingerprints} from "./pipeline-fingerprint";
 export {CTC_VOCABULARY} from "./fingerspelling-vocabulary";
 
 export const CTC_FEATURES = 66;
 export const CTC_MAX_FRAMES = 320;
 export type CtcContract = { url:string;bytes:number;sha256:string;features?:number;presenceIndex?:number;featureVersion?:"v2"|"v3";decoder?:"greedy"|"beam8";
  calibration?:SequenceCalibration;policy?:{threshold:number|null;reviewOnly?:boolean;policy:{minimumTextLength:number;maximumTextLength:number;minVisibleFraction:number;minFrames:number;maxFrames:number}} };
-export type CtcResult = { text: string; uncalibratedScore: number; inferenceMs: number; status: "candidate" | "no-hand" | "uncertain"; estimatedExactProbability?:number; processingMs?:number; abstentionReason?:string };
+export type CtcResult = { text: string; uncalibratedScore: number; inferenceMs: number; status: "candidate" | "no-hand" | "uncertain"; estimatedExactProbability?:number; processingMs?:number; abstentionReason?:string;
+  /** Run-comparison identifiers for the model input, raw output and decoded result. */
+  fingerprints?: StageFingerprints };
 
 export function decodeCtc(logits: Float32Array, frames: number) {
   const size = CTC_VOCABULARY.length;
@@ -30,6 +33,32 @@ export function decodeCtc(logits: Float32Array, frames: number) {
   }
   // This is a model score, never a calibrated probability of correctness.
   return { text, uncalibratedScore: count ? score/count : 0 };
+}
+
+/** Everything after the native run: decoding, sequence statistics and the
+ * review-only policy. Shared by the worker and the offline replay tool so a
+ * replayed tensor is decoded by exactly the production rules. */
+export function interpretCtcLogits(logits:Float32Array,frames:number,features:Float32Array,contract:CtcContract,inferenceMs:number,start=performance.now()):CtcResult {
+  const inputFeatures=contract.features??66,presenceIndex=contract.presenceIndex??65;
+  const fingerprints:StageFingerprints={features:fingerprintFloat32(features),logits:fingerprintFloat32(logits)};
+  const finish=(value:CtcResult):CtcResult=>({...value,fingerprints:{...fingerprints,output:fingerprintText(value.status+"\u0000"+value.text)}});
+  const result=decodeCtc(logits,frames);
+  if(contract.decoder==="beam8")result.text=visualBeam(logits,frames);
+  const stats=visualConfidenceFeatures(logits,frames,features,inputFeatures,presenceIndex,result.text);
+  const calibration=contract.calibration,policy=contract.policy;
+  const estimatedExactProbability=calibration?exactSequenceProbability(stats,calibration):undefined;
+  if(policy){
+    const rules=policy.policy;
+    const structurallyEligible=frames>=rules.minFrames&&frames<=rules.maxFrames&&stats[5]>=rules.minVisibleFraction
+      &&result.text.length>=rules.minimumTextLength&&result.text.length<=rules.maximumTextLength;
+    if(!structurallyEligible)return finish({text:"",uncalibratedScore:0,inferenceMs,status:"uncertain",estimatedExactProbability,abstentionReason:"Capture is outside the evaluated quality or text-length range.",processingMs:performance.now()-start});
+    const qualified=estimatedExactProbability!==undefined&&policy.threshold!==null&&estimatedExactProbability>=policy.threshold;
+    if(policy.reviewOnly||!qualified){
+      return finish({...result,text:policy.reviewOnly?result.text:"",inferenceMs,status:"uncertain",estimatedExactProbability,
+        abstentionReason:policy.reviewOnly&&qualified?"Research-only candidate. Conditional text confidence does not establish rejection of ordinary hand movement; check every character.":policy.threshold===null?"Uncertain capture. No validated acceptance threshold is available; check every character before confirming.":"Uncertain capture. Review carefully or recapture.",processingMs:performance.now()-start});
+    }
+  }
+  return finish({...result,inferenceMs,status:"candidate",estimatedExactProbability,processingMs:performance.now()-start});
 }
 
 async function verifiedBytes(contract: CtcContract, signal?: AbortSignal) {
@@ -102,7 +131,7 @@ export class FingerspellingCtcRuntime {
     }
     let hands = 0;
     for (let t=0;t<frames;t++) if (features[t*this.inputFeatures+this.presenceIndex] === 1) hands++;
-    if (!hands) return { text: "", uncalibratedScore: 0, inferenceMs: 0, status: "no-hand" };
+    if (!hands) return { text: "", uncalibratedScore: 0, inferenceMs: 0, status: "no-hand", fingerprints: {features:fingerprintFloat32(features)} };
     this.busy = true;
     const input = new ort.Tensor("float32",features,[1,frames,this.inputFeatures]);
     let outputs: Record<string,ort.Tensor> | undefined;
@@ -114,24 +143,7 @@ export class FingerspellingCtcRuntime {
       if (tensor.type !== "float32" || tensor.dims.length !== 3 || tensor.dims[0] !== 1
         || tensor.dims[1] !== frames || tensor.dims[2] !== CTC_VOCABULARY.length) throw new Error("Invalid fingerspelling tensor");
       observeLogits?.(tensor.data as Float32Array);
-      const logits=tensor.data as Float32Array;
-      const result=decodeCtc(logits,frames);
-      if(this.contract.decoder==="beam8")result.text=visualBeam(logits,frames);
-      const stats=visualConfidenceFeatures(logits,frames,features,this.inputFeatures,this.presenceIndex,result.text);
-      const calibration=this.contract.calibration,policy=this.contract.policy;
-      const estimatedExactProbability=calibration?exactSequenceProbability(stats,calibration):undefined;
-      if(policy){
-        const rules=policy.policy;
-        const structurallyEligible=frames>=rules.minFrames&&frames<=rules.maxFrames&&stats[5]>=rules.minVisibleFraction
-          &&result.text.length>=rules.minimumTextLength&&result.text.length<=rules.maximumTextLength;
-        if(!structurallyEligible)return {text:"",uncalibratedScore:0,inferenceMs,status:"uncertain",estimatedExactProbability,abstentionReason:"Capture is outside the evaluated quality or text-length range.",processingMs:performance.now()-start};
-        const qualified=estimatedExactProbability!==undefined&&policy.threshold!==null&&estimatedExactProbability>=policy.threshold;
-        if(policy.reviewOnly||!qualified){
-          return {...result,text:policy.reviewOnly?result.text:"",inferenceMs,status:"uncertain",estimatedExactProbability,
-            abstentionReason:policy.reviewOnly&&qualified?"Research-only candidate. Conditional text confidence does not establish rejection of ordinary hand movement; check every character.":policy.threshold===null?"Uncertain capture. No validated acceptance threshold is available; check every character before confirming.":"Uncertain capture. Review carefully or recapture.",processingMs:performance.now()-start};
-        }
-      }
-      return {...result,inferenceMs,status:"candidate",estimatedExactProbability,processingMs:performance.now()-start};
+      return interpretCtcLogits(tensor.data as Float32Array,frames,features,this.contract,inferenceMs,start);
     } finally {
       input.dispose();
       if (outputs) for (const value of new Set(Object.values(outputs))) value.dispose();

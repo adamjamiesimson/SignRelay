@@ -1,0 +1,18 @@
+{
+ "kind": "rendered synthetic hands through the production CPU tracking worker; determinism only, not accuracy",
+ "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+ "frames": 30,
+ "framesWithDetectedHand": 0,
+ "identicalRepeat": true,
+ "repeatFingerprints": [
+  "d9ab78259618f51f",
+  "d9ab78259618f51f"
+ ],
+ "afterOneDroppedFrame": {
+  "comparedFrames": 23,
+  "identicalFrames": 23,
+  "maxLandmarkDelta": 0
+ },
+ "conclusive": false,
+ "note": "No hand detected in rendered synthetic frames (3 rendering styles tried). Identical empty outputs qualify nothing; tracking determinism needs licensed RGB recordings."
+}

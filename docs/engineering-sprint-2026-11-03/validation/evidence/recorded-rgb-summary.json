@@ -1,0 +1,307 @@
+{
+ "kind": "Exposed recorded RGB regressions; same runner, alternating PR #50 baseline (d8cfefc) and PR #51 candidate per case. Not a fresh final cohort and not physical-webcam evidence.",
+ "metrics": "CER = Levenshtein edits / reference characters (internal spaces included); candidates are displayed uncertain texts requiring confirmation",
+ "catalogs": {
+  "positive": {
+   "baseline": {
+    "runs": 3,
+    "sources": [
+     "d8cfefcd2953bac3a2de10722b1ca4f03cfca5a0"
+    ],
+    "planned": 30,
+    "captures": 30,
+    "technicalFailures": 0,
+    "candidates": 30,
+    "abstentions": 0,
+    "qualityAbstentions": 0,
+    "modelAbstentions": 0,
+    "finishToCandidateMs": {
+     "median": 92.5,
+     "p95": 154.3
+    },
+    "observedCaptureHzMedian": 13.5,
+    "maxFrameGapMsMedian": 133.4,
+    "exact": 9,
+    "characterEdits": 70,
+    "referenceCharacters": 384,
+    "CER": 0.1823,
+    "consistentCases": 4,
+    "casesCompared": 10,
+    "repeatDivergenceStage": {
+     "features": 10
+    }
+   },
+   "candidate": {
+    "runs": 3,
+    "sources": [
+     "8ec08bc5755da07ce2f20c5778933ca94d262be1"
+    ],
+    "planned": 30,
+    "captures": 30,
+    "technicalFailures": 0,
+    "candidates": 30,
+    "abstentions": 0,
+    "qualityAbstentions": 0,
+    "modelAbstentions": 0,
+    "finishToCandidateMs": {
+     "median": 93.6,
+     "p95": 145.6
+    },
+    "observedCaptureHzMedian": 13.5,
+    "maxFrameGapMsMedian": 133.4,
+    "exact": 11,
+    "characterEdits": 70,
+    "referenceCharacters": 384,
+    "CER": 0.1823,
+    "consistentCases": 4,
+    "casesCompared": 10,
+    "repeatDivergenceStage": {
+     "schedule": 10
+    }
+   },
+   "paired": {
+    "comparedCaptures": 30,
+    "identicalCapturedTensors": 0,
+    "identicalTensorsWithSameText": 0,
+    "candidateFewerEdits": 5,
+    "candidateMoreEdits": 4,
+    "sameEdits": 21
+   }
+  },
+  "negative": {
+   "baseline": {
+    "runs": 2,
+    "sources": [
+     "d8cfefcd2953bac3a2de10722b1ca4f03cfca5a0"
+    ],
+    "planned": 58,
+    "captures": 58,
+    "technicalFailures": 0,
+    "candidates": 7,
+    "abstentions": 51,
+    "qualityAbstentions": 46,
+    "modelAbstentions": 5,
+    "finishToCandidateMs": {
+     "median": 70.8,
+     "p95": 135.1
+    },
+    "observedCaptureHzMedian": 15.0,
+    "maxFrameGapMsMedian": 67.0,
+    "falseCandidates": 7,
+    "consistentCases": 25,
+    "casesCompared": 29,
+    "repeatDivergenceStage": {
+     "unavailable": 26,
+     "features": 3
+    }
+   },
+   "candidate": {
+    "runs": 2,
+    "sources": [
+     "8ec08bc5755da07ce2f20c5778933ca94d262be1"
+    ],
+    "planned": 58,
+    "captures": 58,
+    "technicalFailures": 0,
+    "candidates": 7,
+    "abstentions": 51,
+    "qualityAbstentions": 46,
+    "modelAbstentions": 5,
+    "finishToCandidateMs": {
+     "median": 50.4,
+     "p95": 153.8
+    },
+    "observedCaptureHzMedian": 15.0,
+    "maxFrameGapMsMedian": 66.7,
+    "falseCandidates": 7,
+    "consistentCases": 25,
+    "casesCompared": 29,
+    "repeatDivergenceStage": {
+     "unavailable": 23,
+     "schedule": 6
+    }
+   },
+   "paired": {
+    "comparedCaptures": 7,
+    "identicalCapturedTensors": 0,
+    "identicalTensorsWithSameText": 0
+   }
+  },
+  "rare-original": {
+   "baseline": {
+    "runs": 6,
+    "sources": [
+     "d8cfefcd2953bac3a2de10722b1ca4f03cfca5a0"
+    ],
+    "planned": 30,
+    "captures": 30,
+    "technicalFailures": 0,
+    "candidates": 30,
+    "abstentions": 0,
+    "qualityAbstentions": 0,
+    "modelAbstentions": 0,
+    "finishToCandidateMs": {
+     "median": 47,
+     "p95": 165.3
+    },
+    "observedCaptureHzMedian": 13.6,
+    "maxFrameGapMsMedian": 133.4,
+    "exact": 14,
+    "characterEdits": 34,
+    "referenceCharacters": 396,
+    "CER": 0.0859,
+    "consistentCases": 2,
+    "casesCompared": 5,
+    "repeatDivergenceStage": {
+     "features": 5
+    }
+   },
+   "candidate": {
+    "runs": 6,
+    "sources": [
+     "64c5494c137bc217dfce2a9c0ed5ca403bb05f56",
+     "8ec08bc5755da07ce2f20c5778933ca94d262be1"
+    ],
+    "planned": 30,
+    "captures": 30,
+    "technicalFailures": 0,
+    "candidates": 30,
+    "abstentions": 0,
+    "qualityAbstentions": 0,
+    "modelAbstentions": 0,
+    "finishToCandidateMs": {
+     "median": 54.7,
+     "p95": 155.4
+    },
+    "observedCaptureHzMedian": 13.6,
+    "maxFrameGapMsMedian": 133.4,
+    "exact": 14,
+    "characterEdits": 31,
+    "referenceCharacters": 396,
+    "CER": 0.0783,
+    "consistentCases": 2,
+    "casesCompared": 5,
+    "repeatDivergenceStage": {
+     "schedule": 5
+    }
+   },
+   "paired": {
+    "comparedCaptures": 30,
+    "identicalCapturedTensors": 0,
+    "identicalTensorsWithSameText": 0,
+    "candidateFewerEdits": 5,
+    "candidateMoreEdits": 3,
+    "sameEdits": 22
+   }
+  },
+  "rare-mirrored": {
+   "baseline": {
+    "runs": 6,
+    "sources": [
+     "d8cfefcd2953bac3a2de10722b1ca4f03cfca5a0"
+    ],
+    "planned": 30,
+    "captures": 30,
+    "technicalFailures": 0,
+    "candidates": 30,
+    "abstentions": 0,
+    "qualityAbstentions": 0,
+    "modelAbstentions": 0,
+    "finishToCandidateMs": {
+     "median": 69.8,
+     "p95": 170.8
+    },
+    "observedCaptureHzMedian": 13.6,
+    "maxFrameGapMsMedian": 133.4,
+    "exact": 13,
+    "characterEdits": 25,
+    "referenceCharacters": 396,
+    "CER": 0.0631,
+    "consistentCases": 2,
+    "casesCompared": 5,
+    "repeatDivergenceStage": {
+     "features": 5
+    }
+   },
+   "candidate": {
+    "runs": 6,
+    "sources": [
+     "64c5494c137bc217dfce2a9c0ed5ca403bb05f56",
+     "8ec08bc5755da07ce2f20c5778933ca94d262be1"
+    ],
+    "planned": 30,
+    "captures": 30,
+    "technicalFailures": 0,
+    "candidates": 30,
+    "abstentions": 0,
+    "qualityAbstentions": 0,
+    "modelAbstentions": 0,
+    "finishToCandidateMs": {
+     "median": 79.2,
+     "p95": 164.6
+    },
+    "observedCaptureHzMedian": 13.7,
+    "maxFrameGapMsMedian": 133.4,
+    "exact": 11,
+    "characterEdits": 26,
+    "referenceCharacters": 396,
+    "CER": 0.0657,
+    "consistentCases": 1,
+    "casesCompared": 5,
+    "repeatDivergenceStage": {
+     "schedule": 5
+    }
+   },
+   "paired": {
+    "comparedCaptures": 30,
+    "identicalCapturedTensors": 0,
+    "identicalTensorsWithSameText": 0,
+    "candidateFewerEdits": 4,
+    "candidateMoreEdits": 6,
+    "sameEdits": 20
+   }
+  }
+ },
+ "provenance": {
+  "pairedRun": "https://github.com/adamjamiesimson/SignRelay/actions/runs/41421199003",
+  "followUpRun": "https://github.com/adamjamiesimson/SignRelay/actions/runs/41425230204",
+  "summaryRun": "https://github.com/adamjamiesimson/SignRelay/actions/runs/41426531562",
+  "ledgerSha256": {
+   "pr51-negative-1/ci-negative-baseline.json": "e45249a5113ec33e038715795855343b10aef76ff73ab148ad93b620ff7e9e8e",
+   "pr51-negative-1/ci-negative-candidate.json": "22d9323498639b98eae86183a0fc8f7ea790d5741bb08439d671808bc572da63",
+   "pr51-negative-2/ci-negative-baseline.json": "dbe39b79183d9bfb27323142a14358cb814e20b82c3cd4ae99d567d0f2e57493",
+   "pr51-negative-2/ci-negative-candidate.json": "4cc36a71a10956ab55a39cc5102c59777f5fdffdbba65fb355bfd731b98b9fb3",
+   "pr51-positive-1/ci-positive-baseline-1.json": "7bde5bd98627c77ecfb8be2cfed69e682fec02d6be92779fc9ad59bade6e1ad6",
+   "pr51-positive-1/ci-positive-candidate-1.json": "f5d46ac62cebf1f258d6f77f111a049610945950c4287933e23fef28d3409b24",
+   "pr51-positive-2/ci-positive-baseline-2.json": "50a40a43b7e8390805e430c36910c5159722aa2d8077f40084add312b4d21716",
+   "pr51-positive-2/ci-positive-candidate-2.json": "6514e3e793b5a43b62d30d78c845f456416ee6d35a519b1db89435b3a1a36c3f",
+   "pr51-positive-3/ci-positive-baseline-3.json": "026b84ad5474f0cac1b43f3aac33fcaa5967ba3c478c9ddd14c8cc5812382eb1",
+   "pr51-positive-3/ci-positive-candidate-3.json": "3e7eaa109a106c69e2b8c0398147117e92d467d65a2b8f339370cef59cf43df3",
+   "pr51-rare-mirrored-1/ci-rare-mirrored-baseline.json": "eee9f43fe023e159642167b6f2f5df1ec5d67c934027461be6ae885699ef2939",
+   "pr51-rare-mirrored-1/ci-rare-mirrored-candidate.json": "c2bfc36fbc31153aa8b1c5de11c263ef0ed6240e01fa1db6ecbac5459d75ed05",
+   "pr51-rare-mirrored-2/ci-rare-mirrored-baseline.json": "20d7d7f85df6f12319c720a51ecd6e7aeed56a3c97b416ac29505e7a18f0ae12",
+   "pr51-rare-mirrored-2/ci-rare-mirrored-candidate.json": "44216ba1fa258858d5da0c27f5d2a23d7557ab304fe9b956b1583464a9bfbcbd",
+   "pr51-rare-mirrored-3/ci-rare-mirrored-baseline.json": "5c3c8019931bbb805df69a7f08e3cafade561b81e470cc84fcec5e4d5536c883",
+   "pr51-rare-mirrored-3/ci-rare-mirrored-candidate.json": "289644866114097a58b61b168db067251f1ca684663b7c485729f7763ec58e33",
+   "pr51-rare-mirrored-4/ci-rare-mirrored-baseline.json": "b6c99294e831333d2972e0b4f8b32440c3db26aed3b045fafe098e73543eb2e0",
+   "pr51-rare-mirrored-4/ci-rare-mirrored-candidate.json": "e32bc21b7bc5e55f17084a62b07616a852eb0942a2432b2a2bfc8914c3eb3ed6",
+   "pr51-rare-mirrored-5/ci-rare-mirrored-baseline.json": "43ae36ba12da27552f2a9eb094de5c97a0d57ed989ac0f502a84adc6a38a53d4",
+   "pr51-rare-mirrored-5/ci-rare-mirrored-candidate.json": "2088f751e9da7f76ed653508b189ac3df7f89ea44c7f6a45e4771c2ac200b5f7",
+   "pr51-rare-mirrored-6/ci-rare-mirrored-baseline.json": "384cbbd35051567e8ad258f89a45f8bf93939091e7a35ad0b50d6fb7ea321b0e",
+   "pr51-rare-mirrored-6/ci-rare-mirrored-candidate.json": "93e3706673e5ca06e3bae048341dec57b601ae40fb4d81f8726de17db7397169",
+   "pr51-rare-original-1/ci-rare-original-baseline.json": "8611fed710948569aed3c1a2bb70ea7336f27b8fa9710c300277bd720f746562",
+   "pr51-rare-original-1/ci-rare-original-candidate.json": "7fd365cd4579e9f5c82a9831bd029b8f105872df95e6dc85de3f10a814bc375e",
+   "pr51-rare-original-2/ci-rare-original-baseline.json": "f7255298ad6130382bf51a8d42677f2bddfc0b6108916e9891793cc9acb39c52",
+   "pr51-rare-original-2/ci-rare-original-candidate.json": "e35e21fbb1ca1021b09d446d6a2242218c9507be7e0430050cb712f24138752e",
+   "pr51-rare-original-3/ci-rare-original-baseline.json": "f66dc485633daed2aa18d3d58ca6a23bee34ea0e592077da70e76d133cb004b1",
+   "pr51-rare-original-3/ci-rare-original-candidate.json": "9326cdf3f08853d6907db5b0a0da6a4f92ca720abf5fd79c4e8c58647af627bc",
+   "pr51-rare-original-4/ci-rare-original-baseline.json": "cdc130151275610e2eaf54ae802e428728e62bf945a446185154a512e139cb1f",
+   "pr51-rare-original-4/ci-rare-original-candidate.json": "c5a3df7cc8592b5585bcd5e9cfe0914d65156b3a4f1d19ecd9854635f094ddff",
+   "pr51-rare-original-5/ci-rare-original-baseline.json": "6b9759d594b59f628ddf08e4d29e323f197500eb4d3024f1ac3d4abd4b6dc7f0",
+   "pr51-rare-original-5/ci-rare-original-candidate.json": "e3cec607d32955e9d269b6e5479f2d1539cc3bdd04f4e0a63169e5d6b84dcd1e",
+   "pr51-rare-original-6/ci-rare-original-baseline.json": "c15e3028db85ff0d983f2c7473750d53aa8987a603ecb718e131bb7025ed065f",
+   "pr51-rare-original-6/ci-rare-original-candidate.json": "a2d5f4df722127c33a549d71704dad264f765bd527af4d3de388831eea933cdd"
+  },
+  "note": "34 ledgers. The negative-1 baseline hash comes from summary run 41424381208 (same immutable artifact); the retrieved tail of run 41426531562 began after that line."
+ }
+}

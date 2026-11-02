@@ -1,0 +1,15 @@
+{
+ "schema": 1,
+ "note": "SHA-256 of published evidence. Synthetic-pattern measurements or aggregates only; no recordings, landmarks, references, predictions or clip identifiers.",
+ "files": {
+  "evidence/capture-clock-rules.json": "e1a9b4a6003ed07eb277eb6e10c90060b60b602a6146c8115fb9b49fc45204cf",
+  "evidence/capture-soak.json": "5c7bbcfacd4ed111082e987c84c0ec9229e38efeb1e385a8c84b54dafef08cdc",
+  "evidence/frame-identity-ab.json": "05e7ecc52b1523853b5848e5aed186a63d532ac7bb63b33a07652f599e2239dd",
+  "evidence/snapshot-fidelity.json": "603daf7ccb2a0fdbc72843345e12f049c0ea567366ed7b0fd2483ab88e5050f8",
+  "evidence/test-summary.json": "52af79cc46e30362c8304694246f5176f3b9b6166e177c1045779ad5c5fcccc3",
+  "evidence/tracking-determinism-inconclusive.json": "92d50046ad1e8d792e8aba2849fb0887769fad8ecc80b36332628ce7409864b3",
+  "validation/evidence/recorded-rgb-summary.json": "c90efbcdb4b1905824580d545481dd4d220d2b1a6c09a0a318abc726381709a3",
+  "validation/evidence/soak.json": "f736d10307506057d8261cf38a60c3ab9a9284b8a36a86f3ff11f651a5b275f9",
+  "validation/evidence/tracking-determinism-rgb.json": "caeb9195ba79845b1198b961382489d6629a812ddba29c52de3def70ae2deef3"
+ }
+}

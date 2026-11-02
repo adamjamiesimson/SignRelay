@@ -1,0 +1,232 @@
+{
+ "kind": "synthetic frame-index pattern through Chrome fake camera; snapshot pixel/metadata agreement only",
+ "sourceFps": 30,
+ "seconds": 6,
+ "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+ "results": [
+  {
+   "method": "gpu-canvas-transfer",
+   "loadMsPer16ms": 0,
+   "repeat": 0,
+   "callbacks": 179,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 0,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 0,
+   "takeMs": {
+    "median": 2.1000000000931323,
+    "p95": 3.8999999999068677
+   }
+  },
+  {
+   "method": "cpu-canvas-transfer",
+   "loadMsPer16ms": 0,
+   "repeat": 0,
+   "callbacks": 180,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 0,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 0,
+   "takeMs": {
+    "median": 2,
+    "p95": 5.100000000093132
+   }
+  },
+  {
+   "method": "create-image-bitmap",
+   "loadMsPer16ms": 0,
+   "repeat": 0,
+   "callbacks": 180,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 0,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 0,
+   "takeMs": {
+    "median": 1.7000000001862645,
+    "p95": 4.399999999906868
+   }
+  },
+  {
+   "method": "video-frame-then-canvas",
+   "loadMsPer16ms": 0,
+   "repeat": 0,
+   "callbacks": 180,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 0,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 0,
+   "takeMs": {
+    "median": 1.6999999997206032,
+    "p95": 2.2999999998137355
+   }
+  },
+  {
+   "method": "gpu-canvas-transfer",
+   "loadMsPer16ms": 0,
+   "repeat": 1,
+   "callbacks": 180,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 0,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 0,
+   "takeMs": {
+    "median": 2.1000000000931323,
+    "p95": 5.2000000001862645
+   }
+  },
+  {
+   "method": "cpu-canvas-transfer",
+   "loadMsPer16ms": 0,
+   "repeat": 1,
+   "callbacks": 179,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 0,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 0,
+   "takeMs": {
+    "median": 2.1999999997206032,
+    "p95": 5.099999999627471
+   }
+  },
+  {
+   "method": "create-image-bitmap",
+   "loadMsPer16ms": 0,
+   "repeat": 1,
+   "callbacks": 179,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 0,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 0,
+   "takeMs": {
+    "median": 1.8000000002793968,
+    "p95": 4.599999999627471
+   }
+  },
+  {
+   "method": "video-frame-then-canvas",
+   "loadMsPer16ms": 0,
+   "repeat": 1,
+   "callbacks": 176,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 65,
+   "videoFrameDiffersFromReadback": 2,
+   "metadataNotCurrentFrame": 63,
+   "takeMs": {
+    "median": 4.100000000093132,
+    "p95": 6
+   }
+  },
+  {
+   "method": "gpu-canvas-transfer",
+   "loadMsPer16ms": 10,
+   "repeat": 0,
+   "callbacks": 159,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 19,
+   "videoFrameDiffersFromReadback": 1,
+   "metadataNotCurrentFrame": 21,
+   "takeMs": {
+    "median": 2,
+    "p95": 4.600000000093132
+   }
+  },
+  {
+   "method": "cpu-canvas-transfer",
+   "loadMsPer16ms": 10,
+   "repeat": 0,
+   "callbacks": 160,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 23,
+   "videoFrameDiffersFromReadback": 2,
+   "metadataNotCurrentFrame": 26,
+   "takeMs": {
+    "median": 2,
+    "p95": 4.800000000279397
+   }
+  },
+  {
+   "method": "create-image-bitmap",
+   "loadMsPer16ms": 10,
+   "repeat": 0,
+   "callbacks": 160,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 24,
+   "videoFrameDiffersFromReadback": 1,
+   "metadataNotCurrentFrame": 23,
+   "takeMs": {
+    "median": 1.7999999998137355,
+    "p95": 4.100000000093132
+   }
+  },
+  {
+   "method": "video-frame-then-canvas",
+   "loadMsPer16ms": 10,
+   "repeat": 0,
+   "callbacks": 163,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 12,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 13,
+   "takeMs": {
+    "median": 1.7999999998137355,
+    "p95": 4
+   }
+  },
+  {
+   "method": "gpu-canvas-transfer",
+   "loadMsPer16ms": 10,
+   "repeat": 1,
+   "callbacks": 162,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 11,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 13,
+   "takeMs": {
+    "median": 1.7999999998137355,
+    "p95": 4.399999999906868
+   }
+  },
+  {
+   "method": "cpu-canvas-transfer",
+   "loadMsPer16ms": 10,
+   "repeat": 1,
+   "callbacks": 157,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 20,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 24,
+   "takeMs": {
+    "median": 1.8999999999068677,
+    "p95": 5.2999999998137355
+   }
+  },
+  {
+   "method": "create-image-bitmap",
+   "loadMsPer16ms": 10,
+   "repeat": 1,
+   "callbacks": 161,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 19,
+   "videoFrameDiffersFromReadback": 0,
+   "metadataNotCurrentFrame": 24,
+   "takeMs": {
+    "median": 1.6000000000931323,
+    "p95": 4.100000000093132
+   }
+  },
+  {
+   "method": "video-frame-then-canvas",
+   "loadMsPer16ms": 10,
+   "repeat": 1,
+   "callbacks": 157,
+   "undecodableReference": 0,
+   "methodDiffersFromReadback": 14,
+   "videoFrameDiffersFromReadback": 1,
+   "metadataNotCurrentFrame": 15,
+   "takeMs": {
+    "median": 1.8000000002793968,
+    "p95": 4.099999999627471
+   }
+  }
+ ]
+}

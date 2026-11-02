@@ -1,0 +1,693 @@
+{
+ "schema": 1,
+ "kind": "headless Chromium, synthetic fake camera; not GPU/WASM/mobile/physical-device memory evidence",
+ "runs": [
+  {
+   "kind": "headless Chromium capture-lifecycle soak with synthetic fake camera; not GPU/WASM/mobile/physical-device memory evidence",
+   "mode": "fingerspelling",
+   "seconds": 600,
+   "modeSwitches": 10,
+   "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+   "unclosedHandleWarnings": 0,
+   "warningExamples": [],
+   "heapMB": [
+    {
+     "at": 0,
+     "mb": 5.66
+    },
+    {
+     "at": 19,
+     "mb": 5.8
+    },
+    {
+     "at": 29,
+     "mb": 5.88
+    },
+    {
+     "at": 47,
+     "mb": 5.9
+    },
+    {
+     "at": 58,
+     "mb": 5.96
+    },
+    {
+     "at": 77,
+     "mb": 5.96
+    },
+    {
+     "at": 88,
+     "mb": 6.08
+    },
+    {
+     "at": 106,
+     "mb": 6.08
+    },
+    {
+     "at": 117,
+     "mb": 6.1
+    },
+    {
+     "at": 136,
+     "mb": 6.29
+    },
+    {
+     "at": 147,
+     "mb": 6.13
+    },
+    {
+     "at": 157,
+     "mb": 6.16
+    },
+    {
+     "at": 167,
+     "mb": 6.26
+    },
+    {
+     "at": 177,
+     "mb": 6.26
+    },
+    {
+     "at": 187,
+     "mb": 6.28
+    },
+    {
+     "at": 197,
+     "mb": 6.28
+    },
+    {
+     "at": 207,
+     "mb": 6.27
+    },
+    {
+     "at": 217,
+     "mb": 6.27
+    },
+    {
+     "at": 227,
+     "mb": 6.28
+    },
+    {
+     "at": 237,
+     "mb": 6.28
+    },
+    {
+     "at": 247,
+     "mb": 6.29
+    },
+    {
+     "at": 257,
+     "mb": 6.28
+    },
+    {
+     "at": 267,
+     "mb": 6.29
+    },
+    {
+     "at": 277,
+     "mb": 6.29
+    },
+    {
+     "at": 287,
+     "mb": 6.29
+    },
+    {
+     "at": 297,
+     "mb": 6.29
+    },
+    {
+     "at": 307,
+     "mb": 6.3
+    },
+    {
+     "at": 317,
+     "mb": 6.3
+    },
+    {
+     "at": 327,
+     "mb": 6.3
+    },
+    {
+     "at": 337,
+     "mb": 6.29
+    },
+    {
+     "at": 348,
+     "mb": 6.3
+    },
+    {
+     "at": 358,
+     "mb": 6.3
+    },
+    {
+     "at": 368,
+     "mb": 6.3
+    },
+    {
+     "at": 378,
+     "mb": 6.31
+    },
+    {
+     "at": 388,
+     "mb": 6.57
+    },
+    {
+     "at": 398,
+     "mb": 6.3
+    },
+    {
+     "at": 408,
+     "mb": 6.35
+    },
+    {
+     "at": 418,
+     "mb": 6.3
+    },
+    {
+     "at": 428,
+     "mb": 6.3
+    },
+    {
+     "at": 438,
+     "mb": 6.3
+    },
+    {
+     "at": 448,
+     "mb": 6.31
+    },
+    {
+     "at": 458,
+     "mb": 6.3
+    },
+    {
+     "at": 468,
+     "mb": 6.3
+    },
+    {
+     "at": 478,
+     "mb": 6.31
+    },
+    {
+     "at": 488,
+     "mb": 6.31
+    },
+    {
+     "at": 498,
+     "mb": 6.31
+    },
+    {
+     "at": 508,
+     "mb": 6.31
+    },
+    {
+     "at": 518,
+     "mb": 6.31
+    },
+    {
+     "at": 528,
+     "mb": 6.31
+    },
+    {
+     "at": 538,
+     "mb": 6.31
+    },
+    {
+     "at": 548,
+     "mb": 6.31
+    },
+    {
+     "at": 558,
+     "mb": 6.32
+    },
+    {
+     "at": 568,
+     "mb": 6.32
+    },
+    {
+     "at": 578,
+     "mb": 6.31
+    },
+    {
+     "at": 588,
+     "mb": 6.32
+    },
+    {
+     "at": 599,
+     "mb": 6.31
+    },
+    {
+     "at": 609,
+     "mb": 6.32
+    }
+   ],
+   "stillActive": true,
+   "label": "PR #51, 10 min, 10 mode switches"
+  },
+  {
+   "kind": "headless Chromium capture-lifecycle soak with synthetic fake camera; not GPU/WASM/mobile/physical-device memory evidence",
+   "mode": "fingerspelling",
+   "seconds": 600,
+   "modeSwitches": 10,
+   "captureCycles": 0,
+   "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+   "unclosedHandleWarnings": 0,
+   "warningExamples": [],
+   "heapMB": [
+    {
+     "at": 0,
+     "mb": 5.69
+    },
+    {
+     "at": 18,
+     "mb": 5.75
+    },
+    {
+     "at": 29,
+     "mb": 5.85
+    },
+    {
+     "at": 48,
+     "mb": 5.88
+    },
+    {
+     "at": 59,
+     "mb": 5.94
+    },
+    {
+     "at": 78,
+     "mb": 5.95
+    },
+    {
+     "at": 88,
+     "mb": 6.05
+    },
+    {
+     "at": 108,
+     "mb": 6.09
+    },
+    {
+     "at": 118,
+     "mb": 6.07
+    },
+    {
+     "at": 137,
+     "mb": 6.08
+    },
+    {
+     "at": 148,
+     "mb": 6.1
+    },
+    {
+     "at": 158,
+     "mb": 6.14
+    },
+    {
+     "at": 168,
+     "mb": 6.21
+    },
+    {
+     "at": 178,
+     "mb": 6.23
+    },
+    {
+     "at": 188,
+     "mb": 6.24
+    },
+    {
+     "at": 198,
+     "mb": 6.25
+    },
+    {
+     "at": 208,
+     "mb": 6.24
+    },
+    {
+     "at": 218,
+     "mb": 6.25
+    },
+    {
+     "at": 228,
+     "mb": 6.25
+    },
+    {
+     "at": 238,
+     "mb": 6.25
+    },
+    {
+     "at": 248,
+     "mb": 6.24
+    },
+    {
+     "at": 258,
+     "mb": 6.24
+    },
+    {
+     "at": 268,
+     "mb": 6.25
+    },
+    {
+     "at": 278,
+     "mb": 6.26
+    },
+    {
+     "at": 288,
+     "mb": 6.27
+    },
+    {
+     "at": 298,
+     "mb": 6.26
+    },
+    {
+     "at": 308,
+     "mb": 6.26
+    },
+    {
+     "at": 319,
+     "mb": 6.27
+    },
+    {
+     "at": 329,
+     "mb": 6.27
+    },
+    {
+     "at": 339,
+     "mb": 6.27
+    },
+    {
+     "at": 349,
+     "mb": 6.27
+    },
+    {
+     "at": 359,
+     "mb": 6.27
+    },
+    {
+     "at": 369,
+     "mb": 6.27
+    },
+    {
+     "at": 379,
+     "mb": 6.36
+    },
+    {
+     "at": 389,
+     "mb": 6.31
+    },
+    {
+     "at": 399,
+     "mb": 6.27
+    },
+    {
+     "at": 409,
+     "mb": 6.27
+    },
+    {
+     "at": 419,
+     "mb": 6.28
+    },
+    {
+     "at": 429,
+     "mb": 6.28
+    },
+    {
+     "at": 439,
+     "mb": 6.27
+    },
+    {
+     "at": 449,
+     "mb": 6.27
+    },
+    {
+     "at": 459,
+     "mb": 6.27
+    },
+    {
+     "at": 469,
+     "mb": 6.27
+    },
+    {
+     "at": 479,
+     "mb": 6.27
+    },
+    {
+     "at": 489,
+     "mb": 6.28
+    },
+    {
+     "at": 499,
+     "mb": 6.27
+    },
+    {
+     "at": 509,
+     "mb": 6.27
+    },
+    {
+     "at": 519,
+     "mb": 6.28
+    },
+    {
+     "at": 529,
+     "mb": 6.28
+    },
+    {
+     "at": 539,
+     "mb": 6.28
+    },
+    {
+     "at": 549,
+     "mb": 6.28
+    },
+    {
+     "at": 559,
+     "mb": 6.28
+    },
+    {
+     "at": 570,
+     "mb": 6.28
+    },
+    {
+     "at": 580,
+     "mb": 6.29
+    },
+    {
+     "at": 590,
+     "mb": 6.28
+    },
+    {
+     "at": 600,
+     "mb": 6.28
+    },
+    {
+     "at": 610,
+     "mb": 6.28
+    }
+   ],
+   "stillActive": true,
+   "label": "PR #50, 10 min, 10 mode switches"
+  },
+  {
+   "kind": "headless Chromium capture-lifecycle soak with synthetic fake camera; not GPU/WASM/mobile/physical-device memory evidence",
+   "mode": "fingerspelling",
+   "seconds": 300,
+   "modeSwitches": 0,
+   "captureCycles": 63,
+   "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+   "unclosedHandleWarnings": 0,
+   "warningExamples": [],
+   "heapMB": [
+    {
+     "at": 0,
+     "mb": 5.66
+    },
+    {
+     "at": 15,
+     "mb": 5.94
+    },
+    {
+     "at": 30,
+     "mb": 5.9
+    },
+    {
+     "at": 45,
+     "mb": 5.92
+    },
+    {
+     "at": 59,
+     "mb": 5.98
+    },
+    {
+     "at": 74,
+     "mb": 6
+    },
+    {
+     "at": 89,
+     "mb": 6.01
+    },
+    {
+     "at": 104,
+     "mb": 6.06
+    },
+    {
+     "at": 119,
+     "mb": 6.03
+    },
+    {
+     "at": 134,
+     "mb": 6.03
+    },
+    {
+     "at": 149,
+     "mb": 6.04
+    },
+    {
+     "at": 164,
+     "mb": 6.12
+    },
+    {
+     "at": 179,
+     "mb": 6.12
+    },
+    {
+     "at": 193,
+     "mb": 6.13
+    },
+    {
+     "at": 208,
+     "mb": 6.13
+    },
+    {
+     "at": 223,
+     "mb": 6.12
+    },
+    {
+     "at": 238,
+     "mb": 6.13
+    },
+    {
+     "at": 253,
+     "mb": 6.14
+    },
+    {
+     "at": 268,
+     "mb": 6.14
+    },
+    {
+     "at": 283,
+     "mb": 6.17
+    },
+    {
+     "at": 298,
+     "mb": 6.13
+    },
+    {
+     "at": 313,
+     "mb": 6.19
+    }
+   ],
+   "stillActive": true,
+   "label": "PR #51, 5 min, repeated Start/Finish"
+  },
+  {
+   "kind": "headless Chromium capture-lifecycle soak with synthetic fake camera; not GPU/WASM/mobile/physical-device memory evidence",
+   "mode": "fingerspelling",
+   "seconds": 300,
+   "modeSwitches": 0,
+   "captureCycles": 63,
+   "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+   "unclosedHandleWarnings": 0,
+   "warningExamples": [],
+   "heapMB": [
+    {
+     "at": 0,
+     "mb": 5.65
+    },
+    {
+     "at": 15,
+     "mb": 5.83
+    },
+    {
+     "at": 30,
+     "mb": 5.86
+    },
+    {
+     "at": 45,
+     "mb": 5.89
+    },
+    {
+     "at": 59,
+     "mb": 5.95
+    },
+    {
+     "at": 74,
+     "mb": 5.96
+    },
+    {
+     "at": 89,
+     "mb": 5.98
+    },
+    {
+     "at": 104,
+     "mb": 5.98
+    },
+    {
+     "at": 119,
+     "mb": 6
+    },
+    {
+     "at": 134,
+     "mb": 6
+    },
+    {
+     "at": 149,
+     "mb": 6
+    },
+    {
+     "at": 163,
+     "mb": 6.08
+    },
+    {
+     "at": 178,
+     "mb": 6.09
+    },
+    {
+     "at": 193,
+     "mb": 6.1
+    },
+    {
+     "at": 208,
+     "mb": 6.14
+    },
+    {
+     "at": 223,
+     "mb": 6.1
+    },
+    {
+     "at": 238,
+     "mb": 6.1
+    },
+    {
+     "at": 253,
+     "mb": 6.38
+    },
+    {
+     "at": 268,
+     "mb": 6.11
+    },
+    {
+     "at": 283,
+     "mb": 6.11
+    },
+    {
+     "at": 298,
+     "mb": 6.11
+    },
+    {
+     "at": 312,
+     "mb": 6.12
+    }
+   ],
+   "stillActive": true,
+   "label": "PR #50, 5 min, repeated Start/Finish"
+  }
+ ]
+}

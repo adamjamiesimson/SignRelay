@@ -128,7 +128,7 @@ try{
   assert.equal(await h.evaluate("window.__qa.spoken.length"),0);
   const report={source,modelSha256:modelContract.sha256,status:"abstained-model",prediction:"",reference:source.reference,actualInference:result.inferenceMs>0,inferenceMs:result.inferenceMs,
    frames:input?.frames,captureTelemetry:input?.captureTelemetry,observedCaptureFps:input?.captureTelemetry?.observedFps,
-   reason:result.abstentionReason,checks:["empty prediction retained","no automatic composition or speech"]};
+   reason:result.abstentionReason,resultFingerprints:result.fingerprints??null,checks:["empty prediction retained","no automatic composition or speech"]};
   mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
   console.log("ACTUAL-RGB-CAMERA-ABSTENTION",JSON.stringify(report));
  }else{
@@ -152,7 +152,7 @@ try{
  frames:input.frames,inputSha256:createHash("sha256").update(Buffer.from(new Float32Array(input.features).buffer)).digest("hex"),captureTelemetry:input.captureTelemetry,trackingReportedFrames:frames.length,
  observedCaptureFps:input.captureTelemetry?.observedFps??(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),maxFrameGapMs:input.captureTelemetry?.maxFrameGapMs??Math.max(...dt),
  captureWallMs:snapshot.finished-snapshot.started,finishToWorkerResultMs:result.received-snapshot.finished,finishToDomCandidateMs:displayed.at-snapshot.finished,finishToNextAnimationFrameMs:displayed.nextFrameAt-snapshot.finished,
- inferenceMs:result.inferenceMs,processingMs:result.processingMs,trackingMs:{median:times[Math.floor(times.length*.5)],p95:times[Math.floor(times.length*.95)]},
+ inferenceMs:result.inferenceMs,processingMs:result.processingMs,resultFingerprints:result.fingerprints??null,trackingMs:{median:times[Math.floor(times.length*.5)],p95:times[Math.floor(times.length*.95)]},
  frameAgeMs:{median:ages[Math.floor(ages.length*.5)],p95:ages[Math.floor(ages.length*.95)]},
  userAgent:await h.evaluate("navigator.userAgent"),trackSettings:await h.evaluate("document.querySelector('video').srcObject.getVideoTracks()[0].getSettings()"),
  checks:["actual RGB tracking, no landmark substitution","actual 132-feature inference","uncertain warning and explicit confirmation","no automatic composition or speech","word transcript preserved"]};
