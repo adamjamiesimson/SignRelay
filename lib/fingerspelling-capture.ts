@@ -1,5 +1,6 @@
 import type { VisionFrame, HandObservation } from "./vision-types";
 import { normalizeFingerspellingHand, normalizeFingerspellingMotion } from "./fingerspelling-features";
+import { fingerprintObservations, fingerprintSchedule } from "./pipeline-fingerprint";
 
 type Sample = { time:number; capturedAt:number; hands:HandObservation[] };
 /** Explicit bounded sequence capture. These are input-quality gates, not
@@ -32,7 +33,25 @@ export class FingerspellingCapture {
     if(missingStart!==null)longestMissingMs=Math.max(longestMissingMs,t.at(-1)!-missingStart);
     return {frames:s.length,dominantSide,leftFrames,rightFrames,durationMs:duration,observedFps:duration?(s.length-1)*1000/duration:0,
       maxFrameGapMs:Math.max(0,...gaps),visibleFrames:visible.filter(Boolean).length,missingFrames:visible.filter(x=>!x).length,longestMissingMs,
-      relativeFrameMs:t.map(v=>Math.round((v-t[0])*1000)/1000)};
+      relativeFrameMs:t.map(v=>Math.round((v-t[0])*1000)/1000),
+      // Run-comparison identifiers only; never part of the metrics export allowlist.
+      fingerprints:{schedule:fingerprintSchedule(t),observations:fingerprintObservations(s)}};
+  }
+  /** Local diagnostic replay only (scripts/diagnostics/replay-fingerspelling-trace.ts).
+   * Contains landmarks: never upload, export or publish it. */
+  trace():FingerspellingTrace {
+    return {schema:"signrelay-fingerspelling-trace-v1",aspect:this.aspect,featureVersion:this.featureVersion,
+      samples:this.samples.map(x=>({time:x.time,capturedAt:x.capturedAt,hands:x.hands.map(h=>({...h,landmarks:h.landmarks.map(p=>({...p}))}))}))};
+  }
+  /** Rebuild a capture from a local trace with exactly the same samples. */
+  static fromTrace(trace:FingerspellingTrace) {
+    if(trace.schema!=="signrelay-fingerspelling-trace-v1")throw new Error("Unknown trace schema");
+    const capture=new FingerspellingCapture(trace.aspect,trace.featureVersion);
+    // JSON stores non-finite landmark values as null; restore them as missing.
+    const number=(value:number|null)=>value??NaN;
+    for(const sample of trace.samples)capture.push({timestamp:sample.time,capturedAt:sample.capturedAt,face:[],pose:[],
+      hands:sample.hands.map(h=>({...h,landmarks:h.landmarks.map(p=>({...p,x:number(p.x),y:number(p.y),z:number(p.z)}))}))} as VisionFrame);
+    return capture;
   }
   finish() {
     const samples=this.samples;
@@ -66,3 +85,4 @@ export class FingerspellingCapture {
 }
 
 export type CaptureDiagnostics=ReturnType<FingerspellingCapture["diagnostics"]>;
+export type FingerspellingTrace={schema:"signrelay-fingerspelling-trace-v1";aspect:number;featureVersion:"v2"|"v3";samples:Sample[]};
