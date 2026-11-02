@@ -85,7 +85,11 @@ def summarize(catalog, variant):
             # Earliest stage at which any repeat differs (candidate rows carry fingerprints).
             stage = next((k for k in STAGES if all(k in o["stages"] for o in outs) and len({o["stages"][k] for o in outs}) > 1), None)
             if stage is None and len({o["input"] for o in outs if o["input"]}) > 1: stage = "features"
-            divergence[stage or "none"] += 1
+            if stage is None:
+                # Quality abstentions (and baseline rows) carry no stage fingerprints.
+                known = any(o["stages"] for o in outs) or all(o["input"] for o in outs)
+                stage = "identical" if known else "unavailable"
+            divergence[stage] += 1
         s["consistentCases"], s["casesCompared"] = same, len(ids)
         s["repeatDivergenceStage"] = dict(divergence)
     return s
@@ -104,7 +108,16 @@ for catalog in ["positive", "negative", "rare-original", "rare-mirrored"]:
             pairs += 1
             if o["input"] == p["input"]:
                 identical += 1; identicalSameText += o["text"] == p["text"]
-    result["catalogs"][catalog]["paired"] = {"comparedCaptures": pairs, "identicalCapturedTensors": identical, "identicalTensorsWithSameText": identicalSameText}
+    better = worse = equal = 0
+    if catalog != "negative":
+        for repeat in set(b) & set(c):
+            for i, o in b[repeat]["rows"].items():
+                p = c[repeat]["rows"].get(i)
+                if not p or o["technical"] or p["technical"]: continue
+                d = lev(p["text"], p["reference"]) - lev(o["text"], o["reference"])
+                better += d < 0; worse += d > 0; equal += d == 0
+    result["catalogs"][catalog]["paired"] = {"comparedCaptures": pairs, "identicalCapturedTensors": identical, "identicalTensorsWithSameText": identicalSameText,
+        **({"candidateFewerEdits": better, "candidateMoreEdits": worse, "sameEdits": equal} if catalog != "negative" else {})}
     # Per-case table keyed by catalog position only (no identifiers or text).
     order = sorted(set().union(*[set(run["rows"]) for run in list(b.values()) + list(c.values())])) if (b or c) else []
     def brief(o):
