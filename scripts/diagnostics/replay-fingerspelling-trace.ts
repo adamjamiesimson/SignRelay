@@ -21,7 +21,7 @@ import { interpretCtcLogits, CTC_VOCABULARY } from "../../lib/fingerspelling-ctc
 import { FINGERSPELLING_CTC_MODEL } from "../../lib/fingerspelling-model";
 import { firstDivergentStage, type StageFingerprints } from "../../lib/pipeline-fingerprint";
 
-type Replay = { input: string; kind: "trace" | "tensor"; frames: number; fingerprints: StageFingerprints; status: string; text?: string; captureError?: string };
+export type Replay = { input: string; kind: "trace" | "tensor"; frames: number; fingerprints: StageFingerprints; status: string; text?: string; captureError?: string };
 
 export async function createSession() {
   const contract = FINGERSPELLING_CTC_MODEL;
@@ -33,18 +33,22 @@ export async function createSession() {
 }
 
 export async function replay(session: ort.InferenceSession, path: string, showText = false): Promise<Replay> {
-  const data = JSON.parse(readFileSync(path, "utf8"));
+  return replayData(session, JSON.parse(readFileSync(path, "utf8")), path, showText);
+}
+
+/** Same as replay() for an in-memory trace or tensor (never written to disk). */
+export async function replayData(session: ort.InferenceSession, data: Record<string, unknown> & { schema?: string; frames?: number; features?: number[] }, path: string, showText = false): Promise<Replay> {
   const contract = FINGERSPELLING_CTC_MODEL, width = contract.features ?? 66;
   let features: Float32Array, frames: number, fingerprints: StageFingerprints = {};
   const kind = data.schema === "signrelay-fingerspelling-trace-v1" ? "trace" : "tensor";
   if (kind === "trace") {
-    const capture = FingerspellingCapture.fromTrace(data as FingerspellingTrace);
+    const capture = FingerspellingCapture.fromTrace(data as unknown as FingerspellingTrace);
     fingerprints = { ...capture.diagnostics().fingerprints };
     try { ({ features, frames } = capture.finish()); }
     catch (error) { return { input: path, kind, frames: capture.diagnostics().frames, fingerprints, status: "quality-rejected", captureError: String(error) }; }
   } else {
-    if (!Number.isInteger(data.frames) || !Array.isArray(data.features) || data.features.length !== data.frames * width) throw new Error(`${path}: not a ${width}-feature captured tensor`);
-    features = Float32Array.from(data.features); frames = data.frames;
+    if (!Number.isInteger(data.frames) || !Array.isArray(data.features) || data.features.length !== data.frames! * width) throw new Error(`${path}: not a ${width}-feature captured tensor`);
+    features = Float32Array.from(data.features); frames = data.frames!;
   }
   const started = performance.now();
   const outputs = await session.run({ features: new ort.Tensor("float32", features, [1, frames, width]) });
