@@ -1,0 +1,39 @@
+{
+  "kind": "Previously exposed RGB regression recordings; correlated repeats; not fresh final, physical camera or independent intent validation",
+  "catalog": "negative",
+  "variant": "candidate",
+  "repeat": "1",
+  "sourceSha": "13124732baaa4e53e6121d7657c72fe11f844689",
+  "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+  "planned": 29,
+  "completed": 29,
+  "complete": true,
+  "aggregateOnly": true,
+  "privacy": "No recording identifiers, strings, per-recording results, device identities or biometric observations published. Full case ledgers retained locally.",
+  "summary": {
+    "captures": 29,
+    "exact": 25,
+    "characterErrors": 23,
+    "referenceCharacters": 0,
+    "candidates": 4,
+    "abstentions": 25,
+    "nativeParity": 6
+  },
+  "timing": {
+    "observedCaptureFps": {
+      "samples": 29,
+      "median": 14.99974186490744,
+      "p95": 15.000272732231501
+    },
+    "finishToDomCandidateMs": {
+      "samples": 4,
+      "median": 125.39999999996508,
+      "p95": 138.89999999996508
+    },
+    "inferenceMs": {
+      "samples": 6,
+      "median": 23,
+      "p95": 26.89999999999418
+    }
+  }
+}

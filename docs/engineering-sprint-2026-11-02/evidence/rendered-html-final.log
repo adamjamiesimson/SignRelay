@@ -1,0 +1,10 @@
+✔ public pages contain metadata, working internal links, image alternatives and script protection (79.534ms)
+✔ export excludes sensitive files and source maps; Firebase protects responses (20.6945ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 201.1951

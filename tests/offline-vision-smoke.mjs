@@ -62,7 +62,7 @@ try {
   // The ASL demo profile disables every other language, so there hydration is
   // proved by React's fiber on the radio and the disabled BSL choice must hold.
   const profile = existsSync("out/runtime-manifest.json") ? JSON.parse(readFileSync("out/runtime-manifest.json", "utf8")).profile : "full";
-  if (profile === "asl-demo") {
+  if (profile === "asl-demo" || profile === "rehearsal") {
     await until(() => evaluate("Object.keys(document.querySelector('[role=radio]')).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate", 100);
     assert.equal(await evaluate(`[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes('British'))?.disabled`), true, "BSL must be disabled in the ASL demo build");
     await choose("British");

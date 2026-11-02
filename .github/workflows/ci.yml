@@ -67,6 +67,18 @@ jobs:
       - name: Benchmark matching isolation and actual PSL references
         run: node scripts/benchmarks/matching-isolation.mjs
 
+      - name: Probe retained memory across personal-vocabulary replacements (synthetic)
+        run: |
+          mkdir -p outputs
+          node --expose-gc scripts/benchmarks/matcher-memory.mjs outputs/matcher-memory.json
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: matcher-retention
+          path: outputs/matcher-memory.json
+          if-no-files-found: ignore
+
       - name: Check for accidental secrets
         run: npm run audit:secrets
 

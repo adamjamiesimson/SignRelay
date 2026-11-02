@@ -63,6 +63,9 @@ next-env.d.ts
 
 # Built from workers/template-matching.worker.ts during build:worker.
 /public/workers/template-matching.worker.js
+# Reproducible sequence/CPU tracking bundles, also rebuilt by build:worker.
+/public/workers/fingerspelling.worker.js
+/public/workers/fingerspelling-vision.worker.js
 
 # Ephemeral derived runs are reviewed and copied into docs explicitly.
 /evaluation/derived/

@@ -1,0 +1,40 @@
+{
+  "baseline": {
+    "source": "116fe686f7b31ecd00ac57ee4724287affafda0f",
+    "passed": 1013,
+    "failed": 0,
+    "skipped": 2,
+    "files": 104
+  },
+  "candidate": {
+    "source": "6783a3dbfbec905d8b483420427a74f094de4c77",
+    "passed": 1036,
+    "failed": 0,
+    "skipped": 2,
+    "files": 108
+  },
+  "defaultSkips": [
+    {
+      "file": "asl-experiments.test.ts",
+      "test": "full experiment comparison compares every experiment with the baseline on positives, sparse YES and adversarial movements"
+    },
+    {
+      "file": "asl-low-throughput.test.ts",
+      "test": "rapid six-word sequence under reduced frame-loop throughput writes the low-throughput record"
+    }
+  ],
+  "optionalRun": {
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "files": 2,
+    "description": "Both default-skipped report writers executed separately with redirected outputs; 7 ordinary cases re-executed in that focused run"
+  },
+  "finalReview": {
+    "source": "e278bda38642216aaf2df8fd5f789587d16804e2",
+    "passed": 1038,
+    "failed": 0,
+    "skipped": 2,
+    "files": 108
+  }
+}

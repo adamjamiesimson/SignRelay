@@ -1,0 +1,49 @@
+name: Matched capture and CTC-session ablation
+# v2: the fixed-input harness uses the production module-worker type.
+on:
+  push:
+    branches: [codex/engineering-sprint-2026-11-02]
+    paths: ['.github/workflows/engineering-causal-rgb.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  ablation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {kind: positive, repeat: 1}
+          - {kind: positive, repeat: 2}
+          - {kind: negative, repeat: 1}
+          - {kind: negative, repeat: 2}
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: baseline, ref: '116fe686f7b31ecd00ac57ee4724287affafda0f'}
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: candidate}
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: control}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - run: python -m pip install --disable-pip-version-check -r candidate/training/fingerspelling/requirements.txt
+      - name: Restore only the control CTC session; build identical dependency locks
+        run: |
+          cp baseline/lib/fingerspelling-ctc-session.ts control/lib/fingerspelling-ctc-session.ts
+          for implementation in baseline candidate control; do
+            (cd "$implementation" && npm ci && npm run build:rehearsal)
+          done
+      - name: Matched RGB catalogs and exact captured-tensor session replay
+        env: {REPEAT: '${{ matrix.repeat }}', CATALOG: '${{ matrix.kind }}'}
+        run: python candidate/scripts/diagnostics/sprint-causal-replay.py "$CATALOG" "$(command -v google-chrome)" --baseline baseline --candidate candidate --control control --out outputs/aggregate.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: causal-${{ matrix.kind }}-${{ matrix.repeat }}
+          path: outputs/aggregate.json
+          if-no-files-found: error

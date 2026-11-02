@@ -1,0 +1,2 @@
+{"classicWorkerDefectReproduced":true,"message":"Uncaught SyntaxError: Cannot use 'import.meta' outside a module"}
+{"syntheticFixedInputRuns":6,"allThreeSessionsAndIdleResetAgree":true,"realModuleWorkers":true,"recognitionAccuracyClaim":false}

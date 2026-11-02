@@ -104,7 +104,8 @@ describe("rapid six-word sequence under reduced frame-loop throughput", () => {
         longest_consecutive_rule_run_median: Object.fromEntries(ASL_DEMO_WORDS.map(word => [word, runs.map(run => run.evidence[word]).sort((a, b) => a - b)[2]])),
         runs: runs.length });
     }
-    writeFileSync("docs/refinement/sprint-5/low-throughput.json", JSON.stringify({ schema: 1,
+    // Preserve historical measurements when collecting a new diagnostic run.
+    writeFileSync(process.env.SIGNRELAY_THROUGHPUT_REPORT ?? "docs/refinement/sprint-5/low-throughput.json", JSON.stringify({ schema: 1,
       status: "Synthetic kinematics through the real recognition worker, rules only (model abstains). Not recordings, not accuracy, not a device measurement.",
       method: "tests/asl-low-throughput.test.ts: the rehearsal sequence replayed by RehearsalScript against a frame loop at the given interval with ±30% jitter, 5 seeds",
       rows }, null, 2) + "\n");

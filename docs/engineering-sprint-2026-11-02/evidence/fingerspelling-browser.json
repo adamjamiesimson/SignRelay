@@ -1,0 +1,13 @@
+{
+  "kind": "software-only; fake camera; no signing-accuracy claim",
+  "checks": [
+    "word default; explicit sequence confirmation; mode isolates transcript and terminates word worker without stopping camera",
+    "keyboard composition, repeated LL, backspace, space, explicit speech only; word fixture rejected in spelling mode",
+    "both drafts survive repeated mode switches",
+    "three start/stop cycles, no extra live tracks, composed draft preserved",
+    "offline text editing",
+    "desktop/mobile overflow, labelled textarea and 44px controls; screenshots captured",
+    "clear; no external page requests during software check",
+    "permission denial and retry recovery in spelling mode"
+  ]
+}

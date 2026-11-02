@@ -1,0 +1,20 @@
+test_corrupt_cache_refused_without_output (test_secure_download.FrozenRecoveryTests.test_corrupt_cache_refused_without_output) ... ok
+test_license_and_containment_preserved (test_secure_download.FrozenRecoveryTests.test_license_and_containment_preserved) ... ok
+test_recovery_checks_frozen_bytes_and_never_contacts_network (test_secure_download.FrozenRecoveryTests.test_recovery_checks_frozen_bytes_and_never_contacts_network) ... ok
+test_sealed_fingerprints_block_renamed_manifest_even_with_cache (test_secure_download.FrozenRecoveryTests.test_sealed_fingerprints_block_renamed_manifest_even_with_cache) ... ok
+test_default_context_requires_hostname_and_trust (test_secure_download.SecureDownloadTests.test_default_context_requires_hostname_and_trust) ... ok
+test_exact_range_and_checksum (test_secure_download.SecureDownloadTests.test_exact_range_and_checksum) ... ok
+test_http_404_does_not_retry (test_secure_download.SecureDownloadTests.test_http_404_does_not_retry) ... ok
+test_redirect_handler_rejects_downgrade (test_secure_download.SecureDownloadTests.test_redirect_handler_rejects_downgrade) ... ok
+test_reject_bad_range_length_bytes_or_redirect (test_secure_download.SecureDownloadTests.test_reject_bad_range_length_bytes_or_redirect) ... ok
+test_reject_insecure_foreign_or_invalid_sources_before_network (test_secure_download.SecureDownloadTests.test_reject_insecure_foreign_or_invalid_sources_before_network) ... ok
+test_tls_errors_fail_without_retries (test_secure_download.SecureDownloadTests.test_tls_errors_fail_without_retries) ... ok
+test_transient_resets_recover (test_secure_download.SecureDownloadTests.test_transient_resets_recover) ... ok
+test_transport_retries_bounded (test_secure_download.SecureDownloadTests.test_transport_retries_bounded) ... ok
+test_truncated_response_retries_then_fails (test_secure_download.SecureDownloadTests.test_truncated_response_retries_then_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.796s
+
+OK
+Verified clip existing-development

@@ -1,0 +1,41 @@
+{
+  "ok": false,
+  "failures": [
+    "Unreviewed development advisory GHSA-g3hv-75wg-m249 in minimatch (moderate).",
+    "Vulnerable package @eslint-community/eslint-utils is not explained by a reviewed advisory chain.",
+    "Vulnerable package @eslint/config-array is not explained by a reviewed advisory chain.",
+    "Vulnerable package @eslint/eslintrc is not explained by a reviewed advisory chain.",
+    "Vulnerable package @next/eslint-plugin-next is not explained by a reviewed advisory chain.",
+    "Vulnerable package @typescript-eslint/eslint-plugin is not explained by a reviewed advisory chain.",
+    "Vulnerable package @typescript-eslint/parser is not explained by a reviewed advisory chain.",
+    "Vulnerable package @typescript-eslint/type-utils is not explained by a reviewed advisory chain.",
+    "Vulnerable package @typescript-eslint/typescript-estree is not explained by a reviewed advisory chain.",
+    "Vulnerable package @typescript-eslint/utils is not explained by a reviewed advisory chain.",
+    "Vulnerable package eslint is not explained by a reviewed advisory chain.",
+    "Vulnerable package eslint-config-next is not explained by a reviewed advisory chain.",
+    "Vulnerable package eslint-plugin-import is not explained by a reviewed advisory chain.",
+    "Vulnerable package eslint-plugin-jsx-a11y is not explained by a reviewed advisory chain.",
+    "Vulnerable package eslint-plugin-react is not explained by a reviewed advisory chain.",
+    "Vulnerable package typescript-eslint is not explained by a reviewed advisory chain."
+  ],
+  "accepted": [],
+  "stale": [],
+  "totals": {
+    "full": {
+      "info": 0,
+      "low": 0,
+      "moderate": 16,
+      "high": 0,
+      "critical": 0,
+      "total": 16
+    },
+    "production": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    }
+  }
+}

@@ -153,6 +153,8 @@ export class LiveVision {
       worker.onmessage = ({ data }) => {
         if (this.closed || this.worker !== worker) return;
         if (data.type === "progress") { progress?.(data.message); return; }
+        // Startup notifications cannot replace or clear an active frame timer.
+        if (ready && (data.type === "warming" || data.type === "ready")) return;
         if (data.type === "warming") {
           clearTimeout(this.timer);
           this.timer = setTimeout(() => fail("Tracking warmup timed out"), 4000);
@@ -186,6 +188,9 @@ export class LiveVision {
 
   private fail(error: Error) {
     this.lastError = error.message;
+    // Pixels captured before a tracking fault belong to the interrupted
+    // observation stream, even if CPU recovery completes within the age limit.
+    this.snapshot?.bitmap.close(); this.snapshot = null; this.snapshotError = null;
     this.worker?.terminate(); this.worker = null;
     this.stats.recoveries++;
     // A failed GPU context must not be selected again during recovery.

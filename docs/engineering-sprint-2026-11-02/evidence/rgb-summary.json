@@ -1,0 +1,194 @@
+{
+  "kind": "Exposed regression recordings only; correlated repetitions, not independent signer or physical camera evidence",
+  "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+  "sources": [
+    {
+      "file": "ci-positive-baseline-1.json",
+      "sha256": "b30255cdd6253786146dc35cddf93ffbbc9d45d173f13322c296852a11f496d2"
+    },
+    {
+      "file": "ci-positive-baseline-2.json",
+      "sha256": "c84da80ac96773bd12199118fda52ebbd52a2a5651d91db4a3dc5ad20b7cb207"
+    },
+    {
+      "file": "ci-positive-baseline-3.json",
+      "sha256": "603bab45dcd0cc5bb7fa5b5ba2980c9777ab1e1df93852779ec8afe44bd5413f"
+    },
+    {
+      "file": "ci-negative-baseline.json",
+      "sha256": "3a0a5409e5198f08ff14198513d41fb0e872ad67e57046b1e4e4baccc4d5309f"
+    },
+    {
+      "file": "ci-positive-candidate-1.json",
+      "sha256": "a0bcf8acea82762e398580018658cbf9dfddf638a4e3c0df3abcca75589608b2"
+    },
+    {
+      "file": "ci-positive-candidate-2.json",
+      "sha256": "b047cb78d8e86f5b20723dfcffa9354452f77dd55370339db1c991a47f99ef67"
+    },
+    {
+      "file": "ci-positive-candidate-3.json",
+      "sha256": "5b2f189e5d1463e24380af71d8a147a8f42a651c8602428bf881de253bb71c1e"
+    },
+    {
+      "file": "ci-negative-candidate.json",
+      "sha256": "a6092525bb49f032ff8250e85686618708fdf1a248c0cc261eb3d18134faa1e3"
+    },
+    {
+      "file": "rare-rgb/ci-rare-original-baseline.json",
+      "sha256": "bf6bcb52913264f52f30980beb874ba2e18eef5db8065d6ad8cdc0c0e1d88e1e"
+    },
+    {
+      "file": "rare-rgb/ci-rare-original-candidate.json",
+      "sha256": "e3b85cc3e4bcde468956345ae3eaa331ff1df2a48582c8d793042ea69b221486"
+    },
+    {
+      "file": "rare-rgb/ci-rare-mirrored-baseline.json",
+      "sha256": "a9aac270789f92d023767a33bfea5e9e9311f1e121d515a2c9e27041c74c21cd"
+    },
+    {
+      "file": "rare-rgb/ci-rare-mirrored-candidate.json",
+      "sha256": "1dfdc3b022fe960be7eb686e2178aefbbf1bcec9994084021de0c732c2ab2225"
+    }
+  ],
+  "variants": {
+    "baseline": {
+      "positive": {
+        "captures": 30,
+        "exact": 11,
+        "characterErrors": 73,
+        "referenceCharacters": 384,
+        "CER": 0.19010416666666666,
+        "candidates": 30,
+        "abstentions": 0,
+        "nativeParity": 30
+      },
+      "exposedEightClipSubset": {
+        "captures": 24,
+        "exact": 8,
+        "characterErrors": 70,
+        "referenceCharacters": 333,
+        "CER": 0.21021021021021022,
+        "candidates": 24,
+        "abstentions": 0,
+        "nativeParity": 24
+      },
+      "sameOutputAllThree": 9,
+      "negative": {
+        "windows": 29,
+        "falseCandidates": 2,
+        "abstentions": 27
+      },
+      "finishToDom": {
+        "samples": 30,
+        "medianMs": 45.60000000000582,
+        "p95Ms": 101.79999999998836
+      },
+      "inference": {
+        "samples": 30,
+        "medianMs": 19,
+        "p95Ms": 26.10000000000582
+      },
+      "observedFps": {
+        "samples": 30,
+        "median": 15.000124039487238,
+        "p95": 15.000441904910167
+      }
+    },
+    "candidate": {
+      "positive": {
+        "captures": 30,
+        "exact": 10,
+        "characterErrors": 72,
+        "referenceCharacters": 384,
+        "CER": 0.1875,
+        "candidates": 30,
+        "abstentions": 0,
+        "nativeParity": 30
+      },
+      "exposedEightClipSubset": {
+        "captures": 24,
+        "exact": 7,
+        "characterErrors": 69,
+        "referenceCharacters": 333,
+        "CER": 0.2072072072072072,
+        "candidates": 24,
+        "abstentions": 0,
+        "nativeParity": 24
+      },
+      "sameOutputAllThree": 4,
+      "negative": {
+        "windows": 29,
+        "falseCandidates": 4,
+        "abstentions": 25
+      },
+      "finishToDom": {
+        "samples": 30,
+        "medianMs": 103.80000000001746,
+        "p95Ms": 144.30000000004657
+      },
+      "inference": {
+        "samples": 30,
+        "medianMs": 24.20000000001164,
+        "p95Ms": 29.10000000000582
+      },
+      "observedFps": {
+        "samples": 30,
+        "median": 13.40015812186583,
+        "p95": 13.750074479570092
+      }
+    }
+  },
+  "rareRgb": [
+    {
+      "view": "original",
+      "variant": "baseline",
+      "captures": 5,
+      "exact": 2,
+      "characterErrors": 6,
+      "referenceCharacters": 66,
+      "CER": 0.09090909090909091,
+      "candidates": 5,
+      "abstentions": 0,
+      "nativeParity": 5
+    },
+    {
+      "view": "original",
+      "variant": "candidate",
+      "captures": 5,
+      "exact": 2,
+      "characterErrors": 6,
+      "referenceCharacters": 66,
+      "CER": 0.09090909090909091,
+      "candidates": 5,
+      "abstentions": 0,
+      "nativeParity": 5
+    },
+    {
+      "view": "mirrored",
+      "variant": "baseline",
+      "captures": 5,
+      "exact": 3,
+      "characterErrors": 3,
+      "referenceCharacters": 66,
+      "CER": 0.045454545454545456,
+      "candidates": 5,
+      "abstentions": 0,
+      "nativeParity": 5
+    },
+    {
+      "view": "mirrored",
+      "variant": "candidate",
+      "captures": 5,
+      "exact": 3,
+      "characterErrors": 3,
+      "referenceCharacters": 66,
+      "CER": 0.045454545454545456,
+      "candidates": 5,
+      "abstentions": 0,
+      "nativeParity": 5
+    }
+  ],
+  "privacy": "Aggregate results only. Per-case ledgers retained locally; not published.",
+  "recomputation": "Additive counts verified from public aggregates; pooled timings and repeated-output consistency require locally retained full ledgers."
+}

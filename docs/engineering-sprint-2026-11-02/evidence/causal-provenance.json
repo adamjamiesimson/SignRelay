@@ -1,0 +1,548 @@
+{
+  "baseline": "116fe686f7b31ecd00ac57ee4724287affafda0f",
+  "candidate": "7a80ec388febda14b5c8684cb946bf21b0a7c5ce",
+  "control": "Candidate with only lib/fingerspelling-ctc-session.ts restored to exact baseline bytes",
+  "artifacts": [
+    {
+      "id": 13120620301,
+      "name": "causal-negative-2",
+      "run": 41394974763,
+      "head": "7a80ec388febda14b5c8684cb946bf21b0a7c5ce",
+      "zipSha256": "sha256:66fcb2ed5e2587ccc40d3fdb7a8e606af26557575aea9f6235fcb3e91b893c12",
+      "verifiedBeforeExtraction": true
+    },
+    {
+      "id": 13120216517,
+      "name": "causal-negative-1",
+      "run": 41394974763,
+      "head": "7a80ec388febda14b5c8684cb946bf21b0a7c5ce",
+      "zipSha256": "sha256:eead5b0b1b8d0ef4407aa23c104b28419e2349daa5336c2f9bf840e38e8140b2",
+      "verifiedBeforeExtraction": true
+    },
+    {
+      "id": 13118928399,
+      "name": "causal-positive-2",
+      "run": 41394974763,
+      "head": "7a80ec388febda14b5c8684cb946bf21b0a7c5ce",
+      "zipSha256": "sha256:6f1e5e2c4a00fda2cc71df1006cd9516f01ef78888c7f0b163a9c7adf38f5284",
+      "verifiedBeforeExtraction": true
+    },
+    {
+      "id": 13118888641,
+      "name": "causal-positive-1",
+      "run": 41394974763,
+      "head": "7a80ec388febda14b5c8684cb946bf21b0a7c5ce",
+      "zipSha256": "sha256:7edcfa4e4be631f49cb11e445b3c3da1b451538c9064a1c3fbdf6d1f69bcab96",
+      "verifiedBeforeExtraction": true
+    }
+  ],
+  "initialHarnessFailure": {
+    "run": 41394537386,
+    "cause": "Classic worker instead of production module worker; failed run is not recognition evidence"
+  },
+  "reviewSource": "e278bda38642216aaf2df8fd5f789587d16804e2",
+  "reviewJobs": {
+    "41395293951": [
+      {
+        "id": 125115430927,
+        "name": "Typecheck, test, lint, worker, repo guard",
+        "status": "completed",
+        "conclusion": "failure",
+        "run_id": 41395293951,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Setup Node",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Install dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Typecheck",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Dataset acquisition and artifact regression tests",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Unit and regression tests",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Lint",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          },
+          {
+            "name": "Build recognition workers",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Compare pre-optimization and bounded DTW (synthetic CPU baseline)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          },
+          {
+            "name": "Benchmark matching isolation and actual PSL references",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Probe retained memory across personal-vocabulary replacements (synthetic)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13
+          },
+          {
+            "name": "Run actions/upload-artifact@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 14
+          },
+          {
+            "name": "Check for accidental secrets",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "Dependency advisories (production fail-closed, reviewed dev exceptions expire)",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 16
+          },
+          {
+            "name": "Enforce repository asset policy",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 17
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 32
+          },
+          {
+            "name": "Post Setup Node",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 33
+          },
+          {
+            "name": "Post Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 34
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 35
+          }
+        ]
+      }
+    ],
+    "41395293983": [
+      {
+        "id": 125115286783,
+        "name": "build",
+        "status": "completed",
+        "conclusion": "failure",
+        "run_id": 41395293983,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Setup Node",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Install dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Recover the reviewed Spanish training artifact when weights are absent",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 5
+          },
+          {
+            "name": "Verify recovered Spanish weights",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 6
+          },
+          {
+            "name": "Set up reproducible Bangla model conversion when weights are absent",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 7
+          },
+          {
+            "name": "Recover and verify the pinned Bangla model",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 8
+          },
+          {
+            "name": "Restore the verified RSL model from the CI cache",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          },
+          {
+            "name": "Acquire and verify the RSL model (external download)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Save the verified RSL model to the CI cache",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 11
+          },
+          {
+            "name": "Build Firebase static export",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Verify export",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13
+          },
+          {
+            "name": "Test recognition and model contracts",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 14
+          },
+          {
+            "name": "Lint application source",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "Verify workspace switching, storage failures and delayed camera grants",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "Verify cancelled model runs and cached session reuse in Chrome",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
+          },
+          {
+            "name": "Verify Russian camera and model worker in headless Chrome",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18
+          },
+          {
+            "name": "Verify Bangla camera flow in headless Chrome",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 19
+          },
+          {
+            "name": "Verify Spanish camera and model worker in headless Chrome",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 20
+          },
+          {
+            "name": "Start ASL vision with CDNs blocked (self-hosted MediaPipe runtime)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 21
+          },
+          {
+            "name": "Automated WCAG 2.x A/AA checks (axe-core, not added to the lockfile)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 22
+          },
+          {
+            "name": "Secret scan, rendered export and fail-closed dependency gate",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 23
+          },
+          {
+            "name": "Preserve browser evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 24
+          },
+          {
+            "name": "Upload static export",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 25
+          },
+          {
+            "name": "Post Setup Node",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 49
+          },
+          {
+            "name": "Post Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 50
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 51
+          }
+        ]
+      },
+      {
+        "id": 125116850622,
+        "name": "Strict dependency audit (release gate)",
+        "status": "completed",
+        "conclusion": "skipped",
+        "run_id": 41395293983,
+        "logs_url": null,
+        "steps": null
+      }
+    ],
+    "41395293907": [
+      {
+        "id": 125115286090,
+        "name": "Offline demo, rehearsal and fault-injection smokes",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 41395293907,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Install exact lockfile dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Locate Chrome",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Cooperative yielding - messages, timers and cancellation during real ASL-2000 inference",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Build rehearsal profile",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Rehearsal - six signs, abstention, interruption, offline, speech, privacy",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Fingerspelling - mode isolation, explicit confirmation, camera lifecycle and privacy",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          },
+          {
+            "name": "Rehearsal - transcript, live regions, keyboard, touch targets, reduced motion",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "User-facing outcomes under storage and speech faults",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          },
+          {
+            "name": "Personal vocabulary at 30, 150 and 300 saved examples",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "First-visit tour, navigation, cookie choices and hero animation (axe-core from the lockfile)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13
+          },
+          {
+            "name": "Rehearsal - rendered export and runtime manifest",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 14
+          },
+          {
+            "name": "Build ASL demo profile",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15
+          },
+          {
+            "name": "Demo - strict offline check (deny-all proxy)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 16
+          },
+          {
+            "name": "Demo - the strict check's leak detector catches a planted request",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17
+          },
+          {
+            "name": "Demo - self-hosted vision with CDNs blocked",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18
+          },
+          {
+            "name": "Demo - camera and worker lifecycle stress",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 19
+          },
+          {
+            "name": "Demo - missing and corrupt assets, storage failures, worker faults",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 20
+          },
+          {
+            "name": "Demo - rendered export and runtime manifest",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 21
+          },
+          {
+            "name": "Preserve browser evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 22
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 43
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 44
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 45
+          }
+        ]
+      }
+    ]
+  },
+  "preview": {
+    "status": {
+      "statuses": [
+        {
+          "context": "Vercel",
+          "state": "success",
+          "target_url": "https://vercel.com/adam-s-team4/signrelay/8PMwQSD6fESLovu4eE9V7QJdLYGP"
+        }
+      ]
+    },
+    "httpStatus": 302,
+    "requiresVercelSSO": true
+  }
+}

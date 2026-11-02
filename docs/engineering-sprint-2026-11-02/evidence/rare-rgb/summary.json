@@ -1,0 +1,50 @@
+[
+  {
+    "view": "original",
+    "variant": "baseline",
+    "captures": 5,
+    "exact": 2,
+    "characterErrors": 6,
+    "referenceCharacters": 66,
+    "CER": 0.09090909090909091,
+    "candidates": 5,
+    "abstentions": 0,
+    "nativeParity": 5
+  },
+  {
+    "view": "original",
+    "variant": "candidate",
+    "captures": 5,
+    "exact": 2,
+    "characterErrors": 6,
+    "referenceCharacters": 66,
+    "CER": 0.09090909090909091,
+    "candidates": 5,
+    "abstentions": 0,
+    "nativeParity": 5
+  },
+  {
+    "view": "mirrored",
+    "variant": "baseline",
+    "captures": 5,
+    "exact": 3,
+    "characterErrors": 3,
+    "referenceCharacters": 66,
+    "CER": 0.045454545454545456,
+    "candidates": 5,
+    "abstentions": 0,
+    "nativeParity": 5
+  },
+  {
+    "view": "mirrored",
+    "variant": "candidate",
+    "captures": 5,
+    "exact": 3,
+    "characterErrors": 3,
+    "referenceCharacters": 66,
+    "CER": 0.045454545454545456,
+    "candidates": 5,
+    "abstentions": 0,
+    "nativeParity": 5
+  }
+]
