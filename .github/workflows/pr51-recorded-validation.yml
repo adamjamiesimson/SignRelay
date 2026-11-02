@@ -1,0 +1,82 @@
+name: PR 51 recorded-RGB validation
+# Exact PR #50 head versus this branch on the same runner, alternating per case,
+# over the established exposed regression catalogs; plus a lockstep real-hand
+# tracker determinism study. Exposed recordings: regression evidence only.
+on:
+  push:
+    branches: [claude/charming-thompson-2aql9w]
+    paths: ['.github/workflows/pr51-recorded-validation.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {kind: positive, repeat: 1}
+          - {kind: positive, repeat: 2}
+          - {kind: positive, repeat: 3}
+          - {kind: negative, repeat: 1}
+          - {kind: negative, repeat: 2}
+          - {kind: rare-original, repeat: 1}
+          - {kind: rare-original, repeat: 2}
+          - {kind: rare-mirrored, repeat: 1}
+          - {kind: rare-mirrored, repeat: 2}
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: harness}
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: baseline, ref: 'd8cfefcd2953bac3a2de10722b1ca4f03cfca5a0'}
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: candidate}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - run: python -m pip install --disable-pip-version-check -r harness/training/fingerspelling/requirements.txt
+      - name: Identical lockfile and tracker worker in both implementations
+        run: |
+          cmp baseline/package-lock.json candidate/package-lock.json
+          cmp baseline/workers/fingerspelling-vision.worker.ts candidate/workers/fingerspelling-vision.worker.ts
+          for implementation in baseline candidate; do
+            (cd "$implementation" && npm ci && npm run build:rehearsal)
+          done
+      - name: Alternate every predetermined RGB input on this runner
+        env: {REPEAT: '${{ matrix.repeat }}', CATALOG: '${{ matrix.kind }}'}
+        run: python harness/scripts/diagnostics/sprint-paired-replay.py "$CATALOG" "$(command -v google-chrome)" --baseline baseline --candidate candidate --out outputs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr51-${{ matrix.kind }}-${{ matrix.repeat }}
+          path: outputs/*.json
+          retention-days: 14
+  determinism:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env: {OMP_NUM_THREADS: '1', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - run: python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+      - name: Verified licensed frames (runner-local; never uploaded)
+        run: python scripts/diagnostics/tracking-determinism-prepare.py
+      - run: npm ci && npm run build:rehearsal
+      - name: Lockstep production tracker under controlled schedules
+        run: node scripts/diagnostics/run-tracking-determinism.mjs "$(command -v google-chrome)" outputs/tracking-determinism-rgb.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          # Counts, deltas, CER and fingerprints only: no frames, landmarks, text or clip ids.
+          name: pr51-tracking-determinism
+          path: outputs/tracking-determinism-rgb.json
+          retention-days: 14
