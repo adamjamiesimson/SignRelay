@@ -45,7 +45,8 @@ for(const variant of ["baseline","candidate"]){
       outputs:negative.map(r=>({id:r.caseId,status:r.status,prediction:prediction(r)}))},
     finishToDom:timing(positive.map(r=>r.finishToDomCandidateMs).filter(Number.isFinite)),
     inference:timing(positive.map(r=>r.inferenceMs).filter(Number.isFinite)),
-    observedFps:timing(positive.map(r=>r.observedCaptureFps).filter(Number.isFinite))};
+    observedFps:{samples:positive.length,median:quantile(positive.map(r=>r.observedCaptureFps).filter(Number.isFinite),.5),
+      p95:quantile(positive.map(r=>r.observedCaptureFps).filter(Number.isFinite),.95)}};
 }
 if(process.argv[3])await writeFile(process.argv[3],JSON.stringify(output,null,2)+"\n");
 console.log(JSON.stringify(output,null,2));

@@ -53,6 +53,9 @@ jobs:
       - name: Rehearsal - six signs, abstention, interruption, offline, speech, privacy
         run: node tests/gitex-rehearsal-smoke.mjs "$CHROME"
 
+      - name: Fingerspelling - mode isolation, explicit confirmation, camera lifecycle and privacy
+        run: node tests/fingerspelling-browser-smoke.mjs "$CHROME"
+
       - name: Rehearsal - transcript, live regions, keyboard, touch targets, reduced motion
         run: node tests/transcript-a11y-smoke.mjs "$CHROME"
 
