@@ -1,0 +1,40 @@
+{
+  "kind": "Same-runner, alternating genuine RGB regression replay; exposed recordings, not fresh final or physical webcam evidence",
+  "catalog": "positive",
+  "variant": "candidate",
+  "repeat": "2",
+  "sourceSha": "abc8a7b0e2023f6deacb51056d25288eaaaa66f3",
+  "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+  "planned": 10,
+  "completed": 10,
+  "complete": true,
+  "pairedSameHost": true,
+  "aggregateOnly": true,
+  "privacy": "No recording identifiers, strings, per-recording results, device identities or biometric observations published. Full case ledgers retained locally.",
+  "summary": {
+    "captures": 10,
+    "exact": 4,
+    "characterErrors": 24,
+    "referenceCharacters": 128,
+    "candidates": 10,
+    "abstentions": 0,
+    "nativeParity": 10
+  },
+  "timing": {
+    "observedCaptureFps": {
+      "samples": 10,
+      "median": 15.000131819340233,
+      "p95": 15.000216003110445
+    },
+    "finishToDomCandidateMs": {
+      "samples": 10,
+      "median": 29.300000000017462,
+      "p95": 91.90000000002328
+    },
+    "inferenceMs": {
+      "samples": 10,
+      "median": 16.5,
+      "p95": 21.79999999993015
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "baseline": "116fe686f7b31ecd00ac57ee4724287affafda0f",
+  "protectedFiles": 526,
+  "changed": [],
+  "allUnchanged": true,
+  "excludedChanges": [
+    "lib/fingerspelling-ctc-session.ts request ownership and idle lifetime",
+    "lib/live-vision.ts fault snapshot disposal",
+    "lib/personalized-recognition.ts exact cost cache",
+    "lib/capability-status.ts historical attribution",
+    "new laboratory/test/report files"
+  ],
+  "scope": "Every original historical evidence file, model asset, app/component/style/branding file, worker source and tracked worker bundle, lockfile, Firebase/Vercel config, saved-template format and sequence feature/decoder/runtime contract in these prefixes; new sprint evidence is additive."
+}

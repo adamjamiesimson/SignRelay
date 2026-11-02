@@ -1,0 +1,26 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Rapid words in order, no duplicates (Tracking 0/0 ms (p50/p95) · recognition round trip 2/6 ms · queue wait 0/0 ms · 23.4 forwarded/s, 14 dropped (7%) · 23.4 frames analysed/s · assets self-hosted · recognition running, 0 recoveries · hand tracked in 79% of frames · tracker worker/CPU · capture 4/4 ms · hands 193/193 ms · auxiliary 0/0 ms · transport 25/25 ms · overlay 0/0 ms · age 0/0 ms · classification 1/2 ms · communication 2/5 ms · model 2/2 ms · personal — · reference —)
++ actual - expected
+
+  [
+    'Hello',
+-   'Thank you',
+    'Please',
+    'Sorry',
+    'Yes',
+    'No'
+  ]
+
+    at file:///C:/Users/DELL/Documents/Codex/2026-11-02/files-pasted-by-the-user-signrelay/work/SignRelay/tests/transcript-a11y-smoke.mjs:46:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [ 'Hello', 'Please', 'Sorry', 'Yes', 'No' ],
+  expected: [ 'Hello', 'Thank you', 'Please', 'Sorry', 'Yes', 'No' ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.22.1

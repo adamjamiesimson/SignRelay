@@ -1,0 +1,86 @@
+[
+  {
+    "number": 43,
+    "title": "Decouple hand tracking from UI and preserve dynamic-sign trajectories",
+    "url": "https://github.com/adamjamiesimson/SignRelay/pull/43",
+    "base": "main",
+    "baseSha": "e63fffe64e6cc7136cf5191bd3beb07058c24200",
+    "head": "codex/tracking-temporal-refinement",
+    "headSha": "06316aa7363a6794d6d8989aa87edeb2b9317ea8",
+    "state": "open",
+    "draft": false,
+    "merged": false
+  },
+  {
+    "number": 44,
+    "title": "Integrate tracking refinement, repair CI and prepare supervised testing",
+    "url": "https://github.com/adamjamiesimson/SignRelay/pull/44",
+    "base": "main",
+    "baseSha": "e63fffe64e6cc7136cf5191bd3beb07058c24200",
+    "head": "codex/integration-release-candidate",
+    "headSha": "fc95a6f361f19fd18bf28fd3e05998e447ce6758",
+    "state": "open",
+    "draft": true,
+    "merged": false
+  },
+  {
+    "number": 45,
+    "title": "Performance and recognition-reliability follow-up to #44 (stacked)",
+    "url": "https://github.com/adamjamiesimson/SignRelay/pull/45",
+    "base": "codex/integration-release-candidate",
+    "baseSha": "fc95a6f361f19fd18bf28fd3e05998e447ce6758",
+    "head": "claude/optimistic-clarke-mnreht",
+    "headSha": "e0b1f3543d57d51e0d4208dbb3e43fbd2034f4d5",
+    "state": "open",
+    "draft": true,
+    "merged": false
+  },
+  {
+    "number": 46,
+    "title": "Engineering refinement: tracking-failure invalidation, faster matching and inference scheduling (stacked on #45)",
+    "url": "https://github.com/adamjamiesimson/SignRelay/pull/46",
+    "base": "claude/optimistic-clarke-mnreht",
+    "baseSha": "e0b1f3543d57d51e0d4208dbb3e43fbd2034f4d5",
+    "head": "claude/nifty-davinci-fgv665",
+    "headSha": "6eb9c64a1ed33a3f2d64f62e4d5363bde824ffdb",
+    "state": "open",
+    "draft": true,
+    "merged": false
+  },
+  {
+    "number": 47,
+    "title": "Stabilise verified dataset acquisition, gate landmark training and restore logo colours",
+    "url": "https://github.com/adamjamiesimson/SignRelay/pull/47",
+    "base": "claude/festive-dirac-pbwx2j",
+    "baseSha": "996b0d2925e882e15ed303cd3f2b459e261be962",
+    "head": "codex/stabilisation-2026-10-31",
+    "headSha": "fa97370706cd2d878931c8c534cb3244ff605e33",
+    "state": "open",
+    "draft": true,
+    "merged": false
+  },
+  {
+    "number": 48,
+    "title": "ASL fingerspelling: display-aware CTC recognition with fresh final and real RGB evidence (research only)",
+    "url": "https://github.com/adamjamiesimson/SignRelay/pull/48",
+    "base": "codex/stabilisation-2026-10-31",
+    "baseSha": "fa97370706cd2d878931c8c534cb3244ff605e33",
+    "head": "codex/asl-fingerspelling-2026-10-31",
+    "headSha": "d89cff666fe7a4981fb01a8b460a65a9abd3065e",
+    "state": "open",
+    "draft": true,
+    "merged": false
+  },
+  {
+    "number": 49,
+    "title": "ASL fingerspelling: decoded-frame capture and consent-aware local testing, with measured regressions",
+    "url": "https://github.com/adamjamiesimson/SignRelay/pull/49",
+    "base": "codex/asl-fingerspelling-2026-10-31",
+    "baseSha": "d89cff666fe7a4981fb01a8b460a65a9abd3065e",
+    "head": "codex/fingerspelling-reliability-2026-11-01",
+    "headSha": "116fe686f7b31ecd00ac57ee4724287affafda0f",
+    "state": "open",
+    "draft": true,
+    "merged": false
+  }
+]

@@ -1,0 +1,76 @@
+
+> signrelay@0.1.0 build:firebase
+> node scripts/verify-vision-runtime.mjs && npm run install:rsl-model && node scripts/verify-bdsl-assets.mjs && node scripts/verify-lse-assets.mjs && node scripts/verify-psl-assets.mjs && node scripts/prepare-export.mjs && node scripts/install-vision-assets.mjs && npm run build:worker && next build && node scripts/exclude-private-routes.mjs && node scripts/secure-export.mjs && node scripts/verify-runtime.mjs --out out --profile full
+
+Verified MediaPipe JS/WASM 0.10.35
+
+> signrelay@0.1.0 install:rsl-model
+> node scripts/install-rsl-model.mjs
+
+Slovo pretrained model verified (1,000 sign classes).
+Bangla assets verified: 401 sign classes / 398 English glosses.
+Spanish model and all 300 labels match the reviewed training artifact.
+PSL template bundle and all 775 labels match the reviewed dataset build.
+Self-hosted 4 MediaPipe WASM files and verified models: gesture (cached), face (cached), pose (cached).
+
+> signrelay@0.1.0 build:worker
+> esbuild workers/recognition.worker.ts workers/template-matching.worker.ts workers/rsl.worker.ts workers/bdsl.worker.ts workers/fingerspelling.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outdir=public/workers && esbuild workers/vision.worker.ts --bundle --format=iife --platform=browser --target=es2020 --outfile=public/workers/vision.worker.js && esbuild workers/fingerspelling-vision.worker.ts --bundle --format=iife --platform=browser --target=es2020 --outfile=public/workers/fingerspelling-vision.worker.js && node scripts/copy-onnx-runtime.mjs && node scripts/install-vision-assets.mjs --wasm-only
+
+
+  public\workers\recognition.worker.js        674.5kb
+  public\workers\rsl.worker.js                542.7kb
+  public\workers\fingerspelling.worker.js     503.4kb
+  public\workers\bdsl.worker.js               497.1kb
+  public\workers\template-matching.worker.js   20.8kb
+
+Done in 210ms
+
+  public\workers\vision.worker.js  206.7kb
+
+Done in 168ms
+
+  public\workers\fingerspelling-vision.worker.js  194.5kb
+
+Done in 108ms
+Self-hosted 4 MediaPipe WASM files.
+▲ Next.js 16.4.2 (Turbopack)
+✓ Running next.config.ts took 231ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 6.0s
+  Running TypeScript ...
+  Finished TypeScript in 9.0s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/13) ...
+  Generating static pages using 7 workers (3/13) 
+  Generating static pages using 7 workers (6/13) 
+  Generating static pages using 7 workers (9/13) 
+✓ Generating static pages using 7 workers (13/13) in 993ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /about
+├ ○ /field-test
+├ ○ /how-it-works
+├ ○ /languages
+├ ○ /models
+├ ○ /privacy
+├ ○ /roadmap
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+└ ○ /terms
+
+
+○  (Static)  prerendered as static content
+
+Public export: removed private /field-test (5 documents, 2 route-only assets).
+Added hash-based script policies to 10 exported pages.
+{
+  "ok": true,
+  "failures": [],
+  "recognition_worker_sha256": "ec7b6d01b89467339b1a957c1f8714d8a4044a23b24a751ad4fe2a403a7aa557",
+  "matches_committed_worker": true,
+  "real_video_evidence": "none recorded"
+}

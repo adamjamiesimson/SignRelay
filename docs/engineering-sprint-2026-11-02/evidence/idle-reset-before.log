@@ -1,0 +1,33 @@
+
+ RUN  v4.1.12 C:/Users/DELL/Documents/Codex/2026-11-02/files-pasted-by-the-user-signrelay/work/SignRelay
+
+ ❯ tests/fingerspelling-session.test.ts (7 tests | 1 failed) 22ms
+     × reuses an idle initialized model for repeated capture cancellations 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > reuses an idle initialized model for repeated capture cancellations
+AssertionError: expected [ { …(5) }, { …(5) }, { …(5) }, …(98) ] to have a length of 1 but got 101
+
+- Expected
++ Received
+
+- 1
++ 101
+
+ ❯ tests/fingerspelling-session.test.ts:23:21
+     21|     const h=harness();h.ready();
+     22|     for(let i=0;i<100;i++)h.session.reset();
+     23|     expect(h.ports).toHaveLength(1);expect(h.ports[0].terminate).not.t…
+       |                     ^
+     24|     h.submit();h.finish(1);expect(h.result).toHaveBeenCalledOnce();h.s…
+     25|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  07:52:27
+   Duration  386ms (transform 45ms, setup 0ms, import 107ms, tests 22ms, environment 0ms)
+

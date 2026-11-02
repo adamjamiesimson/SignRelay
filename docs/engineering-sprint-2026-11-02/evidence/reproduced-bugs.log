@@ -1,0 +1,96 @@
+
+ RUN  v4.1.12 C:/Users/DELL/Documents/Codex/2026-11-02/files-pasted-by-the-user-signrelay/work/SignRelay
+
+ ❯ tests/live-vision-capture.test.ts (3 tests | 1 failed) 17ms
+     × releases the pending pre-failure bitmap before worker recovery 9ms
+ ❯ tests/fingerspelling-session.test.ts (5 tests | 3 failed) 19ms
+     × ignores duplicate completions while the next request is running 7ms
+     × keeps only the latest queued capture and never displays a superseded capture 4ms
+     × ignores duplicate ready messages without clearing the inference watchdog 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > ignores duplicate completions while the next request is running
+AssertionError: expected "vi.fn()" to be called 1 times, but got 2 times
+ ❯ tests/fingerspelling-session.test.ts:22:34
+     20|   it("ignores duplicate completions while the next request is running"…
+     21|     const h=harness();h.ready();h.submit();h.finish(1);h.submit();
+     22|     h.finish(1);expect(h.result).toHaveBeenCalledTimes(1);
+       |                                  ^
+     23|     h.finish(2);expect(h.result).toHaveBeenCalledTimes(2);h.session.cl…
+     24|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > keeps only the latest queued capture and never displays a superseded capture
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      Object {
+        "epoch": 1,
+        "inferenceMs": 1,
+        "requestId": 1,
+        "status": "uncertain",
+        "text": "ANNA",
+        "type": "result",
+        "uncalibratedScore": 0.8,
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ tests/fingerspelling-session.test.ts:28:26
+     26|     const h=harness();h.ready();for(let i=0;i<100;i++)h.submit();
+     27|     expect(h.requests()).toHaveLength(1);h.finish(1);
+     28|     expect(h.result).not.toHaveBeenCalled();
+       |                          ^
+     29|     expect(h.requests().map(d=>d.requestId)).toEqual([1,100]);
+     30|     h.finish(100);expect(h.result).toHaveBeenCalledOnce();h.session.cl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > ignores duplicate ready messages without clearing the inference watchdog
+AssertionError: expected last "vi.fn()" call to have been called with [ 'failed', …(1) ]
+
+- Expected
++ Received
+
+  [
+-   "failed",
+-   "Fingerspelling inference timed out",
++   "ready",
+  ]
+
+ ❯ tests/fingerspelling-session.test.ts:35:22
+     33|     vi.useFakeTimers();const h=harness();h.ready();h.submit();h.ready(…
+     34|     await vi.advanceTimersByTimeAsync(30001);
+     35|     expect(h.status).toHaveBeenLastCalledWith("failed","Fingerspelling…
+       |                      ^
+     36|     expect(h.ports[0].terminate).toHaveBeenCalledOnce();h.session.clos…
+     37|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > releases the pending pre-failure bitmap before worker recovery
+AssertionError: expected "vi.fn()" to be called once, but got 0 times
+ ❯ tests/live-vision-capture.test.ts:34:30
+     32|     const first=live.process(v.element,now,vi.fn());now+=67;v.sample(1…
+     33|     const rejected=expect(first).rejects.toThrow("interrupted");Port.a…
+     34|     expect(bitmaps[1].close).toHaveBeenCalledOnce();
+       |                              ^
+     35|     live.close();expect(bitmaps[1].close).toHaveBeenCalledOnce();
+     36|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 4 passed (8)
+   Start at  07:48:20
+   Duration  720ms (transform 100ms, setup 0ms, import 228ms, tests 36ms, environment 0ms)
+

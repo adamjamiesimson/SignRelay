@@ -1,0 +1,526 @@
+{
+  "schema": 1,
+  "benchmark": "long-session",
+  "environment": "Node v22.13.0, AMD EPYC 7763 64-Core Processor x4, real worker threads, local files; not a browser, camera or phone measurement",
+  "protocol": "20 Hz offered frames, one in flight and one latest (coalescing), six-sign cycle with rests",
+  "results": [
+    {
+      "scenario": "300 personal examples, language switch and idle every 30 s",
+      "seconds": 600,
+      "offered": 8182,
+      "sent": 8182,
+      "acknowledged": 8182,
+      "coalesced_dropped": 0,
+      "faults": [],
+      "confirmed": {},
+      "language_switch_idle_cycles": 19,
+      "matcher_workers": {
+        "max": 1,
+        "last": 1
+      },
+      "ack_latency_ms": {
+        "p50": 0.22,
+        "p95": 0.32,
+        "max": 33.93
+      },
+      "max_at_s": 0.03,
+      "over_50ms": [],
+      "first_30s_p95_ms": 0.38,
+      "last_30s_p95_ms": 0.28,
+      "queue_age_ms": {
+        "p50": 0,
+        "p95": 0,
+        "max": 0.05
+      },
+      "worker_heap_mb": {
+        "first": 20.8,
+        "last": 27,
+        "max": 30.3
+      },
+      "heap_samples": [
+        {
+          "t": 0,
+          "worker_heap_mb": 20.8
+        },
+        {
+          "t": 10,
+          "worker_heap_mb": 20.9
+        },
+        {
+          "t": 20,
+          "worker_heap_mb": 23.7
+        },
+        {
+          "t": 40,
+          "worker_heap_mb": 20.1
+        },
+        {
+          "t": 40,
+          "worker_heap_mb": 20.2
+        },
+        {
+          "t": 50,
+          "worker_heap_mb": 21
+        },
+        {
+          "t": 70,
+          "worker_heap_mb": 20.2
+        },
+        {
+          "t": 70,
+          "worker_heap_mb": 20.2
+        },
+        {
+          "t": 80,
+          "worker_heap_mb": 21.6
+        },
+        {
+          "t": 100,
+          "worker_heap_mb": 18.7
+        },
+        {
+          "t": 100,
+          "worker_heap_mb": 18.7
+        },
+        {
+          "t": 110,
+          "worker_heap_mb": 19.9
+        },
+        {
+          "t": 130,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 130,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 140,
+          "worker_heap_mb": 19.1
+        },
+        {
+          "t": 160,
+          "worker_heap_mb": 18.3
+        },
+        {
+          "t": 160,
+          "worker_heap_mb": 18.3
+        },
+        {
+          "t": 170,
+          "worker_heap_mb": 19.7
+        },
+        {
+          "t": 190,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 190,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 200,
+          "worker_heap_mb": 19.9
+        },
+        {
+          "t": 220,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 220,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 230,
+          "worker_heap_mb": 20.1
+        },
+        {
+          "t": 250,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 250,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 260,
+          "worker_heap_mb": 20
+        },
+        {
+          "t": 280,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 280,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 290,
+          "worker_heap_mb": 20
+        },
+        {
+          "t": 310,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 310,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 320,
+          "worker_heap_mb": 19.7
+        },
+        {
+          "t": 340,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 340,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 350,
+          "worker_heap_mb": 20.3
+        },
+        {
+          "t": 370,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 370,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 380,
+          "worker_heap_mb": 27.5
+        },
+        {
+          "t": 400,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 400,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 410,
+          "worker_heap_mb": 29.5
+        },
+        {
+          "t": 430,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 430,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 440,
+          "worker_heap_mb": 26.9
+        },
+        {
+          "t": 460,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 460,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 470,
+          "worker_heap_mb": 28.3
+        },
+        {
+          "t": 490,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 490,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 500,
+          "worker_heap_mb": 28.1
+        },
+        {
+          "t": 510,
+          "worker_heap_mb": 30.3
+        },
+        {
+          "t": 520,
+          "worker_heap_mb": 18.6
+        },
+        {
+          "t": 530,
+          "worker_heap_mb": 27.2
+        },
+        {
+          "t": 550,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 550,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 560,
+          "worker_heap_mb": 28.8
+        },
+        {
+          "t": 580,
+          "worker_heap_mb": 18.4
+        },
+        {
+          "t": 580,
+          "worker_heap_mb": 18.5
+        },
+        {
+          "t": 590,
+          "worker_heap_mb": 27
+        }
+      ],
+      "rss_samples": [
+        {
+          "t": 0,
+          "process_rss_mb": 188.4
+        },
+        {
+          "t": 10,
+          "process_rss_mb": 235.1
+        },
+        {
+          "t": 20,
+          "process_rss_mb": 237.1
+        },
+        {
+          "t": 40,
+          "process_rss_mb": 232.5
+        },
+        {
+          "t": 40,
+          "process_rss_mb": 232.5
+        },
+        {
+          "t": 50,
+          "process_rss_mb": 280.1
+        },
+        {
+          "t": 70,
+          "process_rss_mb": 243.1
+        },
+        {
+          "t": 70,
+          "process_rss_mb": 243.1
+        },
+        {
+          "t": 80,
+          "process_rss_mb": 291.7
+        },
+        {
+          "t": 100,
+          "process_rss_mb": 265.4
+        },
+        {
+          "t": 100,
+          "process_rss_mb": 265.4
+        },
+        {
+          "t": 110,
+          "process_rss_mb": 309.9
+        },
+        {
+          "t": 130,
+          "process_rss_mb": 309.6
+        },
+        {
+          "t": 130,
+          "process_rss_mb": 309.6
+        },
+        {
+          "t": 140,
+          "process_rss_mb": 309.9
+        },
+        {
+          "t": 160,
+          "process_rss_mb": 284.1
+        },
+        {
+          "t": 160,
+          "process_rss_mb": 284.1
+        },
+        {
+          "t": 170,
+          "process_rss_mb": 284.2
+        },
+        {
+          "t": 190,
+          "process_rss_mb": 316.9
+        },
+        {
+          "t": 190,
+          "process_rss_mb": 316.9
+        },
+        {
+          "t": 200,
+          "process_rss_mb": 317.4
+        },
+        {
+          "t": 220,
+          "process_rss_mb": 315.3
+        },
+        {
+          "t": 220,
+          "process_rss_mb": 315.3
+        },
+        {
+          "t": 230,
+          "process_rss_mb": 315.4
+        },
+        {
+          "t": 250,
+          "process_rss_mb": 293
+        },
+        {
+          "t": 250,
+          "process_rss_mb": 293
+        },
+        {
+          "t": 260,
+          "process_rss_mb": 334.4
+        },
+        {
+          "t": 280,
+          "process_rss_mb": 345.1
+        },
+        {
+          "t": 280,
+          "process_rss_mb": 345.1
+        },
+        {
+          "t": 290,
+          "process_rss_mb": 346.1
+        },
+        {
+          "t": 310,
+          "process_rss_mb": 359.2
+        },
+        {
+          "t": 310,
+          "process_rss_mb": 359.2
+        },
+        {
+          "t": 320,
+          "process_rss_mb": 359.3
+        },
+        {
+          "t": 340,
+          "process_rss_mb": 359.4
+        },
+        {
+          "t": 340,
+          "process_rss_mb": 359.4
+        },
+        {
+          "t": 350,
+          "process_rss_mb": 359.4
+        },
+        {
+          "t": 370,
+          "process_rss_mb": 320.2
+        },
+        {
+          "t": 370,
+          "process_rss_mb": 320.2
+        },
+        {
+          "t": 380,
+          "process_rss_mb": 320.2
+        },
+        {
+          "t": 400,
+          "process_rss_mb": 346.5
+        },
+        {
+          "t": 400,
+          "process_rss_mb": 346.5
+        },
+        {
+          "t": 410,
+          "process_rss_mb": 346.5
+        },
+        {
+          "t": 430,
+          "process_rss_mb": 346.7
+        },
+        {
+          "t": 430,
+          "process_rss_mb": 346.7
+        },
+        {
+          "t": 440,
+          "process_rss_mb": 346.8
+        },
+        {
+          "t": 460,
+          "process_rss_mb": 346.8
+        },
+        {
+          "t": 460,
+          "process_rss_mb": 346.8
+        },
+        {
+          "t": 470,
+          "process_rss_mb": 346.9
+        },
+        {
+          "t": 490,
+          "process_rss_mb": 346.9
+        },
+        {
+          "t": 490,
+          "process_rss_mb": 346.9
+        },
+        {
+          "t": 500,
+          "process_rss_mb": 347
+        },
+        {
+          "t": 510,
+          "process_rss_mb": 347.2
+        },
+        {
+          "t": 520,
+          "process_rss_mb": 334.1
+        },
+        {
+          "t": 530,
+          "process_rss_mb": 334.4
+        },
+        {
+          "t": 550,
+          "process_rss_mb": 323.5
+        },
+        {
+          "t": 550,
+          "process_rss_mb": 323.5
+        },
+        {
+          "t": 560,
+          "process_rss_mb": 323.5
+        },
+        {
+          "t": 580,
+          "process_rss_mb": 350.4
+        },
+        {
+          "t": 580,
+          "process_rss_mb": 350.4
+        },
+        {
+          "t": 590,
+          "process_rss_mb": 350.6
+        }
+      ]
+    }
+  ]
+}

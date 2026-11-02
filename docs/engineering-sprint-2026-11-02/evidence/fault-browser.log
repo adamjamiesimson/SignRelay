@@ -1,0 +1,7 @@
+Fault check: Worker crashes: two automatic restarts per minute, then a manual restart.
+Fault check: Tracking worker crash invalidates the overlay and recognition evidence.
+Fault check: Worker construction fails once.
+Fault check: Missing tracking model (self-hosted and CDN both unavailable).
+Fault check: Corrupted tracking model bytes.
+Fault check: Browser storage throws on every access.
+{"passed":true,"results":[{"fault":"recognition worker crash x3","automatic_restarts":2,"then":"paused with Restart recognition; manual restart recovered"},{"fault":"tracking worker crash","overlay_cleared":true,"recognition_reset":true,"recovered":true},{"fault":"recognition worker fails to construct once","recovered":true},{"fault":"missing gesture_recognizer.task","message":"tracking models could not load","camera_released":true,"recovered":true},{"fault":"corrupted gesture_recognizer.task","message":"tracking models could not load","camera_released":true,"recovered":true},{"fault":"localStorage throws","camera_and_recognition":"running"}],"environment":"headless Chromium, synthetic fake camera (no hands); software resilience only"}

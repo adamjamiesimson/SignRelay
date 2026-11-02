@@ -1,0 +1,128 @@
+{
+  "kind": "Exposed regression recordings only; correlated repetitions, not independent signer or physical camera evidence",
+  "modelSha256": "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b",
+  "sources": [
+    {
+      "file": "ci-positive-baseline-1.json",
+      "sha256": "d4183c78c8e47bd4fcb712106cbac871aef9daf724f164c74313c3a3f5c39e22"
+    },
+    {
+      "file": "ci-positive-baseline-2.json",
+      "sha256": "af44894383a8bb388c2ea48b56727af0e22b8ee83dfb90b55a3943fdca7724d2"
+    },
+    {
+      "file": "ci-positive-baseline-3.json",
+      "sha256": "ce10d005f9f0eb37ada6a08e56db2f40b414b31b2cf0d201527d62ae72d6fbd4"
+    },
+    {
+      "file": "ci-negative-baseline.json",
+      "sha256": "d90b6c77834d381050ea5c34c4ab4f0d00f4ffe50645e8b9ed0122bc09613b9c"
+    },
+    {
+      "file": "ci-positive-candidate-1.json",
+      "sha256": "178f5ee3bf90d88f1fccc531419d4c10c88aff4b0cb35efbc6ea46b8b6b9fa65"
+    },
+    {
+      "file": "ci-positive-candidate-2.json",
+      "sha256": "aee156e4a6b1438aca7a21186926aa78a8cb9c8700e051c533adafb29afdfcd6"
+    },
+    {
+      "file": "ci-positive-candidate-3.json",
+      "sha256": "ae992e567ad0e01df7ceb29cf18c6d52f336c95882a12e9f4b5d29f592a567cb"
+    },
+    {
+      "file": "ci-negative-candidate.json",
+      "sha256": "ce9497711e05fa9006a21e2ce79a2ebce8e6a34a8e5f2db2be4b0d96f44a4fff"
+    }
+  ],
+  "variants": {
+    "baseline": {
+      "positive": {
+        "captures": 30,
+        "exact": 10,
+        "characterErrors": 72,
+        "referenceCharacters": 384,
+        "CER": 0.1875,
+        "candidates": 30,
+        "abstentions": 0,
+        "nativeParity": 30
+      },
+      "exposedEightClipSubset": {
+        "captures": 24,
+        "exact": 7,
+        "characterErrors": 69,
+        "referenceCharacters": 333,
+        "CER": 0.2072072072072072,
+        "candidates": 24,
+        "abstentions": 0,
+        "nativeParity": 24
+      },
+      "sameOutputAllThree": 7,
+      "negative": {
+        "windows": 29,
+        "falseCandidates": 4,
+        "abstentions": 25
+      },
+      "finishToDom": {
+        "samples": 30,
+        "medianMs": 53.29999999998836,
+        "p95Ms": 131.90000000002328
+      },
+      "inference": {
+        "samples": 30,
+        "medianMs": 21.599999999976717,
+        "p95Ms": 29.100000000034925
+      },
+      "observedFps": {
+        "samples": 30,
+        "median": 14.711736504145238,
+        "p95": 15.00048463104192
+      }
+    },
+    "candidate": {
+      "positive": {
+        "captures": 30,
+        "exact": 10,
+        "characterErrors": 76,
+        "referenceCharacters": 384,
+        "CER": 0.19791666666666666,
+        "candidates": 30,
+        "abstentions": 0,
+        "nativeParity": 30
+      },
+      "exposedEightClipSubset": {
+        "captures": 24,
+        "exact": 7,
+        "characterErrors": 73,
+        "referenceCharacters": 333,
+        "CER": 0.21921921921921922,
+        "candidates": 24,
+        "abstentions": 0,
+        "nativeParity": 24
+      },
+      "sameOutputAllThree": 5,
+      "negative": {
+        "windows": 29,
+        "falseCandidates": 2,
+        "abstentions": 27
+      },
+      "finishToDom": {
+        "samples": 30,
+        "medianMs": 49.59999999997672,
+        "p95Ms": 154.70000000001164
+      },
+      "inference": {
+        "samples": 30,
+        "medianMs": 22.20000000001164,
+        "p95Ms": 30.099999999976717
+      },
+      "observedFps": {
+        "samples": 30,
+        "median": 14.732207310549859,
+        "p95": 15.000262504593815
+      }
+    }
+  },
+  "privacy": "Aggregate results only. Per-case ledgers retained locally; not published.",
+  "recomputation": "Additive counts verified from public aggregates; pooled timings and repeated-output consistency require locally retained full ledgers."
+}

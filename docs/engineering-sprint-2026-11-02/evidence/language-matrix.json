@@ -1,0 +1,812 @@
+{
+  "source": "6783a3dbfbec905d8b483420427a74f094de4c77",
+  "languages": [
+    {
+      "id": "asl",
+      "name": "American Sign Language",
+      "status": "experimental",
+      "capability": {
+        "tier": "research-model",
+        "independentlyValidated": false,
+        "headline": "Research preview. Six demo words use simple movement rules. A research model holds 2,000 installed labels: 0 have been recognised at least once on unseen signers' clips, and none has yet passed SignRelay's multi-signer check.",
+        "evidence": "Earlier research version. On 11 previously seen, publisher-labelled development clips: 5 correct, 0 wrong, 6 no-match (PLEASE 3/3, NO 1/1, HELLO 1/3, THANK YOU 0/3, YES 0/1; SORRY untested). These results do not validate this version. Recorded-sign checks for the current word recognizer are still blocked; new signers, live cameras and non-signing movement remain untested."
+      },
+      "type": "Research model, isolated signs",
+      "installedAutomaticLabels": 2000,
+      "assets": [
+        {
+          "file": "public/models/asl2000-tgcn/adapter.json",
+          "bytes": 499,
+          "sha256": "081e4e83fb40064cabfa14160bf8eb801ad2e7fd07b4c6dc0502db93b69429fd"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/labels.json",
+          "bytes": 24017,
+          "sha256": "4a4e1e6c024c19320557d0febdd7f3956960d77a691848a2101cbca72ce69380"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/metrics.json",
+          "bytes": 438,
+          "sha256": "813e7fc425a6a34e8c7f165a0412416c391610445f5edcb39fa6ea3400a43fe8"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/model.json",
+          "bytes": 51460,
+          "sha256": "ebac604f1c4ee86a7b3b20cfaa9c3a8f157cc814ad0c94e6a87be7902b3ac466"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/model.part00.bin",
+          "bytes": 716800,
+          "sha256": "0d38c52c54b7f0318a57e64f92fb80cb1465b7032eb2373e2ec7ad3064bbb5d3"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/model.part01.bin",
+          "bytes": 716800,
+          "sha256": "8a4f519c23623d16bb2a5d628a5ad9679d661b74e629399e6fc15768e607f23e"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/model.part02.bin",
+          "bytes": 716800,
+          "sha256": "189d09d2c059333095e9e7829c0fa0a4c5c0b45309bcc99d050703c1caf93755"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/model.part03.bin",
+          "bytes": 716800,
+          "sha256": "c00f99fcca5cb9d2e68fabc3466934282f60d8db9ca5823af58f657b9415cc0e"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/model.part04.bin",
+          "bytes": 716800,
+          "sha256": "8e9961df4bb56d8e3d70efc046689217cbb00c7705865453c17a21dccc882761"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/model.part05.bin",
+          "bytes": 716800,
+          "sha256": "957e15ffa38a6955f9d56ff49f05233264c1382e83aac2f5a8fce82fc47ba929"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/model.part06.bin",
+          "bytes": 716800,
+          "sha256": "6cae4ae49c39a3c00f5ba642b5edcab6cf213b80271c1200e0c79a500dcbf6de"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/model.part07.bin",
+          "bytes": 716800,
+          "sha256": "7f659bc373a7debd44d93bd00f07af0bc16d79b39b3eada68902cea08b1e11b3"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/model.part08.bin",
+          "bytes": 588366,
+          "sha256": "727a1eb21c6532358ecf276555487fdf8fb2fce466fbde105175fd203686edb3"
+        },
+        {
+          "file": "public/models/asl2000-tgcn/vocabulary-status.json",
+          "bytes": 350,
+          "sha256": "7ecf6716c0a845f3a3837c5b44bff25bd023ece49ffabff554c21a442e5b0c03"
+        }
+      ],
+      "executionEvidence": "Actual browser model execution/recovery in build-check job 125087663147; synthetic/fake-camera inputs, not signing accuracy",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "bsl",
+      "name": "British Sign Language",
+      "status": "experimental",
+      "capability": {
+        "tier": "research-model",
+        "independentlyValidated": false,
+        "headline": "Research preview. 1,064 isolated signs from a shared research model.",
+        "evidence": "SignRelay live-camera accuracy has not been measured for this language."
+      },
+      "type": "Research model, isolated signs",
+      "installedAutomaticLabels": 1064,
+      "assets": [
+        {
+          "file": "public/models/bsl1064-pose2sign/labels.json",
+          "bytes": 12667,
+          "sha256": "f99394258861ab0cb8629ddb5bd133c7a1ca6703ed4e62011a2108ea9fc5d71f"
+        },
+        {
+          "file": "public/models/bsl1064-pose2sign/model.json",
+          "bytes": 356,
+          "sha256": "d01076096d6cde5861c31f3612279ba09b036c6d0940ef8de33688d59996bbeb"
+        },
+        {
+          "file": "public/models/bsl1064-pose2sign/model.onnx",
+          "bytes": 45941853,
+          "sha256": "f48ffce9ccfc419fa4047845c152cc4a4224151e6e2bf10873cf59cfcdbc278f"
+        }
+      ],
+      "executionEvidence": "Actual browser model execution/recovery in build-check job 125087663147; synthetic/fake-camera inputs, not signing accuracy",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "isl",
+      "name": "Indian Sign Language",
+      "status": "experimental",
+      "capability": {
+        "tier": "research-model",
+        "independentlyValidated": false,
+        "headline": "Research preview. 263 isolated signs from a shared research model.",
+        "evidence": "SignRelay live-camera accuracy has not been measured for this language."
+      },
+      "type": "Research model, isolated signs",
+      "installedAutomaticLabels": 263,
+      "assets": [
+        {
+          "file": "public/models/isl263-include/labels.json",
+          "bytes": 3070,
+          "sha256": "16508c851ced89989dfe6a983e53d5fa2b70fec82d6932f6855d49846c39b1b8"
+        },
+        {
+          "file": "public/models/isl263-include/model.json",
+          "bytes": 384,
+          "sha256": "a5ea200a71295dfd3cb89a651dbc6d099bd4494f0f2f097f0d40d2ecd948fbd2"
+        },
+        {
+          "file": "public/models/isl263-include/model.onnx",
+          "bytes": 15412494,
+          "sha256": "122c9038eb1ac2143ebc91ab6e9752871132ff4d78dd6be589d98f50a67e13a6"
+        }
+      ],
+      "executionEvidence": "Actual browser model execution/recovery in build-check job 125087663147; synthetic/fake-camera inputs, not signing accuracy",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "lse",
+      "name": "Spanish Sign Language",
+      "status": "experimental",
+      "capability": {
+        "tier": "research-model",
+        "independentlyValidated": false,
+        "headline": "Research preview. 300 isolated signs from a shared research model.",
+        "evidence": "SignRelay live-camera accuracy has not been measured for this language."
+      },
+      "type": "Research model, isolated signs",
+      "installedAutomaticLabels": 300,
+      "assets": [
+        {
+          "file": "public/models/lse300-swl/labels.json",
+          "bytes": 4808,
+          "sha256": "5cda31c42d0f9e45788d323c8d7f5af8c18bec9baf6178f0bfde428552038eff"
+        },
+        {
+          "file": "public/models/lse300-swl/model.json",
+          "bytes": 668,
+          "sha256": "43935387aabc00f43e953f16ae30ecfb84fee2f67e849a31fbca489a4cd7a31c"
+        },
+        {
+          "file": "public/models/lse300-swl/model.onnx",
+          "bytes": 3509107,
+          "sha256": "58ce0f861f7e095054386435bf1a506b933a68883befee60a33c163a152d0ae3"
+        }
+      ],
+      "executionEvidence": "Actual browser model execution/recovery in build-check job 125087663147; synthetic/fake-camera inputs, not signing accuracy",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "auslan",
+      "name": "Australian Sign Language",
+      "status": "preparing",
+      "capability": {
+        "tier": "preparing",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. No automatic model is installed yet.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; automatic model in preparation",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "csl",
+      "name": "Chinese Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your CSL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "lsf",
+      "name": "French Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your LSF vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "dgs",
+      "name": "German Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your DGS vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "libras",
+      "name": "Brazilian Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your LIBRAS vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "lsa",
+      "name": "Argentine Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your LSA vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "nzsl",
+      "name": "New Zealand Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your NZSL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "jsl",
+      "name": "Japanese Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your JSL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "ksl",
+      "name": "Korean Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your KSL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "tid",
+      "name": "Turkish Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your TİD vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "uaesl",
+      "name": "Emirati Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your UAE SL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "ssl",
+      "name": "Saudi Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your Saudi SL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "egysl",
+      "name": "Egyptian Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your Egyptian SL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "lis",
+      "name": "Italian Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your LIS vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "lgp",
+      "name": "Portuguese Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your LGP vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "ngt",
+      "name": "Sign Language of the Netherlands",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your NGT vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "vgt",
+      "name": "Flemish Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your VGT vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "dsgs",
+      "name": "Swiss German Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your DSGS vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "irsl",
+      "name": "Irish Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your Irish SL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "pjm",
+      "name": "Polish Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your PJM vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "usl",
+      "name": "Ukrainian Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your USL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "rsl",
+      "name": "Russian Sign Language",
+      "status": "experimental",
+      "capability": {
+        "tier": "clip-mode",
+        "independentlyValidated": false,
+        "headline": "Research preview. One sign per capture from a 1,000-class model; suggestions are not added to a transcript.",
+        "evidence": "Published dataset results only. SignRelay live-camera accuracy has not been measured."
+      },
+      "type": "Research model, isolated signs",
+      "installedAutomaticLabels": 1000,
+      "assets": [
+        {
+          "file": "public/models/rsl1000-slovo/labels.json",
+          "bytes": 20723,
+          "sha256": "4f7d0ad8245bf226d90118a57101eebb0f03bd812b45066c4516f6d62501be11"
+        },
+        {
+          "file": "public/models/rsl1000-slovo/manifest.json",
+          "bytes": 813,
+          "sha256": "2d26c0a9778b3e18f426cd5695c63b9ae1f6f4aaf2ed5c06cc9d8f141d775736"
+        },
+        {
+          "file": "public/models/rsl1000-slovo/model.onnx",
+          "bytes": 140785735,
+          "sha256": "3414b1cca3619ba9a92994c261505d14361657fcc7a66f5a13696de526bc4975"
+        }
+      ],
+      "executionEvidence": "Actual browser model execution/recovery in build-check job 125087663147; synthetic/fake-camera inputs, not signing accuracy",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "lsm",
+      "name": "Mexican Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your LSM vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "lsc",
+      "name": "Colombian Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your LSC vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "lsch",
+      "name": "Chilean Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your LSCh vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "lsp",
+      "name": "Peruvian Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your LSP vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "sasl",
+      "name": "South African Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your SASL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "ksl_ke",
+      "name": "Kenyan Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your KSL · Kenya vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "bisindo",
+      "name": "Indonesian Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your BISINDO vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "bim",
+      "name": "Malaysian Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your BIM vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "sgsl",
+      "name": "Singapore Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your SgSL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "tsl",
+      "name": "Thai Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your TSL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "fsl",
+      "name": "Filipino Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your FSL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "psl",
+      "name": "Pakistan Sign Language",
+      "status": "experimental",
+      "capability": {
+        "tier": "research-model",
+        "independentlyValidated": false,
+        "headline": "Research preview. 775 dictionary signs, each matched against one recorded reference performance. There is no trained model.",
+        "evidence": "No live-camera or held-out evaluation exists for this language."
+      },
+      "type": "Reference DTW, one example per label",
+      "installedAutomaticLabels": 775,
+      "assets": [
+        {
+          "file": "public/models/psl776-hfad/labels.json",
+          "bytes": 9567,
+          "sha256": "de1f557f09b7e192e6109c2f2fd858084f59b5f38b9236dd4fb41f013adacd8d"
+        },
+        {
+          "file": "public/models/psl776-hfad/templates.json.gz",
+          "bytes": 6935772,
+          "sha256": "2cdcf70981178c6739392764846b7ef153fe993ab8d39c95792fd5665e462a14"
+        }
+      ],
+      "executionEvidence": "All 775 installed reference distances checked against independent DTW; no held-out accuracy result",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "bdsl",
+      "name": "Bangla Sign Language",
+      "status": "experimental",
+      "capability": {
+        "tier": "clip-mode",
+        "independentlyValidated": false,
+        "headline": "Research preview. One sign per capture from a 401-class model; suggestions are not added to a transcript.",
+        "evidence": "Published dataset results only. SignRelay live-camera accuracy has not been measured."
+      },
+      "type": "Research model, isolated signs",
+      "installedAutomaticLabels": 401,
+      "assets": [
+        {
+          "file": "public/models/bdsl401-videomae/class-codes.json",
+          "bytes": 4013,
+          "sha256": "39d88ba6e29336990cc99f1a28952cd6a7fc3b146b3b432fb6d44263c213b3dd"
+        },
+        {
+          "file": "public/models/bdsl401-videomae/labels.json",
+          "bytes": 6272,
+          "sha256": "31e115427f849fbe2f1f648e15203b1f801cfd94423b8b93f578af18e5b3732d"
+        },
+        {
+          "file": "public/models/bdsl401-videomae/manifest.json",
+          "bytes": 899,
+          "sha256": "1b7715cd95c02633724a0a57bb631b0cf6f6d46dc27cd7b51f421caf21aedb1b"
+        },
+        {
+          "file": "public/models/bdsl401-videomae/model.onnx",
+          "bytes": 96764338,
+          "sha256": "600c7a8064e5b41f24d145165990493c996ab7cf4b3a554aa7b354f18bad40a6"
+        }
+      ],
+      "executionEvidence": "Actual browser model execution/recovery in build-check job 125087663147; synthetic/fake-camera inputs, not signing accuracy",
+      "independentLiveAccuracy": "Not established"
+    },
+    {
+      "id": "vsl",
+      "name": "Vietnamese Sign Language",
+      "status": "personal",
+      "capability": {
+        "tier": "personal-only",
+        "independentlyValidated": false,
+        "headline": "Personal signs only. Record examples to activate your VSL vocabulary.",
+        "evidence": "No automatic recognition is claimed."
+      },
+      "type": "Personal only; no automatic model",
+      "installedAutomaticLabels": 0,
+      "assets": [],
+      "executionEvidence": "Shared personal matcher, storage, isolation and language registry checks; not independent signing evidence for this language",
+      "independentLiveAccuracy": "Not established"
+    }
+  ]
+}

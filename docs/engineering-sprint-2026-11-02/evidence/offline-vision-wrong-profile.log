@@ -1,0 +1,10 @@
+{"errors":[{"error":"net::ERR_ABORTED","url":"http://127.0.0.1:18945/"},{"error":"net::ERR_ABORTED","url":"http://127.0.0.1:18945/languages"},{"error":"net::ERR_ABORTED","url":"http://127.0.0.1:18945/how-it-works"},{"error":"net::ERR_ABORTED","url":"http://127.0.0.1:18945/privacy"}],"page":{"simd":"function"}}
+file:///C:/Users/DELL/Documents/Codex/2026-11-02/files-pasted-by-the-user-signrelay/work/SignRelay/tests/offline-vision-smoke.mjs:20
+  throw new Error(reason);
+        ^
+
+Error: Welcome screen did not hydrate
+    at until (file:///C:/Users/DELL/Documents/Codex/2026-11-02/files-pasted-by-the-user-signrelay/work/SignRelay/tests/offline-vision-smoke.mjs:20:9)
+    at async file:///C:/Users/DELL/Documents/Codex/2026-11-02/files-pasted-by-the-user-signrelay/work/SignRelay/tests/offline-vision-smoke.mjs:70:10
+
+Node.js v24.22.1
