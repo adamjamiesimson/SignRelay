@@ -153,6 +153,8 @@ export class LiveVision {
       worker.onmessage = ({ data }) => {
         if (this.closed || this.worker !== worker) return;
         if (data.type === "progress") { progress?.(data.message); return; }
+        // Startup notifications cannot replace or clear an active frame timer.
+        if (ready && (data.type === "warming" || data.type === "ready")) return;
         if (data.type === "warming") {
           clearTimeout(this.timer);
           this.timer = setTimeout(() => fail("Tracking warmup timed out"), 4000);

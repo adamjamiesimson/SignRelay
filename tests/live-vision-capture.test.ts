@@ -26,6 +26,20 @@ beforeEach(()=>{
 });
 afterEach(()=>{vi.restoreAllMocks();vi.unstubAllGlobals();});
 describe("decoded capture buffer lifecycle",()=>{
+  it.each(["ready","warming"])("keeps the frame watchdog after a stale %s startup message",async(type)=>{
+    vi.useFakeTimers();
+    const live=await LiveVision.create(undefined,false,undefined,"fingerspelling"),v=video(),failure=vi.fn();
+    await live.process(v.element,now,vi.fn());v.sample(1);
+    const frame=live.process(v.element,now,vi.fn()).catch(failure);
+    try{
+      Port.all[0].emit({type,assetSource:"self-hosted",delegate:"CPU"});
+      await vi.advanceTimersByTimeAsync(4001);
+      expect(failure).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(4000);
+      expect(failure).toHaveBeenCalledOnce();
+      expect(failure.mock.calls[0][0].message).toBe("Tracking frame timed out");
+    }finally{live.close();await frame;vi.useRealTimers();}
+  });
   it("releases the pending pre-failure bitmap before worker recovery",async()=>{
     const live=await LiveVision.create(undefined,false,undefined,"fingerspelling"),v=video();
     await live.process(v.element,now,vi.fn());v.sample(1);
