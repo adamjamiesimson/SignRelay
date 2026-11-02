@@ -1,6 +1,7 @@
 // Actual recorded RGB -> getUserMedia -> production CPU tracker -> capture -> CTC -> confirm.
 // No landmark substitution. This is one selected integration case, not physical webcam accuracy.
 import assert from "node:assert/strict";
+import {createHash} from "node:crypto";
 import {readFileSync,writeFileSync,mkdirSync} from "node:fs";
 import {resolve} from "node:path";
 import {openRehearsal,until} from "../../tests/rehearsal-harness.mjs";
@@ -8,6 +9,7 @@ const example=process.argv[3]||"6befb92aee4dcad7bf6ed904",root="work/fingerspell
 const source=JSON.parse(readFileSync(root+"/source.json","utf8"));
 const modelContract=JSON.parse(readFileSync("docs/fingerspelling/evidence/upright-runtime.json","utf8"));
 const diagnostic=process.argv[4]==="diagnostic";
+const research=process.argv[4]==="research",captureLabel=research?"Start test":"Capture name",finishLabel=research?"Finish test":"Finish capture";
 if(diagnostic)writeFileSync("out/workers/fingerspelling-vision.worker.debug.js",`
  importScripts("/workers/fingerspelling-vision.worker.js");
  const production=self.onmessage;let canvas;
@@ -25,10 +27,14 @@ if(diagnostic)writeFileSync("out/workers/fingerspelling-vision.worker.debug.js",
  };
 `);
 const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-video-capture="+resolve(root+"/known-fsboard.y4m")],extraInit:`
+ const exportClick=HTMLAnchorElement.prototype.click,nativeObjectURL=URL.createObjectURL.bind(URL);
+ const exportBlobs=new Map();URL.createObjectURL=blob=>{const url=nativeObjectURL(blob);exportBlobs.set(url,blob);return url;};
+ window.__researchDownloads=[];
+ HTMLAnchorElement.prototype.click=function(){if(this.download==="signrelay-test-metrics.json")exportBlobs.get(this.href).text().then(text=>window.__researchDownloads.push(text));else exportClick.call(this);};
  const NativeWorker=window.Worker;window.__recorded={frames:[],results:[],inputs:[],delegates:[],capture:false,contact:[],pixels:[]};
  document.addEventListener('click',event=>{const text=event.target.closest('button')?.textContent?.trim();
-  if(text==='Capture name'){window.__recorded.capture=true;window.__recorded.started=performance.now();}
-  if(text==='Finish capture'){window.__recorded.capture=false;window.__recorded.finished=performance.now();}
+  if(text==='Capture name'||text==='Start test'){window.__recorded.capture=true;window.__recorded.started=performance.now();}
+  if(text==='Finish capture'||text==='Finish test'){window.__recorded.capture=false;window.__recorded.finished=performance.now();}
  },true);
  window.Worker=class extends NativeWorker{
   constructor(url,options){const tracker=String(url).includes('fingerspelling-vision.worker');super(tracker&&${diagnostic}?'/workers/fingerspelling-vision.worker.debug.js':url,options);this.ctc=String(url).includes('fingerspelling.worker');this.tracker=tracker;
@@ -42,12 +48,13 @@ const h=await openRehearsal(process.argv[2],{extraArgs:["--use-file-for-fake-vid
     if(this.ctc&&e.data.type==='result')window.__recorded.results.push({...e.data,received:performance.now()});
    });
   }
-  postMessage(data,...rest){if(this.ctc&&data.type==='predict')window.__recorded.inputs.push({at:performance.now(),frames:data.frames,featureCount:data.features.length,features:Array.from(data.features)});return super.postMessage(data,...rest);}
+  postMessage(data,...rest){if(this.ctc&&data.type==='predict')window.__recorded.inputs.push({at:performance.now(),frames:data.frames,featureCount:data.features.length,features:Array.from(data.features),captureTelemetry:data.captureTelemetry||null});return super.postMessage(data,...rest);}
  };
 `});
 try{
  await h.open("/?perf");await h.start();await h.click("Fingerspelling");
- await until(()=>h.evaluate("[...document.querySelectorAll('button')].some(b=>b.textContent==='Capture name'&&!b.disabled)"),"Research model failed to load");
+ if(research){await h.evaluate("document.querySelector('[data-research-test]').parentElement.open=true");await until(()=>h.evaluate("!!document.querySelector('[data-research-test] input[type=checkbox]')"),"No research consent");assert.equal(await h.evaluate("document.querySelector('[data-research-test] input[type=checkbox]').checked"),false);await h.evaluate("document.querySelector('[data-research-test] input[type=checkbox]').click()");}
+ await until(()=>h.evaluate("[...document.querySelectorAll('button')].some(b=>b.textContent==="+JSON.stringify(captureLabel)+"&&!b.disabled)"),"Research model failed to load");
  assert.equal(await h.evaluate("window.__signrelayRehearsal.playing"),false,"Landmark substitution must remain inactive");
  await h.evaluate(`(()=>{
   const strong=document.querySelector('.spelling-candidate strong');
@@ -81,8 +88,8 @@ try{
    requestAnimationFrame(tick);
   }tick();
  })`);
- const started=await clickAt(onset.time+source.annotationStartSeconds,"Capture name");
- const finished=await clickAt(onset.time+source.annotationEndSeconds,"Finish capture");
+ const started=await clickAt(onset.time+source.annotationStartSeconds,captureLabel);
+ const finished=await clickAt(onset.time+source.annotationEndSeconds,finishLabel);
  await until(()=>h.evaluate("window.__recorded.results.length>0 || [...document.querySelectorAll('p.calibration-message[role=\"status\"]')].some(p=>/too slow|interrupted|Keep one hand|1–16 seconds/.test(p.textContent))"),"No inference or quality rejection");
  const snapshot=await h.evaluate("({...window.__recorded,pixels:undefined})");
  if(diagnostic){
@@ -108,10 +115,20 @@ try{
   assert.equal(await h.evaluate("window.__qa.spoken.length"),0);
   const frames=snapshot.frames;
   const report={kind:"selected genuine RGB virtual-camera positive; no landmark injection; quality abstention, not recognition success",
-   source,sourceOnset:onset,captureStart:started,captureEnd:finished,status:"abstained-quality",actualInference:false,
+   source,sourceOnset:onset,captureStart:started,captureEnd:finished,status:"abstained-quality",actualInference:false,modelSha256:modelContract.sha256,prediction:"",
    observedFrames:frames.length,visibleFrames:frames.filter(f=>f.hasHand).length,categoryQuality:frames.map(f=>f.quality),
    observedCaptureFps:(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),messages,
    checks:["no model prediction claimed","quality rejection retained","empty draft and confirmation disabled"]};
+  mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
+  console.log("ACTUAL-RGB-CAMERA-ABSTENTION",JSON.stringify(report));
+ }else if(snapshot.results.at(-1).status==="no-hand"||!snapshot.results.at(-1).text.trim()){
+  const result=snapshot.results.at(-1),input=snapshot.inputs.at(-1);
+  if(input)writeFileSync(root+"/actual-captured-features.json",JSON.stringify({...input,prediction:result.text}));
+  assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),"");
+  assert.equal(await h.evaluate("window.__qa.spoken.length"),0);
+  const report={source,modelSha256:modelContract.sha256,status:"abstained-model",prediction:"",reference:source.reference,actualInference:result.inferenceMs>0,inferenceMs:result.inferenceMs,
+   frames:input?.frames,captureTelemetry:input?.captureTelemetry,observedCaptureFps:input?.captureTelemetry?.observedFps,
+   reason:result.abstentionReason,checks:["empty prediction retained","no automatic composition or speech"]};
   mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
   console.log("ACTUAL-RGB-CAMERA-ABSTENTION",JSON.stringify(report));
  }else{
@@ -121,7 +138,7 @@ try{
  writeFileSync(root+"/actual-captured-features.json",JSON.stringify({...input,prediction:result.text}));
  assert.equal(displayed.text,result.text);assert.equal(result.status,"uncertain");
  assert.ok(snapshot.delegates.length&&snapshot.delegates.every(d=>d==="CPU"));
- assert.equal(input.featureCount,input.frames*132);assert.equal(snapshot.frames.length,input.frames);
+ assert.equal(input.featureCount,input.frames*132);if(input.captureTelemetry)assert.equal(input.captureTelemetry.frames,input.frames);else assert.equal(snapshot.frames.length,input.frames);
  assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),"","Text was inserted automatically");
  assert.equal(await h.evaluate("window.__qa.spoken.length"),0,"Text spoke automatically");
  await h.click("Confirm text");
@@ -132,7 +149,8 @@ try{
  const report={kind:"one selected genuine RGB recording via Chrome virtual getUserMedia camera; no landmark injection; NOT physical webcam accuracy",
  source,sourceOnset:onset,captureStart:started,captureEnd:finished,modelSha256:modelContract.sha256,
  reference:source.reference,prediction:displayed.text,exact:displayed.text===source.reference,status:result.status,
- frames:input.frames,observedCaptureFps:(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),maxFrameGapMs:Math.max(...dt),
+ frames:input.frames,inputSha256:createHash("sha256").update(Buffer.from(new Float32Array(input.features).buffer)).digest("hex"),captureTelemetry:input.captureTelemetry,trackingReportedFrames:frames.length,
+ observedCaptureFps:input.captureTelemetry?.observedFps??(frames.length-1)*1000/(frames.at(-1).timestamp-frames[0].timestamp),maxFrameGapMs:input.captureTelemetry?.maxFrameGapMs??Math.max(...dt),
  captureWallMs:snapshot.finished-snapshot.started,finishToWorkerResultMs:result.received-snapshot.finished,finishToDomCandidateMs:displayed.at-snapshot.finished,finishToNextAnimationFrameMs:displayed.nextFrameAt-snapshot.finished,
  inferenceMs:result.inferenceMs,processingMs:result.processingMs,trackingMs:{median:times[Math.floor(times.length*.5)],p95:times[Math.floor(times.length*.95)]},
  frameAgeMs:{median:ages[Math.floor(ages.length*.5)],p95:ages[Math.floor(ages.length*.95)]},
@@ -140,6 +158,39 @@ try{
  checks:["actual RGB tracking, no landmark substitution","actual 132-feature inference","uncertain warning and explicit confirmation","no automatic composition or speech","word transcript preserved"]};
  mkdirSync("outputs",{recursive:true});writeFileSync("outputs/fingerspelling-recorded-camera-"+example+".json",JSON.stringify(report,null,2));
  console.log("ACTUAL-RGB-CAMERA-RESULT",JSON.stringify(report));
+
+
  }
+ if(research){
+  const rawStudyPrediction=snapshot.results.at(-1)?.text?.trim()||"",confirmedDraftBeforeEnding=await h.evaluate("document.querySelector('#spelling-text').value");
+  await until(()=>h.evaluate("!!document.querySelector('[data-research-result]')"),"Local research result missing");
+  assert.equal(await h.evaluate("document.querySelector('[data-research-prediction]').textContent"),rawStudyPrediction||"No text");
+  await h.evaluate("document.querySelector('#research-truth').focus();document.querySelector('#research-truth').select()");
+  await h.browser.send("Input.insertText",{text:source.reference});
+  await h.evaluate("document.querySelector('#research-confirm-truth').click()");
+  await h.click("Save local result");
+  await until(()=>h.evaluate("document.querySelector('[data-research-summary]').textContent.includes('1/100')"),"Local result was not saved");
+  assert.equal(await h.evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Download test metrics').disabled"),true);
+  await h.evaluate("document.querySelector('#research-export-consent').click()");
+  await h.click("Download test metrics");
+  await until(()=>h.evaluate("window.__researchDownloads.length===1"),"Explicit local download missing");
+  const data=JSON.parse(await h.evaluate("window.__researchDownloads[0]"));
+  assert.equal(data.trials.length,1);assert.equal(data.textIncluded,false);
+  assert.equal(data.trials[0].referenceCharacters,source.reference.length);
+  const serialized=JSON.stringify(data);
+  assert.ok(!serialized.includes(source.reference)&&(!rawStudyPrediction||!serialized.includes(rawStudyPrediction)),"Export leaked local text");
+  for(const key of ["prediction","truth","startedAt","finishedAt","landmarks","deviceId","userAgent"])assert.ok(!serialized.includes('"'+key+'"'),"Unexpected identifying export field "+key);
+  await h.click("End testing and clear results");
+  assert.equal(await h.evaluate("document.querySelector('[data-research-test] input[type=checkbox]').checked"),false);
+  assert.equal(await h.evaluate("document.querySelector('[data-research-result]')===null"),true);
+  assert.equal(await h.evaluate("document.querySelector('#spelling-text').value"),confirmedDraftBeforeEnding,"Ending research erased the deliberately confirmed draft");
+  await h.browser.send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  assert.equal(await h.evaluate("document.documentElement.scrollWidth<=innerWidth"),true,"Mobile horizontal overflow");
+  assert.deepEqual(h.nonLoopback(),[],"Unexpected external page request during local study");
+  const shot=await h.browser.send("Page.captureScreenshot",{format:"png"});
+  if(shot.data)console.log("RESEARCH-SCREENSHOT",shot.data);
+  console.log("RESEARCH-CONSENT-CHECKS",JSON.stringify({passed:8,kind:"Software/privacy workflow on one genuine recorded RGB source; not participant/physical-camera validation",source:source.id,checks:["opt-in initially off","real result and user-corrected truth","explicit truth confirmation","local save","separate export consent","text-free file schema","withdrawal clears study state and preserves confirmed composition","390px no overflow"]}));
+ }
+
 }catch(error){console.error("ACTUAL-RGB-CAMERA-FAIL",await h.evaluate("JSON.stringify({tracking:{...window.__recorded,inputs:window.__recorded.inputs.map(i=>({...i,features:undefined})),contact:undefined,pixels:undefined},candidate:document.querySelector('.spelling-candidate')?.textContent,messages:[...document.querySelectorAll('.fingerspelling-panel p')].map(p=>p.textContent)})"));throw error;
 }finally{await h.close();}

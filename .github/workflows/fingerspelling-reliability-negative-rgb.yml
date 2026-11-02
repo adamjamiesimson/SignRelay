@@ -1,0 +1,72 @@
+name: Fingerspelling real ordinary-action RGB regressions
+on:
+  push:
+    branches: [codex/fingerspelling-reliability-2026-11-01]
+    paths: ['.github/workflows/fingerspelling-reliability-negative-rgb.yml']
+permissions: {contents: read}
+jobs:
+  recorded-rgb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [baseline, candidate]
+        repeat: [1]
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: harness}
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: implementation
+          ref: ${{ matrix.variant == 'baseline' && 'd89cff666fe7a4981fb01a8b460a65a9abd3065e' || github.sha }}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - name: Install frozen requirements and consistent instrumentation
+        working-directory: implementation
+        run: |
+          python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+          npm ci
+          cp ../harness/scripts/diagnostics/fingerspelling-camera-browser.mjs scripts/diagnostics/fingerspelling-camera-browser.mjs
+          cp ../harness/scripts/diagnostics/fingerspelling-camera-onnx.py scripts/diagnostics/fingerspelling-camera-onnx.py
+          cp ../harness/scripts/diagnostics/fingerspelling-reliability-negative-camera.py scripts/diagnostics/fingerspelling-reliability-negative-camera.py
+      - run: npm run build:rehearsal
+        working-directory: implementation
+      - name: Every predetermined genuine RGB case; no result-based selection
+        working-directory: implementation
+        run: |
+          python scripts/diagnostics/fingerspelling-reliability-negative-camera.py --catalog
+          mapfile -t cases < work/fingerspelling-camera/negative-cases.txt
+          for example in "${cases[@]}"; do
+            python scripts/diagnostics/fingerspelling-reliability-negative-camera.py "$example" </dev/null
+            node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)" "$example" </dev/null
+            python scripts/diagnostics/fingerspelling-camera-onnx.py "$example" </dev/null
+            python -c 'import pathlib,sys; (pathlib.Path("work/fingerspelling-camera")/sys.argv[1]/"known-fsboard.y4m").unlink()' "$example"
+          done
+      - name: Preserve complete denominator, timing and model identity
+        if: always()
+        working-directory: implementation
+        env: {VARIANT: "${{ matrix.variant }}", REPEAT: "${{ matrix.repeat }}", SOURCE_SHA: "${{ github.sha }}"}
+        run: |
+          python - <<'PY'
+          import json,pathlib,os
+          rows=[json.loads(p.read_text()) for p in pathlib.Path("outputs").glob("fingerspelling-recorded-camera-*.json")]
+          cases=json.loads(pathlib.Path("work/fingerspelling-camera/negative-cases.json").read_text())
+          report={"variant":os.environ["VARIANT"],"repeat":int(os.environ["REPEAT"]),"candidateSource":os.environ["SOURCE_SHA"],"baselineSource":"d89cff666fe7a4981fb01a8b460a65a9abd3065e","caseCount":len(cases),"completed":len(rows),"cases":rows,"kind":"Previously exposed regression recordings, not a new final cohort or physical-camera validation"}
+          pathlib.Path("outputs/reliability-rgb.json").write_text(json.dumps(report,indent=2))
+          print("MATCHED-RGB-REPORT",json.dumps(report),flush=True)
+          assert len(rows)==len(cases),"Every fixed case must complete; failures remain failures"
+          assert all(r["modelSha256"]=="34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b" for r in rows)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reliability-negative-rgb-${{ matrix.variant }}
+          path: implementation/outputs/reliability-rgb.json
+
+# Commons VFR containers are validated using decoded PTS, independently of the FSboard source FPS guard.

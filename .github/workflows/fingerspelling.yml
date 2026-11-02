@@ -1,7 +1,7 @@
 name: Fingerspelling isolated verification
 on:
   push:
-    branches: [codex/asl-fingerspelling-2026-10-31]
+    branches: [codex/asl-fingerspelling-2026-10-31, codex/fingerspelling-reliability-2026-11-01]
   workflow_dispatch:
 permissions:
   contents: read

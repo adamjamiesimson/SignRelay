@@ -1,3 +1,5 @@
+> Current implementation sprint: [recognition reliability and opt-in webcam testing](RELIABILITY-SPRINT.md). The baseline accuracy report and results below remain unchanged.
+
 # ASL fingerspelling: current research inference
 
 The [accuracy and real-world reliability report](ACCURACY-SPRINT.md) is the current engineering record. An independently trained, display-aware CTC model is active in the isolated fingerspelling worker and produces real sequence candidates from camera-tracked hands.

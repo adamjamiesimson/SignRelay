@@ -1,0 +1,46 @@
+[
+  {
+    "variant": "baseline",
+    "mirror": "original",
+    "completed": 5,
+    "exact": 3,
+    "characters": 66,
+    "edits": 4,
+    "cer": 0.06060606060606061,
+    "candidates": 5,
+    "parity": true
+  },
+  {
+    "variant": "candidate",
+    "mirror": "original",
+    "completed": 5,
+    "exact": 3,
+    "characters": 66,
+    "edits": 5,
+    "cer": 0.07575757575757576,
+    "candidates": 5,
+    "parity": true
+  },
+  {
+    "variant": "baseline",
+    "mirror": "mirrored",
+    "completed": 5,
+    "exact": 3,
+    "characters": 66,
+    "edits": 2,
+    "cer": 0.030303030303030304,
+    "candidates": 5,
+    "parity": true
+  },
+  {
+    "variant": "candidate",
+    "mirror": "mirrored",
+    "completed": 5,
+    "exact": 3,
+    "characters": 66,
+    "edits": 3,
+    "cer": 0.045454545454545456,
+    "candidates": 5,
+    "parity": true
+  }
+]

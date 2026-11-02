@@ -1,0 +1,83 @@
+name: Fingerspelling rare-letter and mirrored RGB regressions
+on:
+  push:
+    branches: [codex/fingerspelling-reliability-2026-11-01]
+    paths: ['.github/workflows/fingerspelling-reliability-mirror.yml']
+permissions: {contents: read}
+jobs:
+  recorded-rgb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [baseline, candidate]
+        mirror: [original, mirrored]
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: harness}
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: implementation
+          ref: ${{ matrix.variant == 'baseline' && 'd89cff666fe7a4981fb01a8b460a65a9abd3065e' || github.sha }}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - name: Install frozen requirements and consistent instrumentation
+        working-directory: implementation
+        run: |
+          python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+          npm ci
+          cp ../harness/scripts/diagnostics/fingerspelling-camera-browser.mjs scripts/diagnostics/fingerspelling-camera-browser.mjs
+          cp ../harness/scripts/diagnostics/fingerspelling-camera-onnx.py scripts/diagnostics/fingerspelling-camera-onnx.py
+          cp ../harness/scripts/diagnostics/fingerspelling-reliability-mirror.py scripts/diagnostics/fingerspelling-reliability-mirror.py
+      - run: npm run build:rehearsal
+        working-directory: implementation
+      - name: Every predetermined genuine RGB case; no result-based selection
+        working-directory: implementation
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          d=json.load(open("docs/fingerspelling/evidence/upright-final.json"))
+          rows=sorted(d["predictions"]["challenge"]["selected"],key=lambda r:r["id"])
+          ids=[]
+          for letter in "QJZ":
+           r=next(r for r in rows if letter in r["reference"])
+           if r["id"] not in ids:ids.append(r["id"])
+          ids+=["164650016581817f52803ab7","47b36e3fa22f13b5bdb304f9"]
+          root=pathlib.Path("work/fingerspelling-camera");root.mkdir(parents=True,exist_ok=True)
+          (root/"cases.json").write_text(json.dumps([{"id":id} for id in ids]))
+          (root/"cases.txt").write_text("\n".join(ids)+"\n")
+          print("PREDECLARED-RARE-MIRROR-CASES",json.dumps(ids))
+          PY
+          mapfile -t cases < work/fingerspelling-camera/cases.txt
+          for example in "${cases[@]}"; do
+            python scripts/diagnostics/fingerspelling-camera-prepare.py "$example" </dev/null
+            python scripts/diagnostics/fingerspelling-reliability-mirror.py "$example" "${{ matrix.mirror }}" </dev/null
+            node scripts/diagnostics/fingerspelling-camera-browser.mjs "$(command -v google-chrome)" "$example" </dev/null
+            python scripts/diagnostics/fingerspelling-camera-onnx.py "$example" </dev/null
+          done
+      - name: Preserve complete denominator, timing and model identity
+        if: always()
+        working-directory: implementation
+        env: {VARIANT: "${{ matrix.variant }}", MIRROR: "${{ matrix.mirror }}", SOURCE_SHA: "${{ github.sha }}"}
+        run: |
+          python - <<'PY'
+          import json,pathlib,os
+          rows=[json.loads(p.read_text()) for p in pathlib.Path("outputs").glob("fingerspelling-recorded-camera-*.json")]
+          cases=json.loads(pathlib.Path("work/fingerspelling-camera/cases.json").read_text())
+          report={"variant":os.environ["VARIANT"],"mirror":os.environ["MIRROR"],"candidateSource":os.environ["SOURCE_SHA"],"baselineSource":"d89cff666fe7a4981fb01a8b460a65a9abd3065e","caseCount":len(cases),"completed":len(rows),"cases":rows,"kind":"Previously exposed regression recordings, not a new final cohort or physical-camera validation"}
+          pathlib.Path("outputs/reliability-rgb.json").write_text(json.dumps(report,indent=2))
+          print("MATCHED-RGB-REPORT",json.dumps(report),flush=True)
+          assert len(rows)==len(cases),"Every fixed case must complete; failures remain failures"
+          assert all(r["modelSha256"]=="34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b" for r in rows)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reliability-mirror-${{ matrix.variant }}-${{ matrix.mirror }}
+          path: implementation/outputs/reliability-rgb.json

@@ -1,0 +1,25 @@
+name: Fingerspelling review and metric-import validation
+on:
+  push:
+    branches: [codex/fingerspelling-reliability-2026-11-01]
+    paths: ['training/fingerspelling/reliability/**', '.github/workflows/fingerspelling-reliability-review.yml']
+permissions: {contents: read}
+jobs:
+  review-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: python -m unittest discover -s training/fingerspelling/reliability -p 'test_*.py' -v
+      - name: Empty collection must remain blocked for training/evaluation claims
+        run: |
+          python - <<'PY'
+          import json,sys
+          sys.path.insert(0,"training/fingerspelling/reliability")
+          from evaluate import validate_manifest
+          errors=validate_manifest(json.load(open("training/fingerspelling/reliability/manifest-template.json")))
+          assert errors and errors[0].startswith("BLOCKED")
+          print("REVIEW-GATE-VERIFIED",json.dumps({"trainingBlocked":True,"reason":errors}))
+          PY

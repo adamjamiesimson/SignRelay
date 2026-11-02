@@ -1,0 +1,14 @@
+{
+  "baseline": "d89cff666fe7a4981fb01a8b460a65a9abd3065e",
+  "audited": "0f2e279f31c20e70ddf70a2224d4099da060488c",
+  "protectedFiles": 904,
+  "unexpectedChanges": [],
+  "unexpectedAdded": [],
+  "originalCssPrefixUnchanged": true,
+  "modelAssetsUnchanged": true,
+  "baselineAccuracyReportUnchanged": true,
+  "lockfileUnchanged": true,
+  "wordWorkerSha256": "ec7b6d01b89467339b1a957c1f8714d8a4044a23b24a751ad4fe2a403a7aa557",
+  "validatedRuntimeSource": "2cc99c22c292816e035d1ac995467d843ef1fab5",
+  "note": "Later commits add diagnostics and reports; final publication changes only this evidence JSON. All original model, security and Firebase files remain protected."
+}
