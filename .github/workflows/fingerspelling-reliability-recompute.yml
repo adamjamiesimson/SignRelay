@@ -1,0 +1,33 @@
+name: Recompute committed fingerspelling reliability evidence
+on:
+  push:
+    branches: [codex/fingerspelling-reliability-2026-11-01]
+    paths: ['.github/workflows/fingerspelling-reliability-recompute.yml']
+permissions: {contents: read}
+jobs:
+  recompute:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: python training/fingerspelling/reliability/summarize_rgb.py docs/fingerspelling/reliability/evidence/rgb-*.json --output work/recomputed-rgb-summary.json
+      - name: Check exact denominators against every committed case
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          r=json.load(open("work/recomputed-rgb-summary.json"))
+          b=r["byVariant"]["baseline"];c=r["byVariant"]["candidate"]
+          assert b["held"]["edits"]==76 and c["held"]["edits"]==66
+          assert b["all"]["exact"]==c["all"]["exact"]==11
+          assert b["all"]["candidates"]==c["all"]["candidates"]==30
+          assert b["stableOutputsAcrossRepeats"]==5 and c["stableOutputsAcrossRepeats"]==7
+          for variant,expected in [("baseline",3),("candidate",4)]:
+           d=json.load(open("docs/fingerspelling/reliability/evidence/negative-rgb-"+variant+".json"))
+           assert d["completed"]==d["caseCount"]==29
+           assert sum(bool(x.get("prediction")) for x in d["cases"])==expected
+          print("RECOMPUTED-EVIDENCE",json.dumps({"positive":r,"negativeCandidates":{"baseline":3,"candidate":4},"negativeDenominator":29}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with: {name: reliability-recomputed-summary, path: work/recomputed-rgb-summary.json}

@@ -54,5 +54,6 @@ if __name__=="__main__":
   print(json.dumps({"ok":not errors,"errors":errors},indent=2));sys.exit(bool(errors))
  if not a.exports:p.error("Provide --exports or --check-manifest")
  result=summarize_exports([json.loads(pathlib.Path(x).read_text()) for x in a.exports]);text=json.dumps(result,indent=2)
- if a.output:pathlib.Path(a.output).write_text(text)
+ if a.output:
+  pathlib.Path(a.output).parent.mkdir(parents=True,exist_ok=True);pathlib.Path(a.output).write_text(text)
  print(text)

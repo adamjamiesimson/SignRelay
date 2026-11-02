@@ -27,5 +27,6 @@ def summarize(reports):
 if __name__=="__main__":
  p=argparse.ArgumentParser();p.add_argument("files",nargs="+");p.add_argument("--output");a=p.parse_args()
  result=summarize([json.loads(pathlib.Path(f).read_text()) for f in a.files]);s=json.dumps(result,indent=2)
- if a.output:pathlib.Path(a.output).write_text(s)
+ if a.output:
+  pathlib.Path(a.output).parent.mkdir(parents=True,exist_ok=True);pathlib.Path(a.output).write_text(s)
  print(s)
