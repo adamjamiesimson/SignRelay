@@ -1,4 +1,5 @@
 name: Matched capture and CTC-session ablation
+# v2: the fixed-input harness uses the production module-worker type.
 on:
   push:
     branches: [codex/engineering-sprint-2026-11-02]

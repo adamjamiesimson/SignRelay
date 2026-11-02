@@ -15,7 +15,7 @@ try{
   await until(()=>h.evaluate("!!window.__fixed"),"Session modules did not load");
   const outputs=[];
   for(let i=0;i<names.length;i++){
-    await h.evaluate(`(()=>{const state=window.__fixed;state.ready=0;state.results=[];state.error=null;state.session=new state.sessions[${i}](()=>new Worker('/workers/fingerspelling.worker.js'),state.contract,r=>state.results.push({text:r.text,status:r.status}),s=>{if(s==='ready')state.ready++;if(s==='failed')state.error='worker failed';});})()`);
+    await h.evaluate(`(()=>{const state=window.__fixed;state.ready=0;state.results=[];state.error=null;state.session=new state.sessions[${i}](()=>new Worker('/workers/fingerspelling.worker.js',{type:'module'}),state.contract,r=>state.results.push({text:r.text,status:r.status}),s=>{if(s==='ready')state.ready++;if(s==='failed')state.error='worker failed';});})()`);
     try{
       for(let pass=0;pass<2;pass++){
         if(pass)await h.evaluate("window.__fixed.session.reset()");

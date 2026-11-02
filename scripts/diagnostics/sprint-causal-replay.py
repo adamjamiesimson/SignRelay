@@ -27,7 +27,7 @@ output.parent.mkdir(parents=True, exist_ok=True)
 positive = args.kind == "positive"
 prepare = "scripts/diagnostics/fingerspelling-camera-prepare.py" if positive else "scripts/diagnostics/fingerspelling-reliability-negative-camera.py"
 counts = {k: dict(captures=0, exact=0, characterErrors=0, referenceCharacters=0, candidates=0, abstentions=0, nativeParity=0, technicalFailures=0) for k in roots}
-paired = dict(fixedInputs=0, workerRuns=0, disagreements=0, coldVersusResetDisagreements=0, sourceParity=0)
+paired = dict(fixedInputs=0, fixedInputFailures=0, workerRuns=0, disagreements=0, capturedResultDisagreements=0, coldVersusResetDisagreements=0, sourceParity=0)
 rows = {k: [] for k in roots}  # local only; never written or logged
 repeat = int(os.environ.get("REPEAT", "1"))
 
@@ -51,7 +51,8 @@ def save():
     for name in ["baseline", "control"]:
         pairs = list(zip(rows[name], rows["candidate"]))
         same[name+"VsCandidate"] = {"pairs": len(pairs), "sameOutput": sum(a["prediction"] == b["prediction"] for a, b in pairs), "sameInput": sum(bool(a.get("inputSha256")) and a.get("inputSha256") == b.get("inputSha256") for a, b in pairs)}
-    report = dict(kind="Matched full frozen RGB catalogs, three variants; aggregate-only diagnostic, not new signer validation", catalog=args.kind, repeat=repeat, planned=len(cases), variants=counts, matched=paired, comparisons=same, complete=all(c["captures"] == len(cases) and not c["technicalFailures"] for c in counts.values()))
+    complete = all(c["captures"] == len(cases) and not c["technicalFailures"] for c in counts.values()) and not any(paired[k] for k in ["fixedInputFailures", "disagreements", "capturedResultDisagreements", "coldVersusResetDisagreements"])
+    report = dict(kind="Matched full frozen RGB catalogs, three variants; aggregate-only diagnostic, not new signer validation", catalog=args.kind, repeat=repeat, planned=len(cases), variants=counts, matched=paired, comparisons=same, complete=complete)
     output.write_text(json.dumps(report, indent=2)+"\n")
 
 catalog = [sys.executable, "scripts/diagnostics/fingerspelling-camera-cases.py"] if positive else [sys.executable, prepare, "--catalog"]
@@ -112,11 +113,13 @@ for index, case in enumerate(cases):
             fixed = candidate/"work/sprint-causal-fixed.json"
             fixed.unlink(missing_ok=True)
             if not run(["node", "scripts/diagnostics/sprint-fixed-input.mjs", args.chrome, str(features), str(roots_file), str(fixed)], candidate):
+                paired["fixedInputFailures"] += 1
                 raise RuntimeError("Matched fixed-input replay failed")
             results = json.loads(fixed.read_text())["outputs"]
             paired["fixedInputs"] += 1
             paired["workerRuns"] += len(results)
             paired["disagreements"] += len({(r["text"],r["status"]) for r in results}) != 1
+            paired["capturedResultDisagreements"] += any(r["text"] != json.loads(features.read_text())["prediction"] for r in results)
             for name in roots:
                 pair = [r for r in results if r["variant"] == name]
                 paired["coldVersusResetDisagreements"] += pair[0] != {**pair[1], "pass": 0}
@@ -126,4 +129,4 @@ for index, case in enumerate(cases):
     print("Completed matched catalog position", index+1, "of", len(cases), flush=True)
 save()
 assert all(c["captures"] == len(cases) and not c["technicalFailures"] for c in counts.values()), "Full catalog incomplete"
-assert paired["disagreements"] == 0 and paired["coldVersusResetDisagreements"] == 0, "Identical input produced differing output"
+assert not any(paired[k] for k in ["fixedInputFailures", "disagreements", "capturedResultDisagreements", "coldVersusResetDisagreements"]), "Identical input produced differing output"
