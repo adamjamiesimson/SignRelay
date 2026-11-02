@@ -1,0 +1,42 @@
+name: Engineering rare-letter and mirror RGB regressions
+on:
+  push:
+    branches: [codex/engineering-sprint-2026-11-02]
+    paths: ['.github/workflows/engineering-rare-rgb.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        kind: [rare-original, rare-mirrored]
+    env: {OMP_NUM_THREADS: '2', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: harness}
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: baseline, ref: '116fe686f7b31ecd00ac57ee4724287affafda0f'}
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, path: candidate}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - run: python -m pip install --disable-pip-version-check -r harness/training/fingerspelling/requirements.txt
+      - name: Build both implementations with the unchanged lockfile
+        run: |
+          for implementation in baseline candidate; do
+            (cd "$implementation" && npm ci && npm run build:rehearsal)
+          done
+      - name: Every frozen Q/J/Z and returned-category case; actual original or mirrored RGB
+        env: {CATALOG: '${{ matrix.kind }}', REPEAT: '1'}
+        run: python harness/scripts/diagnostics/sprint-paired-replay.py "$CATALOG" "$(command -v google-chrome)" --baseline baseline --candidate candidate --out outputs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sprint-${{ matrix.kind }}
+          path: outputs/*.json

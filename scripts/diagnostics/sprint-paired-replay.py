@@ -15,7 +15,7 @@ import subprocess
 import sys
 
 p = argparse.ArgumentParser()
-p.add_argument("kind", choices=["positive", "negative"])
+p.add_argument("kind", choices=["positive", "negative", "rare-original", "rare-mirrored"])
 p.add_argument("chrome")
 p.add_argument("--baseline", required=True)
 p.add_argument("--candidate", required=True)
@@ -26,12 +26,19 @@ out = Path(args.out).resolve()
 out.mkdir(parents=True, exist_ok=True)
 repeat = int(os.environ.get("REPEAT", "1"))
 model_sha = "34c823aef5eaa3e4b74c564138a1a224f8c9a8426e0f69a331d5c01fbf53008b"
-positive = args.kind == "positive"
+rare = args.kind.startswith("rare-")
+positive = args.kind != "negative"
 prepare = "scripts/diagnostics/fingerspelling-camera-prepare.py" if positive else "scripts/diagnostics/fingerspelling-reliability-negative-camera.py"
 catalog = [sys.executable, "scripts/diagnostics/fingerspelling-camera-cases.py"] if positive else [sys.executable, prepare, "--catalog"]
-subprocess.run(catalog, cwd=roots["candidate"], check=True, stdin=subprocess.DEVNULL)
-cases = json.loads((roots["candidate"] / "work/fingerspelling-camera" / ("cases.json" if positive else "negative-cases.json")).read_text())
-assert len(cases) == (10 if positive else 29) and len({c["id"] for c in cases}) == len(cases)
+if rare:
+    # The exact five already-exposed #49 Q/J/Z and returned-Left cases. No new
+    # final set is opened and no choice depends on this candidate's outputs.
+    cases = [{"id": x} for x in ["164650016581817f52803ab7", "10ed939b4682a892fb626193", "47b36e3fa22f13b5bdb304f9", "032cf1f7a7b86bdec79412b9", "02f5e0ef7897ad962de7cca5"]]
+else:
+    subprocess.run(catalog, cwd=roots["candidate"], check=True, stdin=subprocess.DEVNULL)
+    cases = json.loads((roots["candidate"] / "work/fingerspelling-camera" / ("cases.json" if positive else "negative-cases.json")).read_text())
+assert len(cases) == (5 if rare else 10 if positive else 29) and len({c["id"] for c in cases}) == len(cases)
+assert all(Path(c["id"]).name == c["id"] and c["id"] not in (".", "..") for c in cases)
 sources = {}
 for name, root in roots.items():
     contract = json.loads((root / "docs/fingerspelling/evidence/upright-runtime.json").read_text())
@@ -56,7 +63,7 @@ def persist():
                   "modelSha256": model_sha, "planned": len(cases), "completed": success,
                   "complete": len(rows) == len(cases) and success == len(cases), "pairedSameHost": True,
                   "hardware": hardware, "order": "Alternating per case; reverse on even repetitions", "cases": rows}
-        filename = f"ci-positive-{name}-{repeat}.json" if positive else f"ci-negative-{name}.json"
+        filename = f"ci-{args.kind}-{name}.json" if rare else f"ci-positive-{name}-{repeat}.json" if positive else f"ci-negative-{name}.json"
         (out / filename).write_text(json.dumps(report, indent=2))
 
 for index, case in enumerate(cases):
@@ -64,6 +71,8 @@ for index, case in enumerate(cases):
     relative = Path("work/fingerspelling-camera") / example
     try:
         failed = run([sys.executable, prepare, example], roots["candidate"])
+        if not failed and rare:
+            failed = run([sys.executable, "scripts/diagnostics/fingerspelling-reliability-mirror.py", example, args.kind.removeprefix("rare-")], roots["candidate"])
         if failed:
             for name in roots:
                 ledgers[name].append({"id": example, "technicalFailure": True, "stage": "verified-source", **failed})
