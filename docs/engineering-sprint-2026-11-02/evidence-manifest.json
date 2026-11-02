@@ -1,6 +1,6 @@
 {
   "baseline": "116fe686f7b31ecd00ac57ee4724287affafda0f",
-  "validatedSource": "7528959c595b8466f8c82de0c9bf4207c5dccedd",
+  "validatedSource": "e278bda38642216aaf2df8fd5f789587d16804e2",
   "files": [
     {
       "path": "evidence/ancestor-prs.json",
@@ -26,6 +26,31 @@
       "path": "evidence/build-full-final.log",
       "bytes": 3234,
       "sha256": "8166f18cd6617851cf8c323d78285f81d854c83b0a770f881d3637e49357c7b0"
+    },
+    {
+      "path": "evidence/causal-negative-1.json",
+      "bytes": 1342,
+      "sha256": "fe9a22394edfc26db74a87c5e4458fbdda33f55d0e6ecf51649207ef6d938103"
+    },
+    {
+      "path": "evidence/causal-negative-2.json",
+      "bytes": 1340,
+      "sha256": "094ec0a86aeb15a178704bc1bf3ba0061b3a7dd483206c3f07cea42f2bd0b74f"
+    },
+    {
+      "path": "evidence/causal-positive-1.json",
+      "bytes": 1347,
+      "sha256": "276428de67aed1b427814680e1b972fe8165ee9723d603740ea41a37bbcdf88c"
+    },
+    {
+      "path": "evidence/causal-positive-2.json",
+      "bytes": 1349,
+      "sha256": "5a321b40836ee33000bf79e00d40a7b2fe77ce8cb1ccfd3c0204748f90df4a92"
+    },
+    {
+      "path": "evidence/causal-provenance.json",
+      "bytes": 16599,
+      "sha256": "970dd039f43ed37fd8dd5cd62e56395b798cb4c7924cfe148383298a0f48a487"
     },
     {
       "path": "evidence/ci-browser-paired.json",
@@ -208,6 +233,11 @@
       "sha256": "92c46e78db4c45221d56bbc5569b759d5f6915993bc7f19f77cc174fae107ef8"
     },
     {
+      "path": "evidence/regression-matched-analysis.json",
+      "bytes": 758,
+      "sha256": "ea033de4c4559ee29f62a8d7bd46608a5234052bf53890fe24ff0c4999442f10"
+    },
+    {
       "path": "evidence/rejected-cell-pruning.json",
       "bytes": 39099,
       "sha256": "39d031738cd1467bb87764f19efa40c36933121a9033995df316485dc17d785d"
@@ -221,6 +251,21 @@
       "path": "evidence/reproduced-bugs.log",
       "bytes": 4131,
       "sha256": "38e9bef965b8725b7744693bcf3a258a971669b8c70e476a4c00784354d6b431"
+    },
+    {
+      "path": "evidence/review-fixed-input.log",
+      "bytes": 244,
+      "sha256": "2b8a6f3c9954c68d2a13d28e7e055d3556c19230a5b0e1154a1b074f206ff310"
+    },
+    {
+      "path": "evidence/review-watchdog-after.log",
+      "bytes": 4577,
+      "sha256": "e7591d6500a50d86b6017185d1f54191bb45b642e6b35b2e2aaae4c239a817d8"
+    },
+    {
+      "path": "evidence/review-watchdog-before.log",
+      "bytes": 2858,
+      "sha256": "e06615c8697c574fceda65af48d231d81229df6e92052c080635d66315d19747"
     },
     {
       "path": "evidence/rgb-summary.json",
@@ -294,8 +339,8 @@
     },
     {
       "path": "evidence/unit-summary.json",
-      "bytes": 931,
-      "sha256": "183f15ba2f9ec7118e1fddcbcadffca53a0ec8e405e589f134271f9698476cf6"
+      "bytes": 1085,
+      "sha256": "221ed139723d8b6110805b84865318f2b2bf6ffd6782a786eefe3ad9d69d1956"
     }
   ]
 }

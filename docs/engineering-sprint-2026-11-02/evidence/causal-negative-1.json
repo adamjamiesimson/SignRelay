@@ -1,0 +1,60 @@
+{
+  "kind": "Matched full frozen RGB catalogs, three variants; aggregate-only diagnostic, not new signer validation",
+  "catalog": "negative",
+  "repeat": 1,
+  "planned": 29,
+  "variants": {
+    "baseline": {
+      "captures": 29,
+      "exact": 25,
+      "characterErrors": 18,
+      "referenceCharacters": 0,
+      "candidates": 4,
+      "abstentions": 25,
+      "nativeParity": 6,
+      "technicalFailures": 0
+    },
+    "candidate": {
+      "captures": 29,
+      "exact": 25,
+      "characterErrors": 18,
+      "referenceCharacters": 0,
+      "candidates": 4,
+      "abstentions": 25,
+      "nativeParity": 6,
+      "technicalFailures": 0
+    },
+    "control": {
+      "captures": 29,
+      "exact": 25,
+      "characterErrors": 18,
+      "referenceCharacters": 0,
+      "candidates": 4,
+      "abstentions": 25,
+      "nativeParity": 6,
+      "technicalFailures": 0
+    }
+  },
+  "matched": {
+    "fixedInputs": 6,
+    "fixedInputFailures": 0,
+    "workerRuns": 36,
+    "disagreements": 0,
+    "capturedResultDisagreements": 0,
+    "coldVersusResetDisagreements": 0,
+    "sourceParity": 29
+  },
+  "comparisons": {
+    "baselineVsCandidate": {
+      "pairs": 29,
+      "sameOutput": 29,
+      "sameInput": 0
+    },
+    "controlVsCandidate": {
+      "pairs": 29,
+      "sameOutput": 29,
+      "sameInput": 0
+    }
+  },
+  "complete": true
+}

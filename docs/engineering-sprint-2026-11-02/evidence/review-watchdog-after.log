@@ -1,0 +1,34 @@
+
+ RUN  v4.1.12 C:/Users/DELL/Documents/Codex/2026-11-02/files-pasted-by-the-user-signrelay/work/SignRelay
+
+ ✓ tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > reuses an idle initialized model for repeated capture cancellations 5ms
+ ✓ tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > terminates a running WASM request on reset and initializes its replacement 1ms
+ ✓ tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > ignores duplicate completions while the next request is running 1ms
+ ✓ tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > keeps only the latest queued capture and never displays a superseded capture 2ms
+ ✓ tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > ignores duplicate ready messages without clearing the inference watchdog 3ms
+ ✓ tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > rejects a prior generation after reset, even if its epoch and request id match 1ms
+ ✓ tests/fingerspelling-session.test.ts > CTC request ownership and bounded scheduling > cancels startup and releases pending sequences without resurrecting a closed session 1ms
+ ✓ tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > keeps the frame watchdog after a stale ready startup message 8ms
+ ✓ tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > keeps the frame watchdog after a stale warming startup message 2ms
+ ✓ tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > releases the pending pre-failure bitmap before worker recovery 3ms
+ ✓ tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > closes replaced and stopped bitmaps exactly once, retaining only the latest slot 5ms
+ ✓ tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > drains the final pre-Finish snapshot and excludes post-Finish decoded callbacks 5ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > accepts an observed 900 ms sequence without padding or duplicating frames 9ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > accepts an observed 8000 ms sequence without padding or duplicating frames 15ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > accepts an observed 15900 ms sequence without padding or duplicating frames 18ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > is independent of the absolute media-time origin 55ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > keeps short missing-hand runs as explicit zero observations and clears their velocities 3ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > abstains on no hands and on insufficient visibility, rather than feeding a stale sign 3ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > rejects slow tracking and an interrupted stream even with a visible hand at Finish 2ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > does not let duplicate or reversed observations manufacture coverage 1ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > excludes the prior and next capture even when all results arrive after Finish 2ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > preserves canonical coordinates under declared landmark reflection/category swap 52ms
+ ✓ tests/fingerspelling-capture-quality.test.ts > fingerspelling sequence quality and time contracts > rejects camera orientation changes instead of mixing coordinate systems 2ms
+ ✓ tests/dtw-repeat-equivalence.test.ts > exact repeated-observation DTW costs > matches the independent matrix bit for bit across repeats, masks, dimensions and bounds 157ms
+ ✓ tests/dtw-repeat-equivalence.test.ts > exact repeated-observation DTW costs > keeps saved rows independent and does not mutate them while caching 7ms
+
+ Test Files  4 passed (4)
+      Tests  25 passed (25)
+   Start at  09:36:56
+   Duration  745ms (transform 392ms, setup 0ms, import 760ms, tests 370ms, environment 1ms)
+

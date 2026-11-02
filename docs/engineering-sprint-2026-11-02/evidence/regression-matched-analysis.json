@@ -1,0 +1,29 @@
+{
+  "pairedSourceAndModelIdentity": true,
+  "positivePairs": 30,
+  "identicalCapturedTensorPairs": 0,
+  "differentFrameCountPairs": 6,
+  "sameTextPairs": 27,
+  "moreErrors": 3,
+  "fewerErrors": 0,
+  "equalErrors": 27,
+  "extraEdits": 4,
+  "nativeParity": 60,
+  "negativePairs": 29,
+  "negativeBothCandidates": 2,
+  "negativeBaselineOnly": 2,
+  "negativeCandidateOnly": 0,
+  "negativeBothAbstain": 25,
+  "negativeFlips": {
+    "uncertain -> abstained-model": 1,
+    "uncertain -> abstained-quality": 1
+  },
+  "initialFalseCandidateTransitions": {
+    "abstained-model -> uncertain": 1,
+    "quality:throughput -> uncertain": 1
+  },
+  "sameHostFalseCandidateTransitions": {
+    "uncertain -> abstained-model": 1,
+    "uncertain -> quality:throughput": 1
+  }
+}

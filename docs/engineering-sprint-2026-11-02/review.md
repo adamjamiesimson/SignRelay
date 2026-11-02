@@ -1,0 +1,18 @@
+# Separate review of PR #50
+
+The review followed publication of the initial complete sprint report. It inspected the diff against exact parent #49 and traced callers, capture ownership, timer lifetime, worker cancellation, queued-result scheduling, cached sequence ownership, template replacement and test/benchmark boundaries. This is an additional automated review pass, not an independent human or signer review.
+
+## Reproduced findings and fixes
+
+**P2 — Tracking startup messages could replace an active frame watchdog.** After `LiveVision` became ready, a duplicate `ready` cleared its current frame timeout. A late `warming` replaced that timeout with the four-second startup timer. A stalled frame could therefore wait indefinitely or be interrupted early. Both new tests failed on the original implementation. Commit `e278bda38642216aaf2df8fd5f789587d16804e2` ignores those startup messages after readiness, leaving the original frame timeout and recovery path in control. The tests cover both messages and the exact eight-second boundary. The 25 focused capture, cancellation and exact-distance cases pass; the full local suite passes 1,038 tests with zero failures and two default opt-in skips.
+
+**Diagnostic defect — Fixed-input replay used the wrong worker type.** The new causal harness initially created a classic CTC worker, while production creates a module worker. The classic form reproducibly throws `Cannot use 'import.meta' outside a module`. Commit `7a80ec388febda14b5c8684cb946bf21b0a7c5ce` matches production's module-worker setting. Six real-worker runs on one explicitly synthetic fixed tensor agree across parent, candidate and reverted-session control, both cold and after idle reset. The corrected harness also records fixed-replay failures and prevents a failed replay from reporting a complete successful experiment. The failed initial laboratory run is retained and is not recognition evidence.
+
+## Other reviewed boundaries
+
+- CTC generation, epoch and active request ID jointly guard publication. Superseded captures only free the lane; cancellation of running WASM still terminates the worker. Idle reset releases queued input and preserves the verified initialized model. Closed sessions cannot restart. The caller's confirmation and mode/draft isolation remain intact.
+- Tracking recovery releases the queued pre-failure bitmap, while post-failure decoded samples belong to the new observation stream. Replacement, stop, final-snapshot draining and interruption ownership are tested. The review found no additional reproducible bitmap leak in these paths.
+- Repeated-row DTW preserves every dynamic-programming cell and the existing arithmetic order. Exact repeated observations reuse a complete feature-cost row only. An independent full-matrix oracle, missing-group and legacy-dimension cases, threshold bounds and installed PSL references protect behavior. Weak caches retain neither replaced vocabularies nor cleared templates in the forced-GC probe. This does not prove browser/WASM or mobile memory behavior.
+- Matching remains off the recognition acknowledgement lane, with one active scan and one latest replacement. No vocabulary storage schema or migration was introduced. Synthetic benchmark controls are separate from production bundles. No model, decoder, feature extractor or confidence/quality gate was tuned to these recordings.
+
+No further reproducible production defect was found in this review. The review does not establish dependable recognition, physical-device latency, GPU correctness, flat total memory or production readiness. The final engineering report records the matched causal experiment separately from passing software checks and unresolved security gates.

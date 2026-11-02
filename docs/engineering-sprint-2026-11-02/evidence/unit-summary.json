@@ -29,5 +29,12 @@
     "skipped": 0,
     "files": 2,
     "description": "Both default-skipped report writers executed separately with redirected outputs; 7 ordinary cases re-executed in that focused run"
+  },
+  "finalReview": {
+    "source": "e278bda38642216aaf2df8fd5f789587d16804e2",
+    "passed": 1038,
+    "failed": 0,
+    "skipped": 2,
+    "files": 108
   }
 }

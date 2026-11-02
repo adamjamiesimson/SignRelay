@@ -1,0 +1,67 @@
+
+ RUN  v4.1.12 C:/Users/DELL/Documents/Codex/2026-11-02/files-pasted-by-the-user-signrelay/work/SignRelay
+
+ × tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > keeps the frame watchdog after a stale ready startup message 15ms
+   → expected "vi.fn()" to be called once, but got 0 times
+ × tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > keeps the frame watchdog after a stale warming startup message 5ms
+   → expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      [Error: Tracking warmup timed out],
+    ]
+
+
+Number of calls: 1
+
+ ✓ tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > releases the pending pre-failure bitmap before worker recovery 3ms
+ ✓ tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > closes replaced and stopped bitmaps exactly once, retaining only the latest slot 6ms
+ ✓ tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > drains the final pre-Finish snapshot and excludes post-Finish decoded callbacks 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > keeps the frame watchdog after a stale ready startup message
+AssertionError: expected "vi.fn()" to be called once, but got 0 times
+ ❯ tests/live-vision-capture.test.ts:39:23
+     37|       expect(failure).not.toHaveBeenCalled();
+     38|       await vi.advanceTimersByTimeAsync(4000);
+     39|       expect(failure).toHaveBeenCalledOnce();
+       |                       ^
+     40|       expect(failure.mock.calls[0][0].message).toBe("Tracking frame ti…
+     41|     }finally{live.close();await frame;vi.useRealTimers();}
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/live-vision-capture.test.ts > decoded capture buffer lifecycle > keeps the frame watchdog after a stale warming startup message
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      [Error: Tracking warmup timed out],
+    ]
+
+
+Number of calls: 1
+
+ ❯ tests/live-vision-capture.test.ts:37:27
+     35|       Port.all[0].emit({type,assetSource:"self-hosted",delegate:"CPU"}…
+     36|       await vi.advanceTimersByTimeAsync(4001);
+     37|       expect(failure).not.toHaveBeenCalled();
+       |                           ^
+     38|       await vi.advanceTimersByTimeAsync(4000);
+     39|       expect(failure).toHaveBeenCalledOnce();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  09:36:40
+   Duration  427ms (transform 68ms, setup 0ms, import 150ms, tests 38ms, environment 0ms)
+
