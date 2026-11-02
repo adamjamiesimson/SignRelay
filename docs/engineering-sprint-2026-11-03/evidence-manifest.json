@@ -1,0 +1,12 @@
+{
+ "schema": 1,
+ "note": "SHA-256 of published evidence. All entries are synthetic-pattern or aggregate measurements; no recordings, landmarks, identifiers or personal data.",
+ "files": {
+  "evidence/capture-clock-rules.json": "795865dad64ac1e21e877fef00ab05bf71c5f83b442ad68988129de94a8e6071",
+  "evidence/capture-soak.json": "5c7bbcfacd4ed111082e987c84c0ec9229e38efeb1e385a8c84b54dafef08cdc",
+  "evidence/frame-identity-ab.json": "05e7ecc52b1523853b5848e5aed186a63d532ac7bb63b33a07652f599e2239dd",
+  "evidence/snapshot-fidelity.json": "603daf7ccb2a0fdbc72843345e12f049c0ea567366ed7b0fd2483ab88e5050f8",
+  "evidence/test-summary.json": "86d156d612f0f0bc02f7e38c21c587969592bb13cb5f82592cf0cd674f09ca88",
+  "evidence/tracking-determinism-inconclusive.json": "92d50046ad1e8d792e8aba2849fb0887769fad8ecc80b36332628ce7409864b3"
+ }
+}

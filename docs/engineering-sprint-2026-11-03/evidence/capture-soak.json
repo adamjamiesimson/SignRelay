@@ -1,0 +1,202 @@
+{
+ "schema": 1,
+ "runs": [
+  {
+   "kind": "headless Chromium capture-lifecycle soak with synthetic fake camera; not GPU/WASM/mobile/physical-device memory evidence",
+   "mode": "fingerspelling",
+   "seconds": 90,
+   "modeSwitches": 4,
+   "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+   "unclosedHandleWarnings": 0,
+   "warningExamples": [],
+   "heapMB": [
+    {
+     "at": 0,
+     "mb": 5.66
+    },
+    {
+     "at": 19,
+     "mb": 5.76
+    },
+    {
+     "at": 30,
+     "mb": 5.86
+    },
+    {
+     "at": 48,
+     "mb": 5.89
+    },
+    {
+     "at": 59,
+     "mb": 5.96
+    },
+    {
+     "at": 69,
+     "mb": 5.99
+    },
+    {
+     "at": 79,
+     "mb": 6.02
+    },
+    {
+     "at": 89,
+     "mb": 6.02
+    },
+    {
+     "at": 99,
+     "mb": 6.03
+    }
+   ],
+   "stillActive": true,
+   "build": "candidate"
+  },
+  {
+   "kind": "headless Chromium capture-lifecycle soak with synthetic fake camera; not GPU/WASM/mobile/physical-device memory evidence",
+   "mode": "words-capture",
+   "seconds": 90,
+   "modeSwitches": 4,
+   "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+   "unclosedHandleWarnings": 0,
+   "warningExamples": [],
+   "heapMB": [
+    {
+     "at": 0,
+     "mb": 5.69
+    },
+    {
+     "at": 11,
+     "mb": 5.82
+    },
+    {
+     "at": 29,
+     "mb": 5.88
+    },
+    {
+     "at": 40,
+     "mb": 5.91
+    },
+    {
+     "at": 58,
+     "mb": 5.92
+    },
+    {
+     "at": 68,
+     "mb": 6.07
+    },
+    {
+     "at": 78,
+     "mb": 6.08
+    },
+    {
+     "at": 88,
+     "mb": 6.08
+    },
+    {
+     "at": 98,
+     "mb": 6.08
+    }
+   ],
+   "stillActive": true,
+   "build": "candidate"
+  },
+  {
+   "kind": "headless Chromium capture-lifecycle soak with synthetic fake camera; not GPU/WASM/mobile/physical-device memory evidence",
+   "mode": "fingerspelling",
+   "seconds": 90,
+   "modeSwitches": 4,
+   "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+   "unclosedHandleWarnings": 0,
+   "warningExamples": [],
+   "heapMB": [
+    {
+     "at": 0,
+     "mb": 5.64
+    },
+    {
+     "at": 18,
+     "mb": 5.74
+    },
+    {
+     "at": 29,
+     "mb": 5.85
+    },
+    {
+     "at": 47,
+     "mb": 5.88
+    },
+    {
+     "at": 58,
+     "mb": 5.94
+    },
+    {
+     "at": 68,
+     "mb": 5.98
+    },
+    {
+     "at": 78,
+     "mb": 5.99
+    },
+    {
+     "at": 88,
+     "mb": 5.99
+    },
+    {
+     "at": 98,
+     "mb": 6.04
+    }
+   ],
+   "stillActive": true,
+   "build": "baseline"
+  },
+  {
+   "kind": "headless Chromium capture-lifecycle soak with synthetic fake camera; not GPU/WASM/mobile/physical-device memory evidence",
+   "mode": "words-capture",
+   "seconds": 90,
+   "modeSwitches": 4,
+   "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+   "unclosedHandleWarnings": 0,
+   "warningExamples": [],
+   "heapMB": [
+    {
+     "at": 0,
+     "mb": 5.68
+    },
+    {
+     "at": 11,
+     "mb": 5.77
+    },
+    {
+     "at": 29,
+     "mb": 5.82
+    },
+    {
+     "at": 39,
+     "mb": 5.89
+    },
+    {
+     "at": 58,
+     "mb": 5.91
+    },
+    {
+     "at": 68,
+     "mb": 6
+    },
+    {
+     "at": 78,
+     "mb": 6.05
+    },
+    {
+     "at": 88,
+     "mb": 6.06
+    },
+    {
+     "at": 98,
+     "mb": 6.06
+    }
+   ],
+   "stillActive": true,
+   "build": "baseline",
+   "note": "baseline build has no capture-time policy; this run is ordinary word mode"
+  }
+ ]
+}

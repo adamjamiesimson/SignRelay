@@ -1,0 +1,563 @@
+{
+  "schema": 1,
+  "status": "Synthetic kinematics through the real recognition worker, rules only (model abstains). Same frames and order under both clocks. Not recordings, not accuracy, not a device measurement.",
+  "method": "tests/capture-clock-rules.test.ts: 10 ms synthetic source, sample-and-hold camera at cameraFps with random phase, 20 ms presentation latency, 60 Hz loop with 33 ms minimum spacing, tracking lane busy trackingMeanMs ±30%",
+  "rows": [
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 30,
+      "trackingMeanMs": 50,
+      "restMs": 250,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 8,
+          "YES": 8,
+          "NO": 8
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 8,
+          "YES": 8,
+          "NO": 8
+        }
+      },
+      "runsWithDifferentWords": 0
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 30,
+      "trackingMeanMs": 50,
+      "restMs": 700,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 8,
+          "YES": 8,
+          "NO": 8
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 8,
+          "YES": 8,
+          "NO": 8
+        }
+      },
+      "runsWithDifferentWords": 0
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 30,
+      "trackingMeanMs": 80,
+      "restMs": 250,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 8,
+          "NO": 8,
+          "YES": 4
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 8,
+          "NO": 8,
+          "YES": 2
+        }
+      },
+      "runsWithDifferentWords": 2
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 30,
+      "trackingMeanMs": 80,
+      "restMs": 700,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 7,
+          "SORRY": 7,
+          "YES": 5,
+          "NO": 8
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 7,
+          "SORRY": 7,
+          "YES": 4,
+          "NO": 8
+        }
+      },
+      "runsWithDifferentWords": 1
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 30,
+      "trackingMeanMs": 110,
+      "restMs": 250,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 4,
+          "SORRY": 5,
+          "NO": 8
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 4,
+          "SORRY": 5,
+          "NO": 8
+        }
+      },
+      "runsWithDifferentWords": 0
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 30,
+      "trackingMeanMs": 110,
+      "restMs": 700,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 5,
+          "SORRY": 7,
+          "NO": 8,
+          "YES": 1
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 5,
+          "SORRY": 7,
+          "NO": 8,
+          "YES": 1
+        }
+      },
+      "runsWithDifferentWords": 0
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 30,
+      "trackingMeanMs": 150,
+      "restMs": 250,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 4,
+          "SORRY": 2,
+          "NO": 8,
+          "PLEASE": 4,
+          "YES": 1
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 4,
+          "SORRY": 2,
+          "NO": 8,
+          "PLEASE": 4
+        }
+      },
+      "runsWithDifferentWords": 1
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 30,
+      "trackingMeanMs": 150,
+      "restMs": 700,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 6,
+          "NO": 6,
+          "PLEASE": 3,
+          "SORRY": 3
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 6,
+          "NO": 6,
+          "PLEASE": 3,
+          "SORRY": 3
+        }
+      },
+      "runsWithDifferentWords": 0
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 15,
+      "trackingMeanMs": 50,
+      "restMs": 250,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 8,
+          "YES": 8,
+          "NO": 8
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 8,
+          "YES": 8,
+          "NO": 8
+        }
+      },
+      "runsWithDifferentWords": 0
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 15,
+      "trackingMeanMs": 50,
+      "restMs": 700,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 8,
+          "YES": 8,
+          "NO": 8
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 8,
+          "YES": 8,
+          "NO": 8
+        }
+      },
+      "runsWithDifferentWords": 0
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 15,
+      "trackingMeanMs": 80,
+      "restMs": 250,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 6,
+          "SORRY": 6,
+          "NO": 8,
+          "YES": 3
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 6,
+          "SORRY": 6,
+          "NO": 8
+        }
+      },
+      "runsWithDifferentWords": 3
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 15,
+      "trackingMeanMs": 80,
+      "restMs": 700,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 6,
+          "SORRY": 8,
+          "YES": 3,
+          "NO": 8
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 6,
+          "SORRY": 8,
+          "YES": 2,
+          "NO": 8
+        }
+      },
+      "runsWithDifferentWords": 1
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 15,
+      "trackingMeanMs": 110,
+      "restMs": 250,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 7,
+          "SORRY": 5,
+          "NO": 8,
+          "YES": 1
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 8,
+          "SORRY": 4,
+          "NO": 8,
+          "YES": 1
+        }
+      },
+      "runsWithDifferentWords": 1
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 15,
+      "trackingMeanMs": 110,
+      "restMs": 700,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 4,
+          "SORRY": 6,
+          "NO": 8,
+          "YES": 1
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 8,
+          "PLEASE": 4,
+          "SORRY": 6,
+          "NO": 8,
+          "YES": 1
+        }
+      },
+      "runsWithDifferentWords": 0
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 15,
+      "trackingMeanMs": 150,
+      "restMs": 250,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 3,
+          "SORRY": 1,
+          "NO": 8,
+          "PLEASE": 4
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 2,
+          "SORRY": 1,
+          "NO": 8,
+          "PLEASE": 4
+        }
+      },
+      "runsWithDifferentWords": 1
+    },
+    {
+      "kind": "positive six-word sequence",
+      "cameraFps": 15,
+      "trackingMeanMs": 150,
+      "restMs": 700,
+      "runs": 8,
+      "confirmations": {
+        "pickup-tick": {
+          "HELLO": 8,
+          "THANK YOU": 5,
+          "PLEASE": 4,
+          "SORRY": 4,
+          "NO": 4
+        },
+        "capture-time": {
+          "HELLO": 8,
+          "THANK YOU": 5,
+          "PLEASE": 4,
+          "SORRY": 4,
+          "NO": 4
+        }
+      },
+      "runsWithDifferentWords": 0
+    },
+    {
+      "kind": "synthetic everyday-movement controls",
+      "cameraFps": 30,
+      "trackingMeanMs": 50,
+      "cases": 33,
+      "casesWithAnyConfirmation": {
+        "pickup-tick": 12,
+        "capture-time": 12
+      },
+      "examples": {
+        "pickup-tick": [
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "raising an open hand from the chin toward the forehead: HELLO",
+          "raising an open hand from the chin toward the forehead: HELLO",
+          "raising an open hand from the chin toward the forehead: HELLO"
+        ],
+        "capture-time": [
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "raising an open hand from the chin toward the forehead: HELLO",
+          "raising an open hand from the chin toward the forehead: HELLO",
+          "raising an open hand from the chin toward the forehead: HELLO"
+        ]
+      }
+    },
+    {
+      "kind": "synthetic everyday-movement controls",
+      "cameraFps": 30,
+      "trackingMeanMs": 110,
+      "cases": 33,
+      "casesWithAnyConfirmation": {
+        "pickup-tick": 10,
+        "capture-time": 10
+      },
+      "examples": {
+        "pickup-tick": [
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "raising an open hand from the chin toward the forehead: HELLO"
+        ],
+        "capture-time": [
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "raising an open hand from the chin toward the forehead: HELLO"
+        ]
+      }
+    },
+    {
+      "kind": "synthetic everyday-movement controls",
+      "cameraFps": 15,
+      "trackingMeanMs": 50,
+      "cases": 33,
+      "casesWithAnyConfirmation": {
+        "pickup-tick": 12,
+        "capture-time": 12
+      },
+      "examples": {
+        "pickup-tick": [
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "raising an open hand from the chin toward the forehead: HELLO",
+          "raising an open hand from the chin toward the forehead: HELLO",
+          "raising an open hand from the chin toward the forehead: HELLO"
+        ],
+        "capture-time": [
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "raising an open hand from the chin toward the forehead: HELLO",
+          "raising an open hand from the chin toward the forehead: HELLO",
+          "raising an open hand from the chin toward the forehead: HELLO"
+        ]
+      }
+    },
+    {
+      "kind": "synthetic everyday-movement controls",
+      "cameraFps": 15,
+      "trackingMeanMs": 110,
+      "cases": 33,
+      "casesWithAnyConfirmation": {
+        "pickup-tick": 9,
+        "capture-time": 9
+      },
+      "examples": {
+        "pickup-tick": [
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU"
+        ],
+        "capture-time": [
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "adjusting glasses: THANK YOU",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "pushing hair aside near the forehead: HELLO",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU",
+          "lowering a hand from the mouth to rest: THANK YOU"
+        ]
+      }
+    }
+  ]
+}

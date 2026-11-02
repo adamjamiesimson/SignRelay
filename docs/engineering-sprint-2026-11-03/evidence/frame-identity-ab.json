@@ -1,0 +1,1015 @@
+{
+ "schema": 1,
+ "kind": "Synthetic frame-index Y4M through Chrome's fake camera into the real rehearsal export; schedule and timing only. No person, landmarks, recording or recognition result.",
+ "method": "scripts/diagnostics/frame-identity-browser.mjs; ground truth = WebCodecs VideoFrame pixels with their own timestamps; 8 s per run, 3 runs per cell, same machine, baseline and candidate exports built from the same tree except this sprint's capture change.",
+ "builds": {
+  "baseline": "d8cfefcd2953bac3a2de10722b1ca4f03cfca5a0 (PR #50 head)",
+  "candidate": "this sprint before the word-mode clock was made opt-in: word cells therefore measure the capture-time policy, now reachable only with ?perf&captureClock=capture"
+ },
+ "environment": "headless Chromium 153 on Linux x86_64, CPU tracking; not a physical webcam or GPU measurement",
+ "runs": [
+  {
+   "build": "baseline",
+   "run": "fingerspelling-15-r1",
+   "mode": "fingerspelling",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 121,
+    "uniqueSourceFrames": 121,
+    "sourceSpan": 121,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 92,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 27,
+    "timestampOffsetMedianMs": 621.630000000001,
+    "timestampJitterMs": {
+     "median": 0,
+     "p95": 0,
+     "max": 1.8189894035458565e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.1766666666650707,
+     "p95": 5.175666666664853,
+     "max": 6.458333333335148
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "fingerspelling-15-r2",
+   "mode": "fingerspelling",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 110,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 2,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 10,
+    "timestampOffsetMedianMs": 598.0029999999988,
+    "timestampJitterMs": {
+     "median": 1.8189894035458565e-12,
+     "p95": 1.8189894035458565e-12,
+     "max": 1.8189894035458565e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.1346666666674281,
+     "p95": 0.6546666666678647,
+     "max": 17.34933333333477
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "fingerspelling-15-r3",
+   "mode": "fingerspelling",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 112,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 9,
+    "timestampOffsetMedianMs": 639.0139999999992,
+    "timestampJitterMs": {
+     "median": 0,
+     "p95": 0,
+     "max": 1.8189894035458565e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.0986666666655509,
+     "p95": 0.2926666666668609,
+     "max": 0.5406666666664677
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "fingerspelling-30-r1",
+   "mode": "fingerspelling",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 235,
+    "uniqueSourceFrames": 235,
+    "sourceSpan": 240,
+    "notPresented": 5
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 99,
+    "mediaClockMismatches": 8,
+    "mediaClockMismatchFrames": [
+     -0.91,
+     -0.93,
+     -1.04,
+     -1.04,
+     -0.86,
+     -1.14,
+     -1.05,
+     -0.97
+    ],
+    "sourcePacingIrregular": 6,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 140,
+    "timestampOffsetMedianMs": 719.5750000000007,
+    "timestampJitterMs": {
+     "median": 0,
+     "p95": 32.1720000000023,
+     "max": 38.02799999999661
+    },
+    "intervalErrorMs": {
+     "median": 0.14833333333203313,
+     "p95": 31.51300000000083,
+     "max": 40.927999999999884
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "fingerspelling-30-r2",
+   "mode": "fingerspelling",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 240,
+    "uniqueSourceFrames": 240,
+    "sourceSpan": 241,
+    "notPresented": 1
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 109,
+    "mediaClockMismatches": 3,
+    "mediaClockMismatchFrames": [
+     -1.01,
+     -1,
+     -0.99
+    ],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 130,
+    "timestampOffsetMedianMs": 624.8399999999983,
+    "timestampJitterMs": {
+     "median": 1.8189894035458565e-12,
+     "p95": 1.8189894035458565e-12,
+     "max": 33.556000000000495
+    },
+    "intervalErrorMs": {
+     "median": 0.12033333332995255,
+     "p95": 33.33966666666917,
+     "max": 33.504000000000815
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "fingerspelling-30-r3",
+   "mode": "fingerspelling",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 240,
+    "uniqueSourceFrames": 240,
+    "sourceSpan": 241,
+    "notPresented": 1
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 108,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 129,
+    "timestampOffsetMedianMs": 722.5589999999993,
+    "timestampJitterMs": {
+     "median": 1.8189894035458565e-12,
+     "p95": 1.8189894035458565e-12,
+     "max": 1.8189894035458565e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.08866666666533263,
+     "p95": 1.042333333335904,
+     "max": 1.585333333333736
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "words-15-r1",
+   "mode": "words",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 77,
+    "mediaClockMismatches": 48,
+    "mediaClockMismatchFrames": [
+     0.24,
+     0.24,
+     -0.21,
+     -0.22,
+     -0.23,
+     0.24,
+     0.24,
+     0.24,
+     0.24,
+     0.49,
+     0.5,
+     -0.21,
+     -0.22,
+     0.49,
+     0.48,
+     0.49,
+     0.49,
+     0.49,
+     0.49,
+     0.49
+    ],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 43,
+    "timestampOffsetMedianMs": 650.8909999999523,
+    "timestampJitterMs": {
+     "median": 15.256999999954132,
+     "p95": 33.1809999999532,
+     "max": 36.35100000004604
+    },
+    "intervalErrorMs": {
+     "median": 16.433333333426475,
+     "p95": 40.86666666662009,
+     "max": 48.133333333379895
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "words-15-r2",
+   "mode": "words",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 72,
+    "mediaClockMismatches": 51,
+    "mediaClockMismatchFrames": [
+     -0.46,
+     0.25,
+     -0.46,
+     0.25,
+     0.23,
+     0.25,
+     0.26,
+     -0.46,
+     -0.25,
+     -0.46,
+     -0.25,
+     -0.25,
+     -0.46,
+     -0.45,
+     -0.46,
+     -0.44,
+     -0.45,
+     0.25,
+     -0.25,
+     0.25
+    ],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 46,
+    "timestampOffsetMedianMs": 662.8910000001415,
+    "timestampJitterMs": {
+     "median": 16.639000000046508,
+     "p95": 30.696000000141794,
+     "max": 31.485000000000582
+    },
+    "intervalErrorMs": {
+     "median": 16.63333333337991,
+     "p95": 47.33333333333333,
+     "max": 47.800000000046566
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "words-15-r3",
+   "mode": "words",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 68,
+    "mediaClockMismatches": 58,
+    "mediaClockMismatchFrames": [
+     -0.25,
+     0.25,
+     0.25,
+     0.25,
+     -0.46,
+     -0.46,
+     -0.24,
+     0.25,
+     0.25,
+     0.25,
+     0.25,
+     0.25,
+     -0.25,
+     -0.25,
+     0.25,
+     0.25,
+     0.25,
+     0.25,
+     -0.47,
+     0.25
+    ],
+    "sourcePacingIrregular": 1,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 52,
+    "timestampOffsetMedianMs": 933.5030000001389,
+    "timestampJitterMs": {
+     "median": 16.62699999990764,
+     "p95": 33.10499999995227,
+     "max": 36.28800000004412
+    },
+    "intervalErrorMs": {
+     "median": 16.433333333426475,
+     "p95": 48.23333333324021,
+     "max": 49.4000000001397
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "words-30-r1",
+   "mode": "words",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 230,
+    "uniqueSourceFrames": 230,
+    "sourceSpan": 240,
+    "notPresented": 10
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 68,
+    "mediaClockMismatches": 50,
+    "mediaClockMismatchFrames": [
+     -0.82,
+     -0.26,
+     0.17,
+     -0.07,
+     -0.83,
+     0.08,
+     -0.33,
+     -0.47,
+     0.07,
+     -0.77,
+     0.08,
+     0.16,
+     0.15,
+     0.07,
+     0.08,
+     -0.83,
+     0.05,
+     -0.84,
+     -0.84,
+     0.13
+    ],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 171,
+    "timestampOffsetMedianMs": 683.385999999955,
+    "timestampJitterMs": {
+     "median": 5.3899999999048305,
+     "p95": 27.91500000009546,
+     "max": 28.09800000004907
+    },
+    "intervalErrorMs": {
+     "median": 13.26666666675979,
+     "p95": 32.76666666652696,
+     "max": 33.89999999990687
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "words-30-r2",
+   "mode": "words",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 239,
+    "uniqueSourceFrames": 239,
+    "sourceSpan": 240,
+    "notPresented": 1
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 77,
+    "mediaClockMismatches": 37,
+    "mediaClockMismatchFrames": [
+     -0.44,
+     -0.41,
+     -0.43,
+     -0.4,
+     -0.41,
+     -0.38,
+     0.03,
+     -0.41,
+     -0.39,
+     -0.42,
+     -0.42,
+     -0.39,
+     -0.43,
+     -0.42,
+     -0.4,
+     -0.43,
+     -0.43,
+     -0.41,
+     -0.42,
+     -0.43
+    ],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 160,
+    "timestampOffsetMedianMs": 667.2069999999076,
+    "timestampJitterMs": {
+     "median": 0.9470000001856533,
+     "p95": 14.377999999909662,
+     "max": 14.53299999981391
+    },
+    "intervalErrorMs": {
+     "median": 0.8666666666200911,
+     "p95": 14.733333333473041,
+     "max": 16.63333333314708
+    }
+   }
+  },
+  {
+   "build": "baseline",
+   "run": "words-30-r3",
+   "mode": "words",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 237,
+    "uniqueSourceFrames": 237,
+    "sourceSpan": 239,
+    "notPresented": 2
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 71,
+    "mediaClockMismatches": 40,
+    "mediaClockMismatchFrames": [
+     -0.41,
+     0.03,
+     -0.35,
+     -0.36,
+     -0.42,
+     -0.35,
+     -0.39,
+     -0.34,
+     -0.42,
+     -0.35,
+     -0.39,
+     -0.41,
+     -0.44,
+     -0.42,
+     -0.36,
+     -0.4,
+     -0.42,
+     -0.42,
+     -0.42,
+     -0.37
+    ],
+    "sourcePacingIrregular": 4,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 168,
+    "timestampOffsetMedianMs": 587.706000000002,
+    "timestampJitterMs": {
+     "median": 2.3130000000928703,
+     "p95": 14.0050000001429,
+     "max": 14.630000000095606
+    },
+    "intervalErrorMs": {
+     "median": 2.800000000046566,
+     "p95": 14.600000000093132,
+     "max": 14.93333333319363
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "fingerspelling-15-r1",
+   "mode": "fingerspelling",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 108,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 2,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 13,
+    "timestampOffsetMedianMs": 603.0220000000008,
+    "timestampJitterMs": {
+     "median": 0,
+     "p95": 3.637978807091713e-12,
+     "max": 3.637978807091713e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.09466666666655499,
+     "p95": 0.3806666666666132,
+     "max": 0.4983333333342017
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "fingerspelling-15-r2",
+   "mode": "fingerspelling",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 106,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 2,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 14,
+    "timestampOffsetMedianMs": 748.5460000000003,
+    "timestampJitterMs": {
+     "median": 1.8189894035458565e-12,
+     "p95": 5.4569682106375694e-12,
+     "max": 5.4569682106375694e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.0873333333341435,
+     "p95": 2.3233333333385815,
+     "max": 14.533666666665042
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "fingerspelling-15-r3",
+   "mode": "fingerspelling",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 120,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 0,
+    "timestampOffsetMedianMs": 605.3780000000006,
+    "timestampJitterMs": {
+     "median": 0,
+     "p95": 3.637978807091713e-12,
+     "max": 3.637978807091713e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.06166666666710796,
+     "p95": 0.30166666666870867,
+     "max": 3.3836666666672244
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "fingerspelling-30-r1",
+   "mode": "fingerspelling",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 239,
+    "uniqueSourceFrames": 239,
+    "sourceSpan": 240,
+    "notPresented": 1
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 113,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 126,
+    "timestampOffsetMedianMs": 647.7650000000012,
+    "timestampJitterMs": {
+     "median": 1.8189894035458565e-12,
+     "p95": 5.4569682106375694e-12,
+     "max": 5.4569682106375694e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.09233333333152416,
+     "p95": 0.4956666666663807,
+     "max": 0.9093333333324409
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "fingerspelling-30-r2",
+   "mode": "fingerspelling",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 240,
+    "uniqueSourceFrames": 240,
+    "sourceSpan": 240,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 103,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 134,
+    "timestampOffsetMedianMs": 582.1239999999998,
+    "timestampJitterMs": {
+     "median": 0,
+     "p95": 3.637978807091713e-12,
+     "max": 3.637978807091713e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.10266666666636581,
+     "p95": 1.2946666666672684,
+     "max": 3.227666666668185
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "fingerspelling-30-r3",
+   "mode": "fingerspelling",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 239,
+    "uniqueSourceFrames": 239,
+    "sourceSpan": 240,
+    "notPresented": 1
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 118,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 121,
+    "timestampOffsetMedianMs": 506.46399999999994,
+    "timestampJitterMs": {
+     "median": 0,
+     "p95": 3.637978807091713e-12,
+     "max": 3.637978807091713e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.07633333333190251,
+     "p95": 2.5963333333323533,
+     "max": 3.166333333335686
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "words-15-r1",
+   "mode": "words",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 75,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 45,
+    "timestampOffsetMedianMs": 671.545999999953,
+    "timestampJitterMs": {
+     "median": 1.8189894035458565e-12,
+     "p95": 5.4569682106375694e-12,
+     "max": 5.4569682106375694e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.09733333332891903,
+     "p95": 0.46033333333375026,
+     "max": 1.1216666666684034
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "words-15-r2",
+   "mode": "words",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 79,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 41,
+    "timestampOffsetMedianMs": 739.4160000001393,
+    "timestampJitterMs": {
+     "median": 0,
+     "p95": 3.637978807091713e-12,
+     "max": 3.637978807091713e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.10366666666475055,
+     "p95": 1.7749999999996362,
+     "max": 2.2723333333336484
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "words-15-r3",
+   "mode": "words",
+   "sourceFps": 15,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 120,
+    "uniqueSourceFrames": 120,
+    "sourceSpan": 120,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 86,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 32,
+    "timestampOffsetMedianMs": 849.6019999999535,
+    "timestampJitterMs": {
+     "median": 1.8189894035458565e-12,
+     "p95": 3.637978807091713e-12,
+     "max": 5.4569682106375694e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.10233333333357564,
+     "p95": 3.8286666666632954,
+     "max": 4.800666666664867
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "words-30-r1",
+   "mode": "words",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 239,
+    "uniqueSourceFrames": 239,
+    "sourceSpan": 241,
+    "notPresented": 2
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 70,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 168,
+    "timestampOffsetMedianMs": 638.3999999999069,
+    "timestampJitterMs": {
+     "median": 0,
+     "p95": 3.637978807091713e-12,
+     "max": 3.637978807091713e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.13599999999860302,
+     "p95": 1.8853333333366606,
+     "max": 2.2456666666681997
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "words-30-r2",
+   "mode": "words",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 240,
+    "uniqueSourceFrames": 240,
+    "sourceSpan": 240,
+    "notPresented": 0
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 70,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 0,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 166,
+    "timestampOffsetMedianMs": 692.7119999998595,
+    "timestampJitterMs": {
+     "median": 1.8189894035458565e-12,
+     "p95": 1.8189894035458565e-12,
+     "max": 5.4569682106375694e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.12533333333462338,
+     "p95": 0.6183333333368353,
+     "max": 2.486666666666366
+    }
+   }
+  },
+  {
+   "build": "candidate",
+   "run": "words-30-r3",
+   "mode": "words",
+   "sourceFps": 30,
+   "seconds": 8,
+   "presented": {
+    "callbacks": 232,
+    "uniqueSourceFrames": 232,
+    "sourceSpan": 240,
+    "notPresented": 8
+   },
+   "metadataDescribedOtherFrame": 0,
+   "schedule": {
+    "trackedFrames": 69,
+    "mediaClockMismatches": 0,
+    "mediaClockMismatchFrames": [],
+    "sourcePacingIrregular": 5,
+    "undecodable": 0,
+    "duplicates": 0,
+    "duplicateFraction": 0,
+    "backwards": 0,
+    "skippedSourceFrames": 169,
+    "timestampOffsetMedianMs": 769.0450000000001,
+    "timestampJitterMs": {
+     "median": 1.8189894035458565e-12,
+     "p95": 5.4569682106375694e-12,
+     "max": 5.4569682106375694e-12
+    },
+    "intervalErrorMs": {
+     "median": 0.15566666666805418,
+     "p95": 1.8940000000002328,
+     "max": 9.519666666662175
+    }
+   }
+  }
+ ]
+}
