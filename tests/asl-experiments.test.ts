@@ -109,7 +109,8 @@ describe.runIf(process.env.RUN_EXPERIMENTS === "1")("full experiment comparison"
   it("compares every experiment with the baseline on positives, sparse YES and adversarial movements", async () => {
     const results: Record<string, unknown> = {};
     for (const [name, enabled] of Object.entries(CONFIGS)) results[name] = await evaluate(enabled);
-    writeFileSync(RESULTS, JSON.stringify({ schema: 1,
+    // Allow a new sprint to retain its own run without replacing frozen evidence.
+    writeFileSync(process.env.SIGNRELAY_EXPERIMENT_REPORT ?? RESULTS, JSON.stringify({ schema: 1,
       status: "Synthetic kinematic fixtures through the real worker. Not recordings, not real-video evidence, not accuracy. Every experiment is OFF in production.",
       generated_by: "RUN_EXPERIMENTS=1 npx vitest run tests/asl-experiments.test.ts",
       experiments: EXPERIMENTS, positive_runs: "6 signs x 15 capture conditions", sparse_yes_runs: `${Object.keys(SPARSE).length} loss patterns x ${SPARSE_COUNTS.length} frame rates`,
