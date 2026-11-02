@@ -133,7 +133,7 @@ function finishPersonalMatch(distances: Iterable<readonly [CalibrationTemplate, 
 
 // Only immutable template arrays are cached; live candidates are compiled once
 // per window. Canonicalisation/validation is never repeated in the inner scan.
-export type DistanceSequence = { rows: number[][]; length: number; valid: boolean };
+export type DistanceSequence = { rows: number[][]; length: number; valid: boolean; repeatedRows: Uint8Array; hasRepeatedRows: boolean };
 const compiledTemplates = new WeakMap<number[][], DistanceSequence>();
 export function cachedTemplateSequence(rows: number[][]) {
   let compiled = compiledTemplates.get(rows);
@@ -143,8 +143,16 @@ export function cachedTemplateSequence(rows: number[][]) {
 export function compileDistanceSequence(rows: number[][]): DistanceSequence {
   const canonical = rows.map(row => row.length === 208 ? [...row, ...new Array(32).fill(0)] : row);
   const length = canonical[0]?.length ?? 0;
+  const repeatedRows = new Uint8Array(canonical.length);
+  let hasRepeatedRows = false;
+  for (let i = 1; i < canonical.length; i++) {
+    if (canonical[i].length === canonical[i - 1].length
+      && canonical[i].every((value, k) => value === canonical[i - 1][k])) {
+      repeatedRows[i] = 1; hasRepeatedRows = true;
+    }
+  }
   return { rows: canonical, length, valid: length > 0 && canonical.every(row =>
-    row.length === length && row.every(Number.isFinite)) };
+    row.length === length && row.every(Number.isFinite)), repeatedRows, hasRepeatedRows };
 }
 
 // Cache only immutable recorded-template envelopes, keyed by the existing
@@ -216,13 +224,18 @@ export function compiledSequenceDistance(query: DistanceSequence, template: Dist
   const cutoff = Number.isFinite(maxDistance) ? maxDistance * divisor : Infinity;
   let previous = new Float64Array(b.length + 1).fill(Infinity);
   let current = new Float64Array(b.length + 1).fill(Infinity);
+  // Nearest-observation resampling repeats rows when tracking is slower than
+  // the 24-step contract or a pose is held. Reuse only exact adjacent repeats:
+  // their feature costs are identical, while every DTW path cell still runs.
+  const costs = query.hasRepeatedRows ? new Float64Array(b.length) : null;
   previous[0] = 0;
 
   for (let i = 1; i <= a.length; i++) {
     current[0] = Infinity;
     let minimumInRow = Infinity;
     for (let j = 1; j <= b.length; j++) {
-      const cost = featureDistance(a[i - 1], b[j - 1]);
+      const cost = costs && query.repeatedRows[i - 1] ? costs[j - 1] : featureDistance(a[i - 1], b[j - 1]);
+      if (costs) costs[j - 1] = cost;
       const value = cost + Math.min(previous[j], current[j - 1], previous[j - 1]);
       current[j] = value;
       if (value < minimumInRow) minimumInRow = value;
