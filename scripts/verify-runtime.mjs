@@ -11,7 +11,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { TASKS_VERSION, VISION_MODELS, VISION_WASM_FILES } from "../lib/vision-runtime.mjs";
-import { FINGERSPELLING_ASSETS, resolveFingerspelling } from "../lib/release-flags.mjs";
+import { FINGERSPELLING_ASSETS, FINGERSPELLING_UI_MARKERS, resolveFingerspelling } from "../lib/release-flags.mjs";
 
 const require = createRequire(import.meta.url);
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
@@ -97,6 +97,13 @@ export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = n
     ...workers.filter(file => existsSync(join(root, "workers", file))).map(file => `workers/${file}`)];
   if (fingerspelling === "off" && root.replace(/\/$/, "") !== "public" && researchAssets.length)
     fail(`fingerspelling is disabled but the export ships ${researchAssets.join(", ")}`, "run node scripts/prune-research.mjs out, or build with NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=on for a research build");
+  // The artifact itself, not the environment: what the compiled client actually contains.
+  const compiledUi = scripts.length > 0 && FINGERSPELLING_UI_MARKERS.every(marker => scripts.some(file => readFileSync(file, "utf8").includes(marker)));
+  manifest.fingerspelling_ui_compiled = compiledUi;
+  if (scripts.length && fingerspelling === "off" && compiledUi)
+    fail("fingerspelling is expected off but the compiled client contains the fingerspelling workspace", "the build inlined NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=on (check the environment and .env files) — rebuild");
+  if (scripts.length && fingerspelling === "on" && !compiledUi)
+    fail("fingerspelling is expected on but the compiled client has no fingerspelling workspace", "the build inlined the flag off — rebuild with NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=on");
   return { ok: failures.length === 0, failures, manifest };
 }
 

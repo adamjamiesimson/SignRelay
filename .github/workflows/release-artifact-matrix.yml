@@ -1,0 +1,41 @@
+name: Release artifact matrix
+# Builds every release-relevant configuration (production full, Vercel
+# production/preview, asl-demo, rehearsal, explicit and accidental overrides)
+# and checks each ARTIFACT: inlined flag, research models/workers, manifest.
+on:
+  pull_request:
+    paths:
+      - 'lib/release-flags.mjs'
+      - 'lib/release.ts'
+      - 'next.config.ts'
+      - 'vercel.json'
+      - 'package.json'
+      - 'scripts/prepare-export.mjs'
+      - 'scripts/prune-research.mjs'
+      - 'scripts/build-profile.mjs'
+      - 'scripts/verify-runtime.mjs'
+      - 'scripts/release-artifact-matrix.mjs'
+      - 'components/translator-experience.tsx'
+      - '.github/workflows/release-artifact-matrix.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0', cache: npm}
+      - run: npm ci
+      - name: Restore the verified RSL model from the CI cache
+        uses: actions/cache/restore@v4
+        with:
+          path: public/models/rsl1000-slovo/model.onnx
+          key: rsl-model-${{ hashFiles('public/models/rsl1000-slovo/manifest.json') }}
+      - name: Every configuration, artifact-level expectations
+        run: node scripts/release-artifact-matrix.mjs --out outputs/release-artifact-matrix.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: release-artifact-matrix, path: outputs/release-artifact-matrix.json, retention-days: 14}

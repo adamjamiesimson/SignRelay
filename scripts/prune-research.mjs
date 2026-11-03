@@ -3,7 +3,7 @@
 import { readdir, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { FINGERSPELLING_ASSETS, resolveFingerspelling } from "../lib/release-flags.mjs";
+import { FINGERSPELLING_ASSETS, assertReleaseSafe, resolveFingerspelling } from "../lib/release-flags.mjs";
 
 export async function pruneResearch(root, flag = resolveFingerspelling()) {
   if (flag === "on") return { flag, removed: [] };
@@ -17,6 +17,8 @@ export async function pruneResearch(root, flag = resolveFingerspelling()) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  // Also guards builds that skip prepare-export (the Vercel build command).
+  assertReleaseSafe(process.env);
   const result = await pruneResearch(process.argv[2] ?? "out");
   console.log(`Fingerspelling ${result.flag}: removed ${result.removed.length} research asset paths (${result.removed.join(", ") || "none"}).`);
 }

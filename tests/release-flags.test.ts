@@ -2,7 +2,9 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
-import { FINGERSPELLING_ASSETS, FINGERSPELLING_FLAG, resolveFingerspelling } from "../lib/release-flags.mjs";
+import { spawnSync } from "node:child_process";
+import { resolve } from "node:path";
+import { FINGERSPELLING_ASSETS, FINGERSPELLING_FLAG, assertReleaseSafe, resolveFingerspelling } from "../lib/release-flags.mjs";
 import { pruneResearch } from "../scripts/prune-research.mjs";
 import { expectedFingerspelling } from "../scripts/verify-runtime.mjs";
 
@@ -13,11 +15,37 @@ describe("fingerspelling release flag", () => {
     expect(resolveFingerspelling({ NEXT_PUBLIC_SIGNRELAY_PROFILE: "asl-demo" })).toBe("off");
     expect(resolveFingerspelling({ VERCEL_ENV: "production" })).toBe("off");
     expect(resolveFingerspelling({ NODE_ENV: "production" })).toBe("off");
+    // NODE_ENV is not a research signal: only the `next dev` server phase is.
+    expect(resolveFingerspelling({ NODE_ENV: "development" })).toBe("off");
   });
-  it("is on in research builds: rehearsal, Vercel preview and next dev", () => {
+  it("is on in research builds: rehearsal, Vercel preview and the next dev server", () => {
     expect(resolveFingerspelling({ NEXT_PUBLIC_SIGNRELAY_PROFILE: "rehearsal" })).toBe("on");
     expect(resolveFingerspelling({ VERCEL_ENV: "preview" })).toBe("on");
-    expect(resolveFingerspelling({ NODE_ENV: "development" })).toBe("on");
+    expect(resolveFingerspelling({}, { devServer: true })).toBe("on");
+    expect(resolveFingerspelling({ VERCEL_ENV: "production" }, { devServer: false })).toBe("off");
+  });
+  it("refuses an accidental research release from the production profile", () => {
+    expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on" })).toThrow(/must not be released/);
+    expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on", NEXT_PUBLIC_SIGNRELAY_PROFILE: "full", VERCEL_ENV: "production" })).toThrow();
+    expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on", SIGNRELAY_RESEARCH_EXPORT: "1" })).not.toThrow();
+    expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on", VERCEL_ENV: "preview" })).not.toThrow();
+    expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on", NEXT_PUBLIC_SIGNRELAY_PROFILE: "rehearsal" })).not.toThrow();
+    expect(() => assertReleaseSafe({})).not.toThrow();
+  });
+  it("prepare-export rejects the flag in a .env file and an accidental production opt-in", () => {
+    const dir = mkdtempSync(join(tmpdir(), "signrelay-env-"));
+    const run = (env: Record<string, string>) => spawnSync(process.execPath, [resolve("scripts/prepare-export.mjs")], { cwd: dir, encoding: "utf8",
+      env: { PATH: process.env.PATH ?? "", NODE_ENV: "production", ...env } });
+    try {
+      expect(run({}).status).toBe(0);
+      writeFileSync(join(dir, ".env.local"), `${FINGERSPELLING_FLAG}=on\n`);
+      expect(run({}).stderr).toMatch(/is set in \.env\.local/);
+      rmSync(join(dir, ".env.local"));
+      const accidental = run({ [FINGERSPELLING_FLAG]: "on" });
+      expect(accidental.status).not.toBe(0);
+      expect(accidental.stderr).toMatch(/must not be released/);
+      expect(run({ [FINGERSPELLING_FLAG]: "on", NEXT_PUBLIC_SIGNRELAY_PROFILE: "rehearsal" }).status).toBe(0);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
   });
   it("lets an explicit value override both ways and rejects anything else", () => {
     expect(resolveFingerspelling({ [FINGERSPELLING_FLAG]: "on" })).toBe("on");
@@ -25,7 +53,9 @@ describe("fingerspelling release flag", () => {
     for (const bad of ["true", "1", "ON", "yes"]) expect(() => resolveFingerspelling({ [FINGERSPELLING_FLAG]: bad })).toThrow(/"on" or "off"/);
   });
   it("is inlined by next.config.ts and accepted by the export environment check", () => {
-    expect(readFileSync("next.config.ts", "utf8")).toMatch(/NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING: resolveFingerspelling\(\)/);
+    const config = readFileSync("next.config.ts", "utf8");
+    expect(config).toMatch(/NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING: resolveFingerspelling\(process\.env, \{ devServer: phase === PHASE_DEVELOPMENT_SERVER \}\)/);
+    expect(JSON.parse(readFileSync("vercel.json", "utf8")).buildCommand).toMatch(/next build.*&& node scripts\/prune-research\.mjs out$/);
     expect(readFileSync("scripts/prepare-export.mjs", "utf8")).toMatch(/FINGERSPELLING_FLAG/);
     expect(readFileSync("lib/release.ts", "utf8")).toMatch(/=== "on"/);
   });
