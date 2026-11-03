@@ -1,0 +1,32 @@
+name: Tracking sprint - word-mode profiling on licensed frames
+# Hands/face/pose cost and auxiliary-schedule equivalence in the production
+# word-mode worker. Frames never leave the runner.
+on:
+  push:
+    branches: [claude/charming-thompson-2aql9w-release]
+    paths: ['.github/workflows/tracking-sprint-word-mode.yml', 'scripts/diagnostics/word-mode-rgb.ts', 'lib/vision-engine.ts']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  word-mode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env: {OMP_NUM_THREADS: '1', OPENBLAS_NUM_THREADS: '1', TF_CPP_MIN_LOG_LEVEL: '2', PYTHONUNBUFFERED: '1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0'}
+      - run: sudo apt-get update -qq && sudo apt-get install -y libgles2 libegl1 libgl1 ffmpeg
+      - run: python -m pip install --disable-pip-version-check -r training/fingerspelling/requirements.txt
+      - name: Verified licensed frames (runner-local; never uploaded)
+        run: python scripts/diagnostics/tracking-determinism-prepare.py
+      - run: npm ci && npm run build:rehearsal
+      - run: lscpu | head -20
+      - name: Word-mode lockstep profile (production vs alternate aux schedule)
+        run: node scripts/diagnostics/run-word-mode.mjs "$(command -v google-chrome)" outputs/word-mode-rgb.json 2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: tracking-sprint-word-mode, path: outputs/word-mode-rgb.json, retention-days: 14}

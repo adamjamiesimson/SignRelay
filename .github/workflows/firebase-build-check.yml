@@ -108,6 +108,9 @@ jobs:
           test ! -e out/.signrelay-private-capture-included
           echo "Static export created successfully."
 
+      - name: Production release isolation - no research fingerspelling in the artifact or the running page
+        run: node tests/production-release-smoke.mjs "$(command -v google-chrome)"
+
       - name: Test recognition and model contracts
         run: npm test
 

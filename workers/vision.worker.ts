@@ -6,6 +6,8 @@ self.onmessage = async ({ data }: MessageEvent) => {
   try {
     if (data.type === "init") {
       engine = await VisionEngine.create(message => self.postMessage({ type: "progress", message }), data.accelerated !== false);
+      // Research diagnostics only; the app never sends auxSchedule.
+      if (data.auxSchedule === "alternate") engine.auxSchedule = "alternate";
       // Some browsers create a GPU context but hang on its first inference.
       // Probe before declaring readiness; the client can replace this worker
       // with CPU tracking without freezing the camera/UI.
@@ -16,7 +18,7 @@ self.onmessage = async ({ data }: MessageEvent) => {
       context.fillStyle = "#20242c"; context.fillRect(0, 0, 256, 256);
       const probe = await createImageBitmap(surface);
       try { engine.process(probe, 1); } finally { probe.close(); }
-      self.postMessage({ type: "ready", assetSource: engine.assetSource, delegate: engine.delegate });
+      self.postMessage({ type: "ready", assetSource: engine.assetSource, delegate: engine.delegate, auxSchedule: engine.auxSchedule });
     } else if (data.type === "frame" && engine) {
       const bitmap = data.bitmap as ImageBitmap;
       try {

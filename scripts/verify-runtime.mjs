@@ -3,7 +3,7 @@
 // recognition worker bundle. Any missing, stale or tampered file fails with an
 // actionable message. Writes runtime-manifest.json next to the export.
 //
-//   node scripts/verify-runtime.mjs [--out out] [--profile full|asl-demo] [--require-evaluated]
+//   node scripts/verify-runtime.mjs [--out out] [--profile full|asl-demo|rehearsal] [--fingerspelling on|off] [--require-evaluated]
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -11,6 +11,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { TASKS_VERSION, VISION_MODELS, VISION_WASM_FILES } from "../lib/vision-runtime.mjs";
+import { FINGERSPELLING_ASSETS, FINGERSPELLING_UI_MARKERS, resolveFingerspelling } from "../lib/release-flags.mjs";
 
 const require = createRequire(import.meta.url);
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
@@ -26,9 +27,18 @@ const jsFiles = dir => !existsSync(dir) ? [] : readdirSync(dir).flatMap(name => 
 /** Licence and attribution documents stay in the ASL demo so linked notices keep working; no weights, labels or templates. */
 export const KEPT_NOTICES = new Set(["ATTRIBUTION.md", "LICENSE.pdf"]);
 
+/** The flag value an export built for `profile` should carry: an explicit
+ * --fingerspelling or environment value wins, otherwise the profile's default
+ * (so `--profile rehearsal` expects the research build).
+ * @param {string} profile @param {Record<string, string | undefined>} [env] @param {string} [explicit] */
+export function expectedFingerspelling(profile, env = process.env, explicit) {
+  if (explicit !== undefined) return resolveFingerspelling({ NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING: explicit });
+  return resolveFingerspelling({ ...env, NEXT_PUBLIC_SIGNRELAY_PROFILE: env.NEXT_PUBLIC_SIGNRELAY_PROFILE || profile });
+}
+
 /** @param {{ root: string, wasmSource: string, ortSource: string, committedWorker?: string | null, evaluated?: any[],
- *   profile?: string, wasmFiles?: string[], models?: Record<string, { file: string, bytes: number, sha256: string }> }} options */
-export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = null, evaluated = [], profile = "full",
+ *   profile?: string, fingerspelling?: string, wasmFiles?: string[], models?: Record<string, { file: string, bytes: number, sha256: string }> }} options */
+export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = null, evaluated = [], profile = "full", fingerspelling = resolveFingerspelling(),
   wasmFiles = VISION_WASM_FILES, models = VISION_MODELS }) {
   const failures = [];
   const fail = (what, fix) => failures.push(`${what} — ${fix}`);
@@ -80,6 +90,20 @@ export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = n
     const shipped = existsSync(join(root, "models", dir)) ? readdirSync(join(root, "models", dir)).filter(name => !KEPT_NOTICES.has(name)) : [];
     if (shipped.length) fail(`asl-demo export contains models/${dir}/${shipped.join(", ")}`, "the ASL profile must not ship other language models; rebuild with npm run build:asl-demo");
   }
+  // Research fingerspelling ships only in builds that opted in (lib/release-flags.mjs).
+  manifest.fingerspelling = fingerspelling;
+  const { modelDir, workers, keptNotices } = FINGERSPELLING_ASSETS;
+  const researchAssets = [...(existsSync(join(root, modelDir)) ? readdirSync(join(root, modelDir)).filter(name => !keptNotices.has(name)).map(name => `${modelDir}/${name}`) : []),
+    ...workers.filter(file => existsSync(join(root, "workers", file))).map(file => `workers/${file}`)];
+  if (fingerspelling === "off" && root.replace(/\/$/, "") !== "public" && researchAssets.length)
+    fail(`fingerspelling is disabled but the export ships ${researchAssets.join(", ")}`, "run node scripts/prune-research.mjs out, or build with NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=on for a research build");
+  // The artifact itself, not the environment: what the compiled client actually contains.
+  const compiledUi = scripts.length > 0 && FINGERSPELLING_UI_MARKERS.every(marker => scripts.some(file => readFileSync(file, "utf8").includes(marker)));
+  manifest.fingerspelling_ui_compiled = compiledUi;
+  if (scripts.length && fingerspelling === "off" && compiledUi)
+    fail("fingerspelling is expected off but the compiled client contains the fingerspelling workspace", "the build inlined NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=on (check the environment and .env files) — rebuild");
+  if (scripts.length && fingerspelling === "on" && !compiledUi)
+    fail("fingerspelling is expected on but the compiled client has no fingerspelling workspace", "the build inlined the flag off — rebuild with NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=on");
   return { ok: failures.length === 0, failures, manifest };
 }
 
@@ -88,7 +112,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const option = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
   const root = option("--out", "out");
   const committed = spawnSync("git", ["show", "HEAD:public/workers/recognition.worker.js"], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 });
-  const result = verifyRuntime({ root, profile: option("--profile", existsSync(join(root, "models/bdsl401-videomae/model.onnx")) ? "full" : "asl-demo"),
+  const profile = option("--profile", existsSync(join(root, "models/bdsl401-videomae/model.onnx")) ? "full" : "asl-demo");
+  const result = verifyRuntime({ root, profile, fingerspelling: expectedFingerspelling(profile, process.env, option("--fingerspelling")),
     wasmSource: join(dirname(require.resolve("@mediapipe/tasks-vision")), "wasm"), ortSource: dirname(require.resolve("onnxruntime-web")),
     committedWorker: committed.status === 0 ? sha(committed.stdout) : null,
     evaluated: JSON.parse(readFileSync("docs/evaluation/evaluated-runtimes.json", "utf8")).runtimes });

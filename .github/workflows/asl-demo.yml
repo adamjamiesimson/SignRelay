@@ -56,6 +56,9 @@ jobs:
       - name: Fingerspelling - mode isolation, explicit confirmation, camera lifecycle and privacy
         run: node tests/fingerspelling-browser-smoke.mjs "$CHROME"
 
+      - name: Release flag ON (research build) - mode reachable, assets shipped
+        run: node tests/release-flag-smoke.mjs "$CHROME" on
+
       - name: Rehearsal - transcript, live regions, keyboard, touch targets, reduced motion
         run: node tests/transcript-a11y-smoke.mjs "$CHROME"
 
@@ -72,6 +75,14 @@ jobs:
         run: |
           npm run test:rendered
           node scripts/verify-runtime.mjs --out out --profile rehearsal
+
+      # The same rehearsal export with fingerspelling switched off, as a
+      # production export would be: no selector, worker, model or request.
+      - name: Release flag OFF - build and verify
+        run: |
+          NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=off npm run build:rehearsal
+          node tests/release-flag-smoke.mjs "$CHROME" off
+          node tests/gitex-rehearsal-smoke.mjs "$CHROME"
 
       # The ASL demo profile, exactly as demo:prepare builds it. Built last so
       # the synthetic hook is checked to be absent from the demo export.

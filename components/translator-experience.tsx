@@ -44,6 +44,7 @@ import {
 import { isRecentDuplicate } from "@/lib/decoder";
 import { ASL_ALPHABET, FINGERSPELLING_MODEL, MAX_FINGERSPELLING_TEXT, editSpelling } from "@/lib/fingerspelling";
 import { FingerspellingCapture } from "@/lib/fingerspelling-capture";
+import { FINGERSPELLING_ENABLED } from "@/lib/release";
 import { FingerspellingCtcSession } from "@/lib/fingerspelling-ctc-session";
 import { FINGERSPELLING_CTC_MODEL } from "@/lib/fingerspelling-model";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
@@ -406,7 +407,8 @@ export function TranslatorExperience() {
   }, [finishResearch]);
 
   useEffect(() => {
-    if (aslMode !== "fingerspelling" || selected !== "asl" || step !== "workspace" || cameraState !== "active") return;
+    // Disabled release builds never create the research CTC worker or fetch its model.
+    if (!FINGERSPELLING_ENABLED || aslMode !== "fingerspelling" || selected !== "asl" || step !== "workspace" || cameraState !== "active") return;
     let active = true;
     const session = new FingerspellingCtcSession(
       () => new Worker("/workers/fingerspelling.worker.js", { type: "module" }),
@@ -695,12 +697,12 @@ export function TranslatorExperience() {
   const createCameraVision = useCallback(async (progress: (message: string) => void, signal: AbortSignal): Promise<LiveVision> => {
     for (;;) {
       signal.throwIfAborted();
-      const profile = aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words";
+      const profile = FINGERSPELLING_ENABLED && aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words";
       const engine = await LiveVision.create(progress, profile === "words", signal, profile);
       // Diagnostics only (?perf&captureClock=capture): opt-in word-mode capture-time stamps.
       const query = new URLSearchParams(window.location.search);
       if (query.has("perf") && query.get("captureClock") === "capture") engine.wordClockPolicy = "capture-time";
-      if (profile === (aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words")) return engine;
+      if (profile === (FINGERSPELLING_ENABLED && aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words")) return engine;
       engine.close();
     }
   }, []);
@@ -1048,7 +1050,7 @@ export function TranslatorExperience() {
   function switchTrackingProfile() {
     const previous = engineRef.current;
     if (!previous || cameraPendingRef.current) return;
-    const desired = aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words";
+    const desired = FINGERSPELLING_ENABLED && aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words";
     if (previous.profile === desired) return;
     const generation = cameraGenerationRef.current;
     trackingEpochRef.current++;
@@ -1070,7 +1072,7 @@ export function TranslatorExperience() {
   }
 
   function changeAslMode(mode: "words" | "fingerspelling") {
-    if (aslModeRef.current === mode) return;
+    if (aslModeRef.current === mode || (mode === "fingerspelling" && !FINGERSPELLING_ENABLED)) return;
     // Block queued callbacks immediately; the effect terminates the worker.
     // Returning to words creates a fresh session without clearing the transcript.
     aslModeRef.current = mode;
@@ -1220,7 +1222,7 @@ export function TranslatorExperience() {
             </div>
           </div>
 
-          {selected === "asl" && (
+          {selected === "asl" && FINGERSPELLING_ENABLED && (
             <div className="asl-mode-selector" role="group" aria-label="ASL recognition mode">
               <button type="button" aria-pressed={aslMode === "words"} onClick={() => changeAslMode("words")}>Word Recognition</button>
               <button type="button" aria-pressed={aslMode === "fingerspelling"} onClick={() => changeAslMode("fingerspelling")}>Fingerspelling</button>
@@ -1287,7 +1289,7 @@ export function TranslatorExperience() {
               </details>
             </section>
 
-            {aslMode === "fingerspelling" && selected === "asl" && (
+            {FINGERSPELLING_ENABLED && aslMode === "fingerspelling" && selected === "asl" && (
               <section className="transcript-panel fingerspelling-panel" aria-labelledby="fingerspelling-title">
                 <div className="panel-heading"><h2 id="fingerspelling-title">Fingerspelling</h2></div>
                 <div className="spelling-candidate" aria-label="Sequence candidate">

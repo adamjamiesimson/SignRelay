@@ -19,7 +19,10 @@ type EngineParts = {
   pose: PoseLandmarker;
 };
 
-export type VisionTimings = { hands: number; auxiliary: number };
+export type VisionTimings = { hands: number; auxiliary: number; face?: number; pose?: number };
+/** "together" (production): face and pose on the same auxiliary turn.
+ * "alternate" (research only, never selected by the app): one per turn. */
+export type AuxSchedule = "together" | "alternate";
 type Source = HTMLVideoElement | HTMLCanvasElement | ImageBitmap;
 
 export class VisionEngine {
@@ -30,7 +33,9 @@ export class VisionEngine {
   private handFramesSinceAux = 2;
   private lastFace: Point[] = [];
   private lastPose: Point[] = [];
-  readonly timings: VisionTimings = { hands: 0, auxiliary: 0 };
+  readonly timings: Required<VisionTimings> = { hands: 0, auxiliary: 0, face: 0, pose: 0 };
+  private nextAux: "face" | "pose" = "face";
+  auxSchedule: AuxSchedule = "together";
 
   private constructor(parts: EngineParts, assetSource: AssetSource["id"], readonly delegate: "GPU" | "CPU") {
     this.parts = parts;
@@ -123,11 +128,25 @@ export class VisionEngine {
     const auxiliaryStarted = performance.now();
     this.handFramesSinceAux++;
     // Leave alternate frames for hands even when CPU inference is already slow.
-    if (this.handFramesSinceAux >= 2 && timestamp - this.lastAuxTimestamp >= 150) {
-      const faceResult = this.parts.face.detectForVideo(video, timestamp);
-      const poseResult = this.parts.pose.detectForVideo(video, timestamp);
-      this.lastFace = pickPoints(faceResult.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
-      this.lastPose = pickPoints(poseResult.landmarks[0] ?? [], POSE_CUE_INDICES);
+    this.timings.face = 0; this.timings.pose = 0;
+    // "alternate" halves the gap: each part still refreshes every other turn.
+    const gap = this.auxSchedule === "alternate" ? 75 : 150;
+    if (this.handFramesSinceAux >= 2 && timestamp - this.lastAuxTimestamp >= gap) {
+      const runFace = this.auxSchedule === "together" || this.nextAux === "face";
+      const runPose = this.auxSchedule === "together" || this.nextAux === "pose";
+      if (runFace) {
+        const faceStarted = performance.now();
+        const faceResult = this.parts.face.detectForVideo(video, timestamp);
+        this.lastFace = pickPoints(faceResult.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
+        this.timings.face = performance.now() - faceStarted;
+      }
+      if (runPose) {
+        const poseStarted = performance.now();
+        const poseResult = this.parts.pose.detectForVideo(video, timestamp);
+        this.lastPose = pickPoints(poseResult.landmarks[0] ?? [], POSE_CUE_INDICES);
+        this.timings.pose = performance.now() - poseStarted;
+      }
+      this.nextAux = this.nextAux === "face" ? "pose" : "face";
       this.lastAuxTimestamp = timestamp;
       this.handFramesSinceAux = 0;
     }

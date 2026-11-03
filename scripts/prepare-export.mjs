@@ -1,10 +1,12 @@
 import { readdir, readFile, rm } from "node:fs/promises";
 
-const publicKeys = new Set(["NEXT_PUBLIC_GA_MEASUREMENT_ID", "NEXT_PUBLIC_SIGNRELAY_PROFILE"]);
+import { FINGERSPELLING_FLAG, assertReleaseSafe, resolveFingerspelling } from "../lib/release-flags.mjs";
+const publicKeys = new Set(["NEXT_PUBLIC_GA_MEASUREMENT_ID", "NEXT_PUBLIC_SIGNRELAY_PROFILE", FINGERSPELLING_FLAG]);
 const PROFILES = new Set(["full", "asl-demo", "rehearsal"]);
 function validate(key, value) {
   if (!key.startsWith("NEXT_PUBLIC_")) return;
   if (!publicKeys.has(key)) throw new Error(`Unsupported public environment variable: ${key}. Never expose credentials through NEXT_PUBLIC_.`);
+  if (key === FINGERSPELLING_FLAG) { resolveFingerspelling({ [key]: value }); return; }
   if (key === "NEXT_PUBLIC_SIGNRELAY_PROFILE") {
     if (value && !PROFILES.has(value)) throw new Error(`Unknown build profile ${value}; use full, asl-demo or rehearsal.`);
     return;
@@ -15,8 +17,11 @@ for (const [key, value] of Object.entries(process.env)) validate(key, value);
 for (const name of (await readdir(".")).filter(name => /^\.env(?:\.|$)/.test(name))) {
   for (const line of (await readFile(name, "utf8")).split("\n")) {
     const match = line.match(/^\s*(?:export\s+)?([A-Z][A-Z0-9_]*)\s*=\s*(.*?)\s*$/);
+    if (match?.[1] === FINGERSPELLING_FLAG)
+      throw new Error(`${FINGERSPELLING_FLAG} is set in ${name}. Next would inline it but the export scripts would not see it; set it on the build command instead.`);
     if (match) validate(match[1], match[2].replace(/^['"]|['"]$/g, ""));
   }
 }
+assertReleaseSafe(process.env);
 // A fresh export prevents removed assets or obsolete chunks from being deployed.
 await rm("out", { recursive: true, force: true });
