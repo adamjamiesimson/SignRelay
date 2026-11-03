@@ -11,7 +11,7 @@
 // and verify-runtime's RSL weight check is reported separately. CI's
 // firebase-build-check runs the true full build with the RSL model.
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
 import { runCommandSync } from "./run-command.mjs";
 import { FINGERSPELLING_ASSETS, FINGERSPELLING_UI_MARKERS } from "../lib/release-flags.mjs";
@@ -91,7 +91,7 @@ for (const config of selected) {
   console.log("MATRIX", JSON.stringify(row));
   if (values.keep && existsSync("out")) { mkdirSync(values.keep, { recursive: true }); cpSync("out", join(values.keep, config.name), { recursive: true }); }
 }
-mkdirSync("work", { recursive: true });
+mkdirSync(dirname(values.out), { recursive: true });
 writeFileSync(values.out, JSON.stringify({ skipRsl: values["skip-rsl"], results }, null, 1));
 const failed = results.filter(r => !r.pass);
 console.log(`RELEASE-ARTIFACT-MATRIX ${results.length - failed.length}/${results.length} as expected${failed.length ? `; unexpected: ${failed.map(r => r.name).join(", ")}` : ""}`);
