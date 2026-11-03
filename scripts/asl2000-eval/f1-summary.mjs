@@ -4,7 +4,8 @@
 // offered as a suggestion, and how many clips ended with no automatic word.
 // Gloss text only; no media, frames or landmarks.
 //   node scripts/asl2000-eval/f1-summary.mjs <clips.json> <worker-log.jsonl> [out.json]
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 
 const [clipsPath, logPath, out] = process.argv.slice(2);
 const gloss = new Map(JSON.parse(readFileSync(clipsPath, "utf8")).map(c => [c.id, String(c.gloss).toUpperCase()]));
@@ -29,5 +30,6 @@ for (const row of rows) {
 }
 const summary = { kind: "WLASL frozen-sample direct clips (C-UDA) through the production VisionEngine and each recognition worker in headless Chrome, CPU; exposed evaluation clips, not independent signers; gloss match against the clip label",
   workers: byWorker };
-if (out) writeFileSync(out, JSON.stringify(summary, null, 1));
+// Print first, so the counts survive even if the file cannot be written.
 console.log("F1-RECORDED-SUMMARY", JSON.stringify(summary));
+if (out) { mkdirSync(dirname(out), { recursive: true }); writeFileSync(out, JSON.stringify(summary, null, 1)); }
