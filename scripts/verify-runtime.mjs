@@ -11,6 +11,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { TASKS_VERSION, VISION_MODELS, VISION_WASM_FILES } from "../lib/vision-runtime.mjs";
+import { FINGERSPELLING_ASSETS, resolveFingerspelling } from "../lib/release-flags.mjs";
 
 const require = createRequire(import.meta.url);
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
@@ -28,7 +29,7 @@ export const KEPT_NOTICES = new Set(["ATTRIBUTION.md", "LICENSE.pdf"]);
 
 /** @param {{ root: string, wasmSource: string, ortSource: string, committedWorker?: string | null, evaluated?: any[],
  *   profile?: string, wasmFiles?: string[], models?: Record<string, { file: string, bytes: number, sha256: string }> }} options */
-export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = null, evaluated = [], profile = "full",
+export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = null, evaluated = [], profile = "full", fingerspelling = resolveFingerspelling(),
   wasmFiles = VISION_WASM_FILES, models = VISION_MODELS }) {
   const failures = [];
   const fail = (what, fix) => failures.push(`${what} — ${fix}`);
@@ -80,6 +81,13 @@ export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = n
     const shipped = existsSync(join(root, "models", dir)) ? readdirSync(join(root, "models", dir)).filter(name => !KEPT_NOTICES.has(name)) : [];
     if (shipped.length) fail(`asl-demo export contains models/${dir}/${shipped.join(", ")}`, "the ASL profile must not ship other language models; rebuild with npm run build:asl-demo");
   }
+  // Research fingerspelling ships only in builds that opted in (lib/release-flags.mjs).
+  manifest.fingerspelling = fingerspelling;
+  const { modelDir, workers, keptNotices } = FINGERSPELLING_ASSETS;
+  const researchAssets = [...(existsSync(join(root, modelDir)) ? readdirSync(join(root, modelDir)).filter(name => !keptNotices.has(name)).map(name => `${modelDir}/${name}`) : []),
+    ...workers.filter(file => existsSync(join(root, "workers", file))).map(file => `workers/${file}`)];
+  if (fingerspelling === "off" && root.replace(/\/$/, "") !== "public" && researchAssets.length)
+    fail(`fingerspelling is disabled but the export ships ${researchAssets.join(", ")}`, "run node scripts/prune-research.mjs out, or build with NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=on for a research build");
   return { ok: failures.length === 0, failures, manifest };
 }
 

@@ -15,6 +15,7 @@ export const STEPS = {
     ["npx", "next", "build"],
     ["node", "scripts/exclude-private-routes.mjs"],
     ["node", "scripts/prune-profile.mjs", "asl-demo"],
+    ["node", "scripts/prune-research.mjs", "out"],
     ["node", "scripts/secure-export.mjs"],
     ["node", "scripts/verify-runtime.mjs", "--out", "out", "--profile", "asl-demo"],
   ],
