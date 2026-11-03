@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import { FINGERSPELLING_ASSETS, FINGERSPELLING_FLAG, resolveFingerspelling } from "../lib/release-flags.mjs";
 import { pruneResearch } from "../scripts/prune-research.mjs";
+import { expectedFingerspelling } from "../scripts/verify-runtime.mjs";
 
 describe("fingerspelling release flag", () => {
   it("is off for production exports unless a build opts in", () => {
@@ -35,6 +36,17 @@ describe("fingerspelling release flag", () => {
     expect(source).toMatch(/selected === "asl" && FINGERSPELLING_ENABLED && \(/);
     expect(source).toMatch(/mode === "fingerspelling" && !FINGERSPELLING_ENABLED\)\) return;/);
     expect(source).toMatch(/if \(!FINGERSPELLING_ENABLED \|\| aslMode !== "fingerspelling"/);
+  });
+});
+
+describe("export verifier", () => {
+  it("expects the profile's own default when run standalone, and honours explicit values", () => {
+    expect(expectedFingerspelling("rehearsal", {})).toBe("on");
+    expect(expectedFingerspelling("full", {})).toBe("off");
+    expect(expectedFingerspelling("asl-demo", {})).toBe("off");
+    expect(expectedFingerspelling("rehearsal", { NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING: "off" })).toBe("off");
+    expect(expectedFingerspelling("full", {}, "on")).toBe("on");
+    expect(() => expectedFingerspelling("full", {}, "yes")).toThrow();
   });
 });
 
