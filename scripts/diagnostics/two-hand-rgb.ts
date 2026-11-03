@@ -12,7 +12,8 @@
 //
 // Per configuration: frames tracking the signer vs the distractor, ownership
 // switches of the hand capture would select (dominant label, first match),
-// signer handedness-label flips, the wrist jump at each switch versus the largest genuine
+// signer handedness-label flips, what the (disabled) lib/hand-continuity
+// detector flags, the wrist jump (palm lengths) at each switch versus the largest genuine
 // frame-to-frame wrist motion, and the decoded outcome through production
 // capture + CTC. Counts and distances only; no frames, landmarks or text.
 //
@@ -24,6 +25,7 @@ import { startChrome } from "./chrome-session.mjs";
 import { createSession, replayData } from "./replay-fingerspelling-trace";
 import type { Sample, Step } from "./tracking-determinism-rgb";
 import type { HandObservation } from "../../lib/vision-types";
+import { findHandDiscontinuities, palmLength } from "../../lib/hand-continuity";
 
 type Layout = "solo" | "distractor" | "enters" | "swapped";
 const LAYOUTS: Layout[] = ["solo", "distractor", "enters", "swapped"];
@@ -107,7 +109,8 @@ async function main() {
           // frames wins, and each frame uses the FIRST hand carrying that label.
           const count = (label: string) => inside.filter(({ n }) => tracked[n].hands.some(h => h.handedness === label && h.landmarks.length === 21)).length;
           const dominant = count("Left") >= count("Right") ? "Left" : "Right";
-          for (const { n } of inside) {
+          const switchIndices = new Set<number>(); let previousHand: HandObservation | null = null;
+          for (const [position, { n }] of inside.entries()) {
             const hands = tracked[n].hands;
             const owners = hands.map(owner);
             if (owners.includes("signer")) signerFrames++;
@@ -119,19 +122,24 @@ async function main() {
             if (first && owner(first) === "distractor") selectedDistractor++;
             if (first) {
               const who = owner(first), wrist = { x: first.landmarks[0].x * tracked[n].aspect, y: first.landmarks[0].y };
-              if (previousOwner && previousWrist) {
-                const jump = Math.hypot(wrist.x - previousWrist.x, wrist.y - previousWrist.y);
-                if (who !== previousOwner) { switches++; minSwitchJump = Math.min(minSwitchJump, jump); } else maxGenuineJump = Math.max(maxGenuineJump, jump);
+              if (previousOwner && previousWrist && previousHand) {
+                // Palm lengths of the smaller hand, as lib/hand-continuity measures.
+                const palm = Math.max(1e-6, Math.min(palmLength(first, tracked[n].aspect), palmLength(previousHand, tracked[n].aspect)));
+                const jump = Math.hypot(wrist.x - previousWrist.x, wrist.y - previousWrist.y) / palm;
+                if (who !== previousOwner) { switches++; switchIndices.add(position); minSwitchJump = Math.min(minSwitchJump, jump); } else maxGenuineJump = Math.max(maxGenuineJump, jump);
               }
-              previousOwner = who; previousWrist = wrist;
+              previousOwner = who; previousWrist = wrist; previousHand = first;
             }
           }
           const trace = { schema: "signrelay-fingerspelling-trace-v1", aspect: tracked[0]?.aspect ?? 2, featureVersion: "v3",
             samples: inside.map(({ s, n }) => ({ time: s.ts, capturedAt: s.ts, hands: tracked[n].hands })) };
+          // The (disabled) continuity detector on exactly what capture would see.
+          const detections = findHandDiscontinuities(trace.samples, dominant, trace.aspect);
+          const trueDetections = detections.filter(d => switchIndices.has(d.index)).length;
           const result = await replayData(session, trace, `case-${sample.index}-${config.name}-${layout}`, true);
           const text = (result.text ?? "").trim();
-          layouts[layout] = { frames: inside.length, signerFrames, distractorFrames, framesWithBoth: both, selectedDistractorFrames: selectedDistractor, signerLabelFlips, selectedHandSwitches: switches,
-            maxGenuineWristJump: Math.round(maxGenuineJump * 1000) / 1000, minSwitchWristJump: Number.isFinite(minSwitchJump) ? Math.round(minSwitchJump * 1000) / 1000 : null,
+          layouts[layout] = { frames: inside.length, signerFrames, distractorFrames, framesWithBoth: both, selectedDistractorFrames: selectedDistractor, signerLabelFlips, selectedHandSwitches: switches, detectorFlags: detections.length, detectorTrue: trueDetections, detectorMissed: switches - trueDetections,
+            maxGenuineWristJumpPalms: Math.round(maxGenuineJump * 100) / 100, minSwitchWristJumpPalms: Number.isFinite(minSwitchJump) ? Math.round(minSwitchJump * 100) / 100 : null,
             status: result.captureError ? "quality-rejected" : result.status, captureError: result.captureError ? String(result.captureError).replace(/^Error: /, "") : undefined,
             exact: text === sample.reference, edits: levenshtein(text, sample.reference), referenceCharacters: sample.reference.length, output: result.fingerprints.output };
         }
@@ -140,7 +148,7 @@ async function main() {
       cases.push(row);
       console.log("TWO-HAND-CASE", JSON.stringify({ case: sample.index, configs: Object.fromEntries(Object.entries(row.configs as Record<string, Record<string, { signerFrames: number; distractorFrames: number; selectedHandSwitches: number; frames: number; status: string }>>).map(([n, l]) => [n, Object.fromEntries(Object.entries(l).map(([k, v]) => [k, [v.signerFrames, v.distractorFrames, v.selectedHandSwitches, v.frames, v.status]]))])) }));
     }
-    type Cell = { frames: number; signerFrames: number; distractorFrames: number; selectedDistractorFrames: number; signerLabelFlips: number; selectedHandSwitches: number; maxGenuineWristJump: number; minSwitchWristJump: number | null; status: string; exact: boolean; edits: number; referenceCharacters: number; output?: string };
+    type Cell = { frames: number; signerFrames: number; distractorFrames: number; selectedDistractorFrames: number; signerLabelFlips: number; selectedHandSwitches: number; maxGenuineWristJumpPalms: number; minSwitchWristJumpPalms: number | null; detectorFlags: number; detectorTrue: number; detectorMissed: number; status: string; exact: boolean; edits: number; referenceCharacters: number; output?: string };
     const summary = { kind: "Composites of real licensed FSboard frames (signer plus a different catalog signer); production tracking worker in lockstep; exposed regression clips; behaviour, not accuracy",
       clips: cases.length, configs: Object.fromEntries(configs.map(c => [c.name, Object.fromEntries(LAYOUTS.map(layout => {
         const cells = cases.map(r => (r.configs as Record<string, Record<string, Cell>>)[c.name][layout]);
@@ -148,7 +156,8 @@ async function main() {
         return [layout, { frames: cells.reduce((n, x) => n + x.frames, 0), signerFrames: cells.reduce((n, x) => n + x.signerFrames, 0), distractorFrames: cells.reduce((n, x) => n + x.distractorFrames, 0),
           selectedDistractorFrames: cells.reduce((n, x) => n + x.selectedDistractorFrames, 0), signerLabelFlips: cells.reduce((n, x) => n + x.signerLabelFlips, 0),
           clipsWithSwitch: cells.filter(x => x.selectedHandSwitches > 0).length, switches: cells.reduce((n, x) => n + x.selectedHandSwitches, 0),
-          maxGenuineWristJump: Math.max(0, ...cells.map(x => x.maxGenuineWristJump)), minSwitchWristJump: Math.min(Infinity, ...cells.map(x => x.minSwitchWristJump ?? Infinity)),
+          maxGenuineWristJumpPalms: Math.max(0, ...cells.map(x => x.maxGenuineWristJumpPalms)), minSwitchWristJumpPalms: Math.min(Infinity, ...cells.map(x => x.minSwitchWristJumpPalms ?? Infinity)),
+          detectorFlags: cells.reduce((n, x) => n + x.detectorFlags, 0), detectorTrue: cells.reduce((n, x) => n + x.detectorTrue, 0), detectorMissed: cells.reduce((n, x) => n + x.detectorMissed, 0),
           sameOutputAsSolo: cells.filter((x, j) => x.output !== undefined && x.output === solo[j].output).length,
           exact: cells.filter(x => x.exact).length, edits: cells.reduce((n, x) => n + x.edits, 0), characters: cells.reduce((n, x) => n + x.referenceCharacters, 0),
           qualityRejected: cells.filter(x => x.status === "quality-rejected").length }];

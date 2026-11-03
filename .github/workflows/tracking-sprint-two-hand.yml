@@ -4,7 +4,7 @@ name: Tracking sprint - two-hand composites on licensed frames
 on:
   push:
     branches: [claude/charming-thompson-2aql9w-release]
-    paths: ['.github/workflows/tracking-sprint-two-hand.yml', 'scripts/diagnostics/two-hand-rgb.ts', 'workers/fingerspelling-vision.worker.ts']
+    paths: ['.github/workflows/tracking-sprint-two-hand.yml', 'scripts/diagnostics/two-hand-rgb.ts', 'lib/hand-continuity.ts', 'workers/fingerspelling-vision.worker.ts']
   workflow_dispatch:
 permissions: {contents: read}
 jobs:

@@ -38,6 +38,17 @@ describe("fingerspelling release flag", () => {
   });
 });
 
+describe("stored data across flag toggles", () => {
+  it("no storage module, schema or migration reads the flag, so toggling cannot change what is stored or loaded", () => {
+    for (const file of ["lib/browser-storage.ts", "lib/calibration-storage.ts", "lib/analytics-consent.ts", "lib/personalized-recognition.ts"]) {
+      const source = readFileSync(file, "utf8");
+      expect(source, file).not.toMatch(/FINGERSPELLING_ENABLED|release-flags|lib\/release|NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING/);
+    }
+    // The fingerspelling mode itself is never persisted, so an OFF build has nothing to restore into.
+    expect(readFileSync("components/translator-experience.tsx", "utf8")).not.toMatch(/localStorage[^\n]*aslMode|saveSettings\([^)]*aslMode/);
+  });
+});
+
 describe("research asset pruning", () => {
   const make = () => {
     const root = mkdtempSync(join(tmpdir(), "signrelay-prune-"));
