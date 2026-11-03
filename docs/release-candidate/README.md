@@ -4,7 +4,7 @@
 |---|---|
 | **Branch** | `claude/charming-thompson-2aql9w-rc` (also the head of draft PR #53, `claude/charming-thompson-2aql9w-release`) |
 | **Commit** | see "Release-candidate commit" in PR #53; this document is part of that commit |
-| **Base** | `main` at `e63fffe` (currently deployed main); the RC is 230 commits ahead and 0 behind |
+| **Base** | `main` at `e63fffe` (currently deployed main); the RC is 225 commits ahead and 0 behind |
 | **Scope** | qualification only: no new recognition features, no model changes, no merge, no deployment |
 
 Every result below says how it was obtained:
