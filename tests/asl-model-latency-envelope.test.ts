@@ -46,14 +46,17 @@ async function replay(latencyMs: number, intervalMs: number, holdMs: number) {
     const posted = worker.postMessage.mock.calls.slice(before).map(([message]) => message as WorkerMessage);
     if (!frame.hands.length) modelAnalysesWithoutHands += posted.filter(m => m.type === "analysis" && m.source === "model").length;
   }
-  const words = worker.postMessage.mock.calls.map(([message]) => message as WorkerMessage)
-    .flatMap(message => message.type === "confirmed" ? [message.gloss] : []);
-  return { words, maximumInFlight, modelAnalysesWithoutHands };
+  // Model-only words arrive as suggestions (lib/model-output-policy.ts); none may be confirmed.
+  const all = worker.postMessage.mock.calls.map(([message]) => message as WorkerMessage);
+  const words = all.flatMap(message => message.type === "suggested" ? [message.gloss] : []);
+  const confirmed = all.flatMap(message => message.type === "confirmed" ? [message.gloss] : []);
+  return { words, confirmed, maximumInFlight, modelAnalysesWithoutHands };
 }
 
 describe("ASL-2000 latency envelope in the production worker", () => {
-  it("confirms a model-only word when two results fit inside the motion gate", async () => {
+  it("suggests (never confirms) a model-only word when two results fit inside the motion gate", async () => {
     for (const interval of [66, 100, 200]) for (const latency of [150, 400, 600]) {
+      expect((await replay(latency, interval, 2000)).confirmed, `${latency} ms at ${interval} ms/frame`).toEqual([]);
       expect((await replay(latency, interval, 2000)).words, `${latency} ms at ${interval} ms/frame`).toEqual(["BOOK"]);
     }
   });

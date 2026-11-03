@@ -7,6 +7,9 @@ export type TranscriptEntry = {
   confidence: number;
   timestamp: number;
   source?: "personal" | "starter" | "model";
+  /** Set when a person deliberately added a research-model suggestion
+   * (lib/model-output-policy.ts). Older readers ignore it. */
+  acceptedBy?: "user";
 };
 
 export type TranscriptSession = {

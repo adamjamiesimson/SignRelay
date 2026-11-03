@@ -16,7 +16,10 @@ async function run(frames: VisionFrame[]) {
   worker.postMessage.mockClear();
   await worker.onmessage({ data: { type: "reset" } });
   for (const frame of frames) { await worker.onmessage({ data: { type: "frame", frame } }); await Promise.resolve(); }
-  return worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "confirmed").map(m => (m as { gloss: string }).gloss);
+  // Emitted words, as in tests/asl-tail-guard.test.ts: ASL research-model words
+  // are now `suggested` (never auto-inserted) and are counted so the committed
+  // matrices stay comparable.
+  return worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "confirmed" || m.type === "suggested").map(m => (m as { gloss: string }).gloss);
 }
 const COLUMNS = [...SIGNS, "I LOVE YOU", "abstain", "more than one word"] as const;
 const NON_SIGN = "non-sign movement";

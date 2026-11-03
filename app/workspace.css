@@ -125,6 +125,19 @@
 .candidate-score { grid-column: 2; grid-row: 1 / 3; color: var(--text); font-size: 1.125rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .candidate-score small { color: var(--text-3); font-size: 0.875rem; font-weight: 500; }
 .candidate-note { margin-top: -6px; color: var(--text-3); font-size: 0.875rem; }
+/* F1: research-model suggestion. Amber (warn) marks it as unconfirmed and
+   distinct from transcript words; it is never part of the transcript list. */
+.model-suggestion {
+  display: grid; gap: 6px; margin: 4px 0 12px; padding: 12px 14px;
+  border: 1px dashed var(--warn); border-radius: var(--radius-lg); background: var(--warn-soft);
+}
+.model-suggestion-label { color: var(--warn); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+.model-suggestion-word { color: var(--text); font-size: 1.0625rem; font-weight: 600; overflow-wrap: anywhere; }
+.model-suggestion-note { color: var(--text-2); font-size: 0.875rem; line-height: 1.45; }
+.model-suggestion-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.model-suggestion-actions .button { min-height: 44px; }
+.model-suggestion-actions .button[aria-disabled="true"] { opacity: 0.6; cursor: default; }
+.entry-provenance { color: var(--text-3); font-size: 0.8125rem; font-weight: 500; }
 .transcript-body { min-height: 220px; display: grid; }
 .transcript-empty { display: grid; place-content: center; justify-items: center; gap: 8px; padding: 28px 16px; background: var(--bg-raised); text-align: center; }
 .transcript-empty h3 { font-size: 1.0625rem; }
@@ -269,4 +282,16 @@
   .clip-workspace { position: relative; }
   .clip-workspace .special-workspace-language-bar { position: absolute; top: 20px; right: 0; padding: 0; }
   .clip-workspace .clip-header { padding-right: 320px; }
+}
+
+/* Touch screens: frequently used controls reach the 44 px target (WCAG 2.5.5)
+   without changing the desktop layout. The AA minimum (24 px) already holds
+   everywhere (tests/transcript-a11y-smoke.mjs). */
+@media (pointer: coarse) {
+  .button.small, .back-link, .text-action { min-height: 44px; }
+  .entry-actions .icon-button { width: 44px; height: 44px; }
+  .honesty-banner summary { min-height: 44px; }
+  input[type="range"] { height: 44px; }
+  .switch-row { min-height: 44px; } /* the whole label row is the target for its switch */
+  main select { min-height: 44px; }
 }

@@ -10,6 +10,9 @@ vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.model }));
 let worker: { onmessage: (event: { data: WorkerInput }) => Promise<void>; postMessage: ReturnType<typeof vi.fn> };
 const confirmations = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage)
   .filter(m => m.type === "confirmed").map(m => m.gloss);
+// ASL research-model words are offered, never confirmed (lib/model-output-policy.ts).
+const suggestions = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage)
+  .filter(m => m.type === "suggested").map(m => m.gloss);
 async function feed(frames: VisionFrame[]) {
   for (const frame of frames) {
     await worker.onmessage({ data: { type: "frame", frame } });
@@ -96,7 +99,8 @@ describe("fist motion discrimination (synthetic regressions)", () => {
     mocks.model.mockResolvedValue({ label: "BOOK", text: "Book", confidence: 0.94, margin: 0.5 });
     await feed(makeFistMotion("bob", { duration: 2600, count: 53 })
       .map(frame => ({ ...frame, timestamp: frame.timestamp + 2650 })));
-    expect(confirmations()).toEqual(["BOOK"]);
+    expect(confirmations()).toEqual([]);
+    expect(suggestions()).toEqual(["BOOK"]);
   });
   it("preserves an explicitly saved personal YES gesture", async () => {
     const frames = makeFistMotion("bob");

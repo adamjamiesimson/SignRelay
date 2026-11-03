@@ -38,7 +38,11 @@ async function run(frames: VisionFrame[], model: Model, guarded: boolean): Promi
     await worker.onmessage({ data: { type: "frame", frame: guard ? guard.filter(frame) : frame } });
     await Promise.resolve();
     for (const [message] of worker.postMessage.mock.calls.slice(before) as [WorkerMessage][]) {
-      if (message.type !== "confirmed") continue;
+      // Emitted words: this experiment predates the F1 safeguard and measures
+      // what the worker emits. ASL research-model words now arrive as
+      // `suggested` (shown for acceptance, never auto-inserted); counting them
+      // keeps the committed report comparable. tests/model-suggestion-*.
+      if (message.type !== "confirmed" && message.type !== "suggested") continue;
       words.push({ gloss: message.gloss, source: message.source });
       guard?.noteConfirmation();
     }

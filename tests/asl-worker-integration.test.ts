@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => ({ model: vi.fn() }));
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.model }));
 let worker: { onmessage: (event: { data: WorkerInput }) => Promise<void>; postMessage: ReturnType<typeof vi.fn> };
 const confirmations = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "confirmed");
+// ASL research-model words are offered, never confirmed (lib/model-output-policy.ts).
+const suggestions = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "suggested");
 async function feed(frames: VisionFrame[]) {
   for (const frame of frames) {
     await worker.onmessage({ data: { type: "frame", frame } });
@@ -77,7 +79,7 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     expect(mocks.model).not.toHaveBeenCalled();
     expect(confirmations()).toHaveLength(0);
   });
-  it("passes a short completed non-starter movement to the research model and confirms two fresh results", async () => {
+  it("passes a short completed non-starter movement to the research model and suggests (never confirms) after two fresh results", async () => {
     mocks.model.mockResolvedValue({ label: "BOOK", text: "Book", confidence: 0.94, margin: 0.5 });
     const frames = makeSign("IDLE", { duration: 1600, count: 33 });
     frames.forEach((frame, index) => frame.hands[0].landmarks.forEach(point => {
@@ -86,7 +88,8 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     }));
     await feed(frames);
     expect(mocks.model.mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+    expect(confirmations()).toEqual([]);
+    expect(suggestions().map(result => result.gloss)).toEqual(["BOOK"]);
     expect(mocks.model.mock.calls[0][0].length).toBeLessThan(24);
   });
   it("recovers after lost tracking without replaying an old sign", async () => {
@@ -96,7 +99,7 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     await feed(makeSign("NO").map(frame => ({ ...frame, timestamp: frame.timestamp + 1150 })));
     expect(confirmations().map(result => result.gloss)).toEqual(["NO"]);
   });
-  it("confirms two slow model results while still processing camera frames", async () => {
+  it("suggests after two slow model results while still processing camera frames", async () => {
     vi.useFakeTimers();
     try {
       mocks.model.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({
@@ -111,7 +114,8 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
         await worker.onmessage({ data: { type: "frame", frame } });
         await vi.advanceTimersByTimeAsync(50);
       }
-      expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+      expect(confirmations()).toEqual([]);
+      expect(suggestions().map(result => result.gloss)).toEqual(["BOOK"]);
       expect(mocks.model).toHaveBeenCalledTimes(2);
       expect(worker.postMessage.mock.calls.filter(([message]) => message.type === "analysis")).toHaveLength(81);
     } finally {

@@ -14,6 +14,7 @@ import { TemplateMatchingClient, unpackTemplates, type TemplatePrediction } from
 import { validHand } from "@/lib/asl-starter-recognition";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 import { appendObservation } from "@/lib/frame-timing";
+import { modelWordsNeedAcceptance } from "@/lib/model-output-policy";
 
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
@@ -43,6 +44,7 @@ let retryAfter = 0;
 let blockedStarter: string | null = null;
 let starterSeenAt = 0;
 let completedModelMs: number | undefined;
+let suggestionCount = 0;
 
 let latestPersonal: TemplatePrediction | null = null;
 let personalTimestamp = 0;
@@ -244,10 +246,21 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     streak: candidateStreak, sameLabel: lastConfirmation.label === result.label,
     elapsedSinceLast: now - lastConfirmation.time, cooldown: COOLDOWN_MS,
   })) {
-    self.postMessage({ type: "confirmed", session: event.data.session, text: result.text, gloss: result.label,
-      confidence: result.confidence, timestamp: Date.now(),
-      source,
-    } satisfies WorkerMessage);
+    // F1 safeguard: a word whose only evidence is the research model is offered
+    // as a suggestion, never confirmed. Everything else in this step, including
+    // cooldown and buffer handling, is unchanged, so starter-rule and personal
+    // confirmations behave exactly as before (tests/model-suggestion-equivalence).
+    if (source === "model" && modelWordsNeedAcceptance(activeLanguage)) {
+      self.postMessage({ type: "suggested", session: event.data.session, id: `s${++suggestionCount}`,
+        language: activeLanguage, text: result.text, gloss: result.label,
+        confidence: result.confidence, timestamp: Date.now(), source: "model",
+      } satisfies WorkerMessage);
+    } else {
+      self.postMessage({ type: "confirmed", session: event.data.session, text: result.text, gloss: result.label,
+        confidence: result.confidence, timestamp: Date.now(),
+        source,
+      } satisfies WorkerMessage);
+    }
     lastConfirmation = { label: result.label, time: now };
     if (activeLanguage === "asl" && !candidateIsModel) {
       blockedStarter = result.label;
