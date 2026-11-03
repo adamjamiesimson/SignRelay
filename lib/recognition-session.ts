@@ -115,7 +115,7 @@ export class RecognitionSession {
           }
           this.onMessage(message);
           this.pump();
-        } else if (message.type === "confirmed") this.onMessage(message);
+        } else if (message.type === "confirmed" || message.type === "suggested") this.onMessage(message);
       };
       worker.onerror = worker.onmessageerror = () => {
         if (worker === this.worker) this.recover("Recognition was interrupted. Restarting…");

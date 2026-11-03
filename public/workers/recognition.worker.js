@@ -15363,6 +15363,12 @@ var MODEL_ADAPTERS = {
 };
 var LANGUAGE_LIST = LANGUAGE_IDS.map((id2) => MODEL_ADAPTERS[id2]);
 
+// lib/model-output-policy.ts
+var SUGGEST_ONLY_MODEL_LANGUAGES = /* @__PURE__ */ new Set(["asl"]);
+function modelWordsNeedAcceptance(language) {
+  return SUGGEST_ONLY_MODEL_LANGUAGES.has(language);
+}
+
 // workers/recognition.worker.ts
 var CONFIDENCE_THRESHOLD = 0.62;
 var COOLDOWN_MS = 2600;
@@ -15392,6 +15398,7 @@ var retryAfter = 0;
 var blockedStarter = null;
 var starterSeenAt = 0;
 var completedModelMs;
+var suggestionCount = 0;
 var latestPersonal = null;
 var personalTimestamp = 0;
 var personalReceivedAt = 0;
@@ -15592,15 +15599,29 @@ self.onmessage = async (event) => {
     elapsedSinceLast: now - lastConfirmation.time,
     cooldown: COOLDOWN_MS
   })) {
-    self.postMessage({
-      type: "confirmed",
-      session: event.data.session,
-      text: result.text,
-      gloss: result.label,
-      confidence: result.confidence,
-      timestamp: Date.now(),
-      source
-    });
+    if (source === "model" && modelWordsNeedAcceptance(activeLanguage)) {
+      self.postMessage({
+        type: "suggested",
+        session: event.data.session,
+        id: `s${++suggestionCount}`,
+        language: activeLanguage,
+        text: result.text,
+        gloss: result.label,
+        confidence: result.confidence,
+        timestamp: Date.now(),
+        source: "model"
+      });
+    } else {
+      self.postMessage({
+        type: "confirmed",
+        session: event.data.session,
+        text: result.text,
+        gloss: result.label,
+        confidence: result.confidence,
+        timestamp: Date.now(),
+        source
+      });
+    }
     lastConfirmation = { label: result.label, time: now };
     if (activeLanguage === "asl" && !candidateIsModel) {
       blockedStarter = result.label;

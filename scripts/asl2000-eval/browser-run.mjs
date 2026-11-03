@@ -67,7 +67,9 @@ try {
     }
     await writeFile(path.join(outDir, `${clip.id}--${name}--${pause}.json`), JSON.stringify({ id: clip.id, worker: name, pauseMs: pause, ...result }));
     const confirmed = (result.messages ?? []).filter(message => message.type === "confirmed").map(message => `${message.gloss}/${message.source}`);
-    console.log(JSON.stringify({ clip: clip.id, worker: name, pause, frames: result.frames?.length ?? 0, confirmed, error: result.error }));
+    // F1: research-model words offered for acceptance, never auto-inserted.
+    const suggested = (result.messages ?? []).filter(message => message.type === "suggested").map(message => message.gloss);
+    console.log(JSON.stringify({ clip: clip.id, worker: name, pause, frames: result.frames?.length ?? 0, confirmed, suggested, error: result.error }));
   }
 } finally {
   await browser?.close();

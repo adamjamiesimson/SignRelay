@@ -50,7 +50,22 @@ export type WorkerConfirmation = {
   source?: "personal" | "starter" | "model";
 };
 
-export type WorkerMessage = WorkerAnalysis | WorkerConfirmation
+/** A research-model word that must be deliberately accepted before it enters
+ * the transcript (lib/model-output-policy.ts). Never spoken or auto-inserted. */
+export type WorkerSuggestion = {
+  type: "suggested";
+  session?: number;
+  /** Unique within a worker; the workspace accepts only the suggestion on screen. */
+  id: string;
+  language: LanguageId;
+  text: string;
+  gloss: string;
+  confidence: number;
+  timestamp: number;
+  source: "model";
+};
+
+export type WorkerMessage = WorkerAnalysis | WorkerConfirmation | WorkerSuggestion
   | { type: "fault"; session?: number; message: string };
 
 export type CalibrationTemplate = {

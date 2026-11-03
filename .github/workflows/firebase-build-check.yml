@@ -111,6 +111,9 @@ jobs:
       - name: Production release isolation - no research fingerspelling in the artifact or the running page
         run: node tests/production-release-smoke.mjs "$(command -v google-chrome)"
 
+      - name: F1 - research-model words are suggestions that must be added, never auto-inserted or spoken
+        run: node tests/model-suggestion-browser-smoke.mjs "$(command -v google-chrome)"
+
       - name: Test recognition and model contracts
         run: npm test
 

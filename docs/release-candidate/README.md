@@ -214,7 +214,9 @@ Use the production-profile export (local serve or a protected preview channel). 
 2. **First visit:** the tour appears once and can be skipped. "Take a tour" reopens it.
 3. **Consent:** with analytics configured, the banner asks; "Decline" keeps it off. With browser GPC on, it says analytics cannot be enabled.
 4. **ASL workspace:** grant the camera; the status reaches *Active*; the hand overlay follows your hand.
-5. Sign HELLO, THANK YOU and YES. Words appear. Check any word the research model adds that you did not sign (F1).
+5. Sign HELLO, THANK YOU and YES. Words appear.
+   - Sign a few *other* words. If an amber "Experimental suggestion · not added" card appears, check all of the following: nothing is spoken; Dismiss removes the card; Add puts the word in with "· added from suggestion"; the card disappears after about 12 seconds, or when you pause the camera.
+   - Note any starter word that appears on its own while you sign something else.
 6. **No "Fingerspelling" option anywhere,** including at `/?mode=fingerspelling#fingerspelling`.
 7. **Personal signs:** record a sign with 3 examples, sign it, and see it recognised. Reload: it is still listed. Delete it.
 8. **Transcript:** edit a word, undo, copy, and *Speak* (explicit only). Save & clear, and see it under history.
@@ -229,6 +231,9 @@ Record the device, browser, results and anything unexpected. These are software-
 ---
 
 ## 7. Recommendation
+
+> **Update (F1, PR #54):** F1 is resolved by the research-model safeguard. ASL-2000 model words are now suggestions that a person must add, and are never inserted or spoken automatically. Evidence is in `docs/release-candidate/F1-SAFEGUARD.md`. Recorded RGB (120 WLASL clips) moved 3 of 3 automatic model words, all wrong, to suggestions. The same run found that **starter rules insert a wrong word automatically in 25 of 120 clips of other signs**. That is unchanged by F1 and is now the main public-release blocker alongside #44. Supervised testing stays **GO**, using the F1 branch. Public release stays **NO-GO**.
+
 
 **Supervised testing: GO.** Conditions:
 - run on the production-profile build of the RC commit, with fingerspelling off;

@@ -1,0 +1,313 @@
+{
+ "kind": "Synthetic kinematic fixtures through the real recognition worker with a mocked ASL-2000 model; automatic transcript words only. Not recordings, not accuracy.",
+ "generated_by": "RUN_F1_REPORT=1 npx vitest run tests/f1-synthetic-before-after.test.ts",
+ "takes": 1001,
+ "models": {
+  "silent": {
+   "before_rc_1e53d61": {
+    "starter signs, every condition": {
+     "takes": 90,
+     "auto_correct": 90,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 90,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "starter signs, 36 capture variations": {
+     "takes": 216,
+     "auto_correct": 216,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 216,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "everyday non-sign movements x 36 variations": {
+     "takes": 684,
+     "auto_correct": 0,
+     "auto_false": 280,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 280,
+     "abstained_no_auto_word": 404,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "negative controls": {
+     "takes": 11,
+     "auto_correct": 0,
+     "auto_false": 4,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 4,
+     "abstained_no_auto_word": 7,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    }
+   },
+   "after_f1": {
+    "starter signs, every condition": {
+     "takes": 90,
+     "auto_correct": 90,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 90,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "starter signs, 36 capture variations": {
+     "takes": 216,
+     "auto_correct": 216,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 216,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "everyday non-sign movements x 36 variations": {
+     "takes": 684,
+     "auto_correct": 0,
+     "auto_false": 280,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 280,
+     "abstained_no_auto_word": 404,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "negative controls": {
+     "takes": 11,
+     "auto_correct": 0,
+     "auto_false": 4,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 4,
+     "abstained_no_auto_word": 7,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    }
+   }
+  },
+  "confidently-wrong": {
+   "before_rc_1e53d61": {
+    "starter signs, every condition": {
+     "takes": 90,
+     "auto_correct": 90,
+     "auto_false": 9,
+     "auto_false_from_model": 9,
+     "auto_from_model": 9,
+     "takes_with_correct_auto_word": 90,
+     "takes_with_false_auto_word": 9,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "starter signs, 36 capture variations": {
+     "takes": 216,
+     "auto_correct": 216,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 216,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "everyday non-sign movements x 36 variations": {
+     "takes": 684,
+     "auto_correct": 0,
+     "auto_false": 340,
+     "auto_false_from_model": 68,
+     "auto_from_model": 68,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 316,
+     "abstained_no_auto_word": 368,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "negative controls": {
+     "takes": 11,
+     "auto_correct": 0,
+     "auto_false": 4,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 4,
+     "abstained_no_auto_word": 7,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    }
+   },
+   "after_f1": {
+    "starter signs, every condition": {
+     "takes": 90,
+     "auto_correct": 90,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 90,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 9,
+     "suggestions_correct": 0
+    },
+    "starter signs, 36 capture variations": {
+     "takes": 216,
+     "auto_correct": 216,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 216,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "everyday non-sign movements x 36 variations": {
+     "takes": 684,
+     "auto_correct": 0,
+     "auto_false": 272,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 272,
+     "abstained_no_auto_word": 412,
+     "suggestions": 68,
+     "suggestions_correct": 0
+    },
+    "negative controls": {
+     "takes": 11,
+     "auto_correct": 0,
+     "auto_false": 4,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 4,
+     "abstained_no_auto_word": 7,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    }
+   }
+  },
+  "agrees": {
+   "before_rc_1e53d61": {
+    "starter signs, every condition": {
+     "takes": 90,
+     "auto_correct": 90,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 90,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "starter signs, 36 capture variations": {
+     "takes": 216,
+     "auto_correct": 216,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 216,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "everyday non-sign movements x 36 variations": {
+     "takes": 684,
+     "auto_correct": 0,
+     "auto_false": 340,
+     "auto_false_from_model": 68,
+     "auto_from_model": 68,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 316,
+     "abstained_no_auto_word": 368,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "negative controls": {
+     "takes": 11,
+     "auto_correct": 0,
+     "auto_false": 4,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 4,
+     "abstained_no_auto_word": 7,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    }
+   },
+   "after_f1": {
+    "starter signs, every condition": {
+     "takes": 90,
+     "auto_correct": 90,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 90,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "starter signs, 36 capture variations": {
+     "takes": 216,
+     "auto_correct": 216,
+     "auto_false": 0,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 216,
+     "takes_with_false_auto_word": 0,
+     "abstained_no_auto_word": 0,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    },
+    "everyday non-sign movements x 36 variations": {
+     "takes": 684,
+     "auto_correct": 0,
+     "auto_false": 272,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 272,
+     "abstained_no_auto_word": 412,
+     "suggestions": 68,
+     "suggestions_correct": 0
+    },
+    "negative controls": {
+     "takes": 11,
+     "auto_correct": 0,
+     "auto_false": 4,
+     "auto_false_from_model": 0,
+     "auto_from_model": 0,
+     "takes_with_correct_auto_word": 0,
+     "takes_with_false_auto_word": 4,
+     "abstained_no_auto_word": 7,
+     "suggestions": 0,
+     "suggestions_correct": 0
+    }
+   }
+  }
+ }
+}

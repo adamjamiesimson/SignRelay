@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({ model: vi.fn() }));
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.model }));
 let worker: { onmessage: (event: { data: WorkerInput }) => Promise<void>; postMessage: ReturnType<typeof vi.fn> };
 const confirmations = () => worker.postMessage.mock.calls.map(([message]) => message as WorkerMessage).filter(message => message.type === "confirmed");
+// ASL research-model words are offered, never confirmed (lib/model-output-policy.ts).
+const suggestions = () => worker.postMessage.mock.calls.map(([message]) => message as WorkerMessage).filter(message => message.type === "suggested");
 async function feed(frames: VisionFrame[]) {
   for (const frame of frames) {
     await worker.onmessage({ data: { type: "frame", frame } });
@@ -39,7 +41,7 @@ describe("recognition with slow and uneven camera delivery", () => {
   it("admits completed finger movement without requiring a fast camera", () => {
     expect(analyzeSignMotion(makeSign("NO", { duration: 2400, count: 9 })).ready).toBe(true);
   });
-  it("runs and confirms fresh research-model results before a slow completion window closes", async () => {
+  it("runs and suggests fresh research-model results before a slow completion window closes", async () => {
     mocks.model.mockResolvedValue({ label: "BOOK", text: "Book", confidence: 0.94, margin: 0.5 });
     const frames = makeSign("IDLE", { duration: 3000, count: 11 });
     frames.forEach((frame, index) => frame.hands[0].landmarks.forEach(point => {
@@ -48,7 +50,8 @@ describe("recognition with slow and uneven camera delivery", () => {
     }));
     await feed(frames);
     expect(mocks.model.mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(confirmations().map(message => message.gloss)).toEqual(["BOOK"]);
+    expect(confirmations()).toEqual([]);
+    expect(suggestions().map(message => message.gloss)).toEqual(["BOOK"]);
   });
   it("does not reinterpret slowly delivered idle hands as a sign", async () => {
     mocks.model.mockResolvedValue({ label: "BOOK", text: "Book", confidence: 0.99, margin: 0.9 });
