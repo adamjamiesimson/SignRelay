@@ -1,0 +1,48 @@
+name: F1 recorded RGB - research-model words before and after the safeguard
+# The frozen Sprint 8 WLASL sample's direct clips (C-UDA; stay on the runner)
+# replayed through the production VisionEngine with the release-candidate
+# worker (1e53d61) and this branch's worker. Reports automatic transcript
+# words and suggestions. Read-only; commits nothing; uploads counts only.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/f1-recorded-rgb.yml'
+      - 'workers/recognition.worker.ts'
+      - 'lib/model-output-policy.ts'
+      - 'scripts/asl2000-eval/f1-*'
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env: {DATA: '${{ github.workspace }}/../wlasl-data', WORK: '${{ github.workspace }}/work/f1'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0', cache: npm}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install
+        run: |
+          npm ci
+          python -m pip install --disable-pip-version-check numpy
+          node scripts/install-vision-assets.mjs
+          mkdir -p "$DATA" "$WORK"
+      - name: Verified WLASL index and direct clips (frozen sample; never uploaded)
+        run: |
+          curl -fL --retry 4 -o "$DATA/WLASL_v0.3.json" https://raw.githubusercontent.com/dxli94/WLASL/master/start_kit/WLASL_v0.3.json
+          PYTHONPATH=training python scripts/asl2000-eval/f1-fetch-clips.py "$DATA/WLASL_v0.3.json" "$DATA/videos" "$WORK/clips.json" 120
+      - name: Replay with the release-candidate worker and the F1 worker
+        run: |
+          git show 1e53d619be297e9b8f6932dd4dffbfde6e4cf263:public/workers/recognition.worker.js > public/workers/rc-recognition.worker.js
+          npm run build:worker
+          node scripts/asl2000-eval/browser-run.mjs "$(command -v google-chrome)" "$WORK/clips.json" "$WORK/captures" \
+            rc=/workers/rc-recognition.worker.js f1=/workers/recognition.worker.js --pause=1000 > "$WORK/worker-log.jsonl"
+          tail -3 "$WORK/worker-log.jsonl"
+      - name: Summary (counts only)
+        run: node scripts/asl2000-eval/f1-summary.mjs "$WORK/clips.json" "$WORK/worker-log.jsonl" outputs/f1-recorded-rgb.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: f1-recorded-rgb, path: outputs/f1-recorded-rgb.json, retention-days: 14}
