@@ -405,8 +405,9 @@ export function TranslatorExperience() {
       return;
     }
     if (message.type !== "confirmed") return;
-    // Any confirmed word supersedes an older suggestion.
-    if (suggestionRef.current) { suggestionRef.current = null; setSuggestion(null); }
+    // Any confirmed word supersedes an older suggestion (keeping keyboard focus
+    // in the transcript if it was on the suggestion).
+    withdrawSuggestion();
 
     const entry: TranscriptEntry = {
       id: `${message.timestamp}-${message.gloss}`,
@@ -422,7 +423,7 @@ export function TranslatorExperience() {
     setEntries(entriesRef.current);
     setAnnouncement(`Confirmed: ${message.text}`);
     if (settingsRef.current.autoSpeak) speak(message.text);
-  }, [speak, perfMode]);
+  }, [speak, perfMode, withdrawSuggestion]);
 
   useEffect(() => {
     if (aslMode !== "words" || step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;

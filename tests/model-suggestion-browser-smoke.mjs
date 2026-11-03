@@ -120,9 +120,11 @@ try {
   await pause(100);
   assert.deepEqual(await entries(), ["Book · added from suggestion"], "A superseded or unarmed suggestion was added");
   // A starter-rule confirmation supersedes the pending suggestion and is unchanged.
+  await evaluate(`${action("accept")}.focus()`);
   await evaluate("window.__qaConfirm('HELLO', 'starter')");
   await until(async () => (await entries()).includes("Hello"), "Starter confirmation missing");
   assert.equal(await card(), null, "A confirmed word did not withdraw the suggestion");
+  assert.equal(await evaluate("document.activeElement?.id"), "transcript-title", "Focus was lost when a confirmed word withdrew the suggestion");
   assert.deepEqual(await evaluate("window.__qa.spoken"), ["Book", "Hello"], "Starter words must still be spoken automatically");
   checks.push("newer suggestion replaces older; stale and unarmed clicks add nothing; starter confirmation is unchanged (inserted, announced, auto-spoken) and withdraws the suggestion");
 
