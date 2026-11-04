@@ -173,7 +173,12 @@ const span = (values: number[]) => Math.max(...values) - Math.min(...values);
 const ratio = (samples: Sample[], predicate: (sample: Sample) => boolean) => samples.filter(predicate).length / samples.length;
 const prediction = (label: string, text: string): StarterPrediction => ({ label, text, confidence: 0.86 });
 
-/** Rules adopted for production. Empty = the PR #54 rule set. */
+/** Rules adopted for production. Empty = the PR #54 rule set.
+ * No refinement is adopted (docs/release-candidate/STARTER-RELIABILITY.md §2):
+ * on WLASL, settledEnding / thankYouForward removed 8 of 12 false THANK YOU
+ * words but also the only correctly recognised THANK YOU, and settledEnding
+ * stops HELLO and THANK YOU confirming at 3.3 fps (a 120 ms hold is not
+ * observable there). Starter words are suggestions in production instead. */
 export const ADOPTED_STARTER_RULES: Readonly<StarterRuleOptions> = BASELINE_STARTER_RULES;
 
 /** Body-relative height of the resting zone: below this the hand has dropped

@@ -135,7 +135,7 @@ try {
   assert.deepEqual(await entries(), ["Book · added by you (research model)", "Hello · added by you (sign rules)", "My sign · your sign"], "Accepted word not placed in signing order");
   checks.push("accepted starter word placed in signing order, labelled 'added by you (sign rules)'");
 
-  // 8. Several in quick succession: at most three, newest first, each armed separately; nothing lost silently.
+  // 8. Several in quick succession: at most three, newest first, each armed separately (a fourth drops the oldest card).
   for (const word of ["PLEASE", "SORRY", "YES", "NO"]) await evaluate(`window.__qaConfirm('${word}', 'starter')`);
   await until(async () => (await cards()).length === 3, "List not capped at three");
   assert.deepEqual(await cards(), ["starter:No", "starter:Yes", "starter:Sorry"], "Not newest first");
@@ -145,7 +145,7 @@ try {
   await evaluate(`${actionFor("Sorry", "accept")}.click()`);
   await until(async () => (await entries()).includes("Sorry · added by you (sign rules)"), "Older card in the list could not be added");
   assert.deepEqual(await cards(), ["starter:No", "starter:Yes"]);
-  checks.push("rapid suggestions: capped at three newest first, each armed separately, any card can be added or dismissed");
+  checks.push("rapid suggestions: capped at three newest first (a fourth drops the oldest card), each armed separately, any card can be added or dismissed");
 
   // 9. Any language's research-model confirmation (e.g. an old cached worker) is demoted, never inserted.
   await evaluate("window.__qaConfirm('GOOD', 'model')");
