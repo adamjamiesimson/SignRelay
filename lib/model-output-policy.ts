@@ -34,6 +34,15 @@ export const SUGGESTION_LIFETIME_MS = 12000;
  * tap or key press already in progress cannot accept a word the person has
  * not yet seen. */
 export const SUGGESTION_ARMING_MS = 600;
-/** At most this many suggestions are offered at once, newest first, so a word
- * signed a moment ago is not lost when the next one arrives. */
+/** At most this many suggestion cards are shown at once, in signing order. */
 export const MAX_PENDING_SUGGESTIONS = 3;
+/** While the person is pointing at or focused in the suggestions, nothing
+ * expires (WCAG 2.2.1). On leaving, each card keeps at least this long. */
+export const SUGGESTION_RELEASE_GRACE_MS = 4000;
+/** Suggestions that arrive while every slot is taken and the person is
+ * interacting wait (not shown) up to this many; more are reported as not added. */
+export const MAX_WAITING_SUGGESTIONS = 3;
+/** "Not added" notes (expired or pushed out without a decision) are listed for
+ * this long, at most MAX_MISSED_NOTES words. They cannot be added. */
+export const MISSED_NOTE_LIFETIME_MS = 20000;
+export const MAX_MISSED_NOTES = 3;

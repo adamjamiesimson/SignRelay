@@ -8,6 +8,8 @@
   heldout-positive   every direct WLASL instance of a starter gloss in val/test
 
 Rules are tuned only on the dev sets; held-out sets are reported, never tuned on.
+Each clip records WLASL's own signer_id (on the runner only) so research
+experiments can use signer-disjoint folds.
 usage: PYTHONPATH=training python scripts/asl2000-eval/starter-sets.py INDEX.json VIDEOS OUT.json [HELDOUT_NEG]
 """
 import hashlib
@@ -60,7 +62,8 @@ exposed = 0
 for group, item in negatives:
     if exposed < 120:
         if fetch(item["video_id"], item["url"]):
-            chosen.append({"id": item["video_id"], "file": str(videos / f"{item['video_id']}.video"), "gloss": item["gloss"], "set": "exposed-negative", "group": group})
+            chosen.append({"id": item["video_id"], "file": str(videos / f"{item['video_id']}.video"), "gloss": item["gloss"], "set": "exposed-negative", "group": group,
+                           "signer": str(index[item["video_id"]].get("signer_id"))})
             exposed += 1
         continue
     if item["gloss"].lower() in STARTER:
@@ -68,7 +71,8 @@ for group, item in negatives:
     if sum(1 for c in chosen if c["set"] == "heldout-negative") >= heldout_negatives:
         break
     if fetch(item["video_id"], item["url"]):
-        chosen.append({"id": item["video_id"], "file": str(videos / f"{item['video_id']}.video"), "gloss": item["gloss"], "set": "heldout-negative", "group": group})
+        chosen.append({"id": item["video_id"], "file": str(videos / f"{item['video_id']}.video"), "gloss": item["gloss"], "set": "heldout-negative", "group": group,
+                       "signer": str(index[item["video_id"]].get("signer_id"))})
 
 for entry in entries:
     if entry["gloss"].lower() not in STARTER:
@@ -79,7 +83,8 @@ for entry in entries:
         seen.add(inst["video_id"])
         if fetch(inst["video_id"], inst["url"]):
             chosen.append({"id": inst["video_id"], "file": str(videos / f"{inst['video_id']}.video"), "gloss": entry["gloss"].upper(),
-                           "set": "dev-positive" if inst["split"] == "train" else "heldout-positive", "group": inst["split"]})
+                           "set": "dev-positive" if inst["split"] == "train" else "heldout-positive", "group": inst["split"],
+                           "signer": str(inst.get("signer_id"))})
 
 out.write_text(json.dumps(chosen, indent=1), encoding="utf-8")
 counts = {}

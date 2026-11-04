@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "plan_id": "asl-signer-study-2026-11",
+  "status": "planned-no-participants",
+  "language": "asl",
+  "purpose": "Supervised alpha study with genuine ASL signers: measure raw recognition separately from transcript safety (suggestion decisions), and collect consented correction feedback. Development sessions inform design; held-out sessions are sealed until a candidate recognizer is frozen.",
+  "participants": {
+    "eligibility": "Adults (18+) who use ASL regularly and consent in their preferred language or with an interpreter. Deaf, hard-of-hearing and hearing signers welcome; at least one Deaf signer per split is a target.",
+    "target_signers": 8,
+    "minimum_signers_per_split": 3,
+    "pseudonym_pattern": "^ss-2026-11-p[0-9]{2}$",
+    "require_both_dominant_hands_per_split": true
+  },
+  "split": {
+    "rule": "A signer's split is fixed at enrolment, before any of their sessions is recorded or inspected, from the pseudonym and this plan's salt: development if the first byte of SHA-256(salt + ':' + pseudonym) is even, held_out otherwise. Every session of a signer stays in that split. Held-out sessions are never summarised while a candidate is being developed.",
+    "salt": "signrelay-asl-signer-study-2026-11",
+    "values": ["development", "held_out"]
+  },
+  "conditions": {
+    "camera_position": [
+      { "id": "front-eye-level", "label": "Camera in front at about eye level, upper body in view" },
+      { "id": "below-eye-level", "label": "Laptop on a desk: camera below eye level, looking up" },
+      { "id": "off-axis", "label": "Camera about 30 degrees to one side" }
+    ],
+    "lighting": [
+      { "id": "even-bright", "label": "Even, bright light on the face and hands" },
+      { "id": "dim", "label": "Dim room light" },
+      { "id": "backlit", "label": "Window or lamp behind the signer" }
+    ],
+    "sessions_per_signer": 2,
+    "session_conditions": [
+      { "session": 1, "camera_position": "front-eye-level", "lighting": "even-bright" },
+      { "session": 2, "camera_position": "rotate", "lighting": "rotate", "rotation": "Session 2 uses the next (camera_position, lighting) pair from the list below, in enrolment order, so all pairs are covered across signers.",
+        "pairs": [["below-eye-level", "dim"], ["off-axis", "backlit"], ["below-eye-level", "backlit"], ["off-axis", "dim"], ["front-eye-level", "dim"], ["front-eye-level", "backlit"]] }
+    ],
+    "recorded_attributes": ["dominant_hand", "camera_position", "lighting", "device_class", "camera_resolution"],
+    "device_classes": ["laptop", "desktop-webcam", "tablet", "phone"]
+  },
+  "tasks": {
+    "starter_signs": { "glosses": ["HELLO", "THANK YOU", "PLEASE", "SORRY", "YES", "NO"], "takes": 3,
+      "take_instructions": ["at your natural pace", "a little slower than usual", "a little faster than usual"] },
+    "confusable_signs": { "glosses": ["HAPPY", "BAD", "SAD", "PLAY", "PARTY", "COMPUTER", "FOOTBALL", "FUTURE", "FEW", "PROBLEM"], "takes": 1,
+      "selection": "Glosses whose WLASL clips triggered a starter rule in the PR #54/#55 analysis (STARTER-RELIABILITY.md), chosen by gloss only. New recordings are captured; no WLASL clip is reused." },
+    "everyday_movements": { "items": [
+      { "id": "adjust-glasses", "instruction": "Adjust or push up your glasses (or mime it)" },
+      { "id": "hair-aside", "instruction": "Push your hair aside from your forehead" },
+      { "id": "wave-across-room", "instruction": "Wave to someone across the room" },
+      { "id": "scratch-chin", "instruction": "Scratch your chin or touch your mouth briefly" },
+      { "id": "hand-on-chest", "instruction": "Rest a hand on your chest, then move it away" },
+      { "id": "drink", "instruction": "Pick up a cup and drink (or mime it)" },
+      { "id": "type-or-phone", "instruction": "Type on a keyboard or use your phone for a few seconds" },
+      { "id": "hands-still", "instruction": "Keep your hands still and visible for a few seconds" }
+    ], "takes": 1 },
+    "unsupported_signs": { "slots": 2, "policy": "The facilitator or an independent fluent reviewer chooses two ASL signs absent from the installed ASL-2000 + starter vocabulary before the session; the participant signs them without being told what SignRelay supports." },
+    "sequences": { "items": [
+      { "id": "seq-hello-please-thanks", "glosses": ["HELLO", "PLEASE", "THANK YOU"] },
+      { "id": "seq-sorry-no-yes", "glosses": ["SORRY", "NO", "YES"] },
+      { "id": "seq-hello-sorry-thanks", "glosses": ["HELLO", "SORRY", "THANK YOU"] }
+    ], "takes": 1, "purpose": "Signed one after another without pausing, to exercise rapid successive suggestions and transcript ordering." },
+    "order": "Blocks in a fixed order (starter signs, everyday movements, confusable signs, unsupported signs, sequences) with tasks shuffled inside each block by a seed derived from the pseudonym and session, so order effects are balanced and reproducible."
+  },
+  "measures": {
+    "raw_recognition": "For each trial, the first word SignRelay produced (any source, suggested or automatic) during the trial window, compared with the expected gloss; or none (abstention).",
+    "transcript_safety": "Words that entered the transcript during the trial window, automatically or because the participant added them, compared with what they signed.",
+    "decisions": "Added, dismissed, timed out or replaced, for every suggestion.",
+    "correction": "The participant's own report: correct, wrong word, missed, unexpected word, tracking problem, and optionally the gloss actually signed (from the plan's gloss list).",
+    "latency": "Time from the participant pressing Start (or the sign onset they report) to the first output."
+  },
+  "privacy": "No video, image, landmark or audio is stored by the study session tool; it records task ids, SignRelay's outputs, decisions and the participant's selected corrections, with times relative to the session start. Video recording for training is a separate, separately consented activity (/field-test). See CONSENT-AND-PRIVACY.md.",
+  "release_claim": "A plan, not observed trials. No accuracy figure may be cited from this study until sessions have actually taken place, and held-out figures only from a frozen candidate."
+}

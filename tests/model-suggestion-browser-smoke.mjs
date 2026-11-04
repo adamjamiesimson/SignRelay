@@ -39,7 +39,7 @@ try {
       terminate() { this.closed = true; }
     };
     window.__qaLive = () => window.__qa.workers.filter(w => !w.closed).at(-1);
-    window.__qaSend = (message, session) => { const w = window.__qaLive(); w.onmessage?.({ data: { session: session ?? w.session, timestamp: Date.now(), ...message } }); };
+    window.__qaSend = (message, session) => { const w = window.__qaLive(); w.onmessage?.({ data: { session: session ?? w.session, timestamp: performance.now(), ...message } }); };
     window.__qaSuggest = (id, gloss, session) => window.__qaSend({ type: 'suggested', id, language: 'asl', text: gloss[0] + gloss.slice(1).toLowerCase(), gloss, confidence: 0.9, source: 'model' }, session);
     window.__qaConfirm = (gloss, source) => window.__qaSend({ type: 'confirmed', text: gloss[0] + gloss.slice(1).toLowerCase(), gloss, confidence: 0.9, source });
     window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
@@ -54,10 +54,17 @@ try {
   const entries = () => evaluate("[...document.querySelectorAll('.transcript-entry p')].map(p => p.textContent)");
   const card = () => evaluate("document.querySelector('.model-suggestion')?.dataset.suggestionKey ?? null");
   const action = kind => `document.querySelector('[data-suggestion-action=${kind}]')`;
-  // Buttons of the card for a given word (cards are newest first).
+  // Buttons of the card for a given word (cards are in signing order, oldest first).
   const actionFor = (word, kind) => `[...document.querySelectorAll('.model-suggestion')].find(c => c.querySelector('strong')?.textContent === ${JSON.stringify(word)})?.querySelector('[data-suggestion-action=${kind}]')`;
   const cards = () => evaluate("[...document.querySelectorAll('.model-suggestion')].map(c => c.dataset.suggestionSource + ':' + c.querySelector('strong').textContent)");
   const announcements = () => evaluate("[...document.querySelectorAll('.sr-only[role=status]')].map(n => n.textContent).join(' | ')");
+  const missed = () => evaluate("document.querySelector('[data-suggestions-missed]')?.textContent ?? ''");
+  const waiting = () => evaluate("document.querySelector('[data-suggestions-waiting]')?.textContent ?? ''");
+  const armedOf = word => evaluate(`${actionFor(word, "accept")}?.getAttribute('aria-disabled') === 'false'`);
+  // Real pointer input at the control's on-screen centre (scrolled into view first).
+  const centre = selector => evaluate(`(() => { const el = ${selector}; el.scrollIntoView({ block: "center", behavior: "instant" }); const r = el.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })()`);
+  const moveMouse = ([x, y]) => browser.send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+  const tap = async ([x, y]) => { for (const type of ["mousePressed", "mouseReleased"]) await browser.send("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 }); };
   const active = () => evaluate("document.querySelector('.status-badge')?.textContent === 'Active'");
 
   await until(() => evaluate("!!document.querySelector('.language-row [role=radio]')"), "Welcome screen missing");
@@ -74,10 +81,11 @@ try {
   const focusBefore = await evaluate("document.activeElement?.outerHTML.slice(0, 60)");
   await evaluate("window.__qaSuggest('s1', 'BOOK')");
   await until(async () => (await card()) !== null, "Suggestion not shown");
-  assert.match(await evaluate("document.querySelector('.model-suggestion').textContent"), /Experimental suggestion · not added.*Book.*ASL research model/s);
+  assert.match(await evaluate("document.querySelector('.model-suggestion').textContent"), /Experimental suggestion · ASL research model.*Book/s);
+  assert.match(await evaluate("document.querySelector('.model-suggestions').textContent"), /Not in the transcript\. Add a word only if it is what you signed\./);
   assert.deepEqual(await entries(), [], "A suggestion entered the transcript");
   assert.deepEqual(await evaluate("window.__qa.spoken"), [], "A suggestion was spoken");
-  assert.match(await announcements(), /Experimental suggestion: Book\. Not added to the transcript\./);
+  assert.match(await announcements(), /Experimental suggestion: Book\. Not added\./);
   assert.equal(await evaluate("document.activeElement?.outerHTML.slice(0, 60)"), focusBefore, "Focus moved to the suggestion");
   assert.equal(await evaluate(`${action("accept")}.getAttribute('aria-disabled')`), "true", "Add is armed immediately");
   checks.push("research-model suggestion shown and labelled; transcript unchanged; nothing spoken (auto speak on); announced as not added; focus not moved");
@@ -85,7 +93,8 @@ try {
   // 2. An immediate activation (before arming) does nothing.
   await evaluate(`${action("accept")}.click()`);
   assert.deepEqual(await entries(), [], "An immediate tap accepted the suggestion");
-  checks.push("activation within 600 ms of appearing is ignored");
+  assert.match(await announcements(), /Not added yet\. Check the word, then press Add again\./, "An early press was not explained");
+  checks.push("activation within 600 ms of appearing is ignored and explained to screen readers");
 
   // 3. Keyboard: Enter adds once; an extra click adds nothing; focus returns to the transcript.
   await pause(700);
@@ -115,10 +124,11 @@ try {
   // 5. Production policy: a starter-rule word is a "Possible sign" suggestion, not inserted, not spoken.
   await evaluate("window.__qaConfirm('HELLO', 'starter')");
   await until(async () => (await cards()).includes("starter:Hello"), "Starter word was not offered as a suggestion");
-  assert.match(await evaluate("document.querySelector('.model-suggestion.starter').textContent"), /Possible sign · not added.*Hello.*built-in sign rules/s);
+  assert.match(await evaluate("document.querySelector('.model-suggestion.starter').textContent"), /Possible sign · built-in sign rules.*Hello/s);
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('.model-suggestion.starter')).borderTopStyle"), "dashed", "A pending word is not drawn as an outline");
   assert.deepEqual(await entries(), ["Book · added by you (research model)"], "A starter word entered the transcript automatically");
   assert.deepEqual(await evaluate("window.__qa.spoken"), ["Book"], "A starter suggestion was spoken");
-  assert.match(await announcements(), /Possible sign: Hello\. Not added to the transcript\./);
+  assert.match(await announcements(), /Possible sign: Hello\. Not added\./);
   checks.push("starter-rule word (production policy) offered as a distinct 'Possible sign' suggestion; not inserted, not spoken");
 
   // 6. Personal signs stay automatic and do not withdraw pending suggestions.
@@ -128,24 +138,60 @@ try {
   assert.ok((await cards()).includes("starter:Hello"), "A personal sign withdrew a pending suggestion");
   checks.push("personal-sign word unchanged: inserted, labelled 'your sign', auto-spoken; pending suggestions kept");
 
-  // 7. Accepting the earlier suggestion places it where it was signed (before the later personal word).
+  // 7. Accepting the earlier suggestion places it where it was signed (before the later personal word),
+  //    comparing on the camera frame clock that confirmed words carry.
   await pause(700);
   await evaluate(`${actionFor("Hello", "accept")}.click()`);
   await until(async () => (await entries()).length === 3, "Starter suggestion not added");
   assert.deepEqual(await entries(), ["Book · added by you (research model)", "Hello · added by you (sign rules)", "My sign · your sign"], "Accepted word not placed in signing order");
   checks.push("accepted starter word placed in signing order, labelled 'added by you (sign rules)'");
 
-  // 8. Several in quick succession: at most three, newest first, each armed separately (a fourth drops the oldest card).
+  // 8. Rapid signing, nobody touching the cards: signing order, oldest first; a fourth word replaces the
+  //    oldest card and is listed and announced as not added (no silent eviction).
   for (const word of ["PLEASE", "SORRY", "YES", "NO"]) await evaluate(`window.__qaConfirm('${word}', 'starter')`);
-  await until(async () => (await cards()).length === 3, "List not capped at three");
-  assert.deepEqual(await cards(), ["starter:No", "starter:Yes", "starter:Sorry"], "Not newest first");
-  await evaluate(`${actionFor("Sorry", "accept")}.click()`); // still arming
-  await pause(100); assert.equal((await entries()).length, 3, "An unarmed card accepted");
+  await until(async () => (await cards()).length === 3 && (await cards()).includes("starter:No"), "Rapid suggestions missing");
+  assert.deepEqual(await cards(), ["starter:Sorry", "starter:Yes", "starter:No"], "Not in signing order");
+  assert.equal(await missed(), "Not added: Please", "The replaced card was not listed as not added");
+  assert.match(await announcements(), /Possible sign: No\. Not added\. Please was not added and has been replaced\./);
+  checks.push("rapid signing: cards in signing order (new ones below); a fourth word replaces the oldest, which is listed and announced as not added");
+
+  // 8b. Layout-shift guard: after adding the first card, the card that moves into its place is re-armed, so a
+  //     second tap at the same spot adds nothing.
   await pause(700);
-  await evaluate(`${actionFor("Sorry", "accept")}.click()`);
-  await until(async () => (await entries()).includes("Sorry · added by you (sign rules)"), "Older card in the list could not be added");
-  assert.deepEqual(await cards(), ["starter:No", "starter:Yes"]);
-  checks.push("rapid suggestions: capped at three newest first (a fourth drops the oldest card), each armed separately, any card can be added or dismissed");
+  const firstAdd = await centre(actionFor("Sorry", "accept"));
+  await tap(firstAdd);
+  await until(async () => (await entries()).includes("Sorry · added by you (sign rules)"), "First card could not be added by tap");
+  assert.deepEqual(await cards(), ["starter:Yes", "starter:No"]);
+  assert.equal(await armedOf("Yes"), false, "A card that moved under the pointer was not re-armed");
+  await tap(await centre(actionFor("Yes", "accept")));
+  await pause(100);
+  assert.equal((await entries()).some(e => e.startsWith("Yes")), false, "A double tap added the card that moved into place");
+  await until(() => armedOf("Yes"), "Moved card never re-armed");
+  checks.push("a card that moves up after another is answered is re-armed for 600 ms; a double tap does not add it");
+
+  // 8c. A repeated word is counted on its own card, in place.
+  await evaluate("window.__qaConfirm('NO', 'starter')");
+  await until(async () => (await evaluate(`${actionFor("No", "accept")}?.closest('.model-suggestion').querySelector('[data-suggestion-repeats]')?.textContent ?? ''`)) === "Recognised 2 times", "Repeat not counted");
+  assert.deepEqual(await cards(), ["starter:Yes", "starter:No"], "A repeat moved or duplicated a card");
+  assert.match(await announcements(), /Possible sign again: No\. Still not added\./);
+  checks.push("a repeated word is counted on its own card ('Recognised 2 times') without moving or duplicating it");
+
+  // 8d. While the pointer is on the cards, a new word waits instead of pushing a card away.
+  await evaluate("window.__qaConfirm('WATER', 'starter')");
+  await until(async () => (await cards()).length === 3, "Third card missing");
+  await moveMouse(await centre(actionFor("Yes", "accept")));
+  await pause(100);
+  await evaluate("window.__qaConfirm('HELP', 'starter')");
+  await until(async () => (await waiting()) === "1 more waiting", "A word arriving during interaction did not wait");
+  assert.deepEqual(await cards(), ["starter:Yes", "starter:No", "starter:Water"], "A card was pushed away under the pointer");
+  await tap(await centre(actionFor("Yes", "accept")));
+  await until(async () => (await entries()).includes("Yes · added by you (sign rules)"), "Yes could not be added");
+  await until(async () => (await cards()).includes("starter:Help"), "The waiting word was not shown when a slot freed");
+  assert.deepEqual(await cards(), ["starter:No", "starter:Water", "starter:Help"], "The waiting word was not added below");
+  await moveMouse([5, 5]);
+  checks.push("while pointing at the cards a new word waits ('1 more waiting'); it appears below when a card is answered");
+  for (const word of ["No", "Water", "Help"]) { await until(() => armedOf(word), `${word} not armed`); await evaluate(`${actionFor(word, "dismiss")}.click()`); }
+  await until(async () => (await cards()).length === 0, "Cards not dismissed");
 
   // 9. Any language's research-model confirmation (e.g. an old cached worker) is demoted, never inserted.
   await evaluate("window.__qaConfirm('GOOD', 'model')");
@@ -173,13 +219,22 @@ try {
   await until(async () => (await card()) === null, "A worker failure did not withdraw the suggestion");
   checks.push("worker failure withdraws the suggestions");
 
-  // 13. Expiry after 12 s.
+  // 13. Expiry after 12 s, paused while the pointer is on the card (WCAG 2.2.1), with a grace period after.
   await until(() => evaluate("!!window.__qaLive() && !window.__qaLive().closed"), "Worker did not recover", 400);
   await pause(1500);
   await evaluate("window.__qaSuggest('s6', 'DOOR')"); await until(async () => (await card()) !== null, "s6 missing");
-  await pause(12600);
-  assert.equal(await card(), null, "An unanswered suggestion did not expire");
-  checks.push("unanswered suggestion withdrawn after 12 s");
+  await moveMouse(await centre(actionFor("Door", "dismiss")));
+  await pause(13000);
+  assert.ok((await cards()).includes("model:Door"), "A card expired while the pointer was on it");
+  await moveMouse([5, 5]);
+  await pause(2500);
+  assert.ok((await cards()).includes("model:Door"), "No grace period after the pointer left");
+  await until(async () => (await card()) === null, "The card did not expire after the grace period", 80);
+  assert.match(await missed(), /Not added: .*Door/, "An expired card was not listed as not added");
+  assert.match(await announcements(), /Not added, timed out: Door\./);
+  checks.push("expiry pauses while the pointer is on a card, resumes with a 4 s grace period, then the card is listed and announced as not added");
+  const sorted = await evaluate("document.querySelector('.model-suggestions') ? 'shown' : 'none'");
+  assert.equal(sorted, "shown", "Missed note panel unexpectedly removed");
 
   // 14. Mobile: three cards, every control at least 44 px, no overflow.
   for (const word of ["WATER", "HELP"]) await evaluate(`window.__qaConfirm('${word}', 'starter')`);
@@ -199,7 +254,7 @@ try {
   const saved = await evaluate("JSON.parse(localStorage.getItem('signrelay.history.v1') || '[]')[0]");
   assert.equal(saved.language, "asl");
   assert.deepEqual(saved.entries.map(e => [e.text, e.source, e.acceptedBy ?? null]),
-    [["Book", "model", "user"], ["Hello", "starter", "user"], ["My sign", "personal", null], ["Sorry", "starter", "user"]]);
+    [["Book", "model", "user"], ["Hello", "starter", "user"], ["My sign", "personal", null], ["Sorry", "starter", "user"], ["Yes", "starter", "user"]]);
   checks.push("language switch withdraws the suggestions; saved history keeps source and acceptedBy=user");
 
   // 16. BSL research-model words are suggestions too, labelled with their model.
