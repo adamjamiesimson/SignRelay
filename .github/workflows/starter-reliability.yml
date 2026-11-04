@@ -1,14 +1,18 @@
 name: Starter reliability - WLASL positives, exposed and held-out negatives
 # Captures licensed WLASL clips (C-UDA; never leave the runner) once with the
 # production VisionEngine and the exact PR #54 worker, then replays the landmark
-# sequences through starter-rule variants. Read-only; commits nothing; logs and
-# uploads counts, glosses and rule measurements only.
+# sequences through starter-rule variants and the research baseline
+# (signer-disjoint folds from WLASL's own signer ids). Read-only; commits
+# nothing; logs and uploads counts, glosses and rule measurements only.
 on:
   pull_request:
     paths:
       - '.github/workflows/starter-reliability.yml'
       - 'lib/asl-starter-recognition.ts'
       - 'scripts/asl2000-eval/starter-*'
+      - 'lib/sign-features.ts'
+      - 'lib/temporal-*.ts'
+      - 'scripts/research/temporal-experiment.mjs'
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
@@ -42,6 +46,8 @@ jobs:
           tail -2 "$WORK/capture-log.jsonl"
       - name: Replay starter-rule variants (research models silent)
         run: node scripts/asl2000-eval/starter-replay.mjs "$WORK/clips.json" "$WORK/captures" outputs/starter-reliability.json
+      - name: Research baseline vs starter rules, signer-disjoint folds (aggregates only; every clip is exposed)
+        run: node scripts/research/temporal-experiment.mjs wlasl "$WORK/clips.json" "$WORK/captures" outputs/temporal-baseline-wlasl.json
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: starter-reliability, path: outputs/starter-reliability.json, retention-days: 14}
+        with: {name: starter-reliability, path: "outputs/*.json", retention-days: 14}
