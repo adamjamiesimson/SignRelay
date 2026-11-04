@@ -3,6 +3,21 @@ import { recentContinuousFrames } from "./frame-timing";
 
 export type StarterPrediction = { label: string; text: string; confidence: number };
 
+/** Opt-in rule refinements under evaluation (docs/release-candidate/STARTER-RELIABILITY.md).
+ * Every field defaults to off, which is exactly the PR #54 rule set; the
+ * production worker passes no options unless a refinement is adopted below. */
+export type StarterRuleOptions = {
+  /** THANK YOU must move toward the addressee (palm scale grows), not only sideways. */
+  thankYouForward?: boolean;
+  /** HELLO and THANK YOU must end above the resting zone (hand not dropped below the lower chest). */
+  endAboveRest?: boolean;
+  /** HELLO must begin at or above eye level and travel outward, away from the head. */
+  helloFromForehead?: boolean;
+  /** HELLO and THANK YOU must finish with a brief settled hold, not mid-movement. */
+  settledEnding?: boolean;
+};
+export const BASELINE_STARTER_RULES: Readonly<StarterRuleOptions> = Object.freeze({});
+
 export function validHand(hand: HandObservation | undefined): hand is HandObservation {
   return !!hand && hand.landmarks.length === 21
     && hand.landmarks.every(point => Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z));
@@ -111,15 +126,15 @@ function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"], 
 /** Limited, explicit ASL fallback rules, not a calibrated general sign-language model.
  * See docs/asl-dynamic-recognition.md for references and evaluation limitations.
  */
-export function recognizeAslStarter(sequence: VisionFrame[]): StarterPrediction | null {
-  return analyzeAslStarter(sequence).prediction;
+export function recognizeAslStarter(sequence: VisionFrame[], options: StarterRuleOptions = ADOPTED_STARTER_RULES): StarterPrediction | null {
+  return analyzeAslStarter(sequence, options).prediction;
 }
 
 /** Conflicting temporal windows are evidence to abstain, not a reason to pick
  * whichever open-palm rule happened to run first. Personal examples keep their
  * independent matcher and are not subject to this fallback-only veto.
  */
-export function analyzeAslStarter(sequence: VisionFrame[]) {
+export function analyzeAslStarter(sequence: VisionFrame[], options: StarterRuleOptions = ADOPTED_STARTER_RULES) {
   const now = sequence.at(-1)?.timestamp;
   if (now === undefined) return { prediction: null, ambiguousOpenPalm: false, labels: [] as string[], incompleteLabels: [] as string[] };
   let yes: StarterPrediction | null = null;
@@ -133,11 +148,11 @@ export function analyzeAslStarter(sequence: VisionFrame[]) {
         frame => frame.hands.some(hand => hand.handedness === side && validHand(hand)));
       const samples = samplesFor(recent, side, features);
       if (!samples.length) continue;
-      const result = recognizeSamples(samples);
+      const result = recognizeSamples(samples, true, options);
       // A completion veto removes permission to emit a word, not evidence of
       // a competing movement. Otherwise tightening PLEASE exposes a THANK YOU
       // suffix that used to be suppressed by the cross-window ambiguity gate.
-      const evidence = recognizeSamples(samples, false);
+      const evidence = recognizeSamples(samples, false, options);
       if (evidence?.label === "PLEASE" && result?.label !== "PLEASE") incompleteLabels.add("PLEASE");
       // A mouth departure that lacks outward completion still competes with a
       // chest circle. Preserve it for the same veto, including model fallback.
@@ -158,7 +173,19 @@ const span = (values: number[]) => Math.max(...values) - Math.min(...values);
 const ratio = (samples: Sample[], predicate: (sample: Sample) => boolean) => samples.filter(predicate).length / samples.length;
 const prediction = (label: string, text: string): StarterPrediction => ({ label, text, confidence: 0.86 });
 
-function recognizeSamples(samples: Sample[], requireClosure = true): StarterPrediction | null {
+/** Rules adopted for production. Empty = the PR #54 rule set. */
+export const ADOPTED_STARTER_RULES: Readonly<StarterRuleOptions> = BASELINE_STARTER_RULES;
+
+/** Body-relative height of the resting zone: below this the hand has dropped
+ * past the lower chest (shoulder line = 0, one shoulder width per unit). */
+const REST_ZONE_Y = 1.25;
+function settled(samples: Sample[], ms = 120, limit = 0.06) {
+  const last = samples.at(-1)!;
+  const tail = samples.filter(sample => last.time - sample.time <= ms);
+  return tail.length >= 2 && span(tail.map(s => s.wrist.x)) <= limit && span(tail.map(s => s.wrist.y)) <= limit;
+}
+
+function recognizeSamples(samples: Sample[], requireClosure = true, options: StarterRuleOptions = BASELINE_STARTER_RULES): StarterPrediction | null {
   const first = samples[0];
   const last = samples.at(-1)!;
   const mostlyOpen = ratio(samples, sample => sample.open >= 3) >= 0.75;
@@ -183,20 +210,24 @@ function recognizeSamples(samples: Sample[], requireClosure = true): StarterPred
   // Preserve the original wrist-only competing evidence. New emitting rules
   // must not erase a partial circle and expose its outward THANK YOU suffix.
   const mouthStart = requireClosure ? departingMouthStroke(samples) : null;
-  if (mostlyOpen && mouthStart && (Math.abs(last.tip.x - mouthStart.tip.x) > 0.15
-    || last.palm / mouthStart.palm > 1.14)) return prediction("THANK YOU", "Thank you");
+  const thankYouEnding = () => (!options.endAboveRest || last.wrist.y < REST_ZONE_Y) && (!options.settledEnding || settled(samples));
+  if (mostlyOpen && mouthStart && ((!options.thankYouForward && Math.abs(last.tip.x - mouthStart.tip.x) > 0.15)
+    || last.palm / mouthStart.palm > 1.14) && thankYouEnding()) return prediction("THANK YOU", "Thank you");
 
   const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
-  const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
+  const outward = (!options.thankYouForward && Math.abs(last.tip.x - first.tip.x) > 0.15) || last.palm / first.palm > 1.14;
   if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12
-    && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth!) > 0.25) {
+    && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth!) > 0.25 && thankYouEnding()) {
     return prediction("THANK YOU", "Thank you");
   }
 
   const raised = ratio(samples, sample => !!sample.nose && sample.wrist.y < sample.nose.y + 0.55) >= 0.7;
   const startsNearHead = first.nose && distance2(first.tip, first.nose) < 0.8;
+  const helloShape = !options.helloFromForehead || (!!first.nose && first.tip.y <= first.nose.y
+    && Math.abs(last.wrist.x - first.nose.x) - Math.abs(first.wrist.x - first.nose.x) > 0.15);
   if (mostlyOpen && raised && xRange > 0.25 && yRange < Math.max(0.35, xRange * 0.75)
-    && (directionChanges(xs, 0.025) >= 1 || startsNearHead)) return prediction("HELLO", "Hello");
+    && (directionChanges(xs, 0.025) >= 1 || startsNearHead) && helloShape
+    && (!options.endAboveRest || last.wrist.y < REST_ZONE_Y) && (!options.settledEnding || settled(samples))) return prediction("HELLO", "Hello");
 
   const atChest = ratio(samples, sample => sample.wrist.y > -0.1 && sample.wrist.y < 1.05
     && Math.abs(sample.wrist.x) < 0.8) >= 0.8;
@@ -355,4 +386,33 @@ function completedPalmCircle(samples: Sample[]) {
     if (span(xs) > 0.1 && span(ys) > 0.1 && circularMotion(xs, ys, true)) return true;
   }
   return false;
+}
+
+/** Diagnostics only (scripts/asl2000-eval/starter-replay.ts): for every window
+ * and hand side that produces a word, the rule measurements behind it. Numbers
+ * only; never landmarks. Uses the baseline rules unless options are given. */
+export function starterDiagnostics(sequence: VisionFrame[], options: StarterRuleOptions = BASELINE_STARTER_RULES) {
+  const out: Record<string, number | string | boolean>[] = [];
+  const features: FeatureCache = new Map();
+  for (const duration of [650, 1100, 1700, 2600]) {
+    for (const side of ["Right", "Left", "Unknown"] as const) {
+      const recent = recentContinuousFrames(sequence, duration,
+        frame => frame.hands.some(hand => hand.handedness === side && validHand(hand)));
+      const samples = samplesFor(recent, side, features);
+      if (!samples.length) continue;
+      const result = recognizeSamples(samples, true, options);
+      if (!result) continue;
+      const first = samples[0], last = samples.at(-1)!;
+      const r = (value: number) => Math.round(value * 1000) / 1000;
+      out.push({ window: duration, side, label: result.label, ms: last.time - first.time,
+        openRatio: r(ratio(samples, s => s.open >= 3)), fistRatio: r(ratio(samples, s => s.open <= 1)),
+        firstTipY: r(first.tip.y), firstNoseY: first.nose ? r(first.nose.y) : "none", lastWristY: r(last.wrist.y),
+        firstTipMouth: first.mouth ? r(distance2(first.tip, first.mouth)) : "none",
+        xRange: r(span(samples.map(s => s.wrist.x))), yRange: r(span(samples.map(s => s.wrist.y))),
+        tipDx: r(last.tip.x - first.tip.x), tipDy: r(last.tip.y - first.tip.y), palmGrowth: r(last.palm / first.palm),
+        directionChanges: directionChanges(samples.map(s => s.wrist.x), 0.025), settled: settled(samples),
+        poseTracked: samples.filter(s => s.nose).length / samples.length });
+    }
+  }
+  return out;
 }
