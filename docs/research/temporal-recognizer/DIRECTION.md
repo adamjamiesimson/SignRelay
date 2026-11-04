@@ -42,7 +42,7 @@ From `docs/release-candidate/STARTER-RELIABILITY.md` (176 WLASL clips; 16 correc
 | Data | Status | What it can say |
 |---|---|---|
 | **Synthetic signers** (5 signers × 6 signs × 2 takes, plus 11 everyday controls each) | Rules: 60/60 recognised, 20/55 everyday movements accepted as a sign. Baseline: 53/60, 7 abstained, 0/55 accepted. | Only that the pipeline works end to end. The rules were written for these fixtures, and the fixtures resemble the false-trigger gestures (§1 of STARTER-RELIABILITY.md). **Not evidence.** |
-| **WLASL** (CI, signer-disjoint, **every clip exposed**) | See the CI run linked in the PR. | At best a development estimate on very few positives (27 across 6 signs). It mainly shows whether representation B separates the confusions in §1. **Not evidence of accuracy**, and not a basis for adopting anything. |
+| **WLASL** (CI, signer-disjoint, **every clip exposed**) | CI run 41785854658, 30 signers, 10 folds: rules 16/27 correct, 30/149 other signs accepted (reproducing PR #55 exactly); baseline 5/27 correct, 22 abstained, 10/149 accepted. Data-starved: 0–6 training examples per sign per fold. | At best a development estimate on very few positives (27 across 6 signs). It mainly shows whether representation B separates the confusions in §1. **Not evidence of accuracy**, and not a basis for adopting anything. |
 | **Signer study, held-out signers** | Not run. Needs participants. | The first legitimate test. |
 
 ## 5. Data: what may be used

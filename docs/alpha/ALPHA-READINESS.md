@@ -1,7 +1,5 @@
 # Recognition validation and supervised alpha preparation
 
-> **Draft:** sections marked with UPPER_CASE placeholders are filled in once the final verification and CI runs complete.
-
 Stacked on PR #55 (`6674c90`). Draft PR #56, branch `claude/charming-thompson-2aql9w-alpha`. Nothing merged or deployed.
 
 **Owner decisions applied:**
@@ -90,7 +88,7 @@ Stacked on PR #55 (`6674c90`). Draft PR #56, branch `claude/charming-thompson-2a
 - **Browser guard.** A research export opened from a public host (anything other than this device, a `.local` name or a private network address) falls back to suggestions, and its banner says so. Until the host is known, the policy is `suggest`.
 
 **Verification:**
-- **Release artifact matrix: MATRIX_RESULT.** The six new rows:
+- **Release artifact matrix: 18/18 as expected (local `--skip-rsl`, final code; CI `matrix` job passes).** The six new rows:
   - unacknowledged `auto` → refused;
   - `.env` `auto` → refused;
   - acknowledged research export → automatic, marked, banner compiled, refused by the gate;
@@ -182,7 +180,17 @@ See `docs/research/temporal-recognizer/DIRECTION.md`.
   - baseline: 53/60, 7 abstained, 0/55 accepted.
 
   The rules were written for these fixtures, so this says nothing about real signing.
-- **WLASL (CI, every clip exposed, development estimate only):** WLASL_RESULT
+- **WLASL (CI, every clip exposed, development estimate only):** CI run [41785854658](https://github.com/adamjamiesimson/SignRelay/actions/runs/41785854658): 176 clips, 30 WLASL signers, 10 signer-disjoint folds.
+
+| Predictor | Target signs (27) | Other signs accepted as a target (149) |
+|---|---|---|
+| Starter rules (streaming, two agreeing analyses) | 16 correct, 0 wrong, 11 none | 30 |
+| Temporal baseline (configuration fixed beforehand) | 5 correct, 0 wrong, 22 abstained | 10 |
+
+- **The rules comparator is faithful.** It reproduces PR #55's worker replay exactly: 16/27, and false words in 30 of 149 clips.
+- **The baseline abstains far more and accepts fewer non-target signs.** It is starved of data: 27 positives over 6 signs and 30 signers leave 0–6 training examples per sign in a fold. Its recall is therefore not competitive, and the result says nothing about the representation's ceiling.
+- **What it does show:** with this data, no recognizer can be validated or chosen. More consented examples per sign, from many signers, are the bottleneck. That supports the plan's order: study, then recordings, then option C.
+- **Status:** all clips exposed; development estimate only; nothing adopted.
 
 ## 5. Alpha release candidate (P4)
 
@@ -190,7 +198,20 @@ See `docs/research/temporal-recognizer/DIRECTION.md`.
 
 **Verification on the final commit:**
 
-VERIFICATION_TABLE
+| Check | Result |
+|---|---|
+| `vitest run` | 1,198 passed, 7 skipped (local and CI) |
+| `tsc --noEmit` | clean |
+| ESLint | 0 errors, 1 existing warning |
+| Release artifact matrix | 18/18 (local and CI) |
+| Browser suites on the final artifacts (22) | all pass:<ul><li>suggestion workflow 19/19</li><li>starter policy (production; research on-device vs public host)</li><li>production release</li><li>workspace</li><li>landmark lifecycle</li><li>BdSL, LSE</li><li>offline vision</li><li>axe</li><li>rehearsal (automatic starter words)</li><li>fingerspelling</li><li>transcript accessibility</li><li>user-feedback faults</li><li>personal-vocabulary scale</li><li>onboarding</li><li>release flag on and off</li><li>demo check</li><li>lifecycle stress</li><li>fault injection</li></ul> |
+| Public-deploy gate | the production export passes; research and private-route exports are refused |
+| `/study` on a private-route production build | 6/6, axe clean; no storage, uploads or beacons |
+| Storage | history schema unchanged (`source` and `acceptedBy` kept); personal templates and settings untouched; nothing new persisted |
+| Privacy | the diagnostic privacy boundary test passes; study log in memory only; WLASL landmarks never leave the CI runner |
+| Worker failure | suggestion smoke checks 11–12, fault-injection and lifecycle-stress suites pass |
+| CI on `866a691` | <ul><li>**Pass:** matrix, offline demo/rehearsal/fault-injection, consent, synthetic capture, starter reliability with the research run.</li><li>**Firebase check and Core CI:** every functional step passes, including the true full build with the RSL model and the 19-check suggestion smoke. They fail **only** at the dependency-advisory gate (eslint and typescript-eslint dev dependencies). That failure is pre-existing on #54 and #55 and is not suppressed.</li><li>**ASL Video Pilot:** not triggered. It fails at PopSign's certificate restriction, which is not bypassed.</li></ul> |
+| Vercel | Vercel's own Git integration built a **preview** (the "Vercel Preview Comments" check). Starter words are suggestions there, `/study` and `/field-test` are excluded, and fingerspelling follows the existing preview rule. Nothing was deployed to Firebase or production. |
 
 **Signer guide:** `docs/alpha/SIGNER-TESTING-GUIDE.md`. It covers what to expect, the exact tasks, how to decide about cards, how to report wrong predictions, and withdrawal.
 
@@ -217,4 +238,19 @@ VERIFICATION_TABLE
 
 ## 8. Recommendation
 
-RECOMMENDATION
+- **Supervised alpha with genuine signers: GO**, with #54 + #55 + #56, on the production-profile build:
+  - fingerspelling off;
+  - starter and model words as suggestions;
+  - `/study` served locally by the facilitator.
+
+  Conditions:
+  - the owner completes the legal and ethics check of `CONSENT-AND-PRIVACY.md`;
+  - Deaf community review of the tasks;
+  - an interpreter where needed.
+- **Public release: NO-GO, unchanged.** Recognition is still the PR #55 starter rules, and they remain low precision. Real-device and real-signer evidence and the #44 review are still outstanding.
+- **Replacing the starter rules: not yet.** First run the study's development sessions and collect consented recordings. Then evaluate on sealed held-out signers. The WLASL run shows the available data cannot support a choice.
+- **Owner actions:**
+  1. Review and approve the consent text.
+  2. Recruit signers, aiming for 8 with both dominant hands in each split.
+  3. Keep Vercel environment variables free of research switches (they are refused anyway).
+  4. Decide whether to unblock PopSign through a proper certificate route, or to license another dataset.
