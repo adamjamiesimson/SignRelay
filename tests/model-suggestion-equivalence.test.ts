@@ -1,8 +1,9 @@
-// F1 provenance proof. The same scenario corpus runs through the release
+// Model-output provenance proof (F1, extended to every language in the
+// starter-reliability sprint). The same scenario corpus runs through the release
 // candidate's worker as it was before the safeguard (frozen fixture) and the
 // current worker, with identical deterministic model behaviour. The ONLY
-// allowed difference: a confirmation whose source is the ASL research model
-// becomes a `suggested` message. Every analysis message, every starter-rule and
+// allowed difference: a confirmation whose source is a research model (ASL-2000,
+// BSL-1064, ISL-263, LSE-300, PSL matcher) becomes a `suggested` message. Every analysis message, every starter-rule and
 // personal-sign confirmation, and every other language's behaviour must be
 // identical, message for message.
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -59,7 +60,7 @@ const SCENARIOS: Scenario[] = [
   { name: "language switch away and back", behaviour: "book", steps: () => [{ frames: modelOnly().slice(0, 22) }, { input: { type: "templates", language: "bsl", templates: [] } }, { input: { type: "templates", language: "asl", templates: [] } }, { frames: modelOnly(1700) }] },
   { name: "personal sign, model silent", behaviour: "silent", steps: () => [{ input: personalTemplate() }, { frames: modelOnly() }] },
   { name: "personal sign while the model also predicts", behaviour: "book", steps: () => [{ input: personalTemplate() }, { frames: modelOnly() }] },
-  { name: "BSL model words keep their behaviour", behaviour: "silent", bsl: true, steps: () => [{ input: { type: "templates", language: "bsl", templates: [] } }, { frames: modelOnly() }, { frames: modelOnly(1700) }] },
+  { name: "BSL model words become suggestions too", behaviour: "silent", bsl: true, steps: () => [{ input: { type: "templates", language: "bsl", templates: [] } }, { frames: modelOnly() }, { frames: modelOnly(1700) }] },
   ...Object.entries(NEGATIVE_CONTROLS).map(([name, make]) => ({ name: `negative control ${name}, model says BOOK`, behaviour: "book" as const, steps: () => [{ frames: make() }] })),
 ];
 
@@ -105,16 +106,16 @@ async function run(scenario: Scenario, workerModule: string) {
   return port.postMessage.mock.calls.map(([m]) => { const { timestamp: _t, ...rest } = m as WorkerMessage & { timestamp?: number }; void _t; return rest; });
 }
 
-const ledger: Record<string, number> = { scenarios: 0, starterConfirmed: 0, personalConfirmed: 0, otherLanguageModelConfirmed: 0,
-  aslModelConfirmedBefore: 0, aslModelSuggestedAfter: 0, aslModelConfirmedAfter: 0, analysisMessages: 0 };
+const ledger: Record<string, number> = { scenarios: 0, starterConfirmed: 0, personalConfirmed: 0,
+  modelConfirmedBefore: 0, modelSuggestedAfter: 0, modelConfirmedAfter: 0, otherLanguageModelSuggestedAfter: 0, analysisMessages: 0 };
 
-describe("F1: the safeguard changes only how ASL research-model words are delivered", () => {
+describe("model-output policy: only how research-model words are delivered changes, in every language", () => {
   it.each(SCENARIOS.map(s => [s.name, s] as const))("%s", async (_name, scenario) => {
     const before = await run(scenario, "./fixtures/recognition-worker-rc-baseline");
     const after = await run(scenario, "../workers/recognition.worker");
     // The baseline translated by the one rule the safeguard adds.
-    const reference = before.map(message => message.type === "confirmed" && message.source === "model" && !scenario.bsl
-      ? { type: "suggested", session: message.session, language: "asl", text: message.text, gloss: message.gloss, confidence: message.confidence, source: "model" }
+    const reference = before.map(message => message.type === "confirmed" && message.source === "model"
+      ? { type: "suggested", session: message.session, language: scenario.bsl ? "bsl" : "asl", text: message.text, gloss: message.gloss, confidence: message.confidence, source: "model" }
       : message);
     const comparable = after.map(message => message.type === "suggested" ? (({ id: _id, ...rest }) => { void _id; return rest; })(message as WorkerMessage & { id: string }) : message);
     expect(comparable).toEqual(reference);
@@ -122,24 +123,24 @@ describe("F1: the safeguard changes only how ASL research-model words are delive
     ledger.scenarios++;
     for (const m of before) {
       if (m.type === "analysis") ledger.analysisMessages++;
-      if (m.type === "confirmed" && m.source === "model" && !scenario.bsl) ledger.aslModelConfirmedBefore++;
+      if (m.type === "confirmed" && m.source === "model") ledger.modelConfirmedBefore++;
     }
     for (const m of after) {
       if (m.type === "confirmed" && m.source === "starter") ledger.starterConfirmed++;
       if (m.type === "confirmed" && m.source === "personal") ledger.personalConfirmed++;
-      if (m.type === "confirmed" && m.source === "model" && scenario.bsl) ledger.otherLanguageModelConfirmed++;
-      if (m.type === "confirmed" && m.source === "model" && !scenario.bsl) ledger.aslModelConfirmedAfter++;
-      if (m.type === "suggested") ledger.aslModelSuggestedAfter++;
+      if (m.type === "confirmed" && m.source === "model") ledger.modelConfirmedAfter++;
+      if (m.type === "suggested") ledger.modelSuggestedAfter++;
+      if (m.type === "suggested" && scenario.bsl) ledger.otherLanguageModelSuggestedAfter++;
     }
   });
   afterAll(() => {
     // The corpus must exercise every source, or the equivalence proves little.
-    expect(ledger.aslModelConfirmedAfter).toBe(0);
-    expect(ledger.aslModelSuggestedAfter).toBe(ledger.aslModelConfirmedBefore);
-    expect(ledger.aslModelConfirmedBefore).toBeGreaterThan(0);
+    expect(ledger.modelConfirmedAfter).toBe(0);
+    expect(ledger.modelSuggestedAfter).toBe(ledger.modelConfirmedBefore);
+    expect(ledger.modelConfirmedBefore).toBeGreaterThan(0);
     expect(ledger.starterConfirmed).toBeGreaterThan(0);
     expect(ledger.personalConfirmed).toBeGreaterThan(0);
-    expect(ledger.otherLanguageModelConfirmed).toBeGreaterThan(0);
+    expect(ledger.otherLanguageModelSuggestedAfter).toBeGreaterThan(0);
     mkdirSync("work", { recursive: true });
     writeFileSync("work/f1-equivalence-ledger.json", JSON.stringify(ledger, null, 1));
   });

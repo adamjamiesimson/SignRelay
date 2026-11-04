@@ -43,10 +43,10 @@ import {
 } from "@/lib/model-adapters";
 import { isRecentDuplicate } from "@/lib/decoder";
 import { SUGGESTION_ARMING_MS, SUGGESTION_LIFETIME_MS } from "@/lib/model-output-policy";
-import { acceptSuggestion, suggestionFromMessage, type PendingSuggestion } from "@/lib/model-suggestion";
+import { acceptSuggestion, offerSuggestion, suggestionFromMessage, unexpired, withoutSuggestion, type PendingSuggestion } from "@/lib/model-suggestion";
 import { ASL_ALPHABET, FINGERSPELLING_MODEL, MAX_FINGERSPELLING_TEXT, editSpelling } from "@/lib/fingerspelling";
 import { FingerspellingCapture } from "@/lib/fingerspelling-capture";
-import { FINGERSPELLING_ENABLED } from "@/lib/release";
+import { FINGERSPELLING_ENABLED, STARTER_OUTPUT } from "@/lib/release";
 import { FingerspellingCtcSession } from "@/lib/fingerspelling-ctc-session";
 import { FINGERSPELLING_CTC_MODEL } from "@/lib/fingerspelling-model";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
@@ -130,10 +130,11 @@ export function TranslatorExperience() {
   const [visionSource, setVisionSource] = useState<LiveVision["assetSource"] | null>(null);
   // Screen readers hear confirmed words and camera changes, never tentative candidates.
   const [announcement, setAnnouncement] = useState("");
-  // F1 safeguard: at most one research-model suggestion, never in the transcript
-  // until a person adds it. The ref is the authority for event handlers.
-  const [suggestion, setSuggestion] = useState<PendingSuggestion | null>(null);
-  const suggestionRef = useRef<PendingSuggestion | null>(null);
+  // Words that need a person's decision (research-model words; starter-rule words
+  // unless STARTER_OUTPUT is "auto"): never in the transcript until added. Newest
+  // first, at most three. The ref is the authority for event handlers.
+  const [suggestions, setSuggestions] = useState<PendingSuggestion[]>([]);
+  const suggestionsRef = useRef<PendingSuggestion[]>([]);
   const suggestionPanelRef = useRef<HTMLDivElement | null>(null);
   const selectedRef = useRef<LanguageId>("asl");
   const [transcriptMessage, setTranscriptMessage] = useState("");
@@ -337,34 +338,37 @@ export function TranslatorExperience() {
     window.speechSynthesis.speak(utterance);
   }, [model.speechLocale]);
 
-  // Withdraw without moving focus unless focus was inside the suggestion.
-  const withdrawSuggestion = useCallback(() => {
-    if (!suggestionRef.current) return;
-    const hadFocus = Boolean(suggestionPanelRef.current?.contains(document.activeElement));
-    suggestionRef.current = null;
-    setSuggestion(null);
-    if (hadFocus) transcriptHeadingRef.current?.focus();
+  const setPending = useCallback((next: PendingSuggestion[]) => {
+    // Keep keyboard focus in the transcript if it was on a card that disappears.
+    const focused = suggestionPanelRef.current?.contains(document.activeElement)
+      ? (document.activeElement as HTMLElement | null)?.closest<HTMLElement>("[data-suggestion-key]")?.dataset.suggestionKey : undefined;
+    suggestionsRef.current = next;
+    setSuggestions(next);
+    if (focused && !next.some(item => item.key === focused)) transcriptHeadingRef.current?.focus();
   }, []);
+  // Withdraw every pending suggestion (session, language, mode or camera ended).
+  const withdrawSuggestion = useCallback(() => {
+    if (suggestionsRef.current.length) setPending([]);
+  }, [setPending]);
 
   // A suggestion belongs to one language, mode and live camera session.
   useEffect(() => { withdrawSuggestion(); }, [selected, aslMode, step, withdrawSuggestion]);
   useEffect(() => { if (cameraState !== "active") withdrawSuggestion(); }, [cameraState, withdrawSuggestion]);
-  // An unanswered suggestion is withdrawn after its lifetime.
+  // Each unanswered suggestion is withdrawn after its own lifetime.
   useEffect(() => {
-    if (!suggestion) return;
-    const key = suggestion.key;
-    const timer = window.setTimeout(() => { if (suggestionRef.current?.key === key) withdrawSuggestion(); }, SUGGESTION_LIFETIME_MS);
+    if (!suggestions.length) return;
+    const oldest = Math.min(...suggestions.map(item => item.shownAt));
+    const timer = window.setTimeout(() => setPending(unexpired(suggestionsRef.current, Date.now())),
+      Math.max(0, oldest + SUGGESTION_LIFETIME_MS - Date.now()) + 1);
     return () => window.clearTimeout(timer);
-  }, [suggestion, withdrawSuggestion]);
-  // Buttons stay inert briefly after a suggestion appears (SUGGESTION_ARMING_MS).
-  const [armedSuggestionKey, setArmedSuggestionKey] = useState<string | null>(null);
+  }, [suggestions, setPending]);
+  // Buttons stay inert briefly after each suggestion appears (SUGGESTION_ARMING_MS).
+  const [armedKeys, setArmedKeys] = useState<ReadonlySet<string>>(new Set());
   useEffect(() => {
-    if (!suggestion) return;
-    const key = suggestion.key;
-    const timer = window.setTimeout(() => setArmedSuggestionKey(key), SUGGESTION_ARMING_MS);
-    return () => window.clearTimeout(timer);
-  }, [suggestion]);
-  const suggestionArmed = Boolean(suggestion && armedSuggestionKey === suggestion.key);
+    const timers = suggestions.filter(item => !armedKeys.has(item.key)).map(item => window.setTimeout(
+      () => setArmedKeys(previous => new Set([...previous, item.key])), Math.max(0, item.shownAt + SUGGESTION_ARMING_MS - Date.now())));
+    return () => timers.forEach(timer => window.clearTimeout(timer));
+  }, [suggestions, armedKeys]);
 
   const handleWorkerMessage = useCallback((message: WorkerMessage) => {
     if (aslModeRef.current !== "words") return;
@@ -397,17 +401,13 @@ export function TranslatorExperience() {
 
     // A research-model word for a suggest-only language is offered, never
     // inserted, announced as confirmed or spoken (lib/model-output-policy.ts).
-    const offered = suggestionFromMessage(message, selectedRef.current, Date.now());
+    const offered = suggestionFromMessage(message, selectedRef.current, Date.now(), STARTER_OUTPUT);
     if (offered) {
-      suggestionRef.current = offered;
-      setSuggestion(offered);
-      setAnnouncement(`Experimental suggestion: ${offered.text}. Not added to the transcript.`);
+      setPending(offerSuggestion(suggestionsRef.current, offered));
+      setAnnouncement(`${offered.source === "model" ? "Experimental suggestion" : "Possible sign"}: ${offered.text}. Not added to the transcript.`);
       return;
     }
     if (message.type !== "confirmed") return;
-    // Any confirmed word supersedes an older suggestion (keeping keyboard focus
-    // in the transcript if it was on the suggestion).
-    withdrawSuggestion();
 
     const entry: TranscriptEntry = {
       id: `${message.timestamp}-${message.gloss}`,
@@ -423,14 +423,14 @@ export function TranslatorExperience() {
     setEntries(entriesRef.current);
     setAnnouncement(`Confirmed: ${message.text}`);
     if (settingsRef.current.autoSpeak) speak(message.text);
-  }, [speak, perfMode, withdrawSuggestion]);
+  }, [speak, perfMode, setPending]);
 
   useEffect(() => {
     if (aslMode !== "words" || step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
     const worker = new RecognitionSession(
       // The version changes with the worker protocol, so a cached older worker
       // (which confirmed research-model words) is never reused.
-      () => new Worker("/workers/recognition.worker.js?v=f1-suggestions-1", { type: "module" }),
+      () => new Worker("/workers/recognition.worker.js?v=output-policy-2", { type: "module" }),
       handleWorkerMessage,
       status => {
         setRecognitionUnavailable(status.state === "failed");
@@ -1058,14 +1058,18 @@ export function TranslatorExperience() {
     }, 0);
   };
 
-  // Only an explicit Add on the suggestion that is on screen inserts a
-  // research-model word; stale, too-early, expired or repeated activations do nothing.
+  // Only an explicit Add on a suggestion that is on screen inserts its word;
+  // stale, too-early, expired or repeated activations do nothing.
   const acceptPendingSuggestion = (key: string) => {
-    const outcome = acceptSuggestion(suggestionRef.current, key, selectedRef.current, Date.now());
+    const now = Date.now();
+    const outcome = acceptSuggestion(suggestionsRef.current, key, selectedRef.current, now);
     if (!outcome.accepted) return;
-    suggestionRef.current = null;
-    setSuggestion(null);
-    entriesRef.current = [...entriesRef.current, outcome.entry];
+    const offered = suggestionsRef.current.find(item => item.key === key)!;
+    setPending(withoutSuggestion(suggestionsRef.current, key));
+    // Place the word where it was signed, not where it was accepted.
+    const entry = { ...outcome.entry, timestamp: offered.shownAt };
+    const at = entriesRef.current.findIndex(item => item.timestamp > entry.timestamp);
+    entriesRef.current = at < 0 ? [...entriesRef.current, entry] : [...entriesRef.current.slice(0, at), entry, ...entriesRef.current.slice(at)];
     setEntries(entriesRef.current);
     setAnnouncement(`Added: ${outcome.entry.text}`);
     // The person added this word, so it is spoken like any other added word.
@@ -1074,10 +1078,10 @@ export function TranslatorExperience() {
   };
 
   const dismissPendingSuggestion = (key: string) => {
-    if (suggestionRef.current?.key !== key) return;
-    const text = suggestionRef.current.text;
-    withdrawSuggestion();
-    setAnnouncement(`Dismissed suggestion: ${text}`);
+    const item = suggestionsRef.current.find(entry => entry.key === key);
+    if (!item) return;
+    setPending(withoutSuggestion(suggestionsRef.current, key));
+    setAnnouncement(`Dismissed suggestion: ${item.text}`);
     transcriptHeadingRef.current?.focus();
   };
 
@@ -1479,21 +1483,31 @@ export function TranslatorExperience() {
                 <strong>{status.key === "checking-sign" ? candidate : status.detail}</strong>
               </div>
               {recognitionFeedback && <p className="calibration-message">{recognitionFeedback}</p>}
-              {suggestion && (
-                <div className="model-suggestion" ref={suggestionPanelRef} role="group" aria-labelledby="model-suggestion-title" aria-describedby="model-suggestion-note" data-suggestion-key={suggestion.key}>
-                  <p className="model-suggestion-label" id="model-suggestion-title">Experimental suggestion · not added</p>
-                  <strong className="model-suggestion-word">{suggestion.text}</strong>
-                  <p className="model-suggestion-note" id="model-suggestion-note">From the ASL research model, which is often wrong. Add it only if it is what you signed.</p>
-                  <div className="model-suggestion-actions">
-                    <button type="button" className="button secondary small" aria-disabled={!suggestionArmed} data-suggestion-action="accept"
-                      onClick={() => { if (suggestionArmed) acceptPendingSuggestion(suggestion.key); }}>
-                      <Plus aria-hidden="true" size={16} />Add “{suggestion.text}”
-                    </button>
-                    <button type="button" className="button ghost small" data-suggestion-action="dismiss"
-                      onClick={() => dismissPendingSuggestion(suggestion.key)} aria-label={`Dismiss suggestion ${suggestion.text}`}>
-                      <X aria-hidden="true" size={16} />Dismiss
-                    </button>
-                  </div>
+              {suggestions.length > 0 && (
+                <div className="model-suggestions" ref={suggestionPanelRef} role="region" aria-label="Suggestions not yet added">
+                  {suggestions.map(item => {
+                    const armed = armedKeys.has(item.key);
+                    const title = `suggestion-title-${item.key.replace(/[^a-z0-9]/gi, "-")}`;
+                    return (
+                      <div className={`model-suggestion ${item.source}`} key={item.key} role="group" aria-labelledby={title} data-suggestion-key={item.key} data-suggestion-source={item.source}>
+                        <p className="model-suggestion-label" id={title}>{item.source === "model" ? "Experimental suggestion · not added" : "Possible sign · not added"}</p>
+                        <strong className="model-suggestion-word">{item.text}</strong>
+                        <p className="model-suggestion-note">{item.source === "model"
+                          ? `From the ${model.shortName} research model, which is often wrong. Add it only if it is what you signed.`
+                          : "From SignRelay's built-in sign rules, which can mistake other movements for this sign. Add it only if it is what you signed."}</p>
+                        <div className="model-suggestion-actions">
+                          <button type="button" className="button secondary small" aria-disabled={!armed} data-suggestion-action="accept"
+                            onClick={() => { if (armed) acceptPendingSuggestion(item.key); }}>
+                            <Plus aria-hidden="true" size={16} />Add “{item.text}”
+                          </button>
+                          <button type="button" className="button ghost small" data-suggestion-action="dismiss"
+                            onClick={() => dismissPendingSuggestion(item.key)} aria-label={`Dismiss suggestion ${item.text}`}>
+                            <X aria-hidden="true" size={16} />Dismiss
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
               <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
@@ -1525,7 +1539,7 @@ export function TranslatorExperience() {
                             aria-label={`Edit ${entry.text}`}
                           />
                         ) : (
-                          <p>{entry.text}{entry.acceptedBy === "user" && <span className="entry-provenance"> · added from suggestion</span>}</p>
+                          <p>{entry.text}<span className="entry-provenance">{provenanceLabel(entry)}</span></p>
                         )}
                         <div className="entry-actions">
                           <button type="button" className="icon-button" data-edit onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`} title="Edit"><Pencil aria-hidden="true" size={16} /></button>
@@ -1798,4 +1812,12 @@ function DetectionItem({ label, active }: { label: string; active: boolean }) {
 
 function wait(milliseconds: number) {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
+/** Where a transcript word came from, shown beside it. */
+function provenanceLabel(entry: TranscriptEntry) {
+  if (entry.acceptedBy === "user") return entry.source === "model" ? " · added by you (research model)" : " · added by you (sign rules)";
+  if (entry.source === "personal") return " · your sign";
+  if (entry.source === "starter") return " · sign rules";
+  return "";
 }

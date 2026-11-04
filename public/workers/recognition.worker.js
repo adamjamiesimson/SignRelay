@@ -55,6 +55,7 @@ function recentContinuousFrames(frames2, duration, tracked) {
 }
 
 // lib/asl-starter-recognition.ts
+var BASELINE_STARTER_RULES = Object.freeze({});
 function validHand(hand4) {
   return !!hand4 && hand4.landmarks.length === 21 && hand4.landmarks.every((point3) => Number.isFinite(point3.x) && Number.isFinite(point3.y) && Number.isFinite(point3.z));
 }
@@ -149,7 +150,7 @@ function samplesFor(frames2, side, cache = /* @__PURE__ */ new Map()) {
   if (samples.length < 5 || samples.length / frames2.length < 0.6 || samples.at(-1)?.time !== frames2.at(-1)?.timestamp || samples.at(-1).time - samples[0].time < 160) return [];
   return samples;
 }
-function analyzeAslStarter(sequence) {
+function analyzeAslStarter(sequence, options = ADOPTED_STARTER_RULES) {
   const now = sequence.at(-1)?.timestamp;
   if (now === void 0) return { prediction: null, ambiguousOpenPalm: false, labels: [], incompleteLabels: [] };
   let yes = null;
@@ -166,8 +167,8 @@ function analyzeAslStarter(sequence) {
       );
       const samples = samplesFor(recent, side, features);
       if (!samples.length) continue;
-      const result = recognizeSamples(samples);
-      const evidence = recognizeSamples(samples, false);
+      const result = recognizeSamples(samples, true, options);
+      const evidence = recognizeSamples(samples, false, options);
       if (evidence?.label === "PLEASE" && result?.label !== "PLEASE") incompleteLabels.add("PLEASE");
       if (result?.label !== "THANK YOU" && ratio(samples, (sample) => sample.open >= 3) >= 0.75 && departingMouthStroke(samples)) incompleteLabels.add("THANK YOU");
       if (result) labels.add(result.label);
@@ -181,7 +182,14 @@ function analyzeAslStarter(sequence) {
 var span = (values) => Math.max(...values) - Math.min(...values);
 var ratio = (samples, predicate) => samples.filter(predicate).length / samples.length;
 var prediction = (label, text) => ({ label, text, confidence: 0.86 });
-function recognizeSamples(samples, requireClosure = true) {
+var ADOPTED_STARTER_RULES = BASELINE_STARTER_RULES;
+var REST_ZONE_Y = 1.25;
+function settled(samples, ms2 = 120, limit = 0.06) {
+  const last = samples.at(-1);
+  const tail = samples.filter((sample) => last.time - sample.time <= ms2);
+  return tail.length >= 2 && span(tail.map((s) => s.wrist.x)) <= limit && span(tail.map((s) => s.wrist.y)) <= limit;
+}
+function recognizeSamples(samples, requireClosure = true, options = BASELINE_STARTER_RULES) {
   const first = samples[0];
   const last = samples.at(-1);
   const mostlyOpen = ratio(samples, (sample) => sample.open >= 3) >= 0.75;
@@ -197,15 +205,17 @@ function recognizeSamples(samples, requireClosure = true) {
     return prediction("NO", "No");
   }
   const mouthStart = requireClosure ? departingMouthStroke(samples) : null;
-  if (mostlyOpen && mouthStart && (Math.abs(last.tip.x - mouthStart.tip.x) > 0.15 || last.palm / mouthStart.palm > 1.14)) return prediction("THANK YOU", "Thank you");
+  const thankYouEnding = () => (!options.endAboveRest || last.wrist.y < REST_ZONE_Y) && (!options.settledEnding || settled(samples));
+  if (mostlyOpen && mouthStart && (!options.thankYouForward && Math.abs(last.tip.x - mouthStart.tip.x) > 0.15 || last.palm / mouthStart.palm > 1.14) && thankYouEnding()) return prediction("THANK YOU", "Thank you");
   const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
-  const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
-  if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12 && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth) > 0.25) {
+  const outward = !options.thankYouForward && Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
+  if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12 && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth) > 0.25 && thankYouEnding()) {
     return prediction("THANK YOU", "Thank you");
   }
   const raised = ratio(samples, (sample) => !!sample.nose && sample.wrist.y < sample.nose.y + 0.55) >= 0.7;
   const startsNearHead = first.nose && distance2(first.tip, first.nose) < 0.8;
-  if (mostlyOpen && raised && xRange > 0.25 && yRange < Math.max(0.35, xRange * 0.75) && (directionChanges(xs2, 0.025) >= 1 || startsNearHead)) return prediction("HELLO", "Hello");
+  const helloShape = !options.helloFromForehead || !!first.nose && first.tip.y <= first.nose.y && Math.abs(last.wrist.x - first.nose.x) - Math.abs(first.wrist.x - first.nose.x) > 0.15;
+  if (mostlyOpen && raised && xRange > 0.25 && yRange < Math.max(0.35, xRange * 0.75) && (directionChanges(xs2, 0.025) >= 1 || startsNearHead) && helloShape && (!options.endAboveRest || last.wrist.y < REST_ZONE_Y) && (!options.settledEnding || settled(samples))) return prediction("HELLO", "Hello");
   const atChest = ratio(samples, (sample) => sample.wrist.y > -0.1 && sample.wrist.y < 1.05 && Math.abs(sample.wrist.x) < 0.8) >= 0.8;
   if (atChest && xRange > 0.1 && yRange > 0.1 && !(mostlyOpen && mouthStart) && (requireClosure ? completedPalmCircle(samples) : circularMotion(xs2, ys2, false))) {
     if (mostlyOpen) return prediction("PLEASE", "Please");
@@ -445,8 +455,8 @@ function analyzeGenericSignMotion(sequence) {
   const tailRange = Math.hypot(range(tailWrists.map((point3) => point3.x)), range(tailWrists.map((point3) => point3.y)));
   if (tailRange > 0.06) return { ready: false, reason: "moving" };
   const anchor = tail[0].hand;
-  const settled = tail.every((sample) => shapeDistance2(anchor, sample.hand) <= 0.14);
-  return settled ? { ready: true, reason: "ready" } : { ready: false, reason: "moving" };
+  const settled2 = tail.every((sample) => shapeDistance2(anchor, sample.hand) <= 0.14);
+  return settled2 ? { ready: true, reason: "ready" } : { ready: false, reason: "moving" };
 }
 function shapeDistance2(a, b) {
   const scales = [handScale(a), handScale(b)];
@@ -15364,7 +15374,7 @@ var MODEL_ADAPTERS = {
 var LANGUAGE_LIST = LANGUAGE_IDS.map((id2) => MODEL_ADAPTERS[id2]);
 
 // lib/model-output-policy.ts
-var SUGGEST_ONLY_MODEL_LANGUAGES = /* @__PURE__ */ new Set(["asl"]);
+var SUGGEST_ONLY_MODEL_LANGUAGES = new Set(LANGUAGE_IDS);
 function modelWordsNeedAcceptance(language) {
   return SUGGEST_ONLY_MODEL_LANGUAGES.has(language);
 }

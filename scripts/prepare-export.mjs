@@ -1,12 +1,13 @@
 import { readdir, readFile, rm } from "node:fs/promises";
 
-import { FINGERSPELLING_FLAG, assertReleaseSafe, resolveFingerspelling } from "../lib/release-flags.mjs";
-const publicKeys = new Set(["NEXT_PUBLIC_GA_MEASUREMENT_ID", "NEXT_PUBLIC_SIGNRELAY_PROFILE", FINGERSPELLING_FLAG]);
+import { FINGERSPELLING_FLAG, STARTER_OUTPUT_FLAG, assertReleaseSafe, resolveFingerspelling, resolveStarterOutput } from "../lib/release-flags.mjs";
+const publicKeys = new Set(["NEXT_PUBLIC_GA_MEASUREMENT_ID", "NEXT_PUBLIC_SIGNRELAY_PROFILE", FINGERSPELLING_FLAG, STARTER_OUTPUT_FLAG]);
 const PROFILES = new Set(["full", "asl-demo", "rehearsal"]);
 function validate(key, value) {
   if (!key.startsWith("NEXT_PUBLIC_")) return;
   if (!publicKeys.has(key)) throw new Error(`Unsupported public environment variable: ${key}. Never expose credentials through NEXT_PUBLIC_.`);
   if (key === FINGERSPELLING_FLAG) { resolveFingerspelling({ [key]: value }); return; }
+  if (key === STARTER_OUTPUT_FLAG) { resolveStarterOutput({ [key]: value }); return; }
   if (key === "NEXT_PUBLIC_SIGNRELAY_PROFILE") {
     if (value && !PROFILES.has(value)) throw new Error(`Unknown build profile ${value}; use full, asl-demo or rehearsal.`);
     return;
