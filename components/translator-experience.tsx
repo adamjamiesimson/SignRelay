@@ -47,6 +47,7 @@ import { EMPTY_SUGGESTIONS, acceptSuggestion, announceSuggestion, holdSuggestion
 import { ASL_ALPHABET, FINGERSPELLING_MODEL, MAX_FINGERSPELLING_TEXT, editSpelling } from "@/lib/fingerspelling";
 import { FingerspellingCapture } from "@/lib/fingerspelling-capture";
 import { FINGERSPELLING_ENABLED, STARTER_OUTPUT, effectiveStarterOutput } from "@/lib/release";
+import type { StudyEvent } from "@/lib/signer-study";
 import { FingerspellingCtcSession } from "@/lib/fingerspelling-ctc-session";
 import { FINGERSPELLING_CTC_MODEL } from "@/lib/fingerspelling-model";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
@@ -86,7 +87,15 @@ const EMPTY_DETECTION: DetectionStatus = {
   pose: false,
 };
 
-export function TranslatorExperience() {
+/** onStudyEvent: only the private /study route (excluded from public exports)
+ * observes the workspace, after the participant's consent. Public pages pass
+ * nothing, so nothing is reported anywhere. */
+export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: StudyEvent) => void } = {}) {
+  const studyRef = useRef(onStudyEvent);
+  useEffect(() => { studyRef.current = onStudyEvent; }, [onStudyEvent]);
+  const report = useCallback((kind: StudyEvent["kind"], item: { gloss: string; source?: StudyEvent["source"] }) => {
+    if (item.source) studyRef.current?.({ kind, gloss: item.gloss, source: item.source });
+  }, []);
   const [step, setStep] = useState<Step>("welcome");
   const [aslMode, setAslMode] = useState<"words" | "fingerspelling">("words");
   const aslModeRef = useRef<"words" | "fingerspelling">("words");
@@ -378,11 +387,12 @@ export function TranslatorExperience() {
     if (deadline === null) return;
     const timer = window.setTimeout(() => {
       const { state, expired } = tickSuggestions(suggestionsRef.current, Date.now());
+      for (const item of expired) report("expired", item);
       if (state !== suggestionsRef.current) setPending(state); else setSuggestionClock(Date.now());
       if (expired.length) setAnnouncement(announceSuggestion({ kind: "expired", items: expired }));
     }, Math.max(0, deadline - Date.now()));
     return () => window.clearTimeout(timer);
-  }, [suggestions, suggestionClock, setPending]);
+  }, [suggestions, suggestionClock, setPending, report]);
   const holdPending = useCallback((held: boolean) => {
     const next = holdSuggestions(suggestionsRef.current, held, Date.now());
     if (next !== suggestionsRef.current) setPending(next);
@@ -422,6 +432,8 @@ export function TranslatorExperience() {
     const offered = suggestionFromMessage(message, selectedRef.current, Date.now(), starterOutputRef.current);
     if (offered) {
       const { state, event } = offerSuggestion(suggestionsRef.current, offered, Date.now());
+      if (event.kind === "offered" && event.replaced) report("replaced", event.replaced);
+      if (event.kind !== "expired") report(event.kind, offered);
       setPending(state);
       setAnnouncement(announceSuggestion(event));
       return;
@@ -441,8 +453,9 @@ export function TranslatorExperience() {
     entriesRef.current = [...entriesRef.current, entry];
     setEntries(entriesRef.current);
     setAnnouncement(`Confirmed: ${message.text}`);
+    report("automatic", entry);
     if (settingsRef.current.autoSpeak) speak(message.text);
-  }, [speak, perfMode, setPending]);
+  }, [speak, perfMode, setPending, report]);
 
   useEffect(() => {
     if (aslMode !== "words" || step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
@@ -1082,6 +1095,7 @@ export function TranslatorExperience() {
   const acceptPendingSuggestion = (key: string) => {
     const now = Date.now();
     const outcome = acceptSuggestion(suggestionsRef.current, key, selectedRef.current, now);
+    if (outcome.accepted) report("accepted", outcome.entry);
     if (!outcome.accepted) {
       if (outcome.reason === "too-soon") setAnnouncement("Not added yet. Check the word, then press Add again.");
       return;
@@ -1102,10 +1116,12 @@ export function TranslatorExperience() {
     if (!item) return;
     setPending(removeSuggestion(suggestionsRef.current, key, Date.now()));
     setAnnouncement(`Dismissed suggestion: ${item.text}`);
+    report("dismissed", item);
     transcriptHeadingRef.current?.focus();
   };
 
   const removeEntry = (entry: TranscriptEntry) => {
+    report("removed", entry);
     setEntries((current) => current.filter((item) => item.id !== entry.id));
     setTranscriptMessage(`Removed "${entry.text}".`);
     // The pressed button disappears; keep keyboard focus in the transcript.

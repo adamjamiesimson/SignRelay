@@ -27,8 +27,8 @@ export function publicExportProblems(root = "out") {
   if (!existsSync(join(root, "index.html"))) return [`${root}/index.html is missing: not a complete export`];
   if (existsSync(join(root, RESEARCH_EXPORT_MARKER))) problems.push(`research export marker present (${readFileSync(join(root, RESEARCH_EXPORT_MARKER), "utf8").trim().replace(/\n/g, " ")})`);
   if (existsSync(join(root, PRIVATE_EXPORT_MARKER))) problems.push("private capture marker present");
-  for (const route of PRIVATE_ROUTES) for (const target of [route, `${route}.html`])
-    if (existsSync(join(root, target))) problems.push(`private route /${route} is included`);
+  for (const route of PRIVATE_ROUTES)
+    if ([route, `${route}.html`].some(target => existsSync(join(root, target)))) problems.push(`private route /${route} is included`);
   const manifestPath = join(root, "runtime-manifest.json");
   if (!existsSync(manifestPath)) problems.push("runtime-manifest.json is missing (verify-runtime did not run)");
   else {

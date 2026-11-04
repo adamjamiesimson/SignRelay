@@ -6,7 +6,8 @@ import { readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 
-export const PRIVATE_ROUTES = ["field-test"];
+// Private development tooling: the ASL capture recorder and the supervised signer study.
+export const PRIVATE_ROUTES = ["field-test", "study"];
 export const PRIVATE_EXPORT_MARKER = ".signrelay-private-capture-included";
 
 async function files(directory) {
