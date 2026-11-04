@@ -14,7 +14,8 @@ import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, write
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
 import { runCommandSync } from "./run-command.mjs";
-import { FINGERSPELLING_ASSETS, FINGERSPELLING_UI_MARKERS } from "../lib/release-flags.mjs";
+import { FINGERSPELLING_ASSETS, FINGERSPELLING_UI_MARKERS, RESEARCH_EXPORT_MARKER, STARTER_AUTO_UI_MARKER, STARTER_OUTPUT_FLAG } from "../lib/release-flags.mjs";
+import { publicExportProblems } from "./assert-public-export.mjs";
 
 const { values } = parseArgs({ options: { only: { type: "string" }, "skip-rsl": { type: "boolean", default: false }, keep: { type: "string" }, out: { type: "string", default: "work/release-artifact-matrix.json" } } });
 const FLAG = "NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING";
@@ -30,7 +31,11 @@ const fullSteps = (skipRsl) => [
 const vercelSteps = () => JSON.parse(readFileSync("vercel.json", "utf8")).buildCommand.split(" && ").map(c => c.trim().split(/\s+/));
 const profileSteps = (profile) => [["node", "scripts/build-profile.mjs", profile]];
 
-/** expect: "on" | "off" | "refused" (the build must stop before producing an export). */
+/** expect: "on" | "off" | "refused" (the build must stop before producing an export).
+ * starter: how starter-rule words reach the transcript in that artifact
+ * ("suggest" unless stated). production: the artifact must also pass the
+ * public-deploy gate (scripts/assert-public-export.mjs). */
+const AUTO = { [STARTER_OUTPUT_FLAG]: "auto" };
 const CONFIGS = [
   { name: "full-default", steps: fullSteps, env: {}, expect: "off", production: true },
   // Next itself refuses to export a non-standard NODE_ENV=development build, so nothing can ship.
@@ -39,12 +44,21 @@ const CONFIGS = [
   { name: "full-explicit-on-unacknowledged", steps: fullSteps, env: { [FLAG]: "on" }, expect: "refused", production: true },
   { name: "full-explicit-on-research-export", steps: fullSteps, env: { [FLAG]: "on", SIGNRELAY_RESEARCH_EXPORT: "1" }, expect: "on" },
   { name: "full-dotenv-on", steps: fullSteps, env: {}, dotenv: `${FLAG}=on\n`, expect: "refused", production: true },
-  { name: "vercel-production", steps: vercelSteps, env: { VERCEL_ENV: "production" }, expect: "off", production: true },
+  // Vercel's build command has no verify-runtime step (so no runtime manifest);
+  // its artifact is checked for the research marker and compiled auto UI only.
+  { name: "vercel-production", steps: vercelSteps, env: { VERCEL_ENV: "production" }, expect: "off", production: "hosted" },
   { name: "vercel-production-explicit-on", steps: vercelSteps, env: { VERCEL_ENV: "production", [FLAG]: "on" }, expect: "refused", production: true },
   { name: "vercel-preview", steps: vercelSteps, env: { VERCEL_ENV: "preview" }, expect: "on" },
   { name: "asl-demo-default", steps: () => profileSteps("asl-demo"), env: {}, expect: "off" },
-  { name: "rehearsal-default", steps: () => profileSteps("rehearsal"), env: {}, expect: "on" },
-  { name: "rehearsal-explicit-off", steps: () => profileSteps("rehearsal"), env: { [FLAG]: "off" }, expect: "off" },
+  { name: "rehearsal-default", steps: () => profileSteps("rehearsal"), env: {}, expect: "on", starter: "auto" },
+  { name: "rehearsal-explicit-off", steps: () => profileSteps("rehearsal"), env: { [FLAG]: "off" }, expect: "off", starter: "auto" },
+  // Starter-rule output policy fails closed: automatic words only in a deliberate, local research export.
+  { name: "full-starter-auto-unacknowledged", steps: fullSteps, env: AUTO, expect: "refused", production: true },
+  { name: "full-dotenv-starter-auto", steps: fullSteps, env: { SIGNRELAY_RESEARCH_EXPORT: "1" }, dotenv: `${STARTER_OUTPUT_FLAG}=auto\n`, expect: "refused", production: true },
+  { name: "full-starter-auto-research-export", steps: fullSteps, env: { ...AUTO, SIGNRELAY_RESEARCH_EXPORT: "1" }, expect: "off", starter: "auto" },
+  { name: "vercel-production-starter-auto", steps: vercelSteps, env: { ...AUTO, VERCEL_ENV: "production" }, expect: "refused", production: true },
+  { name: "vercel-preview-starter-auto-acknowledged", steps: vercelSteps, env: { ...AUTO, VERCEL_ENV: "preview", SIGNRELAY_RESEARCH_EXPORT: "1" }, expect: "refused" },
+  { name: "asl-demo-starter-auto", steps: () => profileSteps("asl-demo"), env: AUTO, expect: "refused" },
 ];
 
 function inspect() {
@@ -59,7 +73,9 @@ function inspect() {
   const manifest = existsSync("out/runtime-manifest.json") ? JSON.parse(readFileSync("out/runtime-manifest.json", "utf8")) : null;
   const compiled = Object.values(markers).every(Boolean);
   return { researchModels: models, researchWorkers: shippedWorkers, uiMarkers: markers, compiledUi: compiled,
-    manifestFingerspelling: manifest?.fingerspelling ?? null, manifestProfile: manifest?.profile ?? null };
+    manifestFingerspelling: manifest?.fingerspelling ?? null, manifestProfile: manifest?.profile ?? null,
+    starterAutoUi: text.some(t => t.includes(STARTER_AUTO_UI_MARKER)), manifestStarter: manifest?.starter_output ?? null,
+    researchMarker: existsSync(join("out", RESEARCH_EXPORT_MARKER)), publicProblems: existsSync("out/index.html") ? publicExportProblems("out") : null };
 }
 
 const selected = values.only ? CONFIGS.filter(c => values.only.split(",").includes(c.name)) : CONFIGS;
@@ -68,7 +84,7 @@ for (const config of selected) {
   rmSync("out", { recursive: true, force: true });
   if (config.dotenv) writeFileSync(".env.local", config.dotenv);
   const env = { ...process.env, ...config.env };
-  delete env[FLAG]; delete env.SIGNRELAY_RESEARCH_EXPORT; delete env.VERCEL_ENV; delete env.NEXT_PUBLIC_SIGNRELAY_PROFILE;
+  delete env[FLAG]; delete env[STARTER_OUTPUT_FLAG]; delete env.SIGNRELAY_RESEARCH_EXPORT; delete env.VERCEL_ENV; delete env.NEXT_PUBLIC_SIGNRELAY_PROFILE;
   Object.assign(env, config.env);
   let failedStep = null, failure = "";
   try {
@@ -84,8 +100,15 @@ for (const config of selected) {
   if (failedStep && !rslOnly) outcome = "refused";
   else outcome = artifact?.compiledUi ? "on" : "off";
   const assetsMatch = outcome === "refused" || (outcome === "on" ? artifact.researchModels.length >= 3 && artifact.researchWorkers.length === 2 : artifact.researchModels.length === 0 && artifact.researchWorkers.length === 0);
-  const pass = outcome === config.expect && assetsMatch && (outcome === "refused" || !artifact.manifestFingerspelling || artifact.manifestFingerspelling === outcome || rslOnly);
-  const row = { name: config.name, expect: config.expect, outcome, pass, failedStep: rslOnly ? null : failedStep, failure: rslOnly ? undefined : failure || undefined,
+  const starter = config.starter ?? "suggest";
+  const starterMatch = outcome === "refused" || (artifact.starterAutoUi === (starter === "auto") && (!artifact.manifestStarter || artifact.manifestStarter === starter)
+    && (starter === "suggest" || artifact.researchMarker));
+  // A production artifact must also pass the public-deploy gate (and carry no research marker).
+  const publicOk = outcome === "refused" || !config.production || (config.production === "hosted" ? !artifact.researchMarker && !artifact.starterAutoUi
+    : (artifact.publicProblems ?? ["no export"]).length === 0 && !artifact.researchMarker);
+  const pass = outcome === config.expect && assetsMatch && starterMatch && publicOk
+    && (outcome === "refused" || !artifact.manifestFingerspelling || artifact.manifestFingerspelling === outcome || rslOnly);
+  const row = { name: config.name, expect: config.expect, outcome, starterExpected: starter, pass, failedStep: rslOnly ? null : failedStep, failure: rslOnly ? undefined : failure || undefined,
     rslWeightsMissingOnly: rslOnly || undefined, ...artifact };
   results.push(row);
   console.log("MATRIX", JSON.stringify(row));

@@ -131,14 +131,18 @@
   display: grid; gap: 6px; margin: 4px 0 12px; padding: 12px 14px;
   border: 1px dashed var(--warn); border-radius: var(--radius-lg); background: var(--warn-soft);
 }
+.research-build-banner { margin: 0 0 10px; padding: 8px 12px; border: 1px solid var(--warn); border-radius: var(--radius-lg); color: var(--warn); font-size: 0.875rem; font-weight: 600; }
 .model-suggestions { display: grid; gap: 8px; margin: 4px 0 12px; }
 .model-suggestions .model-suggestion { margin: 0; }
 /* Starter-rule suggestions: built-in rules, distinct from research-model amber. */
-.model-suggestion.starter { border-color: var(--accent-line); background: var(--accent-soft); }
+/* A pending word is an outline, never a filled row like a transcript word. */
+.model-suggestion.starter { border-color: var(--accent-line); background: transparent; }
+.model-suggestions-note, .model-suggestions-meta { color: var(--text-2); font-size: 0.875rem; line-height: 1.45; }
+.model-suggestions-meta { color: var(--text-3); }
+.model-suggestion-repeats { color: var(--text-3); font-size: 0.875rem; font-weight: 500; }
 .model-suggestion.starter .model-suggestion-label { color: var(--accent); }
 .model-suggestion-label { color: var(--warn); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
 .model-suggestion-word { color: var(--text); font-size: 1.0625rem; font-weight: 600; overflow-wrap: anywhere; }
-.model-suggestion-note { color: var(--text-2); font-size: 0.875rem; line-height: 1.45; }
 .model-suggestion-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
 .model-suggestion-actions .button { min-height: 44px; }
 .model-suggestion-actions .button[aria-disabled="true"] { opacity: 0.6; cursor: default; }

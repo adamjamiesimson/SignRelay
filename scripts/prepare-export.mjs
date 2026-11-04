@@ -7,7 +7,7 @@ function validate(key, value) {
   if (!key.startsWith("NEXT_PUBLIC_")) return;
   if (!publicKeys.has(key)) throw new Error(`Unsupported public environment variable: ${key}. Never expose credentials through NEXT_PUBLIC_.`);
   if (key === FINGERSPELLING_FLAG) { resolveFingerspelling({ [key]: value }); return; }
-  if (key === STARTER_OUTPUT_FLAG) { resolveStarterOutput({ [key]: value }); return; }
+  if (key === STARTER_OUTPUT_FLAG) { resolveStarterOutput({ ...process.env, [key]: value }); return; }
   if (key === "NEXT_PUBLIC_SIGNRELAY_PROFILE") {
     if (value && !PROFILES.has(value)) throw new Error(`Unknown build profile ${value}; use full, asl-demo or rehearsal.`);
     return;
@@ -18,6 +18,10 @@ for (const [key, value] of Object.entries(process.env)) validate(key, value);
 for (const name of (await readdir(".")).filter(name => /^\.env(?:\.|$)/.test(name))) {
   for (const line of (await readFile(name, "utf8")).split("\n")) {
     const match = line.match(/^\s*(?:export\s+)?([A-Z][A-Z0-9_]*)\s*=\s*(.*?)\s*$/);
+    // Research switches must be visible to every build step, and deliberate:
+    // never from a file that Next would read but the export scripts would not.
+    if (match && [STARTER_OUTPUT_FLAG, "SIGNRELAY_RESEARCH_EXPORT"].includes(match[1]))
+      throw new Error(`${match[1]} is set in ${name}. Research output switches must be set on the build command, never in a .env file.`);
     if (match?.[1] === FINGERSPELLING_FLAG)
       throw new Error(`${FINGERSPELLING_FLAG} is set in ${name}. Next would inline it but the export scripts would not see it; set it on the build command instead.`);
     if (match) validate(match[1], match[2].replace(/^['"]|['"]$/g, ""));

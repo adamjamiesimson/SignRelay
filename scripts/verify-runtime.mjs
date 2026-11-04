@@ -11,7 +11,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { TASKS_VERSION, VISION_MODELS, VISION_WASM_FILES } from "../lib/vision-runtime.mjs";
-import { FINGERSPELLING_ASSETS, FINGERSPELLING_UI_MARKERS, resolveFingerspelling } from "../lib/release-flags.mjs";
+import { FINGERSPELLING_ASSETS, FINGERSPELLING_UI_MARKERS, RESEARCH_EXPORT_MARKER, STARTER_AUTO_UI_MARKER, resolveFingerspelling, resolveStarterOutput } from "../lib/release-flags.mjs";
 
 const require = createRequire(import.meta.url);
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
@@ -37,9 +37,9 @@ export function expectedFingerspelling(profile, env = process.env, explicit) {
 }
 
 /** @param {{ root: string, wasmSource: string, ortSource: string, committedWorker?: string | null, evaluated?: any[],
- *   profile?: string, fingerspelling?: string, wasmFiles?: string[], models?: Record<string, { file: string, bytes: number, sha256: string }> }} options */
+ *   profile?: string, fingerspelling?: string, starterOutput?: string, wasmFiles?: string[], models?: Record<string, { file: string, bytes: number, sha256: string }> }} options */
 export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = null, evaluated = [], profile = "full", fingerspelling = resolveFingerspelling(),
-  wasmFiles = VISION_WASM_FILES, models = VISION_MODELS }) {
+  starterOutput = resolveStarterOutput(), wasmFiles = VISION_WASM_FILES, models = VISION_MODELS }) {
   const failures = [];
   const fail = (what, fix) => failures.push(`${what} — ${fix}`);
   /** @type {Record<string, any>} */
@@ -104,6 +104,18 @@ export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = n
     fail("fingerspelling is expected off but the compiled client contains the fingerspelling workspace", "the build inlined NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=on (check the environment and .env files) — rebuild");
   if (scripts.length && fingerspelling === "on" && !compiledUi)
     fail("fingerspelling is expected on but the compiled client has no fingerspelling workspace", "the build inlined the flag off — rebuild with NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=on");
+  // Starter-rule output policy (fails closed): the compiled client carries the
+  // research banner only when words are automatic.
+  manifest.starter_output = starterOutput;
+  const autoUi = scripts.length > 0 && scripts.some(file => readFileSync(file, "utf8").includes(STARTER_AUTO_UI_MARKER));
+  manifest.starter_auto_ui_compiled = autoUi;
+  if (scripts.length && starterOutput === "suggest" && autoUi)
+    fail("starter-rule words are expected to be suggestions but the compiled client inserts them automatically", "the build inlined NEXT_PUBLIC_SIGNRELAY_STARTER_OUTPUT=auto — rebuild without it");
+  if (scripts.length && starterOutput === "auto" && !autoUi)
+    fail("starter-rule words are expected automatic (research export) but the compiled client has no research banner", "rebuild; the flag was not inlined");
+  manifest.research_export = existsSync(join(root, RESEARCH_EXPORT_MARKER));
+  if (root.replace(/\/$/, "") !== "public" && scripts.length && starterOutput === "auto" && !manifest.research_export)
+    fail("an export with automatic starter-rule words is not marked as a research export", "run node scripts/prune-research.mjs out");
   return { ok: failures.length === 0, failures, manifest };
 }
 

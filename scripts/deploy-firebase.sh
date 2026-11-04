@@ -17,6 +17,10 @@ if [[ -e out/.signrelay-private-capture-included || -e out/field-test.html || -e
   exit 1
 fi
 
+# The artifact itself must be a public production export: starter-rule words as
+# suggestions, no research export, fingerspelling or private routes.
+node scripts/assert-public-export.mjs out
+
 echo "Deploying to Firebase project signrelay-76f34, site signrelay..."
 
 max_attempts=5
