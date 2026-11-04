@@ -30,7 +30,7 @@ function fnv(text: string) {
   for (const ch of text) { h ^= ch.codePointAt(0)!; h = Math.imul(h, 0x01000193) >>> 0; }
   return (h >>> 0).toString(16).padStart(8, "0");
 }
-export const fingerprint = (value: unknown) => fnv(JSON.stringify(value));
+export const digestOf = (value: unknown) => fnv(JSON.stringify(value));
 
 /** Leave-one-signer-out, or (more signers than maxFolds) a deterministic
  * grouping of signers into maxFolds folds by a hash of the signer id. */
@@ -117,7 +117,7 @@ export function runExperiment(examples: Example[], predictors: Predictor[], { ma
   return {
     framework: "signrelay-temporal-experiment/1",
     dataset: {
-      examples: examples.length, signers, manifest: fingerprint(examples.map(e => [e.id, e.gloss, e.kind, e.signer, e.exposure]).sort()),
+      examples: examples.length, signers, manifest: digestOf(examples.map(e => [e.id, e.gloss, e.kind, e.signer, e.exposure]).sort()),
       byKind: examples.reduce((m, e) => ({ ...m, [e.kind]: (m[e.kind] ?? 0) + 1 }), {} as Record<string, number>),
       byExposure: { exposed: examples.length - untouched, untouched }, targetGlosses: [...perGloss.keys()].sort(),
     },
