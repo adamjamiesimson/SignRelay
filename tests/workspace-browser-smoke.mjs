@@ -28,7 +28,7 @@ try {
         if (message.type === 'frame') this.onmessage?.({data:{type:'analysis',session:this.session,frameId:message.frameId,state:'listening',candidate:null,confidence:0,bufferSize:0}});
       }
       terminate() { this.closed = true; }
-      emit(gloss) { if (!this.closed) this.onmessage?.({data:{type:'confirmed',session:this.session,text:gloss,gloss,confidence:0.86,timestamp:Date.now(),source:'starter'}}); }
+      emit(gloss) { if (!this.closed) this.onmessage?.({data:{type:'confirmed',session:this.session,text:gloss,gloss,confidence:0.86,timestamp:Date.now(),source:'personal'}}); }
     };
     navigator.mediaDevices.getUserMedia = () => { window.__qaCameraRequests++;
       if (window.__qaDenyCamera) return Promise.reject(new DOMException('Denied by controlled permission test','NotAllowedError'));
@@ -146,7 +146,7 @@ try {
   const live = await evaluate("window.__qaWorkers.filter(w => !w.closed).map(w => w.languages?.at(-1))");
   assert.deepEqual(live, ["asl"], `Expected exactly one live ASL recognition worker after rapid switching, got ${JSON.stringify(live)}`);
   await evaluate("window.__qaEmit('HELLO')");
-  const entries = () => evaluate("[...document.querySelectorAll('.transcript-entry p')].map(p => p.textContent)");
+  const entries = () => evaluate("[...document.querySelectorAll('.transcript-entry p')].map(p => p.firstChild?.textContent ?? '')");
   await until(async () => (await entries()).includes("HELLO"), "Word after rapid switching was not shown");
   await pause(300);
   assert.deepEqual(await entries(), ["HELLO"], "After rapid switching the transcript must hold exactly the one new word");

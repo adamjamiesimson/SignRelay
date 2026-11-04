@@ -1,0 +1,47 @@
+name: Starter reliability - WLASL positives, exposed and held-out negatives
+# Captures licensed WLASL clips (C-UDA; never leave the runner) once with the
+# production VisionEngine and the exact PR #54 worker, then replays the landmark
+# sequences through starter-rule variants. Read-only; commits nothing; logs and
+# uploads counts, glosses and rule measurements only.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/starter-reliability.yml'
+      - 'lib/asl-starter-recognition.ts'
+      - 'scripts/asl2000-eval/starter-*'
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  starter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    env: {DATA: '${{ github.workspace }}/../wlasl-data', WORK: '${{ github.workspace }}/work/starter'}
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22.13.0', cache: npm}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install
+        run: |
+          npm ci
+          python -m pip install --disable-pip-version-check numpy
+          node scripts/install-vision-assets.mjs
+          mkdir -p "$DATA" "$WORK" outputs
+      - name: Verified WLASL index and clip sets (never uploaded)
+        run: |
+          curl -fL --retry 4 -o "$DATA/WLASL_v0.3.json" https://raw.githubusercontent.com/dxli94/WLASL/master/start_kit/WLASL_v0.3.json
+          PYTHONPATH=training python scripts/asl2000-eval/starter-sets.py "$DATA/WLASL_v0.3.json" "$DATA/videos" "$WORK/clips.json" 150
+      - name: Capture once with the exact PR #54 worker (real research models)
+        run: |
+          npm run build:worker
+          git show 632607f1701bbba7f5c2e5ff423a9da20df22093:public/workers/recognition.worker.js > public/workers/pr54-recognition.worker.js
+          node scripts/asl2000-eval/browser-run.mjs "$(command -v google-chrome)" "$WORK/clips.json" "$WORK/captures" \
+            pr54=/workers/pr54-recognition.worker.js --pause=1000 > "$WORK/capture-log.jsonl"
+          tail -2 "$WORK/capture-log.jsonl"
+      - name: Replay starter-rule variants (research models silent)
+        run: node scripts/asl2000-eval/starter-replay.mjs "$WORK/clips.json" "$WORK/captures" outputs/starter-reliability.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: starter-reliability, path: outputs/starter-reliability.json, retention-days: 14}

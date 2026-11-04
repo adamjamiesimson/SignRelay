@@ -234,6 +234,14 @@ Record the device, browser, results and anything unexpected. These are software-
 
 > **Update (F1, PR #54):** F1 is resolved by the research-model safeguard. ASL-2000 model words are now suggestions that a person must add, and are never inserted or spoken automatically. Evidence is in `docs/release-candidate/F1-SAFEGUARD.md`. Recorded RGB (120 WLASL clips) moved 3 of 3 automatic model words, all wrong, to suggestions. The same run found that **starter rules insert a wrong word automatically in 25 of 120 clips of other signs**. That is unchanged by F1 and is now the main public-release blocker alongside #44. Supervised testing stays **GO**, using the F1 branch. Public release stays **NO-GO**.
 
+> **Update (starter reliability, PR #55, stacked on #54):** evidence is in `docs/release-candidate/STARTER-RELIABILITY.md`.
+> - **Starter rules on recorded RGB:** 149 negative WLASL clips (119 exposed and 30 held out) produce 33 wrong automatic starter words in 30 clips. On 27 positive clips, 16 words are correct.
+> - **Main causes:** the PLEASE/SORRY chest circle (17 wrong words) and THANK YOU's "leaving the face" (12).
+> - **Rule refinements:** none adopted. The best one removes 12 of the 33 wrong words but loses the only correct THANK YOU and breaks 3.3 fps confirmation.
+> - **Output policy:** production now makes starter-rule words suggestions (0 wrong words inserted automatically), as well as BSL-1064, ISL-263, LSE-300 and PSL model words, which were automatic and bypassed F1. Personal signs stay automatic.
+> - This is a transcript-safety change, **not** a recognition improvement.
+> - Supervised testing: **GO** with #54 + #55. Public release: **NO-GO**, because the starter rules stay low precision, and #44 and device evidence are outstanding.
+
 
 **Supervised testing: GO.** Conditions:
 - run on the production-profile build of the RC commit, with fingerspelling off;

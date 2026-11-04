@@ -42,8 +42,8 @@ async function frames(count: number) {
 const confirmations = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "confirmed");
 // ASL research-model words are offered, never confirmed (lib/model-output-policy.ts).
 const suggestions = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "suggested");
-/** What the worker emitted for a model word: a suggestion for ASL, a confirmation elsewhere. */
-const modelWords = (language: string) => language === "asl" ? suggestions() : confirmations();
+/** Research-model words are suggestions in every language (lib/model-output-policy.ts). */
+const modelWords = (_language: string) => { void _language; return suggestions(); };
 
 beforeEach(async () => {
   vi.resetModules();
@@ -107,19 +107,19 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(confirmations()).toHaveLength(0);
   });
 
-  it.each(["asl", "bsl", "isl", "lse", "psl"] as const)("emits one word for two fresh matching %s predictions (ASL: a suggestion, never confirmed)", async language => {
+  it.each(["asl", "bsl", "isl", "lse", "psl"] as const)("emits one suggestion (never a confirmation) for two fresh matching %s predictions", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks[language].mockResolvedValue(prediction);
     await frames(language === "asl" ? 14 : 34);
     expect(modelWords(language)).toHaveLength(1);
     expect(modelWords(language)[0]).toMatchObject({ gloss: "BOOK", text: "Book", source: "model" });
-    if (language === "asl") expect(confirmations()).toHaveLength(0);
+    expect(confirmations()).toHaveLength(0);
     // Emission must consume the prediction; holding its cached output
     // cannot emit another word while the next inference is pending.
     mocks[language].mockImplementation(() => new Promise(() => {}));
     await frames(50);
     expect(modelWords(language)).toHaveLength(1);
-    if (language === "asl") expect(confirmations()).toHaveLength(0);
+    expect(confirmations()).toHaveLength(0);
   });
 
   it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "psl", "uaesl", "vsl"] as const)("preserves personal recognition for %s", async language => {

@@ -64,7 +64,8 @@ export async function openRehearsal(executable, { extraInit = "", returning = tr
     click: text => evaluate(`(() => { const b=${button(text)}; if(!b||b.disabled) throw new Error('Missing button '+${JSON.stringify(text)}); b.click(); })()`),
     has: text => evaluate(`!!${button(text)}`),
     active: () => evaluate("document.querySelector('.status-badge')?.textContent === 'Active'"),
-    words: () => evaluate("[...document.querySelectorAll('.transcript-entry p')].map(p => p.textContent)"),
+    // The word itself; its provenance label (" · sign rules") is a separate span.
+    words: () => evaluate("[...document.querySelectorAll('.transcript-entry p')].map(p => p.firstChild?.textContent ?? '')"),
     play: frames => evaluate(`window.__signrelayRehearsal.play(${JSON.stringify(frames)})`),
     playing: () => evaluate("window.__signrelayRehearsal.playing"),
     async open(path = "/") {
