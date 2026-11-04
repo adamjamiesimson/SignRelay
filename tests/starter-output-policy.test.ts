@@ -10,6 +10,7 @@ import { FINGERSPELLING_FLAG, RESEARCH_EXPORT_MARKER, STARTER_AUTO_UI_MARKER, ST
 import { effectiveStarterOutput, isPrivateHost } from "../lib/release";
 import { publicExportProblems } from "../scripts/assert-public-export.mjs";
 import { markResearchExport, researchReasons } from "../scripts/prune-research.mjs";
+import { expectedStarterOutput } from "../scripts/verify-runtime.mjs";
 
 const AUTO = { [STARTER_OUTPUT_FLAG]: "auto" };
 
@@ -56,6 +57,16 @@ describe("build-time resolution", () => {
       expect(run({ ...AUTO, VERCEL_ENV: "preview", SIGNRELAY_RESEARCH_EXPORT: "1" }).status).not.toBe(0);
       expect(run({ ...AUTO, SIGNRELAY_RESEARCH_EXPORT: "1" }).status).toBe(0);
     } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+});
+
+describe("standalone export verification", () => {
+  it("expects the profile's own policy when verify-runtime runs without the build environment (CI checks a rehearsal export this way)", () => {
+    expect(expectedStarterOutput("rehearsal", {})).toBe("auto");
+    expect(expectedStarterOutput("full", {})).toBe("suggest");
+    expect(expectedStarterOutput("asl-demo", {})).toBe("suggest");
+    expect(expectedStarterOutput("full", { ...AUTO, SIGNRELAY_RESEARCH_EXPORT: "1" })).toBe("auto");
+    expect(expectedStarterOutput("rehearsal", { [STARTER_OUTPUT_FLAG]: "suggest" })).toBe("suggest");
   });
 });
 

@@ -36,6 +36,12 @@ export function expectedFingerspelling(profile, env = process.env, explicit) {
   return resolveFingerspelling({ ...env, NEXT_PUBLIC_SIGNRELAY_PROFILE: env.NEXT_PUBLIC_SIGNRELAY_PROFILE || profile });
 }
 
+/** The starter-rule policy an export built for `profile` should carry (as for fingerspelling).
+ * @param {string} profile @param {Record<string, string | undefined>} [env] */
+export function expectedStarterOutput(profile, env = process.env) {
+  return resolveStarterOutput({ ...env, NEXT_PUBLIC_SIGNRELAY_PROFILE: env.NEXT_PUBLIC_SIGNRELAY_PROFILE || profile });
+}
+
 /** @param {{ root: string, wasmSource: string, ortSource: string, committedWorker?: string | null, evaluated?: any[],
  *   profile?: string, fingerspelling?: string, starterOutput?: string, wasmFiles?: string[], models?: Record<string, { file: string, bytes: number, sha256: string }> }} options */
 export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = null, evaluated = [], profile = "full", fingerspelling = resolveFingerspelling(),
@@ -126,6 +132,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const committed = spawnSync("git", ["show", "HEAD:public/workers/recognition.worker.js"], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 });
   const profile = option("--profile", existsSync(join(root, "models/bdsl401-videomae/model.onnx")) ? "full" : "asl-demo");
   const result = verifyRuntime({ root, profile, fingerspelling: expectedFingerspelling(profile, process.env, option("--fingerspelling")),
+    starterOutput: expectedStarterOutput(profile),
     wasmSource: join(dirname(require.resolve("@mediapipe/tasks-vision")), "wasm"), ortSource: dirname(require.resolve("onnxruntime-web")),
     committedWorker: committed.status === 0 ? sha(committed.stdout) : null,
     evaluated: JSON.parse(readFileSync("docs/evaluation/evaluated-runtimes.json", "utf8")).runtimes });
