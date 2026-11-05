@@ -16,9 +16,11 @@ import { parseArgs } from "node:util";
 import { runCommandSync } from "./run-command.mjs";
 import { FINGERSPELLING_ASSETS, FINGERSPELLING_UI_MARKERS, RESEARCH_EXPORT_MARKER, STARTER_AUTO_UI_MARKER, STARTER_OUTPUT_FLAG } from "../lib/release-flags.mjs";
 import { publicExportProblems } from "./assert-public-export.mjs";
+import { currentSourceCommit } from "./verify-runtime.mjs";
 
 const { values } = parseArgs({ options: { only: { type: "string" }, "skip-rsl": { type: "boolean", default: false }, keep: { type: "string" }, out: { type: "string", default: "work/release-artifact-matrix.json" } } });
 const FLAG = "NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING";
+const sourceCommit = currentSourceCommit();
 const fullSteps = (skipRsl) => [
   ["node", "scripts/verify-vision-runtime.mjs"],
   ...(skipRsl ? [] : [["npm", "run", "install:rsl-model"]]),
@@ -44,11 +46,12 @@ const CONFIGS = [
   { name: "full-explicit-on-unacknowledged", steps: fullSteps, env: { [FLAG]: "on" }, expect: "refused", production: true },
   { name: "full-explicit-on-research-export", steps: fullSteps, env: { [FLAG]: "on", SIGNRELAY_RESEARCH_EXPORT: "1" }, expect: "on" },
   { name: "full-dotenv-on", steps: fullSteps, env: {}, dotenv: `${FLAG}=on\n`, expect: "refused", production: true },
-  // Vercel's build command has no verify-runtime step (so no runtime manifest);
-  // its artifact is checked for the research marker and compiled auto UI only.
-  { name: "vercel-production", steps: vercelSteps, env: { VERCEL_ENV: "production" }, expect: "off", production: "hosted" },
+  { name: "vercel-production", steps: vercelSteps, env: { VERCEL_ENV: "production" }, expect: "off", production: true },
   { name: "vercel-production-explicit-on", steps: vercelSteps, env: { VERCEL_ENV: "production", [FLAG]: "on" }, expect: "refused", production: true },
-  { name: "vercel-preview", steps: vercelSteps, env: { VERCEL_ENV: "preview" }, expect: "on" },
+  { name: "vercel-production-acknowledged-on", steps: vercelSteps, env: { VERCEL_ENV: "production", [FLAG]: "on", SIGNRELAY_RESEARCH_EXPORT: "1" }, expect: "refused" },
+  { name: "vercel-preview", steps: vercelSteps, env: { VERCEL_ENV: "preview" }, expect: "off", production: true },
+  { name: "vercel-preview-dotenv-on", steps: vercelSteps, env: { VERCEL_ENV: "preview" }, dotenv: `${FLAG}=on\n`, expect: "refused" },
+  { name: "vercel-without-system-env-private-capture", steps: vercelSteps, env: { SIGNRELAY_INCLUDE_PRIVATE_CAPTURE: "1" }, expect: "refused" },
   { name: "asl-demo-default", steps: () => profileSteps("asl-demo"), env: {}, expect: "off" },
   { name: "rehearsal-default", steps: () => profileSteps("rehearsal"), env: {}, expect: "on", starter: "auto" },
   { name: "rehearsal-explicit-off", steps: () => profileSteps("rehearsal"), env: { [FLAG]: "off" }, expect: "off", starter: "auto" },
@@ -75,22 +78,30 @@ function inspect() {
   return { researchModels: models, researchWorkers: shippedWorkers, uiMarkers: markers, compiledUi: compiled,
     manifestFingerspelling: manifest?.fingerspelling ?? null, manifestProfile: manifest?.profile ?? null,
     starterAutoUi: text.some(t => t.includes(STARTER_AUTO_UI_MARKER)), manifestStarter: manifest?.starter_output ?? null,
-    researchMarker: existsSync(join("out", RESEARCH_EXPORT_MARKER)), publicProblems: existsSync("out/index.html") ? publicExportProblems("out") : null };
+    researchMarker: existsSync(join("out", RESEARCH_EXPORT_MARKER)), publicProblems: existsSync("out/index.html") ? publicExportProblems("out", sourceCommit) : null };
 }
 
 const selected = values.only ? CONFIGS.filter(c => values.only.split(",").includes(c.name)) : CONFIGS;
+if (selected.some(config => config.dotenv) && existsSync(".env.local"))
+  throw new Error("Run the release matrix from a clean checkout without .env.local.");
 const results = [];
 for (const config of selected) {
   rmSync("out", { recursive: true, force: true });
   if (config.dotenv) writeFileSync(".env.local", config.dotenv);
   const env = { ...process.env, ...config.env };
-  delete env[FLAG]; delete env[STARTER_OUTPUT_FLAG]; delete env.SIGNRELAY_RESEARCH_EXPORT; delete env.VERCEL_ENV; delete env.NEXT_PUBLIC_SIGNRELAY_PROFILE;
+  delete env[FLAG]; delete env[STARTER_OUTPUT_FLAG]; delete env.SIGNRELAY_RESEARCH_EXPORT; delete env.VERCEL_ENV;
+  delete env.NEXT_PUBLIC_SIGNRELAY_PROFILE; delete env.SIGNRELAY_INCLUDE_PRIVATE_CAPTURE;
   Object.assign(env, config.env);
   let failedStep = null, failure = "";
   try {
     for (const [command, ...args] of config.steps(values["skip-rsl"])) {
       const run = runCommandSync(command, args, { env, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
-      if (run.status !== 0) { failedStep = [command, ...args].join(" "); failure = `${run.stdout ?? ""}${run.stderr ?? ""}`.trim().split("\n").slice(-4).join(" | "); break; }
+      if (run.status !== 0) {
+        failedStep = [command, ...args].join(" ");
+        const lines = `${run.stdout ?? ""}\n${run.stderr ?? ""}`.trim().split(/\r?\n/);
+        failure = lines.find(line => line.startsWith("Error:")) ?? lines.slice(-4).join(" | ");
+        break;
+      }
     }
   } finally { if (config.dotenv) rmSync(".env.local", { force: true }); }
   const artifact = failedStep && !existsSync("out/_next") ? null : inspect();
@@ -104,9 +115,11 @@ for (const config of selected) {
   const starterMatch = outcome === "refused" || (artifact.starterAutoUi === (starter === "auto") && (!artifact.manifestStarter || artifact.manifestStarter === starter)
     && (starter === "suggest" || artifact.researchMarker));
   // A production artifact must also pass the public-deploy gate (and carry no research marker).
-  const publicOk = outcome === "refused" || !config.production || (config.production === "hosted" ? !artifact.researchMarker && !artifact.starterAutoUi
-    : (artifact.publicProblems ?? ["no export"]).length === 0 && !artifact.researchMarker);
-  const pass = outcome === config.expect && assetsMatch && starterMatch && publicOk
+  const publicOk = outcome === "refused" || !config.production
+    || (artifact.publicProblems ?? ["no export"]).length === 0 && !artifact.researchMarker;
+  const hostedPreflightRefused = config.steps !== vercelSteps || config.expect !== "refused"
+    || (failedStep === "node scripts/prepare-export.mjs --hosted" && artifact === null);
+  const pass = outcome === config.expect && assetsMatch && starterMatch && publicOk && hostedPreflightRefused
     && (outcome === "refused" || !artifact.manifestFingerspelling || artifact.manifestFingerspelling === outcome || rslOnly);
   const row = { name: config.name, expect: config.expect, outcome, starterExpected: starter, pass, failedStep: rslOnly ? null : failedStep, failure: rslOnly ? undefined : failure || undefined,
     rslWeightsMissingOnly: rslOnly || undefined, ...artifact };

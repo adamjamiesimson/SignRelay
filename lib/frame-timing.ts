@@ -1,5 +1,7 @@
 type Timed = { timestamp: number };
 
+export const MAX_TRACKING_GAP_MS = 750;
+
 /** Keep the complete longest personal-sign window regardless of camera FPS.
  * A hard cap still bounds memory on malformed/high-frequency input. */
 export function appendObservation<T extends Timed>(frames: T[], frame: T) {
@@ -14,10 +16,10 @@ export function appendObservation<T extends Timed>(frames: T[], frame: T) {
 export function trackingGapLimit(frames: readonly Timed[]) {
   const intervals = frames.slice(-13).flatMap((frame, index, recent) => {
     const interval = index ? frame.timestamp - recent[index - 1].timestamp : 0;
-    return interval > 0 && interval <= 750 ? [interval] : [];
+    return interval > 0 && interval <= MAX_TRACKING_GAP_MS ? [interval] : [];
   }).sort((a, b) => a - b);
   const cadence = intervals[Math.floor(intervals.length / 2)] ?? 50;
-  return Math.min(750, Math.max(240, cadence * 2.5));
+  return Math.min(MAX_TRACKING_GAP_MS, Math.max(240, cadence * 2.5));
 }
 
 /** Keep the newest uninterrupted observation, recovering after a real pause.

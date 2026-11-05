@@ -1,16 +1,17 @@
 // Starter-rule output policy fails closed: automatic insertion of unvalidated
 // sign-rule words is possible only in a deliberate, non-public research export.
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { FINGERSPELLING_FLAG, RESEARCH_EXPORT_MARKER, STARTER_AUTO_UI_MARKER, STARTER_OUTPUT_FLAG, assertReleaseSafe, isResearchExport,
+import { FINGERSPELLING_ASSETS, FINGERSPELLING_FLAG, RESEARCH_EXPORT_MARKER, STARTER_AUTO_UI_MARKER, STARTER_OUTPUT_FLAG, assertReleaseSafe, isResearchExport,
   resolveStarterOutput } from "../lib/release-flags.mjs";
 import { effectiveStarterOutput, isPrivateHost } from "../lib/release";
 import { publicExportProblems } from "../scripts/assert-public-export.mjs";
 import { markResearchExport, researchReasons } from "../scripts/prune-research.mjs";
-import { expectedStarterOutput } from "../scripts/verify-runtime.mjs";
+import { expectedStarterOutput, REHEARSAL_HOOK } from "../scripts/verify-runtime.mjs";
 
 const AUTO = { [STARTER_OUTPUT_FLAG]: "auto" };
 
@@ -36,11 +37,32 @@ describe("build-time resolution", () => {
     for (const bad of ["on", "true", "AUTO", "1"]) expect(() => resolveStarterOutput({ [STARTER_OUTPUT_FLAG]: bad })).toThrow(/must be/);
     expect(isResearchExport({ SIGNRELAY_RESEARCH_EXPORT: "1", VERCEL_ENV: "preview" })).toBe(false);
   });
-  it("is resolved by next.config.ts, so the Vercel build command (which skips prepare-export) is covered too", () => {
+  it("is resolved by next.config.ts and verified on Vercel exports", () => {
     expect(readFileSync("next.config.ts", "utf8")).toMatch(/NEXT_PUBLIC_SIGNRELAY_STARTER_OUTPUT: resolveStarterOutput\(process\.env\)/);
     const vercel = JSON.parse(readFileSync("vercel.json", "utf8")).buildCommand as string;
     expect(vercel).toMatch(/next build/);
-    expect(vercel).toMatch(/prune-research\.mjs/); // asserts release safety and marks research exports
+    expect(vercel).toMatch(/assert-public-export\.mjs out$/);
+  });
+  it("hosted preflight works without system variables and removes stale exports", () => {
+    const dir = mkdtempSync(join(tmpdir(), "signrelay-hosted-env-"));
+    const run = (env: Record<string, string> = {}) => spawnSync(process.execPath, [resolve("scripts/prepare-export.mjs"), "--hosted"], {
+      cwd: dir, encoding: "utf8", env: { PATH: process.env.PATH ?? "", NODE_ENV: "production", ...env },
+    });
+    try {
+      const envFile = join(dir, ".env.local");
+      for (const line of [`${FINGERSPELLING_FLAG}=on`, "SIGNRELAY_INCLUDE_PRIVATE_CAPTURE=1", "NEXT_PUBLIC_SIGNRELAY_PROFILE=rehearsal"]) {
+        writeFileSync(envFile, `${line}\n`);
+        expect(run().stderr).toMatch(/set in \.env\.local|never in \.env\.local/);
+      }
+      rmSync(envFile);
+      expect(run({ ...AUTO, SIGNRELAY_RESEARCH_EXPORT: "1" }).stderr).toMatch(/hosted build/);
+      expect(run({ SIGNRELAY_INCLUDE_PRIVATE_CAPTURE: "1" }).stderr).toMatch(/Hosted exports require/);
+      const stale = join(dir, "out", "study.txt");
+      mkdirSync(join(dir, "out"));
+      writeFileSync(stale, "stale research route");
+      expect(run().status).toBe(0);
+      expect(existsSync(stale)).toBe(false);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
   });
   it("prepare-export rejects research switches in .env files and an unacknowledged auto", () => {
     const dir = mkdtempSync(join(tmpdir(), "signrelay-starter-env-"));
@@ -83,7 +105,8 @@ describe("browser-side guard", () => {
   it("the workspace fails closed until the host is known and shows a research banner only in auto builds", () => {
     const source = readFileSync("components/translator-experience.tsx", "utf8");
     expect(source).toMatch(/const starterOutputRef = useRef<"auto" \| "suggest">\("suggest"\)/);
-    expect(source).toMatch(/suggestionFromMessage\(message, selectedRef\.current, Date\.now\(\), starterOutputRef\.current\)/);
+    expect(source).toMatch(/suggestionFromMessage\(message, selectedRef\.current, performance\.now\(\), starterOutputRef\.current\)/);
+    expect(source).toMatch(/canConfirmAutomatically\(message\.source, selectedRef\.current, starterOutputRef\.current\)/);
     expect(source).toMatch(/\{STARTER_OUTPUT === "auto" && \(/);
     expect(source).toContain(STARTER_AUTO_UI_MARKER); // the literal the artifact checks search for
   });
@@ -99,9 +122,14 @@ describe("research-export marker and the public-deploy gate", () => {
   function exportDir(manifest: Record<string, unknown> | null, script = "console.log('app')") {
     const root = mkdtempSync(join(tmpdir(), "signrelay-public-"));
     mkdirSync(join(root, "_next/static/chunks"), { recursive: true });
+    mkdirSync(join(root, "workers"));
     writeFileSync(join(root, "index.html"), "<html></html>");
     writeFileSync(join(root, "_next/static/chunks/app.js"), script);
-    if (manifest) writeFileSync(join(root, "runtime-manifest.json"), JSON.stringify(manifest));
+    const worker = "console.log('recognition worker')";
+    writeFileSync(join(root, "workers", "recognition.worker.js"), worker);
+    if (manifest) writeFileSync(join(root, "runtime-manifest.json"), JSON.stringify({
+      recognition_worker_sha256: createHash("sha256").update(worker).digest("hex"), ...manifest,
+    }));
     return root;
   }
   const PUBLIC = { profile: "full", starter_output: "suggest", fingerspelling: "off", rehearsal_hook: false };
@@ -124,5 +152,47 @@ describe("research-export marker and the public-deploy gate", () => {
     const script = readFileSync("scripts/deploy-firebase.sh", "utf8");
     expect(script.indexOf("node scripts/assert-public-export.mjs out")).toBeGreaterThan(0);
     expect(script.indexOf("node scripts/assert-public-export.mjs out")).toBeLessThan(script.indexOf("firebase deploy"));
+    expect(JSON.parse(readFileSync("firebase.json", "utf8")).hosting.predeploy).toBe("node scripts/assert-public-export.mjs out");
+  });
+  it("rejects stale research assets and private RSC payloads even with a clean manifest", () => {
+    const root = exportDir(PUBLIC, `window.${REHEARSAL_HOOK} = {};`);
+    try {
+      const { modelDir, workers } = FINGERSPELLING_ASSETS;
+      mkdirSync(join(root, modelDir), { recursive: true });
+      writeFileSync(join(root, modelDir, "NOTICE.md"), "license");
+      writeFileSync(join(root, modelDir, "stale.onnx"), "stale model");
+      writeFileSync(join(root, "workers", workers[0]), "stale worker");
+      writeFileSync(join(root, "study.txt"), "stale payload");
+      expect(publicExportProblems(root)).toEqual([
+        "private route /study is included",
+        `research asset ${modelDir}/stale.onnx is included`,
+        `research asset workers/${workers[0]} is included`,
+        "compiled client contains the automated rehearsal hook",
+      ]);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+  it("refuses a recognition bundle replaced after artifact verification", () => {
+    const root = exportDir(PUBLIC);
+    try {
+      writeFileSync(join(root, "workers", "recognition.worker.js"), "stale recognition worker");
+      expect(publicExportProblems(root)).toEqual(["the recognition worker is missing or differs from the verified runtime manifest"]);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+  it("refuses an otherwise valid export verified for another source commit", () => {
+    const root = exportDir({ ...PUBLIC, source_commit: "a".repeat(40) });
+    try {
+      expect(publicExportProblems(root, "b".repeat(40))).toEqual(["the export was not verified for the current source commit"]);
+      expect(publicExportProblems(root, "a".repeat(40))).toEqual([]);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+  it("invalidates a pre-existing manifest when runtime verification fails", () => {
+    const root = exportDir(PUBLIC);
+    try {
+      const result = spawnSync(process.execPath, [resolve("scripts/verify-runtime.mjs"), "--out", root, "--profile", "full"],
+        { encoding: "utf8" });
+      expect(result.status).toBe(1);
+      expect(result.stdout).toMatch(/missing vision\/wasm/);
+      expect(publicExportProblems(root)).toEqual(["runtime-manifest.json is missing (verify-runtime did not run)"]);
+    } finally { rmSync(root, { recursive: true, force: true }); }
   });
 });

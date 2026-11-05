@@ -37,7 +37,7 @@ export class RecognitionSession {
   ) {
     this.launch();
     this.watchdog = setInterval(() => {
-      if (this.waiting && Date.now() - this.waiting.since >= 8000) {
+      if (this.waiting && performance.now() - this.waiting.since >= 8000) {
         this.recover("Recognition stopped responding. Restarting…");
       }
     }, 1000);
@@ -50,7 +50,7 @@ export class RecognitionSession {
       this.stats.offered++;
       if (this.queued) this.stats.replaced++;
       this.queued = message.frame;
-      this.queuedAt = Date.now();
+      this.queuedAt = performance.now();
       this.pump();
       return;
     }
@@ -59,6 +59,7 @@ export class RecognitionSession {
     this.waiting = null;
     this.queued = null;
     if (!this.worker) {
+      if (message.type === "reset") return;
       this.restarts = [];
       this.recovering = true;
       this.onStatus({ state: "recovering", message: "Restarting recognition…" });
@@ -106,7 +107,7 @@ export class RecognitionSession {
         if (message.type === "fault") { this.recover(message.message); return; }
         const waiting = this.waiting;
         if (message.type === "analysis" && waiting && message.frameId === waiting.id) {
-          this.lastRoundTripMs = Date.now() - waiting.since;
+          this.lastRoundTripMs = performance.now() - waiting.since;
           this.stats.answered++;
           this.waiting = null;
           if (this.recovering) {
@@ -141,7 +142,7 @@ export class RecognitionSession {
     if (!this.worker || this.waiting || !this.queued) return;
     const frame = this.queued;
     this.queued = null;
-    this.waiting = { id: ++this.nextFrameId, since: Date.now() };
+    this.waiting = { id: ++this.nextFrameId, since: performance.now() };
     this.stats.forwarded++;
     this.stats.lastQueueAgeMs = this.waiting.since - this.queuedAt;
     try {
@@ -158,12 +159,13 @@ export class RecognitionSession {
     this.waiting = null;
     this.queued = null;
     this.session++;
-    this.restarts = this.restarts.filter(time => Date.now() - time < 60000);
+    const now = performance.now();
+    this.restarts = this.restarts.filter(time => now - time < 60000);
     if (this.restarts.length >= 2) {
       this.onStatus({ state: "failed", message: "Recognition is paused after repeated interruptions. Use Restart recognition to try again." });
       return;
     }
-    this.restarts.push(Date.now());
+    this.restarts.push(now);
     this.recovering = true;
     this.onStatus({ state: "recovering", message });
     this.launch();

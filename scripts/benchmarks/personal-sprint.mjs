@@ -14,6 +14,8 @@ const quantile = (values, q) => [...values].sort((a,b) => a-b)[Math.ceil(values.
 const summary = values => ({ medianMs: quantile(values,.5), p95Ms: quantile(values,.95), samples: values });
 const repeats = Number(process.env.BENCHMARK_REPEATS ?? 20);
 assert.ok(Number.isInteger(repeats) && repeats >= 2);
+const sizes = (process.env.BENCHMARK_COUNTS ?? "5,10,25,50,100").split(",").map(Number);
+assert.ok(sizes.every(size => Number.isSafeInteger(size) && size >= 0));
 try {
   const common = { bundle:true, platform:"node", format:"esm", logLevel:"silent", absWorkingDir:root };
   await build({ ...common, stdin:{contents:execFileSync("git",["show",`${baseline}:lib/personalized-recognition.ts`],{encoding:"utf8"}),
@@ -26,7 +28,7 @@ try {
   const query = makeSign("HELLO",{duration:3000,count:61});
   const base = old.prepareCalibrationSequence(makeSign("HELLO",{duration:1800,count:37}));
   const rows=[];
-  for (const mode of ["easy","near-rivals","spread","matching-last"]) for (const count of [5,10,25,50,100]) {
+  for (const mode of ["easy","near-rivals","spread","matching-last"]) for (const count of sizes) {
     const templates=Array.from({length:count},(_,position)=>{
       const i=mode==="matching-last"?(position+1)%count:position;
       const offset=i===0?0:mode==="easy"?1.25+i%3*.15:mode==="near-rivals"?.01+i%5*.018:.12+i%23*.017;

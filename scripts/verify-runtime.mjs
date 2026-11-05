@@ -6,12 +6,13 @@
 //   node scripts/verify-runtime.mjs [--out out] [--profile full|asl-demo|rehearsal] [--fingerspelling on|off] [--require-evaluated]
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { TASKS_VERSION, VISION_MODELS, VISION_WASM_FILES } from "../lib/vision-runtime.mjs";
-import { FINGERSPELLING_ASSETS, FINGERSPELLING_UI_MARKERS, RESEARCH_EXPORT_MARKER, STARTER_AUTO_UI_MARKER, resolveFingerspelling, resolveStarterOutput } from "../lib/release-flags.mjs";
+import { FINGERSPELLING_UI_MARKERS, RESEARCH_EXPORT_MARKER, STARTER_AUTO_UI_MARKER, resolveFingerspelling, resolveStarterOutput } from "../lib/release-flags.mjs";
+import { researchAssetPaths } from "./prune-research.mjs";
 
 const require = createRequire(import.meta.url);
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
@@ -20,6 +21,10 @@ const fileSha = path => existsSync(path) ? sha(readFileSync(path)) : null;
 /** Language model directories that the ASL demo profile must not ship. */
 export const NON_ASL_MODEL_DIRS = ["bdsl401-videomae", "bsl1064-pose2sign", "isl263-include", "lse300-swl", "psl776-hfad", "rsl1000-slovo"];
 export const REHEARSAL_HOOK = "__signrelayRehearsal";
+export function currentSourceCommit() {
+  const result = spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" });
+  return result.status === 0 ? result.stdout.trim() : null;
+}
 const jsFiles = dir => !existsSync(dir) ? [] : readdirSync(dir).flatMap(name => {
   const path = join(dir, name);
   return statSync(path).isDirectory() ? jsFiles(path) : name.endsWith(".js") ? [path] : [];
@@ -98,9 +103,7 @@ export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = n
   }
   // Research fingerspelling ships only in builds that opted in (lib/release-flags.mjs).
   manifest.fingerspelling = fingerspelling;
-  const { modelDir, workers, keptNotices } = FINGERSPELLING_ASSETS;
-  const researchAssets = [...(existsSync(join(root, modelDir)) ? readdirSync(join(root, modelDir)).filter(name => !keptNotices.has(name)).map(name => `${modelDir}/${name}`) : []),
-    ...workers.filter(file => existsSync(join(root, "workers", file))).map(file => `workers/${file}`)];
+  const researchAssets = researchAssetPaths(root);
   if (fingerspelling === "off" && root.replace(/\/$/, "") !== "public" && researchAssets.length)
     fail(`fingerspelling is disabled but the export ships ${researchAssets.join(", ")}`, "run node scripts/prune-research.mjs out, or build with NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING=on for a research build");
   // The artifact itself, not the environment: what the compiled client actually contains.
@@ -129,6 +132,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const args = process.argv.slice(2);
   const option = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
   const root = option("--out", "out");
+  const manifestPath = join(root, "runtime-manifest.json");
+  const isExport = existsSync(root) && root.replace(/\/$/, "") !== "public";
+  // A failed verification must leave no manifest that deploy-only could trust.
+  if (isExport) rmSync(manifestPath, { force: true });
   const committed = spawnSync("git", ["show", "HEAD:public/workers/recognition.worker.js"], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 });
   const profile = option("--profile", existsSync(join(root, "models/bdsl401-videomae/model.onnx")) ? "full" : "asl-demo");
   const result = verifyRuntime({ root, profile, fingerspelling: expectedFingerspelling(profile, process.env, option("--fingerspelling")),
@@ -136,10 +143,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     wasmSource: join(dirname(require.resolve("@mediapipe/tasks-vision")), "wasm"), ortSource: dirname(require.resolve("onnxruntime-web")),
     committedWorker: committed.status === 0 ? sha(committed.stdout) : null,
     evaluated: JSON.parse(readFileSync("docs/evaluation/evaluated-runtimes.json", "utf8")).runtimes });
+  result.manifest.source_commit = currentSourceCommit();
   if (args.includes("--require-evaluated") && !result.manifest.real_video_evidence)
     result.failures.push("this recognition worker has no recorded real-video development evidence — run the paired video pilot and record it in docs/evaluation/evaluated-runtimes.json");
   // Only exports get a manifest; public/ is source and must stay unchanged.
-  if (existsSync(root) && root.replace(/\/$/, "") !== "public") writeFileSync(join(root, "runtime-manifest.json"), JSON.stringify(result.manifest, null, 2) + "\n");
+  if (isExport && !result.failures.length) writeFileSync(manifestPath, JSON.stringify(result.manifest, null, 2) + "\n");
   console.log(JSON.stringify({ ok: result.failures.length === 0, failures: result.failures, recognition_worker_sha256: result.manifest.recognition_worker_sha256,
     matches_committed_worker: result.manifest.matches_committed_worker, real_video_evidence: result.manifest.real_video_evidence?.outcome ?? "none recorded" }, null, 2));
   if (result.failures.length) process.exit(1);

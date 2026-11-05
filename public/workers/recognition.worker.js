@@ -22,6 +22,7 @@ function shouldConfirm({
 }
 
 // lib/frame-timing.ts
+var MAX_TRACKING_GAP_MS = 750;
 function appendObservation(frames2, frame) {
   const previous = frames2.at(-1);
   if (previous && frame.timestamp <= previous.timestamp) frames2.length = 0;
@@ -31,10 +32,10 @@ function appendObservation(frames2, frame) {
 function trackingGapLimit(frames2) {
   const intervals = frames2.slice(-13).flatMap((frame, index, recent) => {
     const interval = index ? frame.timestamp - recent[index - 1].timestamp : 0;
-    return interval > 0 && interval <= 750 ? [interval] : [];
+    return interval > 0 && interval <= MAX_TRACKING_GAP_MS ? [interval] : [];
   }).sort((a, b) => a - b);
   const cadence = intervals[Math.floor(intervals.length / 2)] ?? 50;
-  return Math.min(750, Math.max(240, cadence * 2.5));
+  return Math.min(MAX_TRACKING_GAP_MS, Math.max(240, cadence * 2.5));
 }
 function recentContinuousFrames(frames2, duration, tracked) {
   const end = frames2.at(-1);
@@ -15448,26 +15449,29 @@ function invalidatePrediction() {
   }
   modelGeneration += 1;
 }
-function resetSession() {
+function resetEvidence() {
   completedModelMs = void 0;
-  for (const request of pending.values()) request.controller.abort();
-  pending.clear();
   invalidatePersonal();
   frames.length = 0;
   receivedFrames = 0;
   lastInferenceAt = -Infinity;
-  lastConfirmation = { label: "", time: 0 };
   invalidatePrediction();
   candidateLabel = null;
   candidateStreak = 0;
   candidateIsModel = false;
   blockedStarter = null;
   starterSeenAt = 0;
+  hadPersonalTracking = false;
+  candidateSource = void 0;
+}
+function resetSession() {
+  for (const request of pending.values()) request.controller.abort();
+  pending.clear();
+  resetEvidence();
+  lastConfirmation = { label: "", time: 0 };
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
-  hadPersonalTracking = false;
-  candidateSource = void 0;
 }
 self.onmessage = async (event) => {
   const processingStarted = performance.now();
@@ -15484,6 +15488,12 @@ self.onmessage = async (event) => {
     return;
   }
   const now = event.data.frame.timestamp;
+  const previous = frames.at(-1);
+  if (previous) {
+    const gap = now - previous.timestamp;
+    if (gap < 0) resetSession();
+    else if (gap === 0 || gap > MAX_TRACKING_GAP_MS) resetEvidence();
+  }
   for (const [language, request] of pending) {
     const deadline = request.phase === "loading" ? MODEL_LOAD_TIMEOUT_MS : NORMAL_INFERENCE_TIMEOUT_MS;
     if (now - request.started < deadline) continue;

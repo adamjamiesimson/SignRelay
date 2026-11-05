@@ -1,4 +1,5 @@
 import { LANGUAGE_IDS, type LanguageId } from "./model-adapters";
+import type { WorkerConfirmation } from "./vision-types";
 
 /**
  * How recognised words reach the transcript.
@@ -26,6 +27,13 @@ export function modelWordsNeedAcceptance(language: LanguageId): boolean {
 /** Starter rules exist only for ASL. */
 export function starterWordsNeedAcceptance(policy: "auto" | "suggest"): boolean {
   return policy !== "auto";
+}
+
+/** Worker payloads can come from a cached bundle. Require explicit provenance
+ * before allowing an incoming word to reach the automatic transcript path. */
+export function canConfirmAutomatically(source: WorkerConfirmation["source"], language: LanguageId,
+  starterOutput: "auto" | "suggest"): boolean {
+  return source === "personal" || (source === "starter" && language === "asl" && !starterWordsNeedAcceptance(starterOutput));
 }
 
 /** How long an unanswered suggestion stays offered before it is withdrawn. */

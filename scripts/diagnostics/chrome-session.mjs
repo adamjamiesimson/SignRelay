@@ -14,11 +14,33 @@ export async function startChrome(executable, { forwardAssets = false, proxy = p
   if (proxy) args.push(`--proxy-server=${proxy}`, "--proxy-bypass-list=<-loopback>;localhost;127.0.0.1");
   const browser = spawn(executable, [...args, "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
   let stderr = ""; browser.stderr.setEncoding("utf8"); browser.stderr.on("data", chunk => { stderr += chunk; });
+  let launchError;
+  browser.once("error", error => { launchError = error; });
+  const browserClosed = new Promise(resolve => browser.once("close", resolve));
+  const waitForBrowserClose = async () => {
+    let timer;
+    try {
+      await Promise.race([browserClosed, new Promise(resolve => { timer = setTimeout(resolve, 3000); })]);
+    } finally { clearTimeout(timer); }
+  };
   let socket;
-  const close = async () => { socket?.close(); browser.kill(); await rm(profile, { recursive: true, force: true, maxRetries: 3 }); };
+  const close = async () => {
+    // Let Chrome release its Windows profile locks before deleting the profile.
+    if (socket?.readyState === WebSocket.OPEN) {
+      try { socket.send(JSON.stringify({ id: 0, method: "Browser.close" })); } catch {}
+      await waitForBrowserClose();
+    }
+    if (browser.exitCode === null && browser.signalCode === null) {
+      browser.kill();
+      await waitForBrowserClose();
+    }
+    socket?.close();
+    await rm(profile, { recursive: true, force: true, maxRetries: 8, retryDelay: 150 });
+  };
   try {
     let tabs;
     for (let i = 0; i < 150; i++) {
+      if (launchError) throw launchError;
       if (browser.exitCode !== null) throw new Error("Chrome could not start");
       try { tabs = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json(); if (tabs.length) break; } catch {}
       await delay(200);

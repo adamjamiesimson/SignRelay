@@ -167,6 +167,29 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: null });
     expect(confirmations()).toHaveLength(0);
   });
+
+  it.each([1000, -1000])("does not carry a saved-sign match across a %ims camera discontinuity", async gap => {
+    const saved = { id: "saved", gloss: "BOOK", text: "Book", createdAt: 1, frames: [] };
+    await worker.onmessage({ data: { type: "templates", language: "csl", templates: [saved] } });
+    mocks.personal.mockReturnValueOnce(prediction).mockReturnValueOnce(prediction).mockReturnValue(null);
+    await frames(2);
+    expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: "BOOK", source: "personal" });
+    expect(confirmations()).toHaveLength(0);
+
+    timestamp += gap;
+    await frames(1);
+
+    expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ type: "analysis", state: "listening", candidate: null, bufferSize: 1 });
+    expect(confirmations()).toHaveLength(0);
+  });
+
+  it("does not complete a starter streak on the other side of a camera pause", async () => {
+    mocks.starter.mockReturnValue({ prediction, ambiguousOpenPalm: false, labels: ["BOOK"] });
+    await frames(1);
+    timestamp += 1000;
+    await frames(1);
+    expect(confirmations()).toHaveLength(0);
+  });
   it("backs off a failed ASL load and resumes after the network recovers", async () => {
     mocks.asl.mockRejectedValue(new Error("Network unavailable"));
     await frames(6);

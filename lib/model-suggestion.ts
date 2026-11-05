@@ -17,7 +17,7 @@ export type PendingSuggestion = {
   /** The worker's recognition timestamp: the same clock as every confirmed
    * transcript entry, so an accepted word can be placed where it was signed. */
   signedAt: number;
-  /** Wall-clock times (Date.now()) that drive the interface. */
+  /** Monotonic times that drive the interface. They are never persisted. */
   receivedAt: number;
   shownAt: number;
   /** Add ignores activation before this: on first showing, and again whenever
@@ -66,7 +66,7 @@ export function suggestionFromMessage(message: WorkerSuggestion | WorkerConfirma
   // Defence in depth: a research-model confirmation (for example from an older
   // cached worker) is demoted to a suggestion.
   if (message.source === "model" && modelWordsNeedAcceptance(language)) return make(`${message.session ?? 0}:c${message.timestamp}:${message.gloss}`, "model");
-  if (message.source === "starter" && starterWordsNeedAcceptance(starterOutput)) return make(`${message.session ?? 0}:t${message.timestamp}:${message.gloss}`, "starter");
+  if (message.source === "starter" && language === "asl" && starterWordsNeedAcceptance(starterOutput)) return make(`${message.session ?? 0}:t${message.timestamp}:${message.gloss}`, "starter");
   return null;
 }
 

@@ -99,7 +99,11 @@ export class LiveVision {
       this.snapshot={bitmap,timestamp,capturedAt,mediaSlot:slot,presentedFrames:metadata.presentedFrames};
       this.lastSampleTimestamp=timestamp;
       this.stats.sampled++;
-    } catch(error){this.snapshotError=error instanceof Error?error:new Error(String(error));}
+    } catch (error) {
+      this.snapshot?.bitmap.close();
+      this.snapshot = null;
+      this.snapshotError = error instanceof Error ? error : new Error(String(error));
+    }
     finally {own?.frame.close();}
   }
   private whenIdle() {return this.occupied?new Promise<void>(resolve=>this.idleWaiters.push(resolve)):Promise.resolve();}
@@ -270,7 +274,11 @@ export class LiveVision {
       if(this.trackingProfile==="fingerspelling"){
         if(!("videoWidth" in video))throw new Error("Fingerspelling requires a video source");
         this.watchDecodedFrames(video);
-        if(this.snapshotError)throw this.snapshotError;
+        if (this.snapshotError) {
+          const error = this.snapshotError;
+          this.snapshotError = null;
+          throw error;
+        }
         const sample=this.snapshot;this.snapshot=null;
         if(!sample)return null;
         if(performance.now()-sample.capturedAt>200){sample.bitmap.close();this.stats.stale++;return null;}

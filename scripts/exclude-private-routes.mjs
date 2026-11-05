@@ -9,6 +9,7 @@ import { pathToFileURL } from "node:url";
 // Private development tooling: the ASL capture recorder and the supervised signer study.
 export const PRIVATE_ROUTES = ["field-test", "study"];
 export const PRIVATE_EXPORT_MARKER = ".signrelay-private-capture-included";
+export const privateRoutePaths = route => [route, `${route}.html`, `${route}.txt`];
 
 async function files(directory) {
   const found = [];
@@ -23,7 +24,7 @@ async function files(directory) {
 const assetRefs = text => new Set([...text.matchAll(/\/_next\/static\/[^"'\s\\)]+/g)].map(match => match[0]));
 const isRouteFile = (root, path, route) => {
   const name = relative(root, path).split(/[\\/]/);
-  return name[0] === route || name[0] === `${route}.html` || name[0] === `${route}.txt`;
+  return privateRoutePaths(route).includes(name[0]);
 };
 
 export async function excludePrivateRoutes(root = "out", routes = PRIVATE_ROUTES) {
@@ -36,7 +37,7 @@ export async function excludePrivateRoutes(root = "out", routes = PRIVATE_ROUTES
   const privateOnly = new Set();
   for (const path of privateDocs) for (const ref of assetRefs(await readFile(path, "utf8"))) if (!publicRefs.has(ref)) privateOnly.add(ref);
 
-  for (const route of routes) for (const target of [route, `${route}.html`, `${route}.txt`]) await rm(join(root, target), { recursive: true, force: true });
+  for (const route of routes) for (const target of privateRoutePaths(route)) await rm(join(root, target), { recursive: true, force: true });
   const removedAssets = [];
   for (const ref of privateOnly) {
     const path = join(root, ref);

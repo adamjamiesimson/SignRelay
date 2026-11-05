@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { LANGUAGE_IDS } from "../lib/model-adapters";
 import { MAX_MISSED_NOTES, MAX_PENDING_SUGGESTIONS, MISSED_NOTE_LIFETIME_MS, SUGGESTION_ARMING_MS, SUGGESTION_LIFETIME_MS, SUGGESTION_RELEASE_GRACE_MS,
-  SUGGEST_ONLY_MODEL_LANGUAGES, modelWordsNeedAcceptance, starterWordsNeedAcceptance } from "../lib/model-output-policy";
+  SUGGEST_ONLY_MODEL_LANGUAGES, canConfirmAutomatically, modelWordsNeedAcceptance, starterWordsNeedAcceptance } from "../lib/model-output-policy";
 import { EMPTY_SUGGESTIONS, acceptSuggestion, announceSuggestion, holdSuggestions, insertBySigningTime, isArmed, nextSuggestionDeadline, offerSuggestion,
   removeSuggestion, suggestionFromMessage, tickSuggestions, type PendingSuggestion, type SuggestionState } from "../lib/model-suggestion";
 import { RecognitionSession } from "../lib/recognition-session";
@@ -29,6 +29,15 @@ describe("output policy", () => {
     expect(() => resolveStarterOutput({ [STARTER_OUTPUT_FLAG]: "auto" })).toThrow();
     expect(readFileSync("scripts/prepare-export.mjs", "utf8")).toMatch(/STARTER_OUTPUT_FLAG/);
   });
+  it("allows only attributed personal signs or locally authorized ASL starter rules to enter automatically", () => {
+    for (const language of LANGUAGE_IDS) {
+      expect(canConfirmAutomatically("personal", language, "suggest")).toBe(true);
+      expect(canConfirmAutomatically("starter", language, "suggest")).toBe(false);
+      expect(canConfirmAutomatically("starter", language, "auto")).toBe(language === "asl");
+      expect(canConfirmAutomatically("model", language, "auto")).toBe(false);
+      expect(canConfirmAutomatically(undefined, language, "auto")).toBe(false);
+    }
+  });
 });
 
 const starter = (gloss: string, signedAt: number, now: number) => suggestionFromMessage(confirmed("starter", gloss, signedAt), "asl", now, "suggest")!;
@@ -47,6 +56,7 @@ describe("suggestion lifecycle", () => {
   it("turns starter words into suggestions under the suggest policy and leaves personal signs automatic", () => {
     expect(suggestionFromMessage(confirmed("starter", "HELLO"), "asl", 50, "suggest")).toMatchObject({ source: "starter", text: "HELLO" });
     expect(suggestionFromMessage(confirmed("starter", "HELLO"), "asl", 50, "auto")).toBeNull();
+    expect(suggestionFromMessage(confirmed("starter", "HELLO"), "bsl", 50, "suggest")).toBeNull();
     expect(suggestionFromMessage(confirmed("personal"), "asl", 50, "suggest")).toBeNull();
     expect(suggestionFromMessage(confirmed("personal"), "bsl", 50, "suggest")).toBeNull();
   });
@@ -191,11 +201,11 @@ describe("RecognitionSession forwards suggestions only from the live session", (
 
 describe("workspace wiring (source review)", () => {
   const source = readFileSync("components/translator-experience.tsx", "utf8");
-  const handler = source.slice(source.indexOf("const handleWorkerMessage"), source.indexOf("const handleWorkerMessage") + 2600);
   it("offers a suggestion (build policy for starter words) before the confirmed path and never speaks or inserts it there", () => {
-    const offered = handler.slice(handler.indexOf("const offered"), handler.indexOf("if (message.type !== \"confirmed\") return;"));
-    expect(offered).toMatch(/suggestionFromMessage\(message, selectedRef\.current, Date\.now\(\), starterOutputRef\.current\)/);
-    expect(offered).toMatch(/offerSuggestion\(suggestionsRef\.current, offered, Date\.now\(\)\)/);
+    const handler = source.slice(source.indexOf("const handleWorkerMessage"));
+    const offered = handler.slice(handler.indexOf("const offered"), handler.indexOf("const entry: TranscriptEntry"));
+    expect(offered).toMatch(/suggestionFromMessage\(message, selectedRef\.current, performance\.now\(\), starterOutputRef\.current\)/);
+    expect(offered).toMatch(/offerSuggestion\(suggestionsRef\.current, offered\)/);
     expect(offered).toMatch(/setAnnouncement\(announceSuggestion\(event\)\)/);
     expect(offered).not.toMatch(/speak\(|setEntries|entriesRef\.current =/);
   });
@@ -212,8 +222,7 @@ describe("workspace wiring (source review)", () => {
     expect(source).toMatch(/useEffect\(\(\) => \{ withdrawSuggestion\(\); \}, \[selected, aslMode, step, withdrawSuggestion\]\)/);
     expect(source).toMatch(/if \(cameraState !== "active"\) withdrawSuggestion\(\)/);
     expect(source).toMatch(/if \(status\.state !== "running"\) withdrawSuggestion\(\)/);
-    expect(source).toMatch(/tickSuggestions\(suggestionsRef\.current, Date\.now\(\)\)/);
-    expect(source).toMatch(/onPointerEnter=\{\(\) => holdPending\(true\)\} onPointerLeave=\{\(\) => holdPending\(false\)\}/);
+    expect(source).toMatch(/tickSuggestions\(suggestionsRef\.current, performance\.now\(\)\)/);
     expect(source.slice(source.indexOf("const clearTranscript"), source.indexOf("const clearTranscript") + 600)).toMatch(/withdrawSuggestion\(\)/);
   });
   it("uses a new worker URL version so a cached older worker is never reused", () => {

@@ -1,10 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "node scripts/install-vision-assets.mjs && npm run build:worker && npx next build && node scripts/exclude-private-routes.mjs && node scripts/prune-research.mjs out",
+  "buildCommand": "node scripts/prepare-export.mjs --hosted && node scripts/install-vision-assets.mjs && npm run build:worker && npx next build && node scripts/exclude-private-routes.mjs && node scripts/prune-research.mjs out && node scripts/verify-runtime.mjs --out out --profile full && node scripts/assert-public-export.mjs out",
   "git": {
     "deploymentEnabled": {
-      "feature/pretrained-language-expansion": false
+      "feature/pretrained-language-expansion": false,
+      "codex/engineering-excellence-sprint": false
     }
   }
 }

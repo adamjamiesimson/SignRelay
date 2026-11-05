@@ -11,7 +11,7 @@ import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 const executable = process.argv[2];
 if (!executable) throw new Error("usage: node tests/model-suggestion-browser-smoke.mjs <chrome>");
 const port = 19700 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${port}`;
-const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--port", String(port)], { stdio: "ignore" });
+const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", String(port)], { stdio: "ignore" });
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function until(check, reason, attempts = 300) {
   for (let i = 0; i < attempts; i++) { if (await check()) return; await pause(50); }
@@ -90,11 +90,16 @@ try {
   assert.equal(await evaluate(`${action("accept")}.getAttribute('aria-disabled')`), "true", "Add is armed immediately");
   checks.push("research-model suggestion shown and labelled; transcript unchanged; nothing spoken (auto speak on); announced as not added; focus not moved");
 
-  // 2. An immediate activation (before arming) does nothing.
-  await evaluate(`${action("accept")}.click()`);
+  // 2. An immediate activation does nothing, even if the wall clock jumps forward.
+  await evaluate(`(() => {
+    const wallClock = Date.now;
+    Date.now = () => wallClock() + 2000;
+    try { ${action("accept")}.click(); } finally { Date.now = wallClock; }
+  })()`);
   assert.deepEqual(await entries(), [], "An immediate tap accepted the suggestion");
+  assert.deepEqual(await evaluate("window.__qa.spoken"), [], "An immediate tap spoke the suggestion");
   assert.match(await announcements(), /Not added yet\. Check the word, then press Add again\./, "An early press was not explained");
-  checks.push("activation within 600 ms of appearing is ignored and explained to screen readers");
+  checks.push("activation within 600 ms of appearing is ignored and explained to screen readers, even after a wall-clock jump");
 
   // 3. Keyboard: Enter adds once; an extra click adds nothing; focus returns to the transcript.
   await pause(700);
@@ -130,6 +135,14 @@ try {
   assert.deepEqual(await evaluate("window.__qa.spoken"), ["Book"], "A starter suggestion was spoken");
   assert.match(await announcements(), /Possible sign: Hello\. Not added\./);
   checks.push("starter-rule word (production policy) offered as a distinct 'Possible sign' suggestion; not inserted, not spoken");
+
+  await evaluate("window.__qaConfirm('UNATTRIBUTED')");
+  await pause(150);
+  assert.deepEqual(await entries(), ["Book · added by you (research model)"], "A word with no provenance entered the transcript");
+  assert.deepEqual(await evaluate("window.__qa.spoken"), ["Book"], "A word with no provenance was spoken");
+  assert.deepEqual(await cards(), ["starter:Hello"], "A word with no provenance was offered");
+  assert.doesNotMatch(await announcements(), /Unattributed/i);
+  checks.push("a cached-worker confirmation with no provenance is ignored");
 
   // 6. Personal signs stay automatic and do not withdraw pending suggestions.
   await evaluate("window.__qaConfirm('MY SIGN', 'personal')");
@@ -190,7 +203,26 @@ try {
   assert.deepEqual(await cards(), ["starter:No", "starter:Water", "starter:Help"], "The waiting word was not added below");
   await moveMouse([5, 5]);
   checks.push("while pointing at the cards a new word waits ('1 more waiting'); it appears below when a card is answered");
-  for (const word of ["No", "Water", "Help"]) { await until(() => armedOf(word), `${word} not armed`); await evaluate(`${actionFor(word, "dismiss")}.click()`); }
+
+  // 8e. Keyboard focus keeps the cards held when the pointer leaves the panel.
+  await evaluate(`${actionFor("No", "accept")}.focus()`);
+  await moveMouse(await centre(actionFor("No", "accept")));
+  await moveMouse([5, 5]);
+  await evaluate("window.__qaSuggest('held-focus', 'BAG')");
+  await until(async () => (await waiting()) === "1 more waiting", "Leaving the panel with the pointer released a focused card");
+  assert.deepEqual(await cards(), ["starter:No", "starter:Water", "starter:Help"]);
+  assert.equal(await evaluate(`document.activeElement === ${actionFor("No", "accept")}`), true, "The focused button lost focus");
+  checks.push("a focused card remains held after the pointer leaves the suggestion panel");
+
+  // 8f. A pointer still in the panel keeps the cards held after focus leaves.
+  await moveMouse(await centre(actionFor("No", "accept")));
+  await evaluate("document.getElementById('transcript-title').focus({ preventScroll: true })");
+  await evaluate("window.__qaSuggest('held-pointer', 'PEN')");
+  await until(async () => (await waiting()) === "2 more waiting", "Blurring the focused card released the pointer hold");
+  assert.deepEqual(await cards(), ["starter:No", "starter:Water", "starter:Help"]);
+  checks.push("a hovered card remains held after keyboard focus leaves the suggestion panel");
+  await moveMouse([5, 5]);
+  for (const word of ["No", "Water", "Help", "Bag", "Pen"]) { await until(() => armedOf(word), `${word} not armed`); await evaluate(`${actionFor(word, "dismiss")}.click()`); }
   await until(async () => (await cards()).length === 0, "Cards not dismissed");
 
   // 9. Any language's research-model confirmation (e.g. an old cached worker) is demoted, never inserted.
@@ -264,6 +296,14 @@ try {
   assert.match(await evaluate("document.querySelector('.model-suggestion').textContent"), /BSL research model/);
   assert.deepEqual(await entries(), [], "A BSL model word entered the transcript");
   checks.push("BSL research-model word offered as a suggestion labelled with its model; not inserted");
+
+  // 17. Clear local data withdraws unaccepted suggestions as well as saved history.
+  await evaluate("document.querySelector('.privacy-disclosure').open = true");
+  await click("Clear local data");
+  await until(async () => (await card()) === null, "A suggestion was still actionable after clearing local data");
+  assert.deepEqual(await entries(), [], "Clearing local data added a pending suggestion");
+  assert.equal(await evaluate("localStorage.getItem('signrelay.history.v1')"), null, "Saved history was not cleared");
+  checks.push("clearing local data withdraws pending suggestions and removes saved transcript history");
 
   assert.ok((await evaluate("window.__qa.urls")).some(u => u.includes("recognition.worker.js?v=output-policy-2")), "Worker URL version not updated");
   console.log("MODEL-SUGGESTION-SMOKE", JSON.stringify({ passed: checks.length, checks }));
