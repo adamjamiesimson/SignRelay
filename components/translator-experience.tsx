@@ -42,6 +42,7 @@ import {
   type LanguageId,
 } from "@/lib/model-adapters";
 import { isRecentDuplicate } from "@/lib/decoder";
+import { canConfirmAutomatically } from "@/lib/model-output-policy";
 import { EMPTY_SUGGESTIONS, acceptSuggestion, announceSuggestion, holdSuggestions, insertBySigningTime, isArmed, nextSuggestionDeadline, offerSuggestion,
   removeSuggestion, suggestionFromMessage, tickSuggestions, type SuggestionState } from "@/lib/model-suggestion";
 import { ASL_ALPHABET, FINGERSPELLING_MODEL, MAX_FINGERSPELLING_TEXT, editSpelling } from "@/lib/fingerspelling";
@@ -148,6 +149,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   // Re-rendered at each arming/expiry deadline, so Add's state is current.
   const [suggestionClock, setSuggestionClock] = useState(0);
   const suggestionPanelRef = useRef<HTMLDivElement | null>(null);
+  const suggestionPointerInsideRef = useRef(false);
   const selectedRef = useRef<LanguageId>("asl");
   // The compiled policy, further restricted by where the page is served from:
   // fails closed ("suggest") until the hostname is known.
@@ -192,6 +194,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
   const lastVideoTimeRef = useRef(-1);
+  const lastObservedVideoTimeRef = useRef(-1);
   const frameErrorsRef = useRef(0);
   const cameraProgressRef = useRef(0);
   const cameraGenerationRef = useRef(0);
@@ -218,7 +221,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   }, []);
   const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(),
     capture: new RollingTimer(), hands: new RollingTimer(), auxiliary: new RollingTimer(), transport: new RollingTimer(),
-    overlay: new RollingTimer(), age: new RollingTimer(), classification: new RollingTimer(), communication: new RollingTimer(),
+    overlay: new RollingTimer(), age: new RollingTimer(), longTask: new RollingTimer(), classification: new RollingTimer(), communication: new RollingTimer(),
     model: new RollingTimer(), personal: new RollingTimer(), reference: new RollingTimer(),
     throughput: new ThroughputMonitor(), analysed: 0, since: 0, frames: 0, handFrames: 0 });
 
@@ -360,15 +363,17 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   }, [model.speechLocale]);
 
   const setPending = useCallback((input: SuggestionState) => {
-    // With no card left the panel unmounts and may never see the pointer
-    // leave, so the hold ends with the last card.
-    const next = input.held && !input.visible.length && !input.waiting.length ? { ...input, held: false } : input;
+    // An unmounted panel may never receive pointerleave. A panel still
+    // showing missed notes can keep its pointer hold for the next card.
+    const hasPanel = input.visible.length || input.waiting.length || input.missed.length;
+    if (!hasPanel) suggestionPointerInsideRef.current = false;
+    const next = input.held && !hasPanel ? { ...input, held: false } : input;
     // Keep keyboard focus in the transcript if it was on a card that disappears.
     const focused = suggestionPanelRef.current?.contains(document.activeElement)
       ? (document.activeElement as HTMLElement | null)?.closest<HTMLElement>("[data-suggestion-key]")?.dataset.suggestionKey : undefined;
     suggestionsRef.current = next;
     setSuggestions(next);
-    setSuggestionClock(Date.now());
+    setSuggestionClock(performance.now());
     if (focused && !next.visible.some(item => item.key === focused)) transcriptHeadingRef.current?.focus();
   }, []);
   // Withdraw every pending suggestion (session, language, mode or camera ended).
@@ -383,18 +388,18 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   // One timer for the next arming, expiry or note deadline. Expiry pauses
   // while the person points at or focuses the suggestions (holdSuggestions).
   useEffect(() => {
-    const deadline = nextSuggestionDeadline(suggestions, Date.now());
+    const deadline = nextSuggestionDeadline(suggestions, suggestionClock);
     if (deadline === null) return;
     const timer = window.setTimeout(() => {
-      const { state, expired } = tickSuggestions(suggestionsRef.current, Date.now());
+      const { state, expired } = tickSuggestions(suggestionsRef.current, performance.now());
       for (const item of expired) report("expired", item);
-      if (state !== suggestionsRef.current) setPending(state); else setSuggestionClock(Date.now());
+      if (state !== suggestionsRef.current) setPending(state); else setSuggestionClock(performance.now());
       if (expired.length) setAnnouncement(announceSuggestion({ kind: "expired", items: expired }));
-    }, Math.max(0, deadline - Date.now()));
+    }, Math.max(0, deadline - performance.now()));
     return () => window.clearTimeout(timer);
   }, [suggestions, suggestionClock, setPending, report]);
   const holdPending = useCallback((held: boolean) => {
-    const next = holdSuggestions(suggestionsRef.current, held, Date.now());
+    const next = holdSuggestions(suggestionsRef.current, held, performance.now());
     if (next !== suggestionsRef.current) setPending(next);
   }, [setPending]);
 
@@ -429,16 +434,16 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
 
     // A research-model word for a suggest-only language is offered, never
     // inserted, announced as confirmed or spoken (lib/model-output-policy.ts).
-    const offered = suggestionFromMessage(message, selectedRef.current, Date.now(), starterOutputRef.current);
+    const offered = suggestionFromMessage(message, selectedRef.current, performance.now(), starterOutputRef.current);
     if (offered) {
-      const { state, event } = offerSuggestion(suggestionsRef.current, offered, Date.now());
+      const { state, event } = offerSuggestion(suggestionsRef.current, offered);
       if (event.kind === "offered" && event.replaced) report("replaced", event.replaced);
       if (event.kind !== "expired") report(event.kind, offered);
       setPending(state);
       setAnnouncement(announceSuggestion(event));
       return;
     }
-    if (message.type !== "confirmed") return;
+    if (message.type !== "confirmed" || !canConfirmAutomatically(message.source, selectedRef.current, starterOutputRef.current)) return;
 
     const entry: TranscriptEntry = {
       id: `${message.timestamp}-${message.gloss}`,
@@ -564,6 +569,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     setMotionReason(null);
     window.speechSynthesis?.cancel();
     lastVideoTimeRef.current = -1;
+    lastObservedVideoTimeRef.current = -1;
     frameErrorsRef.current = 0;
     captureStateRef.current = "idle";
     captureFramesRef.current = [];
@@ -592,23 +598,31 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     if (!perfMode || cameraState !== "active") return;
     const perf = perfRef.current;
     perf.tracking.reset(); perf.roundTrip.reset(); perf.queueWait.reset(); perf.throughput.reset();
-    for (const name of ["capture", "hands", "auxiliary", "transport", "overlay", "age", "classification", "communication", "model", "personal", "reference"] as const) perf[name].reset();
+    for (const name of ["capture", "hands", "auxiliary", "transport", "overlay", "age", "longTask", "classification", "communication", "model", "personal", "reference"] as const) perf[name].reset();
     perf.analysed = 0; perf.frames = 0; perf.handFrames = 0; perf.since = performance.now();
     workerRef.current?.resetStats();
+    let observer: PerformanceObserver | undefined;
+    if (typeof PerformanceObserver !== "undefined" && PerformanceObserver.supportedEntryTypes.includes("longtask")) {
+      observer = new PerformanceObserver(list => {
+        for (const entry of list.getEntries()) perf.longTask.record(entry.duration);
+      });
+      observer.observe({ type: "longtask" });
+    }
     const timer = window.setInterval(() => {
       const session = workerRef.current;
+      const engine = engineRef.current;
       perf.throughput.tick(perf.analysed, performance.now());
       setPerfWarning(perf.throughput.warning());
       setPerfReadout(formatPerfReadout({ tracking: perf.tracking.summary(), roundTrip: perf.roundTrip.summary(), queueWait: perf.queueWait.summary(),
         seconds: (performance.now() - perf.since) / 1000, analysed: perf.analysed, session: session?.stats ?? null,
-        assets: engineRef.current?.assetSource ?? null,
+        assets: engine?.assetSource ?? null,
         recognition: session ? { state: session.state, recoveries: session.stats.recoveries } : null,
         hands: { seen: perf.handFrames, frames: perf.frames },
-        stages: Object.fromEntries((["capture", "hands", "auxiliary", "transport", "overlay", "age", "classification", "communication", "model", "personal", "reference"] as const)
-          .map(name => [name, perf[name].summary()])),
-        tracker: engineRef.current ? `${engineRef.current.mode}/${engineRef.current.delegate}` : undefined }));
+        stages: { ...Object.fromEntries((["capture", "hands", "auxiliary", "transport", "overlay", "classification", "communication", "model", "personal", "reference"] as const)
+          .map(name => [name, perf[name].summary()])), "capture to overlay": perf.age.summary(), "long task": perf.longTask.summary() },
+        tracker: engine ? `${engine.mode}/${engine.delegate}, ${engine.stats.recoveries} restarts, ${engine.stats.replaced} snapshots replaced` : undefined }));
     }, 1000);
-    return () => { window.clearInterval(timer); setPerfWarning(null); };
+    return () => { observer?.disconnect(); window.clearInterval(timer); setPerfWarning(null); };
   }, [perfMode, cameraState]);
 
   useEffect(() => () => {
@@ -692,7 +706,10 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
       return;
     }
     if (video && engine && !document.hidden) {
-      if (video.readyState >= 2 && video.currentTime !== lastVideoTimeRef.current) cameraProgressRef.current = now;
+      if (video.readyState >= 2 && video.currentTime !== lastObservedVideoTimeRef.current) {
+        lastObservedVideoTimeRef.current = video.currentTime;
+        cameraProgressRef.current = now;
+      }
       if (now - cameraProgressRef.current >= 8000) {
         stopCamera();
         setCameraState("error");
@@ -715,10 +732,15 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
       const trackingStarted = performance.now();
       const current = () => engineRef.current === engine && cameraGenerationRef.current === generation
         && trackingEpochRef.current === trackingEpoch && !document.hidden;
-      const showHands = (frame: VisionFrame) => {
+      const showHands = (frame: VisionFrame, synthetic = false) => {
         if (!current()) return;
         const drawing = performance.now();
         drawOverlay(frame);
+        if (perfMode && !synthetic) {
+          const drawMs = performance.now() - drawing;
+          perfRef.current.overlay.record(drawMs);
+          perfRef.current.age.record(engine.timings.age + drawMs);
+        }
         const capture = spellingCaptureRef.current;
         if (capture && aslModeRef.current === "fingerspelling") {
           try { capture.push(frame, video.videoWidth / video.videoHeight); }
@@ -727,16 +749,12 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
             setSpellingMessage("Capture was interrupted. Please record the name again.");
           }
         }
-        if (perfMode) {
-          perfRef.current.overlay.record(performance.now() - drawing);
-          perfRef.current.age.record(performance.now() - trackingStarted);
-        }
       };
       void (async () => {
         // Rehearsal builds only: while a script plays, synthetic landmarks replace
         // the tracker, which is not run (its output would be discarded).
         const rehearsal = REHEARSAL ? rehearsalRef.current?.next(now) : null;
-        if (rehearsal) showHands(rehearsal);
+        if (rehearsal) showHands(rehearsal, true);
         const frame = rehearsal ?? await engine.process(video, now, showHands);
         if (!frame || !current() || captureGeneration !== captureGenerationRef.current) return;
         if (perfMode) {
@@ -1093,7 +1111,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   // Only an explicit Add on a suggestion that is on screen inserts its word;
   // stale, too-early, expired or repeated activations do nothing.
   const acceptPendingSuggestion = (key: string) => {
-    const now = Date.now();
+    const now = performance.now();
     const outcome = acceptSuggestion(suggestionsRef.current, key, selectedRef.current, now);
     if (outcome.accepted) report("accepted", outcome.entry);
     if (!outcome.accepted) {
@@ -1114,7 +1132,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   const dismissPendingSuggestion = (key: string) => {
     const item = suggestionsRef.current.visible.find(entry => entry.key === key);
     if (!item) return;
-    setPending(removeSuggestion(suggestionsRef.current, key, Date.now()));
+    setPending(removeSuggestion(suggestionsRef.current, key, performance.now()));
     setAnnouncement(`Dismissed suggestion: ${item.text}`);
     report("dismissed", item);
     transcriptHeadingRef.current?.focus();
@@ -1140,6 +1158,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
 
   const clearAllLocalData = async () => {
     window.speechSynthesis?.cancel();
+    withdrawSuggestion();
     // An example being recorded now must not be saved after everything was cleared.
     captureGenerationRef.current++;
     captureStateRef.current = "idle";
@@ -1527,9 +1546,19 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
               {recognitionFeedback && <p className="calibration-message">{recognitionFeedback}</p>}
               {(suggestions.visible.length > 0 || suggestions.waiting.length > 0 || suggestions.missed.length > 0) && (
                 <div className="model-suggestions" ref={suggestionPanelRef} role="region" aria-label="Suggestions not yet added"
-                  onPointerEnter={() => holdPending(true)} onPointerLeave={() => holdPending(false)}
+                  onPointerEnter={() => {
+                    suggestionPointerInsideRef.current = true;
+                    holdPending(true);
+                  }}
+                  onPointerLeave={event => {
+                    suggestionPointerInsideRef.current = false;
+                    holdPending(event.currentTarget.contains(document.activeElement));
+                  }}
                   onFocus={() => holdPending(true)}
-                  onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) holdPending(false); }}>
+                  onBlur={event => {
+                    const nextFocus = event.relatedTarget;
+                    if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) holdPending(suggestionPointerInsideRef.current);
+                  }}>
                   {suggestions.visible.length > 0 && <p className="model-suggestions-note">Not in the transcript. Add a word only if it is what you signed.</p>}
                   {suggestions.visible.map(item => {
                     const armed = isArmed(item, suggestionClock);

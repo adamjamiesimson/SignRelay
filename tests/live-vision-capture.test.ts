@@ -26,6 +26,31 @@ beforeEach(()=>{
 });
 afterEach(()=>{vi.restoreAllMocks();vi.unstubAllGlobals();});
 describe("decoded capture buffer lifecycle",()=>{
+  it("drops the prior snapshot on capture error and resumes on the next decoded frame", async () => {
+    const live = await LiveVision.create(undefined, false, undefined, "fingerspelling");
+    const v = video();
+    const draw = vi.fn();
+    const capture = vi.spyOn(OffscreenCanvas.prototype, "transferToImageBitmap");
+    try {
+      await live.process(v.element, now, draw);
+      v.sample(1);
+      now += 67;
+      capture.mockImplementationOnce(() => { throw new Error("snapshot failed"); });
+      v.sample(1.067);
+      expect(bitmaps[0].close).toHaveBeenCalledOnce();
+      await expect(live.process(v.element, now, draw)).rejects.toThrow("snapshot failed");
+      expect(live.frameAvailable).toBe(false);
+
+      now += 67;
+      v.sample(1.134);
+      const next = live.process(v.element, now, draw);
+      const frame = makeSign("SORRY")[0];
+      Port.all[0].emit({ type: "hands", frame, handsMs: 10 });
+      Port.all[0].emit({ type: "result", frame, timings: { hands: 10, auxiliary: 0 } });
+      await expect(next).resolves.toMatchObject({ capturedAt: now });
+      expect(draw).toHaveBeenCalledOnce();
+    } finally { live.close(); }
+  });
   it.each(["ready","warming"])("keeps the frame watchdog after a stale %s startup message",async(type)=>{
     vi.useFakeTimers();
     const live=await LiveVision.create(undefined,false,undefined,"fingerspelling"),v=video(),failure=vi.fn();

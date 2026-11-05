@@ -130,6 +130,26 @@ try {
   assert.ok(await active(), "The camera must stay active through tracking recovery");
   results.push({ fault: "tracking worker crash", overlay_cleared: true, recognition_reset: true, recovered: true });
 
+  // A decoder can stop on a frame the tracking lane has not picked up yet.
+  // Its clock stays ahead of the last analysed frame even though it is frozen.
+  console.error("Fault check: Camera clock freezes while bitmap capture is pending.");
+  await evaluate(`(() => {
+    const video = document.querySelector('.camera-stage video');
+    const capture = window.createImageBitmap;
+    window.createImageBitmap = (source, ...args) => {
+      if (source !== video) return capture(source, ...args);
+      Object.defineProperty(video, 'currentTime', { configurable: true, value: video.currentTime + 0.1 });
+      window.__qa.frozen = true;
+      return new Promise(() => {});
+    };
+  })()`);
+  await until(() => evaluate("window.__qa.frozen"), "Bitmap freeze was not injected");
+  await until(() => text("/camera stopped sending video/"), "A frozen camera must time out while the tracking lane is busy", 120);
+  assert.equal(await liveTracks(), 0, "Frozen camera tracks must be released");
+  results.push({ fault: "camera clock stalls during bitmap capture", camera_released: true });
+  await open();
+  await until(active, "Camera did not restart after the injected freeze was removed");
+
   // 2. Worker construction fails once.
   console.error("Fault check: Worker construction fails once.");
   await click("Change language");

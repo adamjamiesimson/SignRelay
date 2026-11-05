@@ -7,6 +7,10 @@ import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 const advisoryId = url => typeof url === "string" ? url.match(/GHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}/)?.[0] ?? null : null;
+const isAuditReport = report => report?.auditReportVersion === 2 && !report.error
+  && report.vulnerabilities && typeof report.vulnerabilities === "object" && !Array.isArray(report.vulnerabilities)
+  && Number.isInteger(report.metadata?.vulnerabilities?.total)
+  && report.metadata.vulnerabilities.total === Object.keys(report.vulnerabilities).length;
 
 /** Root advisories (objects in `via`) keyed by advisory id + package. */
 export function rootAdvisories(report) {
@@ -24,6 +28,10 @@ export function rootAdvisories(report) {
 export function evaluateAudit({ full, production, exceptions, today }) {
   const failures = [];
   const accepted = [];
+  for (const [scope, report] of [["full", full], ["production", production]]) {
+    if (!isAuditReport(report)) failures.push(`npm audit did not return a complete ${scope} dependency report.`);
+  }
+  if (failures.length) return { ok: false, failures, accepted, stale: [], totals: { full: null, production: null } };
   for (const root of rootAdvisories(production)) {
     failures.push(`Production dependency advisory ${root.id ?? root.url} in ${root.package} (${root.severity}) — no exception mechanism applies.`);
   }
@@ -65,7 +73,10 @@ function npmAudit(args) {
     return JSON.parse(execFileSync("npm", ["audit", "--json", ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }));
   } catch (error) {
     // npm exits 1 when it finds advisories but still prints the JSON report.
-    if (typeof error.stdout === "string" && error.stdout.trim().startsWith("{")) return JSON.parse(error.stdout);
+    if (error.status === 1 && typeof error.stdout === "string" && error.stdout.trim().startsWith("{")) {
+      const report = JSON.parse(error.stdout);
+      if (!isAuditReport(report) || Object.keys(report.vulnerabilities).length) return report;
+    }
     throw error;
   }
 }

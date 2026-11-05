@@ -18,9 +18,9 @@ describe("fingerspelling release flag", () => {
     // NODE_ENV is not a research signal: only the `next dev` server phase is.
     expect(resolveFingerspelling({ NODE_ENV: "development" })).toBe("off");
   });
-  it("is on in research builds: rehearsal, Vercel preview and the next dev server", () => {
+  it("defaults on only in local rehearsal and next dev", () => {
     expect(resolveFingerspelling({ NEXT_PUBLIC_SIGNRELAY_PROFILE: "rehearsal" })).toBe("on");
-    expect(resolveFingerspelling({ VERCEL_ENV: "preview" })).toBe("on");
+    expect(resolveFingerspelling({ VERCEL_ENV: "preview" })).toBe("off");
     expect(resolveFingerspelling({}, { devServer: true })).toBe("on");
     expect(resolveFingerspelling({ VERCEL_ENV: "production" }, { devServer: false })).toBe("off");
   });
@@ -28,9 +28,20 @@ describe("fingerspelling release flag", () => {
     expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on" })).toThrow(/must not be released/);
     expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on", NEXT_PUBLIC_SIGNRELAY_PROFILE: "full", VERCEL_ENV: "production" })).toThrow();
     expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on", SIGNRELAY_RESEARCH_EXPORT: "1" })).not.toThrow();
-    expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on", VERCEL_ENV: "preview" })).not.toThrow();
+    expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on", VERCEL_ENV: "preview" })).toThrow(/Hosted exports require/);
     expect(() => assertReleaseSafe({ [FINGERSPELLING_FLAG]: "on", NEXT_PUBLIC_SIGNRELAY_PROFILE: "rehearsal" })).not.toThrow();
     expect(() => assertReleaseSafe({})).not.toThrow();
+  });
+  it("requires the public profile and policy for all hosted builds", () => {
+    for (const VERCEL_ENV of ["preview", "production", "hosted"]) {
+      expect(() => assertReleaseSafe({ VERCEL_ENV })).not.toThrow();
+      for (const env of [
+        { [FINGERSPELLING_FLAG]: "on", SIGNRELAY_RESEARCH_EXPORT: "1" },
+        { NEXT_PUBLIC_SIGNRELAY_PROFILE: "rehearsal", [FINGERSPELLING_FLAG]: "off" },
+        { SIGNRELAY_INCLUDE_PRIVATE_CAPTURE: "1" },
+        { SIGNRELAY_RESEARCH_EXPORT: "1" },
+      ]) expect(() => assertReleaseSafe({ ...env, VERCEL_ENV })).toThrow(/Hosted exports require/);
+    }
   });
   it("prepare-export rejects the flag in a .env file and an accidental production opt-in", () => {
     const dir = mkdtempSync(join(tmpdir(), "signrelay-env-"));
@@ -55,7 +66,9 @@ describe("fingerspelling release flag", () => {
   it("is inlined by next.config.ts and accepted by the export environment check", () => {
     const config = readFileSync("next.config.ts", "utf8");
     expect(config).toMatch(/NEXT_PUBLIC_SIGNRELAY_FINGERSPELLING: resolveFingerspelling\(process\.env, \{ devServer: phase === PHASE_DEVELOPMENT_SERVER \}\)/);
-    expect(JSON.parse(readFileSync("vercel.json", "utf8")).buildCommand).toMatch(/next build.*&& node scripts\/prune-research\.mjs out$/);
+    const vercel = JSON.parse(readFileSync("vercel.json", "utf8"));
+    expect(vercel.buildCommand).toMatch(/^node scripts\/prepare-export\.mjs --hosted.*next build.*prune-research\.mjs out.*verify-runtime\.mjs.*assert-public-export\.mjs out$/);
+    expect(vercel.git.deploymentEnabled["codex/engineering-excellence-sprint"]).toBe(false);
     expect(readFileSync("scripts/prepare-export.mjs", "utf8")).toMatch(/FINGERSPELLING_FLAG/);
     expect(readFileSync("lib/release.ts", "utf8")).toMatch(/=== "on"/);
   });

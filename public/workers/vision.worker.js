@@ -4038,6 +4038,8 @@
       file: "gesture_recognizer.task",
       bytes: 8373440,
       sha256: "97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482",
+      // The stored hand_landmarker.task entry inside this exact bundle (detector + landmark weights).
+      handLandmarker: { bytes: 7819105, sha256: "1c454b1f487e6a9f46d1e2cda05454c00189735d250e427d3b472e30c843ede1" },
       url: "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task"
     },
     face: {
@@ -4090,7 +4092,9 @@
       this.handFramesSinceAux = 2;
       this.lastFace = [];
       this.lastPose = [];
-      this.timings = { hands: 0, auxiliary: 0 };
+      this.timings = { hands: 0, auxiliary: 0, face: 0, pose: 0 };
+      this.nextAux = "face";
+      this.auxSchedule = "together";
       this.parts = parts;
       this.assetSource = assetSource;
     }
@@ -4174,11 +4178,25 @@
       onHands?.(frame);
       const auxiliaryStarted = performance.now();
       this.handFramesSinceAux++;
-      if (this.handFramesSinceAux >= 2 && timestamp - this.lastAuxTimestamp >= 150) {
-        const faceResult = this.parts.face.detectForVideo(video, timestamp);
-        const poseResult = this.parts.pose.detectForVideo(video, timestamp);
-        this.lastFace = pickPoints(faceResult.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
-        this.lastPose = pickPoints(poseResult.landmarks[0] ?? [], POSE_CUE_INDICES);
+      this.timings.face = 0;
+      this.timings.pose = 0;
+      const gap = this.auxSchedule === "alternate" ? 75 : 150;
+      if (this.handFramesSinceAux >= 2 && timestamp - this.lastAuxTimestamp >= gap) {
+        const runFace = this.auxSchedule === "together" || this.nextAux === "face";
+        const runPose = this.auxSchedule === "together" || this.nextAux === "pose";
+        if (runFace) {
+          const faceStarted = performance.now();
+          const faceResult = this.parts.face.detectForVideo(video, timestamp);
+          this.lastFace = pickPoints(faceResult.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
+          this.timings.face = performance.now() - faceStarted;
+        }
+        if (runPose) {
+          const poseStarted = performance.now();
+          const poseResult = this.parts.pose.detectForVideo(video, timestamp);
+          this.lastPose = pickPoints(poseResult.landmarks[0] ?? [], POSE_CUE_INDICES);
+          this.timings.pose = performance.now() - poseStarted;
+        }
+        this.nextAux = this.nextAux === "face" ? "pose" : "face";
         this.lastAuxTimestamp = timestamp;
         this.handFramesSinceAux = 0;
       }
@@ -4207,6 +4225,7 @@
     try {
       if (data.type === "init") {
         engine = await VisionEngine.create((message) => self.postMessage({ type: "progress", message }), data.accelerated !== false);
+        if (data.auxSchedule === "alternate") engine.auxSchedule = "alternate";
         self.postMessage({ type: "warming" });
         const surface = new OffscreenCanvas(256, 256);
         const context = surface.getContext("2d");
@@ -4219,7 +4238,7 @@
         } finally {
           probe.close();
         }
-        self.postMessage({ type: "ready", assetSource: engine.assetSource, delegate: engine.delegate });
+        self.postMessage({ type: "ready", assetSource: engine.assetSource, delegate: engine.delegate, auxSchedule: engine.auxSchedule });
       } else if (data.type === "frame" && engine) {
         const bitmap = data.bitmap;
         try {

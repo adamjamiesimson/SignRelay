@@ -102,8 +102,21 @@ async function run(scenario: Scenario, workerModule: string) {
       await new Promise<void>(r => setImmediate(r));
     }
   }
-  // Wall-clock fields are not part of the decision.
-  return port.postMessage.mock.calls.map(([m]) => { const { timestamp: _t, ...rest } = m as WorkerMessage & { timestamp?: number }; void _t; return rest; });
+  return port.postMessage.mock.calls.map(([m]) => {
+    const message = m as WorkerMessage;
+    if (message.type === "analysis") {
+      // Camera discontinuities deliberately clear the diagnostic buffer and
+      // return to "listening" sooner than the frozen worker. Compare the
+      // candidate, confidence, provenance and feedback from each frame.
+      const { bufferSize: _bufferSize, state: _state, ...rest } = message;
+      void _bufferSize;
+      void _state;
+      return rest;
+    }
+    const { timestamp: _timestamp, ...rest } = message as WorkerMessage & { timestamp?: number };
+    void _timestamp;
+    return rest;
+  });
 }
 
 const ledger: Record<string, number> = { scenarios: 0, starterConfirmed: 0, personalConfirmed: 0,

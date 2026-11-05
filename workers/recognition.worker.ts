@@ -13,7 +13,7 @@ import { recognizeLse300 } from "@/lib/lse300-runtime";
 import { TemplateMatchingClient, unpackTemplates, type TemplatePrediction } from "@/lib/template-matching-client";
 import { validHand } from "@/lib/asl-starter-recognition";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
-import { appendObservation } from "@/lib/frame-timing";
+import { appendObservation, MAX_TRACKING_GAP_MS } from "@/lib/frame-timing";
 import { modelWordsNeedAcceptance } from "@/lib/model-output-policy";
 
 const CONFIDENCE_THRESHOLD = 0.62;
@@ -84,28 +84,32 @@ function invalidatePrediction() {
   modelGeneration += 1;
 }
 
-function resetSession() {
+function resetEvidence() {
   completedModelMs = undefined;
-  // In-flight requests from old sessions are invalidated by modelGeneration;
-  // do not let their timers restart a newly selected language.
-  for (const request of pending.values()) request.controller.abort();
-  pending.clear();
   invalidatePersonal();
   frames.length = 0;
   receivedFrames = 0;
   lastInferenceAt = -Infinity;
-  lastConfirmation = { label: "", time: 0 };
   invalidatePrediction();
   candidateLabel = null;
   candidateStreak = 0;
   candidateIsModel = false;
   blockedStarter = null;
   starterSeenAt = 0;
+  hadPersonalTracking = false;
+  candidateSource = undefined;
+}
+
+function resetSession() {
+  // In-flight requests from old sessions are invalidated by modelGeneration;
+  // do not let their timers restart a newly selected language.
+  for (const request of pending.values()) request.controller.abort();
+  pending.clear();
+  resetEvidence();
+  lastConfirmation = { label: "", time: 0 };
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
-  hadPersonalTracking = false;
-  candidateSource = undefined;
 }
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
@@ -121,6 +125,15 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "reset") { resetSession(); return; }
 
   const now = event.data.frame.timestamp;
+  const previous = frames.at(-1);
+  if (previous) {
+    const gap = now - previous.timestamp;
+    // A changed clock invalidates frame-based cooldowns and request deadlines.
+    // A forward pause only breaks the observation. Let a cold model finish
+    // loading, but reject any recognition produced from before the pause.
+    if (gap < 0) resetSession();
+    else if (gap === 0 || gap > MAX_TRACKING_GAP_MS) resetEvidence();
+  }
   for (const [language, request] of pending) {
     const deadline = request.phase === "loading" ? MODEL_LOAD_TIMEOUT_MS : NORMAL_INFERENCE_TIMEOUT_MS;
     if (now - request.started < deadline) continue;

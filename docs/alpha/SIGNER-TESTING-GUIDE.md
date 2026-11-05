@@ -7,7 +7,7 @@ Thank you for helping. This guide is for ASL signers taking part in a **supervis
 - **An early research tool, not an interpreter.** It recognises a small number of ASL signs from a camera, and it often makes mistakes.
 - **Words you signed with your own taught signs** ("personal signs") appear in the transcript straight away.
 - **Everything else appears as a card first.** That includes the built-in sign rules (HELLO, THANK YOU, PLEASE, SORRY, YES, NO) and the research models. A card says *Possible sign* or *Experimental suggestion* and **is not in the transcript** until you press **Add**. If you do nothing, it disappears after about 12 seconds.
-- **Nothing is spoken** unless you added the word and "Speak each word" is on.
+- With **Speak each word** on, the browser speaks confirmed personal signs and words you add. Pending suggestions stay silent. You can also use the transcript's **Speak** control to hear its words.
 - **The camera stays on your device.** The test session records no video, pictures, hand landmarks or your name. It keeps only what SignRelay showed, what you added or dismissed, and what you tell us went wrong. That record is saved only if you agree.
 
 ## Before you start

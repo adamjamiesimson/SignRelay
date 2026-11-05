@@ -1,4 +1,7 @@
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { parseForESLint } from "@typescript-eslint/parser";
 import { describe, expect, it } from "vitest";
 import { evaluateAudit } from "../scripts/audit-dependencies.mjs";
 
@@ -18,12 +21,15 @@ const advisory = (name: string, id: string, severity = "high") => ({
   via: [{ name, url: `https://github.com/advisories/${id}`, severity, title: "test", range: "*" }],
 });
 const chainLink = (name: string, via: string) => ({ name, severity: "high", isDirect: false, via: [via], effects: [] });
-const braces = { vulnerabilities: {
+const report = (vulnerabilities: Record<string, unknown>) => ({
+  auditReportVersion: 2, vulnerabilities, metadata: { vulnerabilities: { total: Object.keys(vulnerabilities).length } },
+});
+const braces = report({
   braces: advisory("braces", "GHSA-vfj7-8cjw-p6xm"), micromatch: chainLink("micromatch", "braces"),
   "fast-glob": chainLink("fast-glob", "micromatch"), "@next/eslint-plugin-next": chainLink("@next/eslint-plugin-next", "fast-glob"),
   "eslint-config-next": chainLink("eslint-config-next", "@next/eslint-plugin-next"),
-} };
-const clean = { vulnerabilities: {} };
+});
+const clean = report({});
 
 describe("fail-closed dependency gate", () => {
   it("accepts only the reviewed development braces chain before it expires", () => {
@@ -42,13 +48,13 @@ describe("fail-closed dependency gate", () => {
     expect(result.failures[0]).toContain("Production dependency advisory GHSA-vfj7-8cjw-p6xm");
   });
   it("fails on any new development advisory, such as the vite launch-editor findings", () => {
-    const full = { vulnerabilities: { ...braces.vulnerabilities, vite: advisory("vite", "GHSA-r825-w8mm-5pxw") } };
+    const full = report({ ...braces.vulnerabilities, vite: advisory("vite", "GHSA-r825-w8mm-5pxw") });
     const result = evaluateAudit({ full, production: clean, exceptions, today: "2026-10-21" });
     expect(result.ok).toBe(false);
     expect(result.failures).toEqual([expect.stringContaining("Unreviewed development advisory GHSA-r825-w8mm-5pxw in vite")]);
   });
   it("fails when a vulnerable package is not explained by a reviewed chain", () => {
-    const full = { vulnerabilities: { ...braces.vulnerabilities, other: chainLink("other", "unknown") } };
+    const full = report({ ...braces.vulnerabilities, other: chainLink("other", "unknown") });
     expect(evaluateAudit({ full, production: clean, exceptions, today: "2026-10-21" }).failures)
       .toEqual([expect.stringContaining("other is not explained")]);
   });
@@ -56,6 +62,16 @@ describe("fail-closed dependency gate", () => {
     const result = evaluateAudit({ full: clean, production: clean, exceptions, today: "2026-10-21" });
     expect(result.ok).toBe(true);
     expect(result.stale).toHaveLength(1);
+  });
+  it.each([
+    { error: { code: "ENOTFOUND", summary: "registry unavailable" } },
+    {},
+    { ...clean, vulnerabilities: [] },
+    { ...clean, metadata: { vulnerabilities: { total: 1 } } },
+  ])("rejects an npm audit error or incomplete report for either scope (%#)", failed => {
+    const evaluate = (full: object, production: object) => evaluateAudit({ full, production, exceptions, today: "2026-10-21" });
+    expect(evaluate(failed, clean).failures).toEqual(["npm audit did not return a complete full dependency report."]);
+    expect(evaluate(clean, failed).failures).toEqual(["npm audit did not return a complete production dependency report."]);
   });
 });
 
@@ -75,4 +91,25 @@ describe("reviewed exceptions cannot be widened", () => {
   it("no development exception is committed once the braces chain is gone", () => {
     expect(committed.exceptions).toEqual([]);
   });
+});
+
+it("keeps TypeScript lint project-service glob matching compatible", () => {
+  const root = mkdtempSync(join(tmpdir(), "signrelay-eslint-project-"));
+  const source = "export const answer: number = 42;\n";
+  const parse = (path: string) => parseForESLint(source, {
+    filePath: join(root, path),
+    projectService: { allowDefaultProject: ["*.config.ts"], defaultProject: "tsconfig.json" },
+    tsconfigRootDir: root,
+  });
+  try {
+    mkdirSync(join(root, "src"));
+    writeFileSync(join(root, "tsconfig.json"), JSON.stringify({ include: ["src/**/*.ts"] }));
+    for (const path of ["src/in-project.ts", ".tool.config.ts", "unmatched.ts"]) writeFileSync(join(root, path), source);
+    for (const path of ["src/in-project.ts", ".tool.config.ts"]) {
+      const parsed = parse(path);
+      expect(parsed.ast.body[0]?.type).toBe("ExportNamedDeclaration");
+      expect(parsed.services.program).toBeTruthy();
+    }
+    expect(() => parse("unmatched.ts")).toThrow(/was not found by the project service/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });

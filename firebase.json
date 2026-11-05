@@ -2,6 +2,7 @@
   "hosting": {
     "site": "signrelay",
     "public": "out",
+    "predeploy": "node scripts/assert-public-export.mjs out",
     "cleanUrls": true,
     "ignore": [
       "firebase.json",

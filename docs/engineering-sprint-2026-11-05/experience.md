@@ -1,0 +1,32 @@
+# Workspace experience and accessibility
+
+The baseline is PR #56 at `900dca8e14ef0daa985c40729304628bde97024c`. This work exercises how the workspace presents and acts on recognition messages. Its controlled inputs cannot measure sign recognition or how a signer decides which words to accept.
+
+## Change register
+
+| Severity and affected users | Root cause | Correction and coverage | Compatibility |
+| --- | --- | --- | --- |
+| P2. A focused suggestion can be replaced when the mouse leaves. A hovered suggestion can also be replaced when keyboard focus leaves. | Four DOM event handlers wrote one hold flag. Either exit cleared the other input's hold. | `components/translator-experience.tsx` tracks pointer presence separately and checks actual focus on pointer exit. `tests/model-suggestion-browser-smoke.mjs` fills the visible cards and injects a new suggestion after each overlapping exit. It checks that the original cards stay visible and the new word waits. | Release grace, queue limits, card order and the Add/Dismiss controls retain their existing behavior. |
+| P2. A system clock adjustment can let an early Add through and speak a word while the button still appears unavailable. A backward adjustment can delay arming or expiry. | The 600 ms interaction gate and other interface deadlines depended on the wall clock. | `components/translator-experience.tsx` uses `performance.now()` for ephemeral suggestion UI times. The timer computes its next deadline from the clock used to render Add, so a delayed effect still refreshes the control. The browser test advances only `Date.now()` by two seconds and checks that an immediate Add inserts and speaks nothing. | `lib/model-suggestion.ts` documents the separate time contract. Accepted words retain their worker signing timestamps. Saved transcript timestamps and schema are unaffected. |
+| P2. A word offered before Clear local data can remain actionable afterward. | The privacy action cleared transcript and storage without clearing the pending UI queue. | `components/translator-experience.tsx` withdraws pending, waiting and missed suggestions at the start of deletion. The browser test clears data with an active suggestion and asserts that the card and saved history are gone. | The existing privacy action and storage formats are retained. |
+| P3. A reader can expect research results to enter the transcript after a confidence check, or expect personal signs to stay silent with Speak each word enabled. | The public explanation and signer guide described different confirmation and speech rules from the workspace. | `app/how-it-works/page.tsx` explains explicit Add for built-in suggestions and automatic confirmation for eligible personal signs. `docs/alpha/SIGNER-TESTING-GUIDE.md` describes what Speak each word and Speak do. The wording follows the actual output branches and the controlled speech checks. | Copy only. |
+| P3. Headless test runs can report failure after every assertion passes on Windows. | `startChrome()` killed its browser and deleted the temporary profile immediately, while Chrome still held `lockfile`. | `scripts/diagnostics/chrome-session.mjs` requests graceful CDP shutdown, waits for exit, and uses a bounded fallback for its child process and profile. Three consecutive Chrome `156.0.8078.80` launch/close cycles passed and left no temporary profiles. | Diagnostics only. |
+
+## Browser verification
+
+The first candidate ASL demo run completed all 21 functional assertions in headless Chrome `156.0.8078.80`. It exercised the repository smoke with ASL entry and save/clear in place of the BSL path because the demo profile does not contain BSL. It observed no insertion or speech after an early Add with the wall clock advanced, retained the hovered or focused card under both mixed-input exit orders, and removed the active card and saved transcript history on Clear local data. It also found six suggestion controls at least 44 CSS px high and wide with no horizontal overflow at 375 CSS px. That run exited with `EBUSY` during Windows profile cleanup. The result distinguishes completed assertions from runner exit status.
+
+## Evidence boundaries
+
+- `tests/model-suggestion.test.ts` passed all 24 tests on the candidate with a workspace-local `TEMP` and `TMP`. The default sandbox temp directory denied a Vitest cache rename before tests could run. This suite covers state transitions and source wiring.
+- The browser smoke uses CDP with a temporary headless Chrome profile, a synthetic camera and a controlled stand-in for the recognition worker. The browser runs the exported workspace and its tracking path. Suggestion arrivals and speech are controlled to make outcomes deterministic. This can verify button actions, focus, live-region text and transcript updates in the real DOM.
+- The header's `public/signrelay-mark.webp` Git blob is `12f4faf3789907cf028b220adcf23c0decce1531` at its introduction in `3e12997`, at the alpha baseline and in the working tree. `components/brand.tsx` uses that asset directly. The two `.brand-mark` declarations only size it. The logo colours and established surface palette were retained.
+- Screen-reader speech, physical touch, camera permission prompts on devices, 200% browser zoom and Deaf signer usability need manual testing. Focus and live-region assertions alone cannot establish WCAG conformance.
+
+## Manual experience checks
+
+1. On desktop, deny camera permission once, then grant it, start signing, pause and restart. Leave a suggestion visible during pause and confirm it is withdrawn.
+2. At 200% browser zoom and on a physical phone in portrait and landscape, open three suggestions. Check that Add, Dismiss, Pause camera and the transcript controls are reachable. Tap Add twice in quick succession on the first card and check that only that word enters the transcript.
+3. With the screen reader and keyboard, focus Add and move the pointer out of the region, then test the reverse with the pointer inside as focus leaves. Listen for the pending, added and timed-out announcements and confirm the actual word remains clear in each case.
+4. Enable Speak each word. Offer a built-in suggestion, dismiss another, add a correct one, then sign a taught personal sign. Check which words are spoken and compare them with their transcript provenance.
+5. For a consented signing session, use the [signer testing guide](../alpha/SIGNER-TESTING-GUIDE.md). Record wrong suggestions and wrong words added separately. Use an expendable profile for Clear local data.

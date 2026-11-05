@@ -84,6 +84,21 @@ describe("ongoing recognition sessions", () => {
     workers[0].acknowledge();
     expect(onMessage).toHaveBeenCalledOnce();
   });
+  it("ignores wall-clock jumps in watchdog and frame timing", () => {
+    send(1);
+    vi.advanceTimersByTime(500);
+    send(2);
+    vi.setSystemTime(Date.now() + 60 * 60 * 1000);
+    vi.advanceTimersByTime(500);
+    expect(workers).toHaveLength(1);
+    workers[0].acknowledge(workers[0].frames()[0]);
+    expect(session.lastRoundTripMs).toBe(1000);
+    expect(session.stats.lastQueueAgeMs).toBe(500);
+
+    vi.setSystemTime(Date.now() - 2 * 60 * 60 * 1000);
+    vi.advanceTimersByTime(8000);
+    expect(workers).toHaveLength(2);
+  });
   it("recovers a model timeout even when the worker still responds to frames", () => {
     send(1);
     workers[0].onmessage?.({ data: { type: "fault", session: workers[0].frames()[0].session, message: "Model timed out" } } as MessageEvent<WorkerMessage>);
@@ -94,6 +109,7 @@ describe("ongoing recognition sessions", () => {
     for (let attempt = 0; attempt < 3; attempt++) workers.at(-1)!.onerror?.();
     expect(workers).toHaveLength(3);
     expect(onStatus).toHaveBeenLastCalledWith(expect.objectContaining({ state: "failed" }));
+    session.postMessage({ type: "reset" });
     send(1);
     vi.advanceTimersByTime(20000);
     expect(workers).toHaveLength(3);
