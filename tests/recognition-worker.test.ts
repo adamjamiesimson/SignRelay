@@ -60,7 +60,7 @@ beforeEach(async () => {
 });
 
 describe("live worker regression coverage (synthetic control inputs, not sign accuracy)", () => {
-  it.each([NaN, Infinity, -Infinity])("breaks temporal evidence at invalid observation time %s and acknowledges the frame", async invalidTime => {
+  it.each([NaN, Infinity, -Infinity, -1])("breaks temporal evidence at invalid observation time %s and acknowledges the frame", async invalidTime => {
     await frames(5);
     await worker.onmessage({ data: { type: "frame", session: 9, frameId: 42,
       frame: { timestamp: invalidTime, hands: [], face: [], pose: [] } } });
@@ -69,6 +69,17 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     await frames(1);
     expect(worker.postMessage).toHaveBeenLastCalledWith(expect.objectContaining({ type: "analysis", bufferSize: 1 }));
   });
+  it.each([{ hands: [{ landmarks: [null] }] }, { face: [{ x: NaN, y: 0, z: 0 }] }, { pose: [null] }, { hands: Array(1) }])(
+    "discards malformed landmarks without losing the acknowledgement slot (%j)", async invalid => {
+      await frames(5);
+      const frame = { timestamp: timestamp + 105, hands: [], face: [], pose: [], ...invalid } as VisionFrame;
+      await worker.onmessage({ data: { type: "frame", session: 9, frameId: 42, frame } });
+      expect(worker.postMessage).toHaveBeenLastCalledWith(expect.objectContaining({
+        type: "analysis", session: 9, frameId: 42, candidate: null, bufferSize: 0,
+      }));
+      await frames(1);
+      expect(worker.postMessage).toHaveBeenLastCalledWith(expect.objectContaining({ type: "analysis", bufferSize: 1 }));
+    });
   it.each(["asl", "bsl", "isl", "lse", "psl"] as const)("keeps %s inference running after the rolling buffer fills", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     await frames(90);
@@ -178,6 +189,7 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
   });
 
   it.each([1000, -1000])("does not carry a saved-sign match across a %ims camera discontinuity", async gap => {
+    timestamp = 2000;
     const saved = { id: "saved", gloss: "BOOK", text: "Book", createdAt: 1, frames: [] };
     await worker.onmessage({ data: { type: "templates", language: "csl", templates: [saved] } });
     mocks.personal.mockReturnValueOnce(prediction).mockReturnValueOnce(prediction).mockReturnValue(null);

@@ -3,6 +3,7 @@
 // node tests/bdsl-browser-smoke.mjs /path/to/chrome [/path/to/fixture.y4m]
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { once } from "node:events";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -22,6 +23,7 @@ const chrome = spawn(chromePath, ["--headless=new", "--no-sandbox", "--disable-d
 let chromeStderr = "";
 chrome.stderr?.setEncoding("utf8");
 chrome.stderr?.on("data", chunk => { chromeStderr += chunk; });
+const chromeClosed = once(chrome, "close");
 let socket;
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function until(check, message, limit = 10000) {
@@ -113,7 +115,13 @@ try {
   assert.equal(errors.length, 0, JSON.stringify(errors));
   console.log("Cancellation, camera release, navigation and no-upload checks passed. No uncaught page errors.");
 } finally {
-  socket?.close(); chrome.kill(); server.kill();
-  await pause(300);
-  await rm(profile, { recursive: true, force: true });
+  if (socket?.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({ id: 0, method: "Browser.close" }));
+    await Promise.race([chromeClosed, pause(3000)]);
+  }
+  socket?.close();
+  if (chrome.exitCode === null && chrome.signalCode === null) chrome.kill();
+  server.kill();
+  await chromeClosed;
+  await rm(profile, { recursive: true, force: true, maxRetries: 8, retryDelay: 150 });
 }

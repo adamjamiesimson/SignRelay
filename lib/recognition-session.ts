@@ -6,6 +6,9 @@ type Configuration = Extract<WorkerInput, { type: "templates" }>;
 type Control = Configuration | Extract<WorkerInput, { type: "reset" }>;
 export type SessionStatus = { state: "running" | "recovering" | "failed"; message: string };
 
+const validConfidence = (value: number) => Number.isFinite(value) && value >= 0 && value <= 1;
+const optionalText = (value: unknown) => value === undefined || typeof value === "string";
+
 /** One in-flight frame and one replaceable latest frame. No unbounded camera
  * backlog, and no output from a worker/session that has already been replaced.
  */
@@ -125,6 +128,14 @@ export class RecognitionSession {
             this.pump();
             return;
           }
+          if ((message.state !== "listening" && message.state !== "processing" && message.state !== "uncertain")
+            || (message.candidate !== null && typeof message.candidate !== "string")
+            || !validConfidence(message.confidence)
+            || !Number.isSafeInteger(message.bufferSize) || message.bufferSize < 0 || message.bufferSize > 300
+            || !optionalText(message.feedback) || !optionalText(message.motionReason)) {
+            this.recover("Recognition returned an invalid analysis. Restarting…");
+            return;
+          }
           this.lastRoundTripMs = performance.now() - waiting.since;
           this.stats.answered++;
           if (this.recovering) {
@@ -134,11 +145,15 @@ export class RecognitionSession {
           this.onMessage(message);
           this.pump();
         } else if (message.session === this.session) {
-          if (message.type === "fault") { this.recover(message.message); return; }
+          if (message.type === "fault") {
+            this.recover(typeof message.message === "string" ? message.message : "Recognition was interrupted. Restarting…");
+            return;
+          }
           if ((message.type === "confirmed" || message.type === "suggested")
-            && Number.isFinite(message.timestamp) && Number.isFinite(message.confidence)
-            && message.confidence >= 0 && message.confidence <= 1
-            && typeof message.text === "string" && typeof message.gloss === "string") this.onMessage(message);
+            && Number.isFinite(message.timestamp) && message.timestamp >= 0
+            && validConfidence(message.confidence)
+            && typeof message.text === "string" && message.text.trim()
+            && typeof message.gloss === "string" && message.gloss.trim()) this.onMessage(message);
         }
       };
       worker.onerror = worker.onmessageerror = () => {

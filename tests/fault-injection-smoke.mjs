@@ -61,6 +61,7 @@ try {
       }
       terminate() { this.__alive = false; return super.terminate(); }
       postMessage(message, transfer) {
+        if (typeof message?.session === 'number') this.__session = message.session;
         if (this.__url.includes('recognition.worker') && message?.type === 'frame') window.__qa.frames++;
         if (this.__url.includes('recognition.worker') && message?.type === 'reset') window.__qa.resets++;
         return super.postMessage(message, transfer);
@@ -112,6 +113,12 @@ try {
   console.error("Fault check: Tracking worker crash invalidates the overlay and recognition evidence.");
   const trackingWorkers = () => evaluate("window.__qa.workers.filter(w => w.__url.includes('vision.worker')).length");
   const trackersBefore = await trackingWorkers();
+  await evaluate(`(() => {
+    const worker = window.__qa.workers.filter(w => w.__alive && w.__url.includes('recognition.worker')).at(-1);
+    worker.onmessage({ data: { type: 'suggested', session: worker.__session, id: 'old-track',
+      language: 'asl', gloss: 'BOOK', text: 'Book', source: 'model', confidence: 0.9, timestamp: Date.now() } });
+  })()`);
+  await until(() => evaluate("!!document.querySelector('.model-suggestion')"), "Expected a pending suggestion before the tracking fault");
   const invalidated = await evaluate(`(() => {
     const canvas = document.querySelector('.camera-stage canvas');
     const context = canvas.getContext('2d');
@@ -125,10 +132,11 @@ try {
   assert.equal(invalidated.marked, 255, "The stale-overlay marker was not painted");
   assert.ok(invalidated.cleared, "A tracking crash must clear the painted overlay immediately");
   assert.ok(invalidated.reset, "A tracking crash must reset recognition evidence immediately");
+  await until(() => evaluate("!document.querySelector('.model-suggestion')"), "Tracking interruption left an old suggestion actionable", 20);
   await until(async () => await trackingWorkers() > trackersBefore, "No replacement tracking worker started");
   await until(analysing, "Tracking did not resume after the crash");
   assert.ok(await active(), "The camera must stay active through tracking recovery");
-  results.push({ fault: "tracking worker crash", overlay_cleared: true, recognition_reset: true, recovered: true });
+  results.push({ fault: "tracking worker crash", overlay_cleared: true, recognition_reset: true, suggestions_withdrawn: true, recovered: true });
 
   // A decoder can stop on a frame the tracking lane has not picked up yet.
   // Its clock stays ahead of the last analysed frame even though it is frozen.
@@ -214,6 +222,24 @@ try {
   await until(active, "Camera did not start with storage disabled");
   await until(analysing, "Recognition did not run with storage disabled");
   results.push({ fault: "localStorage throws", camera_and_recognition: "running" });
+
+  console.error("Fault check: repeated tracking worker crashes.");
+  for (let count = 0; count < 3; count++) {
+    const trackers = await trackingWorkers();
+    await evaluate(`(() => {
+      const tracker = window.__qa.workers.filter(w => w.__alive && w.__url.includes('vision.worker')).at(-1);
+      if (!tracker) throw new Error('Missing active tracker');
+      tracker.onerror(new ErrorEvent('error', { message: 'Injected tracking crash' }));
+    })()`);
+    if (count < 2) {
+      await until(async () => await trackingWorkers() === trackers + 1, "Expected one CPU replacement");
+      await until(analysing, "The replacement did not produce recognition frames");
+    }
+  }
+  await until(() => text("/Hand tracking stopped/"), "Repeated tracker failures did not stop the camera");
+  assert.equal(await liveTracks(), 0, "A terminal tracking fault must release every track");
+  assert.equal(await evaluate("window.__qa.workers.some(w => w.__alive && w.__url.includes('vision.worker'))"), false);
+  results.push({ fault: "repeated tracking worker crashes", camera_released: true, worker_released: true });
 
   const errors = browser.errors.filter(error => typeof error === "string" && !error.includes("Injected"));
   assert.deepEqual(errors, [], "Uncaught page exceptions");

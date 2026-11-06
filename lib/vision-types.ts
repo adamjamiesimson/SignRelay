@@ -22,6 +22,24 @@ export type VisionFrame = {
   pose: Point[];
 };
 
+function validPoints(points: unknown): points is Point[] {
+  if (!Array.isArray(points)) return false;
+  for (const point of points) {
+    if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y) || !Number.isFinite(point.z)
+      || (point.visibility !== undefined && !Number.isFinite(point.visibility))) return false;
+  }
+  return true;
+}
+
+/** Guard the two worker boundaries before reading, drawing or storing landmarks. */
+export function validVisionFrame(value: unknown): value is VisionFrame {
+  if (!value || typeof value !== "object") return false;
+  const frame = value as VisionFrame;
+  if (!Number.isFinite(frame.timestamp) || frame.timestamp < 0 || !Array.isArray(frame.hands)) return false;
+  for (const hand of frame.hands) if (!hand || !validPoints(hand.landmarks)) return false;
+  return validPoints(frame.face) && validPoints(frame.pose);
+}
+
 export type WorkerAnalysis = {
   type: "analysis";
   session?: number;

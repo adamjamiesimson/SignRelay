@@ -128,6 +128,20 @@ describe("bounded tracking lane", () => {
     expect(await pending).toBeNull();
     live.close();
   });
+  it("stops after repeated worker crashes without waiting for a frame to reject", async () => {
+    const live = await LiveVision.create(), failed = vi.fn(), interrupted = vi.fn();
+    live.onFailure = failed;
+    live.onInterrupt = interrupted;
+    for (let i = 0; i < 3; i++) {
+      Port.instances[i].emit(null);
+      await vi.waitFor(() => expect(live.busy).toBe(false));
+    }
+    expect(Port.instances).toHaveLength(3);
+    expect(interrupted).toHaveBeenCalledTimes(2);
+    expect(failed).toHaveBeenCalledOnce();
+    expect(Port.instances.every(port => port.terminate.mock.calls.length === 1)).toBe(true);
+    expect(await live.process({} as HTMLVideoElement, 1, vi.fn())).toBeNull();
+  });
   it("reports an interruption after hands were painted, before the frame rejects", async () => {
     const live = await LiveVision.create(), port = Port.instances[0], order: string[] = [];
     live.onInterrupt = () => order.push("interrupt");
@@ -138,6 +152,18 @@ describe("bounded tracking lane", () => {
     await expect(result).rejects.toThrow("aux inference failed");
     expect(order).toEqual(["hands", "interrupt"]);
     live.close();
+  });
+  it("rejects broken landmarks before they can reach the canvas", async () => {
+    const live = await LiveVision.create(), port = Port.instances[0], draw = vi.fn();
+    try {
+      const result = live.process({} as HTMLVideoElement, 1, draw);
+      const rejected = expect(result).rejects.toThrow("Invalid tracking landmarks");
+      await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledTimes(2));
+      port.emit({ type: "hands", frame: { ...frame, hands: [{ landmarks: [null] }] }, handsMs: 12 });
+      await rejected;
+      expect(draw).not.toHaveBeenCalled();
+      expect(port.terminate).toHaveBeenCalledOnce();
+    } finally { live.close(); }
   });
   it("reports an interruption when a frame times out", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });

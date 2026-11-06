@@ -57,6 +57,25 @@ describe("ongoing recognition sessions", () => {
     expect(onMessage).toHaveBeenCalledOnce();
     expect(onStatus).toHaveBeenLastCalledWith({ state: "running", message: "" });
   });
+  it("recovers from a malformed analysis before it reaches the workspace", () => {
+    send(1);
+    const { session: current, frameId } = workers[0].frames()[0];
+    workers[0].onmessage?.({ data: { type: "analysis", session: current, frameId,
+      state: "processing", candidate: { invalid: true }, confidence: 0.9, bufferSize: 1,
+    } } as unknown as MessageEvent<WorkerMessage>);
+    expect(onMessage).not.toHaveBeenCalled();
+    expect(workers[0].terminate).toHaveBeenCalledOnce();
+    send(2);
+    workers[1].acknowledge();
+    expect(onMessage).toHaveBeenCalledOnce();
+  });
+  it.each([-1, Infinity, NaN])("drops an invalid transcript timestamp (%s)", timestamp => {
+    send(1);
+    workers[0].onmessage?.({ data: { type: "confirmed", session: workers[0].frames()[0].session,
+      text: "Hello", gloss: "HELLO", source: "personal", confidence: 0.9, timestamp,
+    } } as MessageEvent<WorkerMessage>);
+    expect(onMessage).not.toHaveBeenCalled();
+  });
   it.each(["onerror", "onmessageerror"] as const)("recovers after %s without clearing previous transcript messages", event => {
     send(1); workers[0].acknowledge();
     workers[0][event]?.();

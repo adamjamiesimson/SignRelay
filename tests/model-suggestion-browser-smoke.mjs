@@ -79,7 +79,14 @@ try {
 
   // 1. A research-model suggestion is shown, labelled, not inserted, not spoken, announced as not added.
   const focusBefore = await evaluate("document.activeElement?.outerHTML.slice(0, 60)");
-  await evaluate("window.__qaSuggest('s1', 'BOOK')");
+  // Keep the browser's monotonic clock at offer time while CDP reads and
+  // activates the card. Host scheduling must not turn an early press into a
+  // late press between assertions. The later keyboard path uses real time.
+  await evaluate(`(() => {
+    const offeredAt = performance.now();
+    Object.defineProperty(performance, "now", { configurable: true, value: () => offeredAt });
+    window.__qaSuggest('s1', 'BOOK');
+  })()`);
   await until(async () => (await card()) !== null, "Suggestion not shown");
   assert.match(await evaluate("document.querySelector('.model-suggestion').textContent"), /Experimental suggestion · ASL research model.*Book/s);
   assert.match(await evaluate("document.querySelector('.model-suggestions').textContent"), /Not in the transcript\. Add a word only if it is what you signed\./);
@@ -99,6 +106,7 @@ try {
   assert.deepEqual(await entries(), [], "An immediate tap accepted the suggestion");
   assert.deepEqual(await evaluate("window.__qa.spoken"), [], "An immediate tap spoke the suggestion");
   assert.match(await announcements(), /Not added yet\. Check the word, then press Add again\./, "An early press was not explained");
+  await evaluate("delete performance.now");
   checks.push("activation within 600 ms of appearing is ignored and explained to screen readers, even after a wall-clock jump");
 
   // 3. Keyboard: Enter adds once; an extra click adds nothing; focus returns to the transcript.
@@ -326,6 +334,6 @@ try {
   assert.equal(await evaluate("localStorage.getItem('signrelay.history.v1')"), null, "Saved history was not cleared");
   checks.push("clearing local data withdraws pending suggestions and removes saved transcript history");
 
-  assert.ok((await evaluate("window.__qa.urls")).some(u => u.includes("recognition.worker.js?v=observation-boundary-3")), "Worker URL version not updated");
+  assert.ok((await evaluate("window.__qa.urls")).some(u => u.includes("recognition.worker.js?v=observation-boundary-4")), "Worker URL version not updated");
   console.log("MODEL-SUGGESTION-SMOKE", JSON.stringify({ passed: checks.length, checks }));
 } finally { await browser?.close(); server.kill(); }

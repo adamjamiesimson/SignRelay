@@ -5,6 +5,35 @@ const DATABASE_NAME = "signrelay-personal-vocabulary";
 const STORE_NAME = "templates";
 const DATABASE_VERSION = 1;
 const MAX_EXAMPLES_PER_GLOSS = 3;
+const CHANGE_SIGNAL = "signrelay.personal-vocabulary.changed";
+
+/** Publish only an invalidation, after IndexedDB has committed. */
+function notifyCalibrationChange() {
+  if (typeof window === "undefined") return;
+  try {
+    const channel = new BroadcastChannel(CHANGE_SIGNAL);
+    try { channel.postMessage(null); } finally { channel.close(); }
+  } catch {
+    try {
+      localStorage.setItem(CHANGE_SIGNAL, String(Math.random()));
+      localStorage.removeItem(CHANGE_SIGNAL);
+    } catch { /* Storage may be unavailable. */ }
+  }
+}
+
+export function subscribeCalibrationChanges(onChange: () => void) {
+  const storageChanged = (event: StorageEvent) => { if (event.key === CHANGE_SIGNAL && event.newValue !== null) onChange(); };
+  window.addEventListener("storage", storageChanged);
+  let channel: BroadcastChannel | undefined;
+  try {
+    channel = new BroadcastChannel(CHANGE_SIGNAL);
+    channel.onmessage = onChange;
+  } catch { /* Older browsers use the storage event. */ }
+  return () => {
+    window.removeEventListener("storage", storageChanged);
+    channel?.close();
+  };
+}
 
 export function validCalibrationTemplate(value: unknown): value is CalibrationTemplate {
   if (!value || typeof value !== "object") return false;
@@ -77,7 +106,7 @@ async function readwrite(work: (store: IDBObjectStore) => void) {
   await new Promise<void>((resolve, reject) => {
     const transaction = database.transaction(STORE_NAME, "readwrite");
     work(transaction.objectStore(STORE_NAME));
-    transaction.oncomplete = () => { database.close(); resolve(); };
+    transaction.oncomplete = () => { database.close(); notifyCalibrationChange(); resolve(); };
     transaction.onerror = transaction.onabort = () => { database.close(); reject(transaction.error ?? new Error("Personal vocabulary storage was interrupted")); };
   });
 }
