@@ -24,10 +24,10 @@ export function starterRulesPredictor(): Predictor {
 }
 
 /** The temporal DTW baseline, retrained on each fold's training signers. */
-export function temporalBaselinePredictor(config: BaselineConfig = BASELINE_CONFIG): Predictor & { model: () => BaselineModel | null } {
+export function temporalBaselinePredictor(config: BaselineConfig = BASELINE_CONFIG, name = "temporal-baseline"): Predictor & { model: () => BaselineModel | null } {
   let model: BaselineModel | null = null;
   return {
-    name: "temporal-baseline",
+    name,
     model: () => model,
     fit(train: Example[]) { model = trainBaseline(train.map(e => ({ frames: e.frames, label: e.gloss ?? OTHER, signer: e.signer })), config); },
     predict(frames: VisionFrame[]) {

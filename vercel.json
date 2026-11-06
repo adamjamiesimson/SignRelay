@@ -6,7 +6,8 @@
     "deploymentEnabled": {
       "feature/pretrained-language-expansion": false,
       "codex/engineering-excellence-sprint": false,
-      "codex/signrelay-ultimate-stability-accuracy": false
+      "codex/signrelay-ultimate-stability-accuracy": false,
+      "codex/signrelay-tracking-recognition-evaluation": false
     }
   }
 }

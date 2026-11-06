@@ -48,7 +48,18 @@ function extension(p: Point[], mcp: number, tip: number) {
   return Math.max(0, Math.min(1, full > 1e-6 ? reach / full : 0));
 }
 
-export function handshapeOf(hand: HandObservation): number[] {
+function jointExtension(points: Point[], start: number) {
+  const a = points[start], b = points[start + 1], c = points[start + 2], d = points[start + 3];
+  const cosine = (p: Point, q: Point, r: Point) => {
+    const x = q.x - p.x, y = q.y - p.y, z = q.z - p.z;
+    const u = r.x - q.x, v = r.y - q.y, w = r.z - q.z;
+    const length = Math.hypot(x, y, z) * Math.hypot(u, v, w);
+    return length > 1e-9 ? Math.max(-1, Math.min(1, (x * u + y * v + z * w) / length)) : 0;
+  };
+  return (2 + cosine(a, b, c) + cosine(b, c, d)) / 4;
+}
+
+export function handshapeOf(hand: HandObservation, articulated = false): number[] {
   const p = hand.landmarks;
   const palm = Math.max(dist(p[0], p[9]), 1e-4);
   // Palm normal from wrist->index MCP x wrist->pinky MCP (MediaPipe z is relative depth).
@@ -60,7 +71,7 @@ export function handshapeOf(hand: HandObservation): number[] {
   // turns the cross product (x, y, z) into (x, -y, -z), so a left hand's normal
   // is mapped back onto the right-hand layout by negating y and z.
   if (hand.handedness === "Left") n = { x: n.x, y: -n.y, z: -n.z };
-  return [extension(p, 1, 4), extension(p, 5, 8), extension(p, 9, 12), extension(p, 13, 16), extension(p, 17, 20),
+  return [...[1, 5, 9, 13, 17].map(i => articulated ? jointExtension(p, i) : extension(p, i, i + 3)),
     dist(p[4], p[8]) / palm, dist(p[8], p[20]) / Math.max(dist(p[5], p[17]), 1e-4), n.x, n.y, n.z];
 }
 
@@ -88,7 +99,7 @@ export type FeatureSequence = {
 };
 
 /** Per-frame channels. Frames without the dominant hand are skipped (not zero-filled). */
-export function extractFeatures(frames: VisionFrame[]): FeatureSequence {
+export function extractFeatures(frames: VisionFrame[], articulated = false): FeatureSequence {
   const dominant = dominantLabel(frames);
   // MediaPipe labels the hand as seen in an unmirrored image; a right-dominant
   // signer's hand is labelled "Right" in this pipeline (lib/hand-continuity).
@@ -99,12 +110,13 @@ export function extractFeatures(frames: VisionFrame[]): FeatureSequence {
   let body: Body | null = null, prev: { t: number; x: number; y: number; ox?: number; oy?: number } | null = null, missing = 0;
   for (const frame of frames) {
     body = bodyOf(frame) ?? body;
-    const hand = frame.hands.find(h => validHand(h) && h.handedness === dominant) ?? (frame.hands.length === 1 && validHand(frame.hands[0]) ? frame.hands[0] : undefined);
+    const hand = frame.hands.find(h => validHand(h) && h.handedness === dominant) ?? (!articulated && frame.hands.length === 1 && validHand(frame.hands[0]) ? frame.hands[0] : undefined);
     if (!hand || !body) { missing++; continue; }
     const other = frame.hands.find(h => h !== hand && validHand(h));
     const rel = (p: Point) => ({ x: sx * (p.x - body!.cx) / body!.scale, y: (p.y - body!.cy) / body!.scale });
     const w = rel(hand.landmarks[0]), tip = rel(hand.landmarks[8]);
     const d = (anchor: Point) => dist(hand.landmarks[8], anchor) / body!.scale;
+    if (articulated && prev && (frame.timestamp <= prev.t || frame.timestamp - prev.t > 240)) prev = null;
     const dt = prev ? Math.max((frame.timestamp - prev.t) / 1000, 1e-3) : 0;
     const vx = prev ? (w.x - prev.x) / dt : 0, vy = prev ? (w.y - prev.y) / dt : 0;
     const o = other ? rel(other.landmarks[0]) : null;
@@ -114,7 +126,7 @@ export function extractFeatures(frames: VisionFrame[]): FeatureSequence {
       const dot = (-ovx) * vx + ovy * vy, mag = Math.hypot(vx, vy) * Math.hypot(ovx, ovy);
       mirrorMotion = mag > 1e-6 ? dot / mag : 0; // 1 = mirror-symmetric motion, -1 = opposite
     }
-    rows.push([...handshapeOf(hand), w.x, w.y, tip.x, tip.y, d(body.forehead), d(body.eyes), d(body.mouth), d(body.chest),
+    rows.push([...handshapeOf(hand, articulated), w.x, w.y, tip.x, tip.y, d(body.forehead), d(body.eyes), d(body.mouth), d(body.chest),
       vx, vy, Math.hypot(vx, vy), o ? 1 : 0, o ? Math.hypot(o.x - w.x, o.y - w.y) : 0, o ? o.x - w.x : 0, o ? o.y - w.y : 0, mirrorMotion]);
     times.push(frame.timestamp);
     prev = { t: frame.timestamp, x: w.x, y: w.y, ox: o?.x, oy: o?.y };
@@ -172,11 +184,18 @@ export function repetitionOf(rows: number[][]) {
 }
 
 /** Linear resampling of rows to a fixed length. */
-export function resample(rows: number[][], length: number): number[][] {
+export function resample(rows: number[][], length: number, times?: number[]): number[][] {
   if (!rows.length) return [];
   if (rows.length === 1) return Array.from({ length }, () => [...rows[0]]);
+  let timeIndex = 0;
   return Array.from({ length }, (_, i) => {
-    const at = (i * (rows.length - 1)) / (length - 1), lo = Math.floor(at), hi = Math.min(rows.length - 1, lo + 1), f = at - lo;
+    let at = (i * (rows.length - 1)) / (length - 1);
+    if (times) {
+      const time = times[0] + i * (times.at(-1)! - times[0]) / (length - 1);
+      while (timeIndex + 1 < times.length - 1 && times[timeIndex + 1] < time) timeIndex++;
+      at = timeIndex + (time - times[timeIndex]) / (times[timeIndex + 1] - times[timeIndex]);
+    }
+    const lo = Math.floor(at), hi = Math.min(rows.length - 1, lo + 1), f = at - lo;
     return rows[lo].map((v, c) => v + (rows[hi][c] - v) * f);
   });
 }

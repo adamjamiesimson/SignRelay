@@ -56,13 +56,21 @@ if (mode === "synthetic") {
 } else throw new Error("usage: temporal-experiment.mjs synthetic <out> | wlasl <clips.json> <captures> <out> | jsonl <file> <out>");
 
 const started = Date.now();
-const report = lib.runExperiment(examples, [lib.starterRulesPredictor(), lib.temporalBaselinePredictor()], { note });
+const articulated = { ...lib.BASELINE_CONFIG, articulated: true };
+const report = lib.runExperiment(examples, [lib.starterRulesPredictor(), lib.temporalBaselinePredictor(),
+  lib.temporalBaselinePredictor(articulated, "articulated-timed"),
+  lib.temporalBaselinePredictor({ ...articulated, guardedCalibration: true }, "articulated-guarded")], { note });
 let commit = null;
 try { commit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(); } catch { /* not a checkout */ }
-const result = { ...report, mode, commit, baseline_config: lib.BASELINE_CONFIG, runtime_s: Math.round((Date.now() - started) / 1000) };
+const result = { ...report, mode, commit, baseline_config: lib.BASELINE_CONFIG,
+  variant_configs: { "articulated-timed": articulated, "articulated-guarded": { ...articulated, guardedCalibration: true } },
+  runtime_s: Math.round((Date.now() - started) / 1000) };
 mkdirSync(dirname(target), { recursive: true });
 writeFileSync(target, JSON.stringify(result, null, 1));
 const brief = Object.fromEntries(Object.entries(report.predictors).map(([name, r]) => [name, {
   targets: `${r.all.targets.correct}/${r.all.targets.support} correct, ${r.all.targets.wrong} wrong, ${r.all.targets.abstained} abstained`,
   other: `${r.all.other.falseAccept}/${r.all.other.support} accepted as a target sign` }]));
 console.log("TEMPORAL-EXPERIMENT", JSON.stringify({ mode, dataset: report.dataset, folds: report.folds.count, predictors: brief, caveats: report.caveats }));
+for (const [name, r] of Object.entries(report.predictors)) {
+  console.log("TEMPORAL-BY-GLOSS", JSON.stringify({ name, byGloss: r.all.targets.byGloss, falseAcceptAs: r.all.other.falseAcceptAs }));
+}
