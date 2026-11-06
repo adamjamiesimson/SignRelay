@@ -298,13 +298,34 @@ try {
   checks.push("BSL research-model word offered as a suggestion labelled with its model; not inserted");
 
   // 17. Clear local data withdraws unaccepted suggestions as well as saved history.
+  // Hold the vocabulary open callback to test a personal result during deletion.
+  await evaluate(`(() => {
+    const open = indexedDB.open.bind(indexedDB);
+    indexedDB.open = (name, ...args) => {
+      const request = open(name, ...args);
+      if (name !== 'signrelay-personal-vocabulary') return request;
+      return new Proxy(request, { get(target, key) { return Reflect.get(target, key, target); }, set(target, key, value) {
+        if (key === 'onsuccess') {
+          target.onsuccess = () => { window.__qaReleaseClear = () => value.call(target); };
+          return true;
+        }
+        return Reflect.set(target, key, value, target);
+      } });
+    };
+    window.__qaRestoreOpen = () => { indexedDB.open = open; };
+  })()`);
   await evaluate("document.querySelector('.privacy-disclosure').open = true");
   await click("Clear local data");
+  await until(() => evaluate("typeof window.__qaReleaseClear === 'function'"), "Vocabulary clear did not reach storage");
+  await evaluate("window.__qaConfirm('DELETED EXAMPLE', 'personal')");
+  await pause(150);
+  assert.equal((await entries()).some(entry => entry.startsWith("Deleted example")), false, "Personal result escaped during deletion");
+  await evaluate("window.__qaRestoreOpen(); window.__qaReleaseClear();");
   await until(async () => (await card()) === null, "A suggestion was still actionable after clearing local data");
   assert.deepEqual(await entries(), [], "Clearing local data added a pending suggestion");
   assert.equal(await evaluate("localStorage.getItem('signrelay.history.v1')"), null, "Saved history was not cleared");
   checks.push("clearing local data withdraws pending suggestions and removes saved transcript history");
 
-  assert.ok((await evaluate("window.__qa.urls")).some(u => u.includes("recognition.worker.js?v=output-policy-2")), "Worker URL version not updated");
+  assert.ok((await evaluate("window.__qa.urls")).some(u => u.includes("recognition.worker.js?v=observation-boundary-3")), "Worker URL version not updated");
   console.log("MODEL-SUGGESTION-SMOKE", JSON.stringify({ passed: checks.length, checks }));
 } finally { await browser?.close(); server.kill(); }

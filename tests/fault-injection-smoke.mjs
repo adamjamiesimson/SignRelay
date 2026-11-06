@@ -150,6 +150,24 @@ try {
   await open();
   await until(active, "Camera did not restart after the injected freeze was removed");
 
+  // The video clock can advance normally while the browser's pixel conversion
+  // promise never resolves. The camera-clock watchdog cannot detect this fault.
+  await evaluate(`(() => {
+    const video = document.querySelector('.camera-stage video');
+    const capture = window.createImageBitmap;
+    window.createImageBitmap = (source, ...args) => {
+      if (source !== video) return capture(source, ...args);
+      window.__qa.captureHung = true;
+      return new Promise(() => {});
+    };
+  })()`);
+  await until(() => evaluate("window.__qa.captureHung"), "Native bitmap hang was not injected");
+  await until(() => text("/Camera frame capture stopped responding/"), "Hung bitmap conversion must end the active camera", 140);
+  assert.equal(await liveTracks(), 0, "The camera must release its tracks after a native capture timeout");
+  results.push({ fault: "native bitmap conversion hangs while video advances", camera_released: true });
+  await open();
+  await until(active, "Camera did not restart after the bitmap hang was removed");
+
   // 2. Worker construction fails once.
   console.error("Fault check: Worker construction fails once.");
   await click("Change language");

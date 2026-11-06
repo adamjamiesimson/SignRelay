@@ -60,6 +60,15 @@ beforeEach(async () => {
 });
 
 describe("live worker regression coverage (synthetic control inputs, not sign accuracy)", () => {
+  it.each([NaN, Infinity, -Infinity])("breaks temporal evidence at invalid observation time %s and acknowledges the frame", async invalidTime => {
+    await frames(5);
+    await worker.onmessage({ data: { type: "frame", session: 9, frameId: 42,
+      frame: { timestamp: invalidTime, hands: [], face: [], pose: [] } } });
+    expect(worker.postMessage).toHaveBeenLastCalledWith(expect.objectContaining({ type: "analysis", session: 9,
+      frameId: 42, state: "listening", candidate: null, bufferSize: 0 }));
+    await frames(1);
+    expect(worker.postMessage).toHaveBeenLastCalledWith(expect.objectContaining({ type: "analysis", bufferSize: 1 }));
+  });
   it.each(["asl", "bsl", "isl", "lse", "psl"] as const)("keeps %s inference running after the rolling buffer fills", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     await frames(90);
