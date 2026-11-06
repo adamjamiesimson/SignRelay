@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { makeSign } from "./fixtures/asl-motion";
 const mocks = vi.hoisted(() => ({ create: vi.fn() }));
 vi.mock("../lib/vision-engine", () => ({ VisionEngine: { create: mocks.create } }));
-import { LiveVision } from "../lib/live-vision";
+import { BitmapCaptureTimeout, LiveVision } from "../lib/live-vision";
 const frame = makeSign("SORRY")[0];
 class Port {
   static instances: Port[] = [];
@@ -70,7 +70,7 @@ describe("bounded tracking lane", () => {
     port.emit({ type: "result", frame, timings: { hands: 12, auxiliary: 45 } });
     expect(await first).toBe(frame); expect(live.busy).toBe(false);
     const newest = live.process({} as HTMLVideoElement, 100, draw);
-    await Promise.resolve();
+    await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledTimes(3));
     const messages = port.postMessage.mock.calls.map(([m]) => m as { type: string; timestamp: number });
     expect(messages.filter(m => m.type === "frame").map(m => m.timestamp)).toEqual([1, 100]);
     live.close(); expect(await newest).toBeNull();
@@ -84,12 +84,30 @@ describe("bounded tracking lane", () => {
     expect(await result).toBeNull(); expect(bitmap.close).toHaveBeenCalledOnce(); expect(draw).not.toHaveBeenCalled();
     expect(Port.instances[0].postMessage.mock.calls).toHaveLength(1);
   });
+  it("bounds a hung native bitmap conversion and disposes its late bitmap", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    let finish!: (bitmap: ImageBitmap) => void;
+    vi.mocked(createImageBitmap).mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    const live = await LiveVision.create(), draw = vi.fn(), bitmap = { close: vi.fn() };
+    const result = live.process({} as HTMLVideoElement, 1, draw);
+    const assertion = expect(result).rejects.toBeInstanceOf(BitmapCaptureTimeout);
+    await vi.advanceTimersByTimeAsync(10000);
+    await assertion;
+    expect(Port.instances[0].terminate).toHaveBeenCalledOnce();
+    expect(await live.process({} as HTMLVideoElement, 2, draw)).toBeNull();
+    expect(createImageBitmap).toHaveBeenCalledOnce();
+    finish(bitmap as unknown as ImageBitmap);
+    await Promise.resolve();
+    expect(bitmap.close).toHaveBeenCalledOnce();
+    expect(draw).not.toHaveBeenCalled();
+  });
   it("recovers a failed worker off-thread with CPU", async () => {
     const fallback = { process: vi.fn(() => frame), close: vi.fn(), assetSource: "self-hosted", delegate: "CPU", timings: { hands: 20, auxiliary: 0 } };
     mocks.create.mockResolvedValue(fallback);
     const live = await LiveVision.create(), port = Port.instances[0];
     const result = live.process({} as HTMLVideoElement, 1, vi.fn());
-    await Promise.resolve(); port.onerror!();
+    await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledTimes(2));
+    port.onerror!();
     await expect(result).rejects.toThrow("interrupted"); await Promise.resolve();
     expect(Port.instances).toHaveLength(2);
     expect(Port.instances[1].postMessage).toHaveBeenCalledWith({ type: "init", accelerated: false });
@@ -114,7 +132,7 @@ describe("bounded tracking lane", () => {
     const live = await LiveVision.create(), port = Port.instances[0], order: string[] = [];
     live.onInterrupt = () => order.push("interrupt");
     const result = live.process({} as HTMLVideoElement, 1, () => order.push("hands"));
-    await Promise.resolve();
+    await vi.waitFor(() => expect(port.postMessage).toHaveBeenCalledTimes(2));
     port.emit({ type: "hands", frame, handsMs: 12 });
     port.emit({ type: "error", message: "aux inference failed" });
     await expect(result).rejects.toThrow("aux inference failed");

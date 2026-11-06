@@ -113,6 +113,7 @@ function resetSession() {
 }
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
+  if (!event.data || typeof event.data !== "object") return;
   const processingStarted = performance.now();
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
@@ -124,7 +125,16 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   }
   if (event.data.type === "reset") { resetSession(); return; }
 
-  const now = event.data.frame.timestamp;
+  if (event.data.type !== "frame") return;
+  const now = event.data.frame?.timestamp;
+  if (!Number.isFinite(now) || !Array.isArray(event.data.frame?.hands)
+    || !Array.isArray(event.data.frame?.face) || !Array.isArray(event.data.frame?.pose)) {
+    resetEvidence();
+    self.postMessage({ type: "analysis", session: event.data.session, frameId: event.data.frameId,
+      state: "listening", candidate: null, confidence: 0, bufferSize: 0,
+    } satisfies WorkerMessage);
+    return;
+  }
   const previous = frames.at(-1);
   if (previous) {
     const gap = now - previous.timestamp;

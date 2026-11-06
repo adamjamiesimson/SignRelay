@@ -81,8 +81,31 @@ describe("ongoing recognition sessions", () => {
     vi.advanceTimersByTime(60000);
     expect(workers).toHaveLength(1);
     send(60050);
+    workers[0].acknowledge(); // releases the old slot without publishing its analysis
     workers[0].acknowledge();
     expect(onMessage).toHaveBeenCalledOnce();
+  });
+  it("does not add frames to a busy worker mailbox across repeated resets and reconfigurations", () => {
+    send(1);
+    for (let i = 2; i < 102; i++) {
+      session.postMessage(i % 2 ? { type: "reset" } : { type: "templates", language: "isl", templates: [] });
+      send(i);
+    }
+    expect(workers[0].frames()).toHaveLength(1);
+    expect(workers[0].postMessage).toHaveBeenCalledTimes(2);
+    workers[0].acknowledge();
+    expect(onMessage).not.toHaveBeenCalled();
+    expect(workers[0].frames()).toHaveLength(2);
+    expect(workers[0].frames().at(-1)?.frame.timestamp).toBe(101);
+    expect(workers[0].postMessage.mock.calls.at(-2)?.[0]).toMatchObject({ type: "templates", language: "isl" });
+    workers[0].acknowledge();
+    expect(onMessage).toHaveBeenCalledOnce();
+  });
+  it.each([NaN, Infinity, -1, 1.01])("drops an invalid word confidence %s", confidence => {
+    send(1);
+    workers[0].onmessage?.({ data: { type: "confirmed", session: workers[0].frames()[0].session,
+      source: "personal", gloss: "OLD", text: "Old", confidence, timestamp: 1 } } as MessageEvent<WorkerMessage>);
+    expect(onMessage).not.toHaveBeenCalled();
   });
   it("ignores wall-clock jumps in watchdog and frame timing", () => {
     send(1);

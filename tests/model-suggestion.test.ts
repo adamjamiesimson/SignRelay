@@ -226,7 +226,7 @@ describe("workspace wiring (source review)", () => {
     expect(source.slice(source.indexOf("const clearTranscript"), source.indexOf("const clearTranscript") + 600)).toMatch(/withdrawSuggestion\(\)/);
   });
   it("uses a new worker URL version so a cached older worker is never reused", () => {
-    expect(source).toMatch(/recognition\.worker\.js\?v=output-policy-2/);
+    expect(source).toMatch(/recognition\.worker\.js\?v=observation-boundary-3/);
     expect(source).not.toMatch(/tracking-temporal-3|f1-suggestions-1/);
   });
   it("labels every transcript word's provenance", () => {

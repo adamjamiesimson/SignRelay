@@ -3,6 +3,7 @@ import { packTemplates } from "./template-transport";
 
 type Port = Pick<Worker, "postMessage" | "terminate" | "onmessage" | "onerror" | "onmessageerror">;
 type Configuration = Extract<WorkerInput, { type: "templates" }>;
+type Control = Configuration | Extract<WorkerInput, { type: "reset" }>;
 export type SessionStatus = { state: "running" | "recovering" | "failed"; message: string };
 
 /** One in-flight frame and one replaceable latest frame. No unbounded camera
@@ -13,8 +14,9 @@ export class RecognitionSession {
   private configuration: Configuration = { type: "templates", language: "asl", templates: [] };
   private session = 0;
   private nextFrameId = 0;
-  private waiting: { id: number; since: number } | null = null;
+  private waiting: { id: number; session: number; since: number } | null = null;
   private queued: VisionFrame | null = null;
+  private deferredControl: Control | null = null;
   private restarts: number[] = [];
   private recovering = false;
   private closed = false;
@@ -37,7 +39,8 @@ export class RecognitionSession {
   ) {
     this.launch();
     this.watchdog = setInterval(() => {
-      if (this.waiting && performance.now() - this.waiting.since >= 8000) {
+      if (this.waiting && (this.waiting.session === this.session || this.queued)
+        && performance.now() - this.waiting.since >= 8000) {
         this.recover("Recognition stopped responding. Restarting…");
       }
     }, 1000);
@@ -56,7 +59,8 @@ export class RecognitionSession {
     }
     if (message.type === "templates") this.configuration = message;
     this.session++;
-    this.waiting = null;
+    // A reset invalidates the result, but the worker still owns that frame.
+    // Keep its acknowledgement slot so repeated resets cannot queue frames.
     this.queued = null;
     if (!this.worker) {
       if (message.type === "reset") return;
@@ -64,6 +68,12 @@ export class RecognitionSession {
       this.recovering = true;
       this.onStatus({ state: "recovering", message: "Restarting recognition…" });
       this.launch();
+      return;
+    }
+    if (this.waiting) {
+      // Configuring templates also resets recognition. A subsequent reset
+      // cannot replace a configuration that the worker has yet to receive.
+      if (message.type === "templates" || !this.deferredControl) this.deferredControl = message;
       return;
     }
     try {
@@ -102,21 +112,34 @@ export class RecognitionSession {
       const worker = this.createWorker();
       this.worker = worker;
       worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
-        if (worker !== this.worker || event.data.session !== this.session) return;
+        if (worker !== this.worker || !event.data || typeof event.data !== "object") return;
         const message = event.data;
-        if (message.type === "fault") { this.recover(message.message); return; }
         const waiting = this.waiting;
-        if (message.type === "analysis" && waiting && message.frameId === waiting.id) {
+        if (message.type === "analysis" && waiting && message.frameId === waiting.id && message.session === waiting.session) {
+          this.waiting = null;
+          if (message.session !== this.session) {
+            const control = this.deferredControl;
+            this.deferredControl = null;
+            try { if (control) this.send(worker, control); }
+            catch { this.recover("Recognition could not receive the session. Restarting…"); return; }
+            this.pump();
+            return;
+          }
           this.lastRoundTripMs = performance.now() - waiting.since;
           this.stats.answered++;
-          this.waiting = null;
           if (this.recovering) {
             this.recovering = false;
             this.onStatus({ state: "running", message: "" });
           }
           this.onMessage(message);
           this.pump();
-        } else if (message.type === "confirmed" || message.type === "suggested") this.onMessage(message);
+        } else if (message.session === this.session) {
+          if (message.type === "fault") { this.recover(message.message); return; }
+          if ((message.type === "confirmed" || message.type === "suggested")
+            && Number.isFinite(message.timestamp) && Number.isFinite(message.confidence)
+            && message.confidence >= 0 && message.confidence <= 1
+            && typeof message.text === "string" && typeof message.gloss === "string") this.onMessage(message);
+        }
       };
       worker.onerror = worker.onmessageerror = () => {
         if (worker === this.worker) this.recover("Recognition was interrupted. Restarting…");
@@ -142,7 +165,7 @@ export class RecognitionSession {
     if (!this.worker || this.waiting || !this.queued) return;
     const frame = this.queued;
     this.queued = null;
-    this.waiting = { id: ++this.nextFrameId, since: performance.now() };
+    this.waiting = { id: ++this.nextFrameId, session: this.session, since: performance.now() };
     this.stats.forwarded++;
     this.stats.lastQueueAgeMs = this.waiting.since - this.queuedAt;
     try {
@@ -172,6 +195,7 @@ export class RecognitionSession {
   }
 
   private disposeWorker() {
+    this.deferredControl = null;
     if (!this.worker) return;
     this.worker.onmessage = this.worker.onerror = this.worker.onmessageerror = null;
     this.worker.terminate();

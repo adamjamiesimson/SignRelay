@@ -5,6 +5,9 @@ import type { VisionFrame } from "./vision-types";
 
 export type CapturedVisionFrame = VisionFrame & { capturedAt:number; mediaSlot:number; presentedFrames:number };
 export type LiveVisionTiming = VisionTimings & { capture: number; transport: number; age: number };
+export class BitmapCaptureTimeout extends Error {
+  constructor() { super("Camera frame capture timed out"); }
+}
 type Pending = {
   resolve: (frame: VisionFrame | null) => void; reject: (error: Error) => void;
   hands: (frame: VisionFrame) => void; started: number; capture: number; posted: number;
@@ -122,6 +125,7 @@ export class LiveVision {
   private trackingProfile: "words" | "fingerspelling" = "words";
   get profile() { return this.trackingProfile; }
   private cancelStartup: ((error: Error) => void) | null = null;
+  private cancelCapture: (() => void) | null = null;
   assetSource: VisionEngine["assetSource"] = "self-hosted";
   delegate: "GPU" | "CPU" = "CPU";
   mode: "worker" | "main" = "worker";
@@ -252,6 +256,35 @@ export class LiveVision {
     pending?.reject(error);
   }
 
+  private captureBitmap(source: ImageBitmapSource): Promise<ImageBitmap | null> {
+    const capture = createImageBitmap(source);
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = () => {
+        settled = true;
+        clearTimeout(timer);
+        this.cancelCapture = null;
+      };
+      const timer = setTimeout(() => {
+        finish();
+        // The browser cannot cancel bitmap conversion. Close this lane so it
+        // cannot accumulate more conversions behind a stuck native request.
+        this.close();
+        reject(new BitmapCaptureTimeout());
+      }, 10000);
+      this.cancelCapture = () => { finish(); resolve(null); };
+      capture.then(bitmap => {
+        if (settled) { bitmap.close(); return; }
+        finish();
+        resolve(bitmap);
+      }, error => {
+        if (settled) return;
+        finish();
+        reject(error);
+      });
+    });
+  }
+
   async process(video: HTMLVideoElement | HTMLCanvasElement, timestamp: number,
     onHands: (frame: VisionFrame) => void): Promise<VisionFrame | null> {
     if (this.closed) return null;
@@ -270,7 +303,7 @@ export class LiveVision {
       }
       if (!this.worker) throw new Error("Tracking unavailable. Restart the camera.");
       const captureWorker = this.worker;
-      let frameTimestamp=timestamp,metadata:Pending["metadata"],bitmap:ImageBitmap;
+      let frameTimestamp=timestamp,metadata:Pending["metadata"],bitmap:ImageBitmap | null;
       if(this.trackingProfile==="fingerspelling"){
         if(!("videoWidth" in video))throw new Error("Fingerspelling requires a video source");
         this.watchDecodedFrames(video);
@@ -291,15 +324,16 @@ export class LiveVision {
         if(own?.repeat){own.frame.close();this.stats.repeated++;return null;}
         if(own){
           frameTimestamp=this.wordMediaClock.map(own.mediaMs,timestamp);
-          try {bitmap=await createImageBitmap(own.frame);} finally {own.frame.close();}
+          try {bitmap=await this.captureBitmap(own.frame);} finally {own.frame.close();}
         }else{
           // Opt-in policy whose WebCodecs path is unavailable: keep tick times,
           // but never below a capture-time stamp already sent to the tracker.
           if(this.wordClockPolicy==="capture-time")frameTimestamp=Math.max(timestamp,this.lastWordTimestamp+1);
-          bitmap=await createImageBitmap(video);
+          bitmap=await this.captureBitmap(video);
         }
         if(this.wordClockPolicy==="capture-time")this.lastWordTimestamp=frameTimestamp;
       }
+      if (!bitmap) return null;
       if (this.closed || this.worker !== captureWorker || this.recovering) { bitmap.close(); return null; }
       const posted = performance.now();
       return await new Promise<VisionFrame | null>((resolve, reject) => {
@@ -312,6 +346,7 @@ export class LiveVision {
   }
 
   close() {
+    this.cancelCapture?.();
     if (this.sourceVideo && this.frameCallback !== null) this.sourceVideo.cancelVideoFrameCallback(this.frameCallback);
     this.snapshot?.bitmap.close();this.snapshot=null;this.snapshotCanvas=null;
     this.sourceVideo = null; this.decodedFrame = null; this.frameCallback = null;
