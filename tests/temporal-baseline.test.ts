@@ -18,6 +18,27 @@ const padded = (frames: VisionFrame[]) => [...still(frames, 600, true), ...frame
 const mean = (rows: number[][], c: number) => rows.reduce((s, r) => s + r[c], 0) / rows.length;
 
 describe("body-relative features", () => {
+  it("resamples by elapsed time when frames arrive unevenly", () => {
+    const rows = resample([[0], [1], [4]], 3, [0, 100, 400]);
+    expect(rows[0]).toEqual([0]);
+    expect(rows[1][0]).toBeCloseTo(2, 12);
+    expect(rows[2]).toEqual([4]);
+  });
+
+  it("does not replace the dominant hand with an opposite hand in the articulated experiment", () => {
+    const frames = makeSign("SORRY");
+    const switched = structuredClone(frames.at(-1)!);
+    switched.timestamp += 30;
+    switched.hands[0].handedness = switched.hands[0].handedness === "Right" ? "Left" : "Right";
+    const sequence = extractFeatures([...frames, switched], true);
+    expect(sequence.times).not.toContain(switched.timestamp);
+  });
+
+  it("abstains when guarded calibration has no negative examples", () => {
+    const data = ["a", "b", "c"].map(signer => ({ frames: makeSign("SORRY"), label: "SORRY", signer }));
+    const model = trainBaseline(data, { ...BASELINE_CONFIG, articulated: true, guardedCalibration: true });
+    expect(predictBaseline(model, makeSign("SORRY")).label).toBeNull();
+  });
   it("do not change with the signer's distance from the camera or position in frame", () => {
     const a = extractFeatures(makeSign("PLEASE")).rows, b = extractFeatures(makeSign("PLEASE", { scale: 1.2, shiftY: 0.04 })).rows;
     for (const channel of ["wrist_x", "wrist_y", "d_chest", "ext_index", "aperture"]) expect(mean(b, CHANNEL_INDEX[channel])).toBeCloseTo(mean(a, CHANNEL_INDEX[channel]), 1);

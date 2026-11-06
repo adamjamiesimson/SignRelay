@@ -19,6 +19,9 @@ export type BaselineConfig = {
   /** Rejection is calibrated so that, within training signers, at most this
    * fraction of "other" examples is accepted as a target sign. */
   targetFalseAccept: number;
+  /** Research variants. The frozen baseline leaves both disabled. */
+  articulated?: boolean;
+  guardedCalibration?: boolean;
 };
 /** Fixed before any data was seen; changing it is a new, separately reported experiment. */
 export const BASELINE_CONFIG: Readonly<BaselineConfig> = Object.freeze({
@@ -28,14 +31,28 @@ export const BASELINE_CONFIG: Readonly<BaselineConfig> = Object.freeze({
 export type Encoded = { rows: number[][]; global: number[]; ok: boolean; reason?: "no-hand" | "no-motion" };
 
 export function encode(frames: VisionFrame[], config: BaselineConfig = BASELINE_CONFIG): Encoded {
-  const seq = extractFeatures(frames);
+  let seq = extractFeatures(frames, config.articulated);
+  if (config.articulated) {
+    // Pick a contiguous observation span before segmentation. Do not resample
+    // a hand disappearing and reappearing into a continuous stroke.
+    let start = 0, bestStart = 0, bestEnd = 0;
+    for (let end = 1; end <= seq.times.length; end++) {
+      const gap = seq.times[end] - seq.times[end - 1];
+      if (gap > 0 && gap <= 240) continue;
+      if (end - start > bestEnd - bestStart) { bestStart = start; bestEnd = end; }
+      start = end;
+    }
+    seq = { ...seq, rows: seq.rows.slice(bestStart, bestEnd), times: seq.times.slice(bestStart, bestEnd) };
+  }
   if (seq.rows.length < 3) return { rows: [], global: [], ok: false, reason: "no-hand" };
   const span = segmentActive(seq);
   if (!span) return { rows: [], global: [], ok: false, reason: "no-motion" };
   const active = seq.rows.slice(span[0], span[1]);
-  const { reversals, autocorrelation } = repetitionOf(active);
+  const activeTimes = seq.times.slice(span[0], span[1]);
+  const rows = resample(active, config.length, config.articulated ? activeTimes : undefined);
+  const { reversals, autocorrelation } = repetitionOf(config.articulated ? rows : active);
   const duration = (seq.times[span[1] - 1] - seq.times[span[0]]) / 1000;
-  return { rows: resample(active, config.length), global: [Math.min(reversals, 8) / 4, autocorrelation, Math.min(duration, 4)], ok: true };
+  return { rows, global: [Math.min(reversals, 8) / 4, autocorrelation, Math.min(duration, 4)], ok: true };
 }
 
 type Stats = { mean: number[]; std: number[]; gMean: number[]; gStd: number[] };
@@ -100,13 +117,14 @@ function scores(model: Pick<BaselineModel, "config" | "stats" | "prototypes">, q
   return { best: targets[0] ?? null, second: targets[1] ?? null, other: distance.get(OTHER) ?? null };
 }
 
-function decide(s: ReturnType<typeof scores>, tau: number, rho: number): BaselinePrediction {
+function decide(s: ReturnType<typeof scores>, tau: number, rho: number, guarded = false): BaselinePrediction {
   if (!s.best) return { label: null, score: 0, reason: "unusable", nearest: null };
   const [label, d] = s.best;
-  const contrast = s.other ?? s.second?.[1] ?? d * 2;
+  const rival = guarded ? Math.min(s.other ?? Infinity, s.second?.[1] ?? Infinity) : s.other ?? Infinity;
+  const contrast = Number.isFinite(rival) ? rival : s.second?.[1] ?? d * 2;
   const score = contrast / Math.max(d, 1e-9);
   if (d > tau) return { label: null, score, reason: "far", nearest: label };
-  if (s.other !== null && d / s.other > rho) return { label: null, score, reason: "closer-to-other", nearest: label };
+  if (Number.isFinite(rival) && (guarded && rival <= 1e-9 || d / rival > rho)) return { label: null, score, reason: "closer-to-other", nearest: label };
   return { label, score, reason: "accepted", nearest: label };
 }
 
@@ -122,6 +140,19 @@ export function trainBaseline(data: Training[], config: BaselineConfig = BASELIN
   const correct = inner.filter(x => x.truth !== OTHER && x.s.best![0] === x.truth).map(x => x.s.best![1]).sort((a, b) => a - b);
   const tau = correct.length ? correct[Math.min(correct.length - 1, Math.floor(0.95 * correct.length))] * 1.1 : Infinity;
   const negatives = inner.filter(x => x.truth === OTHER);
+  if (config.guardedCalibration) {
+    // Include training negatives with no prediction in the denominator. If
+    // calibration has no correct examples or no negatives, abstain entirely.
+    const negativeSupport = encoded.filter(x => x.label === OTHER).length;
+    let best = { tau: -Infinity, rho: 0, recall: 0, falseAccept: 0 };
+    if (negativeSupport) for (const t of new Set(correct)) for (const r of [.5, .65, .8, .9, 1]) {
+      const falseAccept = negatives.filter(x => decide(x.s, t, r, true).label !== null).length;
+      if (falseAccept / negativeSupport > config.targetFalseAccept) continue;
+      const recall = inner.filter(x => x.truth !== OTHER && decide(x.s, t, r, true).label === x.truth).length;
+      if (recall > best.recall || (recall > 0 && recall === best.recall && falseAccept < best.falseAccept)) best = { tau: t, rho: r, recall, falseAccept };
+    }
+    return { ...base, tau: best.tau, rho: best.rho, labels: [...new Set(encoded.map(item => item.label))].sort() };
+  }
   let rho = 1;
   if (negatives.length) {
     // Largest ratio (most permissive) whose inner false-accept rate on "other" stays within target.
@@ -135,5 +166,5 @@ export function trainBaseline(data: Training[], config: BaselineConfig = BASELIN
 export function predictBaseline(model: BaselineModel, frames: VisionFrame[]): BaselinePrediction {
   const enc = encode(frames, model.config);
   if (!enc.ok) return { label: null, score: 0, reason: "unusable", nearest: null };
-  return decide(scores(model, enc), model.tau, model.rho);
+  return decide(scores(model, enc), model.tau, model.rho, model.config.guardedCalibration);
 }

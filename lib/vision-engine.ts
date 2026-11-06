@@ -51,7 +51,9 @@ export class VisionEngine {
     for (const source of VISION_ASSET_SOURCES) {
       for (const delegate of accelerated ? ["GPU", "CPU"] as const : ["CPU"] as const) {
         try {
-          return new VisionEngine(await VisionEngine.load(vision, source, delegate, onProgress), source.id, delegate);
+          const parts = await VisionEngine.load(vision, source, delegate, onProgress);
+          if (!parts.gesture || !parts.face || !parts.pose) throw new Error("Vision models could not start");
+          return new VisionEngine({ gesture: parts.gesture, face: parts.face, pose: parts.pose }, source.id, delegate);
         } catch (error) {
           lastError = error;
         }
@@ -60,12 +62,14 @@ export class VisionEngine {
     throw lastError;
   }
 
-  private static async load(vision: typeof import("@mediapipe/tasks-vision"), source: AssetSource, delegate: "GPU" | "CPU", onProgress?: (message: string) => void) {
+  /** Diagnostic lanes use the same tasks and options as the combined tracker. */
+  static async load(vision: typeof import("@mediapipe/tasks-vision"), source: AssetSource, delegate: "GPU" | "CPU", onProgress?: (message: string) => void,
+    lane: "combined" | "hands" | "auxiliary" = "combined") {
     const files = await vision.FilesetResolver.forVisionTasks(source.wasm);
 
     onProgress?.("Loading hand, face and pose models");
     const results = await Promise.allSettled([
-      vision.GestureRecognizer.createFromOptions(files, {
+      lane === "auxiliary" ? null : vision.GestureRecognizer.createFromOptions(files, {
         baseOptions: { modelAssetPath: source.models.gesture, delegate },
         ...(typeof OffscreenCanvas !== "undefined" ? { canvas: new OffscreenCanvas(1, 1) } : {}),
         runningMode: "VIDEO",
@@ -75,7 +79,7 @@ export class VisionEngine {
         minTrackingConfidence: 0.55,
         cannedGesturesClassifierOptions: { scoreThreshold: 0.55 },
       }),
-      vision.FaceLandmarker.createFromOptions(files, {
+      lane === "hands" ? null : vision.FaceLandmarker.createFromOptions(files, {
         baseOptions: { modelAssetPath: source.models.face, delegate },
         ...(typeof OffscreenCanvas !== "undefined" ? { canvas: new OffscreenCanvas(1, 1) } : {}),
         runningMode: "VIDEO",
@@ -85,7 +89,7 @@ export class VisionEngine {
         minTrackingConfidence: 0.55,
         outputFaceBlendshapes: false,
       }),
-      vision.PoseLandmarker.createFromOptions(files, {
+      lane === "hands" ? null : vision.PoseLandmarker.createFromOptions(files, {
         baseOptions: { modelAssetPath: source.models.pose, delegate },
         ...(typeof OffscreenCanvas !== "undefined" ? { canvas: new OffscreenCanvas(1, 1) } : {}),
         runningMode: "VIDEO",
@@ -98,7 +102,7 @@ export class VisionEngine {
 
     const failed = results.find(result => result.status === "rejected");
     if (failed) {
-      for (const result of results) if (result.status === "fulfilled") result.value.close();
+      for (const result of results) if (result.status === "fulfilled") result.value?.close();
       throw failed.reason;
     }
     const [gesture, face, pose] = results;
@@ -114,12 +118,7 @@ export class VisionEngine {
     this.timings.hands = performance.now() - started;
     const frame: VisionFrame = {
       timestamp,
-      hands: handResult.landmarks.map((landmarks, index) => ({
-        landmarks: landmarks.map(toPoint),
-        handedness: taskHandedness(handResult.handedness[index]?.[0]?.categoryName),
-        gesture: handResult.gestures[index]?.[0]?.categoryName ?? "None",
-        gestureScore: handResult.gestures[index]?.[0]?.score ?? 0,
-      })),
+      hands: handObservations(handResult),
       face: this.lastFace, pose: this.lastPose,
     };
     // Publish hands before face/pose work. In the tracking worker this message
@@ -137,13 +136,13 @@ export class VisionEngine {
       if (runFace) {
         const faceStarted = performance.now();
         const faceResult = this.parts.face.detectForVideo(video, timestamp);
-        this.lastFace = pickPoints(faceResult.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
+        this.lastFace = faceCues(faceResult);
         this.timings.face = performance.now() - faceStarted;
       }
       if (runPose) {
         const poseStarted = performance.now();
         const poseResult = this.parts.pose.detectForVideo(video, timestamp);
-        this.lastPose = pickPoints(poseResult.landmarks[0] ?? [], POSE_CUE_INDICES);
+        this.lastPose = poseCues(poseResult);
         this.timings.pose = performance.now() - poseStarted;
       }
       this.nextAux = this.nextAux === "face" ? "pose" : "face";
@@ -161,6 +160,20 @@ export class VisionEngine {
     this.parts.pose.close();
   }
 }
+
+export async function loadVisionTasks(lane: "hands" | "auxiliary") {
+  return VisionEngine.load(await import("@mediapipe/tasks-vision"), VISION_ASSET_SOURCES[0], "CPU", undefined, lane);
+}
+
+export function handObservations(result: ReturnType<GestureRecognizer["recognizeForVideo"]>): VisionFrame["hands"] {
+  return result.landmarks.map((landmarks, index) => ({ landmarks: landmarks.map(toPoint),
+    handedness: taskHandedness(result.handedness[index]?.[0]?.categoryName),
+    gesture: result.gestures[index]?.[0]?.categoryName ?? "None",
+    gestureScore: result.gestures[index]?.[0]?.score ?? 0 }));
+}
+
+export const faceCues = (result: ReturnType<FaceLandmarker["detectForVideo"]>) => pickPoints(result.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
+export const poseCues = (result: ReturnType<PoseLandmarker["detectForVideo"]>) => pickPoints(result.landmarks[0] ?? [], POSE_CUE_INDICES);
 
 export function taskHandedness(label: string | undefined): "Left" | "Right" | "Unknown" {
   return label === "Left" || label === "Right" ? label : "Unknown";
