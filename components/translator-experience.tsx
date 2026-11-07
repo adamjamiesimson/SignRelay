@@ -58,7 +58,7 @@ import { BitmapCaptureTimeout, LiveVision } from "@/lib/live-vision";
 import { drawLandmarkOverlay } from "@/lib/landmark-overlay";
 import { RecognitionSession } from "@/lib/recognition-session";
 import { recognitionStatus } from "@/lib/recognition-status";
-import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
+import { ASL_ONLY, BUILD_PROFILE, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
 import { formatPerfReadout, RollingTimer, ThroughputMonitor } from "@/lib/frame-perf";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
@@ -826,7 +826,10 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     for (;;) {
       signal.throwIfAborted();
       const profile = FINGERSPELLING_ENABLED && aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words";
-      const engine = await LiveVision.create(progress, profile === "words", signal, profile);
+      // The offline demo prioritizes predictable startup. Some GPU workers
+      // initialize all three models, then stall at the first inference probe.
+      const accelerated = profile === "words" && BUILD_PROFILE !== "asl-demo";
+      const engine = await LiveVision.create(progress, accelerated, signal, profile);
       // Diagnostics only (?perf&captureClock=capture): opt-in word-mode capture-time stamps.
       const query = new URLSearchParams(window.location.search);
       if (query.has("perf") && query.get("captureClock") === "capture") engine.wordClockPolicy = "capture-time";

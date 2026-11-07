@@ -135,23 +135,7 @@ The earlier ancestry includes `main` at `e63fffe` → [#44](https://github.com/a
 
 Reproduce from the candidate checkout with `npm ci`, `npm run typecheck`, `npm test`, `npm run lint`, `npm run build:firebase`, `node scripts/assert-public-export.mjs out`, and `npm run test:rendered`. The Firebase command produces a local export. Verify the reported commit and worker SHA in `out/runtime-manifest.json`.
 
-Publication is blocked. Git CLI had no usable authenticated credential, and the connected GitHub commit was rejected by automatic approval review because it did not recognize the publication authorization in the attached sprint brief. The branch, draft PR and candidate hosted CI runs are pending. Automatic Vercel deployment is disabled for the branch in its first commit.
-
-With repository write access, use the local branch or apply the handoff patch to the verified PR #59 head. Confirm the base still points to `2142d22ba150fdfd12de3997550ad846ed7af616` before pushing and opening the draft.
-
-```sh
-git fetch origin codex/signrelay-tracking-recognition-evaluation
-git rev-parse FETCH_HEAD
-git switch codex/signrelay-final-master-hardening
-git merge-base --is-ancestor FETCH_HEAD HEAD
-git push origin HEAD:refs/heads/codex/signrelay-final-master-hardening
-gh pr create --repo adamjamiesimson/SignRelay --draft \
-  --base codex/signrelay-tracking-recognition-evaluation \
-  --head codex/signrelay-final-master-hardening \
-  --title "Harden tracking recovery, personal vocabulary and protected exports" \
-  --body "Stacked on PR #59. See docs/final-master-hardening/README.md for evidence and known limits."
-gh pr checks --watch
-```
+The initial reviewed tree was published as `c0828de835906dd21419dc23a4973699c916ddd7` on [draft PR #60](https://github.com/adamjamiesimson/SignRelay/pull/60), stacked on PR #59. Automatic Vercel deployment is disabled for this branch. The [follow-up report](FOLLOW-UP.md) records later changes, their checks and the remaining limits.
 
 ## K. Readiness judgments
 

@@ -313,7 +313,7 @@ function* tgcnSteps(model: MaterialisedModel, input: Float32Array): Generator<vo
   for (let index = 0; index < model.layers.length; index += 1) {
     const layer = model.layers[index];
     if (!layer.residual && model.layers[index + 1]?.residual) pendingResidual = activations;
-    const output = applyGraphLayer(activations, layer, model.manifest.nodes);
+    const output = yield* applyGraphLayer(activations, layer, model.manifest.nodes);
     if (layer.residual && pendingResidual) {
       for (let value = 0; value < output.length; value += 1) output[value] += pendingResidual[value];
       pendingResidual = null;
@@ -346,7 +346,7 @@ function* tgcnSteps(model: MaterialisedModel, input: Float32Array): Generator<vo
 // previous float32 value plus an exact int8 × float32 product, rounded to
 // float32 after every addition in the original source order. Keeping eight
 // outputs in locals avoids a typed-array load and store per multiply.
-function applyGraphLayer(input: Float32Array, layer: MaterialisedLayer, nodes: number) {
+function* applyGraphLayer(input: Float32Array, layer: MaterialisedLayer, nodes: number): Generator<void, Float32Array> {
   const { inputFeatures, outputFeatures, weight, weightScales, attention, attentionScales, normalScale, normalShift } = layer;
   const fround = Math.fround;
   const support = new Float32Array(nodes * outputFeatures);
@@ -384,6 +384,9 @@ function applyGraphLayer(input: Float32Array, layer: MaterialisedLayer, nodes: n
       }
       support[outputOffset + output] = sum * weightScales[output];
     }
+    // Check the cooperative time budget between rows, including cold runs
+    // where a full layer can occupy the worker for several camera frames.
+    yield;
   }
 
   const result = new Float32Array(nodes * outputFeatures);
@@ -402,6 +405,7 @@ function applyGraphLayer(input: Float32Array, layer: MaterialisedLayer, nodes: n
       const offset = outputOffset + output;
       result[offset] = Math.tanh(result[offset] * attentionScale * normalScale[offset] + normalShift[offset]);
     }
+    yield;
   }
   return result;
 }

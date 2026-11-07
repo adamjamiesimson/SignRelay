@@ -889,7 +889,7 @@ function* tgcnSteps(model, input) {
   for (let index = 0; index < model.layers.length; index += 1) {
     const layer = model.layers[index];
     if (!layer.residual && model.layers[index + 1]?.residual) pendingResidual = activations;
-    const output = applyGraphLayer(activations, layer, model.manifest.nodes);
+    const output = yield* applyGraphLayer(activations, layer, model.manifest.nodes);
     if (layer.residual && pendingResidual) {
       for (let value = 0; value < output.length; value += 1) output[value] += pendingResidual[value];
       pendingResidual = null;
@@ -915,7 +915,7 @@ function* tgcnSteps(model, input) {
   }
   return logits;
 }
-function applyGraphLayer(input, layer, nodes) {
+function* applyGraphLayer(input, layer, nodes) {
   const { inputFeatures, outputFeatures, weight, weightScales, attention, attentionScales, normalScale, normalShift } = layer;
   const fround = Math.fround;
   const support = new Float32Array(nodes * outputFeatures);
@@ -953,6 +953,7 @@ function applyGraphLayer(input, layer, nodes) {
       }
       support[outputOffset + output] = sum * weightScales[output];
     }
+    yield;
   }
   const result = new Float32Array(nodes * outputFeatures);
   for (let node = 0; node < nodes; node += 1) {
@@ -970,6 +971,7 @@ function applyGraphLayer(input, layer, nodes) {
       const offset = outputOffset + output;
       result[offset] = Math.tanh(result[offset] * attentionScale * normalScale[offset] + normalShift[offset]);
     }
+    yield;
   }
   return result;
 }

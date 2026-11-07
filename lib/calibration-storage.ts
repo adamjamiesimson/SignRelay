@@ -6,13 +6,16 @@ const STORE_NAME = "templates";
 const DATABASE_VERSION = 1;
 const MAX_EXAMPLES_PER_GLOSS = 3;
 const CHANGE_SIGNAL = "signrelay.personal-vocabulary.changed";
+// BroadcastChannel excludes the sending object, so a separate listener in
+// the same document still needs to ignore that document's committed writes.
+const CHANGE_ORIGIN = Math.random().toString(36);
 
 /** Publish only an invalidation, after IndexedDB has committed. */
 function notifyCalibrationChange() {
   if (typeof window === "undefined") return;
   try {
     const channel = new BroadcastChannel(CHANGE_SIGNAL);
-    try { channel.postMessage(null); } finally { channel.close(); }
+    try { channel.postMessage(CHANGE_ORIGIN); } finally { channel.close(); }
   } catch {
     try {
       localStorage.setItem(CHANGE_SIGNAL, String(Math.random()));
@@ -27,7 +30,7 @@ export function subscribeCalibrationChanges(onChange: () => void) {
   let channel: BroadcastChannel | undefined;
   try {
     channel = new BroadcastChannel(CHANGE_SIGNAL);
-    channel.onmessage = onChange;
+    channel.onmessage = ({ data }) => { if (data !== CHANGE_ORIGIN) onChange(); };
   } catch { /* Older browsers use the storage event. */ }
   return () => {
     window.removeEventListener("storage", storageChanged);
@@ -49,11 +52,15 @@ export function validCalibrationTemplate(value: unknown): value is CalibrationTe
 
 export async function loadCalibrationTemplates(): Promise<CalibrationTemplate[]> {
   const database = await openDatabase();
-  return new Promise((resolve, reject) => {
-    const request = database.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll();
-    request.onsuccess = () => { database.close(); resolve(request.result.filter(validCalibrationTemplate).sort((a: CalibrationTemplate, b: CalibrationTemplate) => b.createdAt - a.createdAt)); };
-    request.onerror = () => { database.close(); reject(request.error); };
-  });
+  try {
+    return await new Promise((resolve, reject) => {
+      const request = database.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll();
+      request.onsuccess = () => resolve(request.result.filter(validCalibrationTemplate).sort((a: CalibrationTemplate, b: CalibrationTemplate) => b.createdAt - a.createdAt));
+      request.onerror = () => reject(request.error);
+    });
+  } finally {
+    database.close();
+  }
 }
 
 export async function saveCalibrationTemplate(template: CalibrationTemplate) {
