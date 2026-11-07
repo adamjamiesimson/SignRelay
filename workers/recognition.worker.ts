@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import type { CalibrationTemplate, VisionFrame, WorkerInput, WorkerMessage } from "@/lib/vision-types";
+import { validVisionFrame, type CalibrationTemplate, type VisionFrame, type WorkerInput, type WorkerMessage } from "@/lib/vision-types";
 import { shouldConfirm } from "@/lib/decoder";
 import { templatesForLanguage } from "@/lib/personalized-recognition";
 import { analyzeAslStarter } from "@/lib/asl-starter-recognition";
@@ -126,15 +126,15 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "reset") { resetSession(); return; }
 
   if (event.data.type !== "frame") return;
-  const now = event.data.frame?.timestamp;
-  if (!Number.isFinite(now) || !Array.isArray(event.data.frame?.hands)
-    || !Array.isArray(event.data.frame?.face) || !Array.isArray(event.data.frame?.pose)) {
+  const frame = event.data.frame;
+  if (!validVisionFrame(frame)) {
     resetEvidence();
     self.postMessage({ type: "analysis", session: event.data.session, frameId: event.data.frameId,
       state: "listening", candidate: null, confidence: 0, bufferSize: 0,
     } satisfies WorkerMessage);
     return;
   }
+  const now = frame.timestamp;
   const previous = frames.at(-1);
   if (previous) {
     const gap = now - previous.timestamp;

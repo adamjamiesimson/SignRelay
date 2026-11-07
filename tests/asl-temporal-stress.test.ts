@@ -62,7 +62,8 @@ const SCENARIOS: Record<string, Scenario> = {
   // break tracking continuity, so the worker abstains rather than guessing.
   "contract violation: every frame delivered twice with the same timestamp": { intended: [...ASL_DEMO_WORDS], frames: () => chain(signs(ASL_DEMO_WORDS), 700).flatMap(frame => [frame, structuredClone(frame)]) },
   "clock jumps backwards between words": { intended: [...ASL_DEMO_WORDS], frames: () => {
-    const frames = chain(signs(ASL_DEMO_WORDS), 700);
+    // Preserve the backwards discontinuity within the nonnegative camera clock domain.
+    const frames = shift(chain(signs(ASL_DEMO_WORDS), 700), 5000);
     const jump = frames.findIndex((frame, i) => i > 30 && !frame.hands.length);
     return [...frames.slice(0, jump), ...shift(frames.slice(jump), -5000)];
   } },

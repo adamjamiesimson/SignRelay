@@ -8,6 +8,22 @@ var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require
 });
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
+// lib/vision-types.ts
+function validPoints(points) {
+  if (!Array.isArray(points)) return false;
+  for (const point3 of points) {
+    if (!point3 || !Number.isFinite(point3.x) || !Number.isFinite(point3.y) || !Number.isFinite(point3.z) || point3.visibility !== void 0 && !Number.isFinite(point3.visibility)) return false;
+  }
+  return true;
+}
+function validVisionFrame(value) {
+  if (!value || typeof value !== "object") return false;
+  const frame = value;
+  if (!Number.isFinite(frame.timestamp) || frame.timestamp < 0 || !Array.isArray(frame.hands)) return false;
+  for (const hand4 of frame.hands) if (!hand4 || !validPoints(hand4.landmarks)) return false;
+  return validPoints(frame.face) && validPoints(frame.pose);
+}
+
 // lib/decoder.ts
 function shouldConfirm({
   confidence,
@@ -873,7 +889,7 @@ function* tgcnSteps(model, input) {
   for (let index = 0; index < model.layers.length; index += 1) {
     const layer = model.layers[index];
     if (!layer.residual && model.layers[index + 1]?.residual) pendingResidual = activations;
-    const output = applyGraphLayer(activations, layer, model.manifest.nodes);
+    const output = yield* applyGraphLayer(activations, layer, model.manifest.nodes);
     if (layer.residual && pendingResidual) {
       for (let value = 0; value < output.length; value += 1) output[value] += pendingResidual[value];
       pendingResidual = null;
@@ -899,7 +915,7 @@ function* tgcnSteps(model, input) {
   }
   return logits;
 }
-function applyGraphLayer(input, layer, nodes) {
+function* applyGraphLayer(input, layer, nodes) {
   const { inputFeatures, outputFeatures, weight, weightScales, attention, attentionScales, normalScale, normalShift } = layer;
   const fround = Math.fround;
   const support = new Float32Array(nodes * outputFeatures);
@@ -937,6 +953,7 @@ function applyGraphLayer(input, layer, nodes) {
       }
       support[outputOffset + output] = sum * weightScales[output];
     }
+    yield;
   }
   const result = new Float32Array(nodes * outputFeatures);
   for (let node = 0; node < nodes; node += 1) {
@@ -954,6 +971,7 @@ function applyGraphLayer(input, layer, nodes) {
       const offset = outputOffset + output;
       result[offset] = Math.tanh(result[offset] * attentionScale * normalScale[offset] + normalShift[offset]);
     }
+    yield;
   }
   return result;
 }
@@ -15489,8 +15507,8 @@ self.onmessage = async (event) => {
     return;
   }
   if (event.data.type !== "frame") return;
-  const now = event.data.frame?.timestamp;
-  if (!Number.isFinite(now) || !Array.isArray(event.data.frame?.hands) || !Array.isArray(event.data.frame?.face) || !Array.isArray(event.data.frame?.pose)) {
+  const frame = event.data.frame;
+  if (!validVisionFrame(frame)) {
     resetEvidence();
     self.postMessage({
       type: "analysis",
@@ -15503,6 +15521,7 @@ self.onmessage = async (event) => {
     });
     return;
   }
+  const now = frame.timestamp;
   const previous = frames.at(-1);
   if (previous) {
     const gap = now - previous.timestamp;

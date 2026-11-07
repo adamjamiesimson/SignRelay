@@ -7,18 +7,20 @@
 //   node tests/personal-vocabulary-scale-smoke.mjs /path/to/chrome
 import assert from "node:assert/strict";
 import { openRehearsal, until } from "./rehearsal-harness.mjs";
+import { RETURNING_VISITOR } from "./helpers/returning-visitor.mjs";
 
 const executable = process.argv[2];
 if (!executable) throw new Error("Usage: node tests/personal-vocabulary-scale-smoke.mjs <chrome>");
 // Record how many templates each configuration sends to the recognition worker.
-const h = await openRehearsal(executable, { extraInit: `
+const instrumentTemplates = `
   window.__templatesSent = [];
   const post = Worker.prototype.postMessage;
   Worker.prototype.postMessage = function (message, transfer) {
     if (message?.type === 'templates') window.__templatesSent.push(Array.isArray(message.templates) ? message.templates.length : message.templates.meta.length);
     return post.call(this, message, transfer);
   };
-` });
+`;
+const h = await openRehearsal(executable, { extraInit: instrumentTemplates });
 const database = body => h.evaluate(`new Promise((resolve, reject) => { const open = indexedDB.open('signrelay-personal-vocabulary', 1);
   open.onupgradeneeded = () => open.result.createObjectStore('templates', { keyPath: 'id' });
   open.onerror = () => reject(open.error);
@@ -76,6 +78,41 @@ try {
   await until(async () => (await lastSent()) === 297, "After a reload the worker did not receive exactly the 297 remaining examples");
   assert.equal((await stored()).length, 297, "Stored examples changed on reload");
   checks.push({ check: "the removal survives a reload; no examples are duplicated or resurrected" });
+
+  // The second tab shares IndexedDB but has its own recognition worker. Keep
+  // it open during a real removal, without reloading its cached vocabulary.
+  const { targetId } = await h.browser.send("Target.createTarget", { url: "about:blank", background: true });
+  try {
+    const { sessionId } = await h.browser.send("Target.attachToTarget", { targetId, flatten: true });
+    const send = (method, params) => h.browser.send(method, params, sessionId);
+    const evaluate = async expression => {
+      const { result, exceptionDetails } = await send("Runtime.evaluate", { expression, returnByValue: true });
+      if (exceptionDetails) throw new Error(exceptionDetails.exception?.description ?? exceptionDetails.text);
+      return result.value;
+    };
+    await send("Page.enable");
+    await send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
+    await send("Page.addScriptToEvaluateOnNewDocument", { source: instrumentTemplates });
+    await send("Page.navigate", { url: h.origin });
+    await until(() => evaluate("Object.keys(document.querySelector('[role=radio]') ?? {}).some(k=>k.startsWith('__reactFiber'))"), "Second tab did not hydrate");
+    await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Start signing').click()");
+    await until(() => evaluate("window.__templatesSent.at(-1) === 297"), "Second tab did not load the same vocabulary");
+    const sentBefore = await evaluate("window.__templatesSent.length");
+
+    await h.evaluate(`(() => {
+      const panel = document.querySelector('.vocabulary-disclosure');
+      panel.open = true;
+      [...panel.querySelectorAll('.vocabulary-grid button')].find(b => b.querySelector('span')?.textContent === 'Word 99').click();
+    })()`);
+    await h.click("Remove");
+    await until(() => evaluate(`window.__templatesSent.slice(${sentBefore}).includes(0) && window.__templatesSent.at(-1) === 294`),
+      "Second tab did not invalidate and reload after the committed deletion");
+    await until(() => evaluate("Number(document.querySelector('.vocabulary-disclosure')?.dataset.taught) === 98"),
+      "Second tab still shows the removed word");
+    checks.push({ check: "committed removal invalidates another tab’s cached worker vocabulary without reload" });
+  } finally {
+    await h.browser.send("Target.closeTarget", { targetId });
+  }
 
   const errors = h.browser.errors.filter(error => typeof error === "string");
   assert.deepEqual(errors, [], "Uncaught page exceptions");

@@ -40,13 +40,17 @@ try {
   await browser.send("Network.enable");
   await network.block(["*cdn.jsdelivr.net*", "*storage.googleapis.com*"]);
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => {
-    window.__qaTracks = []; window.__qaFrames = 0;
+    window.__qaTracks = []; window.__qaFrames = 0; window.__qaVisionDelegates = [];
     const get = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getUserMedia = async options => { const stream = await get(options); window.__qaTracks.push(...stream.getTracks()); return stream; };
     const NativeWorker = window.Worker;
     window.Worker = class extends NativeWorker {
       constructor(url, options) { super(url, options); this.__url = String(url); }
-      postMessage(message, transfer) { if (message?.type === 'frame' && this.__url.includes('recognition.worker')) window.__qaFrames++; return super.postMessage(message, transfer); }
+      postMessage(message, transfer) {
+        if (message?.type === 'frame' && this.__url.includes('recognition.worker')) window.__qaFrames++;
+        if (message?.type === 'init' && this.__url.includes('/workers/vision.worker.js')) window.__qaVisionDelegates.push(message.accelerated);
+        return super.postMessage(message, transfer);
+      }
     };
   })();` });
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: RETURNING_VISITOR });
@@ -80,6 +84,10 @@ try {
       throw error;
     });
     const coldStartMs = Date.now() - started;
+    if (profile === "asl-demo") {
+      const attempts = await evaluate("window.__qaVisionDelegates.splice(0)");
+      assert.ok(attempts.length > 0 && attempts.every(attempt => attempt === false), "Offline demo must start vision on CPU");
+    }
     const framesBefore = await evaluate("window.__qaFrames");
     await pause(4000);
     const framesPerSecond = (await evaluate("window.__qaFrames") - framesBefore) / 4;

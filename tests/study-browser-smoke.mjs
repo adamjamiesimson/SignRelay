@@ -74,6 +74,8 @@ try {
   // 1. Consent gate: nothing starts without both required consents and a consent reference.
   await until(() => evaluate("!!document.querySelector('[data-study-phase=setup]')"), "Study setup missing");
   await until(() => evaluate("document.querySelectorAll('[data-study-phase] input[type=checkbox]').length === 3"), "Consent boxes missing");
+  await until(() => evaluate(`Object.keys(document.querySelector("input[placeholder='ss-2026-11-p01']") ?? {})
+    .some(key => key.startsWith("__reactFiber"))`), "Study setup did not hydrate");
   assert.deepEqual(await evaluate("[...document.querySelectorAll('[data-study-phase] input[type=checkbox]')].map(c => c.checked)"), [false, false, false], "A consent box starts ticked");
   await setValue("input[placeholder='ss-2026-11-p01']", "ss-2026-11-p01");
   await until(() => evaluate("!!document.querySelector('[data-study-split]')?.dataset.studySplit"), "Split not computed");
@@ -176,4 +178,8 @@ try {
   assert.deepEqual(await evaluate("[...document.querySelectorAll('[data-study-phase] input[type=checkbox]')].map(c => c.checked)"), [false, false, false], "Consent not reset");
   checks.push("nothing stored in localStorage/sessionStorage, no POST or beacon; ending the session deletes the log and resets consent");
   console.log("STUDY-SMOKE", JSON.stringify({ passed: checks.length, checks }));
-} finally { await browser?.close(); server.kill(); rmSync(downloads, { recursive: true, force: true }); }
+} finally {
+  await browser?.close();
+  server.kill();
+  rmSync(downloads, { recursive: true, force: true, maxRetries: 8, retryDelay: 150 });
+}

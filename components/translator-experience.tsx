@@ -31,6 +31,7 @@ import {
   deleteCalibrationGloss,
   loadCalibrationTemplates,
   saveCalibrationTemplateAndReload,
+  subscribeCalibrationChanges,
 } from "@/lib/calibration-storage";
 import {
   createCustomVocabularyEntry,
@@ -57,7 +58,7 @@ import { BitmapCaptureTimeout, LiveVision } from "@/lib/live-vision";
 import { drawLandmarkOverlay } from "@/lib/landmark-overlay";
 import { RecognitionSession } from "@/lib/recognition-session";
 import { recognitionStatus } from "@/lib/recognition-status";
-import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
+import { ASL_ONLY, BUILD_PROFILE, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
 import { formatPerfReadout, RollingTimer, ThroughputMonitor } from "@/lib/frame-perf";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
@@ -210,6 +211,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   const templatesRef = useRef<CalibrationTemplate[]>([]);
   const templateRevisionRef = useRef(0);
   const deletingTemplatesRef = useRef(false);
+  const templatesStaleRef = useRef(false);
   const captureFramesRef = useRef<VisionFrame[]>([]);
   const captureStateRef = useRef<CalibrationState>("idle");
   const entriesRef = useRef<TranscriptEntry[]>([]);
@@ -293,20 +295,36 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
 
   const applyTemplates = useCallback((templates: CalibrationTemplate[]) => {
     templatesRef.current = templates;
-    workerRef.current?.postMessage({ type: "templates", language: selectedRef.current, templates });
+    workerRef.current?.postMessage({ type: "templates", language: selectedRef.current,
+      templates: templatesStaleRef.current ? [] : templates });
     setCalibrationTemplates(templates);
   }, []);
 
+  const applyTemplateSnapshot = useCallback((templates: CalibrationTemplate[], revision: number) => {
+    if (revision !== templateRevisionRef.current) return;
+    templatesStaleRef.current = false;
+    applyTemplates(templates);
+  }, [applyTemplates]);
+
   useEffect(() => {
     let active = true;
-    const revision = templateRevisionRef.current;
-    void loadCalibrationTemplates().then(templates => {
-      if (active && revision === templateRevisionRef.current) applyTemplates(templates);
-    }).catch(() => {
-      if (active) setCalibrationMessage("Personal vocabulary storage is unavailable in this browser.");
+    const reload = (revision: number) => {
+      void loadCalibrationTemplates().then(templates => {
+        if (active) applyTemplateSnapshot(templates, revision);
+      }).catch(() => {
+        if (active && revision === templateRevisionRef.current)
+          setCalibrationMessage("Personal vocabulary storage is unavailable in this browser.");
+      });
+    };
+    const unsubscribe = subscribeCalibrationChanges(() => {
+      templatesStaleRef.current = true;
+      workerRef.current?.postMessage({ type: "templates", language: selectedRef.current, templates: [] });
+      setCandidate(null);
+      reload(++templateRevisionRef.current);
     });
-    return () => { active = false; };
-  }, [applyTemplates]);
+    reload(templateRevisionRef.current);
+    return () => { active = false; unsubscribe(); };
+  }, [applyTemplateSnapshot]);
 
   function selectLanguage(language: LanguageId) {
     if (language === selected) return true;
@@ -441,7 +459,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     // Confirmations from a stopped or replaced session never reach here:
     // RecognitionSession drops messages from before every reset.
     if (message.type !== "confirmed" && message.type !== "suggested") return;
-    if (message.source === "personal" && deletingTemplatesRef.current) return;
+    if (message.source === "personal" && (deletingTemplatesRef.current || templatesStaleRef.current)) return;
 
     // A research-model word for a suggest-only language is offered, never
     // inserted, announced as confirmed or spoken (lib/model-output-policy.ts).
@@ -478,7 +496,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     const worker = new RecognitionSession(
       // The version changes with the worker protocol, so a cached older worker
       // (which confirmed research-model words) is never reused.
-      () => new Worker("/workers/recognition.worker.js?v=observation-boundary-3", { type: "module" }),
+      () => new Worker("/workers/recognition.worker.js?v=observation-boundary-4", { type: "module" }),
       handleWorkerMessage,
       status => {
         setRecognitionUnavailable(status.state === "failed");
@@ -493,7 +511,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
       },
       perfMode,
     );
-    worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current });
+    worker.postMessage({ type: "templates", language: selected, templates: templatesStaleRef.current ? [] : templatesRef.current });
     workerRef.current = worker;
     return () => {
       worker.terminate();
@@ -674,13 +692,24 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   const interruptTracking = useCallback(() => {
     discardSpellingCapture();
     workerRef.current?.postMessage({ type: "reset" });
+    withdrawSuggestion();
     const canvas = canvasRef.current;
     canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
     setDetection(EMPTY_DETECTION);
     setCandidate(null);
     setBufferSize(0);
     setMotionReason(null);
-  }, [discardSpellingCapture]);
+  }, [discardSpellingCapture, withdrawSuggestion]);
+
+  const attachTracking = useCallback((engine: LiveVision) => {
+    engine.onInterrupt = () => { if (engineRef.current === engine) interruptTracking(); };
+    engine.onFailure = () => {
+      if (engineRef.current !== engine) return;
+      stopCamera();
+      setCameraState("error");
+      setCameraMessage("Hand tracking stopped. Start the camera again to reload tracking.");
+    };
+  }, [interruptTracking, stopCamera]);
 
   const runFrameLoop = useCallback(() => {
     const video = videoRef.current;
@@ -797,7 +826,10 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     for (;;) {
       signal.throwIfAborted();
       const profile = FINGERSPELLING_ENABLED && aslModeRef.current === "fingerspelling" ? "fingerspelling" : "words";
-      const engine = await LiveVision.create(progress, profile === "words", signal, profile);
+      // The offline demo prioritizes predictable startup. Some GPU workers
+      // initialize all three models, then stall at the first inference probe.
+      const accelerated = profile === "words" && BUILD_PROFILE !== "asl-demo";
+      const engine = await LiveVision.create(progress, accelerated, signal, profile);
       // Diagnostics only (?perf&captureClock=capture): opt-in word-mode capture-time stamps.
       const query = new URLSearchParams(window.location.search);
       if (query.has("perf") && query.get("captureClock") === "capture") engine.wordClockPolicy = "capture-time";
@@ -849,7 +881,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
       if (visionAbortRef.current === visionAbort) visionAbortRef.current = null;
       if (generation !== cameraGenerationRef.current) { engine.close(); return; }
       engineRef.current = engine;
-      engine.onInterrupt = () => { if (engineRef.current === engine) interruptTracking(); };
+      attachTracking(engine);
       setVisionSource(engine.assetSource);
       cameraProgressRef.current = performance.now();
       setCameraState("active");
@@ -875,7 +907,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     } finally {
       if (generation === cameraGenerationRef.current) cameraPendingRef.current = false;
     }
-  }, [interruptTracking, stopCamera, createCameraVision]);
+  }, [attachTracking, stopCamera, createCameraVision]);
 
   // A second caller (e.g. Record while the camera is still starting) waits for
   // the request already in progress instead of seeing the camera as off.
@@ -1005,7 +1037,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     try {
       const revision = templateRevisionRef.current;
       const { templates: updated } = await saveCalibrationTemplateAndReload(template);
-      if (updated && revision === templateRevisionRef.current) applyTemplates(updated);
+      if (updated) applyTemplateSnapshot(updated, revision);
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "saved";
       setCalibrationState("saved");
@@ -1019,7 +1051,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
       setCalibrationState("error");
       setCalibrationMessage("This browser could not save the example. Check private-browsing storage settings and try again.");
     }
-  }, [applyTemplates, calibrationWord, model.shortName, requestCamera, selected]);
+  }, [applyTemplateSnapshot, calibrationWord, model.shortName, requestCamera, selected]);
 
   const selectCustomWord = () => {
     const customWord = createCustomVocabularyEntry(customWordInput);
@@ -1040,7 +1072,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   const removeCalibration = useCallback(async (gloss: string) => {
     if (deletingTemplatesRef.current) return;
     deletingTemplatesRef.current = true;
-    templateRevisionRef.current++;
+    const revision = ++templateRevisionRef.current;
     workerRef.current?.postMessage({ type: "reset" });
     captureGenerationRef.current++;
     captureStateRef.current = "idle";
@@ -1048,21 +1080,23 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     try {
       await deleteCalibrationGloss(gloss, selected);
       // Publish the committed deletion before attempting any follow-up read.
-      const remaining = templatesRef.current.filter(template =>
-        template.gloss !== gloss || (template.language ?? "asl") !== selected);
-      applyTemplates(remaining);
-      await loadCalibrationTemplates().then(applyTemplates, () => {});
+      if (revision === templateRevisionRef.current) {
+        const remaining = templatesRef.current.filter(template =>
+          template.gloss !== gloss || (template.language ?? "asl") !== selected);
+        applyTemplates(remaining);
+      }
+      await loadCalibrationTemplates().then(updated => applyTemplateSnapshot(updated, revision), () => {});
       setCalibrationMessage("Personal examples removed for this word.");
     } catch {
       // Show what is still stored rather than pretending it was deleted.
-      await loadCalibrationTemplates().then(applyTemplates, () => {});
+      await loadCalibrationTemplates().then(updated => applyTemplateSnapshot(updated, revision), () => {});
       captureStateRef.current = "error";
       setCalibrationState("error");
       setCalibrationMessage("These examples could not be removed from this browser. Try again, or clear this site's data in your browser settings.");
     } finally {
       deletingTemplatesRef.current = false;
     }
-  }, [applyTemplates, selected]);
+  }, [applyTemplates, applyTemplateSnapshot, selected]);
 
   const returnHome = () => {
     stopCamera();
@@ -1159,7 +1193,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
   const clearAllLocalData = async () => {
     if (deletingTemplatesRef.current) return;
     deletingTemplatesRef.current = true;
-    templateRevisionRef.current++;
+    const revision = ++templateRevisionRef.current;
     workerRef.current?.postMessage({ type: "reset" });
     window.speechSynthesis?.cancel();
     withdrawSuggestion();
@@ -1178,13 +1212,13 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     sessionStartedRef.current = Date.now();
     try {
       await clearCalibrationTemplates();
-      applyTemplates([]);
+      applyTemplateSnapshot([], revision);
       setPrivacyMessage(localCleared
         ? "Transcripts, settings, personal signs and tour progress were cleared from this browser."
         : "Personal signs were cleared, but saved transcripts and settings could not be removed from browser storage. Clear this site's data in your browser settings.");
     } catch {
       // Keep showing what is still stored rather than pretending it was deleted.
-      await loadCalibrationTemplates().then(applyTemplates, () => {});
+      await loadCalibrationTemplates().then(updated => applyTemplateSnapshot(updated, revision), () => {});
       setPrivacyMessage(localCleared
         ? "Transcripts and settings were cleared, but personal signs could not be deleted. Clear this site's data in your browser settings."
         : "Nothing could be removed from browser storage. Clear this site's data in your browser settings.");
@@ -1206,7 +1240,7 @@ export function TranslatorExperience({ onStudyEvent }: { onStudyEvent?: (event: 
     }, controller.signal).then(engine => {
       if (generation !== cameraGenerationRef.current || controller.signal.aborted) { engine.close(); return; }
       engineRef.current = engine;
-      engine.onInterrupt = () => { if (engineRef.current === engine) interruptTracking(); };
+      attachTracking(engine);
       setVisionSource(engine.assetSource); cameraProgressRef.current = performance.now();
       lastVideoTimeRef.current = -1; setCameraState("active"); setCameraMessage("Camera and vision models active");
     }).catch(() => {

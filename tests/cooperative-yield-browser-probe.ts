@@ -21,15 +21,20 @@ self.onmessage = async ({ data }: MessageEvent<{ type: string }>) => {
 
     // 1. Messages from the page and this worker's own timers keep running
     // between slices of one warm inference.
-    let ticks = 0;
-    const interval = setInterval(() => ticks++, 0);
+    let ticks = 0, lastTick = performance.now(), maxTimerGapMs = 0;
+    const interval = setInterval(() => {
+      const now = performance.now();
+      ticks++;
+      maxTimerGapMs = Math.max(maxTimerGapMs, now - lastTick);
+      lastTick = now;
+    }, 0);
     ask("ping-start");
     await new Promise(resolve => setTimeout(resolve, 20));
-    pings = 0; ticks = 0;
+    pings = 0; ticks = 0; lastTick = performance.now(); maxTimerGapMs = 0;
     let started = performance.now();
     const during = await recognizeAsl1000(frames, { onPhase: phase => { if (phase === "inference") started = performance.now(); } });
     const inferenceMs = performance.now() - started;
-    const handled = { pings, ticks };
+    const handled = { pings, ticks, maxTimerGapMs: Math.round(Math.max(maxTimerGapMs, performance.now() - lastTick)) };
     clearInterval(interval);
     ask("ping-stop");
     if (!same(during)) throw new Error("Output changed while other tasks ran");

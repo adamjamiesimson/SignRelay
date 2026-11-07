@@ -19,7 +19,7 @@ def inspect(path):
  return {"stream":stream,"times":times,"fps":fps,"width":width,"height":height,"ffmpegVersion":subprocess.check_output(["ffmpeg","-version"],text=True).splitlines()[0]},prefix
 def frames(path):
  info,prefix=inspect(path);size=info["width"]*info["height"]*3
- process=subprocess.Popen(prefix+["-vf",FILTER,"-vsync","0","-pix_fmt","rgb24","-threads","1","-f","rawvideo","pipe:1"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ process=subprocess.Popen(prefix+["-vf",FILTER,"-fps_mode","passthrough","-pix_fmt","rgb24","-threads","1","-f","rawvideo","pipe:1"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  try:
   for t in info["times"]:
    blob=process.stdout.read(size)

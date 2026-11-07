@@ -36,7 +36,9 @@ The six ASL starter rules were measured only on synthetic movement and on licens
    ```bash
    npm start
    ```
-   Then open `http://localhost:3000/study`, or the machine's private address when the participant uses a phone. The export is marked and `scripts/deploy-firebase.sh` refuses it.
+   Open `http://127.0.0.1:3000/study` on the facilitator’s machine. The private export binds to loopback by default and the deployment guard refuses it.
+
+   For a phone, use a trusted private network with only authorised devices. Obtain a certificate whose subject alternative name matches the facilitator’s LAN hostname or IP, and ensure the phone trusts its issuer. Bind to the machine’s LAN IP with `npm start -- --host LAN_IP --tls-cert CERT_FILE --tls-key KEY_FILE`. Open the matching HTTPS address on the phone and check for a secure connection before starting the camera. Restrict access with the local firewall and stop the server when finished. The server requires TLS for a private export on a LAN address. Keep the certificate key outside the checkout and export.
 3. **Consent:** go through `CONSENT-AND-PRIVACY.md` §2 with the participant. Tick only what they agree to, and enter the consent record reference (never a name).
 4. **Set up:** enter the pseudonym (the tool shows the split), the session number, the dominant hand, the device, and the planned camera position and lighting. Then press **Start session**.
 5. **In the translator below:** choose American Sign Language, start the camera and check that face, torso and hands are in view.

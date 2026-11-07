@@ -1,7 +1,7 @@
 import { VisionEngine, type VisionTimings } from "./vision-engine";
 import { FingerspellingSamplingClock } from "./fingerspelling-sampling";
 import { MediaTrackingClock, OwnFrameSource } from "./decoded-frame";
-import type { VisionFrame } from "./vision-types";
+import { validVisionFrame, type VisionFrame } from "./vision-types";
 
 export type CapturedVisionFrame = VisionFrame & { capturedAt:number; mediaSlot:number; presentedFrames:number };
 export type LiveVisionTiming = VisionTimings & { capture: number; transport: number; age: number };
@@ -121,6 +121,7 @@ export class LiveVision {
     } finally {this.draining=false;}
   }
   private recovering: Promise<void> | null = null;
+  private failureTimes: number[] = [];
   private accelerated = true;
   private trackingProfile: "words" | "fingerspelling" = "words";
   get profile() { return this.trackingProfile; }
@@ -140,6 +141,8 @@ export class LiveVision {
    * painted by that worker are no longer current, and a failure during
    * capture resolves its frame as null, so callers cannot infer it. */
   onInterrupt: (() => void) | null = null;
+  /** A terminal worker failure needs to release the owning camera stream. */
+  onFailure: (() => void) | null = null;
   readonly timings: LiveVisionTiming = { capture: 0, hands: 0, auxiliary: 0, transport: 0, age: 0 };
   get busy() { return this.occupied || !!this.recovering; }
 
@@ -200,6 +203,7 @@ export class LiveVision {
       worker.onerror = worker.onmessageerror = () => fail("Tracking worker interrupted");
       worker.onmessage = ({ data }) => {
         if (this.closed || this.worker !== worker) return;
+        if (!data || typeof data !== "object") { fail("Invalid tracking worker response"); return; }
         if (data.type === "progress") { progress?.(data.message); return; }
         // Startup notifications cannot replace or clear an active frame timer.
         if (ready && (data.type === "warming" || data.type === "ready")) return;
@@ -215,11 +219,21 @@ export class LiveVision {
         if (data.type === "error") { fail(data.message); return; }
         const pending = this.pending;
         if (!pending) return;
+        if ((data.type === "hands" || data.type === "result") && !validVisionFrame(data.frame)) {
+          fail("Invalid tracking landmarks");
+          return;
+        }
         if (data.type === "hands") {
+          if (!Number.isFinite(data.handsMs) || data.handsMs < 0) { fail("Invalid tracking timings"); return; }
           this.timings.hands = data.handsMs;
           this.timings.age = performance.now() - pending.started;
           pending.hands(this.withCaptureMetadata(data.frame,pending));
         } else if (data.type === "result") {
+          if (!Number.isFinite(data.timings?.hands) || data.timings.hands < 0
+            || !Number.isFinite(data.timings.auxiliary) || data.timings.auxiliary < 0) {
+            fail("Invalid tracking timings");
+            return;
+          }
           clearTimeout(this.timer);
           Object.assign(this.timings, data.timings, { capture: pending.capture,
             transport: Math.max(0, performance.now() - pending.posted - data.timings.hands - data.timings.auxiliary) });
@@ -244,11 +258,28 @@ export class LiveVision {
     // A failed GPU context must not be selected again during recovery.
     this.accelerated = false;
     const pending = this.pending; this.pending = null;
+    const now = performance.now();
+    this.failureTimes = this.failureTimes.filter(time => now - time < 60000);
+    this.failureTimes.push(now);
+    if (this.failureTimes.length > 2) {
+      this.close();
+      this.onFailure?.();
+      pending?.reject(error);
+      return;
+    }
     // Recover off-thread with CPU first; a missing/broken worker platform can
     // still use the main-thread engine. Never reuse a failed GPU context.
     this.recovering = this.launch().catch(async () => {
       this.worker?.terminate(); this.worker = null;
-      if (!this.closed) await this.loadFallback();
+      if (!this.closed) {
+        try { await this.loadFallback(); }
+        catch {
+          if (!this.closed) {
+            this.close();
+            this.onFailure?.();
+          }
+        }
+      }
     }).finally(() => { this.recovering = null; });
     // Surface failures through process; consume a background rejection as well.
     void this.recovering.catch(() => {});

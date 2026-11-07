@@ -12,8 +12,10 @@ const { sequence } = await fixtures();
 // Faults are switched on per page through sessionStorage, so a reload keeps them.
 const h = await openRehearsal(executable, { extraInit: `
   const fault = name => sessionStorage.getItem('qa-fault') === name;
+  window.__qaReadonlyReads = 0;
   const getAll = IDBObjectStore.prototype.getAll;
   IDBObjectStore.prototype.getAll = function (...args) {
+    if (this.transaction.mode === 'readonly') window.__qaReadonlyReads++;
     // Only list reads (readonly transactions) fail: the save's own readwrite transaction still commits.
     if (fault('reload') && this.transaction.mode === 'readonly') throw new DOMException('Injected read failure', 'UnknownError');
     return getAll.apply(this, args);
@@ -53,10 +55,13 @@ try {
   await h.evaluate("sessionStorage.setItem('qa-fault', 'reload')");
   await h.open();
   await h.start();
+  const readsBeforeSave = await h.evaluate("window.__qaReadonlyReads");
   const afterReloadFailure = await record("Pizza");
   assert.deepEqual(await stored(), ["PIZZA"], "The example should be stored");
   assert.ok(!/could not save/i.test(afterReloadFailure), `A stored example was reported as not saved: "${afterReloadFailure}"`);
   assert.match(afterReloadFailure, /saved/i, "The message must say the example was saved");
+  assert.equal(await h.evaluate("window.__qaReadonlyReads"), readsBeforeSave + 1,
+    "A same-tab write should only attempt its direct post-save list refresh");
   checks.push({ check: "saved example with a failed list reload is reported as saved", message: afterReloadFailure });
 
   // 2. Removing a word commits, then reloading the list fails: it must still say removed and stop showing it.
