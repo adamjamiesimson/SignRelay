@@ -220,6 +220,18 @@ All code is in `695655c`; the later commits are documentation and evidence.
 | [Analytics consent](https://github.com/adamjamiesimson/SignRelay/actions/runs/41018187139) | success |
 | [ASL video pilot](https://github.com/adamjamiesimson/SignRelay/actions/runs/41018187214) | **failure before evaluation**: clip host TLS (§7), same on PR #45's head. Re-dispatched on `6eb9c64` on 11 November: [**success**](https://github.com/adamjamiesimson/SignRelay/actions/runs/43115145059), gate `ok`, 0 wrong accepted. |
 
+### Dependency audit (11 November)
+
+Core CI on `040620c` failed only at `npm run audit:deps`. A new moderate advisory, [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249), affects `minimatch` `>=7.0.0 <11.0.1`. It reaches the project only through lint tooling (`eslint-config-next` → `typescript-eslint` → `@typescript-eslint/typescript-estree` → `minimatch@10.2.6`); production has 0 findings. This branch changes no dependencies, so its base has the same exposure. The latest typescript-eslint (8.72.2) still requires `minimatch ^10.2.2`.
+
+The fix is ported from the Codex engineering-excellence branch (`6f5592b`, [rationale](https://github.com/adamjamiesimson/SignRelay/blob/6f5592b/docs/engineering-sprint-2026-11-05/security-and-release.md#dependency-evidence)):
+
+- A scoped override pins `minimatch` 11.0.3 under typescript-estree only. ESLint's own consumers keep 3.1.5.
+- The lockfile adds one development package, `@isaacs/nonrecursive-glob-match` 1.0.3. That is the version Codex verified; 1.1.0 is six days old and was not taken.
+- The parser regression test checks project-service glob matching. It passes before and after the override.
+
+Results: `audit:deps` passes, full suite **962 passed, 0 failed, 2 skipped**, lint and typecheck pass, and every worker bundle rebuilds byte-identical, so `afd4bf13f6e5` is unchanged. No exception, suppression or audit-script change was added. When upstream ships a compatible release, the override can be removed after a clean install and audit.
+
 ### Recognition outcomes
 
 | Evidence | Correct | Wrong accepted | Abstained | Errors |

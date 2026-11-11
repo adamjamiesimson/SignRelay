@@ -54,6 +54,11 @@
     "typescript": "5.9.3",
     "vitest": "^4.1.12"
   },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "11.0.3"
+    }
+  },
   "type": "module",
   "displayName": "SignRelay"
 }
