@@ -91,6 +91,22 @@
         "errors": 0
       },
       "baseline_gate": "ok, zero changes or exceptions across all 11 established trials (run 40656008104, candidate_worker b454deb00b6e); the traced dispatch run 40656015750 gated identically"
+    },
+    {
+      "worker_sha256": "afd4bf13f6e50fe44b730a07af25618f037bbca319c2001cc210807b560296a2",
+      "source_commit": "0c6303e0f3e649ac751773e2a0e9ec0b57e42a1e",
+      "evidence": [
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/43115145059"
+      ],
+      "evidence_kind": "CI pilot on the same frozen development clips, dispatched on PR #46 head 6eb9c64 once the clip host verified TLS again; baseline gate output, paired comparisons and per-cohort summaries read from the job log. The per-trial artifact (ID 13899335368, zip SHA-256 c4345773f2923185c752794b3c917e9228fcdf7c942342f7dac4ae0ddf528f03) was not downloaded into the authoring container and is not committed. Not new or independently reviewed evidence.",
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "baseline_gate": "ok, zero changes, failures or explanations across all 11 established trials (run 43115145059, candidate_worker afd4bf13f6e5)"
     }
   ]
 }

@@ -42,6 +42,10 @@ jobs:
           test -n "$chrome"
           echo "CHROME=$chrome" >> "$GITHUB_ENV"
 
+      # Serves public/ directly; runs before any export build.
+      - name: Cooperative yielding - messages, timers and cancellation during real ASL-2000 inference
+        run: node tests/cooperative-yield-browser-smoke.mjs "$CHROME"
+
       # Rehearsal profile: the ASL demo plus the labelled synthetic-landmark hook.
       - name: Build rehearsal profile
         run: npm run build:rehearsal

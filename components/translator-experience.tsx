@@ -478,6 +478,21 @@ export function TranslatorExperience() {
     drawPoints(frame.pose, "rgba(190, 220, 255, .9)", 3.2);
   }, []);
 
+  // Tracking continuity broke (worker failure, failed capture). The painted
+  // hands and the recognizer's evidence describe frames that are no longer
+  // current; never carry them across the gap or into the recovered tracker.
+  // The epoch is left alone so the failed frame still counts toward the
+  // repeated-failure stop in the frame loop.
+  const interruptTracking = useCallback(() => {
+    workerRef.current?.postMessage({ type: "reset" });
+    const canvas = canvasRef.current;
+    canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
+    setDetection(EMPTY_DETECTION);
+    setCandidate(null);
+    setBufferSize(0);
+    setMotionReason(null);
+  }, []);
+
   const runFrameLoop = useCallback(() => {
     const video = videoRef.current;
     const engine = engineRef.current;
@@ -549,6 +564,7 @@ export function TranslatorExperience() {
       })().catch(error => {
         if (!current()) return;
         if (process.env.NODE_ENV === "development") console.warn("A video frame could not be processed", error);
+        interruptTracking();
         if (++frameErrorsRef.current >= 5) {
           stopCamera();
           setCameraState("error");
@@ -558,7 +574,7 @@ export function TranslatorExperience() {
       });
     }
     animationRef.current = requestAnimationFrame(frameLoopRef.current);
-  }, [drawOverlay, stopCamera, perfMode]);
+  }, [drawOverlay, interruptTracking, stopCamera, perfMode]);
 
   useEffect(() => {
     frameLoopRef.current = runFrameLoop;
@@ -607,6 +623,7 @@ export function TranslatorExperience() {
       if (visionAbortRef.current === visionAbort) visionAbortRef.current = null;
       if (generation !== cameraGenerationRef.current) { engine.close(); return; }
       engineRef.current = engine;
+      engine.onInterrupt = () => { if (engineRef.current === engine) interruptTracking(); };
       setVisionSource(engine.assetSource);
       cameraProgressRef.current = performance.now();
       setCameraState("active");
@@ -632,7 +649,7 @@ export function TranslatorExperience() {
     } finally {
       if (generation === cameraGenerationRef.current) cameraPendingRef.current = false;
     }
-  }, [stopCamera]);
+  }, [interruptTracking, stopCamera]);
 
   // A second caller (e.g. Record while the camera is still starting) waits for
   // the request already in progress instead of seeing the camera as off.

@@ -57,16 +57,25 @@ function originalMatch(frames: VisionFrame[], templates: CalibrationTemplate[]) 
   return { label: best.template.gloss, text: best.template.text, confidence: Math.min(0.96, Math.max(0, 0.965 - best.distance * 0.24)) };
 }
 
-function examples(count: number, mode: "easy" | "hard", base: number[][]) {
-  return Array.from({ length: count }, (_, i): CalibrationTemplate => {
-    // "hard" all plausible close rivals, "easy" most clearly different.
-    const offset = i === 0 ? 0 : mode === "easy" ? 1.25 + i % 3 * 0.15 : 0.01 + (i % 5) * 0.018;
+type Mode = "easy" | "hard" | "spread" | "spread-last";
+function examples(count: number, mode: Mode, base: number[][]) {
+  // "spread-last" stores the matching example last, the worst order for a
+  // cutoff that tightens as matches are found.
+  const order = (i: number) => mode === "spread-last" ? (i + 1) % count : i;
+  return Array.from({ length: count }, (_, position): CalibrationTemplate => {
+    const i = order(position);
+    // "hard" all plausible close rivals, "easy" most clearly different,
+    // "spread" a vocabulary whose other words fall throughout the 0.56
+    // acceptance/ambiguity window (each still a full DTW at a fixed cutoff).
+    const offset = i === 0 ? 0 : mode === "easy" ? 1.25 + i % 3 * 0.15
+      : mode === "hard" ? 0.01 + (i % 5) * 0.018 : 0.12 + (i % 23) * 0.017;
     const frames = base.map(row => row.map((value, k) =>
       [0, 66, 132, 173].includes(k) ? value : value + offset));
     return { id: "t" + i, gloss: "WORD" + i, text: "Word " + i, createdAt: i + 1, language: "asl", frames };
   });
 }
 function elapsed(task: () => unknown) { const start = performance.now(); const result = task(); return { ms: +(performance.now() - start).toFixed(2), result }; }
+const median = (values: number[]) => +[...values].sort((a, b) => a - b)[Math.floor(values.length / 2)].toFixed(2);
 function same(a: unknown, b: unknown) {
   if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error("Recognition decision diverged: " + JSON.stringify({ a, b }));
 }
@@ -74,20 +83,26 @@ function same(a: unknown, b: unknown) {
 const sample = makeSign("HELLO", { duration: 3000, count: 61 });
 const base = prepareCalibrationSequence(makeSign("HELLO", { duration: 1800, count: 37 }));
 const rows: object[] = [];
-for (const mode of ["easy", "hard"] as const) for (const count of [30, 150, 300]) {
+const REPEATS = 5;
+for (const mode of ["easy", "hard", "spread", "spread-last"] as const) for (const count of [30, 150, 300]) {
   const templates = examples(count, mode, base);
   // Cache cold-load initialization once without giving either version an unfair
   // advantage during the measured sequence.
   const original = elapsed(() => originalMatch(sample, templates));
   const optimized = elapsed(() => recognizePersonalTemplate(sample, templates));
   same(original.result, optimized.result);
-  const optimizedWarm = elapsed(() => recognizePersonalTemplate(sample, templates));
-  same(original.result, optimizedWarm.result);
+  // Interleaved warm repeats; the median resists one-off GC pauses.
+  const warm: number[] = [], old: number[] = [original.ms];
+  for (let repeat = 0; repeat < REPEATS; repeat++) {
+    const run = elapsed(() => recognizePersonalTemplate(sample, templates));
+    same(original.result, run.result); warm.push(run.ms);
+    if (repeat < 2) old.push(elapsed(() => originalMatch(sample, templates)).ms);
+  }
   const row = {
     benchmark: "personal", mode, examples: count,
-    old_ms: original.ms, new_cold_ms: optimized.ms,
-    new_warm_ms: optimizedWarm.ms,
-    speedup_warm: +(original.ms / Math.max(optimizedWarm.ms, 0.01)).toFixed(2),
+    old_ms: median(old), new_cold_ms: optimized.ms,
+    new_warm_ms: median(warm),
+    speedup_warm: +(median(old) / Math.max(median(warm), 0.01)).toFixed(2),
     decision_equal: true,
   };
   rows.push(row);

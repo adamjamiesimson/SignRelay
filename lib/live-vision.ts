@@ -24,6 +24,10 @@ export class LiveVision {
   mode: "worker" | "main" = "worker";
   readonly stats = { dropped: 0, recoveries: 0 };
   lastError: string | null = null;
+  /** Called once per worker failure, before recovery starts. Hands already
+   * painted by that worker are no longer current, and a failure during
+   * capture resolves its frame as null, so callers cannot infer it. */
+  onInterrupt: (() => void) | null = null;
   readonly timings: LiveVisionTiming = { capture: 0, hands: 0, auxiliary: 0, transport: 0, age: 0 };
   get busy() { return this.occupied || !!this.recovering; }
 
@@ -125,6 +129,7 @@ export class LiveVision {
     }).finally(() => { this.recovering = null; });
     // Surface failures through process; consume a background rejection as well.
     void this.recovering.catch(() => {});
+    if (!this.closed) this.onInterrupt?.();
     pending?.reject(error);
   }
 

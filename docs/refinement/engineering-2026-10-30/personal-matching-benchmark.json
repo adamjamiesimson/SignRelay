@@ -1,0 +1,200 @@
+{
+  "benchmark": "scripts/benchmarks/personal-dtw.ts (synchronous recognizePersonalTemplate, warm)",
+  "baseline": "0bc16a5^ (e0b1f35 matcher)",
+  "candidate": "0bc16a5",
+  "method": "Same bundle script built against each matcher; runs alternate baseline/candidate; each value is the median of 5 warm repeats in one run. Every run also asserts the decision equals the independent full-matrix oracle (it did in all runs).",
+  "host": {
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+    "vcpus": 4,
+    "node": "22.22.0"
+  },
+  "modes": {
+    "easy": "other words far beyond the 0.56 window",
+    "hard": "near-ties within the 0.06 margin",
+    "spread": "other words spread through the 0.56 window; matching example first",
+    "spread-last": "as spread, matching example stored last (worst order)"
+  },
+  "note": "Synthetic landmarks; computation time only, not sign accuracy.",
+  "rows": [
+    {
+      "mode": "easy",
+      "examples": 30,
+      "baseline_run_medians_ms": [
+        9.62,
+        9.64,
+        15.99
+      ],
+      "candidate_run_medians_ms": [
+        13.5,
+        10.02,
+        9
+      ],
+      "baseline_median_ms": 9.64,
+      "candidate_median_ms": 10.02
+    },
+    {
+      "mode": "easy",
+      "examples": 150,
+      "baseline_run_medians_ms": [
+        24.85,
+        26.59,
+        32.25
+      ],
+      "candidate_run_medians_ms": [
+        30.21,
+        26.22,
+        28.36
+      ],
+      "baseline_median_ms": 26.59,
+      "candidate_median_ms": 28.36
+    },
+    {
+      "mode": "easy",
+      "examples": 300,
+      "baseline_run_medians_ms": [
+        47.9,
+        71.11,
+        51.94
+      ],
+      "candidate_run_medians_ms": [
+        64.69,
+        50.07,
+        48.37
+      ],
+      "baseline_median_ms": 51.94,
+      "candidate_median_ms": 50.07
+    },
+    {
+      "mode": "hard",
+      "examples": 30,
+      "baseline_run_medians_ms": [
+        29.56,
+        30.95,
+        30.06
+      ],
+      "candidate_run_medians_ms": [
+        42.77,
+        28.4,
+        37.15
+      ],
+      "baseline_median_ms": 30.06,
+      "candidate_median_ms": 37.15
+    },
+    {
+      "mode": "hard",
+      "examples": 150,
+      "baseline_run_medians_ms": [
+        160.7,
+        148.6,
+        139.03
+      ],
+      "candidate_run_medians_ms": [
+        124.92,
+        137.38,
+        121.96
+      ],
+      "baseline_median_ms": 148.6,
+      "candidate_median_ms": 124.92
+    },
+    {
+      "mode": "hard",
+      "examples": 300,
+      "baseline_run_medians_ms": [
+        369.08,
+        296.54,
+        271.56
+      ],
+      "candidate_run_medians_ms": [
+        305.23,
+        244.03,
+        244.18
+      ],
+      "baseline_median_ms": 296.54,
+      "candidate_median_ms": 244.18
+    },
+    {
+      "mode": "spread",
+      "examples": 30,
+      "baseline_run_medians_ms": [
+        37.23,
+        28.87,
+        29.35
+      ],
+      "candidate_run_medians_ms": [
+        8,
+        7.34,
+        7.18
+      ],
+      "baseline_median_ms": 29.35,
+      "candidate_median_ms": 7.34
+    },
+    {
+      "mode": "spread",
+      "examples": 150,
+      "baseline_run_medians_ms": [
+        136.57,
+        133.5,
+        146.7
+      ],
+      "candidate_run_medians_ms": [
+        28.01,
+        25.75,
+        30.42
+      ],
+      "baseline_median_ms": 136.57,
+      "candidate_median_ms": 28.01
+    },
+    {
+      "mode": "spread",
+      "examples": 300,
+      "baseline_run_medians_ms": [
+        293.07,
+        317.4,
+        274.38
+      ],
+      "candidate_run_medians_ms": [
+        51.63,
+        55.66,
+        45.94
+      ],
+      "baseline_median_ms": 293.07,
+      "candidate_median_ms": 51.63
+    },
+    {
+      "mode": "spread-last",
+      "examples": 30,
+      "baseline_run_medians_ms": [
+        44.86,
+        29.66
+      ],
+      "candidate_run_medians_ms": [
+        10.62,
+        11.47
+      ]
+    },
+    {
+      "mode": "spread-last",
+      "examples": 150,
+      "baseline_run_medians_ms": [
+        140.45,
+        172.76
+      ],
+      "candidate_run_medians_ms": [
+        35.82,
+        45.21
+      ]
+    },
+    {
+      "mode": "spread-last",
+      "examples": 300,
+      "baseline_run_medians_ms": [
+        265.39,
+        279.69
+      ],
+      "candidate_run_medians_ms": [
+        63.39,
+        65.97
+      ]
+    }
+  ]
+}

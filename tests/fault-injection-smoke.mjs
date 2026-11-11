@@ -2,7 +2,8 @@
 // Each fault must produce a clear message, release the camera when it cannot
 // continue, keep the page usable and recover once the fault is removed:
 // recognition worker crashes (bounded respawns, then a manual restart), a
-// worker that fails to construct, missing and corrupted tracking models, and
+// tracking worker crash (immediate invalidation, then recovery), a worker that
+// fails to construct, missing and corrupted tracking models, and
 // browser storage that throws. Software resilience only; not accuracy.
 //   node tests/fault-injection-smoke.mjs /path/to/chrome
 import assert from "node:assert/strict";
@@ -46,7 +47,7 @@ try {
   const network = await observeWorkerNetwork(browser);
   const evaluate = browser.evaluate;
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => {
-    window.__qa = { tracks: [], workers: [], frames: 0, failWorkers: 0 };
+    window.__qa = { tracks: [], workers: [], frames: 0, resets: 0, failWorkers: 0 };
     if (sessionStorage.getItem('qa-storage-fails') === '1') {
       for (const method of ['setItem', 'getItem', 'removeItem']) Storage.prototype[method] = function () { throw new DOMException('Storage disabled for the test', 'SecurityError'); };
     }
@@ -59,7 +60,11 @@ try {
         super(url, options); this.__url = String(url); this.__alive = true; window.__qa.workers.push(this);
       }
       terminate() { this.__alive = false; return super.terminate(); }
-      postMessage(message, transfer) { if (message?.type === 'frame' && this.__url.includes('recognition.worker')) window.__qa.frames++; return super.postMessage(message, transfer); }
+      postMessage(message, transfer) {
+        if (this.__url.includes('recognition.worker') && message?.type === 'frame') window.__qa.frames++;
+        if (this.__url.includes('recognition.worker') && message?.type === 'reset') window.__qa.resets++;
+        return super.postMessage(message, transfer);
+      }
     };
   })();` });
   const button = text => `[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)})`;
@@ -98,6 +103,32 @@ try {
   await until(analysing, "Manual restart did not resume recognition");
   assert.equal(await evaluate("window.__qa.workers.filter(w => w.__alive && w.__url.includes('recognition.worker')).length"), 1, "Exactly one live recognition worker after recovery");
   results.push({ fault: "recognition worker crash x3", automatic_restarts: 2, then: "paused with Restart recognition; manual restart recovered" });
+
+  // 1b. Tracking worker crash. Whatever the old tracker painted and fed the
+  // recognizer is no longer current: both must be invalidated at the moment of
+  // failure, not when the CPU replacement paints its first frame. The synthetic
+  // camera has no hands, so a marker stands in for a stale overlay; checking
+  // in the same task as the crash leaves the replacement no time to repaint.
+  console.error("Fault check: Tracking worker crash invalidates the overlay and recognition evidence.");
+  const trackingWorkers = () => evaluate("window.__qa.workers.filter(w => w.__url.includes('vision.worker')).length");
+  const trackersBefore = await trackingWorkers();
+  const invalidated = await evaluate(`(() => {
+    const canvas = document.querySelector('.camera-stage canvas');
+    const context = canvas.getContext('2d');
+    context.fillStyle = '#ff00ff'; context.fillRect(0, 0, 4, 4);
+    const marked = context.getImageData(1, 1, 1, 1).data[3];
+    const resets = window.__qa.resets;
+    const tracker = window.__qa.workers.filter(w => w.__alive && w.__url.includes('vision.worker')).at(-1);
+    tracker.onerror?.(new ErrorEvent('error', { message: 'Injected tracking crash' }));
+    return { marked, cleared: context.getImageData(1, 1, 1, 1).data[3] === 0, reset: window.__qa.resets > resets };
+  })()`);
+  assert.equal(invalidated.marked, 255, "The stale-overlay marker was not painted");
+  assert.ok(invalidated.cleared, "A tracking crash must clear the painted overlay immediately");
+  assert.ok(invalidated.reset, "A tracking crash must reset recognition evidence immediately");
+  await until(async () => await trackingWorkers() > trackersBefore, "No replacement tracking worker started");
+  await until(analysing, "Tracking did not resume after the crash");
+  assert.ok(await active(), "The camera must stay active through tracking recovery");
+  results.push({ fault: "tracking worker crash", overlay_cleared: true, recognition_reset: true, recovered: true });
 
   // 2. Worker construction fails once.
   console.error("Fault check: Worker construction fails once.");

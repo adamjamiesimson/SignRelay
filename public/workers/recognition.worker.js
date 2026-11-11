@@ -322,6 +322,22 @@ function completedPalmCircle(samples) {
   return false;
 }
 
+// lib/task-yield.ts
+var channel = null;
+var waiting = [];
+function yieldToTasks() {
+  if (typeof setImmediate === "function") return new Promise((resolve) => setImmediate(resolve));
+  if (typeof MessageChannel === "undefined") return new Promise((resolve) => setTimeout(resolve, 0));
+  if (!channel) {
+    channel = new MessageChannel();
+    channel.port1.onmessage = () => waiting.shift()?.();
+  }
+  return new Promise((resolve) => {
+    waiting.push(resolve);
+    channel.port2.postMessage(null);
+  });
+}
+
 // lib/personalized-recognition.ts
 function templatesForLanguage(templates, language) {
   return templates.filter((template) => (template.language ?? "asl") === language);
@@ -329,6 +345,9 @@ function templatesForLanguage(templates, language) {
 var ZERO_HAND = new Array(66).fill(0);
 var ZERO_FACE = new Array(41).fill(0);
 var ZERO_POSE = new Array(67).fill(0);
+var ACCEPT_DISTANCE = 0.5;
+var RIVAL_MARGIN = 0.06;
+var MAX_RELEVANT_DISTANCE = ACCEPT_DISTANCE + RIVAL_MARGIN;
 
 // lib/sign-motion.ts
 function analyzeSignMotion(frames2) {
@@ -658,7 +677,7 @@ async function runMaterialisedTgcnCooperatively(model, input, signal) {
   let step = steps.next();
   while (!step.done) {
     if (performance.now() - sliceStarted >= 12) {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await yieldToTasks();
       sliceStarted = performance.now();
     }
     signal?.throwIfAborted();

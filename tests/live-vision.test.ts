@@ -98,6 +98,49 @@ describe("bounded tracking lane", () => {
     expect(Port.instances).toHaveLength(2); // a terminated worker cannot restart its replacement
     expect(port.terminate).toHaveBeenCalledOnce(); live.close();
   });
+  it("reports an interruption when the worker fails during capture, though the frame resolves null", async () => {
+    let finish!: (bitmap: ImageBitmap) => void;
+    vi.mocked(createImageBitmap).mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    const live = await LiveVision.create(), interrupted = vi.fn();
+    live.onInterrupt = interrupted;
+    const pending = live.process({} as HTMLVideoElement, 1, vi.fn());
+    Port.instances[0].onerror!();
+    expect(interrupted).toHaveBeenCalledOnce();
+    finish({ close: vi.fn() } as unknown as ImageBitmap);
+    expect(await pending).toBeNull();
+    live.close();
+  });
+  it("reports an interruption after hands were painted, before the frame rejects", async () => {
+    const live = await LiveVision.create(), port = Port.instances[0], order: string[] = [];
+    live.onInterrupt = () => order.push("interrupt");
+    const result = live.process({} as HTMLVideoElement, 1, () => order.push("hands"));
+    await Promise.resolve();
+    port.emit({ type: "hands", frame, handsMs: 12 });
+    port.emit({ type: "error", message: "aux inference failed" });
+    await expect(result).rejects.toThrow("aux inference failed");
+    expect(order).toEqual(["hands", "interrupt"]);
+    live.close();
+  });
+  it("reports an interruption when a frame times out", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const live = await LiveVision.create(), interrupted = vi.fn();
+    live.onInterrupt = interrupted;
+    const result = live.process({} as HTMLVideoElement, 1, vi.fn());
+    const settled = expect(result).rejects.toThrow("timed out");
+    await vi.advanceTimersByTimeAsync(8001);
+    await settled;
+    expect(interrupted).toHaveBeenCalledOnce();
+    live.close();
+  });
+  it("does not report an interruption for a deliberate stop", async () => {
+    const live = await LiveVision.create(), interrupted = vi.fn();
+    live.onInterrupt = interrupted;
+    const result = live.process({} as HTMLVideoElement, 1, vi.fn());
+    await Promise.resolve();
+    live.close(); Port.instances[0].onerror?.();
+    expect(await result).toBeNull();
+    expect(interrupted).not.toHaveBeenCalled();
+  });
   it("falls back when transferable tracking is unsupported", async () => {
     vi.stubGlobal("OffscreenCanvas", undefined);
     mocks.create.mockResolvedValue({ close: vi.fn(), assetSource: "self-hosted", delegate: "CPU" });
