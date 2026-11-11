@@ -4,7 +4,7 @@ Draft [PR #46](https://github.com/adamjamiesimson/SignRelay/pull/46), branch `cl
 
 **Verdict unchanged:** supervised testing only, on devices that pass the existing preflight. Public release **NO-GO**. No webcam, physical device, signer, fluent review or sealed-holdout access was involved.
 
-**One gate could not run.** The ASL video pilot (zero-new-wrong-acceptance gate) fails before evaluating anything, because the clip host's TLS chain stopped verifying on GitHub's runners. The same failure occurs on PR #45's previously passing head (see [§7](#7-blocked-the-asl-video-pilot)). This branch changes ASL-2000 scheduling, so its real-clip outcome is **unverified** until the pilot runs.
+**Real-video pilot passed on 11 November** ([§7](#7-the-asl-video-pilot)). From 30 October to 10 November the pilot (zero-new-wrong-acceptance gate) could not run, because the clip host's TLS chain did not verify on GitHub's runners. Once it verified again, the unchanged pilot ran on this branch's head ([run 43115145059](https://github.com/adamjamiesimson/SignRelay/actions/runs/43115145059)). Worker `afd4bf13f6e5` scored **5 correct, 0 wrong accepted, 6 abstained, 0 errors** on the 11 development clips, and the exact-baseline gate passed with zero changes. That is development-clip evidence only. It is not device, live-camera or unseen-test evidence.
 
 **Follow-up documents:**
 
@@ -145,7 +145,28 @@ At 30 and 150 examples the spread case falls from 29 to 7 ms and from 137 to 28 
 
 PR #45's `keeps every float32 logit bit-identical…` runs seven full inferences, about 6 s in Node here, with no explicit time budget. It failed in isolation and in the full suite on this host (baseline full suite: **950 passed, 1 failed, 2 skipped**) and on Codex's Windows run. The test now has a 120 s budget, like the repository's other heavy numerical tests. The hashes, inputs and assertion are unchanged.
 
-## 7. Blocked: the ASL video pilot
+## 7. The ASL video pilot
+
+### Result (11 November): passed
+
+[Run 43115145059](https://github.com/adamjamiesimson/SignRelay/actions/runs/43115145059) on head `6eb9c64` used the workflow, clip manifests and fetch script unchanged, with TLS verification on. The clip fetch succeeded for the first time since 30 October. The outcomes below come from the job log. The per-trial artifact (ID 13899335368) was not downloaded or committed.
+
+| Cohort | Correct | Wrong accepted | Abstained | Errors |
+| --- | ---: | ---: | ---: | ---: |
+| Historical development (6 clips: HELLO, PLEASE, THANK YOU × 2) | 3 | **0** | 3 | 0 |
+| Development (5 clips: THANK YOU, PLEASE, HELLO, YES, NO) | 2 | **0** | 3 | 0 |
+| **All 11** | **5** | **0** | **6** | **0** |
+
+- **Exact-baseline gate** (`scripts/baseline-gate.mjs`, all 11 established trials): `ok`, with no changes, no failures and nothing explained. `candidate_worker` is `afd4bf13f6e50fe4…`, the committed worker.
+- **Paired comparison with the frozen pre-PR28 worker:** the only difference is THANK YOU 8033. The old worker wrongly accepted PLEASE; this worker abstains. PR #44's pilot showed the same difference.
+- **Per-trial development lines:** frame and hand-frame counts are identical to PR #45's traces (THANK YOU 6/30, PLEASE 15/47, HELLO 12/35, YES 5/31, NO 11/51). The faster scheduling changed no outcome on these clips. That fits the [miss analysis](thank-you-yes-investigation.md): the motion gate never released a sequence in the missed clips.
+- The `net::ERR_ABORTED` `blob:` entries in the summaries also appear in every earlier passing pilot summary. Every trial completed.
+
+The worker is recorded in [`docs/evaluation/evaluated-runtimes.json`](../../evaluation/evaluated-runtimes.json), and the [dashboard](../../evaluation/dashboard-2026-10-21.md) was regenerated.
+
+**This does not validate the worker for release.** The 11 clips are previously inspected, publisher-labelled development recordings. There are no no-sign or out-of-vocabulary trials. Device, live-camera, false-acceptance and sealed-holdout evidence are all still missing ([release status](release-status.md)).
+
+### Earlier block (30 October to 10 November)
 
 Pilot runs [41017695427](https://github.com/adamjamiesimson/SignRelay/actions/runs/41017695427), [41017884190](https://github.com/adamjamiesimson/SignRelay/actions/runs/41017884190) and [41018187214](https://github.com/adamjamiesimson/SignRelay/actions/runs/41018187214) on this branch all stop in `training/fetch_evaluation_clips.py` with:
 
@@ -155,18 +176,9 @@ urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certifica
 
 That happens before any clip is evaluated. **Control:** re-dispatching the pilot on PR #45's unchanged head `e0b1f35`, which passed on 28 October, fails identically ([41018226895](https://github.com/adamjamiesimson/SignRelay/actions/runs/41018226895)). So the cause is the clip host `signdata.cc.gatech.edu`, whose certificate chain no longer verifies against the runner's CA store, not this branch. Its chain could not be inspected from this container, whose proxy refuses the host.
 
-TLS verification was **not** weakened, and no clip was cached or redistributed. **Therefore:**
+TLS verification was **not** weakened, and no clip was cached or redistributed. The pilot was re-dispatched daily. Every retry through 10 November 22:43 UTC failed the same way, until 11 November's run passed (above).
 
-- No recognition outcome counts are reported for worker `afd4bf13f6e5`.
-- [`docs/evaluation/evaluated-runtimes.json`](../../evaluation/evaluated-runtimes.json) has no entry for it.
-- The dashboard is marked stale for it.
-- `verify-runtime` reports "real_video_evidence: none recorded".
-
-The last measured result remains PR #45's worker `b454deb00b6e`: **5 correct, 0 wrong accepted, 6 abstained, 0 errors** on 11 development clips.
-
-**Why it matters for this branch.** The tracking invalidation, personal pruning (no templates in the pilot) and RSL changes cannot affect pilot outcomes. Faster ASL-2000 scheduling can: a result arriving sooner may land inside the motion gate where it previously expired. The two-evidence rule and all gates are unchanged. The deterministic synthetic gates through the real worker still pass, including the tail-guard everyday-movement case (120,096 frames, zero added words), the confusion matrices and the adversarial inventory. They are not real-clip evidence.
-
-**Re-run** the pilot (`workflow_dispatch` on this branch) once the host verifies again, and record the result before relying on this worker.
+**Why the pilot mattered for this branch.** The tracking invalidation, personal pruning (no templates in the pilot) and RSL changes cannot affect pilot outcomes. Faster ASL-2000 scheduling can: a result arriving sooner may land inside the motion gate where it previously expired. The two-evidence rule and all gates are unchanged. The deterministic synthetic gates through the real worker still pass, including the tail-guard everyday-movement case (120,096 frames, zero added words), the confusion matrices and the adversarial inventory. They are not real-clip evidence.
 
 ## 8. Verification
 
@@ -180,7 +192,7 @@ Linux x64 Xeon @ 2.8 GHz, 4 vCPU, Node 22.22.0, Chromium (Playwright 1243) headl
 | `npm run typecheck`, `npm run lint`, `npm run repo:guard` | pass |
 | `npm audit` (full and `--omit=dev`), `npm run audit:secrets`, `npm run test:rendered` | 0 vulnerabilities, 0 findings, pass |
 | `npm run build:worker` | committed `recognition.worker.js` = `afd4bf13f6e50fe44b730a07af25618f037bbca319c2001cc210807b560296a2`. The `vision` and `bdsl` bundles are unchanged. |
-| `build:asl-demo` with `verify-runtime --profile asl-demo` | pass; exported worker matches the committed worker; "real_video_evidence: none recorded" (§7) |
+| `build:asl-demo` with `verify-runtime --profile asl-demo` | pass; exported worker matches the committed worker; on 30 October "real_video_evidence: none recorded". The worker has been recorded since 11 November (§7). |
 | Demo smokes: `demo:check` (strict offline, deny-all proxy), leak-detector self-test, offline vision with CDNs blocked, lifecycle stress (heap 5 → 5 MB, no errors), fault injection including the new tracking crash | pass |
 | `build:rehearsal` with `verify-runtime --profile rehearsal`; six-sign rehearsal (abstains on three non-sign movements, confirms all six, recovers from interruption), transcript and a11y, storage/speech faults, personal vocabulary at 30/150/300 examples | pass |
 | `tests/cooperative-yield-browser-smoke.mjs` (new) | pass |
@@ -206,21 +218,21 @@ All code is in `695655c`; the later commits are documentation and evidence.
 | [Firebase static build and strict audit](https://github.com/adamjamiesimson/SignRelay/actions/runs/41018187213) (builds, never deploys). Covers the real Russian model worker, Bangla and Spanish flows, cancelled model runs and cached session reuse in Chrome, and axe | success, plus the strict dependency audit |
 | [Offline demo and rehearsal](https://github.com/adamjamiesimson/SignRelay/actions/runs/41018187185), including the new cooperative-yield smoke and the tracking-crash fault check | success |
 | [Analytics consent](https://github.com/adamjamiesimson/SignRelay/actions/runs/41018187139) | success |
-| [ASL video pilot](https://github.com/adamjamiesimson/SignRelay/actions/runs/41018187214) | **failure before evaluation**: clip host TLS (§7), same on PR #45's head |
+| [ASL video pilot](https://github.com/adamjamiesimson/SignRelay/actions/runs/41018187214) | **failure before evaluation**: clip host TLS (§7), same on PR #45's head. Re-dispatched on `6eb9c64` on 11 November: [**success**](https://github.com/adamjamiesimson/SignRelay/actions/runs/43115145059), gate `ok`, 0 wrong accepted. |
 
 ### Recognition outcomes
 
 | Evidence | Correct | Wrong accepted | Abstained | Errors |
 | --- | ---: | ---: | ---: | ---: |
-| Real development clips, worker `afd4bf13f6e5` (this branch) | — | — | — | not run (§7) |
-| Real development clips, worker `b454deb00b6e` (PR #45, last measured) | 5 | **0** | 6 | 0 |
+| Real development clips, worker `afd4bf13f6e5` (this branch, [run 43115145059](https://github.com/adamjamiesimson/SignRelay/actions/runs/43115145059)) | 5 | **0** | 6 | 0 |
+| Real development clips, worker `b454deb00b6e` (PR #45) | 5 | **0** | 6 | 0 |
 | Synthetic rehearsal, six signs plus three non-sign movements (this branch) | 6/6 | **0** | 3/3 | 0 |
 
 The synthetic row is kinematic fixtures, not signing accuracy.
 
 ## 9. Remaining limitations and unverified hypotheses
 
-- **Pilot gate blocked** (§7). This is the most important open item.
+- **Pilot evidence is development-only** (§7). The pilot passed on the same 11 previously inspected clips. It includes no no-sign or out-of-vocabulary trials, and it is not unseen-test evidence.
 - **No device evidence.** Every timing above is a Linux Xeon container in headless Chromium or Node. The Windows integration laptop and phones were not measured, so yield savings there are estimated, not measured.
 - **Real-clip misses unchanged.** PR #45's analysis stands. The THANK YOU, YES and HELLO misses are dominated by sparse hand detection and clips that end mid-stroke. Nothing in this sprint changes recognition rules, and nothing should until reviewed recordings with a natural hold and lowering exist.
 - **Live webcam behaviour of §1 unobserved.** The invalidation is proven on the built export with an injected crash, not observed on a live webcam.

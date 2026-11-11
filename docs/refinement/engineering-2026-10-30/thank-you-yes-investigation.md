@@ -2,7 +2,9 @@
 
 **Status:** analysis of committed, coordinate-free evidence only. No code, threshold, gate, rule or expectation was changed.
 
-The 11 development clips could not be replayed again: the clip host fails TLS verification on CI, and this container's proxy refuses it ([report §7](README.md#7-blocked-the-asl-video-pilot)). The sealed holdout was not touched.
+When this was written, the 11 development clips could not be replayed again: the clip host failed TLS verification on CI, and this container's proxy refuses it. The sealed holdout was not touched.
+
+**Update, 11 November.** The pilot ran again on PR #46's worker `afd4bf13f6e5` ([report §7](README.md#7-the-asl-video-pilot)). Every trial had the same outcome as below. The development clips' frame and hand-frame counts were identical, and the historical clips' per-sign totals matched (HELLO 20/72, PLEASE 62/80, THANK YOU 19/68 hand frames). THANK YOU, YES and the two HELLO misses still abstain, and there are still 0 wrong acceptances. The faster ASL-2000 scheduling therefore did not change these misses, as point 6 below predicted. That pilot run did not include the stage-traced replay, so the traces below are still PR #45's.
 
 **Sources:**
 

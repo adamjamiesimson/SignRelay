@@ -4,12 +4,7 @@ This adds to [PR #45's checklist](../followup-2026-10-28/owner-checklist.md), wh
 
 ## Before relying on worker `afd4bf13f6e5`
 
-- [ ] **Re-run the ASL video pilot** once `signdata.cc.gatech.edu` verifies again: Actions → *ASL Video Pilot (non-release)* → Run workflow on `claude/nifty-davinci-fgv665`. It has failed on every runner since 30 October with `CERTIFICATE_VERIFY_FAILED`, including on PR #45's previously passing head ([report §7](README.md#7-blocked-the-asl-video-pilot)).
-  - Required: exact-baseline gate `ok`, **0 wrong accepted**, no runtime errors.
-  - Then record the worker in `docs/evaluation/evaluated-runtimes.json` and regenerate the dashboard.
-  - If any trial changes, stop and report it. Do not edit expectations.
-  - Do not disable TLS verification to get past the error.
-  - If the host stays broken, the owner decides whether a verified mirror or cache of the 11 development clips is acceptable under their licence. Engineering has not done this.
+- [x] **Re-run the ASL video pilot.** Done on 11 November, once `signdata.cc.gatech.edu` verified again ([run 43115145059](https://github.com/adamjamiesimson/SignRelay/actions/runs/43115145059)). Exact-baseline gate `ok`, **0 wrong accepted**, 0 errors; 5 correct, 6 abstained, with no trial changed. The worker is recorded in `docs/evaluation/evaluated-runtimes.json`, and the dashboard was regenerated ([report §7](README.md#7-the-asl-video-pilot)). TLS verification was never disabled, and no clip was cached or mirrored. This is development-clip evidence only. The device sessions below are still needed.
 
 ## Windows integration laptop
 

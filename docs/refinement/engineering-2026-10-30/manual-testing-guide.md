@@ -11,7 +11,7 @@ It also defines how to record *why* a THANK YOU or YES attempt was missed.
 
 **Before you start:**
 
-- **The worker is not validated.** This worker has no real-video pilot result yet ([report §7](README.md#7-blocked-the-asl-video-pilot)). Treat every device session as an observation of an unvalidated build. Do not present results as accuracy, and never as a percentage.
+- **The worker has development-clip evidence only.** On 11 November it passed the real-video pilot on 11 previously inspected clips: 5 correct, 0 wrong accepted, 6 abstained ([report §7](README.md#7-the-asl-video-pilot)). That is not device or live-camera evidence. Treat every device session as an observation of a build with no device evidence yet. Do not present results as accuracy, and never as a percentage.
 - **Nothing here changes recognition.** Do not change thresholds, rules or experiments because of what you see; send observations to the owner.
 - **Log every attempt, including failures.** Never retry until an attempt works and keep only the success.
 - **Keep results private.** Results stay under the git-ignored `evaluation/results/`. Never commit them, attach them to a PR, or post them. Use pseudonyms only.
