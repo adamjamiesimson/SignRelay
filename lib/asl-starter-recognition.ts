@@ -32,7 +32,22 @@ type Sample = {
   hand: HandObservation; time: number; scale: number; palm: number;
   wrist: Point; circlePath: Point; tip: Point; nose?: Point; mouth?: Point; mouthRadius?: number;
   open: number; indexOpen: boolean; middleOpen: boolean;
+  /** Flat hand: all four fingers extended and held together. */
+  flat: boolean;
 };
+
+/** THANK YOU is made with a flat hand: four extended fingers side by side.
+ * Fingertips that are much further apart than the knuckles they grow from are
+ * a spread hand (MOTHER, FATHER), and fewer than four extended fingers are
+ * another handshape (WATER, CAT). Both leave the mouth with an "open" hand. */
+const FINGERS_TOGETHER_RATIO = 1.6;
+export function flatHand(hand: HandObservation) {
+  if (![8, 12, 16, 20].every(tip => extended(hand, tip))) return false;
+  const p = hand.landmarks;
+  const tips = distance2(p[8], p[12]) + distance2(p[12], p[16]) + distance2(p[16], p[20]);
+  const knuckles = distance2(p[5], p[9]) + distance2(p[9], p[13]) + distance2(p[13], p[17]);
+  return knuckles > 0 && tips / knuckles <= FINGERS_TOGETHER_RATIO;
+}
 
 function extended(hand: HandObservation, tip: number) {
   const p = hand.landmarks;
@@ -75,7 +90,7 @@ function samplesFor(frames: VisionFrame[], side: HandObservation["handedness"]):
       wrist: point(hand.landmarks[0]), tip: point(hand.landmarks[8]),
       nose: nose && point(nose), mouth: mouth && point(mouth),
       open: [8, 12, 16, 20].filter(tip => extended(hand, tip)).length,
-      indexOpen: extended(hand, 8), middleOpen: extended(hand, 12),
+      indexOpen: extended(hand, 8), middleOpen: extended(hand, 12), flat: flatHand(hand),
     });
   }
   // A brief dropped frame is tolerable; absent current hands and long gaps are not evidence.
@@ -159,12 +174,15 @@ function recognizeSamples(samples: Sample[], requireClosure = true): StarterPred
   // Preserve the original wrist-only competing evidence. New emitting rules
   // must not erase a partial circle and expose its outward THANK YOU suffix.
   const mouthStart = requireClosure ? departingMouthStroke(samples) : null;
-  if (mostlyOpen && mouthStart && (Math.abs(last.tip.x - mouthStart.tip.x) > 0.15
+  // On 79 PopSign test clips THANK YOU was right on 3 and wrong on 11, mostly
+  // on other signs made at the face. Those use other handshapes.
+  const mostlyFlat = ratio(samples, sample => sample.flat) >= 0.6;
+  if (mostlyOpen && mostlyFlat && mouthStart && (Math.abs(last.tip.x - mouthStart.tip.x) > 0.15
     || last.palm / mouthStart.palm > 1.14)) return prediction("THANK YOU", "Thank you");
 
   const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
   const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
-  if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12
+  if (mostlyOpen && mostlyFlat && nearMouth && outward && last.tip.y - first.tip.y > 0.12
     && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth!) > 0.25) {
     return prediction("THANK YOU", "Thank you");
   }

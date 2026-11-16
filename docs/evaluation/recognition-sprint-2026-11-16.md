@@ -85,6 +85,31 @@ So the segmentation repair does what it was built for (segments now exist on 5 o
 
 Reading this honestly: single clips flip in every variant, so eleven clips cannot choose a setting. Two things are worth a larger sample: the app's real cadence looks worse than the protocol every recorded result used, and a lower palm-detection threshold is the only variant that gained without losing. Both go through the larger PopSign replay (`.github/workflows/asl-popsign-exploration.yml`) before anything changes in the app. YES stays unrecognised in every variant (5–11 hand frames).
 
-## 6. What still needs a person
+## 6. Larger development replay: 79 PopSign game/test clips
+
+[Run 43890510743](https://github.com/adamjamiesimson/SignRelay/actions/runs/43890510743), commit `588a754`. A predetermined sample (`training/build_popsign_exploration.py`): eight signers for each of HELLO, THANK YOU, PLEASE, YES and NO (40 clips; PopSign has no SORRY) and 39 clips of twenty other signs, replayed through the production browser pipeline. Publisher labels, no fluent review, phone recordings; now exposed development clips. Sealed-holdout signers and clips were never requested. This is the first sample large enough to describe the rules, and it is still not a live-camera result.
+
+| Replay | Correct of 40 target clips | Clips with a wrong word (of 79) | On the 39 other-sign clips | Clips with a ready segment | Model suggestions (matching) |
+| --- | ---: | ---: | --- | ---: | ---: |
+| `main` worker, 20 frames/s | 15 | 15 | 9 wrong: THANK YOU 7, HELLO 2, NO 1 | 10 | none possible |
+| This branch (`588a754`), 20 frames/s | 15 | 14 | 9 wrong, same words | 39 | 2 (0) |
+| This branch at 15 frames/s (the old live cadence) | 11 | 16 | 11 wrong | 39 | 2 (0) |
+| This branch at 30 frames/s | 15 | 20 | 12 wrong, PLEASE and SORRY appear | 40 | 4 (0) |
+| This branch, palm detection 0.3 | 15 | 13 | 9 wrong | 39 | 4 (1) |
+
+Per sign, this branch at 20 frames/s: HELLO 2/8, THANK YOU 3/8, PLEASE 5/8, YES 0/8, NO 5/8. THANK YOU was also produced on 10 clips of other signs.
+
+What this decides:
+
+- **Frame cadence.** 20 analysed frames per second beats the 15 the app was really delivering (15 vs 11 correct, 14 vs 16 wrong) and beats every frame (same correct, 6 more wrong). The 45 ms gate stays.
+- **Palm-detection threshold.** 13 more hand frames in 3,346 and no change in correct clips. Not adopted.
+- **The research model** made 2–4 suggestions and at most one matched its clip. It stays a suggestion.
+- **The rules are the problem.** About half of the words they put in the transcript are wrong on this sample (15 right, 14–15 wrong). THANK YOU is the worst (3 right, 11 wrong) and YES is never recognised.
+
+## 7. THANK YOU handshape requirement (in progress)
+
+Hypothesis, stated before measuring: the wrong THANK YOU words come from other signs made at the face with other handshapes, and THANK YOU itself is a flat hand (four extended fingers held together). The rule now requires a flat hand on at least 60% of observations (`flatHand` in `lib/asl-starter-recognition.ts`). Synthetic regressions are unchanged because their open hand is flat. It is measured first on the 79 clips above and, if it holds, confirmed on a second, disjoint sample fetched only after the rule is frozen.
+
+## 8. What still needs a person
 
 See [the webcam protocol](webcam-validation-protocol-2026-11-16.md). All earlier manual gates in `docs/gitex/sprint-3/real-world-test-checklist.md` remain pending.

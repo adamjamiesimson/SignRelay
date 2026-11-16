@@ -43,7 +43,8 @@ for (const { label, file } of sources) {
         suggestions: other.reduce((sum, trial) => sum + trial.suggested.length, 0),
         suggestions_matching_label: other.reduce((sum, trial) => sum + trial.suggested.filter(gloss => gloss === trial.expected).length, 0) };
     })(),
-    per_trial: trials.length <= 30 ? trials : undefined });
+    // Large cohorts: list only the clips where something was produced.
+    per_trial: trials.length <= 30 ? trials : trials.filter(trial => trial.accepted.length || trial.suggested.length) });
 }
 console.log(JSON.stringify(out, null, 1));
 for (const variant of out.variants) {

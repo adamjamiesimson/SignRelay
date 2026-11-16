@@ -29,7 +29,7 @@ concurrency:
 jobs:
   replay:
     runs-on: ubuntu-latest
-    timeout-minutes: 170
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -84,26 +84,11 @@ jobs:
             evaluation/derived/explore-candidate.jsonl --fetch-assets-via-node \
             --cohort-lock=evaluation/derived/exploration-lock.json > /dev/null
 
-      - name: Replay tracker and cadence candidates on the identical clips (diagnostic)
-        # The 11-clip pilot cannot decide these. 0.066 s is what the app's 50 ms
-        # throttle gives a 30 fps camera today; 0.033 s is every frame;
-        # detect:0.3 lowers only the palm-detection threshold.
-        continue-on-error: true
-        run: |
-          chrome="$(command -v google-chrome || command -v chromium || true)"
-          for variant in cadence15=interval:0.066 cadence30=interval:0.033 detect30=detect:0.3; do
-            node scripts/run-recognition-video-evaluation.mjs "$chrome" evaluation/derived/popsign-exploration.json \
-              "evaluation/derived/explore-${variant%%=*}.jsonl" --fetch-assets-via-node "--tracker=${variant#*=}" \
-              --cohort-lock=evaluation/derived/exploration-lock.json > /dev/null || echo "variant $variant failed"
-          done
-
       - name: Summarize (aggregate outcomes only)
         if: always()
         run: |
           node scripts/diagnostics/summarize-replays.mjs main-worker=evaluation/derived/explore-main.jsonl \
-            candidate=evaluation/derived/explore-candidate.jsonl \
-            cadence15=evaluation/derived/explore-cadence15.jsonl cadence30=evaluation/derived/explore-cadence30.jsonl \
-            detect30=evaluation/derived/explore-detect30.jsonl | tee evaluation/derived/exploration-summary.txt
+            candidate=evaluation/derived/explore-candidate.jsonl | tee evaluation/derived/exploration-summary.txt
 
       - name: Store derived metrics only (never video or landmarks)
         if: always()

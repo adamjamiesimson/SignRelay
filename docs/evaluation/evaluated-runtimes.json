@@ -54,6 +54,23 @@
         "errors": 0
       },
       "baseline_gate": "scripts/baseline-gate.mjs ok (0 changes on all 11 established trials) in CI run 43882596879. Research-model suggestions (1, not matching its clip) are not transcript words and are not counted."
+    },
+    {
+      "worker_sha256": "e0bb44fc4ab659aa10d11b0865d7f64a5d089a849cd15e1d6de6e7bfcd411082",
+      "source_commit": "588a75439e3d5e4224c452b694cd2316e1b1d1a4",
+      "evidence": [
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/43890510827",
+        "docs/evaluation/recognition-sprint-2026-11-16.md"
+      ],
+      "evidence_kind": "CI paired pilot (job concluded success, which includes the exact-baseline gate). Per-trial rows were not transcribed; the bundle hash is the committed, deterministically rebuilt bundle of that commit.",
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "baseline_gate": "scripts/baseline-gate.mjs passed in CI run 43890510827 (the pilot job fails otherwise)."
     }
   ]
 }

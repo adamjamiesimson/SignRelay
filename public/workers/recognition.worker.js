@@ -72,6 +72,14 @@ function bodyReference(frame, hand4) {
     tracked
   };
 }
+var FINGERS_TOGETHER_RATIO = 1.6;
+function flatHand(hand4) {
+  if (![8, 12, 16, 20].every((tip) => extended(hand4, tip))) return false;
+  const p = hand4.landmarks;
+  const tips = distance2(p[8], p[12]) + distance2(p[12], p[16]) + distance2(p[16], p[20]);
+  const knuckles = distance2(p[5], p[9]) + distance2(p[9], p[13]) + distance2(p[13], p[17]);
+  return knuckles > 0 && tips / knuckles <= FINGERS_TOGETHER_RATIO;
+}
 function extended(hand4, tip) {
   const p = hand4.landmarks;
   return distance2(p[tip], p[tip - 3]) > distance2(p[tip - 2], p[tip - 3]) * 1.55 && distance2(p[tip], p[0]) > distance2(p[tip - 2], p[0]) * 1.08;
@@ -119,7 +127,8 @@ function samplesFor(frames2, side) {
       mouth: mouth && point3(mouth),
       open: [8, 12, 16, 20].filter((tip) => extended(hand4, tip)).length,
       indexOpen: extended(hand4, 8),
-      middleOpen: extended(hand4, 12)
+      middleOpen: extended(hand4, 12),
+      flat: flatHand(hand4)
     });
   }
   if (samples.length < 5 || samples.length / frames2.length < 0.6 || samples.at(-1)?.time !== frames2.at(-1)?.timestamp || samples.at(-1).time - samples[0].time < 160) return [];
@@ -172,10 +181,11 @@ function recognizeSamples(samples, requireClosure = true) {
     return prediction("NO", "No");
   }
   const mouthStart = requireClosure ? departingMouthStroke(samples) : null;
-  if (mostlyOpen && mouthStart && (Math.abs(last.tip.x - mouthStart.tip.x) > 0.15 || last.palm / mouthStart.palm > 1.14)) return prediction("THANK YOU", "Thank you");
+  const mostlyFlat = ratio(samples, (sample) => sample.flat) >= 0.6;
+  if (mostlyOpen && mostlyFlat && mouthStart && (Math.abs(last.tip.x - mouthStart.tip.x) > 0.15 || last.palm / mouthStart.palm > 1.14)) return prediction("THANK YOU", "Thank you");
   const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
   const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
-  if (mostlyOpen && nearMouth && outward && last.tip.y - first.tip.y > 0.12 && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth) > 0.25) {
+  if (mostlyOpen && mostlyFlat && nearMouth && outward && last.tip.y - first.tip.y > 0.12 && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth) > 0.25) {
     return prediction("THANK YOU", "Thank you");
   }
   const raised = ratio(samples, (sample) => !!sample.nose && sample.wrist.y < sample.nose.y + 0.55) >= 0.7;
