@@ -32,6 +32,8 @@ export type WorkerAnalysis = {
   feedback?: string;
   source?: "personal" | "starter" | "model";
   motionReason?: string;
+  /** Why the ASL movement gate answered as it did: a code, never landmarks. */
+  motionDetail?: string;
 };
 
 export type WorkerConfirmation = {
@@ -44,7 +46,12 @@ export type WorkerConfirmation = {
   source?: "personal" | "starter" | "model";
 };
 
-export type WorkerMessage = WorkerAnalysis | WorkerConfirmation
+/** A word whose only evidence is a research model. It is offered to the person
+ * and never enters the transcript, is announced as confirmed or is spoken
+ * unless they add it. */
+export type WorkerSuggestion = Omit<WorkerConfirmation, "type" | "source"> & { type: "suggested"; source: "model" };
+
+export type WorkerMessage = WorkerAnalysis | WorkerConfirmation | WorkerSuggestion
   | { type: "fault"; session?: number; message: string };
 
 export type CalibrationTemplate = {

@@ -40,6 +40,9 @@ async function frames(count: number) {
   }
 }
 const confirmations = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "confirmed");
+const suggestions = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "suggested");
+/** ASL research-model words are suggestions; the other languages' models are unchanged. */
+const modelWords = (language: string) => language === "asl" ? suggestions() : confirmations();
 
 beforeEach(async () => {
   vi.resetModules();
@@ -107,13 +110,14 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks[language].mockResolvedValue(prediction);
     await frames(language === "asl" ? 14 : 34);
-    expect(confirmations()).toHaveLength(1);
-    expect(confirmations()[0]).toMatchObject({ gloss: "BOOK", text: "Book" });
+    expect(modelWords(language)).toHaveLength(1);
+    expect(modelWords(language)[0]).toMatchObject({ gloss: "BOOK", text: "Book" });
+    if (language === "asl") expect(confirmations()).toHaveLength(0);
     // Confirmation must consume the prediction; holding its cached output
     // cannot emit another word while the next inference is pending.
     mocks[language].mockImplementation(() => new Promise(() => {}));
     await frames(50);
-    expect(confirmations()).toHaveLength(1);
+    expect(modelWords(language)).toHaveLength(1);
   });
 
   it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "psl", "uaesl", "vsl"] as const)("preserves personal recognition for %s", async language => {
@@ -169,7 +173,8 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ feedback: expect.stringContaining("could not run") });
     mocks.asl.mockResolvedValue(prediction);
     await frames(20);
-    expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+    expect(suggestions().map(result => result.gloss)).toEqual(["BOOK"]);
+    expect(confirmations()).toEqual([]);
   });
   it.each(["bsl", "isl"] as const)("allows a slow initial %s model download beyond 20 seconds", async language => {
     mocks[language].mockImplementation(() => new Promise(() => {}));

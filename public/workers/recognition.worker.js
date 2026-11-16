@@ -305,11 +305,12 @@ var ZERO_FACE = new Array(41).fill(0);
 var ZERO_POSE = new Array(67).fill(0);
 
 // lib/sign-motion.ts
-function analyzeSignMotion(frames2) {
+var DEPARTURE_MIN_ABSENT_MS = 250;
+var COMPLETED_AVAILABLE_MS = 2500;
+function scan(frames2, needsRest) {
   const end = frames2.at(-1);
-  const reject = (reason) => ({ ready: false, sequence: [], reason });
-  if (!end?.hands.some(validHand)) return reject("hands");
   let moving = false;
+  let detail = "too-few-observations";
   for (const side of ["Left", "Right", "Unknown"]) {
     const recent = recentContinuousFrames(
       frames2,
@@ -326,7 +327,10 @@ function analyzeSignMotion(frames2) {
     const first = samples[0];
     const travel = (a, b) => distance2(a.landmarks[0], b.landmarks[0]) / scale;
     const excursion = samples.some((sample) => travel(first.hand, sample.hand) > 0.18 || shapeDistance(first.hand, sample.hand) > 0.5);
-    if (!excursion) continue;
+    if (!excursion) {
+      detail = "no-movement";
+      continue;
+    }
     let startIndex = -1;
     let lastActive = 0;
     for (let index = 1; index < samples.length; index++) {
@@ -346,17 +350,47 @@ function analyzeSignMotion(frames2) {
         }
       }
     }
-    if (startIndex < 0) continue;
-    const segment = recent.slice(startIndex);
-    const settledFor = end.timestamp - lastActive;
-    if (settledFor < 140) {
-      moving = true;
+    if (startIndex < 0) {
+      detail = "no-movement";
       continue;
     }
-    if (settledFor > 2500 || segment.length < 6 || end.timestamp - segment[0].timestamp < 220) continue;
-    return { ready: true, sequence: segment, reason: "ready" };
+    const segment = recent.slice(startIndex);
+    const settledFor = end.timestamp - lastActive;
+    if (needsRest && settledFor < 140) {
+      moving = true;
+      detail = "still-moving";
+      continue;
+    }
+    if (settledFor > COMPLETED_AVAILABLE_MS) {
+      detail = "rested-too-long";
+      continue;
+    }
+    if (segment.length < 6 || end.timestamp - segment[0].timestamp < 220) {
+      detail = "too-short";
+      continue;
+    }
+    return { sequence: segment, detail: needsRest ? "rest" : "departure", moving };
   }
-  return reject(moving ? "moving" : "idle");
+  return { sequence: null, detail, moving };
+}
+function analyzeSignMotion(frames2) {
+  const end = frames2.at(-1);
+  const reject = (reason, detail) => ({ ready: false, sequence: [], reason, detail });
+  if (!end) return reject("hands", "no-hand");
+  if (!end.hands.some(validHand)) {
+    let last = frames2.length - 1;
+    while (last >= 0 && !frames2[last].hands.some(validHand)) last--;
+    if (last < 0) return reject("hands", "no-hand");
+    const absentFor = end.timestamp - frames2[last].timestamp;
+    if (!(absentFor >= DEPARTURE_MIN_ABSENT_MS)) return reject("hands", "departed-too-recently");
+    if (absentFor > COMPLETED_AVAILABLE_MS) return reject("hands", "departed-too-long-ago");
+    const result2 = scan(frames2.slice(0, last + 1), false);
+    if (!result2.sequence) return reject("hands", result2.detail);
+    return { ready: true, sequence: result2.sequence, reason: "ready", detail: "departure", completion: "departure" };
+  }
+  const result = scan(frames2, true);
+  if (result.sequence) return { ready: true, sequence: result.sequence, reason: "ready", detail: "rest", completion: "rest" };
+  return reject(result.moving ? "moving" : "idle", result.detail);
 }
 function shapeDistance(a, b) {
   const scales = [handScale(a), handScale(b)];
@@ -492,9 +526,197 @@ async function downloadModelBytes(url, options = {}) {
   }
 }
 
+// lib/tgcn-input.ts
+var NODE_COUNT = 55;
+function openPoseBody(pose) {
+  const point3 = (index) => {
+    const value = pose[index];
+    return value && (value.visibility === void 0 || value.visibility >= 0.3) && Number.isFinite(value.x) && Number.isFinite(value.y) ? { x: value.x, y: value.y } : null;
+  };
+  const midpoint3 = (a, b) => a && b ? { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } : null;
+  return [
+    point3(0),
+    midpoint3(point3(11), point3(12)),
+    point3(12),
+    point3(14),
+    point3(16),
+    point3(11),
+    point3(13),
+    point3(15),
+    midpoint3(point3(23), point3(24)),
+    point3(5),
+    point3(2),
+    point3(8),
+    point3(7)
+  ];
+}
+function handNodes(hand4, visibility) {
+  return Array.from({ length: 21 }, (_, index) => {
+    const point3 = hand4?.landmarks[index];
+    return point3 && (visibility === "ignore" || point3.visibility !== 0) && Number.isFinite(point3.x) && Number.isFinite(point3.y) ? { x: point3.x, y: point3.y } : null;
+  });
+}
+var usable = (hand4) => hand4.landmarks.length === 21 && hand4.landmarks.every((point3) => Number.isFinite(point3.x) && Number.isFinite(point3.y));
+function assignHands(frame, mode) {
+  const hands = frame.hands.filter(usable);
+  const byLabel = (side) => hands.find((hand5) => hand5.handedness === side);
+  if (mode === "label") return [byLabel("Left"), byLabel("Right")];
+  const wrist = (index) => {
+    const point3 = frame.pose[index];
+    return point3 && (point3.visibility ?? 1) >= 0.3 && Number.isFinite(point3.x) && Number.isFinite(point3.y) ? point3 : null;
+  };
+  const poseLeft = wrist(15), poseRight = wrist(16);
+  if (!hands.length || !poseLeft || !poseRight) return [byLabel("Left"), byLabel("Right")];
+  const distance3 = (hand5, target) => Math.hypot(hand5.landmarks[0].x - target.x, hand5.landmarks[0].y - target.y);
+  if (hands.length >= 2) {
+    const [a, b] = hands;
+    const straight = distance3(a, poseLeft) + distance3(b, poseRight);
+    const crossed = distance3(a, poseRight) + distance3(b, poseLeft);
+    return straight <= crossed ? [a, b] : [b, a];
+  }
+  const [hand4] = hands;
+  const toLeft = distance3(hand4, poseLeft), toRight = distance3(hand4, poseRight);
+  if (Math.abs(toLeft - toRight) < 0.03) return hand4.handedness === "Right" ? [void 0, hand4] : hand4.handedness === "Left" ? [hand4, void 0] : [void 0, void 0];
+  return toLeft < toRight ? [hand4, void 0] : [void 0, hand4];
+}
+function skeletons(sequence, options) {
+  return sequence.map((frame) => {
+    const [left, right] = assignHands(frame, options.hands);
+    return [...openPoseBody(frame.pose), ...handNodes(left, options.handVisibility), ...handNodes(right, options.handVisibility)];
+  });
+}
+function fillGaps(nodes, times, maximumGapMs) {
+  if (maximumGapMs <= 0) return nodes;
+  const filled = nodes.map((frame) => [...frame]);
+  for (let node = 0; node < NODE_COUNT; node++) {
+    let previous = -1;
+    for (let index = 0; index < nodes.length; index++) {
+      if (!nodes[index][node]) continue;
+      if (previous >= 0 && index - previous > 1 && times[index] - times[previous] <= maximumGapMs) {
+        const a = nodes[previous][node], b = nodes[index][node];
+        for (let gap = previous + 1; gap < index; gap++) {
+          const t = (times[gap] - times[previous]) / (times[index] - times[previous]);
+          filled[gap][node] = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+        }
+      }
+      previous = index;
+    }
+  }
+  return filled;
+}
+function median(values) {
+  const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
+  return sorted.length ? sorted[Math.floor(sorted.length / 2)] : NaN;
+}
+function framingTransform(nodes, target) {
+  const model = (node) => node && { x: 2 * (node.x - 0.5), y: 2 * (node.y - 0.5) };
+  const necks = nodes.map((frame) => model(frame[1])).filter(Boolean);
+  const widths = nodes.map((frame) => frame[2] && frame[5] ? Math.abs(2 * (frame[2].x - frame[5].x)) : NaN);
+  const heights = nodes.map((frame) => {
+    const neck2 = model(frame[1]), right = model(frame[9]), left = model(frame[10]);
+    return neck2 && right && left ? neck2.y - (right.y + left.y) / 2 : NaN;
+  });
+  const neck = { x: median(necks.map((n) => n.x)), y: median(necks.map((n) => n.y)) };
+  const width = median(widths), height = median(heights);
+  if (![neck.x, neck.y, width].every(Number.isFinite) || width < 0.05) return null;
+  const sx = target.shoulderWidth / width;
+  const sy = Number.isFinite(height) && height > 0.03 ? target.eyeHeight / height : sx;
+  return (x, y) => ({ x: target.neck.x + (x - neck.x) * sx, y: target.neck.y + (y - neck.y) * sy });
+}
+function kCopiesIndices(count, samples, copies) {
+  if (count <= samples) {
+    const window2 = Array.from({ length: samples }, (_, index) => Math.min(index, count - 1));
+    return [window2];
+  }
+  const windows = [];
+  if (samples * copies < count) {
+    const start = Math.floor((count - 1) / 2) - Math.floor(samples * copies / 2);
+    for (let copy = 0; copy < copies; copy++) windows.push(Array.from({ length: samples }, (_, i) => start + copy * samples + i));
+  } else {
+    const stride = Math.floor((count - samples) / (copies - 1));
+    for (let copy = 0; copy < copies; copy++) windows.push(Array.from({ length: samples }, (_, i) => copy * stride + i));
+  }
+  return windows.filter((window2, index) => windows.findIndex((other) => other[0] === window2[0]) === index);
+}
+function fixedRateIndices(times, fps) {
+  if (!times.length) return [];
+  const step = 1e3 / fps, indices = [];
+  let source = 0;
+  for (let t = times[0]; t <= times[times.length - 1] + 1e-6; t += step) {
+    while (source + 1 < times.length && times[source + 1] <= t + 1e-6) source++;
+    indices.push(source);
+  }
+  return indices;
+}
+function prepareTgcnWindows(sequence, options, sequenceLength = 50) {
+  const features = sequenceLength * 2;
+  if (!sequence.length) return [new Float32Array(NODE_COUNT * features).fill(-1)];
+  const times = sequence.map((frame) => frame.timestamp);
+  let nodes = fillGaps(skeletons(sequence, options), times, options.fillGapMs);
+  const transform = options.framing ? framingTransform(nodes, options.framing) : null;
+  let windows;
+  if (options.temporal.mode === "stretch") {
+    windows = [Array.from({ length: sequenceLength }, (_, target) => sequenceLength === 1 ? sequence.length - 1 : Math.round(target * (sequence.length - 1) / (sequenceLength - 1)))];
+  } else {
+    const grid = fixedRateIndices(times, options.temporal.fps);
+    nodes = grid.map((index) => nodes[index]);
+    windows = options.temporal.anchor === "start" ? [Array.from({ length: sequenceLength }, (_, index) => Math.min(index, nodes.length - 1))] : kCopiesIndices(nodes.length, sequenceLength, options.temporal.copies);
+  }
+  return windows.map((window2) => {
+    const result = new Float32Array(NODE_COUNT * features);
+    window2.forEach((source, frame) => {
+      const skeleton = nodes[source];
+      for (let node = 0; node < NODE_COUNT; node++) {
+        const offset = node * features + frame * 2;
+        const point3 = skeleton[node];
+        if (!point3) {
+          result[offset] = -1;
+          result[offset + 1] = -1;
+          continue;
+        }
+        const x = 2 * (point3.x - 0.5), y = 2 * (point3.y - 0.5);
+        const mapped = transform ? transform(x, y) : { x, y };
+        result[offset] = mapped.x;
+        result[offset + 1] = mapped.y;
+      }
+    });
+    return result;
+  });
+}
+
 // lib/asl1000-runtime.ts
 var MODEL_MIN_CONFIDENCE = 0.62;
 var MODEL_MIN_MARGIN = 0.22;
+var ASL2000_INPUT = {
+  // Publisher frame rate, one 50-frame window from the movement onset.
+  temporal: { mode: "publisher", fps: 25, copies: 1, anchor: "start" },
+  // MediaPipe's labels matched the publisher's left/right slots on 89% of
+  // two-hand frames; the nearest pose wrist (OpenPose's own rule) on 96%.
+  hands: "pose-wrist",
+  // Interpolating short hand gaps gave no consistent benefit (condition B).
+  fillGapMs: 0,
+  // Medians of 300 publisher TRAIN-split clips (never test): neck position,
+  // shoulder width and eye height in model units.
+  framing: { neck: { x: 0.0243, y: -54e-4 }, shoulderWidth: 0.6474, eyeHeight: 0.4425 },
+  handVisibility: "ignore"
+};
+var MIN_HAND_FRAMES = 6;
+function hasHandEvidence(window2, sequenceLength = 50) {
+  const features = sequenceLength * 2;
+  let frames2 = 0, previous = "";
+  for (let frame = 0; frame < sequenceLength; frame++) {
+    let observed = false;
+    let signature = "";
+    for (let node = 13; node < NODE_COUNT && !observed; node++) {
+      if (window2[node * features + frame * 2] !== -1) observed = true;
+    }
+    if (!observed) continue;
+    for (let node = 13; node < NODE_COUNT; node++) signature += `${window2[node * features + frame * 2]},`;
+    if (signature !== previous) frames2++;
+    previous = signature;
+  }
+  return frames2 >= MIN_HAND_FRAMES;
+}
 var modelPromise = null;
 var loadController = null;
 function loadModel(signal) {
@@ -561,39 +783,25 @@ async function recognizeAsl1000(sequence, options = {}) {
   const model = await loadModel(options.signal);
   options.signal?.throwIfAborted();
   options.onPhase?.("inference");
-  const input = prepareTgcnInput(sequence, model.manifest.sequenceLength);
-  const logits = await runMaterialisedTgcnCooperatively(model, input, options.signal);
+  const windows = prepareTgcnWindows(sequence, ASL2000_INPUT, model.manifest.sequenceLength);
+  if (!windows.some((window2) => hasHandEvidence(window2, model.manifest.sequenceLength))) return null;
+  const logits = new Float32Array(model.manifest.classes);
+  for (const window2 of windows) {
+    const windowLogits = await runMaterialisedTgcnCooperatively(model, window2, options.signal);
+    for (let index = 0; index < logits.length; index++) logits[index] += windowLogits[index] / windows.length;
+  }
+  const { label, confidence, margin, accepted } = decideAsl2000(logits, model.labels);
+  if (!accepted) return null;
+  return { label, text: title(label), confidence, margin };
+}
+function decideAsl2000(logits, labels) {
   const probabilities = softmax(logits);
   const [best, runnerUp] = topTwo(probabilities);
   const confidence = probabilities[best];
   const margin = confidence - probabilities[runnerUp];
-  const label = model.labels[best];
-  if (!label || confidence < MODEL_MIN_CONFIDENCE || margin < MODEL_MIN_MARGIN) return null;
-  return { label, text: title(label), confidence, margin };
-}
-function prepareTgcnInput(sequence, sequenceLength = 50) {
-  const inputFeatures = sequenceLength * 2;
-  const result = new Float32Array(55 * inputFeatures);
-  if (!sequence.length) {
-    result.fill(-1);
-    return result;
-  }
-  for (let targetFrame = 0; targetFrame < sequenceLength; targetFrame += 1) {
-    const sourceIndex = sequenceLength === 1 ? sequence.length - 1 : Math.round(targetFrame * (sequence.length - 1) / (sequenceLength - 1));
-    const points = openPosePoints(sequence[sourceIndex]);
-    for (let node = 0; node < points.length; node += 1) {
-      const point3 = points[node];
-      const offset = node * inputFeatures + targetFrame * 2;
-      if (!point3 || point3.visibility === 0) {
-        result[offset] = -1;
-        result[offset + 1] = -1;
-      } else {
-        result[offset] = 2 * (point3.x - 0.5);
-        result[offset + 1] = 2 * (point3.y - 0.5);
-      }
-    }
-  }
-  return result;
+  const label = labels[best];
+  const accepted = !(!label || confidence < MODEL_MIN_CONFIDENCE || margin < MODEL_MIN_MARGIN);
+  return { label, confidence, margin, accepted };
 }
 function materialiseTgcnModel(manifest, binary, labels) {
   const layers = manifest.layers.map((layer) => ({
@@ -702,37 +910,6 @@ function applyGraphLayer(input, layer, nodes) {
     }
   }
   return result;
-}
-function openPosePoints(frame) {
-  const pose = frame.pose;
-  const point3 = (index) => visible(pose[index]) ? pose[index] : null;
-  const body = [
-    point3(0),
-    midpoint(point3(11), point3(12)),
-    point3(12),
-    point3(14),
-    point3(16),
-    point3(11),
-    point3(13),
-    point3(15),
-    midpoint(point3(23), point3(24)),
-    point3(5),
-    point3(2),
-    point3(8),
-    point3(7)
-  ];
-  return [...body, ...handPoints(frame, "Left"), ...handPoints(frame, "Right")];
-}
-function handPoints(frame, side) {
-  const hand4 = frame.hands.find((candidate) => candidate.handedness === side)?.landmarks;
-  return Array.from({ length: 21 }, (_, index) => hand4?.[index] ?? null);
-}
-function visible(point3) {
-  return Boolean(point3 && (point3.visibility === void 0 || point3.visibility >= 0.3));
-}
-function midpoint(a, b) {
-  if (!a || !b) return null;
-  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 };
 }
 function int8View(binary, descriptor) {
   return new Int8Array(binary, descriptor.offset, descriptor.length);
@@ -11164,7 +11341,7 @@ function prepareBslInput(sequence) {
 }
 function body18(frame) {
   const pose = (index) => point(frame.pose[index]);
-  const neck = midpoint2(pose(11), pose(12));
+  const neck = midpoint(pose(11), pose(12));
   return [pose(0), neck, pose(12), pose(14), pose(16), pose(11), pose(13), pose(15), pose(24), pose(26), pose(28), pose(23), pose(25), pose(27), pose(5), pose(2), pose(8), pose(7)];
 }
 function hand2(frame, handedness) {
@@ -11175,7 +11352,7 @@ function point(value) {
   if (!value || !Number.isFinite(value.x) || !Number.isFinite(value.y)) return { x: 0, y: 0, score: 0 };
   return { x: value.x, y: value.y, score: value.visibility ?? 1 };
 }
-function midpoint2(a, b) {
+function midpoint(a, b) {
   if (!a.score || !b.score) return { x: 0, y: 0, score: 0 };
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, score: Math.min(a.score, b.score) };
 }
@@ -11230,7 +11407,7 @@ function prepareLseInput(sequence) {
   samples.forEach((points, frameIndex) => {
     const leftShoulder = points[5];
     const rightShoulder = points[6];
-    const centre = leftShoulder.valid && rightShoulder.valid ? midpoint3(leftShoulder, rightShoulder) : { x: 0.5, y: 0.5, z: 0, valid: false };
+    const centre = leftShoulder.valid && rightShoulder.valid ? midpoint2(leftShoulder, rightShoulder) : { x: 0.5, y: 0.5, z: 0, valid: false };
     const scale = leftShoulder.valid && rightShoulder.valid ? Math.max(Math.hypot(leftShoulder.x - rightShoulder.x, leftShoulder.y - rightShoulder.y), 0.08) : 0.25;
     points.forEach((point3, landmarkIndex) => {
       const offset = frameIndex * FEATURES + landmarkIndex * 3;
@@ -11254,7 +11431,7 @@ function point2(value) {
   if (!value || !Number.isFinite(value.x) || !Number.isFinite(value.y) || !Number.isFinite(value.z) || value.x === 0 && value.y === 0 && value.z === 0) return { x: 0, y: 0, z: 0, valid: false };
   return { x: value.x, y: value.y, z: value.z, valid: true };
 }
-function midpoint3(a, b) {
+function midpoint2(a, b) {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2, valid: a.valid && b.valid };
 }
 function resample(sequence, length) {
@@ -15111,6 +15288,12 @@ var MODEL_ADAPTERS = {
 };
 var LANGUAGE_LIST = LANGUAGE_IDS.map((id2) => MODEL_ADAPTERS[id2]);
 
+// lib/model-output-policy.ts
+var SUGGEST_ONLY_MODEL_LANGUAGES = /* @__PURE__ */ new Set(["asl"]);
+function modelWordsNeedAcceptance(language) {
+  return SUGGEST_ONLY_MODEL_LANGUAGES.has(language);
+}
+
 // workers/recognition.worker.ts
 var CONFIDENCE_THRESHOLD = 0.62;
 var COOLDOWN_MS = 2600;
@@ -15139,6 +15322,11 @@ var modelProblem = false;
 var retryAfter = 0;
 var blockedStarter = null;
 var starterSeenAt = 0;
+var declinedSegmentEnd = -Infinity;
+var NEW_MOVEMENT_AFTER_WORD_MS = 600;
+var reportedAt = -Infinity;
+var returnedSinceReport = true;
+var handWasAbsent = false;
 var latestPersonal = null;
 var personalTimestamp = 0;
 var personalReceivedAt = 0;
@@ -15192,6 +15380,10 @@ function resetSession() {
   candidateIsModel = false;
   blockedStarter = null;
   starterSeenAt = 0;
+  declinedSegmentEnd = -Infinity;
+  reportedAt = -Infinity;
+  returnedSinceReport = true;
+  handWasAbsent = false;
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
@@ -15242,7 +15434,12 @@ self.onmessage = async (event) => {
   const starterAnalysis = activeLanguage === "asl" ? analyzeAslStarter(frames) : null;
   const starter = starterAnalysis?.prediction ?? null;
   if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES" && starter?.label !== "YES") invalidatePrediction();
-  const motion = activeLanguage === "asl" ? analyzeSignMotion(frames) : { ...analyzeGenericSignMotion(frames), sequence: frames };
+  const observed = activeLanguage === "asl" ? analyzeSignMotion(frames) : null;
+  if (hasHand && handWasAbsent) returnedSinceReport = true;
+  handWasAbsent = !hasHand;
+  const aslMotion = observed?.completion === "departure" && !returnedSinceReport && observed.sequence[0].timestamp - reportedAt < NEW_MOVEMENT_AFTER_WORD_MS ? { ready: false, sequence: [], reason: "hands", detail: "after-reported-word", completion: void 0 } : observed;
+  const motion = aslMotion ?? { ...analyzeGenericSignMotion(frames), sequence: frames };
+  const segmentEnd = aslMotion?.completion === "departure" ? aslMotion.sequence.at(-1).timestamp : null;
   if (!motion.ready || starterAnalysis?.ambiguousOpenPalm) invalidatePrediction();
   else {
     if (latestPrediction && (now - predictionTimestamp > MAX_PREDICTION_AGE_MS || performance.now() - predictionReceivedAt > MAX_PREDICTION_AGE_MS)) invalidatePrediction();
@@ -15252,7 +15449,7 @@ self.onmessage = async (event) => {
     const cadence = language === "isl" ? 8 : 6;
     const inferenceDue = language === "asl" ? now - lastInferenceAt >= 250 : receivedFrames % cadence === 0;
     const freshResult = latestPrediction && Number.isFinite(latestPrediction.confidence) && latestPrediction.confidence >= CONFIDENCE_THRESHOLD && consumedPredictionVersion !== predictionVersion;
-    if (classifier && MODEL_ADAPTERS[language].status === "experimental" && frames.length >= (language === "asl" ? 6 : 24) && inferenceDue && !freshResult && !pending.has(language) && now >= retryAfter) {
+    if (classifier && MODEL_ADAPTERS[language].status === "experimental" && frames.length >= (language === "asl" ? 6 : 24) && inferenceDue && segmentEnd !== declinedSegmentEnd && !freshResult && !pending.has(language) && now >= retryAfter) {
       const request = { started: now, phase: language === "asl" ? "inference" : "loading", controller: new AbortController() };
       pending.set(language, request);
       lastInferenceAt = now;
@@ -15265,6 +15462,7 @@ self.onmessage = async (event) => {
       } }).then((prediction2) => {
         if (generation !== modelGeneration || request.controller.signal.aborted) return;
         if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS || performance.now() - submittedAt > MAX_PREDICTION_AGE_MS) return;
+        if (!prediction2 && segmentEnd !== null) declinedSegmentEnd = segmentEnd;
         latestPrediction = prediction2;
         predictionTimestamp = now;
         predictionReceivedAt = performance.now();
@@ -15297,7 +15495,8 @@ self.onmessage = async (event) => {
     bufferSize: frames.length,
     feedback,
     source,
-    motionReason: motion.reason
+    motionReason: motion.reason,
+    ...aslMotion ? { motionDetail: aslMotion.detail } : {}
   });
   if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
     candidateLabel = null;
@@ -15327,16 +15526,30 @@ self.onmessage = async (event) => {
     elapsedSinceLast: now - lastConfirmation.time,
     cooldown: COOLDOWN_MS
   })) {
-    self.postMessage({
-      type: "confirmed",
-      session: event.data.session,
-      text: result.text,
-      gloss: result.label,
-      confidence: result.confidence,
-      timestamp: Date.now(),
-      source
-    });
+    if (source === "model" && modelWordsNeedAcceptance(activeLanguage)) {
+      self.postMessage({
+        type: "suggested",
+        session: event.data.session,
+        text: result.text,
+        gloss: result.label,
+        confidence: result.confidence,
+        timestamp: Date.now(),
+        source: "model"
+      });
+    } else {
+      self.postMessage({
+        type: "confirmed",
+        session: event.data.session,
+        text: result.text,
+        gloss: result.label,
+        confidence: result.confidence,
+        timestamp: Date.now(),
+        source
+      });
+    }
     lastConfirmation = { label: result.label, time: now };
+    reportedAt = now;
+    returnedSinceReport = false;
     if (activeLanguage === "asl" && !candidateIsModel) {
       blockedStarter = result.label;
       starterSeenAt = now;

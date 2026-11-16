@@ -402,6 +402,11 @@ body::before {
 .camera-placeholder p { color: #7b8793; }
 .camera-guidance { color: #c8d2d8; background: rgba(4,9,13,.72); border: 1px solid rgba(255,255,255,.07); border-radius: 6px; }
 .candidate-bar { border-bottom: 1px solid var(--line); }
+.model-suggestion { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 12px 19px; border-bottom: 1px solid var(--line); }
+.model-suggestion > div:first-child { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.model-suggestion strong { color: #d7dde2; font-size: .95rem; overflow-wrap: anywhere; }
+.model-suggestion small { color: #9aa5ad; font-size: .76rem; }
+.model-suggestion-actions { display: flex; gap: 8px; }
 .candidate-label { color: #8a95a2; font-family: var(--font-mono); font-size: .62rem; }
 .candidate-bar strong { color: #d7dde2; }
 .confidence-ring { background: conic-gradient(var(--brand) var(--confidence), #1a2028 0); }

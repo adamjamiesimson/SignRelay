@@ -36,6 +36,9 @@ on:
       - 'docs/evaluation/cohort-lock*.json'
       - 'docs/evaluation/popsign-*.json'
       - 'lib/sign-motion.ts'
+      - 'lib/tgcn-input.ts'
+      - 'lib/model-output-policy.ts'
+      - 'scripts/diagnostics/summarize-replays.mjs'
       - 'lib/frame-timing.ts'
       - 'lib/decoder.ts'
       - 'lib/asl1000-runtime.ts'
@@ -150,6 +153,33 @@ jobs:
             > evaluation/derived/development-paired.json
           # Aggregate outcomes only (no media or landmarks), visible without the artifact.
           cat evaluation/derived/development-paired.json
+
+      - name: Tracker variants and segmentation diagnostics on the same 11 clips (not gated)
+        # Development diagnostics only. The gated comparison above uses the
+        # shipped tracker; these replays show what each tracker setting would
+        # change before any of them is allowed into the app. A failed variant
+        # is reported, never hidden, and never affects the gate below.
+        continue-on-error: true
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          run_variant() {
+            node scripts/run-recognition-video-evaluation.mjs "$chrome" docs/evaluation/popsign-project-holdout-manifest.json \
+              "evaluation/derived/variant-$1-historical.jsonl" --fetch-assets-via-node --reviewed-pilot "--tracker=$2" > /dev/null || echo "variant $1 historical replay failed"
+            node scripts/run-recognition-video-evaluation.mjs "$chrome" docs/evaluation/popsign-development-2026-10-16.json \
+              "evaluation/derived/variant-$1-development.jsonl" --fetch-assets-via-node "--tracker=$2" > /dev/null || echo "variant $1 development replay failed"
+            cat "evaluation/derived/variant-$1-historical.jsonl" "evaluation/derived/variant-$1-development.jsonl" > "evaluation/derived/variant-$1.jsonl" || true
+          }
+          run_variant reacquire reacquire:1
+          run_variant detect30 detect:0.3
+          run_variant all30 detect:0.3,presence:0.3,tracking:0.3
+          run_variant all30-reacquire detect:0.3,presence:0.3,tracking:0.3,reacquire:1
+          cat evaluation/derived/base.jsonl evaluation/derived/development-base.jsonl > evaluation/derived/all-base.jsonl
+          cat evaluation/derived/candidate.jsonl evaluation/derived/development-candidate.jsonl > evaluation/derived/all-candidate.jsonl
+          node scripts/diagnostics/summarize-replays.mjs \
+            base-worker=evaluation/derived/all-base.jsonl candidate=evaluation/derived/all-candidate.jsonl \
+            reacquire=evaluation/derived/variant-reacquire.jsonl detect30=evaluation/derived/variant-detect30.jsonl \
+            all30=evaluation/derived/variant-all30.jsonl all30-reacquire=evaluation/derived/variant-all30-reacquire.jsonl \
+            | tee evaluation/derived/replay-summary.txt
 
       - name: Gate against the exact established baseline (all 11 trials)
         run: |
