@@ -8,11 +8,11 @@ on a few hundred recordings from many signers:
 - targets: the five demo signs PopSign contains (HELLO, THANK YOU, PLEASE, YES,
   NO; PopSign has no SORRY), one clip from each of the first --target-signers
   signers in archive order;
-- other signs: a seeded sample of --other-signs other PopSign signs, one clip
-  from each of the first --other-signers signers. Any of the six demo words on
+- other signs: the first --other-signs published signs of a fixed list, one
+  clip from each of the first --other-signers signers. Any of the six demo words on
   these clips is a wrong word.
 
-Selection is fixed by this file (sign order, archive order, seed) before any
+Selection is fixed by this file (sign lists, archive order) before any
 result exists. Sealed-holdout signers and every recording already in a frozen
 cohort are skipped using manifest metadata only; sealed clips are never
 requested. The result is DEVELOPMENT evidence: publisher labels, no fluent
@@ -28,16 +28,20 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import random
 import re
 import time
 from pathlib import Path
 from urllib.parse import urlparse
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 BASE = "https://signdata.cc.gatech.edu/data/popsign_v1_0/game"
 TARGETS = {"hello": "HELLO", "thankyou": "THANK YOU", "please": "PLEASE", "yes": "YES", "no": "NO"}
-SEED = 20261116
+# Other PopSign signs, fixed here before any result exists (alphabetical; the
+# first --other-signs that exist are used). Any of the six demo words on these
+# clips is a wrong word.
+OTHER_SIGNS = ["after", "apple", "bird", "book", "brother", "cat", "cow", "dad", "dog", "drink", "fish", "girl", "go",
+               "happy", "horse", "hot", "mom", "sad", "shoe", "water", "bed", "blue", "car", "chair", "eat", "milk"]
 LOCK = Path("docs/evaluation/cohort-lock-2026-10-16.json")
 
 
@@ -62,6 +66,12 @@ def get(url: str, start: int | None = None, size: int | None = None) -> bytes:
             return data
         except ValueError:
             raise
+        except HTTPError as error:
+            if error.code in (403, 404):
+                raise FileNotFoundError(url) from error
+            if attempt == 3:
+                raise
+            time.sleep(2 ** attempt)
         except Exception:  # network errors only; retried with backoff
             if attempt == 3:
                 raise
@@ -118,17 +128,27 @@ def main() -> None:
     for word in ("HELLO", "THANK YOU", "PLEASE", "SORRY", "YES", "NO", "I LOVE YOU"):
         installed.setdefault(normalise(word), word)
 
-    listing = get(f"{BASE}/{args.split}/").decode("utf-8", "replace")
-    signs = sorted(set(re.findall(r'href="([A-Za-z0-9_]+)\.tar"', listing)))
-    missing = [sign for sign in TARGETS if sign not in signs]
-    if missing:
-        raise SystemExit(f"Target archives missing from the publisher listing: {missing}")
-    others = sorted(random.Random(SEED).sample([sign for sign in signs if sign not in TARGETS], args.other_signs))
+    # Archive URLs follow the pattern of the frozen manifests: <split>/<sign>.tar.
+    plan = [(sign, args.target_signers) for sign in TARGETS] + [(sign, args.other_signers) for sign in OTHER_SIGNS]
+    others, missing = [], []
 
     rows, skipped_sealed = [], 0
-    for sign, wanted in [(sign, args.target_signers) for sign in TARGETS] + [(sign, args.other_signers) for sign in others]:
+    for sign, wanted in plan:
+        if sign not in TARGETS and len(others) >= args.other_signs:
+            break
         url = f"{BASE}/{args.split}/{sign}.tar"
         chosen: dict[str, tuple[str, int, int]] = {}
+        try:
+            first = next(members(url, 1), None)
+        except FileNotFoundError:
+            first = None
+        if first is None:
+            if sign in TARGETS:
+                raise SystemExit(f"Target archive missing: {url}")
+            missing.append(sign)
+            continue
+        if sign not in TARGETS:
+            others.append(sign)
         for name, offset, size in members(url, args.max_headers):
             if not name.endswith(".mp4") or name in used_members:
                 continue
@@ -170,7 +190,7 @@ def main() -> None:
                 "note": lock.get("note", "") + " Extended in CI with an exploratory PopSign game/test development cohort; original cohorts unchanged."}
     args.lock.write_text(json.dumps(extended, indent=1) + "\n")
     print(json.dumps({"split": args.split, "clips": len(rows), "targets": sum(row["cohort_group"] == "target" for row in rows),
-                      "other_sign_clips": sum(row["cohort_group"] == "other-sign" for row in rows), "other_signs": others,
+                      "other_sign_clips": sum(row["cohort_group"] == "other-sign" for row in rows), "other_signs": others, "other_signs_not_published": missing,
                       "signers": len({row["participant_id"] for row in rows}), "sealed_signer_clips_skipped": skipped_sealed,
                       "manifest_sha256": hashlib.sha256(text.encode()).hexdigest()}))
 
