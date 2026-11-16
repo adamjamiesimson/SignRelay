@@ -28,6 +28,8 @@ export function summarizeAslTrace(trace: Trace, row: ResultRow) {
   const frames = trace.events.flatMap(event => event.type === "frame" ? [event.frame] : []);
   const analyses = trace.events.flatMap(event => event.type === "worker" && event.message.type === "analysis"
     ? [event.message as WorkerAnalysis] : []);
+  const suggested = trace.events.flatMap(event => event.type === "worker" && event.message.type === "suggested"
+    ? [event.message.gloss] : []);
   if (!frames.length || frames.length !== row.frames || frames.length !== trace.row.frames
     || analyses.length !== row.analyses || analyses.length !== trace.row.analyses) throw new Error("Trace/result counters differ");
   if (frames.some((frame, i) => !Number.isFinite(frame.timestamp)
@@ -75,8 +77,10 @@ export function summarizeAslTrace(trace: Trace, row: ResultRow) {
     maximum_continuous_hand_span_ms: Math.round(Math.max(0, ...spans)),
     starter_tracking_eligible_endpoints: eligibleEndpoints,
     worker_motion_reasons: counts(analyses.map(message => message.motionReason ?? "unreported")),
+    worker_motion_details: counts(analyses.map(message => message.motionDetail ?? "unreported")),
     worker_candidates: counts(analyses.flatMap(message => message.candidate ? [message.candidate] : [])),
     worker_candidate_sources: counts(analyses.flatMap(message => message.source ? [message.source] : [])),
+    research_suggestions: suggested,
     worker_ambiguity_analyses: analyses.filter(message => message.feedback?.includes("more than one sign")).length,
     hand_continuity: handContinuity,
     tracker_behavior: frames.length >= 2 ? summarizeTrackerBehavior(frames, validHand) : null,

@@ -96,10 +96,21 @@ try {
       const partial = await browser.evaluate("window.signrelayLab?.rows.at(-1) ?? null").catch(() => null);
       row = failedEvaluationTrial(fixture, fields.split, partial, error);
     }
-    if (traceDir) await writeFile(path.join(traceDir, `${fixture.recording_sha256}.json`), JSON.stringify({
-      trial_id: fixture.trial_id, recording_sha256: fixture.recording_sha256, row,
-      events: await browser.evaluate("window.__qaTrace"),
-    }), { flag: "wx" });
+    if (traceDir) {
+      // Long traces with two hands can be too large for one CDP WebSocket
+      // response. Read them in order while the trial page is still mounted.
+      const count = await browser.evaluate("window.__qaTrace.length");
+      const events = [];
+      for (let start = 0; start < count; start += 8) {
+        const end = Math.min(start + 8, count);
+        const batch = await browser.evaluate(`window.__qaTrace.slice(${start}, ${end})`);
+        if (!Array.isArray(batch) || batch.length !== end - start) throw new Error(`Incomplete development trace: ${fixture.trial_id}`);
+        events.push(...batch);
+      }
+      await writeFile(path.join(traceDir, `${fixture.recording_sha256}.json`), JSON.stringify({
+        trial_id: fixture.trial_id, recording_sha256: fixture.recording_sha256, row, events,
+      }), { flag: "wx" });
+    }
     if (row.status === "complete" && (row.tasks_js_version !== installedTasksJs
       || row.tasks_wasm_version !== TASKS_VERSION)) throw new Error("Diagnostic does not report the installed JS and pinned WASM versions; rebuild the lab");
     if (fixture.recording_sha256 && fixture.recording_sha256 !== row.recording_sha256) throw new Error("Recording fingerprint differs from frozen manifest");
