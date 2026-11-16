@@ -14,6 +14,7 @@ import { TemplateMatchingClient, type TemplatePrediction } from "@/lib/template-
 import { validHand } from "@/lib/asl-starter-recognition";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 import { modelWordsNeedAcceptance } from "@/lib/model-output-policy";
+import { MAX_TRACKING_GAP_MS } from "@/lib/frame-timing";
 
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
@@ -92,16 +93,14 @@ function invalidatePrediction() {
   modelGeneration += 1;
 }
 
-function resetSession() {
-  // In-flight requests from old sessions are invalidated by modelGeneration;
-  // do not let their timers restart a newly selected language.
-  for (const request of pending.values()) request.controller.abort();
-  pending.clear();
+/** Everything observed so far: frames, pending matches and confirmation
+ * streaks. Used when the camera stream is not continuous, so nothing seen
+ * before a pause can complete a word after it. */
+function resetEvidence() {
   invalidatePersonal();
   frames.length = 0;
   receivedFrames = 0;
   lastInferenceAt = -Infinity;
-  lastConfirmation = { label: "", time: 0 };
   invalidatePrediction();
   candidateLabel = null;
   candidateStreak = 0;
@@ -112,11 +111,20 @@ function resetSession() {
   reportedAt = -Infinity;
   returnedSinceReport = true;
   handWasAbsent = false;
+  hadPersonalTracking = false;
+  candidateSource = undefined;
+}
+
+function resetSession() {
+  // In-flight requests from old sessions are invalidated by modelGeneration;
+  // do not let their timers restart a newly selected language.
+  for (const request of pending.values()) request.controller.abort();
+  pending.clear();
+  resetEvidence();
+  lastConfirmation = { label: "", time: 0 };
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
-  hadPersonalTracking = false;
-  candidateSource = undefined;
 }
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
@@ -130,6 +138,16 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "reset") { resetSession(); return; }
 
   const now = event.data.frame.timestamp;
+  const previousFrame = frames.at(-1);
+  if (previousFrame) {
+    const gap = now - previousFrame.timestamp;
+    // A clock that runs backwards invalidates frame-based cooldowns and
+    // deadlines too. A forward pause or a repeated timestamp only breaks the
+    // observation: a model that is still loading may finish, but nothing
+    // recognised from before the gap can be completed after it.
+    if (gap < 0) resetSession();
+    else if (gap === 0 || gap > MAX_TRACKING_GAP_MS) resetEvidence();
+  }
   for (const [language, request] of pending) {
     const deadline = request.phase === "loading" ? MODEL_LOAD_TIMEOUT_MS : NORMAL_INFERENCE_TIMEOUT_MS;
     if (now - request.started < deadline) continue;
