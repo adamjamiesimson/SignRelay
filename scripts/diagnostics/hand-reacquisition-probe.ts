@@ -1,7 +1,8 @@
 // Browser half of hand-reacquisition-probe.mjs. Moves a public still photo of a
 // hand across a canvas and counts the frames in which the pinned tracker
-// reports a hand: once with the tracker called exactly as before the
-// reacquisition repair ("baseline"), once through the production VisionEngine.
+// reports a hand: once with the tracker called as production calls it
+// ("baseline"), once through VisionEngine with its evaluation-only
+// reacquireLostHands option.
 // A translated photograph is not signing, a signer or a camera: this measures
 // tracker continuity under motion, never recognition accuracy.
 import { FilesetResolver, GestureRecognizer } from "@mediapipe/tasks-vision";
@@ -55,7 +56,7 @@ async function run(test: Case) {
     baselineMs += performance.now() - started;
   }
   recognizer.close();
-  const engine = await VisionEngine.create();
+  const engine = await VisionEngine.create(undefined, { reacquireLostHands: true });
   let candidate = "", candidateMs = 0;
   for (let i = 0; i < frames; i++) {
     const t = 1000 + i * test.interval; draw(image, test, t);
