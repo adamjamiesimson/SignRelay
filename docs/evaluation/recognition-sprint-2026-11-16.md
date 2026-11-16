@@ -59,9 +59,31 @@ Not established:
 
 Segmentation rules for a movement that ends by leaving: the hand must be absent for at least 250 ms (one missed frame is not leaving) and at most 2.5 s; the frames before it must pass the same movement, length and continuity checks as a rested movement; only observed frames are returned; the model is asked once if it declines (the frames cannot change); and after any reported word, a departure-ended movement counts only if it began at least 600 ms after that word or after the hand left and came back. Sign-rule and personal-sign paths are unchanged.
 
-## 5. Real-video results
+## 5. Real-video results on the 11 development clips
 
-Filled in from the pilot on this pull request; see the pull request description for the current run. The gate compares accepted (transcript) words with the frozen 11-clip baseline. Suggestions are reported separately and are never counted as correct.
+[Pilot run 43882596879](https://github.com/adamjamiesimson/SignRelay/actions/runs/43882596879), commit `0aaf6ae`, worker `4d716f2a…`. These clips were inspected before; none of this is an accuracy estimate. "Accepted" means a word reached the transcript. Suggestions are listed apart and never count as correct.
+
+**Gated comparison (shipped tracker, 20 analysed frames per second).** Exact-baseline gate: ok, 0 changes.
+
+| Worker | Correct | Wrong | Abstained | Hand frames | Clips with a `ready` segment | Model suggestions (matching) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `main` (`ccce84c8`, established baseline) | 5 | 0 | 6 | 150/414 | 0 | none possible |
+| This branch (`4d716f2a`) | 5 | 0 | 6 | 150/414 | 5, all by departure | 1 (0): `HIS` on a HELLO clip |
+
+So the segmentation repair does what it was built for (segments now exist on 5 of 11 clips, including three that abstain), no transcript outcome changed, and the one word the research model offered was wrong, which is why it is a suggestion.
+
+**Diagnostics, not gated: same worker, one tracker or cadence setting changed.**
+
+| Variant | Correct | Wrong | Abstained | Hand frames | Note |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Same-frame reacquisition | 4 | 1 | 6 | 155/414 | PLEASE 8017 becomes THANK YOU + PLEASE. Not adopted |
+| Palm detection 0.3 | 6 | 0 | 5 | 154/414 | THANK YOU 8031 recognised (4→7 hand frames); nothing lost |
+| Detection, presence and tracking 0.3 | 5 | 0 | 6 | 159/414 | Gains THANK YOU 8031, loses HELLO 8033 |
+| All 0.3 plus reacquisition | 5 | 0 | 6 | 166/414 | Same trade |
+| 15 analysed frames per second (what the app gives a 30 fps camera today) | 3 | 0 | 8 | 109/314 | Loses HELLO 8033, PLEASE 8017 and NO; gains THANK YOU 8033 |
+| Every source frame (30 per second) | 5 | 1 | 5 | 231/611 | THANK YOU 8033 becomes PLEASE |
+
+Reading this honestly: single clips flip in every variant, so eleven clips cannot choose a setting. Two things are worth a larger sample: the app's real cadence looks worse than the protocol every recorded result used, and a lower palm-detection threshold is the only variant that gained without losing. Both go through the larger PopSign replay (`.github/workflows/asl-popsign-exploration.yml`) before anything changes in the app. YES stays unrecognised in every variant (5–11 hand frames).
 
 ## 6. What still needs a person
 

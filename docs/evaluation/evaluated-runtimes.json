@@ -37,6 +37,23 @@
         "errors": 0
       },
       "baseline_gate": "scripts/baseline-gate.mjs ok (0 changes on all 11 established trials) in CI run 39573034510 on Sprint 2 commit 2a6dfef"
+    },
+    {
+      "worker_sha256": "4d716f2af944b0cfe7508f6000c45bac46c2446b7dc3a683e6c131788b6849e8",
+      "source_commit": "0aaf6aea2127198d2c3eaf1d1b50966ed9335aa7",
+      "evidence": [
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/43882596879",
+        "docs/evaluation/recognition-sprint-2026-11-16.md"
+      ],
+      "evidence_kind": "CI paired pilot log (per-trial outcomes transcribed in recognition-sprint-2026-11-16.md; the JSONL artifact cannot be downloaded in the sandbox). The bundle hash is the committed, deterministically rebuilt bundle of that commit.",
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "baseline_gate": "scripts/baseline-gate.mjs ok (0 changes on all 11 established trials) in CI run 43882596879. Research-model suggestions (1, not matching its clip) are not transcript words and are not counted."
     }
   ]
 }
