@@ -71,6 +71,23 @@
         "errors": 0
       },
       "baseline_gate": "scripts/baseline-gate.mjs passed in CI run 43890510827 (the pilot job fails otherwise)."
+    },
+    {
+      "worker_sha256": "a5f6d0ef2eb27e469aa2d1069038c2184471e842e6f7f4bb2af242dc7814471a",
+      "source_commit": "9206ce653d572d668a1157371aae633c6cb99171",
+      "evidence": [
+        "https://github.com/adamjamiesimson/SignRelay/actions/runs/43908432068",
+        "docs/evaluation/recognition-sprint-2026-11-16.md"
+      ],
+      "evidence_kind": "CI paired pilot (job concluded success, which includes the exact-baseline gate). Per-trial rows were not transcribed; the bundle hash is the committed, deterministically rebuilt bundle of that commit.",
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "baseline_gate": "scripts/baseline-gate.mjs passed in CI run 43908432068 (the pilot job fails otherwise)."
     }
   ]
 }

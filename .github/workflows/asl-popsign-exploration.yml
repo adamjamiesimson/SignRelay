@@ -28,8 +28,17 @@ concurrency:
 
 jobs:
   replay:
+    name: replay (cohort ${{ matrix.cohort }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # A: the cohort rules are examined on. B: confirmation only; never
+          # change a rule because of B and then re-measure on B.
+          - { cohort: a, skip_targets: 0, skip_others: 0 }
+          - { cohort: b, skip_targets: 8, skip_others: 2 }
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,7 +59,8 @@ jobs:
           vocabulary="$(node -e "import('./scripts/evaluation-manifest.mjs').then(m => console.log(m.aslVocabulary().sha256))")"
           python3 training/build_popsign_exploration.py evaluation/derived/popsign-exploration.json \
             evaluation/derived/exploration-lock.json --vocabulary-sha256 "$vocabulary" \
-            --target-signers 8 --other-signs 20 --other-signers 2
+            --target-signers 8 --other-signs 20 --other-signers 2 --cohort ${{ matrix.cohort }} \
+            --skip-target-signers ${{ matrix.skip_targets }} --skip-other-signers ${{ matrix.skip_others }}
 
       - name: Build the ASL export and the ephemeral diagnostic page
         run: |
@@ -94,7 +104,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: asl-popsign-exploration-derived
+          name: asl-popsign-exploration-derived-${{ matrix.cohort }}
           path: |
             evaluation/derived/explore-*.jsonl
             evaluation/derived/exploration-summary.txt

@@ -106,9 +106,21 @@ What this decides:
 - **The research model** made 2–4 suggestions and at most one matched its clip. It stays a suggestion.
 - **The rules are the problem.** About half of the words they put in the transcript are wrong on this sample (15 right, 14–15 wrong). THANK YOU is the worst (3 right, 11 wrong) and YES is never recognised.
 
-## 7. THANK YOU handshape requirement (in progress)
+## 7. THANK YOU handshape requirement
 
-Hypothesis, stated before measuring: the wrong THANK YOU words come from other signs made at the face with other handshapes, and THANK YOU itself is a flat hand (four extended fingers held together). The rule now requires a flat hand on at least 60% of observations (`flatHand` in `lib/asl-starter-recognition.ts`). Synthetic regressions are unchanged because their open hand is flat. It is measured first on the 79 clips above and, if it holds, confirmed on a second, disjoint sample fetched only after the rule is frozen.
+Hypothesis, stated before measuring: the wrong THANK YOU words come from other signs made at the face with other handshapes, and THANK YOU itself is a flat hand (four extended fingers held together). The rule now requires a flat hand on at least 60% of observations (`flatHand` in `lib/asl-starter-recognition.ts`). Synthetic regressions are unchanged because their open hand is flat.
+
+**Cohort A (the 79 clips above), [run 43908431963](https://github.com/adamjamiesimson/SignRelay/actions/runs/43908431963), commit `9206ce6`.** The 11-clip pilot gate also passed ([run 43908432068](https://github.com/adamjamiesimson/SignRelay/actions/runs/43908432068)).
+
+| Worker | Correct of 40 | Clips with a wrong word | THANK YOU correct | THANK YOU on other clips |
+| --- | ---: | ---: | ---: | ---: |
+| `main` | 15 | 15 | 3/8 | 10 |
+| This branch before the rule | 15 | 14 | 3/8 | 10 |
+| With the flat-hand rule | 15 | 11 | 3/8 | 7 |
+
+Removed: THANK YOU on CAT, HOT and WATER. Nothing correct was lost. Still wrong: THANK YOU on AFTER, BOOK, FISH, two PLEASE clips, one HELLO clip and one HOT clip. AFTER, BOOK, FISH and PLEASE are flat-hand signs, so handshape cannot separate them; that needs location and movement evidence and is not attempted here.
+
+**Cohort B (confirmation).** The rule is frozen. Cohort B is fetched only now: the next eight signers for the five demo signs and a different list of other signs, more of them made at the face. Result recorded below when the run completes. No rule may be changed because of cohort B and then re-measured on it.
 
 ## 8. What still needs a person
 

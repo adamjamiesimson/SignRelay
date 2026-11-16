@@ -42,6 +42,11 @@ TARGETS = {"hello": "HELLO", "thankyou": "THANK YOU", "please": "PLEASE", "yes":
 # clips is a wrong word.
 OTHER_SIGNS = ["after", "apple", "bird", "book", "brother", "cat", "cow", "dad", "dog", "drink", "fish", "girl", "go",
                "happy", "horse", "hot", "mom", "sad", "shoe", "water", "bed", "blue", "car", "chair", "eat", "milk"]
+# Cohort B: confirmation clips, fetched only after a rule tested on cohort A is
+# frozen. Different other signs (more of them made at the face), and for the
+# five demo signs the signers after the ones cohort A used.
+OTHER_SIGNS_B = ["bed", "blue", "boy", "car", "chair", "cry", "eat", "grandma", "grandpa", "green", "hungry", "lips", "look",
+                 "mad", "man", "milk", "moon", "mouth", "nose", "red", "sleep", "thirsty", "tooth", "tree", "white", "yellow"]
 LOCK = Path("docs/evaluation/cohort-lock-2026-10-16.json")
 
 
@@ -111,7 +116,10 @@ def main() -> None:
     parser.add_argument("--target-signers", type=int, default=10)
     parser.add_argument("--other-signs", type=int, default=30)
     parser.add_argument("--other-signers", type=int, default=2)
-    parser.add_argument("--max-headers", type=int, default=400)
+    parser.add_argument("--max-headers", type=int, default=600)
+    parser.add_argument("--cohort", choices=["a", "b"], default="a")
+    parser.add_argument("--skip-target-signers", type=int, default=0, help="Skip this many signers in archive order (cohort B: those cohort A used)")
+    parser.add_argument("--skip-other-signers", type=int, default=0)
     parser.add_argument("--vocabulary-sha256", required=True)
     args = parser.parse_args()
 
@@ -129,7 +137,7 @@ def main() -> None:
         installed.setdefault(normalise(word), word)
 
     # Archive URLs follow the pattern of the frozen manifests: <split>/<sign>.tar.
-    plan = [(sign, args.target_signers) for sign in TARGETS] + [(sign, args.other_signers) for sign in OTHER_SIGNS]
+    plan = [(sign, args.target_signers) for sign in TARGETS] + [(sign, args.other_signers) for sign in (OTHER_SIGNS if args.cohort == "a" else OTHER_SIGNS_B)]
     others, missing = [], []
 
     rows, skipped_sealed = [], 0
@@ -149,12 +157,17 @@ def main() -> None:
             continue
         if sign not in TARGETS:
             others.append(sign)
+        skip, passed_over = (args.skip_target_signers if sign in TARGETS else args.skip_other_signers), []
         for name, offset, size in members(url, args.max_headers):
             if not name.endswith(".mp4") or name in used_members:
                 continue
             signer = Path(name).name.split("-")[0]
             if signer in sealed_signers:
                 skipped_sealed += 1
+                continue
+            if signer not in passed_over and len(passed_over) < skip:
+                passed_over.append(signer)
+            if signer in passed_over:
                 continue
             chosen.setdefault(signer, (name, offset, size))
             if len(chosen) >= wanted:
@@ -163,12 +176,12 @@ def main() -> None:
             data = get(url, offset, size)
             if data[4:8] != b"ftyp":
                 continue
-            path = Path("evaluation/videos/popsign-explore") / f"{sign}-{signer}.mp4"
+            path = Path(f"evaluation/videos/popsign-explore-{args.cohort}") / f"{sign}-{signer}.mp4"
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
             target = TARGETS.get(sign)
             label = target or installed.get(normalise(sign))
-            row = {"trial_id": f"explore-{sign}-{signer}", "participant_id": f"popsign-{signer}", "source_participant_id": signer,
+            row = {"trial_id": f"explore-{args.cohort}-{sign}-{signer}", "participant_id": f"popsign-{signer}", "source_participant_id": signer,
                    "language": "asl", "file": str(path), "recording_sha256": hashlib.sha256(data).hexdigest(),
                    "evaluation_split": "development", "source": url, "archive_member": name, "archive_offset": offset, "bytes": size,
                    "license": "CC BY 4.0", "source_split": f"PopSign ASL v1.0 game/{args.split}", "recording_group": name.removesuffix(".mp4"),
@@ -189,7 +202,7 @@ def main() -> None:
                 "sha256": hashlib.sha256(text.encode()).hexdigest(), "recordings": len(rows)}],
                 "note": lock.get("note", "") + " Extended in CI with an exploratory PopSign game/test development cohort; original cohorts unchanged."}
     args.lock.write_text(json.dumps(extended, indent=1) + "\n")
-    print(json.dumps({"split": args.split, "clips": len(rows), "targets": sum(row["cohort_group"] == "target" for row in rows),
+    print(json.dumps({"cohort": args.cohort, "split": args.split, "clips": len(rows), "targets": sum(row["cohort_group"] == "target" for row in rows),
                       "other_sign_clips": sum(row["cohort_group"] == "other-sign" for row in rows), "other_signs": others, "other_signs_not_published": missing,
                       "signers": len({row["participant_id"] for row in rows}), "sealed_signer_clips_skipped": skipped_sealed,
                       "manifest_sha256": hashlib.sha256(text.encode()).hexdigest()}))
