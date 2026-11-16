@@ -1,0 +1,113 @@
+name: ASL PopSign Exploration Replay (non-release)
+# A larger DEVELOPMENT replay than the 11-clip pilot: a predetermined sample of
+# PopSign ASL v1.0 game/test (CC BY 4.0), replayed through the production
+# browser pipeline with main's worker and this branch's worker. Publisher
+# labels, no fluent review; once replayed these clips are exposed. It measures
+# nothing about live cameras, certifies no accuracy and gates nothing. Sealed
+# holdout signers and clips are never requested.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/asl-popsign-exploration.yml'
+      - 'training/build_popsign_exploration.py'
+      - 'scripts/diagnostics/summarize-replays.mjs'
+      - 'workers/recognition.worker.ts'
+      - 'lib/asl-starter-recognition.ts'
+      - 'lib/sign-motion.ts'
+      - 'lib/tgcn-input.ts'
+      - 'lib/asl1000-runtime.ts'
+      - 'lib/vision-engine.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asl-popsign-exploration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  replay:
+    name: replay (cohort ${{ matrix.cohort }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # A: the cohort rules are examined on. B: confirmation only; never
+          # change a rule because of B and then re-measure on B.
+          - { cohort: a, skip_targets: 0, skip_others: 0 }
+          - { cohort: b, skip_targets: 8, skip_others: 2 }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch the predetermined game/test sample (byte ranges, official host, TLS verified)
+        run: |
+          vocabulary="$(node -e "import('./scripts/evaluation-manifest.mjs').then(m => console.log(m.aslVocabulary().sha256))")"
+          python3 training/build_popsign_exploration.py evaluation/derived/popsign-exploration.json \
+            evaluation/derived/exploration-lock.json --vocabulary-sha256 "$vocabulary" \
+            --target-signers 8 --other-signs 20 --other-signers 2 --cohort ${{ matrix.cohort }} \
+            --skip-target-signers ${{ matrix.skip_targets }} --skip-other-signers ${{ matrix.skip_others }}
+
+      - name: Build the ASL export and the ephemeral diagnostic page
+        run: |
+          npm run build:asl-demo
+          node scripts/prepare-recognition-lab.mjs
+
+      - name: Compile main's recognition worker for the paired comparison
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin main
+          base_dir="$RUNNER_TEMP/signrelay-main"
+          git worktree add --detach "$base_dir" FETCH_HEAD
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$base_dir/node_modules"
+          "$GITHUB_WORKSPACE/node_modules/.bin/esbuild" "$base_dir/workers/recognition.worker.ts" \
+            --bundle --platform=browser --format=esm --target=es2020 --tsconfig="$base_dir/tsconfig.json" \
+            --outfile="$GITHUB_WORKSPACE/out/workers/baseline-recognition.worker.js"
+          sha256sum out/workers/baseline-recognition.worker.js out/workers/recognition.worker.js
+
+      - name: Replay main's worker
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          node scripts/run-recognition-video-evaluation.mjs "$chrome" evaluation/derived/popsign-exploration.json \
+            evaluation/derived/explore-main.jsonl --baseline --fetch-assets-via-node \
+            --cohort-lock=evaluation/derived/exploration-lock.json > /dev/null
+
+      - name: Replay this branch's worker on the identical clips
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          node scripts/run-recognition-video-evaluation.mjs "$chrome" evaluation/derived/popsign-exploration.json \
+            evaluation/derived/explore-candidate.jsonl --fetch-assets-via-node \
+            --cohort-lock=evaluation/derived/exploration-lock.json > /dev/null
+
+      - name: Summarize (aggregate outcomes only)
+        if: always()
+        run: |
+          node scripts/diagnostics/summarize-replays.mjs main-worker=evaluation/derived/explore-main.jsonl \
+            candidate=evaluation/derived/explore-candidate.jsonl | tee evaluation/derived/exploration-summary.txt
+
+      - name: Store derived metrics only (never video or landmarks)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asl-popsign-exploration-derived-${{ matrix.cohort }}
+          path: |
+            evaluation/derived/explore-*.jsonl
+            evaluation/derived/exploration-summary.txt
+            evaluation/derived/popsign-exploration.json
+          retention-days: 7
+          if-no-files-found: ignore

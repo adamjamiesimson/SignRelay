@@ -64,3 +64,74 @@ it("preserves Tasks handedness and forwards the exact unmirrored source", async 
   expect(recognizeForVideo).toHaveBeenCalledWith(source, 100);
   expect(taskHandedness("unexpected")).toBe("Unknown"); engine.close();
 });
+
+describe("same-frame hand reacquisition (evaluation option, off in production)", () => {
+  const points = Array.from({ length: 21 }, () => ({ x: 0.3, y: 0.4, z: 0 }));
+  const seen = { landmarks: [points], handedness: [[{ categoryName: "Right" }]], gestures: [[]] };
+  const empty = { landmarks: [], handedness: [], gestures: [] };
+  async function engineWith(results: Array<typeof seen | typeof empty>, options: { reacquireLostHands?: boolean } = { reacquireLostHands: true }) {
+    const recognizeForVideo = vi.fn();
+    for (const result of results) recognizeForVideo.mockReturnValueOnce(result);
+    recognizeForVideo.mockReturnValue(empty);
+    mocks.gesture.mockResolvedValue({ recognizeForVideo, close: vi.fn() });
+    mocks.face.mockResolvedValue({ detectForVideo: () => ({ faceLandmarks: [] }), close: vi.fn() });
+    mocks.pose.mockResolvedValue({ detectForVideo: () => ({ landmarks: [] }), close: vi.fn() });
+    const { VisionEngine } = await import("../lib/vision-engine");
+    return { engine: await VisionEngine.create(undefined, options), recognizeForVideo };
+  }
+  const source = {} as HTMLVideoElement;
+
+  it("is off by default: production calls the tracker once per frame with the shipped thresholds", async () => {
+    const { engine, recognizeForVideo } = await engineWith([seen, empty, seen], {});
+    engine.process(source, 100);
+    expect(engine.process(source, 150).hands).toEqual([]);
+    expect(recognizeForVideo.mock.calls.map(([, time]) => time)).toEqual([100, 150]);
+    expect(engine.reacquisition).toEqual({ attempts: 0, recovered: 0 });
+    expect(mocks.gesture.mock.calls.at(-1)![1]).toMatchObject({ minHandDetectionConfidence: 0.55, minHandPresenceConfidence: 0.55, minTrackingConfidence: 0.55, numHands: 2 });
+  });
+
+  it("passes evaluation thresholds through without touching the shipped defaults", async () => {
+    mocks.gesture.mockResolvedValue({ recognizeForVideo: vi.fn().mockReturnValue(empty), close: vi.fn() });
+    mocks.face.mockResolvedValue({ detectForVideo: () => ({ faceLandmarks: [] }), close: vi.fn() });
+    mocks.pose.mockResolvedValue({ detectForVideo: () => ({ landmarks: [] }), close: vi.fn() });
+    const { VisionEngine, PRODUCTION_TRACKER } = await import("../lib/vision-engine");
+    await VisionEngine.create(undefined, { handDetectionConfidence: 0.3 });
+    expect(mocks.gesture.mock.calls.at(-1)![1]).toMatchObject({ minHandDetectionConfidence: 0.3, minHandPresenceConfidence: 0.55, minTrackingConfidence: 0.55 });
+    expect(PRODUCTION_TRACKER).toEqual({ reacquireLostHands: false, handDetectionConfidence: 0.55, handPresenceConfidence: 0.55, handTrackingConfidence: 0.55 });
+  });
+
+  it("asks again for the same image when tracking loses a hand it had on the previous frame", async () => {
+    // frame 1 tracked; frame 2 tracking misses, the retry detects the hand afresh.
+    const { engine, recognizeForVideo } = await engineWith([seen, empty, seen]);
+    expect(engine.process(source, 100).hands).toHaveLength(1);
+    const frame = engine.process(source, 150);
+    expect(frame.hands).toHaveLength(1);
+    expect(frame.timestamp).toBe(150); // the frame keeps the camera timestamp
+    expect(recognizeForVideo.mock.calls.map(([image, time]) => [image, time])).toEqual([[source, 100], [source, 150], [source, 151]]);
+    expect(engine.reacquisition).toEqual({ attempts: 1, recovered: 1 });
+  });
+
+  it("retries once when the hand really left, then stops retrying while no hand is visible", async () => {
+    const { engine, recognizeForVideo } = await engineWith([seen]);
+    engine.process(source, 100);
+    for (const time of [150, 200, 250, 300]) expect(engine.process(source, time).hands).toEqual([]);
+    // 1 tracked frame + 4 empty frames + exactly one retry at the moment of loss.
+    expect(recognizeForVideo).toHaveBeenCalledTimes(6);
+    expect(engine.reacquisition).toEqual({ attempts: 1, recovered: 0 });
+  });
+
+  it("never retries when no hand has been seen, so an empty scene costs nothing extra", async () => {
+    const { engine, recognizeForVideo } = await engineWith([]);
+    for (const time of [100, 150, 200]) engine.process(source, time);
+    expect(recognizeForVideo).toHaveBeenCalledTimes(3);
+    expect(engine.reacquisition.attempts).toBe(0);
+  });
+
+  it("keeps retry timestamps strictly increasing and below the next camera frame", async () => {
+    const { engine, recognizeForVideo } = await engineWith([seen, empty, seen, empty, seen]);
+    for (const time of [0, 33, 66]) engine.process(source, time);
+    const times = recognizeForVideo.mock.calls.map(([, time]) => time as number);
+    expect(times).toEqual([0, 33, 34, 66, 67]);
+    expect(times.every((time, index) => !index || time > times[index - 1])).toBe(true);
+  });
+});

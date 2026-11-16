@@ -52,6 +52,10 @@ for (const fixture of manifest) {
 await mkdir(path.dirname(output), { recursive: true });
 await writeFile(output, "", { flag: "wx" }); // A failed rerun cannot leave a previous successful result.
 
+// Diagnostic tracker variants (--tracker=reacquire:1,detect:0.3). Never used for the gated comparison.
+const trackerVariant = flags.find(flag => flag.startsWith("--tracker="))?.slice("--tracker=".length) ?? "";
+if (trackerVariant && !/^[a-z]+:[0-9.]+(,[a-z]+:[0-9.]+)*$/.test(trackerVariant)) throw new Error("Invalid --tracker value");
+if (trackerVariant && flags.includes("--final-holdout")) throw new Error("Tracker variants are development diagnostics; never run them on the holdout");
 const workerVariant = flags.includes("--baseline") ? "base" : flags.includes("--pr28") ? "pr28" : "candidate";
 const workerFile = workerVariant === "base" ? "baseline-recognition.worker.js" : workerVariant === "pr28" ? "pr28-recognition.worker.js" : "recognition.worker.js";
 const harnessDirty = Boolean(execFileSync("git", ["status", "--porcelain", "--untracked-files=no"], { encoding: "utf8" }).trim());
@@ -67,7 +71,7 @@ try {
   for (const fixture of manifest) {
     // Fresh Tasks tracking and model/worker state for every recording. This
     // prevents prior signers, source poses or predictions leaking between clips.
-    await browser.send("Page.navigate", { url: `${origin}/__qa/recognition-lab.html${workerVariant === "base" ? "?baseline=1" : workerVariant === "pr28" ? "?pr28=1" : ""}` });
+    await browser.send("Page.navigate", { url: `${origin}/__qa/recognition-lab.html?${new URLSearchParams({ ...(workerVariant === "base" ? { baseline: "1" } : workerVariant === "pr28" ? { pr28: "1" } : {}), ...(trackerVariant ? { tracker: trackerVariant } : {}) })}` });
     for (let i = 0; i < 100; i++) {
       if (await browser.evaluate("!!window.signrelayLab")) break;
       await new Promise(resolve => setTimeout(resolve, 100));

@@ -1,4 +1,4 @@
-import { VisionEngine } from "../../lib/vision-engine";
+import { VisionEngine, type VisionEngineOptions } from "../../lib/vision-engine";
 import { RecognitionSession } from "../../lib/recognition-session";
 import { diagnoseHandedness } from "../../lib/handedness-diagnostic";
 import { summarizeTrials } from "../evaluation-metrics.mjs";
@@ -24,14 +24,43 @@ let fileController: AbortController | null = null;
 type TraceEvent = { type: "frame"; frame: VisionFrame } | { type: "worker"; message: WorkerMessage };
 let traceObserver: ((event: TraceEvent) => void) | undefined;
 const params = new URLSearchParams(location.search);
+// Evaluation only: tracker variants are compared on the same recordings before
+// any setting may change in the app. Example: ?tracker=reacquire:1,detect:0.3
+const trackerVariant = params.get("tracker") ?? "";
+const trackerOptions: VisionEngineOptions = {};
+// Seconds of source video between analysed frames. 0.05 (20 per second) is the
+// protocol of every recorded result. 0.066 is what the app's 50 ms throttle
+// yields from a 30 fps camera; 0.033 is every frame of a 30 fps recording.
+let sourceStep = 0.05;
+// Diagnostic only: a recording stops when the file ends, a camera does not.
+// Re-analyse the final decoded image for this many seconds so a movement that
+// finishes at the end of a clip gets the frames a live camera would deliver.
+// Every observation still comes from a real image; the recorded protocol is 0.
+let endingHold = 0;
+for (const part of trackerVariant.split(",").filter(Boolean)) {
+  const [key, raw] = part.split(":"), number = Number(raw);
+  if (!Number.isFinite(number) || number < 0 || number > (key === "tail" ? 3 : 1)) throw new Error(`Invalid tracker option ${part}`);
+  if (key === "tail") endingHold = number;
+  else if (key === "interval") { if (number < 0.02 || number > 0.2) throw new Error(`Invalid interval ${raw}`); sourceStep = number; }
+  else if (key === "reacquire") trackerOptions.reacquireLostHands = number === 1;
+  else if (key === "detect") trackerOptions.handDetectionConfidence = number;
+  else if (key === "presence") trackerOptions.handPresenceConfidence = number;
+  else if (key === "tracking") trackerOptions.handTrackingConfidence = number;
+  else throw new Error(`Unknown tracker option ${key}`);
+}
 const workerUrl = params.get("baseline") === "1" ? "/workers/baseline-recognition.worker.js"
   : params.get("pr28") === "1" ? "/workers/pr28-recognition.worker.js" : "/workers/recognition.worker.js";
 const session = new RecognitionSession(() => new Worker(workerUrl, { type: "module" }), message => {
   traceObserver?.({ type: "worker", message: structuredClone(message) });
   if (!trial) return;
   if (message.type === "confirmed") trial.confirmations.push(message);
+  // Offered, never added: recorded apart from accepted words.
+  if (message.type === "suggested") trial.suggestions.push(message.gloss);
   if (message.type === "analysis") {
     trial.analyses++;
+    const reason = message.motionReason ?? "none";
+    trial.motion[reason] = (trial.motion[reason] ?? 0) + 1;
+    if (message.motionDetail) trial.motion[`detail:${message.motionDetail}`] = (trial.motion[`detail:${message.motionDetail}`] ?? 0) + 1;
     if (message.feedback?.includes("could not run") || message.feedback?.includes("could not be checked")) {
       if (!trial.errors.includes(message.feedback)) trial.errors.push(message.feedback);
     }
@@ -54,7 +83,7 @@ function metadata() {
 function startTrial() {
   const data = metadata();
   session.postMessage({ type: "templates", language: data.language as LanguageId, templates: [] });
-  return { data, confirmations: [] as WorkerConfirmation[], frames: 0, hands: 0, analyses: 0,
+  return { data, confirmations: [] as WorkerConfirmation[], suggestions: [] as string[], motion: {} as Record<string, number>, frames: 0, hands: 0, analyses: 0,
     sources: {} as Record<string, number>, handedness: {} as Record<string, number>, errors: [] as string[], started: performance.now() };
 }
 function observe(frame: VisionFrame) {
@@ -88,6 +117,7 @@ async function finishTrial(extra: Record<string, unknown> = {}) {
   const accepted = trial.confirmations.map(message => message.gloss);
   const row = { ...trial.data, ...extra, predicted_gloss: accepted[0] ?? null, accepted: accepted.length > 0,
     accepted_glosses: accepted, confirmed_sources: trial.confirmations.map(message => message.source ?? "unknown"),
+    tracker_variant: trackerVariant || "production", suggested_glosses: trial.suggestions, motion_reasons: trial.motion, hand_reacquisition: engine ? { ...engine.reacquisition } : null,
     frames: trial.frames, hand_frames: trial.hands, analyses: trial.analyses, candidate_sources: trial.sources, handedness_counts: trial.handedness,
     errors: trial.errors, status: trial.errors.length ? "error" : "complete", duration_ms: performance.now() - trial.started };
   trial = null; session.postMessage({ type: "reset" }); rows.push(row);
@@ -107,7 +137,7 @@ async function camera() {
   if (busy || trial) throw new Error("Finish the active diagnostic trial before starting the camera");
   await stop(); busy = true;
   try {
-    engine = await VisionEngine.create(status);
+    engine = await VisionEngine.create(status, trackerOptions);
     stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
     video.srcObject = stream; await video.play(); live = true;
     session.postMessage({ type: "templates", language: value("language") as LanguageId, templates: [] });
@@ -125,7 +155,7 @@ async function evaluateFile(file: File) {
     const fingerprint = [...new Uint8Array(await crypto.subtle.digest("SHA-256", await file.arrayBuffer()))].map(b => b.toString(16).padStart(2, "0")).join("");
     sourceMetadata.recording_sha256 = fingerprint;
     if (rows.some(row => row.recording_sha256 === fingerprint)) throw new Error("This recording is already in the results. Export and reload for a separate repeat pass");
-    engine = await VisionEngine.create(status);
+    engine = await VisionEngine.create(status, trackerOptions);
     controller.signal.throwIfAborted();
     sourceUrl = URL.createObjectURL(file);
     await loadVideoData(video, sourceUrl, { signal: controller.signal });
@@ -133,11 +163,16 @@ async function evaluateFile(file: File) {
     sourceMetadata.source_duration_s = video.duration;
     trial = startTrial(); const base = performance.now(); let previous = -1;
     process(base); previous = 0;
-    for (let time = 0.05; time < video.duration; time += 0.05) {
+    for (let time = sourceStep; time < video.duration; time += sourceStep) {
       const decodedTime = await seekDecodedFrame(video, time, { signal: controller.signal });
       if (decodedTime > previous + 0.001) { process(base + decodedTime * 1000); previous = decodedTime; }
-      await sleep(50);
+      await sleep(sourceStep * 1000);
     }
+    for (let held = sourceStep; held <= endingHold; held += sourceStep) {
+      process(base + (previous + held) * 1000);
+      await sleep(sourceStep * 1000);
+    }
+    if (endingHold) sourceMetadata.ending_hold_s = endingHold;
     controller.signal.throwIfAborted();
     return await finishTrial(sourceMetadata);
   } catch (error) {

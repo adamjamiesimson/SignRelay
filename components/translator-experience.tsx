@@ -42,6 +42,8 @@ import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build
 import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
 import { formatPerfReadout, RollingTimer, ThroughputMonitor } from "@/lib/frame-perf";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
+import { SUGGESTION_LIFETIME_MS } from "@/lib/model-output-policy";
+import { shouldAnalyseFrame } from "@/lib/frame-timing";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
 import type {
@@ -83,6 +85,9 @@ export function TranslatorExperience() {
   // Screen readers hear confirmed words and camera changes, never tentative candidates.
   const [announcement, setAnnouncement] = useState("");
   const [transcriptMessage, setTranscriptMessage] = useState("");
+  // A research-model word waits here until the person adds or dismisses it.
+  // It is never inserted, spoken or announced as confirmed on its own.
+  const [suggestion, setSuggestion] = useState<TranscriptEntry | null>(null);
   const [privacyMessage, setPrivacyMessage] = useState("");
   // Opt-in device-test readout (`?perf`): timings only, nothing is stored or sent.
   const [perfMode] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("perf"));
@@ -229,6 +234,7 @@ export function TranslatorExperience() {
     setEditingId(null);
     setStorageMessage("");
     setTranscriptMessage("");
+    setSuggestion(null);
     // Nothing from the previous language's transcript may keep speaking.
     window.speechSynthesis?.cancel();
     sessionStartedRef.current = Date.now();
@@ -246,6 +252,24 @@ export function TranslatorExperience() {
   }
 
   useEffect(() => { entriesRef.current = entries; }, [entries]);
+
+  // An unanswered suggestion is withdrawn; it never turns into a word by waiting.
+  useEffect(() => {
+    if (!suggestion) return;
+    const timer = window.setTimeout(() => setSuggestion(current => current?.id === suggestion.id ? null : current), SUGGESTION_LIFETIME_MS);
+    return () => window.clearTimeout(timer);
+  }, [suggestion]);
+
+  const addSuggestion = () => {
+    if (!suggestion) return;
+    // Keep signing order: a rule or personal word confirmed after the suggestion stays after it.
+    const next = [...entriesRef.current, suggestion].sort((a, b) => a.timestamp - b.timestamp);
+    entriesRef.current = next;
+    setEntries(next);
+    setSuggestion(null);
+    setTranscriptMessage(`Added "${suggestion.text}".`);
+    transcriptHeadingRef.current?.focus();
+  };
 
   useEffect(() => {
     settingsRef.current = settings;
@@ -282,6 +306,12 @@ export function TranslatorExperience() {
     }
     // Confirmations from a stopped or replaced session never reach here:
     // RecognitionSession drops messages from before every reset.
+    if (message.type === "suggested") {
+      setSuggestion({ id: `${message.timestamp}-${message.gloss}`, text: message.text, gloss: message.gloss,
+        confidence: message.confidence, timestamp: message.timestamp, source: "model" });
+      setAnnouncement(`Suggestion, not added: ${message.text}`);
+      return;
+    }
     if (message.type !== "confirmed") return;
 
     const entry: TranscriptEntry = {
@@ -303,12 +333,13 @@ export function TranslatorExperience() {
   useEffect(() => {
     if (step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
     const worker = new RecognitionSession(
-      () => new Worker("/workers/recognition.worker.js?v=fist-motion-2", { type: "module" }),
+      () => new Worker("/workers/recognition.worker.js?v=suggest-1", { type: "module" }),
       handleWorkerMessage,
       status => {
         setRecognitionUnavailable(status.state === "failed");
         if (status.message) setRecognitionFeedback(status.message);
         if (status.state !== "running") {
+          setSuggestion(null);
           setCandidate(null);
           setConfidence(0);
           setBufferSize(0);
@@ -344,6 +375,7 @@ export function TranslatorExperience() {
     setBufferSize(0);
     setRecognitionFeedback("");
     setMotionReason(null);
+    setSuggestion(null);
     window.speechSynthesis?.cancel();
     lastVideoTimeRef.current = -1;
     frameErrorsRef.current = 0;
@@ -466,7 +498,7 @@ export function TranslatorExperience() {
       return;
     }
 
-    if (now - lastFrameRef.current >= 50 && video.currentTime !== lastVideoTimeRef.current) {
+    if (shouldAnalyseFrame(now, lastFrameRef.current, video.currentTime, lastVideoTimeRef.current)) {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
       try {
@@ -910,6 +942,19 @@ export function TranslatorExperience() {
 
               <p className="calibration-message">Match score out of 100. It is not measured translation accuracy.</p>
               {recognitionFeedback && <p className="calibration-message">{recognitionFeedback}</p>}
+              {suggestion && (
+                <div className="model-suggestion" role="group" aria-label="Research-model suggestion, not added" data-suggestion={suggestion.gloss}>
+                  <div>
+                    <span className="candidate-label">Research-model suggestion · not added</span>
+                    <strong>{suggestion.text}</strong>
+                    <small>This model is often wrong. Add it only if it is the word you signed.</small>
+                  </div>
+                  <div className="model-suggestion-actions">
+                    <button className="button secondary small" onClick={addSuggestion}>Add<span className="sr-only"> {suggestion.text} to the transcript</span></button>
+                    <button className="button ghost small" onClick={() => setSuggestion(null)}>Dismiss<span className="sr-only"> suggestion {suggestion.text}</span></button>
+                  </div>
+                </div>
+              )}
               <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
               <p className="sr-only" role="status" aria-live="polite">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraState === "idle" ? "Camera off." : cameraMessage}</p>
               {recognitionUnavailable && (

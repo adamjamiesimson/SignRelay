@@ -38,7 +38,8 @@ async function run(frames: VisionFrame[], model: Model, guarded: boolean): Promi
     await worker.onmessage({ data: { type: "frame", frame: guard ? guard.filter(frame) : frame } });
     await Promise.resolve();
     for (const [message] of worker.postMessage.mock.calls.slice(before) as [WorkerMessage][]) {
-      if (message.type !== "confirmed") continue;
+      // A research-model word is now a suggestion; it is still a word the worker produced.
+      if (message.type !== "confirmed" && message.type !== "suggested") continue;
       words.push({ gloss: message.gloss, source: message.source });
       guard?.noteConfirmation();
     }

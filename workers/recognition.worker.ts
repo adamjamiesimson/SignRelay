@@ -13,6 +13,8 @@ import { recognizeLse300 } from "@/lib/lse300-runtime";
 import { TemplateMatchingClient, type TemplatePrediction } from "@/lib/template-matching-client";
 import { validHand } from "@/lib/asl-starter-recognition";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
+import { modelWordsNeedAcceptance } from "@/lib/model-output-policy";
+import { MAX_TRACKING_GAP_MS } from "@/lib/frame-timing";
 
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
@@ -41,6 +43,17 @@ let modelProblem = false;
 let retryAfter = 0;
 let blockedStarter: string | null = null;
 let starterSeenAt = 0;
+// A movement that ended by the hand leaving is a frozen set of frames. Once the
+// model has declined it, asking again cannot give a different answer.
+let declinedSegmentEnd = -Infinity;
+// After a word is produced, the rest of that same movement keeps arriving. If
+// the hand then drops out of view, that remainder must not be offered to the
+// model as a new sign. A movement that ends by leaving only counts when it
+// began well after the last word, or after the hand left and came back.
+const NEW_MOVEMENT_AFTER_WORD_MS = 600;
+let reportedAt = -Infinity;
+let returnedSinceReport = true;
+let handWasAbsent = false;
 
 let latestPersonal: TemplatePrediction | null = null;
 let personalTimestamp = 0;
@@ -80,27 +93,38 @@ function invalidatePrediction() {
   modelGeneration += 1;
 }
 
-function resetSession() {
-  // In-flight requests from old sessions are invalidated by modelGeneration;
-  // do not let their timers restart a newly selected language.
-  for (const request of pending.values()) request.controller.abort();
-  pending.clear();
+/** Everything observed so far: frames, pending matches and confirmation
+ * streaks. Used when the camera stream is not continuous, so nothing seen
+ * before a pause can complete a word after it. */
+function resetEvidence() {
   invalidatePersonal();
   frames.length = 0;
   receivedFrames = 0;
   lastInferenceAt = -Infinity;
-  lastConfirmation = { label: "", time: 0 };
   invalidatePrediction();
   candidateLabel = null;
   candidateStreak = 0;
   candidateIsModel = false;
   blockedStarter = null;
   starterSeenAt = 0;
+  declinedSegmentEnd = -Infinity;
+  reportedAt = -Infinity;
+  returnedSinceReport = true;
+  handWasAbsent = false;
+  hadPersonalTracking = false;
+  candidateSource = undefined;
+}
+
+function resetSession() {
+  // In-flight requests from old sessions are invalidated by modelGeneration;
+  // do not let their timers restart a newly selected language.
+  for (const request of pending.values()) request.controller.abort();
+  pending.clear();
+  resetEvidence();
+  lastConfirmation = { label: "", time: 0 };
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
-  hadPersonalTracking = false;
-  candidateSource = undefined;
 }
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
@@ -114,6 +138,16 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "reset") { resetSession(); return; }
 
   const now = event.data.frame.timestamp;
+  const previousFrame = frames.at(-1);
+  if (previousFrame) {
+    const gap = now - previousFrame.timestamp;
+    // A clock that runs backwards invalidates frame-based cooldowns and
+    // deadlines too. A forward pause or a repeated timestamp only breaks the
+    // observation: a model that is still loading may finish, but nothing
+    // recognised from before the gap can be completed after it.
+    if (gap < 0) resetSession();
+    else if (gap === 0 || gap > MAX_TRACKING_GAP_MS) resetEvidence();
+  }
   for (const [language, request] of pending) {
     const deadline = request.phase === "loading" ? MODEL_LOAD_TIMEOUT_MS : NORMAL_INFERENCE_TIMEOUT_MS;
     if (now - request.started < deadline) continue;
@@ -145,8 +179,15 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   // templates. Discard a rejected result so it cannot stall fresh inference.
   if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES"
     && starter?.label !== "YES") invalidatePrediction();
-  const motion = activeLanguage === "asl" ? analyzeSignMotion(frames)
-    : { ...analyzeGenericSignMotion(frames), sequence: frames };
+  const observed = activeLanguage === "asl" ? analyzeSignMotion(frames) : null;
+  if (hasHand && handWasAbsent) returnedSinceReport = true;
+  handWasAbsent = !hasHand;
+  // The remainder of an already reported movement is not a new sign.
+  const aslMotion = observed?.completion === "departure" && !returnedSinceReport
+    && observed.sequence[0].timestamp - reportedAt < NEW_MOVEMENT_AFTER_WORD_MS
+    ? { ready: false, sequence: [] as VisionFrame[], reason: "hands" as const, detail: "after-reported-word" as const, completion: undefined } : observed;
+  const motion = aslMotion ?? { ...analyzeGenericSignMotion(frames), sequence: frames };
+  const segmentEnd = aslMotion?.completion === "departure" ? aslMotion.sequence.at(-1)!.timestamp : null;
 
   if (!motion.ready || starterAnalysis?.ambiguousOpenPalm) invalidatePrediction();
   else {
@@ -163,6 +204,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
       && latestPrediction.confidence >= CONFIDENCE_THRESHOLD && consumedPredictionVersion !== predictionVersion;
     if (classifier && MODEL_ADAPTERS[language].status === "experimental"
       && frames.length >= (language === "asl" ? 6 : 24) && inferenceDue
+      && segmentEnd !== declinedSegmentEnd
       && !freshResult && !pending.has(language) && now >= retryAfter) {
       const request = { started: now, phase: (language === "asl" ? "inference" : "loading") as "loading" | "inference", controller: new AbortController() };
       pending.set(language, request);
@@ -177,6 +219,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
         if (generation !== modelGeneration || request.controller.signal.aborted) return;
         if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS
           || performance.now() - submittedAt > MAX_PREDICTION_AGE_MS) return;
+        if (!prediction && segmentEnd !== null) declinedSegmentEnd = segmentEnd;
         latestPrediction = prediction;
         predictionTimestamp = now;
         predictionReceivedAt = performance.now();
@@ -209,7 +252,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     state: frames.length < 6 ? "listening" : result ? "processing" : "uncertain",
     candidate: result?.label ?? null, confidence: result?.confidence ?? 0,
     bufferSize: frames.length, feedback,
-    source, motionReason: motion.reason,
+    source, motionReason: motion.reason, ...(aslMotion ? { motionDetail: aslMotion.detail } : {}),
   } satisfies WorkerMessage);
 
   if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
@@ -234,11 +277,24 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     streak: candidateStreak, sameLabel: lastConfirmation.label === result.label,
     elapsedSinceLast: now - lastConfirmation.time, cooldown: COOLDOWN_MS,
   })) {
-    self.postMessage({ type: "confirmed", session: event.data.session, text: result.text, gloss: result.label,
-      confidence: result.confidence, timestamp: Date.now(),
-      source,
-    } satisfies WorkerMessage);
+    // A word whose only evidence is the ASL research model is offered as a
+    // suggestion, never confirmed: about 13% of the words that model accepts
+    // from MediaPipe landmarks are right, at every confidence threshold
+    // (docs/evaluation/recognition-sprint-2026-11-16.md). Cooldown and buffer
+    // handling below are unchanged, so rule and personal words behave as before.
+    if (source === "model" && modelWordsNeedAcceptance(activeLanguage)) {
+      self.postMessage({ type: "suggested", session: event.data.session, text: result.text, gloss: result.label,
+        confidence: result.confidence, timestamp: Date.now(), source: "model",
+      } satisfies WorkerMessage);
+    } else {
+      self.postMessage({ type: "confirmed", session: event.data.session, text: result.text, gloss: result.label,
+        confidence: result.confidence, timestamp: Date.now(),
+        source,
+      } satisfies WorkerMessage);
+    }
     lastConfirmation = { label: result.label, time: now };
+    reportedAt = now;
+    returnedSinceReport = false;
     if (activeLanguage === "asl" && !candidateIsModel) {
       blockedStarter = result.label;
       starterSeenAt = now;

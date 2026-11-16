@@ -1,0 +1,1147 @@
+{
+  "scope": "Tracker continuity for a translated public still photo. Not signing, not a camera, not recognition accuracy.",
+  "moving_runs": 42,
+  "moving_frames": 2520,
+  "baseline_hand_frames": 2441,
+  "candidate_hand_frames": 2518,
+  "baseline_runs_with_a_dropped_frame": 14,
+  "candidate_runs_with_a_dropped_frame": 2,
+  "retries": 92,
+  "retries_recovered": 89,
+  "hand_frames_after_exit_or_in_empty_scene": [
+    {
+      "path": "exit",
+      "image": "/thumb_up.jpg",
+      "baseline": "####################........................................",
+      "candidate": "####################........................................",
+      "retries": 1
+    },
+    {
+      "path": "exit",
+      "image": "/fist.jpg",
+      "baseline": "####################........................................",
+      "candidate": "####################........................................",
+      "retries": 1
+    },
+    {
+      "path": "exit",
+      "image": "/woman_hands.jpg",
+      "baseline": "####################........................................",
+      "candidate": "####################........................................",
+      "retries": 1
+    },
+    {
+      "path": "empty",
+      "image": "",
+      "baseline": "............................................................",
+      "candidate": "............................................................",
+      "retries": 0
+    }
+  ],
+  "rows": [
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "sweep",
+      "speed": 0,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 76.8,
+      "engine_ms_per_frame": 101.5
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "sweep",
+      "speed": 300,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 84.3,
+      "engine_ms_per_frame": 100.1
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "sweep",
+      "speed": 600,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 83.5,
+      "engine_ms_per_frame": 114.9
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "sweep",
+      "speed": 1000,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 56,
+        "longest": 13,
+        "pattern": "#############.###########.###########.###########.##########"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 4,
+        "recovered": 4
+      },
+      "baseline_hand_ms_per_frame": 103,
+      "engine_ms_per_frame": 130.1
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "sweep",
+      "speed": 1500,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 117.5,
+      "engine_ms_per_frame": 149.6
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "nod",
+      "speed": 600,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 82,
+      "engine_ms_per_frame": 110.2
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "nod",
+      "speed": 1000,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 102,
+      "engine_ms_per_frame": 112.3
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "sweep",
+      "speed": 0,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 88.5,
+      "engine_ms_per_frame": 99.6
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "sweep",
+      "speed": 300,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 89.5,
+      "engine_ms_per_frame": 106.2
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "sweep",
+      "speed": 600,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 91.7,
+      "engine_ms_per_frame": 117.3
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "sweep",
+      "speed": 1000,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 58,
+        "longest": 35,
+        "pattern": "################.#######.###################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 2,
+        "recovered": 2
+      },
+      "baseline_hand_ms_per_frame": 109,
+      "engine_ms_per_frame": 162.7
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "sweep",
+      "speed": 1500,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 127.9,
+      "engine_ms_per_frame": 138.5
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "nod",
+      "speed": 600,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 89.9,
+      "engine_ms_per_frame": 111.8
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "nod",
+      "speed": 1000,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 55,
+        "longest": 13,
+        "pattern": "#############.############.############.###.############.###"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 4,
+        "recovered": 4
+      },
+      "baseline_hand_ms_per_frame": 94,
+      "engine_ms_per_frame": 113.6
+    },
+    {
+      "image": "/thumb_up.jpg",
+      "height": 260,
+      "path": "exit",
+      "speed": 300,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 20,
+        "longest": 20,
+        "pattern": "####################........................................"
+      },
+      "candidate": {
+        "seen": 20,
+        "longest": 20,
+        "pattern": "####################........................................"
+      },
+      "reacquisition": {
+        "attempts": 1,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 56.3,
+      "engine_ms_per_frame": 73.1
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "sweep",
+      "speed": 0,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 79.8,
+      "engine_ms_per_frame": 90.6
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "sweep",
+      "speed": 300,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 82.2,
+      "engine_ms_per_frame": 102.9
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "sweep",
+      "speed": 600,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 96.4,
+      "engine_ms_per_frame": 125.2
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "sweep",
+      "speed": 1000,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 59,
+        "longest": 59,
+        "pattern": ".###########################################################"
+      },
+      "candidate": {
+        "seen": 59,
+        "longest": 59,
+        "pattern": ".###########################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 104.3,
+      "engine_ms_per_frame": 110.4
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "sweep",
+      "speed": 1500,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 53,
+        "longest": 10,
+        "pattern": "##########.#######.#######.#######.#######.#######.#######.#"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 13,
+        "recovered": 13
+      },
+      "baseline_hand_ms_per_frame": 91.5,
+      "engine_ms_per_frame": 129.6
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "nod",
+      "speed": 600,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 85,
+      "engine_ms_per_frame": 98.4
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "nod",
+      "speed": 1000,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 105.1,
+      "engine_ms_per_frame": 110.2
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "sweep",
+      "speed": 0,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 79.1,
+      "engine_ms_per_frame": 106
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "sweep",
+      "speed": 300,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 90.4,
+      "engine_ms_per_frame": 99.9
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "sweep",
+      "speed": 600,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 95.3,
+      "engine_ms_per_frame": 111.9
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "sweep",
+      "speed": 1000,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 57,
+        "longest": 30,
+        "pattern": ".###################.########.##############################"
+      },
+      "candidate": {
+        "seen": 59,
+        "longest": 59,
+        "pattern": ".###########################################################"
+      },
+      "reacquisition": {
+        "attempts": 2,
+        "recovered": 2
+      },
+      "baseline_hand_ms_per_frame": 99.4,
+      "engine_ms_per_frame": 118.2
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "sweep",
+      "speed": 1500,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 58,
+        "longest": 46,
+        "pattern": "###########.#.##############################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 2,
+        "recovered": 2
+      },
+      "baseline_hand_ms_per_frame": 103.7,
+      "engine_ms_per_frame": 115.2
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "nod",
+      "speed": 600,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 92.5,
+      "engine_ms_per_frame": 114.9
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "nod",
+      "speed": 1000,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 104,
+      "engine_ms_per_frame": 125.3
+    },
+    {
+      "image": "/fist.jpg",
+      "height": 230,
+      "path": "exit",
+      "speed": 300,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 20,
+        "longest": 20,
+        "pattern": "####################........................................"
+      },
+      "candidate": {
+        "seen": 20,
+        "longest": 20,
+        "pattern": "####################........................................"
+      },
+      "reacquisition": {
+        "attempts": 1,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 61.8,
+      "engine_ms_per_frame": 77.3
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "sweep",
+      "speed": 0,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 79.2,
+      "engine_ms_per_frame": 97.3
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "sweep",
+      "speed": 300,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 76.8,
+      "engine_ms_per_frame": 102.6
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "sweep",
+      "speed": 600,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 58,
+        "longest": 32,
+        "pattern": "##########################.################################."
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 2,
+        "recovered": 2
+      },
+      "baseline_hand_ms_per_frame": 102.5,
+      "engine_ms_per_frame": 123.9
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "sweep",
+      "speed": 1000,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 119.5,
+      "engine_ms_per_frame": 140.6
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "sweep",
+      "speed": 1500,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 58,
+        "longest": 56,
+        "pattern": "#.#.########################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 4,
+        "recovered": 4
+      },
+      "baseline_hand_ms_per_frame": 136.1,
+      "engine_ms_per_frame": 153.5
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "nod",
+      "speed": 600,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 98.2,
+      "engine_ms_per_frame": 122.6
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "nod",
+      "speed": 1000,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 52,
+        "longest": 16,
+        "pattern": "###.#####.################.#####.####.#####.#####.####.#####"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 7,
+        "recovered": 7
+      },
+      "baseline_hand_ms_per_frame": 107.8,
+      "engine_ms_per_frame": 137.6
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "sweep",
+      "speed": 0,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 79.1,
+      "engine_ms_per_frame": 107.6
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "sweep",
+      "speed": 300,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 86.4,
+      "engine_ms_per_frame": 108
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "sweep",
+      "speed": 600,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 56,
+        "longest": 25,
+        "pattern": "###.#######.###############.######.#########################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 4,
+        "recovered": 4
+      },
+      "baseline_hand_ms_per_frame": 99.4,
+      "engine_ms_per_frame": 134.8
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "sweep",
+      "speed": 1000,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 45,
+        "longest": 21,
+        "pattern": "#.#.#.#.#.########.#.##.#.#.#.##.#.#.#.#####################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 20,
+        "recovered": 20
+      },
+      "baseline_hand_ms_per_frame": 114.1,
+      "engine_ms_per_frame": 172.3
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "sweep",
+      "speed": 1500,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 50,
+        "longest": 18,
+        "pattern": "#.#.#.#.##################.#####.##.#####.##.##.############"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 11,
+        "recovered": 11
+      },
+      "baseline_hand_ms_per_frame": 100.2,
+      "engine_ms_per_frame": 142.8
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "nod",
+      "speed": 600,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 89.6,
+      "engine_ms_per_frame": 120.7
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "nod",
+      "speed": 1000,
+      "interval": 66,
+      "frames": 60,
+      "baseline": {
+        "seen": 46,
+        "longest": 4,
+        "pattern": "###.###.###.###.####.###.###.####.###.###.###.####.###.###.#"
+      },
+      "candidate": {
+        "seen": 60,
+        "longest": 60,
+        "pattern": "############################################################"
+      },
+      "reacquisition": {
+        "attempts": 14,
+        "recovered": 14
+      },
+      "baseline_hand_ms_per_frame": 84.4,
+      "engine_ms_per_frame": 129.8
+    },
+    {
+      "image": "/woman_hands.jpg",
+      "height": 460,
+      "path": "exit",
+      "speed": 300,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 20,
+        "longest": 20,
+        "pattern": "####################........................................"
+      },
+      "candidate": {
+        "seen": 20,
+        "longest": 20,
+        "pattern": "####################........................................"
+      },
+      "reacquisition": {
+        "attempts": 1,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 55.9,
+      "engine_ms_per_frame": 75.2
+    },
+    {
+      "image": "",
+      "height": 0,
+      "path": "empty",
+      "speed": 0,
+      "interval": 50,
+      "frames": 60,
+      "baseline": {
+        "seen": 0,
+        "longest": 0,
+        "pattern": "............................................................"
+      },
+      "candidate": {
+        "seen": 0,
+        "longest": 0,
+        "pattern": "............................................................"
+      },
+      "reacquisition": {
+        "attempts": 0,
+        "recovered": 0
+      },
+      "baseline_hand_ms_per_frame": 45.6,
+      "engine_ms_per_frame": 59.1
+    }
+  ]
+}
