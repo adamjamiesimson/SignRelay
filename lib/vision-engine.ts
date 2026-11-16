@@ -13,6 +13,10 @@ const FACE_CUE_INDICES = [
 // maps the relevant upper-body points to its 13-point OpenPose body contract.
 const POSE_CUE_INDICES = Array.from({ length: 33 }, (_, index) => index);
 
+/** The tracker needs strictly increasing timestamps. Camera frames are at least
+ * 33 ms apart, so a retry 1 ms later can never collide with the next frame. */
+const REACQUIRE_OFFSET_MS = 1;
+
 type EngineParts = {
   gesture: GestureRecognizer;
   face: FaceLandmarker;
@@ -27,6 +31,10 @@ export class VisionEngine {
   private handFramesSinceAux = 2;
   private lastFace: Point[] = [];
   private lastPose: Point[] = [];
+  private hadHands = false;
+  /** Opt-in `?perf` counters: frames where tracking lost a hand it had on the
+   * previous frame, and how many of those the same-frame retry got back. */
+  readonly reacquisition = { attempts: 0, recovered: 0 };
 
   private constructor(parts: EngineParts, assetSource: AssetSource["id"]) {
     this.parts = parts;
@@ -95,7 +103,21 @@ export class VisionEngine {
   }
 
   process(video: HTMLVideoElement | HTMLCanvasElement, timestamp: number): VisionFrame {
-    const handResult = this.parts.gesture.recognizeForVideo(video, timestamp);
+    let handResult = this.parts.gesture.recognizeForVideo(video, timestamp);
+    // In VIDEO mode the hand model follows the region predicted from the last
+    // frame. A fast hand leaves that region: the frame comes back empty and
+    // detection only restarts on the *next* frame, so quick strokes are seen
+    // as "#.#.#" (measured with the pinned runtime, see
+    // scripts/diagnostics/hand-reacquisition-probe.mjs). Ask again for this
+    // same image: with no region left to follow, palm detection runs on it.
+    // One retry per loss, never when the previous frame was already empty, and
+    // every landmark still comes from the current camera image.
+    if (!handResult.landmarks.length && this.hadHands) {
+      this.reacquisition.attempts++;
+      handResult = this.parts.gesture.recognizeForVideo(video, timestamp + REACQUIRE_OFFSET_MS);
+      if (handResult.landmarks.length) this.reacquisition.recovered++;
+    }
+    this.hadHands = handResult.landmarks.length > 0;
     this.handFramesSinceAux++;
     // Leave alternate frames for hands even when CPU inference is already slow.
     if (this.handFramesSinceAux >= 2 && timestamp - this.lastAuxTimestamp >= 150) {
