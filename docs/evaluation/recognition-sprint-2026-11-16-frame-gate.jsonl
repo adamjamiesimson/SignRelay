@@ -1,0 +1,8 @@
+{"minInterval":50,"busyMs":0,"cameraFps":30,"rafPerSecond":60.2,"analysedPerSecond":16.7,"medianGapMs":66.5,"p90GapMs":66.8}
+{"minInterval":50,"busyMs":15,"cameraFps":30,"rafPerSecond":60.2,"analysedPerSecond":16.8,"medianGapMs":66.3,"p90GapMs":66.7}
+{"minInterval":50,"busyMs":30,"cameraFps":30,"rafPerSecond":60,"analysedPerSecond":16.8,"medianGapMs":66.1,"p90GapMs":66.7}
+{"minInterval":33,"busyMs":0,"cameraFps":30,"rafPerSecond":60.2,"analysedPerSecond":29.2,"medianGapMs":33.4,"p90GapMs":33.9}
+{"minInterval":33,"busyMs":15,"cameraFps":30,"rafPerSecond":60.2,"analysedPerSecond":29.8,"medianGapMs":33.3,"p90GapMs":33.5}
+{"minInterval":30,"busyMs":15,"cameraFps":30,"rafPerSecond":60.2,"analysedPerSecond":30,"medianGapMs":33.3,"p90GapMs":33.5}
+{"minInterval":30,"busyMs":30,"cameraFps":30,"rafPerSecond":50.8,"analysedPerSecond":30.2,"medianGapMs":33.3,"p90GapMs":36.5}
+{"minInterval":45,"busyMs":15,"cameraFps":30,"rafPerSecond":60.2,"analysedPerSecond":20,"medianGapMs":50,"p90GapMs":50.2}

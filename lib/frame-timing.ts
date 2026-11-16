@@ -38,3 +38,20 @@ export function recentContinuousFrames<T extends Timed>(
   while (tracked && start < recent.length - 1 && !tracked(recent[start])) start++;
   return recent.slice(start);
 }
+
+/** Minimum time between two analysed camera frames. The intent has always been
+ * 20 analysed frames per second, the cadence of every recorded evaluation.
+ * A threshold of exactly 50 ms does not deliver that: display callbacks arrive
+ * every 16.7 ms, the third one lands a hair before or after 50 ms, and when it
+ * lands before, the frame waits for the fourth. Measured with a 30 fps camera
+ * on a 60 Hz display: 50 ms gives about 17 per second with 66 ms gaps; 45 ms
+ * gives 20 per second with 50 ms gaps
+ * (docs/evaluation/recognition-sprint-2026-11-16-frame-gate.jsonl). */
+export const MIN_ANALYSIS_INTERVAL_MS = 45;
+
+/** The camera loop's gate: enough time has passed and the video shows a frame
+ * that has not been analysed yet. */
+export function shouldAnalyseFrame(now: number, lastAnalysedAt: number, videoTime: number, lastVideoTime: number,
+  minInterval = MIN_ANALYSIS_INTERVAL_MS) {
+  return now - lastAnalysedAt >= minInterval && videoTime !== lastVideoTime;
+}

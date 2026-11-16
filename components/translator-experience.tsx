@@ -43,6 +43,7 @@ import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
 import { formatPerfReadout, RollingTimer, ThroughputMonitor } from "@/lib/frame-perf";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
 import { SUGGESTION_LIFETIME_MS } from "@/lib/model-output-policy";
+import { shouldAnalyseFrame } from "@/lib/frame-timing";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
 import type {
@@ -497,7 +498,7 @@ export function TranslatorExperience() {
       return;
     }
 
-    if (now - lastFrameRef.current >= 50 && video.currentTime !== lastVideoTimeRef.current) {
+    if (shouldAnalyseFrame(now, lastFrameRef.current, video.currentTime, lastVideoTimeRef.current)) {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
       try {
