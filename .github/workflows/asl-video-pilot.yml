@@ -173,12 +173,16 @@ jobs:
           run_variant detect30 detect:0.3
           run_variant all30 detect:0.3,presence:0.3,tracking:0.3
           run_variant all30-reacquire detect:0.3,presence:0.3,tracking:0.3,reacquire:1
+          # Frame cadence: what the app's 50 ms throttle gives a 30 fps camera, and every source frame.
+          run_variant live15 interval:0.066
+          run_variant every-frame interval:0.033
           cat evaluation/derived/base.jsonl evaluation/derived/development-base.jsonl > evaluation/derived/all-base.jsonl
           cat evaluation/derived/candidate.jsonl evaluation/derived/development-candidate.jsonl > evaluation/derived/all-candidate.jsonl
           node scripts/diagnostics/summarize-replays.mjs \
             base-worker=evaluation/derived/all-base.jsonl candidate=evaluation/derived/all-candidate.jsonl \
             reacquire=evaluation/derived/variant-reacquire.jsonl detect30=evaluation/derived/variant-detect30.jsonl \
             all30=evaluation/derived/variant-all30.jsonl all30-reacquire=evaluation/derived/variant-all30-reacquire.jsonl \
+            live15=evaluation/derived/variant-live15.jsonl every-frame=evaluation/derived/variant-every-frame.jsonl \
             | tee evaluation/derived/replay-summary.txt
 
       - name: Gate against the exact established baseline (all 11 trials)

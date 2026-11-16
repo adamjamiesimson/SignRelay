@@ -28,10 +28,15 @@ const params = new URLSearchParams(location.search);
 // any setting may change in the app. Example: ?tracker=reacquire:1,detect:0.3
 const trackerVariant = params.get("tracker") ?? "";
 const trackerOptions: VisionEngineOptions = {};
+// Seconds of source video between analysed frames. 0.05 (20 per second) is the
+// protocol of every recorded result. 0.066 is what the app's 50 ms throttle
+// yields from a 30 fps camera; 0.033 is every frame of a 30 fps recording.
+let sourceStep = 0.05;
 for (const part of trackerVariant.split(",").filter(Boolean)) {
   const [key, raw] = part.split(":"), number = Number(raw);
   if (!Number.isFinite(number) || number < 0 || number > 1) throw new Error(`Invalid tracker option ${part}`);
-  if (key === "reacquire") trackerOptions.reacquireLostHands = number === 1;
+  if (key === "interval") { if (number < 0.02 || number > 0.2) throw new Error(`Invalid interval ${raw}`); sourceStep = number; }
+  else if (key === "reacquire") trackerOptions.reacquireLostHands = number === 1;
   else if (key === "detect") trackerOptions.handDetectionConfidence = number;
   else if (key === "presence") trackerOptions.handPresenceConfidence = number;
   else if (key === "tracking") trackerOptions.handTrackingConfidence = number;
@@ -152,10 +157,10 @@ async function evaluateFile(file: File) {
     sourceMetadata.source_duration_s = video.duration;
     trial = startTrial(); const base = performance.now(); let previous = -1;
     process(base); previous = 0;
-    for (let time = 0.05; time < video.duration; time += 0.05) {
+    for (let time = sourceStep; time < video.duration; time += sourceStep) {
       const decodedTime = await seekDecodedFrame(video, time, { signal: controller.signal });
       if (decodedTime > previous + 0.001) { process(base + decodedTime * 1000); previous = decodedTime; }
-      await sleep(50);
+      await sleep(sourceStep * 1000);
     }
     controller.signal.throwIfAborted();
     return await finishTrial(sourceMetadata);
