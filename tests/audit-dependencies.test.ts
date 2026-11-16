@@ -1,4 +1,7 @@
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { parseForESLint } from "@typescript-eslint/parser";
 import { describe, expect, it } from "vitest";
 import { evaluateAudit } from "../scripts/audit-dependencies.mjs";
 
@@ -75,4 +78,27 @@ describe("reviewed exceptions cannot be widened", () => {
   it("no development exception is committed once the braces chain is gone", () => {
     expect(committed.exceptions).toEqual([]);
   });
+});
+
+// Guards the scoped minimatch override for @typescript-eslint/typescript-estree
+// (GHSA-g3hv-75wg-m249): project-service glob matching must behave as before.
+it("keeps TypeScript lint project-service glob matching compatible", () => {
+  const root = mkdtempSync(join(tmpdir(), "signrelay-eslint-project-"));
+  const source = "export const answer: number = 42;\n";
+  const parse = (path: string) => parseForESLint(source, {
+    filePath: join(root, path),
+    projectService: { allowDefaultProject: ["*.config.ts"], defaultProject: "tsconfig.json" },
+    tsconfigRootDir: root,
+  });
+  try {
+    mkdirSync(join(root, "src"));
+    writeFileSync(join(root, "tsconfig.json"), JSON.stringify({ include: ["src/**/*.ts"] }));
+    for (const path of ["src/in-project.ts", ".tool.config.ts", "unmatched.ts"]) writeFileSync(join(root, path), source);
+    for (const path of ["src/in-project.ts", ".tool.config.ts"]) {
+      const parsed = parse(path);
+      expect(parsed.ast.body[0]?.type).toBe("ExportNamedDeclaration");
+      expect(parsed.services.program).toBeTruthy();
+    }
+    expect(() => parse("unmatched.ts")).toThrow(/was not found by the project service/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });
