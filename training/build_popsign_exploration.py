@@ -139,10 +139,10 @@ def main() -> None:
         url = f"{BASE}/{args.split}/{sign}.tar"
         chosen: dict[str, tuple[str, int, int]] = {}
         try:
-            first = next(members(url, 1), None)
+            exists = len(get(url, 0, 512)) == 512
         except FileNotFoundError:
-            first = None
-        if first is None:
+            exists = False
+        if not exists:
             if sign in TARGETS:
                 raise SystemExit(f"Target archive missing: {url}")
             missing.append(sign)
