@@ -9,8 +9,8 @@ const rules = [
   ["service-secret", /\b(?:sk-(?:proj-|ant-)?[A-Za-z0-9_-]{24,}|sk_live_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{20,})\b/g],
   ["credential-assignment", /(?:api[_-]?secret|client[_-]?secret|password|access[_-]?token|secret[_-]?key)\s*[=:]\s*["']([A-Za-z0-9_+\/=.-]{20,})["']/gi],
 ];
-function git(args) {
-  const r = spawnSync("git", args, { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
+function git(args, { input, encoding = "utf8" } = {}) {
+  const r = spawnSync("git", args, { input: input === undefined ? undefined : Buffer.from(input), encoding, maxBuffer: 32 * 1024 * 1024 });
   if (r.status !== 0) throw new Error(`Git scan failed: ${args[0]}`);
   return r.stdout;
 }
@@ -25,21 +25,54 @@ function scan(text, location) {
     }
   }
 }
+const excludedAsset = /\.(?:bin|onnx|png|webp|jpg|jpeg|gz|zip|wasm|mp4)$/i;
 const objects = git(["rev-list", "--objects", "--all"]).trim().split("\n");
 let scanned = 0;
 let skipped = 0;
+const paths = new Map();
 for (const row of objects) {
-  const [sha, ...parts] = row.split(" ");
-  const path = parts.join(" ");
-  if (!path || /\.(?:bin|onnx|png|webp|jpg|jpeg|gz|zip|wasm|mp4)$/i.test(path)) { skipped++; continue; }
-  const size = Number(git(["cat-file", "-s", sha]).trim());
-  if (size > 5 * 1024 * 1024 || git(["cat-file", "-t", sha]).trim() !== "blob") { skipped++; continue; }
-  scan(git(["cat-file", "blob", sha]), `${sha.slice(0, 12)}:${path}`);
-  scanned++;
+  const split = row.indexOf(" ");
+  const path = split < 0 ? "" : row.slice(split + 1);
+  if (!path || excludedAsset.test(path)) { skipped++; continue; }
+  paths.set(row.slice(0, split), path);
 }
-for (const path of git(["ls-files", "--cached", "--others", "--exclude-standard"]).trim().split("\n")) {
-  if (!path || /\.(?:bin|onnx|png|webp|jpg|jpeg|gz|zip|wasm|mp4)$/i.test(path)) continue;
-  try { scan(readFileSync(path, "utf8"), `working-tree:${path}`); } catch { /* Deleted tracked files. */ }
+
+function scanBatch(entries) {
+  if (!entries.length) return;
+  const content = git(["cat-file", "--batch"], { input: entries.map(entry => entry.sha).join("\n") + "\n", encoding: "buffer" });
+  let offset = 0;
+  for (const { sha, size } of entries) {
+    const lineEnd = content.indexOf(10, offset);
+    const end = lineEnd + size + 1;
+    if (lineEnd < 0 || content.toString("ascii", offset, lineEnd) !== `${sha} blob ${size}` || content[end] !== 10) {
+      throw new Error("Git blob payload did not agree with batch metadata");
+    }
+    scan(content.toString("utf8", lineEnd + 1, end), `${sha.slice(0, 12)}:${paths.get(sha)}`);
+    offset = end + 1;
+    scanned++;
+  }
+  if (offset !== content.length) throw new Error("Unexpected extra Git batch data");
+}
+
+if (paths.size) {
+  const metadata = git(["cat-file", "--batch-check"], { input: [...paths.keys()].join("\n") + "\n" }).trim().split("\n");
+  if (metadata.length !== paths.size) throw new Error("Git returned incomplete object metadata");
+  let batch = [], bytes = 0;
+  for (const row of metadata) {
+    const [sha, type, length] = row.split(" ");
+    const size = Number(length);
+    if (!paths.has(sha) || !Number.isSafeInteger(size) || size < 0) throw new Error("Invalid Git object metadata");
+    if (type !== "blob" || size > 5 * 1024 * 1024) { skipped++; continue; }
+    if (bytes + size > 16 * 1024 * 1024) { scanBatch(batch); batch = []; bytes = 0; }
+    batch.push({ sha, size });
+    bytes += size;
+  }
+  scanBatch(batch);
+}
+for (const path of git(["ls-files", "--cached", "--others", "--exclude-standard", "-z"]).split("\0")) {
+  if (!path || excludedAsset.test(path)) continue;
+  try { scan(readFileSync(path, "utf8"), `working-tree:${path}`); }
+  catch (error) { if (error.code !== "ENOENT") throw error; }
 }
 for (const path of readdirSync(".").filter(name => /^\.env(?:\.|$)/.test(name))) scan(readFileSync(path, "utf8"), `local:${path}`);
 console.log(JSON.stringify({ scope: "All fetched Git refs and working tree; text blobs up to 5 MiB; known credential patterns. Values are never printed.", commits: Number(git(["rev-list", "--all", "--count"]).trim()), scannedHistoricalBlobs: scanned, skippedObjects: skipped, findings }, null, 2));
