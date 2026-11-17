@@ -328,7 +328,13 @@ function departingMouthStroke(samples) {
   return last.mouth && last.time - origin.time >= 160 && last.tip.y - origin.tip.y > 0.12 && distance2(last.tip, last.mouth) - distance2(origin.tip, origin.mouth) > 0.25 ? origin : null;
 }
 function completedPalmCircle(samples) {
-  for (let start = 0; start <= samples.length - 5; start++) {
+  let firstVisible = samples.length;
+  while (firstVisible > 0) {
+    const { x, y } = samples[firstVisible - 1].hand.landmarks[0];
+    if (x < 0 || x > 1 || y < 0 || y > 1) break;
+    firstVisible--;
+  }
+  for (let start = firstVisible; start <= samples.length - 5; start++) {
     if (samples.at(-1).time - samples[start].time < 160) break;
     const loop = samples.slice(start);
     const xs2 = loop.map((sample) => sample.circlePath.x), ys2 = loop.map((sample) => sample.circlePath.y);

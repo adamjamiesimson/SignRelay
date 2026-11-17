@@ -383,7 +383,15 @@ function departingMouthStroke(samples: Sample[]) {
  * for failing to return to the beginning of the entire window. Do not revive a
  * completed loop from earlier in a different movement. */
 function completedPalmCircle(samples: Sample[]) {
-  for (let start = 0; start <= samples.length - 5; start++) {
+  // MediaPipe can estimate a wrist outside the image while fingers are still
+  // visible. A loop cannot use those samples to establish its closure.
+  let firstVisible = samples.length;
+  while (firstVisible > 0) {
+    const { x, y } = samples[firstVisible - 1].hand.landmarks[0];
+    if (x < 0 || x > 1 || y < 0 || y > 1) break;
+    firstVisible--;
+  }
+  for (let start = firstVisible; start <= samples.length - 5; start++) {
     if (samples.at(-1)!.time - samples[start].time < 160) break;
     const loop = samples.slice(start);
     const xs = loop.map(sample => sample.circlePath.x), ys = loop.map(sample => sample.circlePath.y);
