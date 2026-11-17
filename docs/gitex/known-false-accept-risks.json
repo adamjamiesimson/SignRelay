@@ -38,7 +38,7 @@
     "pushing hair aside near the forehead": "As above: a sideways open-hand sweep at forehead height matches HELLO under every variation (36/36).",
     "tucking hair behind the ear": "The final sideways sweep at ear height reaches the HELLO travel threshold only at the closer/farther camera distances and at normal or slow speed without dropout (12/36). Fast (x1.4) or dropout runs abstain.",
     "raising an open hand from the chin toward the forehead": "As above: the HELLO rule does not check sweep direction (36/36).",
-    "shielding the eyes from light": "The hold at the brow followed by a descent past the mouth matches THANK YOU (28/36). Fast clean or fast dropout runs abstain because the descent is too short-lived.",
+    "shielding the eyes from light": "A brow-to-mouth descent triggered THANK YOU in 28 of 36 synthetic variants before the face-relative origin check. With the check, eight jitter variants still pass. A late rolling window can begin near the mouth after the hand has already left the brow.",
     "waving to someone across the room": "A raised open hand oscillating sideways near head height is exactly the HELLO rule's geometry (36/36). HELLO is a greeting, so this may be the right word, but the rule cannot tell a wave from the ASL salute.",
     "lowering a hand from the mouth to rest": "As above: indistinguishable from THANK YOU in 2-D landmarks (36/36).",
     "blowing a kiss": "An open hand leaving the mouth outward and upward matches the HELLO sideways sweep near the head at slow and normal speed (24/36); every fast (x1.4) run abstains."

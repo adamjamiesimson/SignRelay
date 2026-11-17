@@ -87,15 +87,15 @@
         "YES": 0,
         "PLEASE": 0,
         "SORRY": 0,
-        "THANK YOU": 136,
+        "THANK YOU": 116,
         "I LOVE YOU": 0,
-        "abstain": 404,
+        "abstain": 424,
         "more than one word": 0
       }
     },
     "wrong": {
       "non-sign movement → HELLO": 144,
-      "non-sign movement → THANK YOU": 136
+      "non-sign movement → THANK YOU": 116
     }
   },
   "confidently_wrong_model": {
@@ -161,42 +161,64 @@
         "YES": 0,
         "PLEASE": 0,
         "SORRY": 0,
-        "THANK YOU": 42,
+        "THANK YOU": 51,
         "I LOVE YOU": 0,
         "abstain": 0,
-        "more than one word": 9
+        "more than one word": 0
       },
       "non-sign movement": {
-        "HELLO": 132,
+        "HELLO": 144,
         "NO": 0,
         "YES": 0,
-        "PLEASE": 44,
+        "PLEASE": 0,
         "SORRY": 0,
-        "THANK YOU": 120,
+        "THANK YOU": 116,
         "I LOVE YOU": 0,
-        "abstain": 368,
-        "more than one word": 20
+        "abstain": 424,
+        "more than one word": 0
+      }
+    },
+    "research_suggestions": {
+      "HELLO": {
+        "trials_with_suggestions": 0,
+        "suggestions": 0,
+        "matching": 0
+      },
+      "NO": {
+        "trials_with_suggestions": 0,
+        "suggestions": 0,
+        "matching": 0
+      },
+      "YES": {
+        "trials_with_suggestions": 0,
+        "suggestions": 0,
+        "matching": 0
+      },
+      "PLEASE": {
+        "trials_with_suggestions": 0,
+        "suggestions": 0,
+        "matching": 0
+      },
+      "SORRY": {
+        "trials_with_suggestions": 0,
+        "suggestions": 0,
+        "matching": 0
+      },
+      "THANK YOU": {
+        "trials_with_suggestions": 10,
+        "suggestions": 10,
+        "matching": 0
+      },
+      "non-sign movement": {
+        "trials_with_suggestions": 64,
+        "suggestions": 64,
+        "matching": 0
       }
     },
     "wrong": {
-      "THANK YOU → more than one word": 9,
-      "non-sign movement → HELLO": 132,
-      "non-sign movement → PLEASE": 44,
-      "non-sign movement → THANK YOU": 120,
-      "non-sign movement → more than one word": 20
+      "non-sign movement → HELLO": 144,
+      "non-sign movement → THANK YOU": 116
     },
-    "wrong_conditions": {
-      "THANK YOU → more than one word": [
-        "30 fps: THANK YOU + HELLO",
-        "left hand: THANK YOU + HELLO",
-        "farther from camera: THANK YOU + HELLO",
-        "closer to camera: THANK YOU + HELLO",
-        "every 5th hand frame lost: THANK YOU + HELLO",
-        "two-frame mid-sign dropout: THANK YOU + HELLO",
-        "no pose: THANK YOU + HELLO",
-        "no face: THANK YOU + HELLO",
-        "unknown handedness: THANK YOU + HELLO"
-      ]
-    }
+    "wrong_conditions": {}
   }
 }

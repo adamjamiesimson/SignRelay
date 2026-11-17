@@ -141,6 +141,7 @@ function analyzeAslStarter(sequence) {
   let preferred = null;
   const labels = /* @__PURE__ */ new Set();
   const incompleteLabels = /* @__PURE__ */ new Set();
+  const previousWindows = /* @__PURE__ */ new Map();
   for (const duration of [650, 1100, 1700, 2600]) {
     for (const side of ["Right", "Left", "Unknown"]) {
       const recent = recentContinuousFrames(
@@ -148,12 +149,18 @@ function analyzeAslStarter(sequence) {
         duration,
         (frame) => frame.hands.some((hand4) => hand4.handedness === side && validHand(hand4))
       );
+      if (recent.length < 5) continue;
+      const previous = previousWindows.get(side);
+      if (previous?.length === recent.length && recent.every((frame, index) => frame === previous[index])) continue;
+      previousWindows.set(side, recent);
       const samples = samplesFor(recent, side);
       if (!samples.length) continue;
       const result = recognizeSamples(samples);
       const evidence = recognizeSamples(samples, false);
       if (evidence?.label === "PLEASE" && result?.label !== "PLEASE") incompleteLabels.add("PLEASE");
-      if (result?.label !== "THANK YOU" && ratio(samples, (sample) => sample.open >= 3) >= 0.75 && departingMouthStroke(samples)) incompleteLabels.add("THANK YOU");
+      if (result?.label !== "THANK YOU" && (evidence?.label === "THANK YOU" || ratio(samples, (sample) => sample.open >= 3) >= 0.75 && departingMouthStroke(samples))) {
+        incompleteLabels.add("THANK YOU");
+      }
       if (result) labels.add(result.label);
       if (result?.label === "YES") yes = result;
       else if (result && !preferred) preferred = result;
@@ -185,7 +192,7 @@ function recognizeSamples(samples, requireClosure = true) {
   if (mostlyOpen && mostlyFlat && mouthStart && (Math.abs(last.tip.x - mouthStart.tip.x) > 0.15 || last.palm / mouthStart.palm > 1.14)) return prediction("THANK YOU", "Thank you");
   const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
   const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
-  if (mostlyOpen && mostlyFlat && nearMouth && outward && last.tip.y - first.tip.y > 0.12 && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth) > 0.25) {
+  if (mostlyOpen && mostlyFlat && nearMouth && (!requireClosure || hasMouthOrigin(first)) && outward && last.tip.y - first.tip.y > 0.12 && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth) > 0.25) {
     return prediction("THANK YOU", "Thank you");
   }
   const raised = ratio(samples, (sample) => !!sample.nose && sample.wrist.y < sample.nose.y + 0.55) >= 0.7;
@@ -205,6 +212,10 @@ function recognizeSamples(samples, requireClosure = true) {
   }
   return null;
 }
+function hasMouthOrigin(sample) {
+  const { mouth, mouthRadius, tip } = sample;
+  return mouth && mouthRadius && sample.open >= 3 && Math.abs(tip.x - mouth.x) <= mouthRadius && tip.y >= mouth.y - mouthRadius && tip.y <= mouth.y + 2 * mouthRadius;
+}
 function completedFistNod(history) {
   let start = 0;
   for (let i = 0; i < history.length; i++) if (history[i].open >= 2) start = i + 1;
@@ -213,30 +224,15 @@ function completedFistNod(history) {
   const first = samples[0];
   const last = samples.at(-1);
   if (last.time - first.time < 220 || first.open || last.open || ratio(samples, (sample) => sample.open === 0) < 0.8) return false;
-  const orientations = samples.map((sample) => {
-    const p = sample.hand.landmarks;
-    const pitches2 = [5, 9, 13, 17].map((i) => Math.atan2(p[i].z - p[0].z, p[0].y - p[i].y));
-    const anchor = pitches2[0];
-    const unwrapped = pitches2.map((angle) => anchor + Math.atan2(Math.sin(angle - anchor), Math.cos(angle - anchor))).sort((a, b) => a - b);
-    const x = (p[5].x + p[9].x + p[13].x + p[17].x) / 4 - p[0].x;
-    const y = (p[5].y + p[9].y + p[13].y + p[17].y) / 4 - p[0].y;
-    const z = (p[5].z + p[9].z + p[13].z + p[17].z) / 4 - p[0].z;
-    return { pitch: (unwrapped[1] + unwrapped[2]) / 2, sideways: Math.atan2(x, Math.hypot(y, z)) };
-  });
-  const pitches = [orientations[0].pitch];
-  for (let i = 1; i < orientations.length; i++) {
-    const delta = orientations[i].pitch - orientations[i - 1].pitch;
-    const wrapped = Math.atan2(Math.sin(delta), Math.cos(delta));
-    if (Math.abs(wrapped) > 1.2) return false;
-    pitches.push(pitches[i - 1] + wrapped);
-  }
+  const pitches = fistBendAngles(samples);
+  if (!pitches) return false;
   const smooth = pitches.map((pitch, i) => [
     pitches[Math.max(0, i - 1)],
     pitch,
     pitches[Math.min(pitches.length - 1, i + 1)]
   ].sort((a, b) => a - b)[1]);
   const excursion = span(smooth);
-  if (excursion < 0.35 || span(orientations.map((o) => o.sideways)) > Math.min(0.45, excursion * 0.65) || span(samples.map((sample) => sample.wrist.x)) > 0.25) return false;
+  if (excursion < 0.35 || span(samples.map((sample) => sample.wrist.x)) > 0.25) return false;
   let tail = samples.length - 1;
   while (tail > 0 && last.time - samples[tail].time < 75) tail--;
   if (span(smooth.slice(tail)) > 0.12 || span(samples.slice(tail).map((s) => s.wrist.x)) > 0.035 || span(samples.slice(tail).map((s) => s.wrist.y)) > 0.035) return false;
@@ -247,6 +243,40 @@ function completedFistNod(history) {
     const back = direction * (smooth[peak] - smooth.at(-1));
     return outward >= 0.35 && back >= Math.max(0.3, outward * 0.65) && Math.abs(smooth.at(-1) - smooth[0]) <= outward * 0.45 && samples[peak].time - first.time >= 60 && last.time - samples[peak].time >= 60;
   });
+}
+var subtract = (a, b) => ({ x: a.x - b.x, y: a.y - b.y, z: a.z - b.z });
+var dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+var cross = (a, b) => ({
+  x: a.y * b.z - a.z * b.y,
+  y: a.z * b.x - a.x * b.z,
+  z: a.x * b.y - a.y * b.x
+});
+function unit(vector) {
+  const length = Math.hypot(vector.x, vector.y, vector.z) || 1;
+  return { x: vector.x / length, y: vector.y / length, z: vector.z / length };
+}
+function fistBendAngles(samples) {
+  const orientations = samples.map(({ hand: { landmarks } }) => {
+    const knuckles = [5, 9, 13, 17].map((index) => landmarks[index]);
+    const center = knuckles.reduce((p, joint) => ({
+      x: p.x + joint.x / 4,
+      y: p.y + joint.y / 4,
+      z: p.z + joint.z / 4
+    }), { x: 0, y: 0, z: 0 });
+    return { axis: unit(subtract(landmarks[5], landmarks[17])), forward: unit(subtract(center, landmarks[0])) };
+  });
+  const { axis } = orientations[0];
+  if (orientations.some((sample) => dot(sample.axis, axis) < 0.9 || Math.abs(dot(sample.forward, axis)) > 0.5)) return null;
+  const angles = [0];
+  for (let index = 1; index < orientations.length; index++) {
+    const before = orientations[index - 1].forward;
+    const after = orientations[index].forward;
+    const projectedDot = dot(before, after) - dot(before, axis) * dot(after, axis);
+    const turn = Math.atan2(dot(cross(before, after), axis), projectedDot);
+    if (Math.abs(turn) > 1.2) return null;
+    angles.push(angles[index - 1] + turn);
+  }
+  return angles;
 }
 function directionChanges(values, epsilon) {
   let previous = 0;
@@ -714,19 +744,25 @@ var ASL2000_INPUT = {
 var MIN_HAND_FRAMES = 6;
 function hasHandEvidence(window2, sequenceLength = 50) {
   const features = sequenceLength * 2;
-  let frames2 = 0, previous = "";
+  let frames2 = 0;
+  let previousObserved = -1;
   for (let frame = 0; frame < sequenceLength; frame++) {
     let observed = false;
-    let signature = "";
-    for (let node = 13; node < NODE_COUNT && !observed; node++) {
-      if (window2[node * features + frame * 2] !== -1) observed = true;
+    let different = previousObserved < 0;
+    for (let node = 13; node < NODE_COUNT; node++) {
+      const current = node * features + frame * 2;
+      const x = window2[current], y = window2[current + 1];
+      observed || (observed = x !== -1 || y !== -1);
+      if (!different) {
+        const previous = node * features + previousObserved * 2;
+        different = x !== window2[previous] || y !== window2[previous + 1];
+      }
     }
     if (!observed) continue;
-    for (let node = 13; node < NODE_COUNT; node++) signature += `${window2[node * features + frame * 2]},`;
-    if (signature !== previous) frames2++;
-    previous = signature;
+    if (different && ++frames2 >= MIN_HAND_FRAMES) return true;
+    previousObserved = frame;
   }
-  return frames2 >= MIN_HAND_FRAMES;
+  return false;
 }
 var modelPromise = null;
 var loadController = null;

@@ -16,19 +16,31 @@ async function run(frames: VisionFrame[]) {
   worker.postMessage.mockClear();
   await worker.onmessage({ data: { type: "reset" } });
   for (const frame of frames) { await worker.onmessage({ data: { type: "frame", frame } }); await Promise.resolve(); }
-  return worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "confirmed" || m.type === "suggested").map(m => (m as { gloss: string }).gloss);
+  const messages = worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage);
+  expect(messages.some(message => message.type === "confirmed" && message.source === "model")).toBe(false);
+  return {
+    confirmed: messages.flatMap(message => message.type === "confirmed" ? [message.gloss] : []),
+    suggested: messages.flatMap(message => message.type === "suggested" ? [message.gloss] : []),
+  };
 }
 const COLUMNS = [...SIGNS, "I LOVE YOU", "abstain", "more than one word"] as const;
 const NON_SIGN = "non-sign movement";
 type Matrix = Record<string, Record<string, number>>;
 const matrices: Record<"rules" | "confidently_wrong_model", { matrix: Matrix; wrong: Record<string, string[]> }> = {
   rules: { matrix: {}, wrong: {} }, confidently_wrong_model: { matrix: {}, wrong: {} } };
-function record(target: keyof typeof matrices, row: string, words: string[], label: string) {
+const suggestions: Record<string, { trials_with_suggestions: number; suggestions: number; matching: number }> = {};
+function record(target: keyof typeof matrices, row: string, { confirmed: words, suggested }: Awaited<ReturnType<typeof run>>, label: string) {
   const { matrix, wrong } = matrices[target];
   matrix[row] ??= Object.fromEntries(COLUMNS.map(column => [column, 0]));
   const column = words.length === 0 ? "abstain" : words.length > 1 ? "more than one word" : words[0];
   matrix[row][column] = (matrix[row][column] ?? 0) + 1;
   if (column !== (row === NON_SIGN ? "abstain" : row)) (wrong[`${row} → ${column}`] ??= []).push(words.length > 1 ? `${label}: ${words.join(" + ")}` : label);
+  if (target === "confidently_wrong_model") {
+    const counts = suggestions[row] ??= { trials_with_suggestions: 0, suggestions: 0, matching: 0 };
+    counts.trials_with_suggestions += Number(suggested.length > 0);
+    counts.suggestions += suggested.length;
+    counts.matching += suggested.filter(gloss => gloss === row).length;
+  }
 }
 // A distractor for each sign: the closed-set model confidently reports the next core sign on every inference.
 const distractor = (sign: string) => SIGNS[(SIGNS.indexOf(sign as typeof SIGNS[number]) + 1) % SIGNS.length];
@@ -57,8 +69,11 @@ function markdown() {
     "> Synthetic kinematic fixtures through the real recognition worker. Each sign row has 51 runs: 15 capture conditions plus 36 variations (mirrored hand, 3 speeds, 2 distances, clean/jitter/dropout). The non-sign row has 19 everyday movements × 36 variations. Not recordings and not an accuracy measurement. Regenerate with `UPDATE_CONFUSION=1 npx vitest run tests/asl-confusion-matrix.test.ts`.", "",
     "## Starter rules only (model returns nothing)", "", ...table(matrices.rules.matrix), "",
     "## With a confidently wrong closed-set model", "",
-    "The model reports the next core sign (HELLO→NO, …, THANK YOU→HELLO) at 0.95 on every inference, or PLEASE for non-sign movements. This tests source arbitration, motion gating and two-evidence confirmation against a model that is always wrong.", "",
-    ...table(matrices.confidently_wrong_model.matrix), "", "## Wrong outcomes", ""];
+    "The model reports the next core sign (HELLO→NO, …, THANK YOU→HELLO) at 0.95 on every inference, or PLEASE for non-sign movements. The table counts transcript insertions.", "",
+    ...table(matrices.confidently_wrong_model.matrix), "", "## Research suggestions", "",
+    "| Intended | Trials with suggestions | Suggestions | Matching |", "| --- | ---: | ---: | ---: |",
+    ...Object.entries(suggestions).map(([sign, counts]) => `| ${sign} | ${counts.trials_with_suggestions} | ${counts.suggestions} | ${counts.matching} |`),
+    "", "## Wrong outcomes", ""];
   for (const [name, { wrong }] of Object.entries(matrices)) for (const [cell, count] of Object.entries(counted(wrong))) lines.push(`- ${name}: ${cell}: ${count}`);
   return lines.join("\n") + "\n";
 }
@@ -70,7 +85,8 @@ describe("cross-sign confusion matrix", () => {
   it("matches the committed matrices (regenerate with UPDATE_CONFUSION=1 and explain any change)", () => {
     const json = { schema: 1, status: "Synthetic kinematic fixtures; not recordings, not accuracy.", generated_by: "UPDATE_CONFUSION=1 npx vitest run tests/asl-confusion-matrix.test.ts",
       columns: COLUMNS, rules: { matrix: matrices.rules.matrix, wrong: counted(matrices.rules.wrong) },
-      confidently_wrong_model: { matrix: matrices.confidently_wrong_model.matrix, wrong: counted(matrices.confidently_wrong_model.wrong),
+      confidently_wrong_model: { matrix: matrices.confidently_wrong_model.matrix, research_suggestions: suggestions,
+        wrong: counted(matrices.confidently_wrong_model.wrong),
         wrong_conditions: Object.fromEntries(Object.entries(matrices.confidently_wrong_model.wrong).filter(([cell]) => !cell.startsWith(NON_SIGN)).map(([cell, labels]) => [cell, labels]).sort()) } };
     if (process.env.UPDATE_CONFUSION === "1") { writeFileSync(`${OUT}.json`, JSON.stringify(json, null, 2) + "\n"); writeFileSync(`${OUT}.md`, markdown()); }
     expect(json).toEqual(JSON.parse(readFileSync(`${OUT}.json`, "utf8")));
