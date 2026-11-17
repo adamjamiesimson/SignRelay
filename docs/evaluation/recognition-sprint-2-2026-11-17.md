@@ -69,7 +69,11 @@ These are source-stepped desktop replays, with both workers tested on the same d
 
 ## Verification status
 
-The worker build reproduced the candidate hash. The ASL static export passed runtime integrity and both rendered HTML tests. The browser frame-step and forced-failure controls passed. The dependency audit reported zero advisories for both the full tree and production tree, using the repository's existing failure policy. The 11-clip exact baseline gate rejected the same wrong PLEASE insertion from both Windows workers. The evaluation registry still reserves release evidence for separately evaluated runtimes.
+Typecheck, lint, worker build, asset policy and secret audit passed. The full Windows suite reported 912 passed, one skipped and six failures. The same six failures reproduced on the clean PR #61 baseline in the capture intake, trial logger, frozen dataset and glob shim tests. The ASL static export passed runtime integrity and both rendered HTML tests. The browser frame-step and forced-failure controls passed. The 11-clip exact video gate rejected the same wrong PLEASE insertion from both Windows workers.
+
+The dependency audit initially reported zero advisories. A later registry check on 17 November failed the repository's production dependency gate because Next.js 16.4.2 is in the affected range for a moderate cache-disclosure advisory. The first final static build also surfaced the advisory. A repeat completed the local export and integrity checks. The candidate keeps the baseline dependency versions for the controlled comparison. [Next.js advisory GHSA-mfr8-8qww-v76h](https://github.com/vercel/next.js/security/advisories/GHSA-mfr8-8qww-v76h)
+
+PR #61's five hosted checks passed at its recorded head. The candidate's GitHub upload is pending direct publication approval after automated review rejected the transfer. There are no candidate CI results. The Git bundle includes the candidate commits and uses PR #61's exact head as its prerequisite.
 
 ## Reproduce and validate
 
