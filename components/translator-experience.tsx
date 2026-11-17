@@ -609,6 +609,14 @@ export function TranslatorExperience() {
   useEffect(() => {
     const resume = () => {
       workerRef.current?.postMessage({ type: "reset" });
+      setSuggestion(null);
+      setCandidate(null);
+      setConfidence(0);
+      setBufferSize(0);
+      setRecognitionState("listening");
+      setRecognitionFeedback("");
+      setMotionReason(null);
+      setDetection(EMPTY_DETECTION);
       cameraProgressRef.current = performance.now();
       const video = videoRef.current;
       if (document.hidden || !engineRef.current || !video?.paused) return;

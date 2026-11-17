@@ -20,7 +20,7 @@ let workers: FakeWorker[], session: RecognitionSession;
 const onMessage = vi.fn(), onStatus = vi.fn();
 const send = (timestamp: number) => session.postMessage({ type: "frame", frame: { timestamp, hands: [], face: [], pose: [] } });
 beforeEach(() => {
-  vi.useFakeTimers();
+  vi.useFakeTimers({ toFake: ["Date", "performance", "setInterval", "clearInterval"] });
   vi.clearAllMocks();
   workers = [];
   session = new RecognitionSession(() => { const worker = new FakeWorker(); workers.push(worker); return worker; }, onMessage, onStatus);
@@ -50,6 +50,18 @@ describe("ongoing recognition sessions", () => {
     workers[1].acknowledge();
     expect(onMessage).toHaveBeenCalledOnce();
     expect(onStatus).toHaveBeenLastCalledWith({ state: "running", message: "" });
+  });
+  it("keeps worker timing and timeouts independent of wall-clock changes", () => {
+    send(1);
+    vi.setSystemTime(Date.now() + 60 * 60 * 1000);
+    vi.advanceTimersByTime(1000);
+    expect(workers).toHaveLength(1);
+    workers[0].acknowledge();
+    expect(session.lastRoundTripMs).toBe(1000);
+    send(1001);
+    vi.setSystemTime(Date.now() - 2 * 60 * 60 * 1000);
+    vi.advanceTimersByTime(8000);
+    expect(workers).toHaveLength(2);
   });
   it.each(["onerror", "onmessageerror"] as const)("recovers after %s without clearing previous transcript messages", event => {
     send(1); workers[0].acknowledge();
