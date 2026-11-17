@@ -36,7 +36,7 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
     "lucide-react": "^0.468.0",
-    "next": "16.4.2",
+    "next": "16.4.6",
     "onnxruntime-web": "^1.23.2",
     "react": "19.2.6",
     "react-dom": "19.2.6"
@@ -48,7 +48,7 @@
     "@types/react-dom": "19.2.3",
     "esbuild": "0.28.1",
     "eslint": "9.39.4",
-    "eslint-config-next": "16.4.2",
+    "eslint-config-next": "16.4.6",
     "fast-glob": "file:tooling/fast-glob-shim",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
