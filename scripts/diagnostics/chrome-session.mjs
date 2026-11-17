@@ -15,7 +15,19 @@ export async function startChrome(executable, { forwardAssets = false, proxy = p
   const browser = spawn(executable, [...args, "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
   let stderr = ""; browser.stderr.setEncoding("utf8"); browser.stderr.on("data", chunk => { stderr += chunk; });
   let socket;
-  const close = async () => { socket?.close(); browser.kill(); await rm(profile, { recursive: true, force: true, maxRetries: 3 }); };
+  const exited = new Promise(resolve => browser.once("close", resolve));
+  const close = async () => {
+    if (socket?.readyState === WebSocket.OPEN) {
+      // Let Chrome close its profile before removing it. Killing the parent
+      // first leaves temporary profile files locked on Windows.
+      socket.send(JSON.stringify({ id: 0, method: "Browser.close" }));
+      await Promise.race([exited, delay(2000)]);
+    }
+    socket?.close();
+    if (browser.exitCode === null && browser.signalCode === null) browser.kill();
+    await Promise.race([exited, delay(2000)]);
+    await rm(profile, { recursive: true, force: true, maxRetries: 6 });
+  };
   try {
     let tabs;
     for (let i = 0; i < 150; i++) {

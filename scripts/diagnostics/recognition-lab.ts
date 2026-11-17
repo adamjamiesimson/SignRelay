@@ -1,5 +1,6 @@
 import { VisionEngine, type VisionEngineOptions } from "../../lib/vision-engine";
 import { RecognitionSession } from "../../lib/recognition-session";
+import { RollingTimer } from "../../lib/frame-perf";
 import { diagnoseHandedness } from "../../lib/handedness-diagnostic";
 import { summarizeTrials } from "../evaluation-metrics.mjs";
 import type { LanguageId } from "../../lib/model-adapters";
@@ -58,6 +59,8 @@ const session = new RecognitionSession(() => new Worker(workerUrl, { type: "modu
   if (message.type === "suggested") trial.suggestions.push(message.gloss);
   if (message.type === "analysis") {
     trial.analyses++;
+    if (session.lastRoundTripMs !== null) trial.roundTrip.record(session.lastRoundTripMs);
+    if (session.stats.lastQueueAgeMs !== null) trial.queueWait.record(session.stats.lastQueueAgeMs);
     const reason = message.motionReason ?? "none";
     trial.motion[reason] = (trial.motion[reason] ?? 0) + 1;
     if (message.motionDetail) trial.motion[`detail:${message.motionDetail}`] = (trial.motion[`detail:${message.motionDetail}`] ?? 0) + 1;
@@ -83,8 +86,10 @@ function metadata() {
 function startTrial() {
   const data = metadata();
   session.postMessage({ type: "templates", language: data.language as LanguageId, templates: [] });
+  session.resetStats();
   return { data, confirmations: [] as WorkerConfirmation[], suggestions: [] as string[], motion: {} as Record<string, number>, frames: 0, hands: 0, analyses: 0,
-    sources: {} as Record<string, number>, handedness: {} as Record<string, number>, errors: [] as string[], started: performance.now() };
+    sources: {} as Record<string, number>, handedness: {} as Record<string, number>, errors: [] as string[], started: performance.now(),
+    tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer() };
 }
 function observe(frame: VisionFrame) {
   traceObserver?.({ type: "frame", frame: structuredClone(frame) });
@@ -106,7 +111,10 @@ function process(timestamp: number) {
   const context = canvas.getContext("2d")!;
   context.save(); if (checked("mirror-input")) { context.translate(canvas.width, 0); context.scale(-1, 1); }
   context.drawImage(video, 0, 0); context.restore();
-  observe(engine.process(canvas, timestamp));
+  const started = performance.now();
+  const frame = engine.process(canvas, timestamp);
+  trial?.tracking.record(performance.now() - started);
+  observe(frame);
 }
 async function finishTrial(extra: Record<string, unknown> = {}) {
   // Let queued acknowledgements settle; never replay/hold a source frame to
@@ -119,6 +127,8 @@ async function finishTrial(extra: Record<string, unknown> = {}) {
     accepted_glosses: accepted, confirmed_sources: trial.confirmations.map(message => message.source ?? "unknown"),
     tracker_variant: trackerVariant || "production", suggested_glosses: trial.suggestions, motion_reasons: trial.motion, hand_reacquisition: engine ? { ...engine.reacquisition } : null,
     frames: trial.frames, hand_frames: trial.hands, analyses: trial.analyses, candidate_sources: trial.sources, handedness_counts: trial.handedness,
+    performance: { tracking_ms: trial.tracking.summary(), worker_round_trip_ms: trial.roundTrip.summary(),
+      queue_wait_ms: trial.queueWait.summary(), ...session.stats },
     errors: trial.errors, status: trial.errors.length ? "error" : "complete", duration_ms: performance.now() - trial.started };
   trial = null; session.postMessage({ type: "reset" }); rows.push(row);
   el("results").textContent = JSON.stringify({ latest: row, summary: summarizeTrials(rows) }, null, 2);

@@ -101,8 +101,9 @@ try {
       // response. Read them in order while the trial page is still mounted.
       const count = await browser.evaluate("window.__qaTrace.length");
       const events = [];
-      for (let start = 0; start < count; start += 8) {
-        const end = Math.min(start + 8, count);
+      const batchSize = 4;
+      for (let start = 0; start < count; start += batchSize) {
+        const end = Math.min(start + batchSize, count);
         const batch = await browser.evaluate(`window.__qaTrace.slice(${start}, ${end})`);
         if (!Array.isArray(batch) || batch.length !== end - start) throw new Error(`Incomplete development trace: ${fixture.trial_id}`);
         events.push(...batch);
