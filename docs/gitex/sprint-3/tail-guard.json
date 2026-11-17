@@ -36,8 +36,8 @@
         "wrong_or_missing": 0
       },
       "THANK YOU": {
-        "correct": 42,
-        "extra_words": 9,
+        "correct": 41,
+        "extra_words": 10,
         "wrong_or_missing": 0
       }
     },
@@ -76,6 +76,7 @@
   },
   "production_extra_words": [
     "THANK YOU 30 fps: THANK YOU + HELLO",
+    "THANK YOU slow (1.6 s): THANK YOU + HELLO",
     "THANK YOU left hand: THANK YOU + HELLO",
     "THANK YOU farther from camera: THANK YOU + HELLO",
     "THANK YOU closer to camera: THANK YOU + HELLO",
@@ -88,28 +89,28 @@
   "everyday_movements": {
     "rules, production": {
       "HELLO/starter": 144,
-      "THANK YOU/starter": 136,
-      "abstain": 404
+      "THANK YOU/starter": 116,
+      "abstain": 424
     },
     "rules, guarded": {
       "HELLO/starter": 144,
-      "THANK YOU/starter": 136,
-      "abstain": 404
+      "THANK YOU/starter": 116,
+      "abstain": 424
     },
     "confidently_wrong_model, production": {
       "HELLO/starter + PLEASE/model": 12,
       "HELLO/starter": 132,
-      "PLEASE/model + THANK YOU/starter + PLEASE/model": 4,
+      "PLEASE/model + THANK YOU/starter": 4,
       "PLEASE/model": 44,
       "THANK YOU/starter + PLEASE/model": 4,
-      "THANK YOU/starter": 120,
-      "abstain": 368
+      "THANK YOU/starter": 108,
+      "abstain": 380
     },
     "confidently_wrong_model, guarded": {
       "HELLO/starter": 144,
       "PLEASE/model": 48,
-      "THANK YOU/starter": 124,
-      "abstain": 368
+      "THANK YOU/starter": 112,
+      "abstain": 380
     }
   },
   "rule_word_then_unrelated_movement": {
@@ -123,12 +124,10 @@
     },
     "HELLO, still in view 400 ms, glide 300 ms into an unrelated movement": {
       "production": [
-        "HELLO",
-        "THANK YOU"
+        "HELLO"
       ],
       "guarded": [
-        "HELLO",
-        "THANK YOU"
+        "HELLO"
       ]
     },
     "HELLO, still in view 1500 ms, jump into an unrelated movement": {
@@ -141,12 +140,10 @@
     },
     "HELLO, still in view 1500 ms, glide 300 ms into an unrelated movement": {
       "production": [
-        "HELLO",
-        "THANK YOU"
+        "HELLO"
       ],
       "guarded": [
-        "HELLO",
-        "THANK YOU"
+        "HELLO"
       ]
     },
     "HELLO, still in view 2500 ms, jump into an unrelated movement": {
@@ -159,12 +156,10 @@
     },
     "HELLO, still in view 2500 ms, glide 300 ms into an unrelated movement": {
       "production": [
-        "HELLO",
-        "THANK YOU"
+        "HELLO"
       ],
       "guarded": [
-        "HELLO",
-        "THANK YOU"
+        "HELLO"
       ]
     },
     "NO, still in view 400 ms, jump into an unrelated movement": {
@@ -361,7 +356,6 @@
     },
     "THANK YOU, still in view 400 ms, jump into an unrelated movement": {
       "production": [
-        "THANK YOU",
         "THANK YOU"
       ],
       "guarded": [
@@ -370,7 +364,6 @@
     },
     "THANK YOU, still in view 400 ms, glide 300 ms into an unrelated movement": {
       "production": [
-        "THANK YOU",
         "THANK YOU"
       ],
       "guarded": [
@@ -379,7 +372,6 @@
     },
     "THANK YOU, still in view 1500 ms, jump into an unrelated movement": {
       "production": [
-        "THANK YOU",
         "THANK YOU"
       ],
       "guarded": [
@@ -388,7 +380,6 @@
     },
     "THANK YOU, still in view 1500 ms, glide 300 ms into an unrelated movement": {
       "production": [
-        "THANK YOU",
         "THANK YOU"
       ],
       "guarded": [
@@ -412,15 +403,7 @@
       ]
     }
   },
-  "production_repeated_from_tail": [
-    "HELLO, still in view 400 ms, glide 300 ms into an unrelated movement: HELLO + THANK YOU",
-    "HELLO, still in view 1500 ms, glide 300 ms into an unrelated movement: HELLO + THANK YOU",
-    "HELLO, still in view 2500 ms, glide 300 ms into an unrelated movement: HELLO + THANK YOU",
-    "THANK YOU, still in view 400 ms, jump into an unrelated movement: THANK YOU + THANK YOU",
-    "THANK YOU, still in view 400 ms, glide 300 ms into an unrelated movement: THANK YOU + THANK YOU",
-    "THANK YOU, still in view 1500 ms, jump into an unrelated movement: THANK YOU + THANK YOU",
-    "THANK YOU, still in view 1500 ms, glide 300 ms into an unrelated movement: THANK YOU + THANK YOU"
-  ],
+  "production_repeated_from_tail": [],
   "rule_word_then_model_word": {
     "HELLO then GOOD, out of view 400 ms": {
       "production": [
@@ -755,7 +738,7 @@
     "THANK YOU then GOOD, held still 400 ms": {
       "production": [
         "THANK YOU",
-        "THANK YOU"
+        "GOOD"
       ],
       "guarded": [
         "THANK YOU",
@@ -765,7 +748,7 @@
     "THANK YOU then GOOD, held still 700 ms": {
       "production": [
         "THANK YOU",
-        "THANK YOU"
+        "GOOD"
       ],
       "guarded": [
         "THANK YOU",
@@ -774,7 +757,6 @@
     },
     "THANK YOU then GOOD, held still 1500 ms": {
       "production": [
-        "THANK YOU",
         "THANK YOU",
         "GOOD"
       ],
@@ -938,7 +920,8 @@
   },
   "no_rest_cost": {
     "production": [
-      "THANK YOU"
+      "THANK YOU",
+      "GOOD"
     ],
     "guarded": [
       "THANK YOU"
