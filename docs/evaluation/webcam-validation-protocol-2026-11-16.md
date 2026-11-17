@@ -41,3 +41,19 @@ Sixty seconds of continuous signing: the `?perf` line must show at least 10 fram
 - Do not tune rules or thresholds on these trials and then re-measure on the same trials.
 - A tracking failure is a failure, not a removed trial.
 - These sessions say nothing about the sealed holdout, which stays unopened.
+
+## Paired comparison for the follow-up candidate
+
+Freeze and record both Git commits and the recognition worker hashes before recruiting. Use a separate local export for each build. Recruit consenting fluent ASL signers whose recordings were absent from development, and give each a pseudonym. Have an independent fluent reviewer verify sign identity and variant. If the signer identity, intended gloss, or variant is uncertain, record that separately and resolve it before scoring. Keep developer rehearsals out of the comparison.
+
+Use the same browser, device, camera framing, lighting and prompt list for both builds. Shuffle prompts within each block and alternate which build goes first across signers. Give the signer one attempt per prompt. Reset the transcript between prompts and use the same five-second observation window for both builds. Record all transcript words in order, and mark any second insertion of the expected word on a single sign separately as a duplicate. Keep model suggestions and suggestion matches in their own columns. Leave the suggestion card untouched.
+
+Add these controls twice per build.
+
+- Lift and lower a closed fist, hold a cup, and make an open-handed conversational sweep.
+- Make a repeated wave, shield the eyes, and let a hand leave and reenter the frame.
+- Sign one supported sign, then stop and restart the camera during the pause. Check for an unexpected insertion during the pause, then sign again. Repeat with a language switch and with two intentional repetitions separated by a rest.
+
+Use the `?perf` overlay for the analyzed frame rate, tracking time, worker round-trip time, queue wait, dropped frames and hand coverage. Sample it every ten seconds during the same one-minute block. Record browser CPU over that minute with the browser or operating-system task manager. For end-to-end latency, have an observer mark the end of the visible stroke and the first transcript insertion with the same clock. Report the median and 95th percentile for accepted trials and include the count. Record abstentions as their own outcome and include all camera or processing failures in the results.
+
+Compare per-signer and per-sign correct, wrong, abstained and failed trial counts. Count everyday-motion false inserts, unsupported-sign false inserts, duplicates and suggestions separately. Review all newly wrong trials before a release decision. If a result informs any change to the candidate, use new signers and recordings for the next comparison.
