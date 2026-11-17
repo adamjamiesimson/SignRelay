@@ -2,14 +2,16 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { basename, join, relative, resolve, sep } from "node:path";
 import { describeAslTemporal, ASL_TEMPORAL_FEATURES } from "../lib/asl-temporal-features";
+import { AslMotionSpotter } from "../lib/asl-motion-spotter";
 import { analyzeSignMotion } from "../lib/sign-motion";
 import type { VisionFrame } from "../lib/vision-types";
 import { aslVocabulary, fingerprint, signerKey, validateManifest } from "../scripts/evaluation-manifest.mjs";
 import { loadFrozenCohorts } from "../scripts/evaluation-cohorts.mjs";
 
 const VOCABULARY = ["HELLO", "THANK YOU", "PLEASE", "YES", "NO"];
-const [manifestPath, rawDir, output] = process.argv.slice(2);
+const [manifestPath, rawDir, output, option] = process.argv.slice(2);
 if (!manifestPath || !rawDir || !output) throw new Error("Supply manifest, native extraction directory and ignored feature output");
+if (option && option !== "--augment-motion") throw new Error("Unknown feature option");
 function contained(parent: string, path: string) {
   const local = relative(resolve(parent), resolve(path));
   return local !== "" && local !== ".." && !local.startsWith(`..${sep}`) && resolve(parent, local) === resolve(path);
@@ -42,14 +44,33 @@ for (const row of manifest) {
   const descriptor = describeAslTemporal(frames);
   let firstReady: number | null = null;
   let motionReason = "no-hand";
+  let gateFrames: VisionFrame[] = [];
   for (let i = 0; i < frames.length; i++) {
     const result = analyzeSignMotion(frames.slice(Math.max(0, i - 109), i + 1));
     motionReason = result.detail;
-    if (result.ready) { firstReady = frames[i].timestamp; break; }
+    if (result.ready) { firstReady = frames[i].timestamp; gateFrames = result.sequence; break; }
+  }
+  let augmentation: number[][] | undefined;
+  if (option === "--augment-motion" && descriptor) {
+    const spotter = new AslMotionSpotter();
+    let bestSegment: VisionFrame[] = [];
+    for (const frame of frames) {
+      const segment = spotter.push(frame);
+      if (segment && segment.frames.length > bestSegment.length) bestSegment = segment.frames;
+    }
+    // Include a detected boundary and a short time crop, without fabricating
+    // landmarks or applying the expected gloss to select the window.
+    const origin = frames[0].timestamp;
+    const cropped = frames.filter(frame => frame.timestamp >= origin + 100 && frame.timestamp <= frames.at(-1)!.timestamp - 100);
+    augmentation = [gateFrames, bestSegment, cropped].flatMap(window => {
+      const example = describeAslTemporal(window);
+      return example ? [example.features] : [];
+    });
   }
   rows.push({ ...shared, status: "complete", framework: runtime.protocol, frames: frames.length, quality: extracted.quality,
-    firstReady, motionReason, ...descriptor });
+    firstReady, motionReason, ...descriptor, ...(augmentation ? { augmentation } : {}) });
 }
-await writeFile(output, JSON.stringify({ schema: ASL_TEMPORAL_FEATURES, manifest: basename(manifestPath), runtime, vocabulary: VOCABULARY, rows }), { flag: "wx" });
+await writeFile(output, JSON.stringify({ schema: ASL_TEMPORAL_FEATURES, manifest: basename(manifestPath), runtime,
+  vocabulary: VOCABULARY, ...(option ? { augmentation: option } : {}), rows }), { flag: "wx" });
 console.log(JSON.stringify({ trials: rows.length, descriptors: rows.filter(row => "features" in row).length,
   ready: rows.filter(row => "firstReady" in row && row.firstReady !== null).length, failed: rows.filter(row => row.status !== "complete").length }));

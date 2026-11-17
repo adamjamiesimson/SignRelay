@@ -45,6 +45,8 @@ The optional RGB experiment uses the same samples and calibration folds with gra
 python training/compare_asl_rgb.py evaluation/derived/popsign-rebirth-v1/train-features.json evaluation/derived/popsign-rebirth-v1/train.json evaluation/raw/rebirth-train20 evaluation/derived/popsign-rebirth-v1/val-features.json evaluation/derived/popsign-rebirth-v1/val.json evaluation/raw/rebirth-val20 evaluation/derived/popsign-rebirth-v1/rgb-comparison.json
 ```
 
+To reproduce the selected research weights, run the training feature command again with a fresh filename and the `--augment-motion` argument. Pass those training features and the same unaugmented validation features to the trainer and use a fresh model output directory. Augmentation takes windows from the observed clip. The signer-fold and calibration contracts still apply.
+
 ## Browser validation
 
 The runner accepts `--temporal-model=path/to/model.json` with a frozen development manifest and cohort lock. The diagnostic compares clip and spotted suggestions against current worker output, and fingerprints the weights.

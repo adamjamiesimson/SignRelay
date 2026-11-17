@@ -42,7 +42,8 @@ for (const trial of manifest) {
     await dispatch({ type: "frame", frame });
     await yieldOnce();
   }
-  rows.push({ trial_id: trial.trial_id, kind: trial.role_in_candidate, expected: trial.expected_gloss, status: trace.status,
+  const kind = trial.role_in_candidate ?? (trial.cohort_group === "target" ? "target" : "unsupported");
+  rows.push({ trial_id: trial.trial_id, kind, expected: trial.expected_gloss, status: trace.status,
     confirmed: messages.filter(row => row.type === "confirmed").map(row => row.gloss),
     suggested: messages.filter(row => row.type === "suggested").map(row => row.gloss),
     errors: [...new Set(messages.flatMap(row => row.type === "fault" ? [row.message]

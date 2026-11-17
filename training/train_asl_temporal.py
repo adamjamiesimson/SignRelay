@@ -47,20 +47,26 @@ def fit(rows, labels, algorithm):
     examples = [row for row in rows if "features" in row]
     features = np.array([row["features"] for row in examples], dtype=np.float64)
     y = np.array([labels.index(row["expected"] if row["kind"] == "target" else UNKNOWN) for row in examples])
-    counts = np.bincount(y, minlength=len(labels))
+    sample_weights = np.ones(len(examples))
+    if any(row.get("augmentation") for row in examples):
+        expanded = [([row["features"], *row.get("augmentation", [])], label) for row, label in zip(examples, y, strict=True)]
+        features = np.array([sample for group, _ in expanded for sample in group], dtype=np.float64)
+        y = np.array([label for group, label in expanded for _ in group])
+        sample_weights = np.array([1 / len(group) for group, _ in expanded for _ in group])
+    counts = np.bincount(y, weights=sample_weights, minlength=len(labels))
     if not counts.min():
         raise ValueError(f"Missing a fit class: {dict(zip(labels, counts.tolist()))}")
-    mean = features.mean(axis=0)
-    scale = np.maximum(features.std(axis=0), 0.20)
+    mean = np.average(features, axis=0, weights=sample_weights)
+    scale = np.maximum(np.sqrt(np.average((features - mean) ** 2, axis=0, weights=sample_weights)), 0.20)
     x = (features - mean) / scale
     if algorithm == "centroid":
-        centers = np.stack([x[y == i].mean(axis=0) for i in range(len(labels))])
+        centers = np.stack([np.average(x[y == i], axis=0, weights=sample_weights[y == i]) for i in range(len(labels))])
         weights = 2 * centers
         bias = -(centers ** 2).sum(axis=1)
     else:
         # Ridge regression in the sample dimension, with class-balanced target
         # weights and an unpenalized intercept from weighted centering.
-        w = np.sqrt(len(x) / (len(labels) * counts[y]))
+        w = np.sqrt(sample_weights * counts.sum() / (len(labels) * counts[y]))
         targets = np.eye(len(labels))[y]
         x_mean = np.average(x, axis=0, weights=w ** 2)
         y_mean = np.average(targets, axis=0, weights=w ** 2)
@@ -189,6 +195,7 @@ def main():
     report = {"schema": SCHEMA, "seed": SEED, "code_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
               "training_features_sha256": train_hash, "development_features_sha256": dev_hash,
               "runtime": {"training": train["runtime"], "development": development["runtime"], "numpy": np.__version__},
+              "training_augmentation": train.get("augmentation"),
               "signers": {"train": len(signers), "development": len({r["signer"] for r in b})},
               "note": "Isolated clip boundaries supplied by the publisher. Intervals assume independent clips and ignore signer clustering.",
               "models": {}}
