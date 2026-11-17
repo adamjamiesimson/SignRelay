@@ -61,8 +61,12 @@ export function evaluateAudit({ full, production, exceptions, today }) {
 }
 
 function npmAudit(args) {
+  const npmEntry = process.env.npm_execpath;
+  const command = npmEntry ? process.execPath : "npm";
+  const auditArgs = ["audit", "--json", ...args];
   try {
-    return JSON.parse(execFileSync("npm", ["audit", "--json", ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }));
+    return JSON.parse(execFileSync(command, npmEntry ? [npmEntry, ...auditArgs] : auditArgs,
+      { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }));
   } catch (error) {
     // npm exits 1 when it finds advisories but still prints the JSON report.
     if (typeof error.stdout === "string" && error.stdout.trim().startsWith("{")) return JSON.parse(error.stdout);

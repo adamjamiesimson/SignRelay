@@ -34,7 +34,12 @@ describe("signer identity cannot leak through aliases", () => {
 });
 
 describe("sealed holdout stays unseen", () => {
-  const fetch = (manifest: string, ...flags: string[]) => spawnSync("python3", ["training/fetch_evaluation_clips.py", manifest, ...flags], { encoding: "utf8" });
+  const fetch = (manifest: string, ...flags: string[]) => {
+    const python = process.env.SIGNRELAY_PYTHON ?? (process.platform === "win32" ? "python" : "python3");
+    const result = spawnSync(python, ["training/fetch_evaluation_clips.py", manifest, ...flags], { encoding: "utf8" });
+    if (result.error) throw new Error("Set SIGNRELAY_PYTHON to the Python executable for the dataset guard tests", { cause: result.error });
+    return result;
+  };
   it("refuses to fetch the sealed manifest before network access", () => {
     const result = fetch(sealedFile);
     expect(result.status).not.toBe(0);

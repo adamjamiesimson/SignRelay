@@ -12,7 +12,7 @@ export const STEPS = {
     ["node", "scripts/prepare-export.mjs"],
     ["node", "scripts/install-vision-assets.mjs"],
     ["npm", "run", "build:worker"],
-    ["npx", "next", "build"],
+    ["node", "node_modules/next/dist/bin/next", "build"],
     ["node", "scripts/exclude-private-routes.mjs"],
     ["node", "scripts/prune-profile.mjs", "asl-demo"],
     ["node", "scripts/secure-export.mjs"],
@@ -29,8 +29,14 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const env = { ...process.env, NEXT_PUBLIC_SIGNRELAY_PROFILE: profile, NEXT_PUBLIC_GA_MEASUREMENT_ID: "" };
   for (const [command, ...args] of STEPS[profile]) {
     console.log(`\n▶ ${command} ${args.join(" ")}`);
-    const result = spawnSync(command, args, { stdio: "inherit", env });
-    if (result.status !== 0) { console.error(`Profile ${profile} build failed at: ${command} ${args.join(" ")}`); process.exit(result.status ?? 1); }
+    const npmEntry = command === "npm" ? process.env.npm_execpath : undefined;
+    const executable = command === "node" || npmEntry ? process.execPath : command;
+    const result = spawnSync(executable, npmEntry ? [npmEntry, ...args] : args, { stdio: "inherit", env });
+    if (result.status !== 0) {
+      if (result.error) console.error(result.error.message);
+      console.error(`Profile ${profile} build failed at: ${command} ${args.join(" ")}`);
+      process.exit(result.status ?? 1);
+    }
   }
   console.log(`\nProfile ${profile} export ready in out/ (runtime-manifest.json records exactly what it contains).`);
 }

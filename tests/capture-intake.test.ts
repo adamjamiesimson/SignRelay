@@ -77,7 +77,11 @@ describe("capture folder and intake file hardening", () => {
   it("refuses links, folders, hidden and unexpected files, and oversized sidecars before reading them", async () => {
     const outside = folder({ "secret.webm": webm(9) });
     const linked = folder({});
-    symlinkSync(join(outside, "secret.webm"), join(linked, "dev-20261017-p01-sign-1-1.webm"));
+    // Windows junctions let an unprivileged user redirect a directory entry.
+    // POSIX uses a file link to exercise the same lstat guard.
+    const windows = process.platform === "win32";
+    symlinkSync(windows ? outside : join(outside, "secret.webm"),
+      join(linked, "dev-20261017-p01-sign-1-1.webm"), windows ? "junction" : "file");
     await expect(readCaptureDirectory(linked)).rejects.toThrow("not a regular file");
     const nested = folder({}); mkdirSync(join(nested, "sub"));
     await expect(readCaptureDirectory(nested)).rejects.toThrow("not a regular file");
