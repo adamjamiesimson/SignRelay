@@ -7,6 +7,9 @@ import type { LanguageId } from "../../lib/model-adapters";
 import type { VisionFrame, WorkerConfirmation, WorkerMessage } from "../../lib/vision-types";
 import { TASKS_VERSION as TASKS_WASM_VERSION } from "../../lib/vision-runtime.mjs";
 import { loadVideoData, seekDecodedFrame } from "./video-frame-step";
+import { AslMotionSpotter } from "../../lib/asl-motion-spotter";
+import { describeAslTemporal } from "../../lib/asl-temporal-features";
+import { parseAslTemporalModel, predictAslTemporal } from "../../lib/asl-temporal-model";
 
 declare const __TASKS_JS_VERSION__: string;
 
@@ -24,6 +27,13 @@ let fileController: AbortController | null = null;
 // Opt-in local debugging only. No trace is retained by the default lab or app.
 type TraceEvent = { type: "frame"; frame: VisionFrame } | { type: "worker"; message: WorkerMessage };
 let traceObserver: ((event: TraceEvent) => void) | undefined;
+let temporalModel: ReturnType<typeof parseAslTemporalModel> | undefined;
+const scoreTemporal = (model: NonNullable<typeof temporalModel>, frames: VisionFrame[]) => {
+  const start = performance.now();
+  const descriptor = describeAslTemporal(frames);
+  const prediction = descriptor ? predictAslTemporal(model, descriptor.features) : null;
+  return { prediction, elapsed_ms: performance.now() - start, observed_bins: descriptor?.observedBins ?? 0 };
+};
 const params = new URLSearchParams(location.search);
 // Evaluation only: tracker variants are compared on the same recordings before
 // any setting may change in the app. Example: ?tracker=reacquire:1,detect:0.3
@@ -89,7 +99,11 @@ function startTrial() {
   session.resetStats();
   return { data, confirmations: [] as WorkerConfirmation[], suggestions: [] as string[], motion: {} as Record<string, number>, frames: 0, hands: 0, analyses: 0,
     sources: {} as Record<string, number>, handedness: {} as Record<string, number>, errors: [] as string[], started: performance.now(),
-    tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer() };
+    tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(),
+    temporal: temporalModel && data.language === "asl" ? {
+      model: temporalModel, frames: [] as VisionFrame[], spotter: new AslMotionSpotter(),
+      proposals: [] as Array<ReturnType<typeof scoreTemporal> & { source_ms: number; boundary: string }>,
+    } : null };
 }
 function observe(frame: VisionFrame) {
   traceObserver?.({ type: "frame", frame: structuredClone(frame) });
@@ -98,6 +112,13 @@ function observe(frame: VisionFrame) {
     hands: diagnoseHandedness(frame, value("physical-hand") as "Left" | "Right" | "Unknown") }, null, 2);
   if (trial) {
     trial.frames++; if (frame.hands.length) trial.hands++;
+    const temporal = trial.temporal;
+    if (temporal) {
+      temporal.frames.push(frame);
+      const segment = temporal.spotter.push(frame);
+      if (segment) temporal.proposals.push({ ...scoreTemporal(temporal.model, segment.frames),
+        source_ms: segment.observedAt - temporal.frames[0].timestamp, boundary: segment.boundary });
+    }
     for (const hand of diagnoseHandedness(frame, "Unknown")) {
       const key = `${hand.taskLabel}/pose:${hand.nearestPose}`;
       trial.handedness[key] = (trial.handedness[key] ?? 0) + 1;
@@ -123,13 +144,15 @@ async function finishTrial(extra: Record<string, unknown> = {}) {
   if (!trial) throw new Error("No trial running");
   if (!trial.frames || !trial.analyses) trial.errors.push("No processed frames or worker acknowledgements");
   const accepted = trial.confirmations.map(message => message.gloss);
+  const temporal = trial.temporal;
   const row = { ...trial.data, ...extra, predicted_gloss: accepted[0] ?? null, accepted: accepted.length > 0,
     accepted_glosses: accepted, confirmed_sources: trial.confirmations.map(message => message.source ?? "unknown"),
     tracker_variant: trackerVariant || "production", suggested_glosses: trial.suggestions, motion_reasons: trial.motion, hand_reacquisition: engine ? { ...engine.reacquisition } : null,
     frames: trial.frames, hand_frames: trial.hands, analyses: trial.analyses, candidate_sources: trial.sources, handedness_counts: trial.handedness,
     performance: { tracking_ms: trial.tracking.summary(), worker_round_trip_ms: trial.roundTrip.summary(),
       queue_wait_ms: trial.queueWait.summary(), ...session.stats },
-    errors: trial.errors, status: trial.errors.length ? "error" : "complete", duration_ms: performance.now() - trial.started };
+    errors: trial.errors, status: trial.errors.length ? "error" : "complete", duration_ms: performance.now() - trial.started,
+    ...(temporal ? { temporal_experiment: { bounded_clip: scoreTemporal(temporal.model, temporal.frames), stream: temporal.proposals } } : {}) };
   trial = null; session.postMessage({ type: "reset" }); rows.push(row);
   el("results").textContent = JSON.stringify({ latest: row, summary: summarizeTrials(rows) }, null, 2);
   status("Trial complete. Results include every accepted word, including extra wrong words.");
@@ -211,4 +234,5 @@ el("export").onclick = () => {
 };
 window.addEventListener("pagehide", () => { void stop(); session.terminate(); });
 (window as Window & { signrelayLab?: unknown }).signrelayLab = { evaluateFile, rows, stop,
-  setTraceObserver: (observer: typeof traceObserver) => { traceObserver = observer; } };
+  setTraceObserver: (observer: typeof traceObserver) => { traceObserver = observer; },
+  setTemporalModel: (model: unknown) => { temporalModel = parseAslTemporalModel(model); } };
