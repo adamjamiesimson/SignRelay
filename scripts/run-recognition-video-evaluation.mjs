@@ -16,6 +16,10 @@ const [executable, input, output, ...flags] = process.argv.slice(2);
 if (!executable || !input || !output) throw new Error("Supply Chrome executable, manifest JSON and output JSONL");
 const captureFrames = flags.includes("--capture-frames");
 if (captureFrames && flags.includes("--final-holdout")) throw new Error("Development frame tracing cannot be combined with a final holdout run");
+const modelOption = flags.find(flag => flag.startsWith("--temporal-model="));
+if (modelOption && flags.includes("--final-holdout")) throw new Error("Temporal experiments cannot run against the final holdout");
+const modelBytes = modelOption ? await readFile(modelOption.slice("--temporal-model=".length)) : null;
+const temporalModel = modelBytes ? JSON.parse(modelBytes) : null;
 const manifestBytes = await readFile(input);
 const manifest = JSON.parse(manifestBytes);
 if (flags.includes("--reviewed-pilot")) for (const row of manifest) row.evaluation_split = "development";
@@ -86,6 +90,7 @@ try {
       document.getElementById('mirror-input').checked = ${flags.includes("--mirrored")};
     })()`);
     if (captureFrames) await browser.evaluate("window.__qaTrace = []; window.signrelayLab.setTraceObserver(event => window.__qaTrace.push(event))");
+    if (temporalModel) await browser.evaluate(`window.signrelayLab.setTemporalModel(${JSON.stringify(temporalModel)})`);
     const document = await browser.send("DOM.getDocument");
     const { nodeId } = await browser.send("DOM.querySelector", { nodeId: document.root.nodeId, selector: "#file" });
     await browser.send("DOM.setFileInputFiles", { nodeId, files: [path.resolve(fixture.file)] });
@@ -96,16 +101,28 @@ try {
       const partial = await browser.evaluate("window.signrelayLab?.rows.at(-1) ?? null").catch(() => null);
       row = failedEvaluationTrial(fixture, fields.split, partial, error);
     }
-    if (traceDir) await writeFile(path.join(traceDir, `${fixture.recording_sha256}.json`), JSON.stringify({
-      trial_id: fixture.trial_id, recording_sha256: fixture.recording_sha256, row,
-      events: await browser.evaluate("window.__qaTrace"),
-    }), { flag: "wx" });
+    if (traceDir) {
+      // Long traces with two hands can be too large for one CDP WebSocket
+      // response. Read them in order while the trial page is still mounted.
+      const count = await browser.evaluate("window.__qaTrace.length");
+      const events = [];
+      const batchSize = 4;
+      for (let start = 0; start < count; start += batchSize) {
+        const end = Math.min(start + batchSize, count);
+        const batch = await browser.evaluate(`window.__qaTrace.slice(${start}, ${end})`);
+        if (!Array.isArray(batch) || batch.length !== end - start) throw new Error(`Incomplete development trace: ${fixture.trial_id}`);
+        events.push(...batch);
+      }
+      await writeFile(path.join(traceDir, `${fixture.recording_sha256}.json`), JSON.stringify({
+        trial_id: fixture.trial_id, recording_sha256: fixture.recording_sha256, row, events,
+      }), { flag: "wx" });
+    }
     if (row.status === "complete" && (row.tasks_js_version !== installedTasksJs
       || row.tasks_wasm_version !== TASKS_VERSION)) throw new Error("Diagnostic does not report the installed JS and pinned WASM versions; rebuild the lab");
     if (fixture.recording_sha256 && fixture.recording_sha256 !== row.recording_sha256) throw new Error("Recording fingerprint differs from frozen manifest");
     Object.assign(row, { trial_id: fixture.trial_id, source: fixture.source, license: fixture.license,
       worker_sha256: workerSha, manifest_sha256: fingerprint(manifestBytes), source_commit: sourceCommit, harness_dirty: harnessDirty, vocabulary_sha256: vocabulary.sha256, reviewed_pilot: flags.includes("--reviewed-pilot"),
-      version: workerVariant });
+      version: workerVariant, ...(modelBytes ? { temporal_model_sha256: fingerprint(modelBytes) } : {}) });
     rows.push(row); await writeFile(output, rows.map(row => JSON.stringify(row)).join("\n") + "\n");
     console.log(JSON.stringify({ trial: fixture.trial_id, expected: row.expected_gloss, confirmed: row.accepted_glosses,
       frames: row.frames, hand_frames: row.hand_frames, status: row.status }));

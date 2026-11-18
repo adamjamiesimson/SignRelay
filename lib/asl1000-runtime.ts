@@ -112,20 +112,27 @@ const MIN_HAND_FRAMES = 6;
 
 export function hasHandEvidence(window: Float32Array, sequenceLength = 50) {
   const features = sequenceLength * 2;
-  let frames = 0, previous = "";
+  let frames = 0;
+  let previousObserved = -1;
   for (let frame = 0; frame < sequenceLength; frame++) {
     let observed = false;
-    let signature = "";
-    for (let node = 13; node < NODE_COUNT && !observed; node++) {
-      if (window[node * features + frame * 2] !== -1) observed = true;
+    let different = previousObserved < 0;
+    for (let node = 13; node < NODE_COUNT; node++) {
+      const current = node * features + frame * 2;
+      const x = window[current], y = window[current + 1];
+      observed ||= x !== -1 || y !== -1;
+      if (!different) {
+        const previous = node * features + previousObserved * 2;
+        different = x !== window[previous] || y !== window[previous + 1];
+      }
     }
     if (!observed) continue;
-    // Padding repeats the final frame; it is not new evidence.
-    for (let node = 13; node < NODE_COUNT; node++) signature += `${window[node * features + frame * 2]},`;
-    if (signature !== previous) frames++;
-    previous = signature;
+    // Padding repeats the final frame. Real vertical movement and points on
+    // the left image edge still count because the tensor contains both axes.
+    if (different && ++frames >= MIN_HAND_FRAMES) return true;
+    previousObserved = frame;
   }
-  return frames >= MIN_HAND_FRAMES;
+  return false;
 }
 
 let modelPromise: Promise<MaterialisedModel> | null = null;

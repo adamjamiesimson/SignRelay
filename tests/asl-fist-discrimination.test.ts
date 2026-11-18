@@ -70,6 +70,21 @@ describe("fist motion discrimination (synthetic regressions)", () => {
     await feed(frames);
     expect(confirmations()).toEqual([]);
   });
+  it.each(["Right", "Left"] as const)("recognizes a completed %s wrist nod viewed obliquely", async side => {
+    const frames = makeFistMotion("nod", { side });
+    const yaw = Math.PI * 0.43;
+    for (const { hands: [hand] } of frames) {
+      const wrist = hand.landmarks[0];
+      hand.landmarks = hand.landmarks.map(point => {
+        const x = point.x - wrist.x;
+        const z = point.z - wrist.z;
+        return { ...point, x: wrist.x + x * Math.cos(yaw) + z * Math.sin(yaw),
+          z: wrist.z - x * Math.sin(yaw) + z * Math.cos(yaw) };
+      });
+    }
+    await feed(frames);
+    expect(confirmations()).toEqual(["YES"]);
+  });
   it.each(["close", "bob"] as const)("does not let a confident model bypass missing YES motion for %s", async kind => {
     mocks.model.mockResolvedValue({ label: "YES", text: "Yes", confidence: 0.99, margin: 0.9 });
     await feed(makeFistMotion(kind, { duration: 2600, count: 53 }));

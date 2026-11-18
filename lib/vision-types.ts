@@ -65,7 +65,7 @@ export type CalibrationTemplate = {
 };
 
 export type WorkerInput = (
-  | { type: "frame"; frame: VisionFrame }
+  | { type: "frame"; frame: VisionFrame; rehearsal?: true }
   | { type: "reset" }
   | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[] }
 ) & { session?: number; frameId?: number };

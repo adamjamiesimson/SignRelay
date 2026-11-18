@@ -118,10 +118,17 @@ export function analyzeAslStarter(sequence: VisionFrame[]) {
   let preferred: StarterPrediction | null = null;
   const labels = new Set<string>();
   const incompleteLabels = new Set<string>();
+  const previousWindows = new Map<HandObservation["handedness"], VisionFrame[]>();
   for (const duration of [650, 1100, 1700, 2600]) {
     for (const side of ["Right", "Left", "Unknown"] as const) {
       const recent = recentContinuousFrames(sequence, duration,
         frame => frame.hands.some(hand => hand.handedness === side && validHand(hand)));
+      // A new track or short recording often produces the same continuous
+      // suffix at several durations. Its shape and motion need one evaluation.
+      if (recent.length < 5) continue;
+      const previous = previousWindows.get(side);
+      if (previous?.length === recent.length && recent.every((frame, index) => frame === previous[index])) continue;
+      previousWindows.set(side, recent);
       const samples = samplesFor(recent, side);
       if (!samples.length) continue;
       const result = recognizeSamples(samples);
@@ -130,10 +137,12 @@ export function analyzeAslStarter(sequence: VisionFrame[]) {
       // suffix that used to be suppressed by the cross-window ambiguity gate.
       const evidence = recognizeSamples(samples, false);
       if (evidence?.label === "PLEASE" && result?.label !== "PLEASE") incompleteLabels.add("PLEASE");
-      // A mouth departure that lacks outward completion still competes with a
-      // chest circle. Preserve it for the same veto, including model fallback.
-      if (result?.label !== "THANK YOU" && ratio(samples, sample => sample.open >= 3) >= 0.75
-        && departingMouthStroke(samples)) incompleteLabels.add("THANK YOU");
+      // An open-hand departure with weak origin or completion evidence still
+      // competes with another open-palm rule on the same stroke.
+      if (result?.label !== "THANK YOU" && (evidence?.label === "THANK YOU"
+        || (ratio(samples, sample => sample.open >= 3) >= 0.75 && departingMouthStroke(samples)))) {
+        incompleteLabels.add("THANK YOU");
+      }
       if (result) labels.add(result.label);
       // A short suffix must not override a chest circle visible in a longer
       // window. Keep the whole movement available to distinguish SORRY.
@@ -182,7 +191,8 @@ function recognizeSamples(samples: Sample[], requireClosure = true): StarterPred
 
   const nearMouth = first.mouth && distance2(first.tip, first.mouth) < 0.4;
   const outward = Math.abs(last.tip.x - first.tip.x) > 0.15 || last.palm / first.palm > 1.14;
-  if (mostlyOpen && mostlyFlat && nearMouth && outward && last.tip.y - first.tip.y > 0.12
+  if (mostlyOpen && mostlyFlat && nearMouth && (!requireClosure || hasMouthOrigin(first))
+    && outward && last.tip.y - first.tip.y > 0.12
     && last.mouth && distance2(last.tip, last.mouth) - distance2(first.tip, first.mouth!) > 0.25) {
     return prediction("THANK YOU", "Thank you");
   }
@@ -209,6 +219,15 @@ function recognizeSamples(samples: Sample[], requireClosure = true): StarterPred
   return null;
 }
 
+function hasMouthOrigin(sample: Sample) {
+  // The broad proximity fallback can overlap the eyes on small faces.
+  // Use the measured nose-to-mouth distance to bound the lip-to-chin region.
+  const { mouth, mouthRadius, tip } = sample;
+  return mouth && mouthRadius && sample.open >= 3
+    && Math.abs(tip.x - mouth.x) <= mouthRadius
+    && tip.y >= mouth.y - mouthRadius && tip.y <= mouth.y + 2 * mouthRadius;
+}
+
 function completedFistNod(history: Sample[]) {
   // Forming the handshape is preparation, not a nod. Begin after the last
   // clearly open hand, tolerating occasional single-finger tracking noise.
@@ -221,31 +240,12 @@ function completedFistNod(history: Sample[]) {
   if (last.time - first.time < 220 || first.open || last.open
     || ratio(samples, sample => sample.open === 0) < 0.8) return false;
 
-  // Palm orientation relative to the wrist removes whole-arm travel and body
-  // movement. The median of four MCP angles resists one bad knuckle landmark.
-  // Hand-landmark z is wrist-relative, so never mix it with pose/face depth.
-  const orientations = samples.map(sample => {
-    const p = sample.hand.landmarks;
-    const pitches = [5, 9, 13, 17].map(i => Math.atan2(p[i].z - p[0].z, p[0].y - p[i].y));
-    const anchor = pitches[0];
-    const unwrapped = pitches.map(angle => anchor + Math.atan2(Math.sin(angle - anchor), Math.cos(angle - anchor))).sort((a, b) => a - b);
-    const x = (p[5].x + p[9].x + p[13].x + p[17].x) / 4 - p[0].x;
-    const y = (p[5].y + p[9].y + p[13].y + p[17].y) / 4 - p[0].y;
-    const z = (p[5].z + p[9].z + p[13].z + p[17].z) / 4 - p[0].z;
-    return { pitch: (unwrapped[1] + unwrapped[2]) / 2, sideways: Math.atan2(x, Math.hypot(y, z)) };
-  });
-  const pitches = [orientations[0].pitch];
-  for (let i = 1; i < orientations.length; i++) {
-    const delta = orientations[i].pitch - orientations[i - 1].pitch;
-    const wrapped = Math.atan2(Math.sin(delta), Math.cos(delta));
-    if (Math.abs(wrapped) > 1.2) return false; // Tracking flips are not a nod.
-    pitches.push(pitches[i - 1] + wrapped);
-  }
+  const pitches = fistBendAngles(samples);
+  if (!pitches) return false;
   const smooth = pitches.map((pitch, i) => [pitches[Math.max(0, i - 1)], pitch,
     pitches[Math.min(pitches.length - 1, i + 1)]].sort((a, b) => a - b)[1]);
   const excursion = span(smooth);
-  if (excursion < 0.35 || span(orientations.map(o => o.sideways)) > Math.min(0.45, excursion * 0.65)
-    || span(samples.map(sample => sample.wrist.x)) > 0.25) return false;
+  if (excursion < 0.35 || span(samples.map(sample => sample.wrist.x)) > 0.25) return false;
 
   // Wait for a short stable ending, including at slow capture rates. This
   // avoids committing at a turning point while a different sign is unfolding.
@@ -266,6 +266,47 @@ function completedFistNod(history: Sample[]) {
       && Math.abs(smooth.at(-1)! - smooth[0]) <= outward * 0.45
       && samples[peak].time - first.time >= 60 && last.time - samples[peak].time >= 60;
   });
+}
+
+const subtract = (a: Point, b: Point): Point => ({ x: a.x - b.x, y: a.y - b.y, z: a.z - b.z });
+const dot = (a: Point, b: Point) => a.x * b.x + a.y * b.y + a.z * b.z;
+const cross = (a: Point, b: Point): Point => ({
+  x: a.y * b.z - a.z * b.y,
+  y: a.z * b.x - a.x * b.z,
+  z: a.x * b.y - a.y * b.x,
+});
+
+function unit(vector: Point): Point {
+  const length = Math.hypot(vector.x, vector.y, vector.z) || 1;
+  return { x: vector.x / length, y: vector.y / length, z: vector.z / length };
+}
+
+/** Follow flexion about the index-to-pinky knuckle axis. A fist can nod
+ * sideways in the image if photographed from a different angle. Measure its
+ * twist in wrist-relative hand coordinates, with no pose/face depth. */
+function fistBendAngles(samples: Sample[]) {
+  const orientations = samples.map(({ hand: { landmarks } }) => {
+    const knuckles = [5, 9, 13, 17].map(index => landmarks[index]);
+    const center = knuckles.reduce((p, joint) => ({
+      x: p.x + joint.x / 4,
+      y: p.y + joint.y / 4,
+      z: p.z + joint.z / 4,
+    }), { x: 0, y: 0, z: 0 });
+    return { axis: unit(subtract(landmarks[5], landmarks[17])), forward: unit(subtract(center, landmarks[0])) };
+  });
+  const { axis } = orientations[0];
+  // A palm roll or changing knuckle axis is different evidence from flexion.
+  if (orientations.some(sample => dot(sample.axis, axis) < 0.9 || Math.abs(dot(sample.forward, axis)) > 0.5)) return null;
+  const angles = [0];
+  for (let index = 1; index < orientations.length; index++) {
+    const before = orientations[index - 1].forward;
+    const after = orientations[index].forward;
+    const projectedDot = dot(before, after) - dot(before, axis) * dot(after, axis);
+    const turn = Math.atan2(dot(cross(before, after), axis), projectedDot);
+    if (Math.abs(turn) > 1.2) return null;
+    angles.push(angles[index - 1] + turn);
+  }
+  return angles;
 }
 
 function directionChanges(values: number[], epsilon: number) {
@@ -342,7 +383,15 @@ function departingMouthStroke(samples: Sample[]) {
  * for failing to return to the beginning of the entire window. Do not revive a
  * completed loop from earlier in a different movement. */
 function completedPalmCircle(samples: Sample[]) {
-  for (let start = 0; start <= samples.length - 5; start++) {
+  // MediaPipe can estimate a wrist outside the image while fingers are still
+  // visible. A loop cannot use those samples to establish its closure.
+  let firstVisible = samples.length;
+  while (firstVisible > 0) {
+    const { x, y } = samples[firstVisible - 1].hand.landmarks[0];
+    if (x < 0 || x > 1 || y < 0 || y > 1) break;
+    firstVisible--;
+  }
+  for (let start = firstVisible; start <= samples.length - 5; start++) {
     if (samples.at(-1)!.time - samples[start].time < 160) break;
     const loop = samples.slice(start);
     const xs = loop.map(sample => sample.circlePath.x), ys = loop.map(sample => sample.circlePath.y);

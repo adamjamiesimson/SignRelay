@@ -46,7 +46,7 @@ describe("ASL demo build profile", () => {
   });
   it("the asl-demo build keeps the private-route exclusion and security steps, then verifies the runtime", () => {
     const steps = STEPS["asl-demo"].map(step => step.join(" "));
-    const order = ["next build", "exclude-private-routes", "prune-profile.mjs asl-demo", "secure-export", "verify-runtime.mjs --out out --profile asl-demo"]
+    const order = ["next/dist/bin/next build", "exclude-private-routes", "prune-profile.mjs asl-demo", "secure-export", "verify-runtime.mjs --out out --profile asl-demo"]
       .map(part => steps.findIndex(step => step.includes(part)));
     expect(order.every(index => index >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);

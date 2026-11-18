@@ -35,6 +35,17 @@ describe("ASL-2000 evidence guard", () => {
     expect(hasHandEvidence(window(40, false))).toBe(false);
   });
 
+  it.each([-1, 0.2])("counts vertical hand movement at fixed x = %s", x => {
+    const values = new Float32Array(55 * 100).fill(-1);
+    for (let frame = 0; frame < 50; frame++) {
+      values[34 * 100 + frame * 2] = x;
+      values[34 * 100 + frame * 2 + 1] = 0.2 + Math.min(frame, 4) / 20;
+    }
+    expect(hasHandEvidence(values)).toBe(false);
+    for (let frame = 5; frame < 50; frame++) values[34 * 100 + frame * 2 + 1] = 0.45;
+    expect(hasHandEvidence(values)).toBe(true);
+  });
+
   it("never classifies a movement window in which no hand was observed", async () => {
     vi.resetModules();
     vi.stubGlobal("self", { DecompressionStream });

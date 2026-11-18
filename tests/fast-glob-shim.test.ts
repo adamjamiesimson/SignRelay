@@ -28,7 +28,8 @@ describe("reviewed fast-glob replacement", () => {
   });
 
   it("matches the plugin's onlyDirectories call like fast-glob (posix paths, no dot directories)", () => {
-    expect(shim.globSync(`${root}/apps/*`, { onlyDirectories: true }).sort()).toEqual([`${root}/apps/admin`, `${root}/apps/web`]);
+    const posixRoot = root.replaceAll("\\", "/");
+    expect(shim.globSync(`${root}/apps/*`, { onlyDirectories: true }).sort()).toEqual([`${posixRoot}/apps/admin`, `${posixRoot}/apps/web`]);
     expect(shim.globSync("apps/*/pages", { cwd: root, onlyDirectories: true }).sort()).toEqual(["apps/admin/pages", "apps/web/pages"]);
   });
 

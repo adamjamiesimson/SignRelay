@@ -20,7 +20,7 @@ let workers: FakeWorker[], session: RecognitionSession;
 const onMessage = vi.fn(), onStatus = vi.fn();
 const send = (timestamp: number) => session.postMessage({ type: "frame", frame: { timestamp, hands: [], face: [], pose: [] } });
 beforeEach(() => {
-  vi.useFakeTimers();
+  vi.useFakeTimers({ toFake: ["Date", "performance", "setInterval", "clearInterval"] });
   vi.clearAllMocks();
   workers = [];
   session = new RecognitionSession(() => { const worker = new FakeWorker(); workers.push(worker); return worker; }, onMessage, onStatus);
@@ -28,6 +28,14 @@ beforeEach(() => {
 afterEach(() => { session.terminate(); vi.useRealTimers(); });
 
 describe("ongoing recognition sessions", () => {
+  it("reports rehearsal readiness after acknowledgement and preserves source markers", () => {
+    expect(session.canAcceptRehearsalFrame).toBe(true);
+    session.postMessage({ type: "frame", rehearsal: true, frame: { timestamp: 1, hands: [], face: [], pose: [] } });
+    expect(session.canAcceptRehearsalFrame).toBe(false);
+    expect(workers[0].frames()[0].rehearsal).toBe(true);
+    workers[0].acknowledge();
+    expect(session.canAcceptRehearsalFrame).toBe(true);
+  });
   it("bounds a stalled camera queue and resumes using the latest frame", () => {
     for (let index = 0; index < 1000; index++) send(index * 50);
     expect(workers[0].frames()).toHaveLength(1);
@@ -50,6 +58,18 @@ describe("ongoing recognition sessions", () => {
     workers[1].acknowledge();
     expect(onMessage).toHaveBeenCalledOnce();
     expect(onStatus).toHaveBeenLastCalledWith({ state: "running", message: "" });
+  });
+  it("keeps worker timing and timeouts independent of wall-clock changes", () => {
+    send(1);
+    vi.setSystemTime(Date.now() + 60 * 60 * 1000);
+    vi.advanceTimersByTime(1000);
+    expect(workers).toHaveLength(1);
+    workers[0].acknowledge();
+    expect(session.lastRoundTripMs).toBe(1000);
+    send(1001);
+    vi.setSystemTime(Date.now() - 2 * 60 * 60 * 1000);
+    vi.advanceTimersByTime(8000);
+    expect(workers).toHaveLength(2);
   });
   it.each(["onerror", "onmessageerror"] as const)("recovers after %s without clearing previous transcript messages", event => {
     send(1); workers[0].acknowledge();

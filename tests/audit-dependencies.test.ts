@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseForESLint } from "@typescript-eslint/parser";
 import { describe, expect, it } from "vitest";
-import { evaluateAudit } from "../scripts/audit-dependencies.mjs";
+import { evaluateAudit, parseNpmAudit } from "../scripts/audit-dependencies.mjs";
 
 const committed = JSON.parse(readFileSync("docs/security/dependency-exceptions.json", "utf8"));
 // The 2026-10-21 review of the braces chain, kept as a fixture so the gate's
@@ -27,6 +27,23 @@ const braces = { vulnerabilities: {
   "eslint-config-next": chainLink("eslint-config-next", "@next/eslint-plugin-next"),
 } };
 const clean = { vulnerabilities: {} };
+
+describe("npm audit response boundary", () => {
+  const complete = { auditReportVersion: 2, ...clean, metadata: { vulnerabilities: { total: 0 } } };
+  it("requires a valid report even after exit 0", () => {
+    expect(parseNpmAudit(JSON.stringify(complete))).toEqual(complete);
+    expect(() => parseNpmAudit("{}")).toThrow(/incomplete/);
+    expect(() => parseNpmAudit("<html>proxy error</html>")).toThrow(/invalid JSON/);
+    expect(() => parseNpmAudit(JSON.stringify({ ...complete, vulnerabilities: braces.vulnerabilities }))).toThrow(/incomplete/);
+  });
+  it("distinguishes exit 1 advisory reports from registry failures", () => {
+    const report = { ...complete, ...braces, metadata: { vulnerabilities: { total: Object.keys(braces.vulnerabilities).length } } };
+    expect(parseNpmAudit(JSON.stringify(report), 1)).toEqual(report);
+    expect(() => parseNpmAudit(JSON.stringify({ error: { code: "E503" } }), 1)).toThrow(/incomplete/);
+    expect(() => parseNpmAudit(JSON.stringify(complete), 1)).toThrow(/incomplete/);
+    expect(() => parseNpmAudit(JSON.stringify(report), 2)).toThrow(/did not complete/);
+  });
+});
 
 describe("fail-closed dependency gate", () => {
   it("accepts only the reviewed development braces chain before it expires", () => {

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SignRelay Engine V2 Lab</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <header><p>SignRelay Research</p><h1>Engine V2 Lab</h1></header>
+    <section class="surface" aria-label="Signing input">
+      <video id="video" muted playsinline aria-label="Signing input preview"></video>
+      <div class="controls">
+        <button id="camera" type="button">Start camera</button>
+        <label class="file">Open video <input id="file" type="file" accept="video/*"></label>
+        <button id="stop" type="button" disabled>Stop</button>
+      </div>
+      <p id="status" role="status">Choose a camera or an isolated signing clip.</p>
+    </section>
+    <section class="surface readings" aria-label="Recognition output">
+      <h2>Recognition</h2>
+      <p id="match" aria-live="polite">No match</p>
+      <p id="reason"></p>
+      <p id="events"></p>
+      <dl>
+        <dt>Model</dt><dd id="version">Awaiting input</dd>
+        <dt>Vocabulary</dt><dd id="vocabulary">Awaiting model</dd>
+        <dt>Analyzed FPS</dt><dd id="fps">—</dd>
+        <dt>Median worker time</dt><dd id="latency">—</dd>
+        <dt>Hand observations</dt><dd id="hands">—</dd>
+        <dt>Skipped frames</dt><dd id="drops">—</dd>
+      </dl>
+      <details><summary>Diagnostics</summary><pre id="diagnostics"></pre></details>
+    </section>
+    <details class="surface trial-panel">
+      <summary>Score webcam trials</summary>
+      <p>Choose a prompt, then start a scored trial. The log stays in this tab until you download it and contains only prompts, words and summary metrics.</p>
+      <form id="trial-form">
+        <div class="trial-options">
+          <label>Prompt <select id="trial-prompt" name="prompt"></select></label>
+          <label>Distance <select name="distance"><option value="usual">Usual</option><option value="near">Near</option><option value="far">Far</option></select></label>
+          <label>Lighting <select name="light"><option value="even">Even</option><option value="dim">Dim</option><option value="backlit">Backlit</option></select></label>
+          <label>Speed <select name="speed"><option value="natural">Natural</option><option value="slow">Slow</option><option value="fast">Fast</option></select></label>
+        </div>
+        <div class="controls">
+          <button id="trial-start" type="submit">Start scored trial</button>
+          <button id="trial-finish" type="button" disabled>Finish and score</button>
+          <button id="trial-download" type="button" disabled>Download results</button>
+        </div>
+      </form>
+      <p id="trial-status" role="status"></p>
+      <ol id="trial-results" aria-label="Scored trial results"></ol>
+    </details>
+  </main>
+  <script type="module" src="/app.mjs"></script>
+</body>
+</html>

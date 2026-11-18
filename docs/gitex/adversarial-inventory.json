@@ -26,9 +26,9 @@
   "totals": {
     "patterns": 19,
     "runs": 684,
-    "runs_with_accept": 280,
+    "runs_with_accept": 260,
     "accepted_by_gloss": {
-      "THANK YOU/starter": 136,
+      "THANK YOU/starter": 116,
       "HELLO/starter": 144
     }
   },
@@ -261,37 +261,17 @@
       },
       "shielding the eyes from light": {
         "variations": 36,
-        "runs_with_accept": 28,
+        "runs_with_accept": 8,
         "accepted": {
-          "THANK YOU/starter": 28
+          "THANK YOU/starter": 8
         },
         "accepting_variations": [
-          "Right/x0.7/d0.85/clean",
-          "Right/x0.7/d0.85/jitter",
-          "Right/x0.7/d0.85/dropout",
-          "Right/x0.7/d1.15/clean",
-          "Right/x0.7/d1.15/jitter",
-          "Right/x0.7/d1.15/dropout",
-          "Right/x1/d0.85/clean",
           "Right/x1/d0.85/jitter",
-          "Right/x1/d0.85/dropout",
-          "Right/x1/d1.15/clean",
           "Right/x1/d1.15/jitter",
-          "Right/x1/d1.15/dropout",
           "Right/x1.4/d0.85/jitter",
           "Right/x1.4/d1.15/jitter",
-          "Left/x0.7/d0.85/clean",
-          "Left/x0.7/d0.85/jitter",
-          "Left/x0.7/d0.85/dropout",
-          "Left/x0.7/d1.15/clean",
-          "Left/x0.7/d1.15/jitter",
-          "Left/x0.7/d1.15/dropout",
-          "Left/x1/d0.85/clean",
           "Left/x1/d0.85/jitter",
-          "Left/x1/d0.85/dropout",
-          "Left/x1/d1.15/clean",
           "Left/x1/d1.15/jitter",
-          "Left/x1/d1.15/dropout",
           "Left/x1.4/d0.85/jitter",
           "Left/x1.4/d1.15/jitter"
         ]

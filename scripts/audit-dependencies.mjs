@@ -60,14 +60,37 @@ export function evaluateAudit({ full, production, exceptions, today }) {
     totals: { full: full?.metadata?.vulnerabilities ?? null, production: production?.metadata?.vulnerabilities ?? null } };
 }
 
-function npmAudit(args) {
-  try {
-    return JSON.parse(execFileSync("npm", ["audit", "--json", ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }));
-  } catch (error) {
-    // npm exits 1 when it finds advisories but still prints the JSON report.
-    if (typeof error.stdout === "string" && error.stdout.trim().startsWith("{")) return JSON.parse(error.stdout);
-    throw error;
+export function parseNpmAudit(stdout, exitCode = 0) {
+  if (typeof stdout !== "string" || ![0, 1].includes(exitCode)) throw new Error("npm audit did not complete");
+  let report;
+  try { report = JSON.parse(stdout); }
+  catch { throw new Error("npm audit returned invalid JSON"); }
+  const entries = report?.vulnerabilities;
+  const counts = report?.metadata?.vulnerabilities;
+  if (report?.error || report?.auditReportVersion !== 2 || !entries || typeof entries !== "object" || Array.isArray(entries)
+    || !Number.isInteger(counts?.total) || counts.total !== Object.keys(entries).length
+    || (exitCode === 1 && !counts.total)
+    || Object.values(entries).some(entry => !Array.isArray(entry?.via) || !entry.via.length)) {
+    throw new Error("npm audit returned an incomplete or failed advisory report");
   }
+  return report;
+}
+
+function npmAudit(args) {
+  const npmEntry = process.env.npm_execpath;
+  const command = npmEntry ? process.execPath : "npm";
+  const auditArgs = ["audit", "--json", ...args];
+  let stdout;
+  let exitCode = 0;
+  try {
+    stdout = execFileSync(command, npmEntry ? [npmEntry, ...auditArgs] : auditArgs,
+      { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  } catch (error) {
+    // npm also exits 1 for some registry errors. Require a complete report.
+    stdout = error.stdout;
+    exitCode = error.status ?? -1;
+  }
+  return parseNpmAudit(stdout, exitCode);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

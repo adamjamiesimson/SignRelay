@@ -42,6 +42,8 @@ Add `?perf` to the URL for the device-test readout: tracking, round-trip and que
 
 The [17 September handoff](docs/pretrained-expansion-2026-09-17.md) records the current installation, evaluation limits and Firebase update steps.
 
+The [Project Rebirth report](docs/evaluation/rebirth-results-2026-11-17.md) records the five-sign PopSign research candidates, signer-disjoint development results and the remaining webcam checks.
+
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
 | ASL | Experimental | 2,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL2000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |

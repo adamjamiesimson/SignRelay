@@ -36,7 +36,7 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
     "lucide-react": "^0.468.0",
-    "next": "16.4.2",
+    "next": "16.4.6",
     "onnxruntime-web": "^1.23.2",
     "react": "19.2.6",
     "react-dom": "19.2.6"
@@ -48,8 +48,9 @@
     "@types/react-dom": "19.2.3",
     "esbuild": "0.28.1",
     "eslint": "9.39.4",
-    "eslint-config-next": "16.4.2",
+    "eslint-config-next": "16.4.6",
     "fast-glob": "file:tooling/fast-glob-shim",
+    "picomatch": "file:tooling/picomatch-no-repeat",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
     "vitest": "^4.1.12"
@@ -57,6 +58,7 @@
   "type": "module",
   "displayName": "SignRelay",
   "overrides": {
+    "picomatch": "$picomatch",
     "@typescript-eslint/typescript-estree": {
       "minimatch": "11.0.3"
     }

@@ -30,6 +30,16 @@ describe("ASL chest-circle completion", () => {
     },
   );
 
+  it.each(["PLEASE", "SORRY"] as const)("requires the wrist to be visible throughout a completed %s loop", sign => {
+    const cropped = makeSign(sign, { shiftY: 0.32 });
+    expect(cropped.some(frame => frame.hands[0].landmarks[0].y > 1)).toBe(true);
+    expect(analyzeAslStarter(cropped).labels).not.toContain(sign);
+    expect(recognizeAslStarter(cropped)).toBeNull();
+
+    const visible = makeSign(sign, { shiftY: 0.2 });
+    expect(recognizeAslStarter(visible)?.label).toBe(sign);
+  });
+
   it("keeps the outward THANK YOU motion distinct from chest-circle rules", () => {
     const analysis = analyzeAslStarter(makeSign("THANK YOU"));
     expect(analysis.prediction?.label).toBe("THANK YOU");
