@@ -63,6 +63,47 @@ try {
   if (process.env.SIGNRELAY_V2_EXPECT) {
     assert.equal(file.match, process.env.SIGNRELAY_V2_EXPECT, "Reference clip prediction changed");
   }
+  const traceCamera = cameraFile && process.env.SIGNRELAY_V2_TRACE_CAMERA === "1";
+  if (traceCamera) await chrome.evaluate(`(() => {
+    const video = document.getElementById("video");
+    const canvas = new OffscreenCanvas(12, 12);
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const source = [], processed = [];
+    const post = Worker.prototype.postMessage;
+    let pending;
+    Worker.prototype.postMessage = function(message, transfer) {
+      if (message.type === "start") this.addEventListener("message", ({data}) => {
+        if (data.type === "frame" && processed.length < 1200) processed.push({t: pending, hand: data.hand, ms: data.ms});
+      });
+      if (message.type === "frame") pending = message.timestamp;
+      return post.call(this, message, transfer);
+    };
+    let callback;
+    const collect = (_now, metadata) => {
+      context.drawImage(video, 0, 0, 12, 12);
+      const { data } = context.getImageData(0, 0, 12, 12);
+      let minimum = 255, maximum = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const level = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        minimum = Math.min(minimum, level);
+        maximum = Math.max(maximum, level);
+      }
+      source.push({t: metadata.mediaTime * 1000, active: maximum - minimum > 12});
+      if (source.length < 1200) callback = video.requestVideoFrameCallback(collect);
+    };
+    callback = video.requestVideoFrameCallback(collect);
+    window.finishCameraTrace = () => {
+      video.cancelVideoFrameCallback(callback);
+      Worker.prototype.postMessage = post;
+      const activity = source.filter(frame => frame.active);
+      const start = activity[0]?.t, end = activity.at(-1)?.t;
+      const during = processed.filter(frame => frame.t >= start && frame.t <= end);
+      const timings = during.map(frame => frame.ms.hand).sort((a, b) => a - b);
+      return { sampledSourceFrames: source.length, nonUniformFrames: activity.length, activeStartMs: start, activeEndMs: end,
+        processedInActiveRange: during.length, handsInActiveRange: during.filter(frame => frame.hand).length,
+        medianHandMsInActiveRange: timings[Math.floor(timings.length / 2)] };
+    };
+  })()`);
   const cameraStarted = performance.now();
   await chrome.evaluate("document.getElementById('camera').click()");
   await until("/Camera running|failed|could not/i.test(document.getElementById('status').textContent)");
@@ -72,6 +113,7 @@ try {
     : "Number(document.getElementById('hands').textContent.split('/')[1]) >= 50", 40000);
   if (soak) await until(`document.getElementById('video').currentTime >= ${soak}`, (soak + 30) * 1000);
   const camera = await snapshot();
+  if (traceCamera) evidence.cameraTrace = await chrome.evaluate("window.finishCameraTrace()");
   if (soak) {
     assert.equal(camera.events, "", "Synthetic idle camera produced a suggestion");
     evidence.syntheticIdleSeconds = soak;
