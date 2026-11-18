@@ -4,7 +4,8 @@
   "buildCommand": "node scripts/install-vision-assets.mjs && npm run build:worker && npx next build && node scripts/exclude-private-routes.mjs",
   "git": {
     "deploymentEnabled": {
-      "feature/pretrained-language-expansion": false
+      "feature/pretrained-language-expansion": false,
+      "codex/signrelay-engine-v2": false
     }
   }
 }
