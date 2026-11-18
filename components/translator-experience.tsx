@@ -134,10 +134,32 @@ export function TranslatorExperience() {
     if (!REHEARSAL) return;
     const script = new RehearsalScript();
     rehearsalRef.current = script;
-    (window as unknown as { __signrelayRehearsal?: unknown }).__signrelayRehearsal = {
-      play: (frames: VisionFrame[]) => script.play(frames), get playing() { return script.playing; },
+    let callback = 0;
+    const deliver = (now: number) => {
+      const worker = workerRef.current;
+      if (!worker || !engineRef.current || document.hidden) {
+        script.cancel();
+        return;
+      }
+      if (worker.canAcceptRehearsalFrame) {
+        for (const frame of script.takeDue(now, 1)) worker.postMessage({ type: "frame", frame, rehearsal: true });
+      }
+      if (script.playing) callback = requestAnimationFrame(deliver);
     };
-    return () => { delete (window as unknown as { __signrelayRehearsal?: unknown }).__signrelayRehearsal; };
+    (window as unknown as { __signrelayRehearsal?: unknown }).__signrelayRehearsal = {
+      play(frames: VisionFrame[]) {
+        cancelAnimationFrame(callback);
+        script.play(frames);
+        callback = requestAnimationFrame(deliver);
+      },
+      get playing() { return script.playing; },
+      sourceClock: true,
+    };
+    return () => {
+      cancelAnimationFrame(callback);
+      script.cancel();
+      delete (window as unknown as { __signrelayRehearsal?: unknown }).__signrelayRehearsal;
+    };
   }, []);
   const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(),
     throughput: new ThroughputMonitor(), analysed: 0, since: 0, frames: 0, handFrames: 0 });
@@ -493,7 +515,7 @@ export function TranslatorExperience() {
         return;
       }
     }
-    if (!video || !engine || video.readyState < 2 || document.hidden) {
+    if (!video || !engine || video.readyState < 2 || document.hidden || (REHEARSAL && rehearsalRef.current?.playing)) {
       animationRef.current = requestAnimationFrame(frameLoopRef.current);
       return;
     }
@@ -503,9 +525,7 @@ export function TranslatorExperience() {
       lastVideoTimeRef.current = video.currentTime;
       try {
         const trackingStarted = performance.now();
-        // Rehearsal builds only: while a script plays, synthetic landmarks replace
-        // the tracker, which is not run (its output would be discarded).
-        const frame = (REHEARSAL ? rehearsalRef.current?.next(now) : null) ?? engine.process(video, now);
+        const frame = engine.process(video, now);
         if (perfMode) {
           perfRef.current.tracking.record(performance.now() - trackingStarted);
           perfRef.current.frames++;

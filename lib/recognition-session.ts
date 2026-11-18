@@ -1,7 +1,8 @@
-import type { VisionFrame, WorkerInput, WorkerMessage } from "./vision-types";
+import type { WorkerInput, WorkerMessage } from "./vision-types";
 
 type Port = Pick<Worker, "postMessage" | "terminate" | "onmessage" | "onerror" | "onmessageerror">;
 type Configuration = Extract<WorkerInput, { type: "templates" }>;
+type FrameInput = Extract<WorkerInput, { type: "frame" }>;
 export type SessionStatus = { state: "running" | "recovering" | "failed"; message: string };
 
 /** One in-flight frame and one replaceable latest frame. No unbounded camera
@@ -13,7 +14,7 @@ export class RecognitionSession {
   private session = 0;
   private nextFrameId = 0;
   private waiting: { id: number; since: number } | null = null;
-  private queued: VisionFrame | null = null;
+  private queued: FrameInput | null = null;
   private restarts: number[] = [];
   private recovering = false;
   private closed = false;
@@ -47,7 +48,7 @@ export class RecognitionSession {
       if (!this.worker) return;
       this.stats.offered++;
       if (this.queued) this.stats.replaced++;
-      this.queued = message.frame;
+      this.queued = message;
       this.queuedAt = performance.now();
       this.pump();
       return;
@@ -68,6 +69,11 @@ export class RecognitionSession {
     } catch {
       this.recover("Recognition could not receive the session. Restarting…");
     }
+  }
+
+  /** A deterministic rehearsal waits for the previous frame to be answered. */
+  get canAcceptRehearsalFrame() {
+    return !this.closed && this.worker !== null && !this.waiting && !this.queued;
   }
 
   resetStats() {
@@ -126,13 +132,13 @@ export class RecognitionSession {
 
   private pump() {
     if (!this.worker || this.waiting || !this.queued) return;
-    const frame = this.queued;
+    const message = this.queued;
     this.queued = null;
     this.waiting = { id: ++this.nextFrameId, since: performance.now() };
     this.stats.forwarded++;
     this.stats.lastQueueAgeMs = this.waiting.since - this.queuedAt;
     try {
-      this.worker.postMessage({ type: "frame", frame, frameId: this.waiting.id, session: this.session } satisfies WorkerInput);
+      this.worker.postMessage({ ...message, frameId: this.waiting.id, session: this.session } satisfies WorkerInput);
     } catch {
       this.recover("Recognition could not receive a frame. Restarting…");
     }

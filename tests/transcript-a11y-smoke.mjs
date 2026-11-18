@@ -9,9 +9,21 @@ import { fixtures, openRehearsal, pause, until } from "./rehearsal-harness.mjs";
 
 const executable = process.argv[2];
 if (!executable) throw new Error("Usage: node tests/transcript-a11y-smoke.mjs <chrome>");
+const stall = Number(process.env.SIGNRELAY_REHEARSAL_STALL ?? 0);
+assert(Number.isInteger(stall) && stall >= 0 && stall <= 700, "Invalid rehearsal stall");
 const { sequence } = await fixtures();
 const h = await openRehearsal(executable, { extraInit: `
   window.__qa.announcements = [];
+  window.__qa.rapidFrames = [];
+  const post = Worker.prototype.postMessage;
+  Worker.prototype.postMessage = function(message, transfer) {
+    if (message.type === 'frame' && window.__qa.rapidFrames.length < 500) {
+      if (message.rehearsal === true) window.__qa.rapidTagged = true;
+      if (message.rehearsal !== true && !window.__signrelayRehearsal?.playing) return post.call(this, message, transfer);
+      window.__qa.rapidFrames.push({ timestamp: message.frame.timestamp, hands: message.frame.hands.length });
+    }
+    return post.call(this, message, transfer);
+  };
   const last = new WeakMap();
   new MutationObserver(() => {
     for (const node of document.querySelectorAll('[aria-live]')) {
@@ -23,14 +35,29 @@ const checks = [];
 try {
   await h.open();
   await h.start();
+  if (stall) assert(await h.evaluate("window.__signrelayRehearsal.sourceClock === true"), "Expected updated source-clock rehearsal");
 
   // Rapid words: 250 ms rests (the shortest that keeps all six in synthetic tests).
   await h.evaluate("document.querySelector('.switch-row.prominent input')?.click()");
-  await h.play(sequence(["HELLO", "THANK YOU", "PLEASE", "SORRY", "YES", "NO"], 250));
+  const scripted = sequence(["HELLO", "THANK YOU", "PLEASE", "SORRY", "YES", "NO"], 250);
+  await h.play(scripted);
+  if (stall) {
+    await h.evaluate(`setTimeout(() => { const end = performance.now() + ${stall}; while (performance.now() < end) {} }, 1170)`);
+  }
   await until(async () => !(await h.playing()), "Rapid sequence did not finish", 600);
   await pause(1500);
   const words = await h.words();
+  let sourceGap;
+  if (stall) {
+    const { rapidFrames: replay, rapidTagged } = await h.evaluate("({ rapidFrames: window.__qa.rapidFrames, rapidTagged: window.__qa.rapidTagged })");
+    sourceGap = Math.max(0, ...replay.slice(1).map((frame, i) => frame.timestamp - replay[i].timestamp));
+    console.log(JSON.stringify({ injectedStallMs: stall, observedSyntheticFrames: replay.length,
+      maxSourceGapMs: sourceGap, developmentWords: words }));
+    assert(rapidTagged, "Rehearsal worker did not receive a scripted frame");
+    assert.equal(replay.length, scripted.length, "Every source frame must reach the worker exactly once");
+  }
   assert.deepEqual(words, ["Hello", "Thank you", "Please", "Sorry", "Yes", "No"], "Rapid words in order, no duplicates");
+  if (stall) assert(sourceGap <= 50.01, "Rehearsal must preserve the source cadence after a callback stall");
   const announced = await h.evaluate("window.__qa.announcements.filter(a => a.startsWith('Confirmed:'))");
   assert.deepEqual(announced, words.map(word => `Confirmed: ${word}`), "Each confirmed word is announced once in a polite live region");
   assert.deepEqual(await h.evaluate("window.__qa.spoken"), words, "Each word spoken once");

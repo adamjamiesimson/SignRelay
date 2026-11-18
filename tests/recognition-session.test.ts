@@ -28,6 +28,14 @@ beforeEach(() => {
 afterEach(() => { session.terminate(); vi.useRealTimers(); });
 
 describe("ongoing recognition sessions", () => {
+  it("reports rehearsal readiness after acknowledgement and preserves source markers", () => {
+    expect(session.canAcceptRehearsalFrame).toBe(true);
+    session.postMessage({ type: "frame", rehearsal: true, frame: { timestamp: 1, hands: [], face: [], pose: [] } });
+    expect(session.canAcceptRehearsalFrame).toBe(false);
+    expect(workers[0].frames()[0].rehearsal).toBe(true);
+    workers[0].acknowledge();
+    expect(session.canAcceptRehearsalFrame).toBe(true);
+  });
   it("bounds a stalled camera queue and resumes using the latest frame", () => {
     for (let index = 0; index < 1000; index++) send(index * 50);
     expect(workers[0].frames()).toHaveLength(1);
