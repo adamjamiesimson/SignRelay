@@ -87,6 +87,36 @@ test("a steady six FPS still fills a one-second recognition window", () => {
   assert.deepEqual(suggestions.filter(Boolean), ["HELLO"]);
 });
 
+test("an emission owns its evidence and a short observed release admits an intentional repeat", () => {
+  const stream = new Stream(model({ offset: [0, 0, 0, 3, 0, 0] }));
+  const events = [];
+  const blocked = new Set();
+  for (let time = 0; time <= 2450; time += 50) {
+    const trace = { windows: [], rejected: 0 };
+    const neutral = time >= 1450 && time < 1700;
+    const result = stream.push(sample(time, neutral ? [] : undefined), trace);
+    if (result?.event) events.push({ label: result.event, ...trace.confirmedEvent });
+    if (trace.eventBlocked) blocked.add(trace.eventBlocked);
+  }
+  assert.deepEqual(events.map(item => [item.label, item.id]), [["YES", 1], ["YES", 2]]);
+  assert(events[0].end < events[1].start);
+  assert(events[1].start >= 1700);
+  assert(blocked.has("consumed hand evidence"));
+});
+
+test("a camera delivery gap cannot release a sign with the hand still held", () => {
+  const stream = new Stream(model());
+  const events = [];
+  for (const [start, end, hands] of [[0, 1400, true], [2200, 3900, true], [3900, 4150, false], [4150, 5000, true]]) {
+    for (let time = start; time < end; time += 50) {
+      const result = stream.push(sample(time, hands ? undefined : []));
+      if (result?.event) events.push([result.eventId, time]);
+    }
+  }
+  assert.deepEqual(events.map(([id]) => id), [1, 2]);
+  assert(events[1][1] >= 4150);
+});
+
 test("stream calibration can reject a score the isolated model would accept", () => {
   const fitted = model({ streamScore: 3, streamMargin: 1 });
   const samples = Array.from({ length: 30 }, (_, index) => sample(index * 50));

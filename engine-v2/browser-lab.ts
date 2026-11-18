@@ -65,7 +65,9 @@ function scoreV2(samples: ReturnType<typeof observation>[], unparsed: unknown) {
   const input = tensor(samples, model.mode);
   const stream = new Stream(model);
   const events = samples.flatMap(sample => stream.push(sample)?.event ?? []);
-  return { input: input && Array.from(input), score: predict(model, input), events };
+  const reference = new Stream(model, { calibrationReplay: true });
+  const calibrationEvents = samples.flatMap(sample => reference.push(sample)?.event ?? []);
+  return { input: input && Array.from(input), score: predict(model, input), events, calibrationEvents };
 }
 
 Object.assign(window, { replayDevelopmentClip: run, scoreNative, scoreV2 });

@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "training"))
 from import_popsign_development import archived_recordings, signer_key
 
 
-def build(root, target, indexed):
+def build(root, target, indexed, rest_frames=60):
     width, height, fps = 480, 640, 30
     blank = cv2.cvtColor(np.full((height, width, 3), 127, np.uint8), cv2.COLOR_BGR2YUV_I420).tobytes()
     frame_count = 0
@@ -31,7 +31,7 @@ def build(root, target, indexed):
 
         for _ in range(fps * 2):
             emit(blank)
-        for item in indexed:
+        for position, item in enumerate(indexed):
             asset = (root / item["file"]).resolve()
             if (item["evaluation_split"] != "development" or not asset.is_relative_to((root / "evaluation/videos").resolve())
                     or signer_key(item["participant_id"]) in reserved or item["recording_sha256"] in hashes
@@ -69,7 +69,7 @@ def build(root, target, indexed):
                            "startMs": 1000 * start / fps, "endMs": 1000 * frame_count / fps,
                            "frames": frame_count - start, "sourceFps": actual_fps, "sourceFrames": index,
                            "sha256": item["recording_sha256"]})
-            for _ in range(fps * 2):
+            for _ in range(rest_frames if position + 1 < len(indexed) else fps * 2):
                 emit(blank)
     return {"fps": fps, "frames": frame_count, "sha256": digest(target), "trials": trials,
             "durationSeconds": frame_count / fps}
@@ -80,6 +80,8 @@ if __name__ == "__main__":
     parser.add_argument("source_checkout", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("index", type=Path)
+    parser.add_argument("--repeat", choices=("HELLO", "THANK YOU", "PLEASE", "YES", "NO"),
+                        help="Replay the same guarded sign recording twice with 600 ms of neutral footage")
     args = parser.parse_args()
     if not args.output.resolve().is_relative_to(Path("evaluation/raw").resolve()) or args.output.suffix != ".y4m":
         parser.error("Write derived footage only to ignored evaluation/raw")
@@ -87,4 +89,8 @@ if __name__ == "__main__":
     manifest = {row["recording_sha256"]: row for row in json.loads((dataset / "val.json").read_text(encoding="utf-8"))}
     probe = json.loads((dataset / "browser-probe.json").read_text(encoding="utf-8"))
     rows = [manifest[row["recording_sha256"]] for row in probe]
-    args.index.write_text(json.dumps(build(args.source_checkout, args.output, rows), indent=2), encoding="utf-8")
+    if args.repeat:
+        row = next(item for item in rows if item["expected_gloss"] == args.repeat)
+        rows = [row, row]
+    args.index.write_text(json.dumps(build(args.source_checkout, args.output, rows, 18 if args.repeat else 60),
+                                     indent=2), encoding="utf-8")

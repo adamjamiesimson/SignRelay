@@ -34,7 +34,7 @@ export async function serve({ modelFile, handFile, port = 8765, diagnostics = ne
   files.set("/profile.json", bytes(JSON.stringify({ handDelegate: profile.startsWith("gpu") || profile === "auto" ? "GPU" : "CPU",
     onDemandPose: profile !== "cpu", framewiseHands: profile === "gpu-framewise",
     poseMode: profile.endsWith("-split") || profile === "auto" ? "split" : profile === "gpu-hands" ? "off" : "inline",
-    auto: profile === "auto", capture, warmHand }), "application/json"));
+    auto: profile === "auto", capture, warmHand, calibrationReplay: process.env.SIGNRELAY_V2_CALIBRATION_REPLAY === "1" }), "application/json"));
   if (modelFile) {
     const data = await readFile(modelFile);
     parseModel(JSON.parse(data));

@@ -32,8 +32,9 @@ const oldPython = JSON.parse(await readFile(join(dataset, "models-augmented/ridg
 const legacy = await readFile(join(dataset, "models-augmented/ridge.json"));
 const oldData = JSON.parse(legacy);
 const v2 = modelFile ? parseModel(JSON.parse(await readFile(modelFile))) : null;
+const parityOnly = process.env.SIGNRELAY_V2_PARITY_ONLY === "1";
 const fixturesByRoute = new Map();
-for (const item of fixtures) {
+for (const item of parityOnly ? [] : fixtures) {
   const file = resolve(source, item.file);
   assert.equal(fingerprint(await readFile(file)), item.recording_sha256);
   fixturesByRoute.set("/clip-" + item.recording_sha256 + ".mp4", { file, type: "video/mp4" });
@@ -47,7 +48,8 @@ const server = await serve({ handFile, modelFile, port: 0, diagnostics: new Map(
 ]) });
 let chrome;
 const measurements = [];
-const parities = { legacyTensorClips: 0, legacyTensorMax: 0, legacyScoreMax: 0, v2Clips: 0, v2TensorMax: 0, v2LogitsMax: 0 };
+const parities = { legacyTensorClips: 0, legacyTensorMax: 0, legacyScoreMax: 0, v2Clips: 0, v2TensorMax: 0,
+  v2LogitsMax: 0, v2CalibrationMatches: 0, v2BrowserStreamMatches: 0 };
 const inputErrors = [];
 let browserVersion;
 const save = () => writeFile(output, JSON.stringify({ parities, legacySha256: fingerprint(legacy), measurements, inputErrors,
@@ -96,7 +98,13 @@ try {
       const nodeScore = predict(v2, nodeInput);
       assert.equal(nodeScore.label, result.score.label);
       assert.equal(result.score.label, python.accepted[i]);
-      if (python.stream_accepted) assert.equal(result.events.join(", ") || null, python.stream_accepted[i]);
+      if (python.stream_accepted) {
+        assert.equal(result.calibrationEvents.join(", ") || null, python.stream_accepted[i]);
+        parities.v2CalibrationMatches++;
+      }
+      const stream = new Stream(v2);
+      assert.deepEqual(result.events, row.samples.flatMap(sample => stream.push(sample)?.event ?? []));
+      parities.v2BrowserStreamMatches++;
       if (values) {
         parities.v2Clips++;
         parities.v2TensorMax = Math.max(parities.v2TensorMax, maxAbs(result.input, values));
@@ -107,7 +115,7 @@ try {
     assert(parities.v2LogitsMax <= 3e-5);
   }
   await save();
-  for (const item of process.env.SIGNRELAY_V2_PARITY_ONLY === "1" ? [] : fixtures) {
+  for (const item of parityOnly ? [] : fixtures) {
     const native = JSON.parse(await readFile(join(source, "evaluation/raw/rebirth-val20", item.recording_sha256 + ".json")));
     const url = "/clip-" + item.recording_sha256 + ".mp4";
     let report;

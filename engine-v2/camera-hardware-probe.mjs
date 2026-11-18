@@ -36,7 +36,7 @@ try {
       const status = document.getElementById('status').textContent;
       const trace = signRelayCameraDiagnostics();
       return { status, width: video.videoWidth, height: video.videoHeight,
-        seconds: video.currentTime, counters: trace?.counters, runtime: trace?.runtime, fallback: trace?.gpuFallback,
+        seconds: video.currentTime, counters: trace?.counters, startup: trace?.startup, runtime: trace?.runtime, fallback: trace?.gpuFallback,
         workerStage: trace?.frames.find(frame => frame.stage === 'sent')?.workerStage };
     })()`);
     if ((result.seconds >= 5 && result.counters?.processed > 0) || result.seconds >= 8

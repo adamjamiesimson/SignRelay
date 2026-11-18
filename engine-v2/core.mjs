@@ -132,15 +132,16 @@ export function predict(model, input) {
     reason: accepted ? "accepted" : best === LABELS.length - 1 ? "unsupported movement" : "uncertain match" };
 }
 
-// Fixed-delay, overlapping windows. An event requires agreement across windows.
-// Suppression clears when the evidence changes, without requiring a hand exit.
+// Fixed-delay, overlapping windows. Confirmations belong to source observations.
+const EPISODE_REST_MS = 180;
 export class Stream {
-  constructor(model, { windows = null, hop = 150, confirmations = 2 } = {}) {
+  constructor(model, { windows = null, hop = 150, confirmations = 2, calibrationReplay = false } = {}) {
     this.model = model.streamScore === undefined ? model
       : { ...model, minScore: model.streamScore, minMargin: model.streamMargin };
     this.windows = windows;
     this.hop = hop;
     this.confirmations = confirmations;
+    this.calibrationReplay = calibrationReplay;
     this.reset();
   }
   reset() {
@@ -149,7 +150,11 @@ export class Stream {
     this.evaluated = -Infinity;
     this.run = 0;
     this.previous = null;
-    this.lastEmitted = null;
+    this.claim = null;
+    this.calibrationLabel = null;
+    this.episodeStart = -Infinity;
+    this.quietSince = null;
+    this.quietFrames = 0;
     this.cadence = 50;
   }
   push(sample, trace = undefined) {
@@ -160,10 +165,26 @@ export class Stream {
         trace.reset = Number.isFinite(this.last);
         trace.resetSamples = this.samples.length;
       }
+      const claim = this.claim;
       this.reset();
+      // A delivery gap evicts evidence but cannot certify a sign release.
+      this.claim = claim;
     }
     else this.cadence = this.cadence * 0.7 + gap * 0.3;
     this.last = sample.t;
+    if (!sample.h) {
+      this.quietSince ??= sample.t;
+      this.quietFrames++;
+    } else {
+      if (this.claim && this.quietFrames >= 3 && this.quietSince > this.claim.end
+        && sample.t - this.quietSince >= EPISODE_REST_MS) {
+        this.episodeStart = sample.t;
+        this.run = 0;
+        this.previous = null;
+      }
+      this.quietSince = null;
+      this.quietFrames = 0;
+    }
     this.samples.push(sample);
     const windows = this.windows ?? (this.cadence >= 125 ? [600, 1000, 1600] : [1000]);
     const longest = this.windows ? Math.max(...this.windows) : 1600;
@@ -178,22 +199,44 @@ export class Stream {
     // A window may miss its left edge by one frame interval after eviction.
     // Fixed fractional coverage can skip every decision at a steady low FPS.
     const scored = windows.filter(ms => sample.t - this.samples[0].t >= ms - Math.max(ms * 0.14, Math.min(220, gap + 10))).map(ms => {
-      const inputTrace = trace && { ms, ids: [] };
-      const input = tensor(this.samples.filter(frame => sample.t - frame.t <= ms), this.model.mode, inputTrace);
+      const inputTrace = { ms, ids: trace ? [] : undefined };
+      const input = tensor(this.samples.filter(frame => sample.t - frame.t <= ms && frame.t >= this.episodeStart),
+        this.model.mode, inputTrace);
+      const score = predict(this.model, input);
       if (trace) {
-        if (input) trace.windows.push(inputTrace);
+        if (input) trace.windows.push({ ...inputTrace, label: score.label, top: score.top, score: score.score,
+          margin: score.margin, otherMargin: score.score - score.scores.at(-1) });
         else trace.rejected++;
       }
-      return predict(this.model, input);
+      return { ...score, evidence: inputTrace.handRange };
     });
     const result = scored.filter(value => value.label).sort((a, b) => b.margin - a.margin)[0]
       ?? { label: null, reason: scored.find(value => value.reason !== "insufficient hand evidence")?.reason
         ?? "insufficient hand evidence" };
     this.run = this.previous === result.label ? this.run + 1 : 1;
     this.previous = result.label;
-    if (this.run >= this.confirmations && result.label === null) this.lastEmitted = null;
-    const event = result.label && this.run >= this.confirmations && result.label !== this.lastEmitted ? result.label : null;
-    if (event) this.lastEmitted = event;
-    return { ...result, event, t: sample.t };
+    if (trace) trace.confirmations = this.run;
+    // Reference the original Python calibration rule when replaying its scores.
+    if (this.calibrationReplay) {
+      let event = null;
+      if (this.run >= this.confirmations && result.label !== this.calibrationLabel) {
+        event = this.calibrationLabel = result.label;
+      }
+      return { ...result, event, t: sample.t };
+    }
+    let event = null;
+    if (result.label && this.run >= this.confirmations) {
+      const [start, end] = result.evidence;
+      const shared = this.claim && start <= this.claim.end;
+      const sameEpisode = this.claim?.label === result.label && this.episodeStart <= this.claim.end;
+      if (shared || sameEpisode) {
+        if (trace) trace.eventBlocked = shared ? "consumed hand evidence" : "same sign episode";
+      } else {
+        event = result.label;
+        this.claim = { id: (this.claim?.id ?? 0) + 1, label: event, start, end };
+        if (trace) trace.confirmedEvent = this.claim;
+      }
+    }
+    return { ...result, event, eventId: event ? this.claim.id : null, t: sample.t };
   }
 }

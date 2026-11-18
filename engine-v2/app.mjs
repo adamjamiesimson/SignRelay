@@ -217,7 +217,7 @@ function schedule(session) {
   });
 }
 
-async function start(file, forceCpu = false) {
+async function start(file, forceCpu = false, requestedAt = performance.now()) {
   if (!forceCpu) gpuFallback = null;
   stop(forceCpu ? "Restarting camera tracking on the CPU…" : "Loading recognition model…");
   if (!video.requestVideoFrameCallback || !window.OffscreenCanvas) {
@@ -233,6 +233,7 @@ async function start(file, forceCpu = false) {
   }
   const session = { worker, abort: new AbortController(), trace: new FrameTrace(), frames: 0, hands: 0, detected: 0,
     last: -Infinity, captureMs: 0, timings: [], events: [] };
+  session.trace.startup = {};
   session.latest = new LatestFrame((record, reason) => session.trace.mark(record, reason));
   current = session;
   byId("stop").disabled = false;
@@ -253,7 +254,7 @@ async function start(file, forceCpu = false) {
   }
   function retryCpu(stage, elapsedMs) {
     gpuFallback = { stage, elapsedMs, sent: session.trace.counters.sent, processed: session.trace.counters.processed };
-    void start(null, true);
+    void start(null, true, requestedAt);
   }
   worker.onerror = () => { if (current === session) workerError("Recognition worker stopped. Start again to reload it."); };
   worker.onmessage = async ({ data }) => {
@@ -277,6 +278,7 @@ async function start(file, forceCpu = false) {
     }
     if (data.type === "ready") {
       clearTimeout(session.readyTimeout);
+      Object.assign(session.trace.startup, data.startup, { workerReadyMs: performance.now() - requestedAt });
       session.capture = file ? "bitmap" : data.capture === "track" && typeof MediaStreamTrackProcessor !== "function"
         ? typeof VideoFrame === "function" ? "snapshot" : "bitmap" : data.capture;
       session.runtime = { capture: session.capture, hands: data.handDelegate, pose: data.poseMode };
@@ -287,10 +289,12 @@ async function start(file, forceCpu = false) {
         if (file) { await stepClip(session); return; }
         if (!navigator.mediaDevices?.getUserMedia) throw new Error("Camera access requires HTTPS or localhost.");
         set("status", "Waiting for camera permission…");
+        const acquiring = performance.now();
         const media = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user", width: { ideal: 640 }, resizeMode: { ideal: "none" } }, audio: false,
         });
         if (current !== session) { media.getTracks().forEach(track => track.stop()); return; }
+        session.trace.startup.cameraAcquireMs = performance.now() - acquiring;
         session.media = media;
         for (const track of media.getVideoTracks()) track.addEventListener("ended", () => {
           if (current === session) stop("Camera disconnected. Start the camera to reconnect.");
@@ -299,6 +303,7 @@ async function start(file, forceCpu = false) {
         await video.play();
         if (current !== session) return;
         session.started = performance.now();
+        session.trace.startup.cameraPlayingMs = session.started - requestedAt;
         set("status", "Camera running");
         schedule(session);
         if (session.capture === "track") void readTrack(session, media.getVideoTracks()[0]).catch(error => {
@@ -314,6 +319,8 @@ async function start(file, forceCpu = false) {
         return;
       }
       session.trace.complete(session.active, data, clock());
+      session.trace.startup.firstFrameMs ??= performance.now() - requestedAt;
+      if (data.hand) session.trace.startup.firstUsableHandMs ??= performance.now() - requestedAt;
       session.active = null;
       const pending = session.latest.take(clock());
       if (pending) dispatchTrackFrame(session, pending);

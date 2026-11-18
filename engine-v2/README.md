@@ -57,7 +57,7 @@ Live capture defaults to direct, timestamped camera frames and a separate pose w
 
 For a matched diagnostic, set `SIGNRELAY_V2_CAPTURE` to `bitmap`, `snapshot` or `track`, and `SIGNRELAY_V2_VISION_PROFILE` to `gpu-on-demand` for inline pose or `gpu-split` for separate pose. `cpu-split` and `gpu-hands` provide CPU and hand-only controls. The console function `signRelayCameraDiagnostics()` returns a 600-frame timing and disposition ring and cumulative counts. Device-read IDs and compositor presentation IDs describe separate sampling points. Frame images and landmarks stay out of the trace.
 
-Set `SIGNRELAY_V2_WARM_HAND=1` to reproduce the detector warm-up with an explicit GPU profile, or `0` to reproduce a cold start. The warm-up initializes the tracker with a neutral canvas before opening the camera. The initialization call supplies no observations to recognition. Startup on the tested Windows machine took about 20 seconds.
+Set `SIGNRELAY_V2_WARM_HAND=1` to use detector warm-up with an explicit GPU profile, or `0` to skip warm-up. Initialization uses a small neutral canvas before opening the camera. Check `signRelayCameraDiagnostics()?.startup` for load, warm-up and acquisition timings.
 
 Use `training/make_asl_camera_fixture.py` for a local Y4M from a guarded recorded clip. Pass the original recording hash, generated Y4M and its sign interval to `diagnose-camera-fixture.py` to compare native detector coverage on the original and camera-fixture pixels. `browser-smoke.mjs` accepts the same guarded intake and fixture to measure the actual worker and camera interface. The ledger records the test inputs, clip-level outcomes and runtime versions.
 
@@ -70,6 +70,6 @@ node engine-v2/camera-reel-run.mjs "$CHROME" evaluation/raw/hand_landmarker.task
   evaluation/derived/camera-reel-report.json "$AUTHORIZED_WARMUP_MP4"
 ```
 
-The reel runner accepts an optional guarded local video warm-up. Keep the same warm-up in both runs when comparing capture or pose settings. Trials where no frames reached tracking are recorded as unobserved.
+The reel runner accepts an optional guarded local video warm-up. Keep the same warm-up in both runs when comparing capture or pose settings. It matches output to the signing intervals actually displayed by Chrome using the reel’s uniform gray padding. Generate a repeat reel with `camera-reel.py --repeat YES`. For a matched control, set `SIGNRELAY_V2_CALIBRATION_REPLAY=1` to run the original confirmation policy on the same tracker. Trials where no frames reached tracking are recorded as unobserved.
 
-The held back test and human webcam trials require the existing [webcam protocol](../docs/evaluation/webcam-validation-protocol-2026-11-16.md). Keep model selection on the development data. Record signer and device conditions, review sign identity and boundaries, and include consecutive signs and ordinary movement with consent. Preserve the final cohort until there is a credible candidate and a frozen acceptance policy.
+Use the [owner-operated webcam trials](WEBCAM-TRIALS.md) for a local, text-only development check. Use the [webcam evaluation protocol](../docs/evaluation/webcam-validation-protocol-2026-11-16.md) for a formal study. Preserve the final cohort until the acceptance policy is frozen.

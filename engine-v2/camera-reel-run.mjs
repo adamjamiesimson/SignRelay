@@ -39,7 +39,37 @@ try {
       await delay(250);
     }
   }
-  await browser.evaluate("document.getElementById('camera').click()");
+  await browser.evaluate(`(() => {
+    const video = document.getElementById('video');
+    const ctx = new OffscreenCanvas(8, 8).getContext('2d', { willReadFrequently: true });
+    const intervals = [];
+    const preview = (_now, metadata) => {
+      ctx.drawImage(video, 0, 0, 8, 8);
+      const { data } = ctx.getImageData(0, 0, 8, 8);
+      let low = 255, high = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const luma = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        low = Math.min(low, luma);
+        high = Math.max(high, luma);
+      }
+      // The reel consists of real clips separated by uniform gray padding.
+      // Chrome's device clock can drift from nominal fixture frame numbers.
+      if (high - low > 12) {
+        const at = performance.timeOrigin + (metadata.captureTime ?? performance.now());
+        let interval = intervals.at(-1);
+        if (!interval || at - interval.end > 400) {
+          interval = { start: at, end: at, presented: 0 };
+          intervals.push(interval);
+        }
+        interval.end = at;
+        interval.presented++;
+      }
+      video.requestVideoFrameCallback(preview);
+    };
+    window.reelIntervals = intervals;
+    video.requestVideoFrameCallback(preview);
+    document.getElementById('camera').click();
+  })()`);
   const frames = new Map();
   let progress;
   const expires = performance.now() + (index.durationSeconds + 50) * 1000;
@@ -47,44 +77,59 @@ try {
     progress = await browser.evaluate(`(() => {
       const current = signRelayCameraDiagnostics();
       return { status: document.getElementById('status').textContent, t: document.getElementById('video').currentTime,
+        intervals: window.reelIntervals, now: performance.timeOrigin + performance.now(),
         frames: current?.frames.filter(f => f.stage === 'processed').map(f =>
-          ({ id: f.id, stage: f.stage, sourceMs: f.sourceMs, event: f.event, hand: f.hand, ms: f.ms,
-            model: f.segmentation.windows.length > 0, age: f.receivedAt - f.at })) };
+          ({ id: f.id, at: f.at, sourceMs: f.sourceMs, event: f.event, hand: f.hand, ms: f.ms,
+            segmentation: f.segmentation, model: f.segmentation.windows.length > 0, age: f.receivedAt - f.at })) };
     })()`);
     for (const frame of progress.frames ?? []) frames.set(frame.id, frame);
-    if (progress.t >= index.durationSeconds - 0.25) break;
+    if (progress.intervals.length >= index.trials.length && progress.now - progress.intervals[index.trials.length - 1].end >= 950) break;
     if (/failed|timed out|stopped|disconnected/i.test(progress.status)) throw new Error(progress.status);
     await delay(1500);
   }
-  assert(progress.t >= index.durationSeconds - 0.25, "Reel did not complete");
-  const all = [...frames.values()];
-  const processed = all.filter(frame => frame.stage === "processed");
+  const intervals = progress.intervals.slice(0, index.trials.length);
+  assert.equal(intervals.length, index.trials.length, "Reel did not present every clip");
+  assert(progress.now - intervals.at(-1).end >= 950, "Reel did not complete");
+  const processed = [...frames.values()];
   const remaining = processed.filter(frame => frame.event);
-  const reports = index.trials.map(trial => {
-    const frames = processed.filter(frame => frame.sourceMs >= trial.startMs - 30 && frame.sourceMs < trial.endMs);
-    const events = remaining.filter(frame => frame.sourceMs >= trial.startMs - 100 && frame.sourceMs < trial.endMs + 750);
+  const scoredTrial = (interval, position) => {
+    const next = intervals[position + 1];
+    const end = Math.min(interval.end + 750, next ? next.start - 100 : Infinity);
+    return frame => frame.at >= interval.start - 100 && frame.at < end;
+  };
+  const reports = index.trials.map((trial, position) => {
+    const interval = intervals[position];
+    const span = interval.end - interval.start + 1000 / index.fps;
+    assert(Math.abs(span - (trial.endMs - trial.startMs)) <= 900, "Preview clip boundaries do not match the index");
+    const inTrial = scoredTrial(interval, position);
+    const frames = processed.filter(frame => frame.at >= interval.start - 30 && frame.at < interval.end + 30);
+    const events = remaining.filter(inTrial);
     const labels = events.map(frame => frame.event);
     const hands = frames.filter(frame => frame.hand).length;
-    return { ...trial, processed: frames.length, hands, labels, eventOffsetsMs: events.map(frame => frame.sourceMs - trial.startMs),
-      analyzedFps: frames.length / ((trial.endMs - trial.startMs) / 1000),
+    return { ...trial, presented: interval.presented, processed: frames.length, hands, labels,
+      eventOffsetsMs: events.map(frame => frame.at - interval.start),
+      duplicateWords: labels.length - new Set(labels).size,
+      decisions: processed.filter(frame => frame.model && inTrial(frame))
+        .map(frame => ({ at: frame.sourceMs, offsetMs: frame.at - interval.start, event: frame.event, ...frame.segmentation })),
+      analyzedFps: frames.length / (span / 1000),
       handMs: median(frames.map(frame => frame.ms.hand)), modelMs: median(frames.filter(frame => frame.model)
         .map(frame => frame.ms.recognize)), ageMs: median(frames.map(frame => frame.age)),
-      firstEventFromClipStartMs: events.length ? events[0].sourceMs - trial.startMs : null,
+      firstEventFromClipStartMs: events.length ? events[0].at - interval.start : null,
       outcome: !frames.length ? "unobserved" : trial.kind === "target" ? !labels.length ? "abstained"
         : labels.length === 1 && labels[0] === trial.label ? "correct" : "wrong"
         : labels.length ? "falseAccept" : "rejected" };
   });
-  const outside = remaining.filter(frame => !index.trials.some(trial =>
-    frame.sourceMs >= trial.startMs - 100 && frame.sourceMs < trial.endMs + 750));
+  const outside = remaining.filter(frame => !intervals.some((interval, position) => scoredTrial(interval, position)(frame)));
   const prior = await browser.evaluate("document.getElementById('stop').click(); signRelayCameraDiagnostics()");
   assert.equal(await browser.evaluate("document.getElementById('video').srcObject"), null);
   assert.deepEqual([...external], []);
   const outcomes = Object.fromEntries(["correct", "wrong", "abstained", "falseAccept", "rejected", "unobserved"]
     .map(key => [key, reports.filter(trial => trial.outcome === key).length]));
-  const result = { settings: { capture: process.env.SIGNRELAY_V2_CAPTURE, vision: process.env.SIGNRELAY_V2_VISION_PROFILE },
+  const result = { settings: { capture: process.env.SIGNRELAY_V2_CAPTURE, vision: process.env.SIGNRELAY_V2_VISION_PROFILE,
+    calibrationReplay: process.env.SIGNRELAY_V2_CALIBRATION_REPLAY === "1" },
     browser: (await browser.send("Browser.getVersion")).product, fixtureSha256: index.sha256,
-    warmup: Boolean(warmupFile), runtime: prior.runtime, fallback: prior.gpuFallback,
-    outcomes, paddingSuggestions: outside.map(frame => ({ t: frame.sourceMs, label: frame.event })),
+    warmup: Boolean(warmupFile), startup: prior.startup, runtime: prior.runtime, fallback: prior.gpuFallback,
+    outcomes, paddingSuggestions: outside.map(frame => ({ t: frame.at - intervals[0].start, label: frame.event })),
     counters: prior.counters, wallClockSourceSeconds: progress.t, actualProcessedFps: prior.counters.processed / progress.t,
     reports };
   await writeFile(output, JSON.stringify(result, null, 2));

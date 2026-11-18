@@ -58,6 +58,7 @@ export class FrameTrace {
   snapshot() {
     const frames = this.frames.length === this.capacity
       ? [...this.frames.slice(this.next), ...this.frames.slice(0, this.next)] : this.frames;
-    return { counters: { ...this.counters }, frames, ...(this.isolatedInput ? { isolatedInput: this.isolatedInput } : {}) };
+    return { counters: { ...this.counters }, frames, ...(this.startup ? { startup: { ...this.startup } } : {}),
+      ...(this.isolatedInput ? { isolatedInput: this.isolatedInput } : {}) };
   }
 }

@@ -12,11 +12,13 @@ self.onmessage = async ({ data }) => {
     if (data.type === "start") {
       if (vision) throw new Error("Restart the session before loading another model");
       bounded = data.bounded;
+      const loadStarted = performance.now();
       const [response, runtime] = await Promise.all([fetch("/model.json"), fetch("/profile.json")]);
       if (!response.ok) throw new Error("Development weights are unavailable");
       model = parseModel(await response.json());
       if (!runtime.ok) throw new Error("Tracker profile is unavailable");
       const loaded = await runtime.json();
+      const modelAndProfileMs = performance.now() - loadStarted;
       let profile = bounded ? { ...loaded, poseMode: "inline", handDelegate: "CPU", onDemandPose: false,
         framewiseHands: false, warmHand: false } : loaded;
       if (data.forceCpu && profile.auto) profile = { ...profile, handDelegate: "CPU", warmHand: false };
@@ -30,11 +32,12 @@ self.onmessage = async ({ data }) => {
         profile = { ...profile, handDelegate: "CPU", warmHand: false };
         vision = await tracker(model.mode, profile);
       }
-      stream = new Stream(model);
+      stream = new Stream(model, { calibrationReplay: profile.calibrationReplay });
       clip = [];
       firstFrame = true;
       self.postMessage({ type: "ready", version: model.version, vocabulary: model.labels.slice(0, -1), capture: profile.capture,
-        handDelegate: profile.handDelegate, poseMode: profile.poseMode, auto: profile.auto });
+        handDelegate: profile.handDelegate, poseMode: profile.poseMode, auto: profile.auto,
+        startup: { modelAndProfileMs, ...vision.startup } });
       return;
     }
     if (!vision) throw new Error("Model has not loaded");

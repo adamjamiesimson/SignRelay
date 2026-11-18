@@ -20,32 +20,45 @@ export async function createPose(files = null) {
 
 export async function tracker(mode, { handDelegate = "CPU", onDemandPose = false, framewiseHands = false,
   poseMode = "inline", warmHand = false } = {}) {
-  const files = await visionFiles();
-  const hand = await HandLandmarker.createFromOptions(files, {
-    baseOptions: { modelAssetPath: modelAssetPath(HAND_ASSET.file), delegate: handDelegate },
-    runningMode: framewiseHands ? "IMAGE" : "VIDEO", numHands: 2, minHandDetectionConfidence: 0.55,
-    minHandPresenceConfidence: 0.55, minTrackingConfidence: 0.55,
-  });
-  let pose, auxiliary;
+  const startup = {};
+  const started = performance.now();
+  let hand, pose, auxiliary;
   try {
+    if (mode !== "rgb" && poseMode === "split") auxiliary = new PoseContext(new Worker("/pose.js"));
+    const [files, modelBytes] = await Promise.all([visionFiles(), fetch(modelAssetPath(HAND_ASSET.file)).then(async response => {
+      if (!response.ok) throw new Error("Hand Landmarker asset is unavailable");
+      return new Uint8Array(await response.arrayBuffer());
+    })]);
+    startup.handAssetsMs = performance.now() - started;
+    hand = await HandLandmarker.createFromOptions(files, {
+      baseOptions: { modelAssetBuffer: modelBytes, delegate: handDelegate },
+      runningMode: framewiseHands ? "IMAGE" : "VIDEO", numHands: 2, minHandDetectionConfidence: 0.55,
+      minHandPresenceConfidence: 0.55, minTrackingConfidence: 0.55,
+    });
+    startup.handInitMs = performance.now() - started - startup.handAssetsMs;
+    const warmStarted = performance.now();
     if (warmHand) {
-      const neutral = new OffscreenCanvas(480, 640);
+      const neutral = new OffscreenCanvas(192, 256);
       const context = neutral.getContext("2d");
       context.fillStyle = "#808080";
       context.fillRect(0, 0, neutral.width, neutral.height);
       if (framewiseHands) hand.detect(neutral);
       else hand.detectForVideo(neutral, 0);
     }
+    startup.handWarmMs = performance.now() - warmStarted;
+    const poseStarted = performance.now();
     if (mode !== "rgb" && poseMode === "inline") pose = await createPose(files);
-    if (mode !== "rgb" && poseMode === "split") auxiliary = new PoseContext(new Worker("/pose.js"));
+    startup.inlinePoseInitMs = performance.now() - poseStarted;
   } catch (error) {
-    hand.close();
+    auxiliary?.close();
+    hand?.close();
     throw error;
   }
   let canvas, context;
   let lastPose = -Infinity;
   let points = [];
   return {
+    startup,
     run(image, timestamp, stage = undefined) {
       const start = performance.now();
       stage?.("canvas");
