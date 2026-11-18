@@ -14,7 +14,7 @@ Invoke-WebRequest 'https://storage.googleapis.com/mediapipe-models/hand_landmark
 node engine-v2/serve.mjs evaluation/raw/hand_landmarker.task
 ```
 
-Open http://127.0.0.1:8765, then select **Start camera** or **Open video**. File mode returns an isolated-clip result at the end and accepts clips up to 15 seconds. Camera mode shows suggestions from causal overlapping windows. The displayed scores are logits. The analysis rate counts completed worker responses against elapsed wall time. The diagnostics include hand coverage, intentionally discarded frames and stage timing. A camera stop, tab hide, session change or worker fault releases the media resources. The server binds to loopback and checks vision asset fingerprints.
+Open http://127.0.0.1:8765, then select **Start camera** or **Open video**. File mode steps decoded frames at nominal 20 source samples per second and returns an isolated-clip result at the end. It accepts clips up to 15 seconds. Camera mode shows suggestions from causal overlapping windows and adds longer and shorter windows when analysis cadence falls. The displayed scores are logits. The analysis rate counts completed worker responses against elapsed wall time. The diagnostics include hand coverage, intentionally discarded frames and stage timing. A camera stop, tab hide, session change or worker fault releases the media resources. The server binds to loopback and checks vision asset fingerprints.
 
 ## Reproduce the lab
 

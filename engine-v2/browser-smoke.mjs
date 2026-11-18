@@ -47,10 +47,20 @@ try {
   const { nodeId } = await chrome.send("DOM.querySelector", { nodeId: root.nodeId, selector: "#file" });
   await chrome.send("DOM.setFileInputFiles", { nodeId, files: [fixture.file] });
   await chrome.evaluate("document.getElementById('file').dispatchEvent(new Event('change', {bubbles: true}))");
-  await until("/File complete|failed|could not/i.test(document.getElementById('status').textContent)");
+  await until("/File complete|failed|could not/i.test(document.getElementById('status').textContent)", 90000);
   const file = await snapshot();
   assert.match(file.status, /^File complete/);
   assert(Number(file.fps) > 0);
+  const evidence = {
+    fixture: assetId, test: cameraFile ? "file-backed camera" : "synthetic camera",
+    file, trackerProfile: process.env.SIGNRELAY_V2_VISION_PROFILE ?? "cpu",
+    browserVersion: (await chrome.send("Browser.getVersion")).product,
+  };
+  const save = () => writeFile(output, JSON.stringify({ ...evidence, errors: chrome.errors }, null, 2));
+  await save();
+  if (process.env.SIGNRELAY_V2_EXPECT) {
+    assert.equal(file.match, process.env.SIGNRELAY_V2_EXPECT, "Reference clip prediction changed");
+  }
   const cameraStarted = performance.now();
   await chrome.evaluate("document.getElementById('camera').click()");
   await until("/Camera running|failed|could not/i.test(document.getElementById('status').textContent)");
@@ -59,6 +69,8 @@ try {
   await until(cameraFile ? "document.getElementById('video').currentTime >= 18"
     : "Number(document.getElementById('hands').textContent.split('/')[1]) >= 50", 40000);
   const camera = await snapshot();
+  Object.assign(evidence, { camera, cameraStartupMs: cameraStartup });
+  await save();
   await chrome.evaluate("document.getElementById('stop').click()");
   assert.equal(await chrome.evaluate("document.getElementById('video').srcObject === null"), true);
   await chrome.evaluate("document.getElementById('camera').click()");
@@ -66,11 +78,17 @@ try {
   await chrome.evaluate("document.getElementById('video').srcObject.getVideoTracks()[0].dispatchEvent(new Event('ended'))");
   await until("/^Camera disconnected/.test(document.getElementById('status').textContent)");
   assert.equal(await chrome.evaluate("document.getElementById('video').srcObject === null"), true);
+  await chrome.evaluate("window.savedWorker = Worker; window.Worker = class extends savedWorker { constructor() { super('/missing-worker.js'); } }");
+  await chrome.evaluate("document.getElementById('camera').click()");
+  await until("/Recognition worker (stopped|could not start)/.test(document.getElementById('status').textContent)");
+  await chrome.evaluate("window.Worker = window.savedWorker; delete window.savedWorker");
+  await chrome.evaluate("document.getElementById('camera').click()");
+  await until("/^Camera running/.test(document.getElementById('status').textContent)");
+  await chrome.evaluate("document.getElementById('stop').click()");
   assert.deepEqual(external, [], "The local demo made a non-local request");
-  await writeFile(output, JSON.stringify({ fixture: assetId, test: cameraFile ? "file-backed camera" : "synthetic camera",
-    file, camera, cameraStartupMs: cameraStartup, noExternalRequests: true, cameraRestart: true, disconnectRecovery: true,
-    softwareTestMs: performance.now() - started, browserVersion: (await chrome.send("Browser.getVersion")).product,
-    errors: chrome.errors }, null, 2));
+  Object.assign(evidence, { noExternalRequests: true, cameraRestart: true, disconnectRecovery: true,
+    workerLoadRecovery: true, softwareTestMs: performance.now() - started });
+  await save();
   console.log(JSON.stringify({ file, camera, cameraStartupMs: cameraStartup }));
 } finally {
   await chrome?.close().catch(error => console.warn("Chrome profile cleanup:", error.message));

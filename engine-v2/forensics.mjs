@@ -164,7 +164,8 @@ try {
     const { rows } = JSON.parse(await readFile(developmentFile ?? "evaluation/derived/v2/val.json"));
     const variants = [
       ["slidingThreeWindows", model => new Stream(model, { windows: [600, 1000, 1600] })],
-      ["slidingOneWindow", model => new Stream(model)],
+      ["slidingOneWindow", model => new Stream(model, { windows: [1000] })],
+      ["cadenceAdaptive", model => new Stream(model)],
     ];
     parities.stream = Object.fromEntries(variants.map(([name, factory]) => {
       const predictions = rows.map(row => {

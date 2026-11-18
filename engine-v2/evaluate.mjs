@@ -9,6 +9,7 @@ const model = parseModel(JSON.parse(await readFile(weightsFile)));
 if (upstream.manifest_sha256 === model.trainingManifest) throw new Error("Use data outside training");
 const intervals = [50, 67, 100, 167];
 const policies = [
+  { name: "cadence-adaptive", frames: null, confirmations: 2 },
   { name: "overlap", frames: [600, 1000, 1600], confirmations: 2 },
   { name: "single-1000ms", frames: [1000], confirmations: 2 },
   { name: "overlap-single-decision", frames: [600, 1000, 1600], confirmations: 1 },

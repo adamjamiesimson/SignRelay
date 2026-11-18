@@ -2,7 +2,7 @@ import { VisionEngine } from "../lib/vision-engine";
 import { describeAslTemporal } from "../lib/asl-temporal-features";
 import { parseAslTemporalModel, predictAslTemporal } from "../lib/asl-temporal-model";
 import { seekDecodedFrame, loadVideoData } from "../scripts/diagnostics/video-frame-step";
-import { observation, parseModel, predict, Stream, tensor } from "./core.mjs";
+import { parseModel, predict, Stream, tensor } from "./core.mjs";
 import { tracker } from "./vision.mjs";
 
 async function run(url: string, timestamps: number[], modelUrl: string) {
@@ -63,7 +63,7 @@ function scoreNative(frames: Parameters<typeof describeAslTemporal>[0], unparsed
 function scoreV2(samples: Parameters<typeof tensor>[0], unparsed: unknown) {
   const model = parseModel(unparsed);
   const input = tensor(samples, model.mode);
-  return { input: input && Array.from(input), score: predict(model, input), observation };
+  return { input: input && Array.from(input), score: predict(model, input) };
 }
 
 Object.assign(window, { replayDevelopmentClip: run, scoreNative, scoreV2 });

@@ -7,21 +7,22 @@ export const RGB_WIDTH = 12 * 12 * 3;
 export const WIDTHS = { landmark: LANDMARK_WIDTH, rgb: RGB_WIDTH, hybrid: LANDMARK_WIDTH + RGB_WIDTH };
 
 const clamp = (value, limit) => Math.max(-limit, Math.min(limit, value));
-const visible = point => !!point && Number.isFinite(point.x) && Number.isFinite(point.y)
-  && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1 && (point.visibility ?? 1) >= 0.5;
+const inside = point => !!point && Number.isFinite(point.x) && Number.isFinite(point.y)
+  && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1;
+const visiblePose = point => inside(point) && (point.visibility ?? 1) >= 0.5;
 
 export function observation(frame, aspect) {
   if (!Number.isFinite(aspect) || aspect <= 0) throw new Error("Invalid source dimensions");
   const hands = frame.hands.filter(hand =>
-    hand.landmarks.length === 21 && visible(hand.landmarks[0])
+    hand.landmarks.length === 21 && inside(hand.landmarks[0])
     && hand.landmarks.every(point => [point.x, point.y, point.z].every(Number.isFinite)));
   const pose = frame.pose;
-  const shoulders = visible(pose[11]) && visible(pose[12]);
+  const shoulders = visiblePose(pose[11]) && visiblePose(pose[12]);
   const chest = shoulders
     ? { x: (pose[11].x + pose[12].x) / 2, y: (pose[11].y + pose[12].y) / 2 }
     : null;
   const bodyScale = shoulders ? Math.max(0.045, Math.hypot((pose[11].x - pose[12].x) * aspect, pose[11].y - pose[12].y)) : 1;
-  const nose = visible(pose[0]) ? pose[0] : null;
+  const nose = visiblePose(pose[0]) ? pose[0] : null;
   // Keep both hands. Sort by image x only to break ties in a duplicate label.
   const left = hands.filter(hand => hand.handedness === "Left").sort((a, b) => a.landmarks[0].x - b.landmarks[0].x)[0];
   const right = hands.filter(hand => hand.handedness === "Right").sort((a, b) => b.landmarks[0].x - a.landmarks[0].x)[0];
@@ -129,7 +130,7 @@ export function predict(model, input) {
 // Fixed-delay, overlapping windows. An event requires agreement across windows.
 // Suppression clears when the evidence changes, without requiring a hand exit.
 export class Stream {
-  constructor(model, { windows = [1000], hop = 150, confirmations = 2 } = {}) {
+  constructor(model, { windows = null, hop = 150, confirmations = 2 } = {}) {
     this.model = model;
     this.windows = windows;
     this.hop = hop;
@@ -143,21 +144,23 @@ export class Stream {
     this.run = 0;
     this.previous = null;
     this.lastEmitted = null;
+    this.cadence = 50;
   }
   push(sample) {
     if (!Number.isFinite(sample.t) || sample.t <= this.last) throw new Error("Non-monotonic source timestamps");
     const gap = sample.t - this.last;
     if (gap > 400) this.reset();
+    else this.cadence = this.cadence * 0.7 + gap * 0.3;
     this.last = sample.t;
     this.samples.push(sample);
-    const longest = Math.max(...this.windows);
+    const windows = this.windows ?? (this.cadence >= 125 ? [600, 1000, 1600] : [1000]);
+    const longest = this.windows ? Math.max(...this.windows) : 1600;
     this.samples = this.samples.filter(frame => sample.t - frame.t <= longest);
     if (sample.t - this.evaluated < this.hop) return null;
     this.evaluated = sample.t;
     // A window may miss its left edge by one frame interval after eviction.
     // Fixed fractional coverage can skip every decision at a steady low FPS.
-    const edgeAllowance = Math.min(220, Math.max(70, gap + 10));
-    const scored = this.windows.filter(ms => sample.t - this.samples[0].t >= ms - edgeAllowance).map(ms =>
+    const scored = windows.filter(ms => sample.t - this.samples[0].t >= ms - Math.max(ms * 0.14, Math.min(220, gap + 10))).map(ms =>
       predict(this.model, tensor(this.samples.filter(frame => sample.t - frame.t <= ms), this.model.mode)));
     const result = scored.filter(value => value.label).sort((a, b) => b.margin - a.margin)[0]
       ?? { label: null, reason: scored.find(value => value.reason !== "insufficient hand evidence")?.reason

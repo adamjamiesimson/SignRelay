@@ -11,10 +11,11 @@ self.onmessage = async ({ data }) => {
     if (data.type === "start") {
       if (vision) throw new Error("Restart the session before loading another model");
       bounded = data.bounded;
-      const response = await fetch("/model.json");
+      const [response, runtime] = await Promise.all([fetch("/model.json"), fetch("/profile.json")]);
       if (!response.ok) throw new Error("Development weights are unavailable");
       model = parseModel(await response.json());
-      vision = await tracker(model.mode);
+      if (!runtime.ok) throw new Error("Tracker profile is unavailable");
+      vision = await tracker(model.mode, await runtime.json());
       stream = new Stream(model);
       clip = [];
       self.postMessage({ type: "ready", version: model.version, vocabulary: model.labels.slice(0, -1) });
@@ -28,7 +29,7 @@ self.onmessage = async ({ data }) => {
     }
     if (data.type !== "frame") throw new Error("Unknown worker request");
     try {
-      const { sample, ms } = vision.run(data.image, data.timestamp);
+      const { frame, sample, ms } = vision.run(data.image, data.timestamp);
       const start = performance.now();
       const result = stream.push(sample);
       if (bounded) {
@@ -37,7 +38,7 @@ self.onmessage = async ({ data }) => {
         }
         clip.push(sample);
       }
-      self.postMessage({ type: "frame", result, hand: sample.h,
+      self.postMessage({ type: "frame", result, hand: sample.h, detected: frame.hands.length > 0,
         ms: { ...ms, recognize: performance.now() - start } });
     } finally {
       data.image.close();

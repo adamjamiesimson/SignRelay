@@ -26,6 +26,15 @@ test("absent pose becomes zero masks and both hand slots stay distinct", () => {
   assert.deepEqual([sample(0).x[3], sample(0).x[45]], [0, 1]);
 });
 
+test("browser hand points with unused visibility fields remain observed", () => {
+  const tracked = hand("Left");
+  for (const point of tracked.landmarks) point.visibility = 0;
+  const frame = { timestamp: 0, hands: [tracked], pose: [{ x: 0.5, y: 0.5, z: 0, visibility: 0 }] };
+  const value = observation(frame, 0.75);
+  assert.equal(value.h, true);
+  assert.equal(value.x[1], 0);
+});
+
 test("elapsed-time resampling preserves missing observations and rejects bad frames", () => {
   const samples = [sample(0), sample(100), sample(800, []), sample(900)];
   const values = tensor(samples, "landmark");

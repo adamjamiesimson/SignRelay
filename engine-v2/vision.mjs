@@ -7,11 +7,11 @@ export const HAND_ASSET = {
   url: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
 };
 
-export async function tracker(mode) {
+export async function tracker(mode, { handDelegate = "CPU", onDemandPose = false } = {}) {
   const files = await FilesetResolver.forVisionTasks(new URL("/vision/wasm", location.href).href);
   const modelAssetPath = file => new URL("/vision/models/" + file, location.href).href;
   const hand = await HandLandmarker.createFromOptions(files, {
-    baseOptions: { modelAssetPath: modelAssetPath(HAND_ASSET.file), delegate: "CPU" },
+    baseOptions: { modelAssetPath: modelAssetPath(HAND_ASSET.file), delegate: handDelegate },
     runningMode: "VIDEO", numHands: 2, minHandDetectionConfidence: 0.55,
     minHandPresenceConfidence: 0.55, minTrackingConfidence: 0.55,
   });
@@ -45,13 +45,13 @@ export async function tracker(mode) {
         landmarks, handedness: result.handedness[index]?.[0]?.categoryName,
       }));
       const tracked = performance.now();
-      if (pose && timestamp - lastPose >= 220) {
+      if (pose && timestamp - lastPose >= 220 && (!onDemandPose || hands.length)) {
         points = pose.detectForVideo(canvas, timestamp).landmarks[0] ?? [];
         lastPose = timestamp;
       }
       const posed = performance.now();
       const rgb = mode !== "landmark" && hands.length ? cropPixels(context, hands, width, height) : null;
-      const frame = { timestamp, hands, pose: points, rgb };
+      const frame = { timestamp, hands, pose: timestamp - lastPose <= 350 ? points : [], rgb };
       const sample = observation(frame, image.width / image.height);
       return { frame, sample, ms: { copy: copied - start, hand: tracked - copied,
         pose: posed - tracked, features: performance.now() - posed } };
