@@ -55,7 +55,9 @@ try {
   assert(Number(file.fps) > 0);
   const evidence = {
     fixture: assetId, test: cameraFile ? "file-backed camera" : "synthetic camera",
-    file, trackerProfile: process.env.SIGNRELAY_V2_VISION_PROFILE ?? "cpu",
+    file, fileTransitions: await chrome.evaluate("window.signRelayCameraDiagnostics?.()"),
+    trackerProfile: process.env.SIGNRELAY_V2_VISION_PROFILE ?? "auto",
+    captureProfile: process.env.SIGNRELAY_V2_CAPTURE ?? "track",
     browserVersion: (await chrome.send("Browser.getVersion")).product,
   };
   const save = () => writeFile(output, JSON.stringify({ ...evidence, errors: chrome.errors }, null, 2));
@@ -106,13 +108,14 @@ try {
   })()`);
   const cameraStarted = performance.now();
   await chrome.evaluate("document.getElementById('camera').click()");
-  await until("/Camera running|failed|could not/i.test(document.getElementById('status').textContent)");
+  await until("/Camera running|failed|could not/i.test(document.getElementById('status').textContent)", 45000);
   const cameraStartup = performance.now() - cameraStarted;
   assert.match((await snapshot()).status, /^Camera running/);
   await until(cameraFile ? "document.getElementById('video').currentTime >= 18"
     : "Number(document.getElementById('hands').textContent.split('/')[1]) >= 50", 40000);
   if (soak) await until(`document.getElementById('video').currentTime >= ${soak}`, (soak + 30) * 1000);
   const camera = await snapshot();
+  evidence.cameraTransitions = await chrome.evaluate("window.signRelayCameraDiagnostics?.()");
   if (traceCamera) evidence.cameraTrace = await chrome.evaluate("window.finishCameraTrace()");
   if (soak) {
     assert.equal(camera.events, "", "Synthetic idle camera produced a suggestion");
@@ -123,7 +126,7 @@ try {
   await chrome.evaluate("document.getElementById('stop').click()");
   assert.equal(await chrome.evaluate("document.getElementById('video').srcObject === null"), true);
   await chrome.evaluate("document.getElementById('camera').click()");
-  await until("/^Camera running/.test(document.getElementById('status').textContent)");
+  await until("/^Camera running/.test(document.getElementById('status').textContent)", 45000);
   await chrome.evaluate("document.getElementById('video').srcObject.getVideoTracks()[0].dispatchEvent(new Event('ended'))");
   await until("/^Camera disconnected/.test(document.getElementById('status').textContent)");
   assert.equal(await chrome.evaluate("document.getElementById('video').srcObject === null"), true);
@@ -132,13 +135,17 @@ try {
   await until("/Recognition worker (stopped|could not start)/.test(document.getElementById('status').textContent)");
   await chrome.evaluate("window.Worker = window.savedWorker; delete window.savedWorker");
   await chrome.evaluate("document.getElementById('camera').click()");
-  await until("/^Camera running/.test(document.getElementById('status').textContent)");
+  await until("/^Camera running/.test(document.getElementById('status').textContent)", 45000);
   await chrome.evaluate("document.getElementById('stop').click()");
   assert.deepEqual(external, [], "The local demo made a non-local request");
   Object.assign(evidence, { noExternalRequests: true, cameraRestart: true, disconnectRecovery: true,
     workerLoadRecovery: true, softwareTestMs: performance.now() - started });
   await save();
   console.log(JSON.stringify({ file, camera, cameraStartupMs: cameraStartup }));
+  if (process.env.SIGNRELAY_V2_CAMERA_EXPECT) {
+    assert.equal(camera.events, "Recent suggestions · " + process.env.SIGNRELAY_V2_CAMERA_EXPECT,
+      "Camera replay must emit the expected sign exactly once");
+  }
 } finally {
   await chrome?.close().catch(error => console.warn("Chrome profile cleanup:", error.message));
   server.close();

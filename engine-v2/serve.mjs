@@ -23,10 +23,18 @@ export async function serve({ modelFile, handFile, port = 8765, diagnostics = ne
     ["/", asset(join(here, "index.html"))],
     ...["style.css", "core.mjs"].map(name => ["/" + name, asset(join(here, name))]),
   ]);
-  const profile = process.env.SIGNRELAY_V2_VISION_PROFILE ?? "cpu";
-  if (!["cpu", "cpu-on-demand", "gpu-on-demand", "gpu-framewise"].includes(profile)) throw new Error("Unknown V2 tracker profile");
-  files.set("/profile.json", bytes(JSON.stringify({ handDelegate: profile.startsWith("gpu") ? "GPU" : "CPU",
-    onDemandPose: profile !== "cpu", framewiseHands: profile === "gpu-framewise" }), "application/json"));
+  const profile = process.env.SIGNRELAY_V2_VISION_PROFILE ?? "auto";
+  const capture = process.env.SIGNRELAY_V2_CAPTURE ?? "track";
+  const warmHand = process.env.SIGNRELAY_V2_WARM_HAND === undefined ? profile === "auto"
+    : process.env.SIGNRELAY_V2_WARM_HAND === "1";
+  if (!["auto", "cpu", "cpu-on-demand", "gpu-on-demand", "gpu-framewise", "gpu-hands", "gpu-split", "cpu-split"].includes(profile)) {
+    throw new Error("Unknown V2 tracker profile");
+  }
+  if (!["bitmap", "snapshot", "track"].includes(capture)) throw new Error("Unknown V2 capture profile");
+  files.set("/profile.json", bytes(JSON.stringify({ handDelegate: profile.startsWith("gpu") || profile === "auto" ? "GPU" : "CPU",
+    onDemandPose: profile !== "cpu", framewiseHands: profile === "gpu-framewise",
+    poseMode: profile.endsWith("-split") || profile === "auto" ? "split" : profile === "gpu-hands" ? "off" : "inline",
+    auto: profile === "auto", capture, warmHand }), "application/json"));
   if (modelFile) {
     const data = await readFile(modelFile);
     parseModel(JSON.parse(data));
@@ -43,9 +51,10 @@ export async function serve({ modelFile, handFile, port = 8765, diagnostics = ne
   for (const file of VISION_WASM_FILES) files.set("/vision/wasm/" + file, asset(join(packageDir, file)));
   const compile = (file, format) => build({ entryPoints: [join(here, file)],
     bundle: true, format, platform: "browser", write: false });
-  const [worker, app] = await Promise.all([compile("worker.mjs", "iife"), compile("app.mjs", "esm")]);
+  const [worker, app, pose] = await Promise.all([compile("worker.mjs", "iife"), compile("app.mjs", "esm"), compile("pose-worker.mjs", "iife")]);
   files.set("/app.mjs", bytes(app.outputFiles[0].contents, "text/javascript"));
   files.set("/tracker.js", bytes(worker.outputFiles[0].contents, "text/javascript"));
+  files.set("/pose.js", bytes(pose.outputFiles[0].contents, "text/javascript"));
   for (const entry of diagnostics) files.set(...entry);
   const server = createServer(async (request, response) => {
     const route = new URL(request.url, "http://127.0.0.1").pathname;

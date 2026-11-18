@@ -10,12 +10,13 @@ const clamp = (value, limit) => Math.max(-limit, Math.min(limit, value));
 const inside = point => !!point && Number.isFinite(point.x) && Number.isFinite(point.y)
   && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1;
 const visiblePose = point => inside(point) && (point.visibility ?? 1) >= 0.5;
+export const wellFormedHand = hand => hand.landmarks.length === 21
+  && hand.landmarks.every(point => Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z));
+export const usableHand = hand => wellFormedHand(hand) && inside(hand.landmarks[0]);
 
 export function observation(frame, aspect) {
   if (!Number.isFinite(aspect) || aspect <= 0) throw new Error("Invalid source dimensions");
-  const hands = frame.hands.filter(hand =>
-    hand.landmarks.length === 21 && inside(hand.landmarks[0])
-    && hand.landmarks.every(point => [point.x, point.y, point.z].every(Number.isFinite)));
+  const hands = frame.hands.filter(usableHand);
   const pose = frame.pose;
   const shoulders = visiblePose(pose[11]) && visiblePose(pose[12]);
   const chest = shoulders
@@ -48,7 +49,7 @@ export function observation(frame, aspect) {
   ], rgb: frame.rgb ?? null };
 }
 
-export function tensor(samples, mode) {
+export function tensor(samples, mode, trace = undefined) {
   if (!(mode in WIDTHS)) throw new Error("Unknown input modality");
   if (samples.some((sample, i) => !Number.isFinite(sample.t) || (i && sample.t <= samples[i - 1].t))) {
     throw new Error("Non-monotonic source timestamps");
@@ -57,6 +58,7 @@ export function tensor(samples, mode) {
   if (hands.length < 3 || hands.at(-1).t - hands[0].t < 115) return null;
   const start = hands[0].t;
   const end = hands.at(-1).t;
+  if (trace) trace.handRange = [start, end];
   const width = WIDTHS[mode];
   const output = new Float32Array(width * STEPS);
   let cursor = 0;
@@ -66,6 +68,7 @@ export function tensor(samples, mode) {
       Math.abs(samples[cursor + 1].t - desired) < Math.abs(samples[cursor].t - desired)) cursor++;
     const sample = samples[cursor];
     if (Math.abs(sample.t - desired) > 100) continue;
+    trace?.ids?.push(sample.id);
     if (mode !== "rgb") {
       if (sample.x.length !== LANDMARK_WIDTH || !sample.x.every(Number.isFinite)) throw new Error("Invalid landmark features");
       output.set(sample.x, i * width);
@@ -149,22 +152,40 @@ export class Stream {
     this.lastEmitted = null;
     this.cadence = 50;
   }
-  push(sample) {
+  push(sample, trace = undefined) {
     if (!Number.isFinite(sample.t) || sample.t <= this.last) throw new Error("Non-monotonic source timestamps");
     const gap = sample.t - this.last;
-    if (gap > 400) this.reset();
+    if (gap > 400) {
+      if (trace) {
+        trace.reset = Number.isFinite(this.last);
+        trace.resetSamples = this.samples.length;
+      }
+      this.reset();
+    }
     else this.cadence = this.cadence * 0.7 + gap * 0.3;
     this.last = sample.t;
     this.samples.push(sample);
     const windows = this.windows ?? (this.cadence >= 125 ? [600, 1000, 1600] : [1000]);
     const longest = this.windows ? Math.max(...this.windows) : 1600;
     this.samples = this.samples.filter(frame => sample.t - frame.t <= longest);
+    // Cap memory even if a browser reports an implausibly high frame cadence.
+    if (this.samples.length > 240) {
+      if (trace) trace.capacityEvicted = this.samples.length - 240;
+      this.samples = this.samples.slice(-240);
+    }
     if (sample.t - this.evaluated < this.hop) return null;
     this.evaluated = sample.t;
     // A window may miss its left edge by one frame interval after eviction.
     // Fixed fractional coverage can skip every decision at a steady low FPS.
-    const scored = windows.filter(ms => sample.t - this.samples[0].t >= ms - Math.max(ms * 0.14, Math.min(220, gap + 10))).map(ms =>
-      predict(this.model, tensor(this.samples.filter(frame => sample.t - frame.t <= ms), this.model.mode)));
+    const scored = windows.filter(ms => sample.t - this.samples[0].t >= ms - Math.max(ms * 0.14, Math.min(220, gap + 10))).map(ms => {
+      const inputTrace = trace && { ms, ids: [] };
+      const input = tensor(this.samples.filter(frame => sample.t - frame.t <= ms), this.model.mode, inputTrace);
+      if (trace) {
+        if (input) trace.windows.push(inputTrace);
+        else trace.rejected++;
+      }
+      return predict(this.model, input);
+    });
     const result = scored.filter(value => value.label).sort((a, b) => b.margin - a.margin)[0]
       ?? { label: null, reason: scored.find(value => value.reason !== "insufficient hand evidence")?.reason
         ?? "insufficient hand evidence" };

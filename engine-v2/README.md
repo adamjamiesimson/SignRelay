@@ -53,8 +53,23 @@ node engine-v2/forensics.mjs "$SOURCE" "$CHROME" evaluation/raw/hand_landmarker.
   evaluation/derived/v2/control/landmark-parity.json
 ```
 
-For throughput comparisons set `SIGNRELAY_V2_VISION_PROFILE` to `cpu-on-demand`, `gpu-on-demand` or `gpu-framewise` in the environment before starting the demonstrator. These are diagnostic configurations. The default CPU profile matches the native training configuration.
+Live capture defaults to direct, timestamped camera frames and a separate pose worker. The lab warms the GPU hand tracker before it opens the device. It retries on CPU if GPU preparation or the first camera frame stalls. The preview path remains available where direct capture is unsupported. File playback uses the pinned inline CPU tracker, as in the native training configuration.
+
+For a matched diagnostic, set `SIGNRELAY_V2_CAPTURE` to `bitmap`, `snapshot` or `track`, and `SIGNRELAY_V2_VISION_PROFILE` to `gpu-on-demand` for inline pose or `gpu-split` for separate pose. `cpu-split` and `gpu-hands` provide CPU and hand-only controls. The console function `signRelayCameraDiagnostics()` returns a 600-frame timing and disposition ring and cumulative counts. Device-read IDs and compositor presentation IDs describe separate sampling points. Frame images and landmarks stay out of the trace.
+
+Set `SIGNRELAY_V2_WARM_HAND=1` to reproduce the detector warm-up with an explicit GPU profile, or `0` to reproduce a cold start. The warm-up initializes the tracker with a neutral canvas before opening the camera. The initialization call supplies no observations to recognition. Startup on the tested Windows machine took about 20 seconds.
 
 Use `training/make_asl_camera_fixture.py` for a local Y4M from a guarded recorded clip. Pass the original recording hash, generated Y4M and its sign interval to `diagnose-camera-fixture.py` to compare native detector coverage on the original and camera-fixture pixels. `browser-smoke.mjs` accepts the same guarded intake and fixture to measure the actual worker and camera interface. The ledger records the test inputs, clip-level outcomes and runtime versions.
+
+```bash
+node engine-v2/camera-pixel-probe-run.mjs "$CHROME" evaluation/raw/hand_landmarker.task \
+  engine-v2/models/landmark.json evaluation/raw/v2-please.y4m evaluation/derived/paired-pixels.json
+python engine-v2/camera-reel.py "$SOURCE" evaluation/raw/v2-dev-reel.y4m evaluation/derived/reel.json
+node engine-v2/camera-reel-run.mjs "$CHROME" evaluation/raw/hand_landmarker.task \
+  engine-v2/models/landmark.json evaluation/raw/v2-dev-reel.y4m evaluation/derived/reel.json \
+  evaluation/derived/camera-reel-report.json "$AUTHORIZED_WARMUP_MP4"
+```
+
+The reel runner accepts an optional guarded local video warm-up. Keep the same warm-up in both runs when comparing capture or pose settings. Trials where no frames reached tracking are recorded as unobserved.
 
 The held back test and human webcam trials require the existing [webcam protocol](../docs/evaluation/webcam-validation-protocol-2026-11-16.md). Keep model selection on the development data. Record signer and device conditions, review sign identity and boundaries, and include consecutive signs and ordinary movement with consent. Preserve the final cohort until there is a credible candidate and a frozen acceptance policy.

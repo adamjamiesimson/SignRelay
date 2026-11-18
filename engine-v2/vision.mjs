@@ -1,5 +1,6 @@
 import { FilesetResolver, HandLandmarker, PoseLandmarker } from "@mediapipe/tasks-vision";
 import { observation } from "./core.mjs";
+import { PoseContext } from "./pose-context.mjs";
 
 export const HAND_ASSET = {
   file: "hand_landmarker.task",
@@ -7,20 +8,36 @@ export const HAND_ASSET = {
   url: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
 };
 
-export async function tracker(mode, { handDelegate = "CPU", onDemandPose = false, framewiseHands = false } = {}) {
-  const files = await FilesetResolver.forVisionTasks(new URL("/vision/wasm", location.href).href);
-  const modelAssetPath = file => new URL("/vision/models/" + file, location.href).href;
+const visionFiles = () => FilesetResolver.forVisionTasks(new URL("/vision/wasm", location.href).href);
+const modelAssetPath = file => new URL("/vision/models/" + file, location.href).href;
+
+export async function createPose(files = null) {
+  return PoseLandmarker.createFromOptions(files ?? await visionFiles(), {
+    baseOptions: { modelAssetPath: modelAssetPath("pose_landmarker_lite.task"), delegate: "CPU" },
+    runningMode: "VIDEO", numPoses: 1,
+  });
+}
+
+export async function tracker(mode, { handDelegate = "CPU", onDemandPose = false, framewiseHands = false,
+  poseMode = "inline", warmHand = false } = {}) {
+  const files = await visionFiles();
   const hand = await HandLandmarker.createFromOptions(files, {
     baseOptions: { modelAssetPath: modelAssetPath(HAND_ASSET.file), delegate: handDelegate },
     runningMode: framewiseHands ? "IMAGE" : "VIDEO", numHands: 2, minHandDetectionConfidence: 0.55,
     minHandPresenceConfidence: 0.55, minTrackingConfidence: 0.55,
   });
-  let pose;
+  let pose, auxiliary;
   try {
-    if (mode !== "rgb") pose = await PoseLandmarker.createFromOptions(files, {
-      baseOptions: { modelAssetPath: modelAssetPath("pose_landmarker_lite.task"), delegate: "CPU" },
-      runningMode: "VIDEO", numPoses: 1,
-    });
+    if (warmHand) {
+      const neutral = new OffscreenCanvas(480, 640);
+      const context = neutral.getContext("2d");
+      context.fillStyle = "#808080";
+      context.fillRect(0, 0, neutral.width, neutral.height);
+      if (framewiseHands) hand.detect(neutral);
+      else hand.detectForVideo(neutral, 0);
+    }
+    if (mode !== "rgb" && poseMode === "inline") pose = await createPose(files);
+    if (mode !== "rgb" && poseMode === "split") auxiliary = new PoseContext(new Worker("/pose.js"));
   } catch (error) {
     hand.close();
     throw error;
@@ -29,34 +46,44 @@ export async function tracker(mode, { handDelegate = "CPU", onDemandPose = false
   let lastPose = -Infinity;
   let points = [];
   return {
-    run(image, timestamp) {
+    run(image, timestamp, stage = undefined) {
       const start = performance.now();
-      const scale = Math.min(1, 640 / Math.max(image.width, image.height));
-      const width = Math.max(1, Math.round(image.width * scale));
-      const height = Math.max(1, Math.round(image.height * scale));
+      stage?.("canvas");
+      const sourceWidth = image.displayWidth ?? image.width;
+      const sourceHeight = image.displayHeight ?? image.height;
+      const scale = Math.min(1, 640 / Math.max(sourceWidth, sourceHeight));
+      const width = Math.max(1, Math.round(sourceWidth * scale));
+      const height = Math.max(1, Math.round(sourceHeight * scale));
       if (!canvas || width !== canvas.width || height !== canvas.height) {
         canvas = new OffscreenCanvas(width, height);
         context = canvas.getContext("2d", { willReadFrequently: mode !== "landmark" });
       }
       context.drawImage(image, 0, 0, width, height);
       const copied = performance.now();
-      const result = framewiseHands ? hand.detect(canvas) : hand.detectForVideo(canvas, timestamp);
+      stage?.("hand");
+      const result = framewiseHands ? hand.detect(canvas) : hand.detectForVideo(canvas, timestamp + Number(warmHand));
       const hands = result.landmarks.map((landmarks, index) => ({
         landmarks, handedness: result.handedness[index]?.[0]?.categoryName,
       }));
       const tracked = performance.now();
+      stage?.("pose");
       if (pose && timestamp - lastPose >= 220 && (!onDemandPose || hands.length)) {
         points = pose.detectForVideo(canvas, timestamp).landmarks[0] ?? [];
         lastPose = timestamp;
       }
       const posed = performance.now();
       const rgb = mode !== "landmark" && hands.length ? cropPixels(context, hands, width, height) : null;
-      const frame = { timestamp, hands, pose: timestamp - lastPose <= 350 ? points : [], rgb };
-      const sample = observation(frame, image.width / image.height);
-      return { frame, sample, ms: { copy: copied - start, hand: tracked - copied,
-        pose: posed - tracked, features: performance.now() - posed } };
+      const frame = { timestamp, hands, pose: auxiliary ? auxiliary.read(timestamp) : timestamp - lastPose <= 350 ? points : [], rgb };
+      const sample = observation(frame, sourceWidth / sourceHeight);
+      const finished = performance.now();
+      const poseRequested = auxiliary?.offer(timestamp, () => canvas.transferToImageBitmap()) ?? false;
+      return { frame, sample, pose: { requested: poseRequested, failed: auxiliary?.failed ?? false,
+        used: frame.pose.length > 0, sourceMs: frame.pose.length > 0 ? auxiliary?.completedAt ?? lastPose : null,
+        lastResultMs: auxiliary?.duration ?? null },
+      ms: { copy: copied - start, hand: tracked - copied,
+        pose: posed - tracked, features: finished - posed, poseDispatch: performance.now() - finished } };
     },
-    close() { hand.close(); pose?.close(); },
+    close() { hand.close(); pose?.close(); auxiliary?.close(); },
   };
 }
 

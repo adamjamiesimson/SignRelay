@@ -1,12 +1,30 @@
+import { loadVideoData, seekDecodedFrame } from "../scripts/diagnostics/video-frame-step";
+import { FrameTrace } from "./frame-trace.mjs";
+import { LatestFrame } from "./latest-frame.mjs";
+
 const byId = id => document.getElementById(id);
 const video = byId("video");
 const set = (id, value) => { byId(id).textContent = value; };
 let current;
+let lastTrace;
+let lastRuntime;
+let gpuFallback;
+const clock = () => performance.timeOrigin + performance.now();
+window.signRelayCameraDiagnostics = () => {
+  const trace = current?.trace ?? lastTrace;
+  return trace ? { ...trace.snapshot(), runtime: current?.runtime ?? lastRuntime, gpuFallback } : null;
+};
 
 function stop(message = "Session stopped.", preserve = false) {
   const session = current;
   current = null;
   if (session) {
+    if (session.active) session.trace.mark(session.active, "cancelled");
+    session.latest.clear("cancelled");
+    void session.reader?.cancel().catch(() => {});
+    lastTrace = session.trace;
+    lastRuntime = session.runtime;
+    clearTimeout(session.readyTimeout);
     clearInterval(session.watchdog);
     session.abort.abort(new Error("Session stopped"));
     session.resolveFrame?.();
@@ -28,13 +46,69 @@ function stop(message = "Session stopped.", preserve = false) {
   }
 }
 
-async function postFrame(session, timestamp) {
+async function postFrame(session, record) {
   const capture = performance.now();
-  const image = await createImageBitmap(video);
+  const image = session.capture === "snapshot" && typeof VideoFrame === "function"
+    ? new VideoFrame(video, { timestamp: Math.round(record.sourceMs * 1000) }) : await createImageBitmap(video);
   if (current !== session) { image.close(); return; }
-  session.last = timestamp;
+  session.trace.mark(record, "captured");
+  record.capturedAt = clock();
   session.captureMs = performance.now() - capture;
-  session.worker.postMessage({ type: "frame", timestamp, image }, [image]);
+  sendFrame(session, record, image);
+}
+
+function sendFrame(session, record, image) {
+  try {
+    session.worker.postMessage({ type: "frame", id: record.id, timestamp: record.sourceMs, image }, [image]);
+    session.trace.mark(record, "sent");
+    record.sentAt = clock();
+  } catch (error) {
+    image.close();
+    throw error;
+  }
+}
+
+function dispatchTrackFrame(session, { record, image }) {
+  session.active = record;
+  session.trace.mark(record, "accepted");
+  session.trace.occupy(1);
+  try {
+    sendFrame(session, record, image);
+  } catch (error) {
+    session.trace.mark(record, "captureError");
+    session.active = null;
+    stop("Video frame failed. Start again. " + error.message);
+  }
+}
+
+async function readTrack(session, track) {
+  const reader = new MediaStreamTrackProcessor({ track, maxBufferSize: 1 }).readable.getReader();
+  session.reader = reader;
+  let origin;
+  while (current === session) {
+    const { value: image, done } = await reader.read();
+    if (done) {
+      if (current === session) stop("Camera disconnected. Start the camera to reconnect.");
+      return;
+    }
+    if (current !== session) { image.close(); return; }
+    origin ??= image.timestamp;
+    const timestamp = (image.timestamp - origin) / 1000;
+    const record = session.trace.present(timestamp, clock(), null, 0, false);
+    if (!Number.isFinite(timestamp) || timestamp <= session.last) {
+      image.close();
+      session.trace.mark(record, "invalidTimestamp");
+      continue;
+    }
+    session.last = timestamp;
+    session.trace.mark(record, "captured");
+    record.capturedAt = record.at;
+    if (session.active) {
+      session.trace.mark(record, "queued");
+      session.latest.offer(record, image);
+      session.trace.occupy(2);
+    } else dispatchTrackFrame(session, { record, image });
+  }
 }
 
 async function stepClip(session) {
@@ -48,33 +122,59 @@ async function stepClip(session) {
   set("status", "Analyzing video frames…");
   for (let step = 1; step / 20 < duration; step++) {
     const timestamp = 1000 * await seekDecodedFrame(video, step / 20, { signal, timeoutMs: 12000 });
-    if (timestamp <= session.last) continue;
+    const record = session.trace.present(timestamp, clock());
+    if (!Number.isFinite(timestamp) || timestamp <= session.last) {
+      session.trace.mark(record, "invalidTimestamp");
+      continue;
+    }
     const processed = new Promise(resolve => { session.resolveFrame = resolve; });
-    await postFrame(session, timestamp);
+    session.active = record;
+    session.last = timestamp;
+    session.trace.mark(record, "accepted");
+    session.trace.occupy(1);
+    try {
+      await postFrame(session, record);
+    } catch (error) {
+      session.trace.mark(record, "captureError");
+      session.active = null;
+      throw error;
+    }
     await processed;
     if (current !== session) return;
   }
   session.worker.postMessage({ type: "finish" });
 }
 
-function metrics(session, timings, hand, detected) {
-  session.frames++;
-  session.hands += Number(hand);
-  session.detected += Number(detected);
+function renderMetrics(session) {
+  if (!session.timings.length) return;
   const elapsed = (performance.now() - session.started) / 1000;
-  session.timings.push(timings);
-  if (session.timings.length > 120) session.timings.shift();
+  const timings = session.timings.at(-1);
   const median = values => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)].toFixed(1);
   set("fps", (session.frames / Math.max(0.1, elapsed)).toFixed(1));
   set("latency", median(session.timings.map(entry => Object.values(entry).reduce((a, b) => a + b))) + " ms");
   set("hands", session.hands + " / " + session.frames);
-  set("drops", session.skipped);
+  const { counters } = session.trace;
+  const previewDrops = session.capture === "track" ? 0 : counters.callbackGaps + counters.busy;
+  set("drops", previewDrops + counters.replaced + counters.stale + counters.invalidTimestamp);
   set("diagnostics", JSON.stringify({
     ...Object.fromEntries(Object.keys(timings).map(key => [key + "MsMedian", Number(median(session.timings.map(row => row[key])))])),
     captureToWorkerMs: Number(session.captureMs.toFixed(1)), sourceTimestampMs: session.last,
     sourceWidth: video.videoWidth, sourceHeight: video.videoHeight,
     timedFrames: session.timings.length, detectedHandFrames: session.detected, usableHandFrames: session.hands,
   }, null, 2));
+}
+
+function metrics(session, timings, hand, detected) {
+  session.frames++;
+  session.hands += Number(hand);
+  session.detected += Number(detected);
+  session.timings.push(timings);
+  if (session.timings.length > 120) session.timings.shift();
+  const now = performance.now();
+  if (now - (session.lastRender ?? -Infinity) >= 200) {
+    session.lastRender = now;
+    renderMetrics(session);
+  }
 }
 
 function show(result) {
@@ -88,26 +188,38 @@ function schedule(session) {
   session.callback = video.requestVideoFrameCallback(async (_now, metadata) => {
     if (current !== session) return;
     const timestamp = metadata.mediaTime * 1000;
-    if (session.presented) session.skipped += Math.max(0, metadata.presentedFrames - session.presented - 1);
+    const gaps = session.presented ? Math.max(0, metadata.presentedFrames - session.presented - 1) : 0;
     session.presented = metadata.presentedFrames;
-    if (session.busy || timestamp <= session.last) {
-      session.skipped++;
+    const record = session.trace.present(timestamp, clock(), metadata.presentedFrames, gaps);
+    if (session.capture === "track") {
       schedule(session);
       return;
     }
-    session.busy = true;
+    if (session.active || !Number.isFinite(timestamp) || timestamp <= session.last) {
+      session.trace.mark(record, session.active ? "busy" : "invalidTimestamp");
+      schedule(session);
+      return;
+    }
+    session.active = record;
     session.last = timestamp;
+    session.trace.mark(record, "accepted");
+    session.trace.occupy(1);
     schedule(session);
     try {
-      await postFrame(session, timestamp);
+      await postFrame(session, record);
     } catch (error) {
-      if (current === session) stop("Video frame failed. Start again. " + error.message);
+      if (current === session) {
+        session.trace.mark(record, "captureError");
+        session.active = null;
+        stop("Video frame failed. Start again. " + error.message);
+      }
     }
   });
 }
 
-async function start(file) {
-  stop("Loading recognition model…");
+async function start(file, forceCpu = false) {
+  if (!forceCpu) gpuFallback = null;
+  stop(forceCpu ? "Restarting camera tracking on the CPU…" : "Loading recognition model…");
   if (!video.requestVideoFrameCallback || !window.OffscreenCanvas) {
     stop("This browser lacks the video APIs used by the lab.");
     return;
@@ -119,8 +231,9 @@ async function start(file) {
     stop("Recognition worker could not start. " + error.message);
     return;
   }
-  const session = { worker, abort: new AbortController(), frames: 0, hands: 0, detected: 0, skipped: 0, last: -Infinity,
-    captureMs: 0, timings: [], events: [] };
+  const session = { worker, abort: new AbortController(), trace: new FrameTrace(), frames: 0, hands: 0, detected: 0,
+    last: -Infinity, captureMs: 0, timings: [], events: [] };
+  session.latest = new LatestFrame((record, reason) => session.trace.mark(record, reason));
   current = session;
   byId("stop").disabled = false;
   set("events", "");
@@ -131,11 +244,43 @@ async function start(file) {
   } else {
     video.classList.add("camera");
   }
-  worker.onerror = () => { if (current === session) stop("Recognition worker stopped. Start again to reload it."); };
+  function workerError(message) {
+    if (session.active) {
+      session.trace.mark(session.active, "workerError");
+      session.active = null;
+    }
+    stop(message);
+  }
+  function retryCpu(stage, elapsedMs) {
+    gpuFallback = { stage, elapsedMs, sent: session.trace.counters.sent, processed: session.trace.counters.processed };
+    void start(null, true);
+  }
+  worker.onerror = () => { if (current === session) workerError("Recognition worker stopped. Start again to reload it."); };
   worker.onmessage = async ({ data }) => {
     if (current !== session) return;
-    if (data.type === "error") { stop("Recognition failed. " + data.message); return; }
+    if (data.type === "error") { workerError("Recognition failed. " + data.message); return; }
+    if (data.type === "warming") {
+      clearTimeout(session.readyTimeout);
+      set("status", "Preparing the GPU hand tracker…");
+      const started = performance.now();
+      session.readyTimeout = setTimeout(() => {
+        if (current !== session) return;
+        if (data.automatic) retryCpu("warm-up", performance.now() - started);
+        else workerError("GPU hand tracker took too long to load.");
+      }, 28000);
+      return;
+    }
+    if (data.type === "progress" && session.active?.id === data.id) {
+      session.active.workerStage = data.stage;
+      session.active.workerStageAt = data.at;
+      return;
+    }
     if (data.type === "ready") {
+      clearTimeout(session.readyTimeout);
+      session.capture = file ? "bitmap" : data.capture === "track" && typeof MediaStreamTrackProcessor !== "function"
+        ? typeof VideoFrame === "function" ? "snapshot" : "bitmap" : data.capture;
+      session.runtime = { capture: session.capture, hands: data.handDelegate, pose: data.poseMode };
+      session.mayFallback = !file && data.auto && data.handDelegate === "GPU";
       set("version", data.version);
       set("vocabulary", data.vocabulary.join(", "));
       try {
@@ -156,12 +301,23 @@ async function start(file) {
         session.started = performance.now();
         set("status", "Camera running");
         schedule(session);
+        if (session.capture === "track") void readTrack(session, media.getVideoTracks()[0]).catch(error => {
+          if (current === session) stop("Could not read camera frames. " + error.message);
+        });
       } catch (error) {
         if (current === session) stop("Could not open " + (file ? "this video. " : "the camera. ") + error.message);
       }
     }
     if (data.type === "frame") {
-      session.busy = false;
+      if (!session.active || session.active.id !== data.id) {
+        workerError("Recognition worker returned an unexpected frame.");
+        return;
+      }
+      session.trace.complete(session.active, data, clock());
+      session.active = null;
+      const pending = session.latest.take(clock());
+      if (pending) dispatchTrackFrame(session, pending);
+      if (current !== session) return;
       metrics(session, data.ms, data.hand, data.detected);
       if (data.result) show(data.result);
       if (data.result?.event) {
@@ -173,6 +329,8 @@ async function start(file) {
       session.resolveFrame = null;
     }
     if (data.type === "done") {
+      session.trace.isolatedInput = data.input;
+      renderMetrics(session);
       show(data.result);
       stop("File complete · isolated clip result", true);
     }
@@ -180,14 +338,21 @@ async function start(file) {
   session.watchdog = setInterval(() => {
     if (current !== session || session.started === undefined) return;
     const now = performance.now();
+    if (session.mayFallback && !session.frames && session.active?.sentAt && clock() - session.active.sentAt > 2200) {
+      retryCpu(session.active.workerStage ?? "worker receive", clock() - session.active.sentAt);
+      return;
+    }
     if (session.frames !== session.lastFrames) {
       session.lastFrames = session.frames;
       session.lastProgress = now;
     } else if (now - (session.lastProgress ?? session.started) > (file ? 15000 : 6000)) {
       stop("Analysis timed out. Start again to recover.");
     }
-  }, 1000);
-  worker.postMessage({ type: "start", bounded: Boolean(file) });
+  }, 500);
+  session.readyTimeout = setTimeout(() => {
+    if (current === session) workerError("Recognition worker took too long to load. Start again to retry.");
+  }, 20000);
+  worker.postMessage({ type: "start", bounded: Boolean(file), forceCpu });
 }
 
 video.addEventListener("error", () => {
@@ -202,5 +367,4 @@ document.addEventListener("visibilitychange", () => {
   if (document.hidden && current) stop("Session paused when the tab was hidden.");
 });
 window.addEventListener("pagehide", () => stop());
-import { loadVideoData, seekDecodedFrame } from "../scripts/diagnostics/video-frame-step";
 

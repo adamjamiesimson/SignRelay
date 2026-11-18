@@ -107,7 +107,7 @@ try {
     assert(parities.v2LogitsMax <= 3e-5);
   }
   await save();
-  for (const item of fixtures) {
+  for (const item of process.env.SIGNRELAY_V2_PARITY_ONLY === "1" ? [] : fixtures) {
     const native = JSON.parse(await readFile(join(source, "evaluation/raw/rebirth-val20", item.recording_sha256 + ".json")));
     const url = "/clip-" + item.recording_sha256 + ".mp4";
     let report;

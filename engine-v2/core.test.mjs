@@ -95,3 +95,11 @@ test("stream calibration can reject a score the isolated model would accept", ()
   assert(samples.every(frame => !stream.push(frame)?.event));
   assert.throws(() => model({ streamScore: 3 }), /Incompatible/);
 });
+
+test("tensor instrumentation records real source IDs and leaves numeric inputs unchanged", () => {
+  const samples = Array.from({ length: 6 }, (_, index) => ({ ...sample(index * 50), id: index + 1 }));
+  const trace = { ids: [] };
+  assert.deepEqual(tensor(samples, "landmark", trace), tensor(samples, "landmark"));
+  assert.equal(trace.ids.length, 16);
+  assert.deepEqual([...new Set(trace.ids)], [1, 2, 3, 4, 5, 6]);
+});
