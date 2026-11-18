@@ -1030,11 +1030,13 @@ const parse = (input, options) => {
         continue;
       }
 
-      if (prev && prev.type === 'paren') {
+      // A trailing ? is a glob wildcard. Compiling it as an optional group
+      // lets a sequence such as @(a)?@(a)?... backtrack exponentially.
+      if (isGroup) {
         const next = peek();
         let output = value;
 
-        if ((prev.value === '(' && !/[!=<:]/.test(next)) || (next === '<' && !/<([!=]|\w+>)/.test(remaining()))) {
+        if (!/[!=<:]/.test(next) || (next === '<' && !/<([!=]|\w+>)/.test(remaining()))) {
           output = `\\${value}`;
         }
 
