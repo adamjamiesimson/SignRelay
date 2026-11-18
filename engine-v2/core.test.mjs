@@ -86,3 +86,12 @@ test("a steady six FPS still fills a one-second recognition window", () => {
   const suggestions = Array.from({ length: 12 }, (_, index) => stream.push(sample(index * 167))?.event);
   assert.deepEqual(suggestions.filter(Boolean), ["HELLO"]);
 });
+
+test("stream calibration can reject a score the isolated model would accept", () => {
+  const fitted = model({ streamScore: 3, streamMargin: 1 });
+  const samples = Array.from({ length: 30 }, (_, index) => sample(index * 50));
+  assert.equal(predict(fitted, tensor(samples, "landmark")).label, "HELLO");
+  const stream = new Stream(fitted);
+  assert(samples.every(frame => !stream.push(frame)?.event));
+  assert.throws(() => model({ streamScore: 3 }), /Incompatible/);
+});

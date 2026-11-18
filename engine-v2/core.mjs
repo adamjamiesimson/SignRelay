@@ -88,7 +88,9 @@ export function parseModel(model) {
     || !Array.isArray(model.labels) || model.labels.join("|") !== LABELS.join("|")
     || !Number.isInteger(model.channels) || model.channels < 1 || model.channels > 64
     || parameters.some(([values, size]) => !Array.isArray(values) || values.length !== size || !values.every(Number.isFinite))
-    || model.scale.some(value => value <= 0) || !Number.isFinite(model.minScore) || !Number.isFinite(model.minMargin)) {
+    || model.scale.some(value => value <= 0) || !Number.isFinite(model.minScore) || !Number.isFinite(model.minMargin)
+    || ((model.streamScore !== undefined || model.streamMargin !== undefined)
+      && (!Number.isFinite(model.streamScore) || !Number.isFinite(model.streamMargin)))) {
     throw new Error("Incompatible recognition model");
   }
   return model;
@@ -131,7 +133,8 @@ export function predict(model, input) {
 // Suppression clears when the evidence changes, without requiring a hand exit.
 export class Stream {
   constructor(model, { windows = null, hop = 150, confirmations = 2 } = {}) {
-    this.model = model;
+    this.model = model.streamScore === undefined ? model
+      : { ...model, minScore: model.streamScore, minMargin: model.streamMargin };
     this.windows = windows;
     this.hop = hop;
     this.confirmations = confirmations;

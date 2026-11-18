@@ -38,29 +38,29 @@ def feature_tensor(samples, mode):
 def windows(x, mean, scale):
     x = np.clip((x - mean) / scale, -5, 5).astype(np.float32)
     padded = np.pad(x, ((0, 0), (1, 1), (0, 0)), mode="edge")
-    return np.concatenate([padded[:, i:i+STEPS] for i in range(3)], axis=-1)
+    return np.concatenate([padded[:, i:i + x.shape[1]] for i in range(3)], axis=-1)
 
 
 def forward(context, parameters):
     conv, bias, head, offset = parameters
     a = np.tanh(context @ conv + bias)
-    pooled = a.reshape(len(a), 4, 4, -1).mean(axis=2).reshape(len(a), -1)
+    pooled = a.reshape(len(a), 4, a.shape[1] // 4, -1).mean(axis=2).reshape(len(a), -1)
     return pooled @ head + offset, a, pooled
 
 
-def fit(x, y, seed, epochs, channels, augment):
+def fit(x, y, seed, epochs, channels, augment, classes=len(LABELS)):
     rng = np.random.default_rng(seed)
-    if set(y) != set(range(len(LABELS))):
+    if set(y) != set(range(classes)):
         raise ValueError("Training fold lost a class")
     mean = x.mean(axis=(0, 1))
     scale = np.maximum(x.std(axis=(0, 1)), 0.08)
     base = windows(x, mean, scale)
-    weights = len(y) / (np.bincount(y)[y] * len(LABELS))
+    weights = len(y) / (np.bincount(y)[y] * classes)
     dim = base.shape[-1]
     parameters = [rng.normal(0, 1 / np.sqrt(dim), (dim, channels)).astype(np.float32),
                   np.zeros(channels, np.float32),
-                  rng.normal(0, 0.1, (channels * 4, len(LABELS))).astype(np.float32),
-                  np.zeros(len(LABELS), np.float32)]
+                  rng.normal(0, 0.1, (channels * 4, classes)).astype(np.float32),
+                  np.zeros(classes, np.float32)]
     average = [np.zeros_like(p) for p in parameters]
     squares = [np.zeros_like(p) for p in parameters]
     step = 0
@@ -82,7 +82,8 @@ def fit(x, y, seed, epochs, channels, augment):
             error[np.arange(len(indices)), y[indices]] -= 1
             error *= (weights[indices] / len(indices)).astype(np.float32)[:, None]
             upstream = (error @ parameters[2].T).reshape(len(indices), 4, channels)
-            change = np.repeat(upstream, 4, axis=1) * (1 - a**2) / 4
+            pool_width = a.shape[1] // 4
+            change = np.repeat(upstream, pool_width, axis=1) * (1 - a**2) / pool_width
             derivative = [context.reshape(-1, dim).T @ change.reshape(-1, channels) + 0.001 * parameters[0],
                           change.sum(axis=(0, 1)), pooled.T @ error + 0.001 * parameters[2], error.sum(axis=0)]
             step += 1
@@ -100,6 +101,76 @@ def scores(model, data, indices):
     parameters, mean, scale = model
     outputs = forward(windows(data[indices], mean, scale), parameters)[0]
     return {int(index): row for index, row in zip(indices, outputs)}
+
+
+def stream_scores(model, rows, indices, mode):
+    """Evaluate the causal windows used at native cadence on out-of-fold clips."""
+    entries = {}
+    for index in indices:
+        samples = rows[index]["samples"]
+        history = []
+        last = evaluated = float("-inf")
+        tensors = []
+        counts = []
+        cadence = 50
+        for sample in samples:
+            now = sample["t"]
+            gap = now - last
+            last = now
+            if gap > 400:
+                history = []
+                evaluated = float("-inf")
+                cadence = 50
+            else:
+                cadence = cadence * 0.7 + gap * 0.3
+            history = [item for item in history if now - item["t"] <= 1600] + [sample]
+            if now - evaluated < 150:
+                continue
+            evaluated = now
+            window_sizes = [600, 1000, 1600] if cadence >= 125 else [1000]
+            selected = []
+            for size in window_sizes:
+                if now - history[0]["t"] >= size - max(size * 0.14, min(220, gap + 10)):
+                    value = feature_tensor([item for item in history if now - item["t"] <= size], mode)
+                    if value is not None:
+                        selected.append(value)
+            counts.append((len(selected), gap > 400))
+            tensors.extend(selected)
+        values = scores(model, np.asarray(tensors), np.arange(len(tensors))) if tensors else {}
+        cursor = 0
+        sequence = []
+        for count, reset in counts:
+            proposals = []
+            for i in range(cursor, cursor + count):
+                ranking = np.argsort(-values[i], kind="stable")
+                winner, other = ranking[:2]
+                if winner != len(LABELS) - 1:
+                    proposals.append((LABELS[winner], float(values[i][winner]), float(values[i][winner] - values[i][other])))
+            sequence.append((reset, sorted(proposals, key=lambda row: -row[2])))
+            cursor += count
+        entries[int(index)] = sequence
+    return entries
+
+
+def stream_decisions(rows, outputs, cutoff):
+    chosen = []
+    for index, _ in enumerate(rows):
+        previous = emitted = None
+        run = 0
+        accepted = []
+        for reset, proposals in outputs[index]:
+            if reset:
+                previous = emitted = None
+                run = 0
+            label = next((label for label, score, margin in proposals if score >= cutoff[0] and margin >= cutoff[1]), None)
+            run = run + 1 if label == previous else 1
+            previous = label
+            if run >= 2 and label != emitted:
+                emitted = label
+                if label:
+                    accepted.append(label)
+        chosen.append(", ".join(accepted) if accepted else None)
+    return chosen
 
 
 def decisions(rows, outputs, cutoff):
@@ -133,12 +204,12 @@ def summarize(rows, chosen):
             "recall": correct / len(positives), "confusion": matrix}
 
 
-def choose_cutoff(rows, outputs):
+def choose_cutoff(rows, outputs, classify=decisions):
     best = None
     for score in [-20, 0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 8, 20]:
         for margin in [0, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 4, 8]:
             cutoff = (score, margin)
-            result = summarize(rows, decisions(rows, outputs, cutoff))
+            result = summarize(rows, classify(rows, outputs, cutoff))
             if result["false_accepts"] > int(result["negatives"] * 0.12):
                 continue
             key = (result["correct"] - result["wrong"], result["correct"], -result["false_accepts"])
@@ -181,22 +252,39 @@ def run(args, mode):
     split = np.array([groups[row["signer"]] for row in train_rows])
     y = np.array([LABELS.index(row["label"]) for row in train_rows])
     cv = {}
+    stream_cv = {}
     for fold in range(4):
         training = train_valid[split[train_valid] != fold]
         withheld = train_valid[split[train_valid] == fold]
         model = fit(train_x[training], y[training], 900 + fold, args.epochs, args.channels, args.augment)
         cv.update(scores(model, train_x, withheld))
+        if args.calibrate_stream:
+            stream_cv.update(stream_scores(model, train_rows, np.flatnonzero(split == fold), mode))
     cutoff, calibration = choose_cutoff(train_rows, cv)
     final = fit(train_x[train_valid], y[train_valid], 904, args.epochs, args.channels, args.augment)
     result = scores(final, val_x, val_valid)
     parameters, mean, scale = final
     detector = "hand" if upstream.get("independentDetector") else "rebirth-tracks"
     version = f"v2-{mode}-tcn-{args.channels}-{args.epochs}-{detector}" + ("-aug" if args.augment else "")
+    stream_profile = {}
+    stream_accepted = None
+    if args.calibrate_stream:
+        stream_cutoff, stream_calibration = choose_cutoff(train_rows, stream_cv, stream_decisions)
+        validation_stream = stream_scores(final, val_rows, np.arange(len(val_rows)), mode)
+        stream_accepted = stream_decisions(val_rows, validation_stream, stream_cutoff)
+        stream_profile = {
+            "stream": summarize(val_rows, stream_accepted),
+            "stream_calibration": stream_calibration, "stream_score_cutoff": stream_cutoff[0],
+            "stream_margin_cutoff": stream_cutoff[1],
+        }
+        version += "-stream"
     artifact = {"contract": CONTRACT, "version": version, "mode": mode, "labels": LABELS, "steps": STEPS,
                 "channels": args.channels, "mean": mean.tolist(), "scale": scale.tolist(),
                 "minScore": cutoff[0], "minMargin": cutoff[1],
                 "trainingManifest": upstream["manifest_sha256"], "tracker": upstream.get("independentDetector")}
     artifact.update({name: value.ravel().tolist() for name, value in zip(["conv", "bias", "head", "offset"], parameters)})
+    if stream_profile:
+        artifact.update(streamScore=stream_profile["stream_score_cutoff"], streamMargin=stream_profile["stream_margin_cutoff"])
     payload = json.dumps(artifact, separators=(",", ":")).encode()
     (args.output / (mode + ".json")).write_bytes(payload)
     report = {"version": version, "sha256": hashlib.sha256(payload).hexdigest(),
@@ -207,11 +295,12 @@ def run(args, mode):
                            "source": upstream},
               "development": {"signers": len({row["signer"] for row in val_rows}), "clips": len(val_rows),
                               "scorable": len(val_valid), "source": validation},
-              "score_cutoff": cutoff[0], "margin_cutoff": cutoff[1]}
+              "score_cutoff": cutoff[0], "margin_cutoff": cutoff[1], **stream_profile}
     (args.output / (mode + "-metrics.json")).write_text(json.dumps(report, indent=2), encoding="utf-8")
     (args.output / (mode + "-parity.json")).write_text(json.dumps({
         "scores": [result[i].tolist() if i in result else None for i in range(len(val_rows))],
         "accepted": decisions(val_rows, result, cutoff),
+        "stream_accepted": stream_accepted,
     }), encoding="utf-8")
     print(json.dumps({key: report[key] for key in ("version", "isolated", "score_cutoff", "margin_cutoff")}), flush=True)
 
@@ -223,6 +312,7 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=64)
     parser.add_argument("--channels", type=int, default=24)
     parser.add_argument("--augment", action="store_true")
+    parser.add_argument("--calibrate-stream", action="store_true")
     parser.add_argument("--mode", choices=WIDTHS, action="append")
     args = parser.parse_args()
     if args.epochs < 1 or not 1 <= args.channels <= 64:

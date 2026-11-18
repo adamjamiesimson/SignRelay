@@ -26,6 +26,7 @@ Set `SOURCE` to the Rebirth checkout, or to this checkout after restoring the de
 node engine-v2/prepare.mjs "$SOURCE" evaluation/derived/v2
 python engine-v2/pixels.py evaluation/derived/v2/intake.json evaluation/derived/v2/pixels
 node engine-v2/prepare.mjs "$SOURCE" evaluation/derived/v2 evaluation/derived/v2/pixels
+python engine-v2/popsign_baseline.py evaluation/derived/v2 evaluation/derived/v2/popsign-baseline.json
 python engine-v2/train.py evaluation/derived/v2 evaluation/derived/v2/control
 python engine-v2/train.py evaluation/derived/v2 evaluation/derived/v2/aug --augment
 node engine-v2/evaluate.mjs evaluation/derived/v2/val.json evaluation/derived/v2/control/landmark.json evaluation/derived/v2/control-landmark-stream.json
@@ -39,6 +40,9 @@ python engine-v2/pixels.py evaluation/derived/v2/intake.json evaluation/derived/
   --track evaluation/raw/hand_landmarker.task public/vision/models/pose_landmarker_lite.task
 node engine-v2/prepare.mjs "$SOURCE" evaluation/derived/v2-native evaluation/derived/v2/pixels-v2
 python engine-v2/train.py evaluation/derived/v2-native evaluation/derived/v2-native/aug --augment
+python engine-v2/train.py evaluation/derived/v2-native evaluation/derived/v2-native/control-stream --mode landmark --calibrate-stream
+node engine-v2/evaluate.mjs evaluation/derived/v2-native/val.json \
+  evaluation/derived/v2-native/control-stream/landmark.json evaluation/derived/v2-native/control-stream.json
 ```
 
 Pass the local Chrome executable path as `CHROME`. The matched probe uses native capture timestamps to seek through browser files. The control compares descriptors and logits with the offline path when both receive identical observations. The media probe records tracking and feature differences separately. For independent V2 detector weights, pass the corresponding development file as the last argument.
@@ -48,5 +52,7 @@ node engine-v2/forensics.mjs "$SOURCE" "$CHROME" evaluation/raw/hand_landmarker.
   evaluation/derived/v2/forensics-control.json evaluation/derived/v2/control/landmark.json \
   evaluation/derived/v2/control/landmark-parity.json
 ```
+
+For throughput comparisons set `SIGNRELAY_V2_VISION_PROFILE` to `cpu-on-demand` or `gpu-on-demand` in the environment before starting the demonstrator. These are diagnostic configurations. The default CPU profile matches the native training configuration.
 
 The held back test and human webcam trials require the existing [webcam protocol](../docs/evaluation/webcam-validation-protocol-2026-11-16.md). Keep model selection on the development data. Record signer and device conditions, review sign identity and boundaries, and include consecutive signs and ordinary movement with consent. Preserve the final cohort until there is a credible candidate and a frozen acceptance policy.

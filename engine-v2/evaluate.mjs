@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
 import { parseModel, predict, Stream, tensor } from "./core.mjs";
 
-const [dataFile, weightsFile, output] = process.argv.slice(2);
+const [dataFile, weightsFile, output, baselineFile, manifestFile] = process.argv.slice(2);
 if (!output) throw new Error("Supply development tensors, trained model and output file");
 const { rows, upstream } = JSON.parse(await readFile(dataFile));
 const model = parseModel(JSON.parse(await readFile(weightsFile)));
@@ -63,6 +63,37 @@ const profile = values => {
   return { samples: sorted.length, median: sorted[Math.floor(sorted.length / 2)] ?? null,
     p95: sorted[Math.floor(sorted.length * 0.95)] ?? null };
 };
+const baseline = baselineFile && JSON.parse(await readFile(baselineFile));
+let baselineByHash;
+if (baseline) {
+  if (baseline.runtime.manifest_sha256 !== upstream.manifest_sha256) throw new Error("V1 and V2 manifest fingerprints differ");
+  const manifest = JSON.parse(await readFile(manifestFile));
+  const byTrial = new Map(baseline.rows.map(row => [row.trial_id, row]));
+  baselineByHash = new Map(manifest.map(row => [row.recording_sha256, byTrial.get(row.trial_id)]));
+  if (baselineByHash.size !== rows.length || rows.some(row => baselineByHash.get(row.sha256)?.expected !== row.expected)) {
+    throw new Error("Baseline trials do not match development rows");
+  }
+}
+function paired(trials) {
+  if (!baselineByHash) return;
+  const targets = { bothCorrect: 0, v1OnlyCorrect: 0, v2OnlyCorrect: 0, neitherCorrect: 0 };
+  const unsupported = { bothAccepted: 0, v1OnlyAccepted: 0, v2OnlyAccepted: 0, neitherAccepted: 0 };
+  for (const { row, labels } of trials) {
+    const original = baselineByHash.get(row.sha256);
+    if (row.kind === "target") {
+      const oldCorrect = original.confirmed.length === 1 && original.confirmed[0] === row.expected;
+      const newCorrect = labels.length === 1 && labels[0] === row.expected;
+      const outcome = oldCorrect ? (newCorrect ? "bothCorrect" : "v1OnlyCorrect")
+        : (newCorrect ? "v2OnlyCorrect" : "neitherCorrect");
+      targets[outcome]++;
+    } else {
+      const outcome = original.confirmed.length ? (labels.length ? "bothAccepted" : "v1OnlyAccepted")
+        : (labels.length ? "v2OnlyAccepted" : "neitherAccepted");
+      unsupported[outcome]++;
+    }
+  }
+  return { targets, unsupported };
+}
 const results = intervals.map(interval => {
   const data = rows.map(row => ({ row, samples: timedSamples(row.samples, interval) }));
   const timing = [];
@@ -88,7 +119,8 @@ const results = intervals.map(interval => {
         }
         return { row, labels };
       });
-      return [policy.name, { ...summarize(trials), sourceOffsetMs: profile(latency) }];
+      return [policy.name, { ...summarize(trials), sourceOffsetMs: profile(latency),
+        ...(interval === 50 && baseline ? { pairedWithV1: paired(trials) } : {}) }];
     })),
   };
 });

@@ -2,7 +2,7 @@ import { VisionEngine } from "../lib/vision-engine";
 import { describeAslTemporal } from "../lib/asl-temporal-features";
 import { parseAslTemporalModel, predictAslTemporal } from "../lib/asl-temporal-model";
 import { seekDecodedFrame, loadVideoData } from "../scripts/diagnostics/video-frame-step";
-import { parseModel, predict, Stream, tensor } from "./core.mjs";
+import { type observation, parseModel, predict, Stream, tensor } from "./core.mjs";
 import { tracker } from "./vision.mjs";
 
 async function run(url: string, timestamps: number[], modelUrl: string) {
@@ -45,7 +45,7 @@ async function run(url: string, timestamps: number[], modelUrl: string) {
     const description = describeAslTemporal(old);
     return { old, sourceTimes, elapsed: performance.now() - started, aspect, dimensions: [video.videoWidth, video.videoHeight],
       description, oldScore: description ? predictAslTemporal(oldModel, description.features) : null,
-      independent: independent.map(sample => sample.h), v2Timings, events,
+      independent: independent.map(sample => ({ h: sample.h, x: sample.x })), v2Timings, events,
       result: model ? predict(model, tensor(independent, model.mode)) : null };
   } finally {
     v1.close();
@@ -60,10 +60,12 @@ function scoreNative(frames: Parameters<typeof describeAslTemporal>[0], unparsed
   return { descriptor, score: descriptor ? predictAslTemporal(model, descriptor.features) : null };
 }
 
-function scoreV2(samples: Parameters<typeof tensor>[0], unparsed: unknown) {
+function scoreV2(samples: ReturnType<typeof observation>[], unparsed: unknown) {
   const model = parseModel(unparsed);
   const input = tensor(samples, model.mode);
-  return { input: input && Array.from(input), score: predict(model, input) };
+  const stream = new Stream(model);
+  const events = samples.flatMap(sample => stream.push(sample)?.event ?? []);
+  return { input: input && Array.from(input), score: predict(model, input), events };
 }
 
 Object.assign(window, { replayDevelopmentClip: run, scoreNative, scoreV2 });

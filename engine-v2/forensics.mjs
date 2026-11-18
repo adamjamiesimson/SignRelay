@@ -84,8 +84,9 @@ try {
   assert(parities.legacyTensorMax <= 1e-9);
   assert(parities.legacyScoreMax <= 1e-8);
   console.log(JSON.stringify({ sameTrackParity: parities }));
+  const v2Data = v2 ? JSON.parse(await readFile(developmentFile ?? "evaluation/derived/v2/val.json")) : null;
+  const developmentByHash = new Map(v2Data?.rows.map(row => [row.sha256, row]));
   if (v2 && modelParityFile) {
-    const v2Data = JSON.parse(await readFile(developmentFile ?? "evaluation/derived/v2/val.json"));
     const python = JSON.parse(await readFile(modelParityFile));
     for (const [i, row] of v2Data.rows.entries()) {
       const result = await chrome.evaluate(`scoreV2(${JSON.stringify(row.samples)}, ${JSON.stringify(v2)})`);
@@ -95,6 +96,7 @@ try {
       const nodeScore = predict(v2, nodeInput);
       assert.equal(nodeScore.label, result.score.label);
       assert.equal(result.score.label, python.accepted[i]);
+      if (python.stream_accepted) assert.equal(result.events.join(", ") || null, python.stream_accepted[i]);
       if (values) {
         parities.v2Clips++;
         parities.v2TensorMax = Math.max(parities.v2TensorMax, maxAbs(result.input, values));
@@ -139,6 +141,17 @@ try {
     }
     const nativeFeatures = oldFeatures.rows.find(row => row.trial_id === item.trial_id);
     const nativePrediction = oldPython.find(row => row.trial_id === item.trial_id);
+    const reference = developmentByHash.get(item.recording_sha256);
+    const refSamples = new Map(reference?.samples.map(sample => [sample.t, sample]));
+    let v2HandDisagreements = 0;
+    const v2FeatureDifferences = [];
+    for (const { requested, i } of stable) {
+      const ref = refSamples.get(requested);
+      const web = report.independent[i];
+      if (!ref || !web) continue;
+      v2HandDisagreements += Number(ref.h !== web.h);
+      if (ref.h && web.h) v2FeatureDifferences.push(maxAbs(ref.x, web.x));
+    }
     const summarize = values => {
       values.sort((a, b) => a - b);
       return { median: values[Math.floor(values.length / 2)] ?? null, p95: values[Math.floor(values.length * 0.95)] ?? null };
@@ -152,7 +165,11 @@ try {
       nativeHands: native.frames.filter(frame => frame.hands.length).length, browserHands: report.old.filter(frame => frame.hands.length).length,
       nativeAccepted: nativePrediction.accepted, browserAccepted: report.oldScore?.accepted ?? null,
       tensorMax: nativeFeatures.features && report.description ? maxAbs(nativeFeatures.features, report.description.features) : null,
-      v2Hands: report.independent.filter(Boolean).length, v2Bounded: report.result?.label ?? null, v2Events: report.events,
+      v2Hands: report.independent.filter(sample => sample.h).length,
+      v2NativeHands: reference?.samples.filter(sample => sample.h).length ?? null,
+      v2HandDisagreements, v2FeatureDiffPerMatchedFrame: summarize(v2FeatureDifferences),
+      v2NativeBounded: reference ? predict(v2, tensor(reference.samples, v2.mode)).label : null,
+      v2Bounded: report.result?.label ?? null, v2Events: report.events,
       v2TimingMs: Object.fromEntries(Object.keys(report.v2Timings[0] ?? {}).map(key =>
         [key, summarize(report.v2Timings.map(row => row[key]))])),
     });
@@ -161,7 +178,7 @@ try {
     await save();
   }
   if (v2) {
-    const { rows } = JSON.parse(await readFile(developmentFile ?? "evaluation/derived/v2/val.json"));
+    const { rows } = v2Data;
     const variants = [
       ["slidingThreeWindows", model => new Stream(model, { windows: [600, 1000, 1600] })],
       ["slidingOneWindow", model => new Stream(model, { windows: [1000] })],
