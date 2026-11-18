@@ -53,6 +53,8 @@ node engine-v2/forensics.mjs "$SOURCE" "$CHROME" evaluation/raw/hand_landmarker.
   evaluation/derived/v2/control/landmark-parity.json
 ```
 
-For throughput comparisons set `SIGNRELAY_V2_VISION_PROFILE` to `cpu-on-demand` or `gpu-on-demand` in the environment before starting the demonstrator. These are diagnostic configurations. The default CPU profile matches the native training configuration.
+For throughput comparisons set `SIGNRELAY_V2_VISION_PROFILE` to `cpu-on-demand`, `gpu-on-demand` or `gpu-framewise` in the environment before starting the demonstrator. These are diagnostic configurations. The default CPU profile matches the native training configuration.
+
+Use `training/make_asl_camera_fixture.py` for a local Y4M from a guarded recorded clip. Pass the original recording hash, generated Y4M and its sign interval to `diagnose-camera-fixture.py` to compare native detector coverage on the original and camera-fixture pixels. `browser-smoke.mjs` accepts the same guarded intake and fixture to measure the actual worker and camera interface. The ledger records the test inputs, clip-level outcomes and runtime versions.
 
 The held back test and human webcam trials require the existing [webcam protocol](../docs/evaluation/webcam-validation-protocol-2026-11-16.md). Keep model selection on the development data. Record signer and device conditions, review sign identity and boundaries, and include consecutive signs and ordinary movement with consent. Preserve the final cohort until there is a credible candidate and a frozen acceptance policy.

@@ -7,6 +7,8 @@ import { fingerprint } from "../scripts/evaluation-manifest.mjs";
 
 const [browser, handFile, modelFile, intakeFile, assetId, output, cameraFile] = process.argv.slice(2);
 if (!output) throw new Error("Supply Chrome, hand asset, model, guarded intake, recording hash, output and optional Y4M");
+const soak = Number(process.env.SIGNRELAY_V2_SOAK_SECONDS ?? 0);
+if (!Number.isInteger(soak) || soak < 0 || soak > 180 || (soak && cameraFile)) throw new Error("Invalid idle-camera soak setting");
 const intake = JSON.parse(await readFile(intakeFile));
 const fixture = intake.find(row => row.sha256 === assetId);
 assert(fixture, "Supply a recording from the guarded intake");
@@ -68,7 +70,12 @@ try {
   assert.match((await snapshot()).status, /^Camera running/);
   await until(cameraFile ? "document.getElementById('video').currentTime >= 18"
     : "Number(document.getElementById('hands').textContent.split('/')[1]) >= 50", 40000);
+  if (soak) await until(`document.getElementById('video').currentTime >= ${soak}`, (soak + 30) * 1000);
   const camera = await snapshot();
+  if (soak) {
+    assert.equal(camera.events, "", "Synthetic idle camera produced a suggestion");
+    evidence.syntheticIdleSeconds = soak;
+  }
   Object.assign(evidence, { camera, cameraStartupMs: cameraStartup });
   await save();
   await chrome.evaluate("document.getElementById('stop').click()");

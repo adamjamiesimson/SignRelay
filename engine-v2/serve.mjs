@@ -24,9 +24,9 @@ export async function serve({ modelFile, handFile, port = 8765, diagnostics = ne
     ...["style.css", "core.mjs"].map(name => ["/" + name, asset(join(here, name))]),
   ]);
   const profile = process.env.SIGNRELAY_V2_VISION_PROFILE ?? "cpu";
-  if (!["cpu", "cpu-on-demand", "gpu-on-demand"].includes(profile)) throw new Error("Unknown V2 tracker profile");
-  files.set("/profile.json", bytes(JSON.stringify({ handDelegate: profile === "gpu-on-demand" ? "GPU" : "CPU",
-    onDemandPose: profile !== "cpu" }), "application/json"));
+  if (!["cpu", "cpu-on-demand", "gpu-on-demand", "gpu-framewise"].includes(profile)) throw new Error("Unknown V2 tracker profile");
+  files.set("/profile.json", bytes(JSON.stringify({ handDelegate: profile.startsWith("gpu") ? "GPU" : "CPU",
+    onDemandPose: profile !== "cpu", framewiseHands: profile === "gpu-framewise" }), "application/json"));
   if (modelFile) {
     const data = await readFile(modelFile);
     parseModel(JSON.parse(data));

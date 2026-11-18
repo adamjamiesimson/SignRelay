@@ -72,6 +72,7 @@ function metrics(session, timings, hand, detected) {
   set("diagnostics", JSON.stringify({
     ...Object.fromEntries(Object.keys(timings).map(key => [key + "MsMedian", Number(median(session.timings.map(row => row[key])))])),
     captureToWorkerMs: Number(session.captureMs.toFixed(1)), sourceTimestampMs: session.last,
+    sourceWidth: video.videoWidth, sourceHeight: video.videoHeight,
     timedFrames: session.timings.length, detectedHandFrames: session.detected, usableHandFrames: session.hands,
   }, null, 2));
 }
@@ -142,7 +143,7 @@ async function start(file) {
         if (!navigator.mediaDevices?.getUserMedia) throw new Error("Camera access requires HTTPS or localhost.");
         set("status", "Waiting for camera permission…");
         const media = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false,
+          video: { facingMode: "user", width: { ideal: 640 }, resizeMode: { ideal: "none" } }, audio: false,
         });
         if (current !== session) { media.getTracks().forEach(track => track.stop()); return; }
         session.media = media;

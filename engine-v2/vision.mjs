@@ -7,12 +7,12 @@ export const HAND_ASSET = {
   url: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
 };
 
-export async function tracker(mode, { handDelegate = "CPU", onDemandPose = false } = {}) {
+export async function tracker(mode, { handDelegate = "CPU", onDemandPose = false, framewiseHands = false } = {}) {
   const files = await FilesetResolver.forVisionTasks(new URL("/vision/wasm", location.href).href);
   const modelAssetPath = file => new URL("/vision/models/" + file, location.href).href;
   const hand = await HandLandmarker.createFromOptions(files, {
     baseOptions: { modelAssetPath: modelAssetPath(HAND_ASSET.file), delegate: handDelegate },
-    runningMode: "VIDEO", numHands: 2, minHandDetectionConfidence: 0.55,
+    runningMode: framewiseHands ? "IMAGE" : "VIDEO", numHands: 2, minHandDetectionConfidence: 0.55,
     minHandPresenceConfidence: 0.55, minTrackingConfidence: 0.55,
   });
   let pose;
@@ -40,7 +40,7 @@ export async function tracker(mode, { handDelegate = "CPU", onDemandPose = false
       }
       context.drawImage(image, 0, 0, width, height);
       const copied = performance.now();
-      const result = hand.detectForVideo(canvas, timestamp);
+      const result = framewiseHands ? hand.detect(canvas) : hand.detectForVideo(canvas, timestamp);
       const hands = result.landmarks.map((landmarks, index) => ({
         landmarks, handedness: result.handedness[index]?.[0]?.categoryName,
       }));
