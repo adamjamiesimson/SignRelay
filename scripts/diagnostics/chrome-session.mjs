@@ -1,20 +1,21 @@
 import { spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { TASKS_WASM_PATH } from "../../lib/vision-runtime.mjs";
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 export async function startChrome(executable, { forwardAssets = false, proxy = process.env.HTTPS_PROXY, extraArgs = [], fakeDevice = true } = {}) {
   const profile = await mkdtemp(join(tmpdir(), "signrelay-diagnostic-"));
-  const port = 19000 + Math.floor(Math.random() * 1000);
   const args = ["--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--no-first-run",
-    "--disable-background-networking", `--user-data-dir=${profile}`, `--remote-debugging-port=${port}`,
+    "--disable-background-networking", `--user-data-dir=${profile}`, "--remote-debugging-port=0",
     "--autoplay-policy=no-user-gesture-required", "--use-fake-ui-for-media-stream"];
   if (fakeDevice) args.push("--use-fake-device-for-media-stream");
   args.push(...extraArgs);
   if (proxy) args.push(`--proxy-server=${proxy}`, "--proxy-bypass-list=<-loopback>;localhost;127.0.0.1");
   const browser = spawn(executable, [...args, "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
   let stderr = ""; browser.stderr.setEncoding("utf8"); browser.stderr.on("data", chunk => { stderr += chunk; });
+  let launchError;
+  browser.on("error", error => { launchError = error; });
   let socket;
   const exited = new Promise(resolve => browser.once("close", resolve));
   const close = async () => {
@@ -30,14 +31,25 @@ export async function startChrome(executable, { forwardAssets = false, proxy = p
     await rm(profile, { recursive: true, force: true, maxRetries: 6 });
   };
   try {
-    let tabs;
-    for (let i = 0; i < 150; i++) {
-      if (browser.exitCode !== null) throw new Error("Chrome could not start");
-      try { tabs = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json(); if (tabs.length) break; } catch {}
+    let page;
+    const expires = performance.now() + 65000;
+    let port;
+    while (performance.now() < expires) {
+      if (launchError) throw launchError;
+      if (browser.exitCode !== null || browser.signalCode !== null) break;
+      try {
+        // Chrome publishes its own ephemeral port in this session's profile.
+        port ??= /^(\d+)\r?\n/.exec(await readFile(join(profile, "DevToolsActivePort"), "utf8"))?.[1];
+        if (port) {
+          const response = await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(2000) });
+          page = (await response.json()).find(tab => tab.type === "page" && tab.webSocketDebuggerUrl);
+          if (page) break;
+        }
+      } catch { /* Chrome has not published its page yet. */ }
       await delay(200);
     }
-    if (!tabs?.length) throw new Error("Chrome CDP was not available: " + stderr.slice(-2000));
-    socket = new WebSocket(tabs.find(tab => tab.type === "page").webSocketDebuggerUrl);
+    if (!page) throw new Error("Chrome CDP was not available: " + stderr.slice(-2000));
+    socket = new WebSocket(page.webSocketDebuggerUrl);
     await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
     let id = 0; const pending = new Map(), errors = [];
     const assetCache = new Map(), requestUrls = new Map(), listeners = new Set();
