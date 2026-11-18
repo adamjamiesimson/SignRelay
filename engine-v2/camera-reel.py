@@ -82,13 +82,22 @@ if __name__ == "__main__":
     parser.add_argument("index", type=Path)
     parser.add_argument("--repeat", choices=("HELLO", "THANK YOU", "PLEASE", "YES", "NO"),
                         help="Replay the same guarded sign recording twice with 600 ms of neutral footage")
+    parser.add_argument("--hard-negatives", type=Path, help="Use only the frozen open-set hard-negative intake")
     args = parser.parse_args()
     if not args.output.resolve().is_relative_to(Path("evaluation/raw").resolve()) or args.output.suffix != ".y4m":
         parser.error("Write derived footage only to ignored evaluation/raw")
-    dataset = args.source_checkout / "evaluation/derived/popsign-rebirth-v1"
-    manifest = {row["recording_sha256"]: row for row in json.loads((dataset / "val.json").read_text(encoding="utf-8"))}
-    probe = json.loads((dataset / "browser-probe.json").read_text(encoding="utf-8"))
-    rows = [manifest[row["recording_sha256"]] for row in probe]
+    if args.repeat and args.hard_negatives:
+        parser.error("Choose a repeat reel or a hard-negative reel")
+    if args.hard_negatives:
+        rows = json.loads(args.hard_negatives.read_text(encoding="utf-8"))
+        if not rows or any(row["role_in_candidate"] != "unsupported" or row["license"] != "CC BY 4.0"
+                           or not row["source"].startswith("https://signdata.cc.gatech.edu/") for row in rows):
+            parser.error("Hard negatives must be licensed unsupported signs from the official publisher")
+    else:
+        dataset = args.source_checkout / "evaluation/derived/popsign-rebirth-v1"
+        manifest = {row["recording_sha256"]: row for row in json.loads((dataset / "val.json").read_text(encoding="utf-8"))}
+        probe = json.loads((dataset / "browser-probe.json").read_text(encoding="utf-8"))
+        rows = [manifest[row["recording_sha256"]] for row in probe]
     if args.repeat:
         row = next(item for item in rows if item["expected_gloss"] == args.repeat)
         rows = [row, row]

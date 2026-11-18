@@ -6,7 +6,7 @@ import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 import { VISION_MODELS, VISION_WASM_FILES } from "../lib/vision-runtime.mjs";
-import { parseModel } from "./core.mjs";
+import { LABELS, parseModel } from "./core.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
@@ -31,15 +31,26 @@ export async function serve({ modelFile, handFile, port = 8765, diagnostics = ne
     throw new Error("Unknown V2 tracker profile");
   }
   if (!["bitmap", "snapshot", "track"].includes(capture)) throw new Error("Unknown V2 capture profile");
-  files.set("/profile.json", bytes(JSON.stringify({ handDelegate: profile.startsWith("gpu") || profile === "auto" ? "GPU" : "CPU",
-    onDemandPose: profile !== "cpu", framewiseHands: profile === "gpu-framewise",
-    poseMode: profile.endsWith("-split") || profile === "auto" ? "split" : profile === "gpu-hands" ? "off" : "inline",
-    auto: profile === "auto", capture, warmHand, calibrationReplay: process.env.SIGNRELAY_V2_CALIBRATION_REPLAY === "1" }), "application/json"));
+  const rejectionProfile = process.env.SIGNRELAY_V2_REJECTION ?? "baseline";
+  if (!["baseline", "fresh", "calibrated", "combined"].includes(rejectionProfile)) throw new Error("Unknown rejection profile");
+  const rejection = { recentEvidence: rejectionProfile === "fresh" || rejectionProfile === "combined" };
   if (modelFile) {
     const data = await readFile(modelFile);
     parseModel(JSON.parse(data));
     files.set("/model.json", bytes(data, "application/json"));
+    if (rejectionProfile === "calibrated" || rejectionProfile === "combined") {
+      const calibration = JSON.parse(await readFile(process.env.SIGNRELAY_V2_CALIBRATION_FILE));
+      if (calibration.schema !== "signrelay-v2-other-margin-1" || calibration.modelSha256 !== hash(data)
+        || !LABELS.slice(0, -1).every(label => Number.isFinite(calibration.floors?.[label]))) {
+        throw new Error("Open-set calibration does not match the active model");
+      }
+      rejection.otherMargin = calibration.floors;
+    }
   }
+  files.set("/profile.json", bytes(JSON.stringify({ handDelegate: profile.startsWith("gpu") || profile === "auto" ? "GPU" : "CPU",
+    onDemandPose: profile !== "cpu", framewiseHands: profile === "gpu-framewise",
+    poseMode: profile.endsWith("-split") || profile === "auto" ? "split" : profile === "gpu-hands" ? "off" : "inline",
+    auto: profile === "auto", capture, warmHand, rejection, calibrationReplay: process.env.SIGNRELAY_V2_CALIBRATION_REPLAY === "1" }), "application/json"));
   const hand = await readFile(handFile);
   if (hash(hand) !== handHash) throw new Error("Hand Landmarker failed integrity verification");
   files.set("/vision/models/hand_landmarker.task", bytes(hand, "application/octet-stream"));

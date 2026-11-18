@@ -72,4 +72,14 @@ node engine-v2/camera-reel-run.mjs "$CHROME" evaluation/raw/hand_landmarker.task
 
 The reel runner accepts an optional guarded local video warm-up. Keep the same warm-up in both runs when comparing capture or pose settings. It matches output to the signing intervals actually displayed by Chrome using the reel’s uniform gray padding. Generate a repeat reel with `camera-reel.py --repeat YES`. For a matched control, set `SIGNRELAY_V2_CALIBRATION_REPLAY=1` to run the original confirmation policy on the same tracker. Trials where no frames reached tracking are recorded as unobserved.
 
+Set `SIGNRELAY_V2_REQUIRE_TARGETS=1` when running the supported and repeat reels as regressions. The runner requires exact target sequences and no suggestions in padding, and keeps the negative-trial results in the report.
+
+Compare open-set policies with `evaluate-open-set.mjs` using the original training tracks and the exposed signer-disjoint development tracks. The training-only lower-tail margins are model-digest-bound. Set `SIGNRELAY_V2_REJECTION` to `baseline`, `fresh`, `calibrated` or `combined` in the camera replay. The last two require `SIGNRELAY_V2_CALIBRATION_FILE` pointing to the generated calibration JSON. `hard-negatives.py` freezes six additional licensed PopSign clips in ignored local storage. Build their separate local reel with `camera-reel.py --hard-negatives evaluation/derived/v2-native/open-set-hard-negatives.json`. These are development controls.
+
+```bash
+node engine-v2/evaluate-open-set.mjs engine-v2/models/landmark.json \
+  evaluation/derived/v2-native/train.json evaluation/derived/v2-native/val.json \
+  evaluation/derived/v2-native/open-set-calibration.json evaluation/derived/v2-native/open-set-dev-results.json
+```
+
 Use the [owner-operated webcam trials](WEBCAM-TRIALS.md) for a local, text-only development check. Use the [webcam evaluation protocol](../docs/evaluation/webcam-validation-protocol-2026-11-16.md) for a formal study. Preserve the final cohort until the acceptance policy is frozen.

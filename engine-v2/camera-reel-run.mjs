@@ -126,6 +126,7 @@ try {
   const outcomes = Object.fromEntries(["correct", "wrong", "abstained", "falseAccept", "rejected", "unobserved"]
     .map(key => [key, reports.filter(trial => trial.outcome === key).length]));
   const result = { settings: { capture: process.env.SIGNRELAY_V2_CAPTURE, vision: process.env.SIGNRELAY_V2_VISION_PROFILE,
+    rejection: process.env.SIGNRELAY_V2_REJECTION ?? "baseline",
     calibrationReplay: process.env.SIGNRELAY_V2_CALIBRATION_REPLAY === "1" },
     browser: (await browser.send("Browser.getVersion")).product, fixtureSha256: index.sha256,
     warmup: Boolean(warmupFile), startup: prior.startup, runtime: prior.runtime, fallback: prior.gpuFallback,
@@ -135,6 +136,11 @@ try {
   await writeFile(output, JSON.stringify(result, null, 2));
   console.log(JSON.stringify({ settings: result.settings, outcomes, processedFps: result.actualProcessedFps,
     reports: reports.map(row => [row.label, row.labels, row.processed, row.hands]) }));
+  if (process.env.SIGNRELAY_V2_REQUIRE_TARGETS === "1") {
+    const targets = reports.filter(row => row.kind === "target");
+    assert(targets.length && targets.every(trial => trial.outcome === "correct") && !outside.length,
+      "Expected exactly one matching suggestion per target and no suggestions outside scored trials");
+  }
 } finally {
   await browser?.close().catch(error => console.warn("Chrome profile cleanup:", error.message));
   server.close();

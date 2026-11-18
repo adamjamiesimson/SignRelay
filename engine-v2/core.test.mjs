@@ -126,6 +126,44 @@ test("stream calibration can reject a score the isolated model would accept", ()
   assert.throws(() => model({ streamScore: 3 }), /Incompatible/);
 });
 
+test("freshness blocks an old window without consuming the next sign's evidence", () => {
+  const fitted = model();
+  const streams = [new Stream(fitted), new Stream(fitted, { rejection: { recentEvidence: true } })];
+  const events = streams.map(() => []);
+  const rejection = [];
+  for (let time = 0; time <= 2500; time += 50) {
+    const hands = time <= 300 && time % 100 === 0 || time >= 1500;
+    streams.forEach((stream, i) => {
+      const trace = { windows: [], rejected: 0 };
+      const result = stream.push(sample(time, hands ? undefined : []), trace);
+      if (result?.event) events[i].push(time);
+      if (i && trace.eventBlocked === "stale hand evidence") rejection.push(time);
+    });
+  }
+  assert.equal(events[0].length, 2);
+  assert(events[0][0] < 1500);
+  assert.equal(events[1].length, 1);
+  assert(events[1][0] >= 1500);
+  assert(rejection.some(time => time < 1500));
+});
+
+test("an experimental class-relative floor rejects OTHER ambiguity without changing the base logits", () => {
+  const fitted = model();
+  const stream = new Stream(fitted, { rejection: { otherMargin: { HELLO: 3 } } });
+  let tested = false;
+  for (let time = 0; time <= 1350; time += 50) {
+    const trace = { windows: [], rejected: 0 };
+    const result = stream.push(sample(time), trace);
+    assert(!result?.event);
+    if (!trace.windows.length) continue;
+    assert.equal(trace.windows[0].label, "HELLO");
+    assert.equal(trace.windows[0].otherMargin, 2);
+    assert.equal(trace.windows[0].rejection, "other margin");
+    tested = true;
+  }
+  assert(tested);
+});
+
 test("tensor instrumentation records real source IDs and leaves numeric inputs unchanged", () => {
   const samples = Array.from({ length: 6 }, (_, index) => ({ ...sample(index * 50), id: index + 1 }));
   const trace = { ids: [] };

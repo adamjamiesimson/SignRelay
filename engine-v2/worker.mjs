@@ -32,7 +32,7 @@ self.onmessage = async ({ data }) => {
         profile = { ...profile, handDelegate: "CPU", warmHand: false };
         vision = await tracker(model.mode, profile);
       }
-      stream = new Stream(model, { calibrationReplay: profile.calibrationReplay });
+      stream = new Stream(model, { calibrationReplay: profile.calibrationReplay, rejection: bounded ? null : profile.rejection });
       clip = [];
       firstFrame = true;
       self.postMessage({ type: "ready", version: model.version, vocabulary: model.labels.slice(0, -1), capture: profile.capture,

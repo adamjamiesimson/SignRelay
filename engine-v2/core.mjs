@@ -58,7 +58,7 @@ export function tensor(samples, mode, trace = undefined) {
   if (hands.length < 3 || hands.at(-1).t - hands[0].t < 115) return null;
   const start = hands[0].t;
   const end = hands.at(-1).t;
-  if (trace) trace.handRange = [start, end];
+  if (trace) Object.assign(trace, { handRange: [start, end], handCount: hands.length });
   const width = WIDTHS[mode];
   const output = new Float32Array(width * STEPS);
   let cursor = 0;
@@ -135,13 +135,14 @@ export function predict(model, input) {
 // Fixed-delay, overlapping windows. Confirmations belong to source observations.
 const EPISODE_REST_MS = 180;
 export class Stream {
-  constructor(model, { windows = null, hop = 150, confirmations = 2, calibrationReplay = false } = {}) {
+  constructor(model, { windows = null, hop = 150, confirmations = 2, calibrationReplay = false, rejection = null } = {}) {
     this.model = model.streamScore === undefined ? model
       : { ...model, minScore: model.streamScore, minMargin: model.streamMargin };
     this.windows = windows;
     this.hop = hop;
     this.confirmations = confirmations;
     this.calibrationReplay = calibrationReplay;
+    this.rejection = calibrationReplay ? null : rejection;
     this.reset();
   }
   reset() {
@@ -203,12 +204,17 @@ export class Stream {
       const input = tensor(this.samples.filter(frame => sample.t - frame.t <= ms && frame.t >= this.episodeStart),
         this.model.mode, inputTrace);
       const score = predict(this.model, input);
+      const otherMargin = input ? score.score - score.scores.at(-1) : null;
+      const floor = score.label ? this.rejection?.otherMargin?.[score.label] : undefined;
+      const unknown = floor !== undefined && otherMargin < floor;
       if (trace) {
         if (input) trace.windows.push({ ...inputTrace, label: score.label, top: score.top, score: score.score,
-          margin: score.margin, otherMargin: score.score - score.scores.at(-1) });
+          margin: score.margin, otherMargin, latestHandAgeMs: sample.t - inputTrace.handRange[1],
+          ...(unknown ? { rejection: "other margin" } : {}) });
         else trace.rejected++;
       }
-      return { ...score, evidence: inputTrace.handRange };
+      return { ...score, ...(unknown ? { label: null, reason: "ambiguous versus unsupported signs" } : {}),
+        evidence: inputTrace.handRange, otherMargin };
     });
     const result = scored.filter(value => value.label).sort((a, b) => b.margin - a.margin)[0]
       ?? { label: null, reason: scored.find(value => value.reason !== "insufficient hand evidence")?.reason
@@ -229,8 +235,9 @@ export class Stream {
       const [start, end] = result.evidence;
       const shared = this.claim && start <= this.claim.end;
       const sameEpisode = this.claim?.label === result.label && this.episodeStart <= this.claim.end;
-      if (shared || sameEpisode) {
-        if (trace) trace.eventBlocked = shared ? "consumed hand evidence" : "same sign episode";
+      const stale = this.rejection?.recentEvidence && sample.t - end > Math.max(400, 2 * this.cadence + this.hop);
+      if (shared || sameEpisode || stale) {
+        if (trace) trace.eventBlocked = shared ? "consumed hand evidence" : sameEpisode ? "same sign episode" : "stale hand evidence";
       } else {
         event = result.label;
         this.claim = { id: (this.claim?.id ?? 0) + 1, label: event, start, end };
