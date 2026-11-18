@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SignRelay Engine V2 Lab</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <header><p>SignRelay Research</p><h1>Engine V2 Lab</h1></header>
+    <section class="surface" aria-label="Signing input">
+      <video id="video" muted playsinline aria-label="Signing input preview"></video>
+      <div class="controls">
+        <button id="camera" type="button">Start camera</button>
+        <label class="file">Open video <input id="file" type="file" accept="video/*"></label>
+        <button id="stop" type="button" disabled>Stop</button>
+      </div>
+      <p id="status" role="status">Choose a camera or an isolated signing clip.</p>
+    </section>
+    <section class="surface readings" aria-label="Recognition output">
+      <h2>Recognition</h2>
+      <p id="match" aria-live="polite">No match</p>
+      <p id="reason"></p>
+      <p id="events"></p>
+      <dl>
+        <dt>Model</dt><dd id="version">Awaiting input</dd>
+        <dt>Vocabulary</dt><dd id="vocabulary">Awaiting model</dd>
+        <dt>Analyzed FPS</dt><dd id="fps">—</dd>
+        <dt>Median worker time</dt><dd id="latency">—</dd>
+        <dt>Hand observations</dt><dd id="hands">—</dd>
+        <dt>Skipped frames</dt><dd id="drops">—</dd>
+      </dl>
+      <details><summary>Diagnostics</summary><pre id="diagnostics"></pre></details>
+    </section>
+  </main>
+  <script type="module" src="/app.mjs"></script>
+</body>
+</html>

@@ -1,2 +1,5 @@
 
 *.onnx binary
+docs/evaluation/popsign-project-holdout-manifest.json text eol=lf
+docs/evaluation/popsign-development-2026-10-16.json text eol=lf
+docs/evaluation/popsign-reserved-holdout-2026-10-16.json text eol=lf
