@@ -7,7 +7,7 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     // CommonJS shims loaded with require() by locked third-party tooling.
-    files: ["tooling/**/*.cjs"],
+    files: ["tooling/**/*.cjs", "tooling/picomatch-no-repeat/**/*.js"],
     rules: { "@typescript-eslint/no-require-imports": "off" },
   },
   // Override default ignores of eslint-config-next.

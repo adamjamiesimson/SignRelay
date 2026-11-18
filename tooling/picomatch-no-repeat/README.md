@@ -1,0 +1,5 @@
+# Picomatch compatibility fork
+
+Based on MIT-licensed Picomatch 4.0.7 (tag `4.0.7`, commit `6bb4067`). The original license and library entry points are included. The parser fails immediately on `+(...)` and `*(...)`, including inside other extglobs. It also disables the regex option for raw suffix quantifiers on parenthesized groups. These operators can put unbounded wildcard expressions inside a second repetition and create catastrophic backtracking. The project's build and test glob patterns do not need these operators.
+
+The root npm override makes Vite, Vitest, tinyglobby and fdir resolve this same local package. It has an independent package identity and needs no audit exception. The regression test checks both that the lockfile contains no registry copy and that the installed callers reject a malicious pattern. Replace the fork with an upstream release once a compatible fix is published and verified. [Upstream release](https://github.com/micromatch/picomatch/releases/tag/4.0.7) · [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)

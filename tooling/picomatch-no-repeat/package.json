@@ -1,0 +1,10 @@
+{
+  "name": "@signrelay/picomatch-no-repeat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Picomatch 4.0.7 compatibility fork that rejects repeated extglobs",
+  "license": "MIT",
+  "main": "index.js",
+  "type": "commonjs",
+  "sideEffects": false
+}
