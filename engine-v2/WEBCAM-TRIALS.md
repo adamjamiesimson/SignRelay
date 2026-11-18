@@ -5,12 +5,12 @@ The local V2 lab is experimental. Run these development trials with a consenting
 ## Set up
 
 1. Start `node engine-v2/serve.mjs evaluation/raw/hand_landmarker.task` from the repository root and open `http://127.0.0.1:8765` in Chrome. The [lab README](README.md) contains the pinned asset setup.
-2. Record the commit, browser version, approximate camera distance and lighting in your local log. Use a session code in place of a name. Note if the browser already has camera permission, since a permission prompt affects startup time.
-3. Use **Recent suggestions** to score the emitted sequence. **Recognition** shows the current model window and can change without emitting a word. Open **Diagnostics** for throughput, or read `signRelayCameraDiagnostics()?.startup` in the local console for startup timings.
+2. Open **Score webcam trials**, choose the prompt, distance, lighting and speed, then choose **Start scored trial**. The scoring panel uses **Recent suggestions**, which shows emitted words. **Recognition** shows the current model window and can change between emitted words.
+3. Record the commit and browser version separately if you share the results with a supervisor. Note whether camera permission was already granted, since the permission prompt affects startup time.
 
 ## Run and score
 
-Press **Start camera** for each scored trial. Wait for **Camera running**, perform the action, then wait two seconds for trailing suggestions before you record the result. Press **Stop** and check that the preview clears. Record the full sequence in order, including any extra word.
+Wait for **Camera running**, perform the action, and allow two seconds for trailing suggestions. Choose **Finish and score**. The browser compares the complete emitted sequence with the prompt and stops the camera. **Stop** or an interruption records a failed trial. Restart in a new scored trial after recovery.
 
 | Set | Actions | Expected suggestions |
 | --- | --- | --- |
@@ -24,8 +24,4 @@ Press **Start camera** for each scored trial. Wait for **Camera running**, perfo
 
 Use **correct** for the exact expected sequence, **incorrect** for a different sign on a supported trial, **abstained** when a supported trial emits nothing, **duplicate** for excess matching words, **false accept** when a negative trial emits any word, and **failed** for an interrupted or unusable run. Keep failed runs visible and rerun them as new trials. Count duplicate trials separately even if they also contain a wrong word.
 
-Copy this header into a local text file. Only share the scored rows you choose to provide for review.
-
-```text
-session | commit | browser | trial | distance | light | speed | expected | emitted | outcome | analyzed FPS | startup ms | notes
-```
+Choose **Download results** before closing or reloading the tab. The browser generates a local JSON file with prompt IDs, selected conditions, expected and emitted words, outcome, duplicate count, frame count, usable hand count, FPS and startup time. It has no names, session IDs, device identifiers, images, raw landmarks or wall-clock timestamps. The browser keeps at most 200 trials in tab memory. Only share the downloaded file with reviewers you choose.

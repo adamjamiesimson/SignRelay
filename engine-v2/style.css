@@ -44,6 +44,11 @@ dd { margin: 0; overflow-wrap: anywhere; }
 dt, #reason { color: #b1c9bf; }
 summary { cursor: pointer; }
 pre { white-space: pre-wrap; font-size: 0.8rem; }
+.trial-panel { grid-column: 1 / -1; }
+.trial-options { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.trial-options label { display: grid; gap: 0.35rem; }
+.trial-options select { color: inherit; font: inherit; background: #213a34; min-height: 2.75rem; border: 1px solid #6d9b88; border-radius: 0.35rem; padding: 0.3rem; }
+#trial-results:empty, #trial-status:empty { display: none; }
 @media (max-width: 780px) {
   main { grid-template-columns: 1fr; }
   video { height: min(54vh, 22rem); }

@@ -33,6 +33,25 @@
       </dl>
       <details><summary>Diagnostics</summary><pre id="diagnostics"></pre></details>
     </section>
+    <details class="surface trial-panel">
+      <summary>Score webcam trials</summary>
+      <p>Choose a prompt, then start a scored trial. The log stays in this tab until you download it and contains only prompts, words and summary metrics.</p>
+      <form id="trial-form">
+        <div class="trial-options">
+          <label>Prompt <select id="trial-prompt" name="prompt"></select></label>
+          <label>Distance <select name="distance"><option value="usual">Usual</option><option value="near">Near</option><option value="far">Far</option></select></label>
+          <label>Lighting <select name="light"><option value="even">Even</option><option value="dim">Dim</option><option value="backlit">Backlit</option></select></label>
+          <label>Speed <select name="speed"><option value="natural">Natural</option><option value="slow">Slow</option><option value="fast">Fast</option></select></label>
+        </div>
+        <div class="controls">
+          <button id="trial-start" type="submit">Start scored trial</button>
+          <button id="trial-finish" type="button" disabled>Finish and score</button>
+          <button id="trial-download" type="button" disabled>Download results</button>
+        </div>
+      </form>
+      <p id="trial-status" role="status"></p>
+      <ol id="trial-results" aria-label="Scored trial results"></ol>
+    </details>
   </main>
   <script type="module" src="/app.mjs"></script>
 </body>

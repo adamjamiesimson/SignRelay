@@ -1,6 +1,7 @@
 import { loadVideoData, seekDecodedFrame } from "../scripts/diagnostics/video-frame-step";
 import { FrameTrace } from "./frame-trace.mjs";
 import { LatestFrame } from "./latest-frame.mjs";
+import { bindWebcamTrials } from "./webcam-trials.mjs";
 
 const byId = id => document.getElementById(id);
 const video = byId("video");
@@ -9,15 +10,24 @@ let current;
 let lastTrace;
 let lastRuntime;
 let gpuFallback;
+const webcamTrials = bindWebcamTrials({
+  startCamera: trial => { void start(null, { trial }); },
+  finishCamera: () => stop("Trial finished.", { completed: true }),
+});
 const clock = () => performance.timeOrigin + performance.now();
 window.signRelayCameraDiagnostics = () => {
   const trace = current?.trace ?? lastTrace;
   return trace ? { ...trace.snapshot(), runtime: current?.runtime ?? lastRuntime, gpuFallback } : null;
 };
 
-function stop(message = "Session stopped.", preserve = false) {
+function stop(message = "Session stopped.", { preserve = false, completed = false, retry = false } = {}) {
   const session = current;
   current = null;
+  if (!retry) {
+    const seconds = session?.started === undefined ? 0 : (performance.now() - session.started) / 1000;
+    webcamTrials.end(completed && !!session?.frames, { frames: session?.frames, hands: session?.hands,
+      fps: seconds > 0 ? session.frames / seconds : null, startup: session?.trace.startup.cameraPlayingMs });
+  }
   if (session) {
     if (session.active) session.trace.mark(session.active, "cancelled");
     session.latest.clear("cancelled");
@@ -217,9 +227,10 @@ function schedule(session) {
   });
 }
 
-async function start(file, forceCpu = false, requestedAt = performance.now()) {
+async function start(file, { forceCpu = false, requestedAt = performance.now(), trial } = {}) {
   if (!forceCpu) gpuFallback = null;
-  stop(forceCpu ? "Restarting camera tracking on the CPU…" : "Loading recognition model…");
+  stop(forceCpu ? "Restarting camera tracking on the CPU…" : "Loading recognition model…", { retry: forceCpu });
+  if (trial) webcamTrials.begin(trial);
   if (!video.requestVideoFrameCallback || !window.OffscreenCanvas) {
     stop("This browser lacks the video APIs used by the lab.");
     return;
@@ -254,7 +265,8 @@ async function start(file, forceCpu = false, requestedAt = performance.now()) {
   }
   function retryCpu(stage, elapsedMs) {
     gpuFallback = { stage, elapsedMs, sent: session.trace.counters.sent, processed: session.trace.counters.processed };
-    void start(null, true, requestedAt);
+    webcamTrials.retry();
+    void start(null, { forceCpu: true, requestedAt });
   }
   worker.onerror = () => { if (current === session) workerError("Recognition worker stopped. Start again to reload it."); };
   worker.onmessage = async ({ data }) => {
@@ -305,6 +317,7 @@ async function start(file, forceCpu = false, requestedAt = performance.now()) {
         session.started = performance.now();
         session.trace.startup.cameraPlayingMs = session.started - requestedAt;
         set("status", "Camera running");
+        webcamTrials.ready();
         schedule(session);
         if (session.capture === "track") void readTrack(session, media.getVideoTracks()[0]).catch(error => {
           if (current === session) stop("Could not read camera frames. " + error.message);
@@ -328,6 +341,7 @@ async function start(file, forceCpu = false, requestedAt = performance.now()) {
       metrics(session, data.ms, data.hand, data.detected);
       if (data.result) show(data.result);
       if (data.result?.event) {
+        webcamTrials.observe(data.result.event);
         session.events.push(data.result.event);
         if (session.events.length > 10) session.events.shift();
         set("events", "Recent suggestions · " + session.events.join(" · "));
@@ -339,7 +353,7 @@ async function start(file, forceCpu = false, requestedAt = performance.now()) {
       session.trace.isolatedInput = data.input;
       renderMetrics(session);
       show(data.result);
-      stop("File complete · isolated clip result", true);
+      stop("File complete · isolated clip result", { preserve: true });
     }
   };
   session.watchdog = setInterval(() => {

@@ -107,7 +107,15 @@ try {
     };
   })()`);
   const cameraStarted = performance.now();
-  await chrome.evaluate("document.getElementById('camera').click()");
+  const scoreTrial = process.env.SIGNRELAY_V2_SCORE_TRIAL === "1";
+  if (scoreTrial) {
+    assert(process.env.SIGNRELAY_V2_CAMERA_EXPECT, "Supply the expected camera word to score a trial");
+    await chrome.evaluate(`(() => {
+      document.querySelector('.trial-panel').open = true;
+      document.getElementById('trial-prompt').value = ${JSON.stringify(process.env.SIGNRELAY_V2_CAMERA_EXPECT)};
+      document.getElementById('trial-start').click();
+    })()`);
+  } else await chrome.evaluate("document.getElementById('camera').click()");
   await until("/Camera running|failed|could not/i.test(document.getElementById('status').textContent)", 45000);
   const cameraStartup = performance.now() - cameraStarted;
   assert.match((await snapshot()).status, /^Camera running/);
@@ -123,7 +131,33 @@ try {
   }
   Object.assign(evidence, { camera, cameraStartupMs: cameraStartup });
   await save();
-  await chrome.evaluate("document.getElementById('stop').click()");
+  if (scoreTrial) {
+    const logged = await chrome.evaluate(`(async () => {
+      document.getElementById('trial-finish').click();
+      document.getElementById('trial-prompt').value = 'movement';
+      document.getElementById('trial-start').click();
+      document.getElementById('stop').click();
+      const makeUrl = URL.createObjectURL;
+      const click = HTMLAnchorElement.prototype.click;
+      let download, contents;
+      URL.createObjectURL = blob => { contents = blob.text(); return makeUrl.call(URL, blob); };
+      HTMLAnchorElement.prototype.click = function () { download = this.download; };
+      try { document.getElementById('trial-download').click(); return { download, log: JSON.parse(await contents) }; }
+      finally { URL.createObjectURL = makeUrl; HTMLAnchorElement.prototype.click = click; }
+    })()`);
+    assert.equal(logged.download, "signrelay-webcam-trials.json");
+    assert.equal(logged.log.schema, "signrelay-webcam-trials-1");
+    assert.equal(logged.log.trials.length, 2);
+    const [trial, cancelled] = logged.log.trials;
+    assert.equal(trial.outcome, "correct");
+    assert.deepEqual(trial.emitted, [process.env.SIGNRELAY_V2_CAMERA_EXPECT]);
+    assert.equal(cancelled.prompt, "movement");
+    assert.equal(cancelled.outcome, "failed");
+    assert.deepEqual(cancelled.emitted, []);
+    assert.deepEqual(Object.keys(trial).sort(), ["analyzedFps", "conditions", "duplicateWords", "emitted", "expected", "frames",
+      "number", "outcome", "overflow", "prompt", "startupMs", "usableHands"].sort());
+    evidence.scoredTrialExport = logged;
+  } else await chrome.evaluate("document.getElementById('stop').click()");
   assert.equal(await chrome.evaluate("document.getElementById('video').srcObject === null"), true);
   await chrome.evaluate("document.getElementById('camera').click()");
   await until("/^Camera running/.test(document.getElementById('status').textContent)", 45000);
