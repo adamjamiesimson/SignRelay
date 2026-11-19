@@ -1,4 +1,4 @@
-import type { LanguageId } from "./model-adapters";
+import { PUBLIC_LANGUAGE_IDS, type LanguageId } from "./model-adapters";
 
 /** Build-time product profile, inlined by Next.js from NEXT_PUBLIC_SIGNRELAY_PROFILE.
  * "full" is the multilingual site. "asl-demo" is the GITEX build: only the ASL
@@ -14,7 +14,7 @@ export const BUILD_PROFILE: BuildProfile = configured === "asl-demo" || configur
 export const ASL_ONLY = BUILD_PROFILE !== "full";
 
 export function isLanguageAvailable(language: LanguageId, profile: BuildProfile = BUILD_PROFILE) {
-  return profile === "full" || language === "asl";
+  return PUBLIC_LANGUAGE_IDS.some((id) => id === language) && (profile === "full" || language === "asl");
 }
 
 export const OUT_OF_PROFILE_LABEL = "Not in this ASL demo build";

@@ -27,7 +27,7 @@ import {
 } from "@/lib/calibration-storage";
 import {
   createCustomVocabularyEntry,
-  LANGUAGE_LIST,
+  PUBLIC_LANGUAGE_LIST,
   MODEL_ADAPTERS,
   PERSONAL_STARTER_VOCABULARY,
   type AslVocabularyEntry,
@@ -138,7 +138,7 @@ export function TranslatorExperience() {
     throughput: new ThroughputMonitor(), analysed: 0, since: 0, frames: 0, handFrames: 0 });
 
   const model = useMemo(
-    () => LANGUAGE_LIST.find((item) => item.id === selected)!,
+    () => PUBLIC_LANGUAGE_LIST.find((item) => item.id === selected)!,
     [selected],
   );
 
@@ -1153,8 +1153,7 @@ function WorkspaceLanguageSwitcher({
   selected: LanguageId;
   onChange: (language: LanguageId) => void;
 }) {
-  const automatic = LANGUAGE_LIST.filter((language) => language.status === "experimental");
-  const development = LANGUAGE_LIST.filter((language) => language.status !== "experimental");
+  const automatic = PUBLIC_LANGUAGE_LIST;
 
   return (
     <label className="workspace-language-switcher">
@@ -1167,13 +1166,6 @@ function WorkspaceLanguageSwitcher({
         >
           <optgroup label="Research models · live accuracy not measured">
             {automatic.map((language) => (
-              <option key={language.id} value={language.id} disabled={!isLanguageAvailable(language.id)}>
-                {language.shortName} · {language.language}{isLanguageAvailable(language.id) ? "" : ` (${OUT_OF_PROFILE_LABEL.toLowerCase()})`}
-              </option>
-            ))}
-          </optgroup>
-          <optgroup label="Teach your own signs · no automatic model">
-            {development.map((language) => (
               <option key={language.id} value={language.id} disabled={!isLanguageAvailable(language.id)}>
                 {language.shortName} · {language.language}{isLanguageAvailable(language.id) ? "" : ` (${OUT_OF_PROFILE_LABEL.toLowerCase()})`}
               </option>

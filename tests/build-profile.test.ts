@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { isLanguageAvailable } from "../lib/build-profile";
+import { LANGUAGE_LIST, PUBLIC_LANGUAGE_IDS, PUBLIC_LANGUAGE_LIST } from "../lib/model-adapters";
 import { STEPS } from "../scripts/build-profile.mjs";
 import { NON_ASL_WORKERS, pruneProfile } from "../scripts/prune-profile.mjs";
 import { NON_ASL_MODEL_DIRS } from "../scripts/verify-runtime.mjs";
@@ -20,11 +21,18 @@ function fakeExport() {
 }
 
 describe("ASL demo build profile", () => {
-  it("only ASL is usable in the asl-demo profile; full keeps every language", () => {
+  it("only ASL is usable in demo; the full public product only offers seven model-backed languages", () => {
     expect(isLanguageAvailable("asl", "asl-demo")).toBe(true);
     for (const language of ["bsl", "isl", "rsl", "bdsl", "lse", "psl"] as const) {
       expect(isLanguageAvailable(language, "asl-demo")).toBe(false);
       expect(isLanguageAvailable(language, "full")).toBe(true);
+    }
+    expect(PUBLIC_LANGUAGE_IDS).toHaveLength(7);
+    expect(PUBLIC_LANGUAGE_LIST.map(language => language.id)).toEqual([...PUBLIC_LANGUAGE_IDS]);
+    expect(LANGUAGE_LIST).toHaveLength(40); // Internal legacy registry, NOT public navigation.
+    for (const language of LANGUAGE_LIST.filter(item => !PUBLIC_LANGUAGE_IDS.some(id => id === item.id))) {
+      expect(isLanguageAvailable(language.id, "full")).toBe(false);
+      expect(isLanguageAvailable(language.id, "asl-demo")).toBe(false);
     }
   });
   it("prunes every other language model and clip worker but keeps the ASL runtime", async () => {

@@ -3,13 +3,11 @@
 import { useEffect, useState } from "react";
 import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import {
-  LANGUAGE_LIST,
-  MODEL_ADAPTERS,
+  PUBLIC_LANGUAGE_LIST,
   type LanguageId,
 } from "@/lib/model-adapters";
 
-const AUTOMATIC_IDS: LanguageId[] = ["asl", "bsl", "isl", "lse", "rsl", "bdsl", "psl"];
-const automaticLanguages = AUTOMATIC_IDS.map((id) => MODEL_ADAPTERS[id]);
+const automaticLanguages = PUBLIC_LANGUAGE_LIST;
 
 function capabilityWidth(language: (typeof automaticLanguages)[number]) {
   const count = language.automaticVocabularyCount || 0;
@@ -179,7 +177,7 @@ function HowItWorks() {
     {
       num: "02",
       title: "Select your sign language",
-      body: "Choose from seven automatic research recognizers, with additional language workspaces available while more models are in development.",
+      body: "Choose from seven experimental sign-language recognition workspaces. Only languages with built-in recognition are shown.",
     },
     {
       num: "03",
@@ -214,7 +212,7 @@ function Languages({ selected, onSelect }: Pick<Props, "selected" | "onSelect">)
         <div className="figma-language-heading">
           <div>
             <h2>Supported languages</h2>
-            <p>{ASL_ONLY ? <>ASL demo build · other languages are not included in this build</> : <>7 automatic research recognizers · {LANGUAGE_LIST.length} total workspaces</>}</p>
+            <p>{ASL_ONLY ? <>ASL demo build · other languages are not included in this build</> : <>7 experimental recognizers · isolated signs only</>}</p>
           </div>
           <a href="/languages">View all languages</a>
         </div>
