@@ -5,7 +5,7 @@ import * as ort from "onnxruntime-web/wasm";
 import { gatherFrame, prepareClip, hasHand, TMAX, N_POINTS } from "./preprocess.mjs";
 import { decide } from "./decision.mjs";
 
-let hand, pose, face, session, meta, canvas, ctx, lastTs = -1;
+let hand, pose, face, session, meta, canvas, ctx, lastTs = -1, build;
 const base = new URL("./", self.location.href);
 
 async function sha256(buf) {
@@ -30,12 +30,15 @@ async function init({ delegate = "CPU", threads = 0 }) {
   const [hb, pb, fb, mb] = await Promise.all([task("hand_landmarker.task"), task("pose_landmarker_lite.task"),
     useFace ? task("face_landmarker.task") : null, fetchVerified("model.onnx", meta.model_sha256)]);
   startup.fetchMs = performance.now() - t0;
-  const opts = buf => ({ baseOptions: { modelAssetBuffer: buf, delegate }, runningMode: "VIDEO" });
-  [hand, pose, face] = await Promise.all([
-    HandLandmarker.createFromOptions(files, { ...opts(hb), numHands: 2 }),
-    PoseLandmarker.createFromOptions(files, { ...opts(pb), numPoses: 1 }),
-    useFace ? FaceLandmarker.createFromOptions(files, { ...opts(fb), numFaces: 1 }) : null,
-  ]);
+  build = async () => {
+    const opts = buf => ({ baseOptions: { modelAssetBuffer: buf, delegate }, runningMode: "VIDEO" });
+    [hand, pose, face] = await Promise.all([
+      HandLandmarker.createFromOptions(files, { ...opts(hb), numHands: 2 }),
+      PoseLandmarker.createFromOptions(files, { ...opts(pb), numPoses: 1 }),
+      useFace ? FaceLandmarker.createFromOptions(files, { ...opts(fb), numFaces: 1 }) : null,
+    ]);
+  };
+  await build();
   startup.visionMs = performance.now() - t0 - startup.fetchMs;
   ort.env.wasm.wasmPaths = new URL("ort/", base).href;
   ort.env.wasm.numThreads = threads || Math.min(4, navigator.hardwareConcurrency || 1);
@@ -87,7 +90,14 @@ async function classify(frames) {
 self.onmessage = async ({ data }) => {
   try {
     if (data.type === "init") return self.postMessage({ type: "ready", id: data.id, ...(await init(data)) });
-    if (data.type === "reset") { lastTs = -1; return self.postMessage({ type: "reset", id: data.id }); }
+    if (data.type === "reset") {
+      // Fresh MediaPipe graphs per clip / camera session: VIDEO-mode timestamps restart and no tracking
+      // state leaks between recordings (identical to the native extractor, which builds graphs per clip).
+      const t0 = performance.now();
+      hand?.close(); pose?.close(); face?.close();
+      await build(); lastTs = -1;
+      return self.postMessage({ type: "reset", id: data.id, ms: performance.now() - t0 });
+    }
     if (data.type === "frame") {
       const r = track(data.image, data.width, data.height, data.ts);
       data.image.close?.();
