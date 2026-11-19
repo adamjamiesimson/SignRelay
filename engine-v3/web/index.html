@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SignRelay V3 Lab</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>SignRelay Engine V3 — experimental ASL lab</h1>
+  <p class="mut">Isolated-sign recognizer trained on <b id="nclasses">…</b> ASL sign classes (PopSign ASL v2.1, CC BY 4.0).
+  Camera frames and files are processed in this tab only; nothing is uploaded. Research preview — not a translator.</p>
+  <p class="mut small" id="version">loading…</p>
+  <p class="mut small" id="startup"></p>
+  <p id="status" role="status">Loading…</p>
+</header>
+<main>
+  <section>
+    <h2>Camera</h2>
+    <video id="cam" playsinline muted></video>
+    <div class="row"><button id="startcam">Start camera</button><button id="stopcam">Stop</button></div>
+    <p class="mut small" id="diag"></p>
+  </section>
+  <section>
+    <h2>Video file (one sign per clip)</h2>
+    <input type="file" id="file" accept="video/*">
+    <p class="mut small" id="fileprog"></p>
+  </section>
+  <section>
+    <h2>Current result</h2>
+    <p id="proposal" class="big">—</p>
+    <p class="mut small" id="scores"></p>
+    <h3>Top-5 hypotheses (calibrated probabilities)</h3>
+    <ol id="top5"></ol>
+  </section>
+  <section>
+    <h2>Recognition events</h2>
+    <ol id="events" class="events"></ol>
+  </section>
+  <section>
+    <h2>Test a sign</h2>
+    <div class="row"><input id="target" list="vocab" placeholder="type a sign, e.g. APPLE"><datalist id="vocab"></datalist>
+    <button id="trialbtn">Record trial</button><button id="export">Export anonymous results</button></div>
+    <p id="trialstate" class="mut"></p><p id="trialsum" class="mut small"></p>
+  </section>
+  <section>
+    <h2>Supported vocabulary</h2>
+    <p class="small" id="vocablist"></p>
+  </section>
+</main>
+<footer class="mut small">Training data: PopSign ASL v2.1, Starner et al., Georgia Tech / DPAN, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Landmarks: Google MediaPipe Tasks (Apache-2.0).</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>

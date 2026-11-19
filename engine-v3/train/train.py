@@ -15,7 +15,7 @@ import torch.nn.functional as F
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "..", "pipeline"))
-from v3model import SignModel, prepare_clip, sign_span, resample_index, TMAX  # noqa: E402
+from v3model import SignModel, prepare_clip, sign_span, resample_index, resample_to_15hz, TMAX  # noqa: E402
 from points import MIRROR, N_POINTS  # noqa: E402
 import labels  # noqa: E402
 
@@ -38,6 +38,14 @@ def augment(seg, rng):
     idx = np.clip(np.floor(np.arange(m) * (n - 1) / max(m - 1, 1) + rng.uniform(-0.5, 0.5, m) + 0.5), 0, n - 1).astype(int)
     idx = np.sort(idx)
     seg = seg[idx]
+    # low camera frame rate: observe at an irregular 5-14 Hz, then interpolate back to 15 Hz
+    # exactly as the browser camera path does (web/preprocess.mjs:resampleTo15Hz)
+    if rng.random() < 0.35 and len(seg) > 4:
+        dur = (len(seg) - 1) * 1000 / 15; hz = rng.uniform(5, 14)
+        obs = np.cumsum(rng.uniform(0.6, 1.4, int(dur / 1000 * hz) + 2) * 1000 / hz); obs = obs[obs <= dur]
+        obs = np.concatenate([[0.0], obs])
+        src = seg[np.clip(np.round(obs * 15 / 1000).astype(int), 0, len(seg) - 1)]
+        seg = resample_to_15hz(obs, src, 0.0, obs[-1])
     a = rng.integers(0, 3); b = len(seg) - rng.integers(0, 3)
     if b - a >= 4: seg = seg[a:b]
     # mirror (left/right signer) with p=0.5

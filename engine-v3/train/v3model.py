@@ -52,6 +52,27 @@ def prepare_clip(pts, tmax=TMAX):
     return x, valid, fmask
 
 
+def resample_to_15hz(ts, frames, t0=None, t1=None):
+    """Mirror of web/preprocess.mjs:resampleTo15Hz for irregular camera timestamps (ms)."""
+    t0 = ts[0] if t0 is None else t0; t1 = ts[-1] if t1 is None else t1
+    out, j, step = [], 0, 1000.0 / 15
+    n = int(np.floor((t1 + 1e-6 - t0) / step)) + 1
+    for k in range(n):
+        t = t0 + k * step
+        while j + 1 < len(ts) and ts[j + 1] <= t: j += 1
+        A, B = frames[j], frames[min(j + 1, len(ts) - 1)]
+        ta, tb = ts[j], ts[min(j + 1, len(ts) - 1)]
+        w = min(1.0, max(0.0, (t - ta) / (tb - ta))) if tb > ta else 0.0
+        ha = np.isfinite(A).all(-1); hb = np.isfinite(B).all(-1)
+        f = np.full_like(A, np.nan)
+        both = ha & hb
+        f[both] = A[both] * (1 - w) + B[both] * w
+        if w <= 0.5: f[ha & ~hb] = A[ha & ~hb]
+        else: f[hb & ~ha] = B[hb & ~ha]
+        out.append(f)
+    return np.stack(out)
+
+
 # ---------------------------------------------------------------- in-graph featurizer
 class Featurizer(nn.Module):
     """x [B,T,86,3], valid [B,T,86], fmask [B,T] -> features [B,T,412]."""
