@@ -14,7 +14,11 @@ const fixture = intake.find(row => row.sha256 === assetId);
 assert(fixture, "Supply a recording from the guarded intake");
 assert.equal(fingerprint(await readFile(fixture.file)), assetId);
 if (cameraFile && !(await stat(cameraFile)).isFile()) throw new Error("Fake camera fixture is missing");
-const server = await serve({ handFile, modelFile, port: 0 });
+const staticPreview = process.env.SIGNRELAY_V2_STATIC_PREVIEW === "1";
+const remotePreview = process.env.SIGNRELAY_V2_PREVIEW_ORIGIN;
+if (remotePreview && !remotePreview.startsWith("https://")) throw new Error("A remote preview must use HTTPS");
+const server = remotePreview ? null : staticPreview ? await (await import("./serve-preview.mjs")).servePreview()
+  : await serve({ handFile, modelFile, port: 0 });
 let chrome;
 try {
   const started = performance.now();
@@ -22,7 +26,7 @@ try {
     proxy: "http://127.0.0.1:9",
     extraArgs: cameraFile ? ["--use-file-for-fake-video-capture=" + resolve(cameraFile)] : [],
   });
-  const origin = "http://127.0.0.1:" + server.address().port;
+  const origin = remotePreview ?? "http://127.0.0.1:" + server.address().port;
   const external = [];
   chrome.onEvent(event => {
     if (event.method !== "Network.requestWillBeSent") return;
@@ -44,6 +48,10 @@ try {
   const snapshot = () => chrome.evaluate(`Object.fromEntries(['status','version','match','reason','events','fps','latency','hands','drops','diagnostics']
     .map(id => [id, document.getElementById(id).textContent]))`);
   await until("Boolean(document.getElementById('file'))");
+  if (staticPreview || remotePreview) {
+    assert(await chrome.evaluate("isSecureContext && !document.getElementById('policy-control').hidden"));
+    await chrome.evaluate("document.getElementById('policy').value = 'fresh'");
+  }
   await until("document.readyState === 'complete'");
   const { root } = await chrome.send("DOM.getDocument");
   const { nodeId } = await chrome.send("DOM.querySelector", { nodeId: root.nodeId, selector: "#file" });
@@ -124,6 +132,10 @@ try {
   if (soak) await until(`document.getElementById('video').currentTime >= ${soak}`, (soak + 30) * 1000);
   const camera = await snapshot();
   evidence.cameraTransitions = await chrome.evaluate("window.signRelayCameraDiagnostics?.()");
+  if (staticPreview || remotePreview) {
+    assert.equal(evidence.cameraTransitions.runtime.policy, "fresh");
+    assert(await chrome.evaluate("document.getElementById('policy').disabled"));
+  }
   if (traceCamera) evidence.cameraTrace = await chrome.evaluate("window.finishCameraTrace()");
   if (soak) {
     assert.equal(camera.events, "", "Synthetic idle camera produced a suggestion");
@@ -159,8 +171,23 @@ try {
     evidence.scoredTrialExport = logged;
   } else await chrome.evaluate("document.getElementById('stop').click()");
   assert.equal(await chrome.evaluate("document.getElementById('video').srcObject === null"), true);
+  if (staticPreview || remotePreview) {
+    assert(await chrome.evaluate("!document.getElementById('policy').disabled"));
+    await chrome.evaluate("document.getElementById('policy').value = 'baseline'");
+    await chrome.evaluate(`window.originalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('Test denial', 'NotAllowedError'); };`);
+    await chrome.evaluate("document.getElementById('camera').click()");
+    await until("/^Camera permission denied/.test(document.getElementById('status').textContent)", 45000);
+    assert(await chrome.evaluate("document.getElementById('video').srcObject === null"));
+    await chrome.evaluate("navigator.mediaDevices.getUserMedia = window.originalGetUserMedia; delete window.originalGetUserMedia;");
+    evidence.permissionDenial = true;
+  }
   await chrome.evaluate("document.getElementById('camera').click()");
   await until("/^Camera running/.test(document.getElementById('status').textContent)", 45000);
+  if (staticPreview || remotePreview) {
+    assert.equal(await chrome.evaluate("signRelayCameraDiagnostics().runtime.policy"), "baseline");
+    evidence.policySwitch = true;
+  }
   await chrome.evaluate("document.getElementById('video').srcObject.getVideoTracks()[0].dispatchEvent(new Event('ended'))");
   await until("/^Camera disconnected/.test(document.getElementById('status').textContent)");
   assert.equal(await chrome.evaluate("document.getElementById('video').srcObject === null"), true);
@@ -182,5 +209,5 @@ try {
   }
 } finally {
   await chrome?.close().catch(error => console.warn("Chrome profile cleanup:", error.message));
-  server.close();
+  server?.close();
 }

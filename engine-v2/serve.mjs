@@ -7,11 +7,11 @@ import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 import { VISION_MODELS, VISION_WASM_FILES } from "../lib/vision-runtime.mjs";
 import { LABELS, parseModel } from "./core.mjs";
+import { HAND_ASSET } from "./assets.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
 const packageDir = join(root, "node_modules/@mediapipe/tasks-vision/wasm");
-const handHash = "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1";
 const mime = { html: "text/html", css: "text/css", mjs: "text/javascript", js: "text/javascript",
   wasm: "application/wasm", json: "application/json", mp4: "video/mp4" };
 const bytes = (data, type) => ({ data, type });
@@ -52,8 +52,8 @@ export async function serve({ modelFile, handFile, port = 8765, diagnostics = ne
     poseMode: profile.endsWith("-split") || profile === "auto" ? "split" : profile === "gpu-hands" ? "off" : "inline",
     auto: profile === "auto", capture, warmHand, rejection, calibrationReplay: process.env.SIGNRELAY_V2_CALIBRATION_REPLAY === "1" }), "application/json"));
   const hand = await readFile(handFile);
-  if (hash(hand) !== handHash) throw new Error("Hand Landmarker failed integrity verification");
-  files.set("/vision/models/hand_landmarker.task", bytes(hand, "application/octet-stream"));
+  if (hash(hand) !== HAND_ASSET.sha256) throw new Error("Hand Landmarker failed integrity verification");
+  files.set("/vision/models/" + HAND_ASSET.file, bytes(hand, "application/octet-stream"));
   for (const descriptor of Object.values(VISION_MODELS)) {
     const data = await readFile(join(root, "public/vision/models", descriptor.file));
     if (hash(data) !== descriptor.sha256) throw new Error("Vision asset failed integrity verification");

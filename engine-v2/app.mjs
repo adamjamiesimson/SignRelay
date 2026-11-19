@@ -5,6 +5,10 @@ import { bindWebcamTrials } from "./webcam-trials.mjs";
 
 const byId = id => document.getElementById(id);
 const video = byId("video");
+const policy = byId("policy");
+const choosePolicy = document.body.hasAttribute("data-preview");
+byId("policy-control").hidden = !choosePolicy;
+byId("policy-help").hidden = !choosePolicy;
 const set = (id, value) => { byId(id).textContent = value; };
 let current;
 let lastTrace;
@@ -48,6 +52,7 @@ function stop(message = "Session stopped.", { preserve = false, completed = fals
   video.removeAttribute("src");
   video.load();
   byId("stop").disabled = true;
+  policy.disabled = false;
   byId("file").value = "";
   set("status", message);
   if (!preserve) {
@@ -171,6 +176,7 @@ function renderMetrics(session) {
     captureToWorkerMs: Number(session.captureMs.toFixed(1)), sourceTimestampMs: session.last,
     sourceWidth: video.videoWidth, sourceHeight: video.videoHeight,
     timedFrames: session.timings.length, detectedHandFrames: session.detected, usableHandFrames: session.hands,
+    startup: session.trace.startup, runtime: session.runtime, poseTrackingUnavailable: !!session.poseFailed,
   }, null, 2));
 }
 
@@ -247,9 +253,10 @@ async function start(file, { forceCpu = false, requestedAt = performance.now(), 
   session.trace.startup = {};
   session.latest = new LatestFrame((record, reason) => session.trace.mark(record, reason));
   current = session;
+  policy.disabled = true;
   byId("stop").disabled = false;
   set("events", "");
-  for (const id of ["fps", "latency", "hands", "drops"]) set(id, "—");
+  for (const id of ["fps", "latency", "hands", "drops", "startup"]) set(id, "—");
   if (file) {
     session.url = URL.createObjectURL(file);
     video.classList.remove("camera");
@@ -293,7 +300,8 @@ async function start(file, { forceCpu = false, requestedAt = performance.now(), 
       Object.assign(session.trace.startup, data.startup, { workerReadyMs: performance.now() - requestedAt });
       session.capture = file ? "bitmap" : data.capture === "track" && typeof MediaStreamTrackProcessor !== "function"
         ? typeof VideoFrame === "function" ? "snapshot" : "bitmap" : data.capture;
-      session.runtime = { capture: session.capture, hands: data.handDelegate, pose: data.poseMode };
+      session.runtime = { capture: session.capture, hands: data.handDelegate, pose: data.poseMode,
+        ...(choosePolicy && !file ? { policy: policy.value } : {}) };
       session.mayFallback = !file && data.auto && data.handDelegate === "GPU";
       set("version", data.version);
       set("vocabulary", data.vocabulary.join(", "));
@@ -316,6 +324,7 @@ async function start(file, { forceCpu = false, requestedAt = performance.now(), 
         if (current !== session) return;
         session.started = performance.now();
         session.trace.startup.cameraPlayingMs = session.started - requestedAt;
+        set("startup", (session.trace.startup.cameraPlayingMs / 1000).toFixed(1) + " s");
         set("status", "Camera running");
         webcamTrials.ready();
         schedule(session);
@@ -323,7 +332,11 @@ async function start(file, { forceCpu = false, requestedAt = performance.now(), 
           if (current === session) stop("Could not read camera frames. " + error.message);
         });
       } catch (error) {
-        if (current === session) stop("Could not open " + (file ? "this video. " : "the camera. ") + error.message);
+        if (current === session) {
+          const denied = !file && (error.name === "NotAllowedError" || error.name === "SecurityError");
+          stop(denied ? "Camera permission denied. Allow camera access in Chrome and try again."
+            : "Could not open " + (file ? "this video. " : "the camera. ") + error.message);
+        }
       }
     }
     if (data.type === "frame") {
@@ -338,6 +351,7 @@ async function start(file, { forceCpu = false, requestedAt = performance.now(), 
       const pending = session.latest.take(clock());
       if (pending) dispatchTrackFrame(session, pending);
       if (current !== session) return;
+      session.poseFailed = data.pose?.failed;
       metrics(session, data.ms, data.hand, data.detected);
       if (data.result) show(data.result);
       if (data.result?.event) {
@@ -373,7 +387,7 @@ async function start(file, { forceCpu = false, requestedAt = performance.now(), 
   session.readyTimeout = setTimeout(() => {
     if (current === session) workerError("Recognition worker took too long to load. Start again to retry.");
   }, 20000);
-  worker.postMessage({ type: "start", bounded: Boolean(file), forceCpu });
+  worker.postMessage({ type: "start", bounded: Boolean(file), forceCpu, policy: policy.value });
 }
 
 video.addEventListener("error", () => {
