@@ -117,7 +117,7 @@ def labelled(meta, mapping, C):
     y = np.full(len(meta), -1); role = np.empty(len(meta), dtype=object)
     for i, m in enumerate(meta):
         # external cohorts: fingerspelling windows -> non-vocabulary motion; ASL Citizen OOV -> unknown sign
-        t = mapping.get(m["sign"]) or {"__fingerspelling__": "nonvocab_motion", "__oov__": "unknown_external"}[m["sign"]]
+        t = mapping[m["sign"]] if m["sign"] in mapping else {"__fingerspelling__": "nonvocab_motion", "__oov__": "unknown_external"}[m["sign"]]
         if isinstance(t, (int, np.integer)): y[i] = t; role[i] = "known"
         else: role[i] = t
     return y, role
