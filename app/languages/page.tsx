@@ -6,7 +6,7 @@ import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 
 export const metadata: Metadata = {
   title: "Supported languages",
-  description: "Automatic research recognizers and sign-language models in development in SignRelay.",
+  description: "Seven experimental sign-language recognition workspaces with built-in models or reference matching. Isolated signs only.",
   alternates: { canonical: "/languages" },
 };
 
@@ -25,7 +25,6 @@ export default function LanguagesPage() {
             {ASL_ONLY && <p role="note"><strong>ASL demo build:</strong> only the ASL workspace is included. The other languages below are listed for information; their models are not part of this build.</p>}
             <div className="figma-language-summary" aria-label="Language support summary">
               <div><strong>{automatic.length}</strong><span>Automatic</span></div>
-              <div><strong>7</strong><span>Available research workspaces</span></div>
             </div>
           </div>
         </section>
