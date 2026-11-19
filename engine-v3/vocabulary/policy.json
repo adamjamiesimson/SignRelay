@@ -1,0 +1,177 @@
+{
+ "version": "v3-vocab-policy-1",
+ "source": "PopSign ASL v2.1 game split (CC BY 4.0), 562 published sign directories",
+ "frozen_before_results": true,
+ "merges": {
+  "DAD": [
+   "dad",
+   "daddy"
+  ],
+  "MOM": [
+   "mom",
+   "mommy"
+  ],
+  "HELLO": [
+   "hello",
+   "hi"
+  ],
+  "TEDDY-BEAR": [
+   "teddy",
+   "teddybear"
+  ],
+  "COUCH": [
+   "couch",
+   "sofa"
+  ],
+  "RABBIT": [
+   "bunny",
+   "rabbit"
+  ],
+  "ROCK": [
+   "rock",
+   "stone"
+  ],
+  "CAT": [
+   "cat",
+   "kitty"
+  ],
+  "TOILET": [
+   "potty",
+   "toilet"
+  ]
+ },
+ "merge_candidates_resolved_on_validation_only": [
+  [
+   "slide",
+   "slidenoun",
+   "slideverb"
+  ],
+  [
+   "gopotty",
+   "potty",
+   "toilet"
+  ],
+  [
+   "hose",
+   "waterhose"
+  ],
+  [
+   "window",
+   "glasswindow"
+  ],
+  [
+   "horse",
+   "pony"
+  ],
+  [
+   "dog",
+   "puppy"
+  ],
+  [
+   "insidein",
+   "into"
+  ],
+  [
+   "night",
+   "nightnight"
+  ],
+  [
+   "full",
+   "fullfood"
+  ],
+  [
+   "shoe",
+   "sneaker"
+  ],
+  [
+   "sleep",
+   "sleepy",
+   "nap"
+  ],
+  [
+   "tooth",
+   "toothbrush"
+  ],
+  [
+   "child",
+   "children"
+  ],
+  [
+   "person",
+   "people"
+  ]
+ ],
+ "unknown_signs": {
+  "train_as_unknown": [
+   "better",
+   "bucket",
+   "happy",
+   "helicopter",
+   "hit",
+   "leg",
+   "other",
+   "short",
+   "stand",
+   "which"
+  ],
+  "calibration_only": [
+   "asleep",
+   "grapes",
+   "icecream",
+   "melon",
+   "napkin",
+   "nice",
+   "over",
+   "porch",
+   "stove",
+   "turtle"
+  ],
+  "test_only_never_seen": [
+   "chin",
+   "crib",
+   "garage",
+   "gum",
+   "highchair",
+   "hungry",
+   "milk",
+   "shower",
+   "star",
+   "toast"
+  ]
+ },
+ "selection_rule": "unknown signs = first 30 by sha256('signrelay-v3-unknown|'+sign) among signs not merged, not merge candidates, not protected",
+ "protected_from_holdout": [
+  "bad",
+  "bathroom",
+  "dad",
+  "drink",
+  "eat",
+  "finish",
+  "go",
+  "good",
+  "hello",
+  "help",
+  "hi",
+  "home",
+  "how",
+  "hurt",
+  "like",
+  "love",
+  "mom",
+  "more",
+  "no",
+  "please",
+  "sick",
+  "stop",
+  "thankyou",
+  "want",
+  "wantto",
+  "water",
+  "what",
+  "when",
+  "where",
+  "who",
+  "why",
+  "yes"
+ ]
+}
