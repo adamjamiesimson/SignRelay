@@ -110,6 +110,7 @@ def main():
     ap.add_argument("--no-face", action="store_true", help="ablation: drop face points at train and eval")
     ap.add_argument("--threads", type=int, default=4); ap.add_argument("--late-drop-epoch", type=int, default=0)
     ap.add_argument("--policy", default=None)
+    ap.add_argument("--fs-negatives", action="store_true", help="add FSBoard fingerspelling windows as UNKNOWN")
     a = ap.parse_args()
     torch.set_num_threads(a.threads); torch.manual_seed(a.seed); rng = np.random.default_rng(a.seed)
     os.makedirs(a.out, exist_ok=True)
@@ -130,6 +131,13 @@ def main():
     def lab(y):
         return UNK if y == "unknown_train" else (y if isinstance(y, int) else None)
     train = [(c, lab(y)) for c, y in zip(tr_clips, tr_y) if lab(y) is not None and sign_span(c) is not None]
+    if a.fs_negatives and os.path.exists(f"{a.cache}/fs_train.npz"):
+        fz = np.load(f"{a.cache}/fs_train.npz"); fo = fz["offsets"]
+        fs = [fz["pts"][fo[i]:fo[i + 1]] for i in range(len(fo) - 1)]
+        if a.no_face:
+            for c in fs: c[:, 55:] = np.nan
+        train += [(c, UNK) for c in fs if sign_span(c) is not None]
+        print("added fingerspelling negatives as UNKNOWN:", len(fs), flush=True)
     va_known = [i for i, y in enumerate(va_y) if isinstance(y, int)]
     va_prep = prepared([va_clips[i] for i in va_known]); va_true = np.array([va_y[i] for i in va_known])
     print(f"classes {C} (+UNKNOWN) | train clips {len(train)} | val known clips {len(va_known)}", flush=True)

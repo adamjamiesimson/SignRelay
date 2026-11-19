@@ -139,18 +139,20 @@ def calibrate(a):
     Pk, Pu = softmax_T(L[kn], T), softmax_T(cu, T)
     yk = y[kn]
     best, grid = None, []
-    for mu in [0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.01]:
-        for mt1 in [0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6]:
-            for mm in [None, 0.05, 0.1, 0.2]:
-                for mp in ([None] if protos is None else [None, 0.3, 0.4, 0.5, 0.6]):
-                    pol = {"temperature": T, "max_unknown": mu, "min_top1": mt1, "min_margin": mm, "min_proto": mp}
-                    sk, ik = decide(Pk, E[kn], pol, C, protos); su, _ = decide(Pu, cuE, pol, C, protos)
-                    acc_k = sk == "accepted"; corr = (acc_k & (ik == yk)).mean(); wrong = (acc_k & (ik != yk)).mean()
-                    far = (su == "accepted").mean()
-                    # utility: correct accepts minus 2 x (wrong-word accepts on known + accepts on unknown)
-                    util = corr - 2 * wrong - 2 * far
-                    grid.append({**pol, "correct": float(corr), "wrong": float(wrong), "far": float(far), "utility": float(util)})
-                    if far <= a.max_far and (best is None or util > best["utility"]): best = grid[-1]
+    su_p1 = Pu[:, :C].max(1)
+    cos_u = (cuE * protos[Pu[:, :C].argmax(1)]).sum(1) if protos is not None else None
+    # thresholds at quantiles of the unknown-calibration score distributions (fine at the strict end)
+    qs = [0, .5, .6, .7, .75, .8, .85, .9, .93, .95, .97, .99]
+    for mu in [0.3, 0.5, 1.01]:
+        for mt1 in sorted(set(float(np.quantile(su_p1, q)) if q else 0.0 for q in qs)):
+            for mp in ([None] if protos is None else [None] + sorted(set(float(np.quantile(cos_u, q)) for q in qs[1:]))):
+                pol = {"temperature": T, "max_unknown": mu, "min_top1": mt1, "min_margin": None, "min_proto": mp}
+                sk, ik = decide(Pk, E[kn], pol, C, protos); su, _ = decide(Pu, cuE, pol, C, protos)
+                acc_k = sk == "accepted"; corr = (acc_k & (ik == yk)).mean(); wrong = (acc_k & (ik != yk)).mean()
+                far = (su == "accepted").mean()
+                util = corr - 2 * wrong - 2 * far
+                grid.append({**pol, "correct": float(corr), "wrong": float(wrong), "far": float(far), "utility": float(util)})
+                if far <= a.max_far and (best is None or util > best["utility"]): best = grid[-1]
     json.dump(grid, open(a.out.replace(".json", "-grid.json"), "w"))
     print("n known", int(kn.sum()), "n unknown-cal", len(cu), "far range", min(g["far"] for g in grid), max(g["far"] for g in grid))
     if best is None: raise SystemExit("no operating point satisfies max_far")
