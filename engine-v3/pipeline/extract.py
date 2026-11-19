@@ -206,8 +206,17 @@ def main():
           for i, s in enumerate(shards)]
     for p in ps: p.start()
     n, t0 = 0, time.time()
+    import queue
     while n < len(todo):
-        q.get(); n += 1
+        try:
+            q.get(timeout=120); n += 1
+        except queue.Empty:
+            dead = [p for p in ps if not p.is_alive()]
+            if len(dead) == len(ps):
+                print(f"all workers exited with {len(todo) - n} clips unrecorded; re-run this plan to finish", flush=True); break
+            if dead and all(p.exitcode not in (0, None) for p in dead):
+                print(f"worker died (exit {[p.exitcode for p in dead]}); continuing, re-run the plan afterwards", flush=True)
+            continue
         if n % 200 == 0 or n == len(todo):
             el = time.time() - t0
             print(f"progress {n}/{len(todo)} {n/el*3600:.0f}/h eta {(len(todo)-n)/(n/el)/3600:.2f}h", flush=True)
