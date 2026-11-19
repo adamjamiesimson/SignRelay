@@ -116,7 +116,8 @@ def open_set_metrics(st, i1, y_known, is_unknown, nosign):
 def labelled(meta, mapping, C):
     y = np.full(len(meta), -1); role = np.empty(len(meta), dtype=object)
     for i, m in enumerate(meta):
-        t = mapping[m["sign"]]
+        # external cohorts: fingerspelling windows -> non-vocabulary motion; ASL Citizen OOV -> unknown sign
+        t = mapping.get(m["sign"]) or {"__fingerspelling__": "nonvocab_motion", "__oov__": "unknown_external"}[m["sign"]]
         if isinstance(t, (int, np.integer)): y[i] = t; role[i] = "known"
         else: role[i] = t
     return y, role
@@ -195,7 +196,8 @@ def report(a):
     signer = collections.defaultdict(list)
     for i in np.nonzero(K)[0]: signer[meta[i]["signer"]].append(bool(c1[i]))
     st, i1 = decide(P, E, policy, C, protos) if ok.any() else (None, None)
-    unk_roles = {"val": ["unknown_cal"], "test": ["unknown_test"], "train": []}.get(a.split, [])
+    unk_roles = {"val": ["unknown_cal"], "test": ["unknown_test"], "train": [], "fs_test": ["nonvocab_motion"],
+                 "aslc": ["unknown_external"]}.get(a.split, [])
     U = np.isin(role, unk_roles) if unk_roles else np.zeros(len(meta), bool)
     sel = K | U
     osm = open_set_metrics(st[sel], i1[sel], y[sel], U[sel], ~ok[sel])
@@ -204,9 +206,9 @@ def report(a):
         "split": a.split, "runs": a.run, "policy": policy, "inference_seconds": dt, "clips_per_second": len(meta) / dt,
         "trained_labels": C, "labels_with_eval_coverage": len(covered),
         "known_clips": int(K.sum()), "no_sign_known_clips": int((K & ~ok).sum()),
-        "top1": float(c1[K].mean()), "top5": float(c5[K].mean()),
-        "macro_recall": float(np.mean([p["recall"] for p in covered])),
-        "ece_top1": ece(pt[K & ok], c1[K & ok].astype(float)),
+        "top1": float(c1[K].mean()) if K.any() else None, "top5": float(c5[K].mean()) if K.any() else None,
+        "macro_recall": float(np.mean([p["recall"] for p in covered])) if covered else None,
+        "ece_top1": ece(pt[K & ok], c1[K & ok].astype(float)) if (K & ok).any() else None,
         "signers": {s: {"n": len(v), "top1": float(np.mean(v))} for s, v in sorted(signer.items())},
         "weakest_classes": sorted(covered, key=lambda p: (p["recall"], -p["n"]))[:40],
         "top_confusions": [{"true": t, "pred": p, "count": n} for (t, p), n in conf.most_common(60)],

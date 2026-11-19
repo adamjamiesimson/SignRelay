@@ -20,18 +20,31 @@ def load(run, which="best.pt"):
     return m, cfg, cls
 
 
+class EnsembleWrapper(torch.nn.Module):
+    """Mean log-probabilities of several models; concatenated, re-normalised embeddings.
+    Mirrors evaluate.infer, so Python reports and the browser score the same ensemble."""
+    def __init__(self, ms):
+        super().__init__(); self.ms = torch.nn.ModuleList(ms)
+
+    def forward(self, x, valid, fmask):
+        ls, es = [], []
+        for m in self.ms:
+            e = m.embed(x, valid, fmask); ls.append(torch.log_softmax(m.head(e), -1)); es.append(torch.nn.functional.normalize(e, dim=-1))
+        return torch.stack(ls).mean(0), torch.nn.functional.normalize(torch.cat(es, -1), dim=-1)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--run", required=True); ap.add_argument("--out", required=True)
+    ap.add_argument("--run", required=True, nargs="+"); ap.add_argument("--out", required=True)
     ap.add_argument("--which", default="best.pt"); ap.add_argument("--policy", default=None)
     ap.add_argument("--prototypes", default=None, help=".npy [C, D] class prototypes")
     ap.add_argument("--version", default="v3"); ap.add_argument("--cache", default="/home/user/data/cache")
     ap.add_argument("--threads", type=int, default=1)
     a = ap.parse_args()
     torch.set_num_threads(a.threads)
-    m, cfg, cls = load(a.run, a.which)
+    loaded = [load(r, a.which) for r in a.run]; m, cfg, cls = loaded[0]
     os.makedirs(a.out, exist_ok=True)
-    w = ExportWrapper(m).eval()
+    w = (ExportWrapper(m) if len(loaded) == 1 else EnsembleWrapper([l[0] for l in loaded])).eval()
     x = torch.zeros(1, TMAX, N_POINTS, 3); v = torch.zeros(1, TMAX, N_POINTS); f = torch.zeros(1, TMAX)
     path = f"{a.out}/model.onnx"
     torch.onnx.export(w, (x, v, f), path, input_names=["x", "valid", "fmask"], output_names=["logits", "embedding"],
@@ -44,7 +57,9 @@ def main():
     z = np.load(f"{a.cache}/val.npz"); meta = json.load(open(f"{a.cache}/val.json"))
     offs = z["offsets"]; pts = z["pts"]; errs, agree, n = [], 0, 0
     for i in range(0, min(len(meta), 400)):
-        p = prepare_clip(pts[offs[i]:offs[i + 1]].astype(np.float32))
+        c = pts[offs[i]:offs[i + 1]].astype(np.float32)
+        if cfg.get("no_face"): c[:, 55:] = np.nan
+        p = prepare_clip(c)
         if p is None: continue
         xi, vi, fi = (t[None] for t in p)
         with torch.no_grad(): tl, te = w(torch.from_numpy(xi), torch.from_numpy(vi), torch.from_numpy(fi))
@@ -55,7 +70,8 @@ def main():
     data = open(path, "rb").read()
     out = {"version": a.version, "model_sha256": hashlib.sha256(data).hexdigest(), "classes": cls["classes"],
            "unknown_index": cls["unknown_index"], "input": {"tmax": TMAX, "points": N_POINTS, "fps": 15, "long_side": 480},
-           "contract": contract(), "train_config": cfg, "onnx_verification": ver,
+           "contract": contract(), "train_config": cfg, "ensemble_runs": [os.path.basename(r.rstrip("/")) for r in a.run],
+           "uses_face": not cfg.get("no_face"), "onnx_verification": ver,
            "policy": json.load(open(a.policy)) if a.policy else {"temperature": 1.0, "max_unknown": 0.5, "min_top1": 0.0, "min_margin": None, "min_proto": None, "min_hand_frames": 3},
            "data": "PopSign ASL v2.1 (Starner et al.), CC BY 4.0; https://signdata.cc.gatech.edu/"}
     if a.prototypes:

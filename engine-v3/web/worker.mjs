@@ -26,14 +26,15 @@ async function init({ delegate = "CPU", threads = 0 }) {
   meta = await (await fetch(new URL("meta.json", base))).json();
   const files = await FilesetResolver.forVisionTasks(new URL("vision/wasm", base).href);
   const task = async f => new Uint8Array(await fetchVerified(`vision/models/${f}`, meta.assets[f]));
+  const useFace = meta.uses_face !== false; // V3 models trained without face points never run the Face Landmarker
   const [hb, pb, fb, mb] = await Promise.all([task("hand_landmarker.task"), task("pose_landmarker_lite.task"),
-    task("face_landmarker.task"), fetchVerified("model.onnx", meta.model_sha256)]);
+    useFace ? task("face_landmarker.task") : null, fetchVerified("model.onnx", meta.model_sha256)]);
   startup.fetchMs = performance.now() - t0;
   const opts = buf => ({ baseOptions: { modelAssetBuffer: buf, delegate }, runningMode: "VIDEO" });
   [hand, pose, face] = await Promise.all([
     HandLandmarker.createFromOptions(files, { ...opts(hb), numHands: 2 }),
     PoseLandmarker.createFromOptions(files, { ...opts(pb), numPoses: 1 }),
-    FaceLandmarker.createFromOptions(files, { ...opts(fb), numFaces: 1 }),
+    useFace ? FaceLandmarker.createFromOptions(files, { ...opts(fb), numFaces: 1 }) : null,
   ]);
   startup.visionMs = performance.now() - t0 - startup.fetchMs;
   ort.env.wasm.wasmPaths = new URL("ort/", base).href;
@@ -45,7 +46,7 @@ async function init({ delegate = "CPU", threads = 0 }) {
   }
   startup.totalMs = performance.now() - t0;
   return { startup, classes: meta.classes.length, version: meta.version, commit: meta.commit, model_sha256: meta.model_sha256,
-    threads: ort.env.wasm.numThreads, delegate };
+    threads: ort.env.wasm.numThreads, delegate, face: useFace };
 }
 
 function track(image, width, height, ts) {
@@ -60,7 +61,7 @@ function track(image, width, height, ts) {
   const t1 = performance.now();
   const p = pose.detectForVideo(canvas, ts);
   const t2 = performance.now();
-  const f = face.detectForVideo(canvas, ts);
+  const f = face ? face.detectForVideo(canvas, ts) : null;
   const t3 = performance.now();
   const frame = gatherFrame(h, p, f, width, height);
   return { frame, ms: { hand: t1 - t0, pose: t2 - t1, face: t3 - t2 }, hands: h.landmarks.length };

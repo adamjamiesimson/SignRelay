@@ -24,7 +24,9 @@ const TASKS = {
 await rm(out, { recursive: true, force: true });
 for (const d of ["vision/wasm", "vision/models", "ort"]) await mkdir(join(out, d), { recursive: true });
 const assets = {};
+const metaPeek = JSON.parse(await readFile(join(modelDir, "meta.json"), "utf8"));
 for (const [f, [url, digest]] of Object.entries(TASKS)) {
+  if (f === "face_landmarker.task" && metaPeek.uses_face === false) continue;
   const local = join(process.env.SIGNRELAY_MODELS ?? "/home/user/data/models", f);
   const bytes = existsSync(local) ? await readFile(local) : Buffer.from(await (await fetch(url)).arrayBuffer());
   if (sha(bytes) !== digest) throw new Error(`${f}: SHA-256 mismatch`);

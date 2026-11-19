@@ -46,9 +46,11 @@ def main(chrome_json, model_dir, out):
     so = ort.SessionOptions(); so.intra_op_num_threads = 1
     sess = ort.InferenceSession(f"{model_dir}/model.onnx", so, providers=["CPUExecutionProvider"])
     tr = Tracker()
+    no_face = meta.get("uses_face") is False
     ch = json.load(open(chrome_json)); rows = []
     for r in ch["results"]:
         nat = native_frames(r["video"], tr)
+        if no_face: nat[:, 55:] = np.nan
         chp = np.array([[np.nan if v is None else v for v in f] for f in r["frames"]], np.float32).reshape(len(r["frames"]), 86, 3)
         n = min(len(nat), len(chp))
         hn = np.isfinite(nat[:, :42, 0]).any(1); hc = np.isfinite(chp[:, :42, 0]).any(1)
