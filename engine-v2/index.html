@@ -8,9 +8,19 @@
 </head>
 <body>
   <main>
-    <header><p>SignRelay Research</p><h1>Engine V2 Lab</h1></header>
+    <header>
+      <h1>SIGNRELAY ENGINE V2 — EXPERIMENTAL RECOGNITION LAB</h1>
+      <p>Experimental only · Commit <code id="commit">local checkout</code></p>
+    </header>
     <section class="surface" aria-label="Signing input">
       <video id="video" muted playsinline aria-label="Signing input preview"></video>
+      <label id="policy-control" class="policy" hidden>Recognition policy
+        <select id="policy" aria-describedby="policy-help">
+          <option value="baseline">Default</option>
+          <option value="fresh">Freshness guard (experimental)</option>
+        </select>
+      </label>
+      <p id="policy-help" hidden>Stop the camera before switching policies.</p>
       <div class="controls">
         <button id="camera" type="button">Start camera</button>
         <label class="file">Open video <input id="file" type="file" accept="video/*"></label>
@@ -22,11 +32,13 @@
       <h2>Recognition</h2>
       <p id="match" aria-live="polite">No match</p>
       <p id="reason"></p>
-      <p id="events"></p>
+      <h3>Confirmed suggestions</h3>
+      <p id="events" aria-live="polite"></p>
       <dl>
         <dt>Model</dt><dd id="version">Awaiting input</dd>
         <dt>Vocabulary</dt><dd id="vocabulary">Awaiting model</dd>
         <dt>Analyzed FPS</dt><dd id="fps">—</dd>
+        <dt>Camera startup</dt><dd id="startup">—</dd>
         <dt>Median worker time</dt><dd id="latency">—</dd>
         <dt>Hand observations</dt><dd id="hands">—</dd>
         <dt>Skipped frames</dt><dd id="drops">—</dd>
@@ -52,6 +64,10 @@
       <p id="trial-status" role="status"></p>
       <ol id="trial-results" aria-label="Scored trial results"></ol>
     </details>
+    <footer>Research weights trained from PopSign ASL v1.0 by Starner et al. (2023), with SignRelay preprocessing and training.
+      <a href="https://signdata.cc.gatech.edu/view/datasets/popsign_v1_0/" rel="noreferrer">Dataset and attribution</a> ·
+      <a href="https://creativecommons.org/licenses/by/4.0/" rel="noreferrer">CC BY 4.0</a>
+    </footer>
   </main>
   <script type="module" src="/app.mjs"></script>
 </body>

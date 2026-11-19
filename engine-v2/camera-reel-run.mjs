@@ -12,14 +12,18 @@ const index = JSON.parse(await readFile(indexFile));
 const hash = createHash("sha256");
 for await (const chunk of createReadStream(fixture)) hash.update(chunk);
 assert.equal(hash.digest("hex"), index.sha256);
-const server = await serve({ handFile, modelFile, port: 0 });
+const staticPreview = process.env.SIGNRELAY_V2_STATIC_PREVIEW === "1";
+const remotePreview = process.env.SIGNRELAY_V2_PREVIEW_ORIGIN;
+if (remotePreview && !remotePreview.startsWith("https://")) throw new Error("A remote preview must use HTTPS");
+const server = remotePreview ? null : staticPreview ? await (await import("./serve-preview.mjs")).servePreview()
+  : await serve({ handFile, modelFile, port: 0 });
 let browser;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const median = values => values.length ? [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)] : null;
 try {
   browser = await startChrome(chromePath, { proxy: "http://127.0.0.1:9",
     extraArgs: ["--use-file-for-fake-video-capture=" + resolve(fixture)] });
-  const origin = "http://127.0.0.1:" + server.address().port;
+  const origin = remotePreview ?? "http://127.0.0.1:" + server.address().port;
   const external = new Set();
   browser.onEvent(event => {
     if (event.method !== "Network.requestWillBeSent") return;
@@ -28,6 +32,11 @@ try {
   });
   await browser.send("Page.navigate", { url: origin });
   for (let i = 0; i < 100 && !await browser.evaluate("typeof signRelayCameraDiagnostics === 'function'"); i++) await delay(100);
+  if (staticPreview || remotePreview) {
+    const policy = process.env.SIGNRELAY_V2_REJECTION ?? "baseline";
+    assert(["baseline", "fresh"].includes(policy), "The static preview offers the baseline and freshness policies");
+    await browser.evaluate(`document.getElementById('policy').value = ${JSON.stringify(policy)}`);
+  }
   if (warmupFile) {
     const { root } = await browser.send("DOM.getDocument");
     const { nodeId } = await browser.send("DOM.querySelector", { nodeId: root.nodeId, selector: "#file" });
@@ -143,5 +152,5 @@ try {
   }
 } finally {
   await browser?.close().catch(error => console.warn("Chrome profile cleanup:", error.message));
-  server.close();
+  server?.close();
 }

@@ -5,7 +5,8 @@
   "git": {
     "deploymentEnabled": {
       "feature/pretrained-language-expansion": false,
-      "codex/signrelay-engine-v2": false
+      "codex/signrelay-engine-v2": false,
+      "codex/signrelay-v2-lab-preview": false
     }
   }
 }

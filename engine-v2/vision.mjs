@@ -1,12 +1,7 @@
 import { FilesetResolver, HandLandmarker, PoseLandmarker } from "@mediapipe/tasks-vision";
 import { observation } from "./core.mjs";
 import { PoseContext } from "./pose-context.mjs";
-
-export const HAND_ASSET = {
-  file: "hand_landmarker.task",
-  sha256: "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1",
-  url: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
-};
+import { HAND_ASSET } from "./assets.mjs";
 
 const visionFiles = () => FilesetResolver.forVisionTasks(new URL("/vision/wasm", location.href).href);
 const modelAssetPath = file => new URL("/vision/models/" + file, location.href).href;
@@ -91,6 +86,7 @@ export async function tracker(mode, { handDelegate = "CPU", onDemandPose = false
       const finished = performance.now();
       const poseRequested = auxiliary?.offer(timestamp, () => canvas.transferToImageBitmap()) ?? false;
       return { frame, sample, pose: { requested: poseRequested, failed: auxiliary?.failed ?? false,
+        error: auxiliary?.error ?? null,
         used: frame.pose.length > 0, sourceMs: frame.pose.length > 0 ? auxiliary?.completedAt ?? lastPose : null,
         lastResultMs: auxiliary?.duration ?? null },
       ms: { copy: copied - start, hand: tracked - copied,

@@ -32,7 +32,12 @@ self.onmessage = async ({ data }) => {
         profile = { ...profile, handDelegate: "CPU", warmHand: false };
         vision = await tracker(model.mode, profile);
       }
-      stream = new Stream(model, { calibrationReplay: profile.calibrationReplay, rejection: bounded ? null : profile.rejection });
+      let rejection = bounded ? null : profile.rejection;
+      if (!bounded && profile.allowPolicySelection) {
+        if (!["baseline", "fresh"].includes(data.policy)) throw new Error("Unknown recognition policy");
+        rejection = { recentEvidence: data.policy === "fresh" };
+      }
+      stream = new Stream(model, { calibrationReplay: profile.calibrationReplay, rejection });
       clip = [];
       firstFrame = true;
       self.postMessage({ type: "ready", version: model.version, vocabulary: model.labels.slice(0, -1), capture: profile.capture,

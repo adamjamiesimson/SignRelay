@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
+    "engine-v2/dist-preview/**",
     "build/**",
     "work/**",
     "outputs/**",

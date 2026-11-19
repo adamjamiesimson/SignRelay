@@ -1,0 +1,30 @@
+name: V2 static lab preview
+
+on:
+  pull_request:
+    paths:
+      - 'engine-v2/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'lib/vision-runtime.mjs'
+      - '.github/workflows/v2-lab-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - name: Build the dedicated static client
+        run: node engine-v2/build-preview.mjs
+      - name: Verify runtime assets, output isolation and event handling
+        run: node --test engine-v2/preview.test.mjs engine-v2/core.test.mjs engine-v2/capture.test.mjs engine-v2/webcam-trials.test.mjs
