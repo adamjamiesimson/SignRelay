@@ -1,5 +1,5 @@
 // Engine V3 experimental lab (main thread). Camera frames and files never leave the tab.
-import { analysisSize, resampleTo15Hz, hasHand, FPS } from "./preprocess.mjs";
+import { analysisSize, resampleTo15Hz, hasHand, signingEvidence, FPS } from "./preprocess.mjs";
 
 const $ = s => document.querySelector(s);
 const DEBUG = new URLSearchParams(location.search).has("debug");
@@ -102,7 +102,7 @@ async function classifySamples(samples, final) {
 }
 
 function onSample(t, frame) {
-  const s = { t, f: frame }; const h = hasHand(frame);
+  const s = { t, f: frame }; const h = signingEvidence(frame);
   seg.samples.push(s);
   while (seg.samples.length && seg.samples[0].t < t - 8000) seg.samples.shift();
   if (h) {
@@ -114,7 +114,7 @@ function onSample(t, frame) {
   const span = seg.samples.filter(x => x.t >= seg.start - 140 && x.t <= Math.min(t, seg.lastHand + 140));
   if (end) {
     seg.active = false;
-    if (span.filter(x => hasHand(x.f)).length >= MIN_HAND) classifySamples(span, true);
+    if (span.filter(x => signingEvidence(x.f)).length >= MIN_HAND) classifySamples(span, true);
   } else if (t - seg.provisionalAt > 500 && span.length >= 6) {
     seg.provisionalAt = t; classifySamples(span, false);
   }

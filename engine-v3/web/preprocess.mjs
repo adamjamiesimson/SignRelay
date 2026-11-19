@@ -97,3 +97,20 @@ export function resampleTo15Hz(samples, t0 = samples[0]?.t, t1 = samples.at(-1)?
   }
   return out;
 }
+
+/**
+ * Live segmentation evidence: a visible hand whose wrist is in signing space (above roughly
+ * mid-torso: shoulder line + 1.3 x shoulder width). Without shoulders any visible hand counts.
+ * Hands resting low in view therefore do not hold a segment open.
+ */
+export function signingEvidence(f) {
+  const ls = 42 + 7, rs = 42 + 8; // pose 11, 12 in the POSE list
+  const haveSh = Number.isFinite(f[ls * 3 + 1]) && Number.isFinite(f[rs * 3 + 1]);
+  let limit = Infinity;
+  if (haveSh) {
+    const sw = Math.hypot(f[ls * 3] - f[rs * 3], f[ls * 3 + 1] - f[rs * 3 + 1]);
+    limit = (f[ls * 3 + 1] + f[rs * 3 + 1]) / 2 + 1.3 * sw;
+  }
+  for (const w of [0, 21]) if (Number.isFinite(f[w * 3 + 1]) && f[w * 3 + 1] < limit) return true;
+  return false;
+}

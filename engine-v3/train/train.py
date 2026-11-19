@@ -158,6 +158,7 @@ def main():
                 items.append(p); ys.append(y)
             if len(items) < 2: continue
             x, v, m = batchify(items); yt = torch.tensor(ys)
+            tl_ = int(m.sum(1).max().item()); x, v, m = x[:, :tl_], v[:, :tl_], m[:, :tl_]  # crop shared padding
             loss = F.cross_entropy(model(x, v, m), yt, weight=cw, label_smoothing=a.smooth)
             opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0); opt.step(); sched.step()
             tl += loss.item() * len(ys); n += len(ys)
