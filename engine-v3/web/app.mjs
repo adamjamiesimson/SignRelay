@@ -61,6 +61,16 @@ function addEvent(r, source, segment = null) {
 }
 
 // ------------------------------------------------------------------ video file (isolated sign)
+// Seek and wait for the frame; a no-op seek never fires "seeked", and a stalled decode must not hang the lab.
+function seekTo(v, t) {
+  if (Math.abs(v.currentTime - t) < 1e-6 && v.readyState >= 2) return Promise.resolve();
+  return new Promise(ok => {
+    let done = false; const finish = () => { if (!done) { done = true; clearTimeout(timer); v.removeEventListener("seeked", finish); ok(); } };
+    const timer = setTimeout(finish, 5000);
+    v.addEventListener("seeked", finish);
+    v.currentTime = t;
+  });
+}
 async function runFile(file) {
   const v = document.createElement("video");
   v.muted = true; v.playsInline = true; v.src = URL.createObjectURL(file);
@@ -73,8 +83,7 @@ async function runFile(file) {
   for (let k = 0; k < n; k++) {
     // ffmpeg's fps filter takes the source frame nearest to k/15 s; seeking a quarter source-frame late
     // lands inside that frame's display interval for 30 fps sources.
-    v.currentTime = Math.min(v.duration - 1e-3, k / FPS + 0.008);
-    await new Promise(ok => { v.onseeked = ok; });
+    await seekTo(v, Math.min(v.duration - 1e-3, k / FPS + 0.008));
     const bmp = await createImageBitmap(v, { resizeWidth: w, resizeHeight: h, resizeQuality: "high" });
     const r = await call({ type: "frame", image: bmp, width: w, height: h, ts: Math.round((k * 1000) / FPS) }, [bmp]);
     frames.push(r.frame); if (r.hands) handN++;
