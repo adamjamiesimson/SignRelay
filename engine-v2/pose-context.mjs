@@ -9,18 +9,19 @@ export class PoseContext {
     this.ready = false;
     this.failed = false;
     this.busy = false;
-    worker.onerror = () => this.fail();
-    worker.onmessageerror = () => this.fail();
+    worker.onerror = () => this.fail("The pose worker could not load");
+    worker.onmessageerror = () => this.fail("The pose worker returned an invalid message");
     worker.onmessage = ({ data }) => {
       if (data.type === "ready") { this.ready = true; return; }
-      if (data.type !== "pose" || data.timestamp !== this.requestedAt) { this.fail(); return; }
+      if (data.type !== "pose" || data.timestamp !== this.requestedAt) { this.fail(data.message ?? "The pose worker returned an unexpected result"); return; }
       this.completedAt = data.timestamp;
       this.points = data.points;
       this.duration = data.duration;
       this.busy = false;
     };
   }
-  fail() {
+  fail(message) {
+    this.error = message;
     this.failed = true;
     this.ready = false;
     this.busy = false;
@@ -28,7 +29,7 @@ export class PoseContext {
     this.worker.terminate();
   }
   offer(timestamp, snapshot, now = performance.now()) {
-    if (this.busy && now - this.requestTime > 1800) this.fail();
+    if (this.busy && now - this.requestTime > 1800) this.fail("Pose inference timed out");
     if (!this.ready || this.busy || timestamp - this.requestedAt < 220) return false;
     let image;
     try {
@@ -36,7 +37,7 @@ export class PoseContext {
       this.worker.postMessage({ image, timestamp }, [image]);
     } catch {
       image?.close();
-      this.fail();
+      this.fail("Could not send a frame to the pose worker");
       return false;
     }
     this.requestedAt = timestamp;

@@ -86,6 +86,7 @@ export async function tracker(mode, { handDelegate = "CPU", onDemandPose = false
       const finished = performance.now();
       const poseRequested = auxiliary?.offer(timestamp, () => canvas.transferToImageBitmap()) ?? false;
       return { frame, sample, pose: { requested: poseRequested, failed: auxiliary?.failed ?? false,
+        error: auxiliary?.error ?? null,
         used: frame.pose.length > 0, sourceMs: frame.pose.length > 0 ? auxiliary?.completedAt ?? lastPose : null,
         lastResultMs: auxiliary?.duration ?? null },
       ms: { copy: copied - start, hand: tracked - copied,

@@ -177,6 +177,7 @@ function renderMetrics(session) {
     sourceWidth: video.videoWidth, sourceHeight: video.videoHeight,
     timedFrames: session.timings.length, detectedHandFrames: session.detected, usableHandFrames: session.hands,
     startup: session.trace.startup, runtime: session.runtime, poseTrackingUnavailable: !!session.poseFailed,
+    poseError: session.poseError ?? null,
   }, null, 2));
 }
 
@@ -352,6 +353,7 @@ async function start(file, { forceCpu = false, requestedAt = performance.now(), 
       if (pending) dispatchTrackFrame(session, pending);
       if (current !== session) return;
       session.poseFailed = data.pose?.failed;
+      session.poseError = data.pose?.error;
       metrics(session, data.ms, data.hand, data.detected);
       if (data.result) show(data.result);
       if (data.result?.event) {
