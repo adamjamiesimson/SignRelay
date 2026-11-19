@@ -151,6 +151,9 @@ def calibrate(a):
                     util = corr - 2 * wrong - 2 * far
                     grid.append({**pol, "correct": float(corr), "wrong": float(wrong), "far": float(far), "utility": float(util)})
                     if far <= a.max_far and (best is None or util > best["utility"]): best = grid[-1]
+    json.dump(grid, open(a.out.replace(".json", "-grid.json"), "w"))
+    print("n known", int(kn.sum()), "n unknown-cal", len(cu), "far range", min(g["far"] for g in grid), max(g["far"] for g in grid))
+    if best is None: raise SystemExit("no operating point satisfies max_far")
     policy = {k: best[k] for k in ("temperature", "max_unknown", "min_top1", "min_margin", "min_proto")}
     policy.update(min_hand_frames=3, selection={"objective": "correct - 2*wrong - 2*unknown_accept", "max_far": a.max_far,
                   "fit_on": "validation signers (known) + calibration-only unknown signs (val+train clips)",
