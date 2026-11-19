@@ -6,7 +6,9 @@ This repository is an engineering foundation, not a claim of full sign-language 
 
 ## What works now
 
-- Forty sign-language workspaces have separate identities; RSL and Bangla have separate pretrained clip-recognition modes.
+The public language selector intentionally excludes 33 personal-only or preparing workspaces. Their historical registry entries remain in the source to preserve local user data and research compatibility; they are not advertised as supported translators.
+
+- Only seven language workspaces with built-in recognition are publicly selectable (ASL, BSL, ISL, LSE, PSL, RSL, Bangla); all remain experimental. RSL and Bangla use slow, single-sign clip modes.
 - Camera permission is requested only after language selection.
 - MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
 - A Web Worker maintains an ordered temporal buffer for landmark recognition.
@@ -96,7 +98,7 @@ Important modules:
 
 - `lib/vision-engine.ts`: model loading and per-frame holistic tracking
 - `workers/recognition.worker.ts`: temporal buffer, segmentation, automatic model routing and personal inference
-- `lib/model-adapters.ts`: 40-language registry and independent model contracts
+- `lib/model-adapters.ts`: seven-language public selector and a preserved 40-language legacy/research registry with independent model contracts
 - `lib/decoder.ts`: confidence gating and duplicate suppression
 - `components/translator-experience.tsx`: camera, transcript and speech experience
 - `lib/browser-storage.ts`: device-local settings and transcript sessions
@@ -248,5 +250,5 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 1. Create legally cleared, signer-independent ASL starter benchmarks.
 2. Train and export a compact temporal sequence model with a blank class.
 3. Add learned sign boundaries and continuous word error rate evaluation.
-4. Co-design shared adapters with native signers and language experts, prioritising the existing 40 language communities by data readiness and contributor interest.
+4. Co-design shared adapters with native signers and language experts; add languages to public selection only after a genuine built-in recognizer is installed and validated.
 5. Add language-specific gloss-to-text decoding without hiding uncertainty.
