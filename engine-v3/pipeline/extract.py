@@ -47,12 +47,12 @@ def out_size(w, h):
     return ow, oh
 
 
-def decode(path, ow, oh, fast=False, start=None, dur=None):
+def decode(path, ow, oh, fast=False, start=None, dur=None, pre=None):
     # fast=True skips the H.264 deblocking filter (training clips only; ~25% faster on
     # 120 fps 6 MP sources). Validation/test use full-quality decoding like a browser.
     win = (["-ss", f"{start:.3f}"] if start is not None else []) + (["-t", f"{dur:.3f}"] if dur is not None else [])
     cmd = ["ffmpeg", "-v", "error", "-threads", "1"] + (["-skip_loop_filter", "all"] if fast else []) + win + ["-i", path, "-vf",
-           f"fps={FPS},scale={ow}:{oh}:flags=area", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
+           (f"{pre}," if pre else "") + f"fps={FPS},scale={ow}:{oh}:flags=area", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
     raw = subprocess.run(cmd, capture_output=True, check=True).stdout
     return np.frombuffer(raw, np.uint8).reshape(-1, oh, ow, 3)
 
@@ -124,7 +124,7 @@ def fetch_zip_member(member, dest, url=ASLC_URL):
 
 
 def key(row):
-    return f"{row['split']}/{row['sign']}/{row['file'][:-4]}"
+    return f"{row['split']}/{row['sign']}/{row['file'][:-4]}" + (f"@{row['condition']}" if row.get("condition") else "")
 
 
 def worker(wid, rows, outdir, status_path, q):
@@ -149,7 +149,7 @@ def worker(wid, rows, outdir, status_path, q):
             if nxt < len(rows): futs.append(pool.submit(fetch, rows[nxt])); nxt += 1
             rec = {"key": key(row), "split": row["split"], "sign": row["sign"], "signer": row["signer"],
                    "file": row["file"], "extractor": EXTRACTOR_VERSION}
-            for extra in ("aslc_gloss", "role", "window_start", "window_dur", "phrase"):
+            for extra in ("aslc_gloss", "role", "window_start", "window_dur", "phrase", "condition", "vf_pre"):
                 if extra in row: rec[extra] = row[extra]
             t0 = time.time()
             try:
@@ -157,9 +157,11 @@ def worker(wid, rows, outdir, status_path, q):
                 data = open(path, "rb").read()
                 rec["sha256"] = hashlib.sha256(data).hexdigest(); rec["bytes"] = len(data)
                 meta = probe(path); rec.update(meta)
+                if row.get("geometry") == "webcam":  # perturbation output is landscape 4:3 of the source height
+                    meta["width"], meta["height"] = meta["height"], int(round(meta["height"] * 0.75))
                 ow, oh = out_size(meta["width"], meta["height"]); rec["analysis_size"] = [ow, oh]
                 fast = row["split"] in ("train", "fs_train"); rec["fast_decode"] = fast
-                frames = decode(path, ow, oh, fast, row.get("window_start"), row.get("window_dur"))
+                frames = decode(path, ow, oh, fast, row.get("window_start"), row.get("window_dur"), row.get("vf_pre"))
                 if len(frames) == 0: raise ValueError("no decodable frames")
                 res = tr.run(frames)
                 hp = np.isfinite(res["hands"][:, :, 0, 0].astype(np.float32)).any(1)

@@ -17,7 +17,7 @@ await page.click("#startcam");
 await page.waitForFunction(() => window.__t0 !== null, null, { timeout: 60000 });
 const wallStart = Date.now();
 await page.waitForTimeout(truth.duration * 1000 + 1500);
-const res = await page.evaluate(() => ({ events: window.__v3.state.events, stats: window.__v3.state.stats, diag: document.querySelector("#diag").textContent }));
+const res = await page.evaluate(() => ({ camera_t0: window.__t0, events: window.__v3.state.events, stats: window.__v3.state.stats, diag: document.querySelector("#diag").textContent }));
 await page.click("#stopcam");
 await writeFile(out, JSON.stringify({ reel, truth, wallMs: Date.now() - wallStart, ...res }, null, 1));
 console.log(res.diag); console.log(res.events.map(e => `${e.t.slice(11, 19)} ${e.status} ${e.label ?? e.best}`).join("\n"));
