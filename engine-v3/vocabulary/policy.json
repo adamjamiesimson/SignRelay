@@ -173,5 +173,12 @@
   "who",
   "why",
   "yes"
- ]
+ ],
+ "validation_merges": {},
+ "validation_merge_decision": {
+  "rule": "merge a candidate pair only if both directions are confused >= 30% on validation signers",
+  "evidence": "ledger/alias-check-val.json (model A-noface-fs, 9 validation signers)",
+  "result": "no pair met the rule; all 14 candidate groups kept as distinct classes (PopSign prompted distinct variants)",
+  "frozen_before_test": true
+ }
 }
