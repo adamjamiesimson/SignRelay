@@ -47,7 +47,7 @@ try {
   }
   const snapshot = () => chrome.evaluate(`Object.fromEntries(['status','version','match','reason','events','fps','latency','hands','drops','diagnostics']
     .map(id => [id, document.getElementById(id).textContent]))`);
-  await until("Boolean(document.getElementById('file'))");
+  await until("typeof window.signRelayCameraDiagnostics === 'function'");
   if (staticPreview || remotePreview) {
     assert(await chrome.evaluate("isSecureContext && !document.getElementById('policy-control').hidden"));
     await chrome.evaluate("document.getElementById('policy').value = 'fresh'");
