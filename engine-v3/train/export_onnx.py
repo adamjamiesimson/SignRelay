@@ -42,9 +42,9 @@ def main():
     sess = ort.InferenceSession(path, so, providers=["CPUExecutionProvider"])
     # verify on real clips
     z = np.load(f"{a.cache}/val.npz"); meta = json.load(open(f"{a.cache}/val.json"))
-    offs = z["offsets"]; errs, agree, n = [], 0, 0
+    offs = z["offsets"]; pts = z["pts"]; errs, agree, n = [], 0, 0
     for i in range(0, min(len(meta), 400)):
-        p = prepare_clip(z["pts"][offs[i]:offs[i + 1]].astype(np.float32))
+        p = prepare_clip(pts[offs[i]:offs[i + 1]].astype(np.float32))
         if p is None: continue
         xi, vi, fi = (t[None] for t in p)
         with torch.no_grad(): tl, te = w(torch.from_numpy(xi), torch.from_numpy(vi), torch.from_numpy(fi))

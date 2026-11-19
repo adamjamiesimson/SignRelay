@@ -132,8 +132,8 @@ def main():
         return UNK if y == "unknown_train" else (y if isinstance(y, int) else None)
     train = [(c, lab(y)) for c, y in zip(tr_clips, tr_y) if lab(y) is not None and sign_span(c) is not None]
     if a.fs_negatives and os.path.exists(f"{a.cache}/fs_train.npz"):
-        fz = np.load(f"{a.cache}/fs_train.npz"); fo = fz["offsets"]
-        fs = [fz["pts"][fo[i]:fo[i + 1]] for i in range(len(fo) - 1)]
+        fz = np.load(f"{a.cache}/fs_train.npz"); fo = fz["offsets"]; fp = fz["pts"]  # read the array once
+        fs = [fp[fo[i]:fo[i + 1]] for i in range(len(fo) - 1)]
         if a.no_face:
             for c in fs: c[:, 55:] = np.nan
         train += [(c, UNK) for c in fs if sign_span(c) is not None]

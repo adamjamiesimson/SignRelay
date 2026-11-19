@@ -4,9 +4,9 @@ import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "train"))
 from v3model import prepare_clip, resample_to_15hz
 cache, out = sys.argv[1], sys.argv[2]
-z = np.load(f"{cache}/train.npz"); o = z["offsets"]; rng = np.random.default_rng(1); cases = []
+z = np.load(f"{cache}/train.npz"); o = z["offsets"]; P = z["pts"]; rng = np.random.default_rng(1); cases = []
 for i in range(0, min(len(o) - 1, 400), 13):
-    c = z["pts"][o[i]:o[i + 1]].astype(np.float32)
+    c = P[o[i]:o[i + 1]].astype(np.float32)
     p = prepare_clip(c)
     ts = np.cumsum(rng.uniform(40, 160, len(c))); ts -= ts[0]
     r = resample_to_15hz(ts, c)

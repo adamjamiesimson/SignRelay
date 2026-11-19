@@ -41,10 +41,10 @@ def sign_mapping(cls_json):
 @torch.no_grad()
 def infer(models, cache, split, no_face=False, bs=256):
     """Returns meta rows, logits [N, C+1] (NaN rows for no-sign clips), embeddings [N, D], prepared mask."""
-    z = np.load(f"{cache}/{split}.npz"); meta = json.load(open(f"{cache}/{split}.json")); offs = z["offsets"]
+    z = np.load(f"{cache}/{split}.npz"); meta = json.load(open(f"{cache}/{split}.json")); offs = z["offsets"]; pts = z["pts"]
     preps = []
     for i in range(len(meta)):
-        c = z["pts"][offs[i]:offs[i + 1]].astype(np.float32)
+        c = pts[offs[i]:offs[i + 1]].astype(np.float32)
         if no_face: c[:, 55:] = np.nan
         preps.append(prepare_clip(c))
     ok = np.array([p is not None for p in preps])
@@ -150,14 +150,14 @@ def calibrate(a):
                 sk, ik = decide(Pk, E[kn], pol, C, protos); su, _ = decide(Pu, cuE, pol, C, protos)
                 acc_k = sk == "accepted"; corr = (acc_k & (ik == yk)).mean(); wrong = (acc_k & (ik != yk)).mean()
                 far = (su == "accepted").mean()
-                util = corr - 2 * wrong - 2 * far
+                util = corr - wrong  # maximise correct minus wrong accepts subject to the FAR cap
                 grid.append({**pol, "correct": float(corr), "wrong": float(wrong), "far": float(far), "utility": float(util)})
                 if far <= a.max_far and (best is None or util > best["utility"]): best = grid[-1]
     json.dump(grid, open(a.out.replace(".json", "-grid.json"), "w"))
     print("n known", int(kn.sum()), "n unknown-cal", len(cu), "far range", min(g["far"] for g in grid), max(g["far"] for g in grid))
     if best is None: raise SystemExit("no operating point satisfies max_far")
     policy = {k: best[k] for k in ("temperature", "max_unknown", "min_top1", "min_margin", "min_proto")}
-    policy.update(min_hand_frames=3, selection={"objective": "correct - 2*wrong - 2*unknown_accept", "max_far": a.max_far,
+    policy.update(min_hand_frames=3, selection={"objective": "max(correct - wrong) s.t. unknown accept rate <= max_far", "max_far": a.max_far,
                   "fit_on": "validation signers (known) + calibration-only unknown signs (val+train clips)",
                   "val_point": {k: best[k] for k in ("correct", "wrong", "far")}, "n_known": int(kn.sum()), "n_unknown_cal": int(len(cu))})
     json.dump(policy, open(a.out, "w"), indent=1)
