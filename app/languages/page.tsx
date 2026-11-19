@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LANGUAGE_LIST } from "@/lib/model-adapters";
+import { PUBLIC_LANGUAGE_LIST } from "@/lib/model-adapters";
 import { ASL_ONLY } from "@/lib/build-profile";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 
@@ -11,9 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default function LanguagesPage() {
-  const automatic = LANGUAGE_LIST.filter((language) => language.status === "experimental");
-  const preparing = LANGUAGE_LIST.filter((language) => language.status === "preparing");
-  const personal = LANGUAGE_LIST.filter((language) => language.status === "personal");
+  const automatic = PUBLIC_LANGUAGE_LIST;
 
   return (
     <div className="app-shell figma-app">
@@ -23,13 +21,11 @@ export default function LanguagesPage() {
           <div className="figma-section-inner">
             <span className="figma-eyebrow">Language support</span>
             <h1>Supported sign languages</h1>
-            <p>Seven language workspaces currently include automatic research recognition. The remaining language models are in development, with private signer-taught recognition available in those workspaces in the meantime.</p>
+            <p>Only the seven languages with built-in automatic recognition are listed. Each is an experimental isolated-sign recognizer, not a validated full-conversation translator.</p>
             {ASL_ONLY && <p role="note"><strong>ASL demo build:</strong> only the ASL workspace is included. The other languages below are listed for information; their models are not part of this build.</p>}
             <div className="figma-language-summary" aria-label="Language support summary">
               <div><strong>{automatic.length}</strong><span>Automatic</span></div>
-              <div><strong>{personal.length}</strong><span>In development</span></div>
-              <div><strong>{preparing.length}</strong><span>Preparing</span></div>
-              <div><strong>{LANGUAGE_LIST.length}</strong><span>Total workspaces</span></div>
+              <div><strong>7</strong><span>Available research workspaces</span></div>
             </div>
           </div>
         </section>
@@ -58,53 +54,11 @@ export default function LanguagesPage() {
           </div>
         </section>
 
-        {preparing.length > 0 && (
-          <section className="figma-language-page-section">
-            <div className="figma-section-inner">
-              <div className="figma-language-page-heading">
-                <div><i className="preparing" /><h2>Models in preparation</h2><span>({preparing.length})</span></div>
-                <p>The workspace is usable for personal signer-taught signs while the shared automatic model is still being prepared.</p>
-              </div>
-              <div className="figma-language-page-grid">
-                {preparing.map((language) => (
-                  <article className="figma-language-page-card preparing" key={language.id}>
-                    <div className="figma-language-page-card-head">
-                      <div><strong>{language.shortName}</strong><span>{language.language}</span></div>
-                      <em title="Automatic recognition is in development; personal signs require training">In progress</em>
-                    </div>
-                    <p>{language.summary}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        <section className="figma-language-page-section">
-          <div className="figma-section-inner">
-            <div className="figma-language-page-heading">
-              <div><i className="personal" /><h2>Models in development</h2><span>({personal.length})</span></div>
-              <p>These shared automatic models are still in development. Until they are ready, the workspaces can use private signer-taught recognition on the device.</p>
-            </div>
-            <div className="figma-language-page-grid personal-grid">
-              {personal.map((language) => (
-                <article className="figma-language-page-card personal" key={language.id}>
-                  <div className="figma-language-page-card-head">
-                    <div><strong>{language.shortName}</strong><span>{language.language}</span></div>
-                    <em title="Automatic recognition is in development; personal signs require training">In progress</em>
-                  </div>
-                  <p>{language.summary}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section className="figma-language-page-cta">
           <div className="figma-section-inner">
             <div className="figma-final-card">
-              <h2>Choose a language and start signing.</h2>
-              <p>Open the translator, select a workspace, and keep your camera processing in the browser.</p>
+              <h2>Choose a supported language and try isolated-sign recognition.</h2>
+              <p>Select one of seven research recognition modes. Accuracy varies; continuous sentence translation is not supported yet.</p>
               <div><Link className="figma-primary" href="/#choose-language">Start translating</Link></div>
             </div>
           </div>
