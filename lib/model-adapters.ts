@@ -327,6 +327,18 @@ export const MODEL_ADAPTERS: Record<LanguageId, ModelAdapter> = {
 
 export const LANGUAGE_LIST = LANGUAGE_IDS.map((id) => MODEL_ADAPTERS[id]);
 
+/**
+ * Publicly selectable sign languages. These seven have built-in recognition
+ * without requiring the user to teach a personal template first.
+ * All seven remain experimental: this is not a claim of reliable live
+ * translation or full-sentence understanding.
+ *
+ * Keep LANGUAGE_IDS and MODEL_ADAPTERS intact for legacy local data,
+ * model research, and backwards compatibility.
+ */
+export const PUBLIC_LANGUAGE_IDS = ["asl", "bsl", "isl", "lse", "psl", "rsl", "bdsl"] as const satisfies readonly LanguageId[];
+export const PUBLIC_LANGUAGE_LIST = PUBLIC_LANGUAGE_IDS.map((id) => MODEL_ADAPTERS[id]);
+
 export function isLanguageId(value: unknown): value is LanguageId {
   return typeof value === "string" && (LANGUAGE_IDS as readonly string[]).includes(value);
 }
