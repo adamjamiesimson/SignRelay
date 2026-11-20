@@ -1,0 +1,20 @@
+{
+ "freeze_id": "v3.1",
+ "frozen_before_holdout2": true,
+ "model_onnx_sha256": "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090",
+ "meta_json_sha256": "50d59fdada18cc5c43ac61585f3af9c81d828402e2c2ba27c5ebeae86489ad22",
+ "policy_balanced_sha256": "feca858e67e0fa5bd89ee3be7ce80bd599a7c9ab0ac8d7f952c52648519e460a",
+ "policy_strict_sha256": "751fd950bde3ab3166653bb1dd4884a155fd831bb92bc4a7a16a6691c5fb48e0",
+ "prototypes_sha256": "0482a8e2d9d9baa38bb9d68eed0b2a9fd49380c37803615fa26bfb388195d589",
+ "checkpoints_sha256": {
+  "v31-s0/best.pt": "f7a6845fe3171346fd8b047fbc327c230cf41ebd45b98185100370e5d9248682",
+  "v31-bal/best.pt": "dfc66ef2fc73b8895dc833028ed1143f60ed6cd285c354e78f94e8029b281a95"
+ },
+ "classes": 523,
+ "vocabulary_unchanged_from_v3.0": true,
+ "default_policy": "balanced",
+ "uses_face": false,
+ "training_data": "PopSign v2.1 train tranches A+B+D (19,587 clips) + 600 FSBoard train windows as UNKNOWN; seeds: standard + class-balanced(0.5)",
+ "selection_data": "PopSign v2.1 val (9 signers) + calibration-only unknown signs; development camera reels (validation signers)",
+ "holdout2": "vocabulary/holdout-2.json - not yet evaluated"
+}
