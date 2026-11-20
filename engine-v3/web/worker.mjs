@@ -27,10 +27,11 @@ async function init({ delegate = "CPU", threads = 0, role: r = "all", poseDelega
   role = r;
   const t0 = performance.now(), startup = {};
   meta = await (await fetch(new URL("meta.json", base))).json();
-  const files = await FilesetResolver.forVisionTasks(new URL("vision/wasm", base).href);
+  const files = role === "classify" ? null : await FilesetResolver.forVisionTasks(new URL("vision/wasm", base).href);
   const task = async f => new Uint8Array(await fetchVerified(`vision/models/${f}`, meta.assets[f]));
   const useFace = meta.uses_face !== false; // V3 models trained without face points never run the Face Landmarker
-  const wantHand = role !== "pose", wantPose = role !== "hand", wantModel = role !== "pose";
+  // "classify": ONNX classifier only, so model inference never blocks the tracking worker
+  const wantHand = role === "all" || role === "hand", wantPose = role === "all" || role === "pose", wantModel = role !== "pose";
   const [hb, pb, fb, mb] = await Promise.all([wantHand ? task("hand_landmarker.task") : null, wantPose ? task("pose_landmarker_lite.task") : null,
     useFace && role === "all" ? task("face_landmarker.task") : null, wantModel ? fetchVerified("model.onnx", meta.model_sha256) : null]);
   startup.fetchMs = performance.now() - t0;
@@ -42,7 +43,24 @@ async function init({ delegate = "CPU", threads = 0, role: r = "all", poseDelega
       fb ? FaceLandmarker.createFromOptions(files, { ...opts(fb), numFaces: 1 }) : null,
     ]);
   };
-  await build();
+  if (files && delegate === "AUTO") {
+    // Pick the faster MediaPipe delegate on this device: time warm hand+pose inference on a neutral frame.
+    const probe = new OffscreenCanvas(640, 480); const pc = probe.getContext("2d"); pc.fillStyle = "#808080"; pc.fillRect(0, 0, 640, 480);
+    const timing = {};
+    for (const d of ["GPU", "CPU"]) {
+      try {
+        delegate = d; await build();
+        for (let i = 0; i < 3; i++) { hand?.detectForVideo(probe, 1 + i); pose?.detectForVideo(probe, 1 + i); }
+        const t = performance.now();
+        for (let i = 3; i < 11; i++) { hand?.detectForVideo(probe, 1 + i); pose?.detectForVideo(probe, 1 + i); }
+        timing[d] = (performance.now() - t) / 8;
+        hand?.close(); pose?.close(); face?.close();
+      } catch (e) { timing[d] = Infinity; timing[d + "_error"] = String(e?.message ?? e); }
+    }
+    delegate = timing.GPU < timing.CPU ? "GPU" : "CPU";
+    startup.delegateProbeMs = timing;
+    await build();
+  } else if (files) await build(); else build = async () => {};
   startup.visionMs = performance.now() - t0 - startup.fetchMs;
   if (mb) {
     ort.env.wasm.wasmPaths = new URL("ort/", base).href;

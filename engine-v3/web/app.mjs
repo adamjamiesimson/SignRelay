@@ -4,8 +4,9 @@ import { analysisSize, resampleTo15Hz, hasHand, signingEvidence, FPS, CAMERA_MAX
 const $ = s => document.querySelector(s);
 const DEBUG = new URLSearchParams(location.search).has("debug");
 const Q = new URLSearchParams(location.search);
-// Camera mode tracks hands and pose in two workers in parallel (?split=0 restores the single-worker path).
-const SPLIT = Q.get("split") !== "0";
+// Optional (?split=1): track hands and pose in two parallel workers. Off by default: on the 4-vCPU
+// test machine it did not raise analysed fps (ledger: A/B dev reels), because the hand tracker dominates.
+const SPLIT = Q.get("split") === "1";
 function spawn() {
   const w = new Worker(new URL("./worker.js", import.meta.url)); let seq = 0; const pending = new Map();
   w.onmessage = ({ data }) => {
@@ -18,6 +19,9 @@ function spawn() {
 }
 const call = spawn();
 const poseCall = SPLIT ? spawn() : null;
+// Dedicated classifier worker (?clf=0 disables): keeps ONNX inference off the tracking worker.
+const CLF = Q.get("clf") !== "0";
+const clfCall = CLF ? spawn() : call;
 
 const state = { ready: null, classes: [], events: [], trials: [], running: false, stats: null };
 const log = (...a) => { $("#status").textContent = a.join(" "); };
@@ -27,13 +31,16 @@ async function start() {
   log("Loading models…");
   const meta = await (await fetch("meta.json")).json();
   state.meta = meta; state.classes = meta.classes;
-  const delegate = new URLSearchParams(location.search).get("delegate") === "gpu" ? "GPU" : "CPU";
+  // MediaPipe delegate: "auto" (default) times CPU and GPU on this device and keeps the faster one.
+  const delegate = { gpu: "GPU", cpu: "CPU" }[Q.get("delegate")] ?? "AUTO";
   const r = await call({ type: "init", delegate });
-  if (poseCall) state.poseReady = await poseCall({ type: "init", delegate, role: "pose" });
+  if (poseCall) state.poseReady = await poseCall({ type: "init", delegate: r.delegate, role: "pose" });
+  if (CLF) await clfCall({ type: "init", role: "classify" });
   state.ready = r;
   $("#nclasses").textContent = meta.classes.length;
   $("#version").textContent = `${meta.version} · model ${meta.model_sha256.slice(0, 12)} · commit ${meta.commit.slice(0, 10)} · ${r.delegate} · ${r.threads} ORT threads`;
-  $("#startup").textContent = `startup ${Math.round(r.startup.totalMs)} ms (fetch ${Math.round(r.startup.fetchMs)}, vision ${Math.round(r.startup.visionMs)})`;
+  $("#startup").textContent = `startup ${Math.round(r.startup.totalMs)} ms (fetch ${Math.round(r.startup.fetchMs)}, vision ${Math.round(r.startup.visionMs)})` +
+    (r.startup.delegateProbeMs ? ` · delegate probe ms/frame CPU ${r.startup.delegateProbeMs.CPU?.toFixed(0)} GPU ${Number.isFinite(r.startup.delegateProbeMs.GPU) ? r.startup.delegateProbeMs.GPU.toFixed(0) : "unavailable"} → ${r.delegate}` : "");
   const dl = $("#vocab"); dl.innerHTML = "";
   for (const c of meta.classes) { const o = document.createElement("option"); o.value = c; dl.appendChild(o); }
   $("#vocablist").textContent = meta.classes.join(" · ");
@@ -114,7 +121,7 @@ const GAP_MS = 500, MAX_MS = 4000, MIN_HAND = 3, MARGIN_MS = 600;
 
 async function classifySamples(samples, final) {
   const frames = resampleTo15Hz(samples);
-  const r = (await call({ type: "classify", frames: frames.map(f => f.buffer) }, frames.map(f => f.buffer))).result;
+  const r = (await clfCall({ type: "classify", frames: frames.map(f => f.buffer) }, frames.map(f => f.buffer))).result;
   if (final) { showResult(r); addEvent(r, "camera", [samples[0].t, samples.at(-1).t]); } else showResult(r, "#proposal");
   if (!final) $("#proposal").textContent = "(provisional) " + $("#proposal").textContent;
   return r;
