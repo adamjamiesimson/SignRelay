@@ -150,6 +150,8 @@ async function startCamera() {
       stats.done++; if (r.hands) stats.hands++;
       stats.recent.push(performance.now()); while (stats.recent[0] < performance.now() - 3000) stats.recent.shift();
       stats.ms.push(r.ms); if (stats.ms.length > 60) stats.ms.shift();
+      if (DEBUG) (window.__camSamples ??= []).push({ t, sent: lastSent, done: performance.now(), hands: r.hands, ms: r.ms,
+        f: Array.from(r.frame, x => (Number.isFinite(x) ? x : null)) });
       onSample(t, r.frame);
     } finally { busy = false; }
   };
