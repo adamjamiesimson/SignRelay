@@ -129,8 +129,8 @@ def main(model_dir, out, *replays):
     summ["unknown_false_accepts_live"] = sum(any(st == "accepted" for st in r["S5_live"]["statuses"]) for r in unk)
     summ["first_loss_stage"] = loss
     summ["camera_fps_median"] = float(np.median([r["camera_fps_in_interval"] for r in rows]))
-    json.dump({"summary": summ, "rows": rows}, open(out, "w"), indent=1)
-    print(json.dumps(summ, indent=1))
+    print(json.dumps(summ, indent=1, default=float), flush=True)
+    json.dump({"summary": summ, "rows": rows}, open(out, "w"), indent=1, default=lambda o: o.item() if hasattr(o, "item") else str(o))
 
 
 if __name__ == "__main__":
