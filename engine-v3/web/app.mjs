@@ -7,6 +7,8 @@ const Q = new URLSearchParams(location.search);
 // Optional (?split=1): track hands and pose in two parallel workers. Off by default: on the 4-vCPU
 // test machine it did not raise analysed fps (ledger: A/B dev reels), because the hand tracker dominates.
 const SPLIT = Q.get("split") === "1";
+// ?pose=2: run the pose landmarker on every 2nd analysed frame (opt-in until the A/B decides).
+const POSE_EVERY = Math.max(1, Number(Q.get("pose") ?? 1) | 0);
 function spawn() {
   const w = new Worker(new URL("./worker.js", import.meta.url)); let seq = 0; const pending = new Map();
   w.onmessage = ({ data }) => {
@@ -150,7 +152,7 @@ async function startCamera() {
   await Promise.all([call({ type: "reset" }), poseCall?.({ type: "reset" })]);
   state.running = true; seg.samples = []; seg.active = false;
   const stats = state.stats = { sent: 0, done: 0, skipped: 0, hands: 0, t0: performance.now(), ms: [], recent: [] };
-  let busy = false, lastSent = -1e9;
+  let busy = false, lastSent = -1e9, lastPose = null;
   const tick = async () => {
     if (!state.running) return;
     v.requestVideoFrameCallback(tick);
@@ -169,9 +171,15 @@ async function startCamera() {
         ]);
         for (let i = 42 * 3; i < 55 * 3; i++) rh.frame[i] = rp.frame[i]; // pose points 42..54 from the pose worker
         r = { ...rh, ms: { hand: rh.ms.hand, pose: rp.ms.pose, face: 0 } };
+      } else if (POSE_EVERY > 1 && stats.sent % POSE_EVERY !== 0 && lastPose) {
+        // reduced pose cadence: track hands only and carry the previous pose forward
+        // (validation simulation: no measurable top-1 cost at 12 fps; ledger)
+        r = await call({ type: "frame", parts: "hand", image: bmp, width: w, height: h, ts: Math.round(t) }, [bmp]);
+        for (let i = 42 * 3; i < 55 * 3; i++) r.frame[i] = lastPose[i - 42 * 3];
       } else {
         r = await call({ type: "frame", image: bmp, width: w, height: h, ts: Math.round(t) }, [bmp]);
       }
+      if (POSE_EVERY > 1) lastPose = r.frame.slice(42 * 3, 55 * 3);
       stats.done++; if (r.hands) stats.hands++;
       stats.recent.push(performance.now()); while (stats.recent[0] < performance.now() - 3000) stats.recent.shift();
       stats.ms.push(r.ms); if (stats.ms.length > 60) stats.ms.shift();
