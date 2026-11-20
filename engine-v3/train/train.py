@@ -111,6 +111,8 @@ def main():
     ap.add_argument("--threads", type=int, default=4); ap.add_argument("--late-drop-epoch", type=int, default=0)
     ap.add_argument("--policy", default=None)
     ap.add_argument("--fs-negatives", action="store_true", help="add FSBoard fingerspelling windows as UNKNOWN")
+    ap.add_argument("--balance", type=float, default=0.0,
+                    help="class-balanced loss: weight_c = (median_count / count_c) ** balance (0 = off, 0.5 = inverse sqrt)")
     a = ap.parse_args()
     torch.set_num_threads(a.threads); torch.manual_seed(a.seed); rng = np.random.default_rng(a.seed)
     os.makedirs(a.out, exist_ok=True)
@@ -148,6 +150,12 @@ def main():
     steps_per_epoch = math.ceil(len(train) / a.bs); total = steps_per_epoch * a.epochs; warm = steps_per_epoch * 2
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1, (s + 1) / warm) * 0.5 * (1 + math.cos(math.pi * min(1, s / total))))
     cw = torch.ones(C + 1); cw[UNK] = a.unknown_weight
+    if a.balance > 0:
+        cnt = np.bincount([y for _, y in train if y != UNK], minlength=C).astype(np.float64)
+        med = np.median(cnt[cnt > 0])
+        w = np.where(cnt > 0, (med / np.maximum(cnt, 1)) ** a.balance, 1.0)
+        cw[:C] = torch.tensor(w, dtype=torch.float32)
+        print("class-balanced weights: min %.2f max %.2f" % (w.min(), w.max()), flush=True)
     start, best = 0, -1
     if os.path.exists(f"{a.out}/ckpt.pt"):
         ck = torch.load(f"{a.out}/ckpt.pt", weights_only=False)
