@@ -34,7 +34,7 @@ def main(lmdir, outdir, splits=("train", "val", "test")):
         for r in rows:
             if r["status"] != "ok":
                 excluded.append({"key": r["key"], "reason": r.get("reason", "error")}); continue
-            ident = (r["sha256"], r.get("condition"))  # perturbation variants share a source file by design
+            ident = (r["sha256"], r.get("condition"), r["split"] if r.get("condition") else None)  # perturbation/diagnostic variants share a source file by design
             if ident in seen_sha:
                 excluded.append({"key": r["key"], "reason": f"duplicate of {seen_sha[ident]}"}); continue
             seen_sha[ident] = r["key"]

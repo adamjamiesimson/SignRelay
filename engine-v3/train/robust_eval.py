@@ -5,7 +5,8 @@ import evaluate as ev
 runs, cache, policy_path, protos_path, out = sys.argv[1:3] + sys.argv[3:6] if False else (sys.argv[1].split(","), sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
 models = [ev.load_model(r)[0] for r in runs]; cls = json.load(open(f"{runs[0]}/classes.json")); C = len(cls["classes"])
 mp = ev.sign_mapping(cls); pol = json.load(open(policy_path)); protos = np.load(protos_path)
-meta, L, E, ok = ev.infer(models, cache, "robust", no_face=True)
+split = sys.argv[6] if len(sys.argv) > 6 else "robust"
+meta, L, E, ok = ev.infer(models, cache, split, no_face=True)
 y, role = ev.labelled(meta, mp, C)
 P = np.zeros_like(L); P[ok] = ev.softmax_T(L[ok], pol["temperature"])
 st, i1 = ev.decide(P, E, pol, C, protos); st[~ok] = "no-sign"

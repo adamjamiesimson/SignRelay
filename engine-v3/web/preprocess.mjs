@@ -8,13 +8,17 @@ export const TMAX = 48;
 export const PAD = 2;
 export const FPS = 15;
 export const LONG_SIDE = 480;
+// Camera mode analyses at the camera's native resolution (capped): the 480 px rule exists to match
+// 6-8 MP portrait phone sources; downscaling a 640x480 webcam further loses small/dim hands
+// (ledger: robustness 960 px diagnostic).
+export const CAMERA_MAX_LONG_SIDE = 960;
 export const POSE = [0, 2, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 export const FACE = [0, 17, 1, 152, 10, 61, 291, 185, 409, 40, 270, 39, 269, 37, 267, 146, 375, 91, 321, 181, 405, 84, 314,
   33, 263, 133, 362, 70, 300, 105, 334];
 
 /** Analysis canvas size: long side 480 px, even dimensions (extract.py:out_size). */
-export function analysisSize(w, h) {
-  const s = LONG_SIDE / Math.max(w, h);
+export function analysisSize(w, h, longSide = LONG_SIDE) {
+  const s = longSide / Math.max(w, h);
   return [Math.round((w * s) / 2) * 2, Math.round((h * s) / 2) * 2];
 }
 

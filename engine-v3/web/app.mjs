@@ -1,5 +1,5 @@
 // Engine V3 experimental lab (main thread). Camera frames and files never leave the tab.
-import { analysisSize, resampleTo15Hz, hasHand, signingEvidence, FPS } from "./preprocess.mjs";
+import { analysisSize, resampleTo15Hz, hasHand, signingEvidence, FPS, CAMERA_MAX_LONG_SIDE } from "./preprocess.mjs";
 
 const $ = s => document.querySelector(s);
 const DEBUG = new URLSearchParams(location.search).has("debug");
@@ -144,7 +144,7 @@ async function startCamera() {
     if (busy || t - lastSent < 1000 / FPS - 4) { stats.skipped++; return; }
     busy = true; lastSent = t; stats.sent++;
     try {
-      const [w, h] = analysisSize(v.videoWidth, v.videoHeight);
+      const [w, h] = analysisSize(v.videoWidth, v.videoHeight, Math.min(CAMERA_MAX_LONG_SIDE, Math.max(v.videoWidth, v.videoHeight)));
       const bmp = await createImageBitmap(v, { resizeWidth: w, resizeHeight: h, resizeQuality: "high" });
       const r = await call({ type: "frame", image: bmp, width: w, height: h, ts: Math.round(t) }, [bmp]);
       stats.done++; if (r.hands) stats.hands++;
