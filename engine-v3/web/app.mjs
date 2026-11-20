@@ -7,8 +7,9 @@ const Q = new URLSearchParams(location.search);
 // Optional (?split=1): track hands and pose in two parallel workers. Off by default: on the 4-vCPU
 // test machine it did not raise analysed fps (ledger: A/B dev reels), because the hand tracker dominates.
 const SPLIT = Q.get("split") === "1";
-// ?pose=2: run the pose landmarker on every 2nd analysed frame (opt-in until the A/B decides).
-const POSE_EVERY = Math.max(1, Number(Q.get("pose") ?? 1) | 0);
+// Pose landmarker on every 2nd analysed camera frame (default; ?pose=1 for every frame). A/B on 60 dev
+// signs: 29 vs 28 correct, same wrong count, ~12.0 vs ~10.3 analysed fps; validation simulation: no top-1 cost.
+const POSE_EVERY = Math.max(1, Number(Q.get("pose") ?? 2) | 0);
 function spawn() {
   const w = new Worker(new URL("./worker.js", import.meta.url)); let seq = 0; const pending = new Map();
   w.onmessage = ({ data }) => {
