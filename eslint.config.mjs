@@ -19,6 +19,9 @@ const eslintConfig = defineConfig([
     "work/**",
     "outputs/**",
     "next-env.d.ts",
+    // Engine V3 lab build output (bundled MediaPipe / ONNX Runtime) and local test tooling links
+    "engine-v3/web/dist/**",
+    "engine-v3/parity/node_modules/**",
     "public/wasm/**",
     // Copied from the locked @mediapipe/tasks-vision package at build time.
     "public/vision/**",

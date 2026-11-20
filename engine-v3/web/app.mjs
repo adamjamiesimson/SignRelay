@@ -10,7 +10,7 @@ const call = (msg, transfer = []) => new Promise((resolve, reject) => {
 });
 worker.onmessage = ({ data }) => {
   const p = pending.get(data.id); if (!p) return; pending.delete(data.id);
-  data.type === "error" ? p.reject(new Error(data.message)) : p.resolve(data);
+  if (data.type === "error") p.reject(new Error(data.message)); else p.resolve(data);
 };
 
 const state = { ready: null, classes: [], events: [], trials: [], running: false, stats: null };
@@ -137,7 +137,7 @@ async function startCamera() {
   state.running = true; seg.samples = []; seg.active = false;
   const stats = state.stats = { sent: 0, done: 0, skipped: 0, hands: 0, t0: performance.now(), ms: [], recent: [] };
   let busy = false, lastSent = -1e9;
-  const tick = async (now, md) => {
+  const tick = async () => {
     if (!state.running) return;
     v.requestVideoFrameCallback(tick);
     const t = performance.now();
