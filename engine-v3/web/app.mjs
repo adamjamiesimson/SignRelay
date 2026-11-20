@@ -76,7 +76,7 @@ async function runFile(file) {
   v.muted = true; v.playsInline = true; v.src = URL.createObjectURL(file);
   await new Promise((ok, err) => { v.onloadedmetadata = ok; v.onerror = () => err(new Error("cannot decode video")); });
   const [w, h] = analysisSize(v.videoWidth, v.videoHeight);
-  const n = Math.floor(v.duration * FPS + 1e-6);
+  const n = Math.max(1, Math.round(v.duration * FPS)); // same count as ffmpeg fps=15 (round half up)
   if (n > FPS * 20) throw new Error("Videos up to 20 s are supported in file mode");
   await call({ type: "reset" });
   const frames = [], t0 = performance.now(); let handN = 0;
