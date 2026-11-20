@@ -167,7 +167,8 @@ def calibrate(a):
 
 
 def report(a):
-    if a.split == "test" and not a.sealed_test: raise SystemExit("test split is sealed; pass --sealed-test only after freezing")
+    if a.split in ("test", "h2_popsign", "aslc_val") and not a.sealed_test:
+        raise SystemExit(f"{a.split} is sealed; pass --sealed-test only after freezing")
     if a.sealed_test:
         lockf = os.path.join(os.path.dirname(a.out), f"SEALED-{a.freeze_id}.lock")
         if os.path.exists(lockf): raise SystemExit(f"sealed test already run for {a.freeze_id}")
@@ -197,7 +198,7 @@ def report(a):
     for i in np.nonzero(K)[0]: signer[meta[i]["signer"]].append(bool(c1[i]))
     st, i1 = decide(P, E, policy, C, protos) if ok.any() else (None, None)
     unk_roles = {"val": ["unknown_cal"], "test": ["unknown_test"], "train": [], "fs_test": ["nonvocab_motion"],
-                 "aslc": ["unknown_external"]}.get(a.split, [])
+                 "aslc": ["unknown_external"], "h2_popsign": ["unknown_test"], "aslc_val": ["unknown_external"]}.get(a.split, [])
     U = np.isin(role, unk_roles) if unk_roles else np.zeros(len(meta), bool)
     sel = K | U
     osm = open_set_metrics(st[sel], i1[sel], y[sel], U[sel], ~ok[sel])
