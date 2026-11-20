@@ -48,7 +48,10 @@ def main(chrome_json, model_dir, out):
     tr = Tracker()
     no_face = meta.get("uses_face") is False
     ch = json.load(open(chrome_json)); rows = []
+    failures = [os.path.basename(r["video"]) for r in ch["results"] if "error" in r]
     for r in ch["results"]:
+        if "error" in r:
+            rows.append({"video": os.path.basename(r["video"]), "browser_failure": r["error"], "top1_agree": False, "decision_agree": False}); continue
         nat = native_frames(r["video"], tr)
         if no_face: nat[:, 55:] = np.nan
         chp = np.array([[np.nan if v is None else v for v in f] for f in r["frames"]], np.float32).reshape(len(r["frames"]), 86, 3)
@@ -75,7 +78,8 @@ def main(chrome_json, model_dir, out):
         rows.append(row); print(json.dumps(row))
     summ = {"clips": len(rows), "top1_agreement": float(np.mean([r["top1_agree"] for r in rows])),
             "decision_agreement": float(np.mean([r["decision_agree"] for r in rows])),
-            "median_hand_point_err": float(np.nanmedian([r["hand_point_abs_err_median"] or np.nan for r in rows])),
+            "browser_failures": failures,
+            "median_hand_point_err": float(np.nanmedian([r.get("hand_point_abs_err_median") or np.nan for r in rows])),
             "chrome_startup_ms": ch["startupMs"], "crossOriginIsolated": ch["crossOriginIsolated"], "userAgent": ch["userAgent"]}
     json.dump({"summary": summ, "clips": rows}, open(out, "w"), indent=1); print(json.dumps(summ, indent=1))
 

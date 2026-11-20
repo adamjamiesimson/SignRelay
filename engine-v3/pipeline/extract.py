@@ -133,7 +133,7 @@ def worker(wid, rows, outdir, status_path, q):
     pool = ThreadPoolExecutor(2)
 
     def fetch(row):
-        dest = os.path.join(tmp, row["file"].replace(" ", "_"))
+        dest = os.path.join(tmp, (row.get("condition", "") + "_" + row["file"]).replace(" ", "_"))  # unique per variant
         try:
             if row.get("zip_member"): fetch_zip_member(row["zip_member"], dest)
             else: download(row["url"], dest)

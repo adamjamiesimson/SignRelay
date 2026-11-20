@@ -1,0 +1,42 @@
+{
+ "original": {
+  "clips": 120,
+  "no_hands": 0,
+  "top1": 0.7833333333333333,
+  "top5": 0.975,
+  "accepted": 0.675,
+  "accepted_precision": 0.9382716049382716
+ },
+ "bright": {
+  "clips": 112,
+  "no_hands": 2,
+  "top1": 0.7410714285714286,
+  "top5": 0.9285714285714286,
+  "accepted": 0.6339285714285714,
+  "accepted_precision": 0.9154929577464789
+ },
+ "dark": {
+  "clips": 76,
+  "no_hands": 50,
+  "top1": 0.09210526315789473,
+  "top5": 0.14473684210526316,
+  "accepted": 0.06578947368421052,
+  "accepted_precision": 0.8
+ },
+ "far": {
+  "clips": 71,
+  "no_hands": 48,
+  "top1": 0.07042253521126761,
+  "top5": 0.11267605633802817,
+  "accepted": 0.07042253521126761,
+  "accepted_precision": 0.8
+ },
+ "noise": {
+  "clips": 8,
+  "no_hands": 0,
+  "top1": 1.0,
+  "top5": 1.0,
+  "accepted": 1.0,
+  "accepted_precision": 1.0
+ }
+}

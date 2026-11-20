@@ -34,9 +34,10 @@ def main(lmdir, outdir, splits=("train", "val", "test")):
         for r in rows:
             if r["status"] != "ok":
                 excluded.append({"key": r["key"], "reason": r.get("reason", "error")}); continue
-            if r["sha256"] in seen_sha:
-                excluded.append({"key": r["key"], "reason": f"duplicate of {seen_sha[r['sha256']]}"}); continue
-            seen_sha[r["sha256"]] = r["key"]
+            ident = (r["sha256"], r.get("condition"))  # perturbation variants share a source file by design
+            if ident in seen_sha:
+                excluded.append({"key": r["key"], "reason": f"duplicate of {seen_sha[ident]}"}); continue
+            seen_sha[ident] = r["key"]
             p = gather(np.load(f"{lmdir}/{r['key']}.npz"))
             chunks.append(p.astype(np.float16)); offs.append(offs[-1] + len(p))
             meta.append({k: r[k] for k in ("key", "sign", "signer", "sha256", "frames", "hand_frames", "width", "height", "fps", "duration")})
