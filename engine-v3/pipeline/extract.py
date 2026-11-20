@@ -20,7 +20,7 @@ import numpy as np
 
 MODELS = os.environ.get("SIGNRELAY_MODELS", "/home/user/data/models")
 FPS = 15.0          # analysis rate (frames per source second)
-LONG_SIDE = 480     # decoded long side in px; browser uses the same rule
+LONG_SIDE = int(os.environ.get("SIGNRELAY_LONG_SIDE", 480))  # decoded long side in px; browser uses the same rule (480)
 EXTRACTOR_VERSION = "v3-extract-1"
 
 
