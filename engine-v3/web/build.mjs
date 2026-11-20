@@ -12,7 +12,7 @@ import { execFileSync } from "node:child_process";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");
-const out = join(here, "dist");
+const out = process.env.V3_OUT ?? join(here, "dist");
 const modelDir = process.argv[2] ?? join(here, "..", "models", "current");
 const sha = b => createHash("sha256").update(b).digest("hex");
 const TASKS = {

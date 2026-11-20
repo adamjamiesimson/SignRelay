@@ -3,15 +3,21 @@ import { analysisSize, resampleTo15Hz, hasHand, signingEvidence, FPS, CAMERA_MAX
 
 const $ = s => document.querySelector(s);
 const DEBUG = new URLSearchParams(location.search).has("debug");
-const worker = new Worker(new URL("./worker.js", import.meta.url));
-let seq = 0; const pending = new Map();
-const call = (msg, transfer = []) => new Promise((resolve, reject) => {
-  const id = ++seq; pending.set(id, { resolve, reject }); worker.postMessage({ ...msg, id }, transfer);
-});
-worker.onmessage = ({ data }) => {
-  const p = pending.get(data.id); if (!p) return; pending.delete(data.id);
-  if (data.type === "error") p.reject(new Error(data.message)); else p.resolve(data);
-};
+const Q = new URLSearchParams(location.search);
+// Camera mode tracks hands and pose in two workers in parallel (?split=0 restores the single-worker path).
+const SPLIT = Q.get("split") !== "0";
+function spawn() {
+  const w = new Worker(new URL("./worker.js", import.meta.url)); let seq = 0; const pending = new Map();
+  w.onmessage = ({ data }) => {
+    const p = pending.get(data.id); if (!p) return; pending.delete(data.id);
+    if (data.type === "error") p.reject(new Error(data.message)); else p.resolve(data);
+  };
+  return (msg, transfer = []) => new Promise((resolve, reject) => {
+    const id = ++seq; pending.set(id, { resolve, reject }); w.postMessage({ ...msg, id }, transfer);
+  });
+}
+const call = spawn();
+const poseCall = SPLIT ? spawn() : null;
 
 const state = { ready: null, classes: [], events: [], trials: [], running: false, stats: null };
 const log = (...a) => { $("#status").textContent = a.join(" "); };
@@ -23,6 +29,7 @@ async function start() {
   state.meta = meta; state.classes = meta.classes;
   const delegate = new URLSearchParams(location.search).get("delegate") === "gpu" ? "GPU" : "CPU";
   const r = await call({ type: "init", delegate });
+  if (poseCall) state.poseReady = await poseCall({ type: "init", delegate, role: "pose" });
   state.ready = r;
   $("#nclasses").textContent = meta.classes.length;
   $("#version").textContent = `${meta.version} · model ${meta.model_sha256.slice(0, 12)} · commit ${meta.commit.slice(0, 10)} · ${r.delegate} · ${r.threads} ORT threads`;
@@ -133,7 +140,7 @@ function onSample(t, frame) {
 async function startCamera() {
   const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, frameRate: 30 }, audio: false });
   const v = $("#cam"); v.srcObject = stream; await v.play();
-  await call({ type: "reset" });
+  await Promise.all([call({ type: "reset" }), poseCall?.({ type: "reset" })]);
   state.running = true; seg.samples = []; seg.active = false;
   const stats = state.stats = { sent: 0, done: 0, skipped: 0, hands: 0, t0: performance.now(), ms: [], recent: [] };
   let busy = false, lastSent = -1e9;
@@ -146,7 +153,18 @@ async function startCamera() {
     try {
       const [w, h] = analysisSize(v.videoWidth, v.videoHeight, Math.min(CAMERA_MAX_LONG_SIDE, Math.max(v.videoWidth, v.videoHeight)));
       const bmp = await createImageBitmap(v, { resizeWidth: w, resizeHeight: h, resizeQuality: "high" });
-      const r = await call({ type: "frame", image: bmp, width: w, height: h, ts: Math.round(t) }, [bmp]);
+      let r;
+      if (poseCall) {
+        const bmp2 = await createImageBitmap(bmp);
+        const [rh, rp] = await Promise.all([
+          call({ type: "frame", parts: "hand", image: bmp, width: w, height: h, ts: Math.round(t) }, [bmp]),
+          poseCall({ type: "frame", image: bmp2, width: w, height: h, ts: Math.round(t) }, [bmp2]),
+        ]);
+        for (let i = 42 * 3; i < 55 * 3; i++) rh.frame[i] = rp.frame[i]; // pose points 42..54 from the pose worker
+        r = { ...rh, ms: { hand: rh.ms.hand, pose: rp.ms.pose, face: 0 } };
+      } else {
+        r = await call({ type: "frame", image: bmp, width: w, height: h, ts: Math.round(t) }, [bmp]);
+      }
       stats.done++; if (r.hands) stats.hands++;
       stats.recent.push(performance.now()); while (stats.recent[0] < performance.now() - 3000) stats.recent.shift();
       stats.ms.push(r.ms); if (stats.ms.length > 60) stats.ms.shift();
