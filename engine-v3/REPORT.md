@@ -7,8 +7,9 @@ made before results where stated, and the commit history shows the order.
 **Bottom line.** V3.0 is a trained, frozen **523-class** isolated-ASL recognizer. On the sealed PopSign test
 (10 signers never seen in training) it reaches **80.8 % top-1 / 96.3 % top-5**, with all 523 classes covered.
 That is below the 90 % aspiration. It rejects fingerspelling and most out-of-vocabulary signs, and the
-browser reproduces the native model exactly. Two problems remain: accuracy drops on an external webcam
-cohort (54.6 %), and the live camera path depends on frame rate.
+browser reproduces the native model exactly. Two problems remain. Accuracy drops on an external webcam
+cohort (54.6 %). The live camera path, at 11–13 fps in this CPU-only container, committed only 8 of 30
+test signs correctly, so live use is not ready yet.
 
 ---
 
@@ -149,7 +150,22 @@ differences. The browser shows no systematic accuracy loss.
   11–12 fps and gets 6–7/12 (0 wrong).
 * Sealed test-signer reels (36 intervals, run once with the final build): see the table below.
 
-SEALED_REELS_PLACEHOLDER
+| Sealed reels (3 × 12 intervals, test signers, final build, 12–13 fps analysed) | Count |
+| --- | ---: |
+| Supported-sign intervals (incl. intentional A, B, A, A repeats) | 30 |
+| Correct accepted | **8** |
+| Wrong accepted | 7 — TO→HAVETO ×3 (one clip repeated), DONT→NOT ×2 (one clip), NIGHTNIGHT→NIGHT, DUMP→POUR |
+| Abstained (uncertain / unknown) | 15 |
+| Missed (no event at all) | 0 |
+| Unsupported intervals (never-seen sign or fingerspelling) | 6 — 1 false accept (→WISH) |
+| Spurious events in idle gaps / duplicate accepts | **0 / 0** |
+| Exact sequence match | 0 / 3 reels |
+
+**Live camera recognition is not yet at file-mode level.** File mode reached ~85 % top-1 on the same clips
+natively, but the live path committed only 8 of 30 signs correctly. Every wrong answer is a lexical
+neighbour, and 5 of the 7 come from two repeated clips. The cause measured above is the analysed frame rate
+(11–13 fps vs the 15 Hz design point on this CPU-only container). Real-device fps measurement is the most
+important open item before human trials.
 
 ## G. Practical performance (headless Chrome 157, this 4-vCPU CPU-only container)
 
