@@ -1,0 +1,155 @@
+{
+ "summary": {
+  "intervals": 14,
+  "supported": 12,
+  "correct": 7,
+  "wrong": 0,
+  "missed": 0,
+  "abstained_on_supported": 5,
+  "unsupported_intervals": 2,
+  "unsupported_false_accepts": 1,
+  "duplicate_accepts": 0,
+  "spurious_events_in_gaps": 0,
+  "exact_sequence_match": false,
+  "expected_sequence": [
+   "WET",
+   "SOBIG",
+   "WET",
+   "WET",
+   "LAWNMOWER",
+   "SIDEWALK",
+   "UNCLE",
+   "WAKE",
+   "SIDEWALK",
+   "PLATE",
+   "WAS",
+   "LIVINGROOM"
+  ],
+  "accepted_sequence": [
+   "WET",
+   "SOBIG",
+   "LAWNMOWER",
+   "WHERE",
+   "SIDEWALK",
+   "UNCLE",
+   "SIDEWALK",
+   "LIVINGROOM"
+  ]
+ },
+ "intervals": [
+  {
+   "label": "WET",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "WET"
+   ]
+  },
+  {
+   "label": "SOBIG",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "SOBIG"
+   ]
+  },
+  {
+   "label": "WET",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "WET",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "LAWNMOWER",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "LAWNMOWER"
+   ]
+  },
+  {
+   "label": "__unknown__",
+   "outcome": "false-accept",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "WHERE"
+   ]
+  },
+  {
+   "label": "SIDEWALK",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "SIDEWALK"
+   ]
+  },
+  {
+   "label": "UNCLE",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "UNCLE"
+   ]
+  },
+  {
+   "label": "WAKE",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "__motion__",
+   "outcome": "rejected",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "SIDEWALK",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "SIDEWALK"
+   ]
+  },
+  {
+   "label": "PLATE",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "WAS",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "LIVINGROOM",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "LIVINGROOM"
+   ]
+  }
+ ]
+}

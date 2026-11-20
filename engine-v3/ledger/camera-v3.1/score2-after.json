@@ -1,0 +1,164 @@
+{
+ "summary": {
+  "intervals": 14,
+  "supported": 12,
+  "correct": 11,
+  "wrong": 0,
+  "missed": 0,
+  "abstained_on_supported": 1,
+  "unsupported_intervals": 2,
+  "unsupported_false_accepts": 0,
+  "duplicate_accepts": 0,
+  "spurious_events_in_gaps": 0,
+  "exact_sequence_match": false,
+  "expected_sequence": [
+   "BECAUSE",
+   "MAN",
+   "BECAUSE",
+   "BECAUSE",
+   "PETSNAME",
+   "DUCK",
+   "SHOULDER",
+   "JELLY",
+   "WATCH",
+   "CLEAN",
+   "PLANTS",
+   "QUIET"
+  ],
+  "accepted_sequence": [
+   "BECAUSE",
+   "MAN",
+   "BECAUSE",
+   "BECAUSE",
+   "PETSNAME",
+   "DUCK",
+   "SHOULDER",
+   "JELLY",
+   "WATCH",
+   "CLEAN",
+   "QUIET"
+  ]
+ },
+ "intervals": [
+  {
+   "label": "BECAUSE",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "BECAUSE"
+   ]
+  },
+  {
+   "label": "MAN",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "MAN"
+   ]
+  },
+  {
+   "label": "BECAUSE",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "BECAUSE"
+   ]
+  },
+  {
+   "label": "BECAUSE",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "BECAUSE"
+   ]
+  },
+  {
+   "label": "PETSNAME",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "PETSNAME"
+   ]
+  },
+  {
+   "label": "__unknown__",
+   "outcome": "rejected",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "DUCK",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "DUCK"
+   ]
+  },
+  {
+   "label": "SHOULDER",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "SHOULDER"
+   ]
+  },
+  {
+   "label": "JELLY",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "JELLY"
+   ]
+  },
+  {
+   "label": "__motion__",
+   "outcome": "rejected",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "WATCH",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "WATCH"
+   ]
+  },
+  {
+   "label": "CLEAN",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "CLEAN"
+   ]
+  },
+  {
+   "label": "PLANTS",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "QUIET",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "QUIET"
+   ]
+  }
+ ]
+}
