@@ -222,7 +222,8 @@ writes lock files, which are committed in `ledger/sealed-v3.0/`.
   merged or deployed.
 * Key commits: `aeb3ab8` (policy frozen), `9fe139a` (vocabulary frozen), `6647a26` (model frozen before the
   sealed test), `89820b3` (sealed reports), followed by parity/robustness commits.
-* The draft PR link is in the PR description of this branch.
+* Draft PR: https://github.com/adamjamiesimson/SignRelay/pull/65
+* Verification: `npm run typecheck`, `npm run lint`, `npm run repo:guard` pass; `npm test` 84 files / 871 passed / 1 skipped.
 
 ---
 Attribution: PopSign ASL v2.1 — Thad Starner et al., Georgia Institute of Technology & DPAN, CC BY 4.0.
