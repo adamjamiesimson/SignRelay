@@ -100,7 +100,10 @@ async function runFile(file) {
 
 // ------------------------------------------------------------------ camera (streaming)
 const seg = { samples: [], active: false, start: 0, lastHand: 0, provisionalAt: 0 };
-const GAP_MS = 330, MAX_MS = 4000, MIN_HAND = 3;
+// Segment boundaries: open on a hand in signing space; stay open while any hand is visible;
+// close after GAP_MS without hands or at MAX_MS. The classified window is the segment +/- MARGIN_MS,
+// which prepareClip then trims to any-hand frames +/- 2 -- the same rule used for training clips.
+const GAP_MS = 500, MAX_MS = 4000, MIN_HAND = 3, MARGIN_MS = 600;
 
 async function classifySamples(samples, final) {
   const frames = resampleTo15Hz(samples);
@@ -111,19 +114,17 @@ async function classifySamples(samples, final) {
 }
 
 function onSample(t, frame) {
-  const s = { t, f: frame }; const h = signingEvidence(frame);
-  seg.samples.push(s);
-  while (seg.samples.length && seg.samples[0].t < t - 8000) seg.samples.shift();
-  if (h) {
-    if (!seg.active) { seg.active = true; seg.start = t; seg.provisionalAt = t; }
-    seg.lastHand = t;
-  }
+  seg.samples.push({ t, f: frame });
+  while (seg.samples.length && seg.samples[0].t < t - 10000) seg.samples.shift();
+  const any = hasHand(frame);
+  if (!seg.active && signingEvidence(frame)) { seg.active = true; seg.start = t; seg.provisionalAt = t; }
+  if (seg.active && any) seg.lastHand = t;
   if (!seg.active) return;
-  const end = (!h && t - seg.lastHand > GAP_MS) || t - seg.start > MAX_MS;
-  const span = seg.samples.filter(x => x.t >= seg.start - 140 && x.t <= Math.min(t, seg.lastHand + 140));
+  const end = (!any && t - seg.lastHand > GAP_MS) || t - seg.start > MAX_MS;
+  const span = seg.samples.filter(x => x.t >= seg.start - MARGIN_MS && x.t <= Math.min(t, seg.lastHand + MARGIN_MS));
   if (end) {
     seg.active = false;
-    if (span.filter(x => signingEvidence(x.f)).length >= MIN_HAND) classifySamples(span, true);
+    if (span.filter(x => hasHand(x.f)).length >= MIN_HAND) classifySamples(span, true);
   } else if (t - seg.provisionalAt > 500 && span.length >= 6) {
     seg.provisionalAt = t; classifySamples(span, false);
   }
