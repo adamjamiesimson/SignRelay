@@ -44,6 +44,16 @@ if (sha(model) !== meta.model_sha256) throw new Error("model.onnx does not match
 let commit = process.env.VERCEL_GIT_COMMIT_SHA;
 try { commit ??= execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim(); } catch { commit ??= "unknown"; }
 meta.commit = commit; meta.assets = assets;
+// Both decision presets (balanced = default, strict) travel with the model; balanced must equal meta.policy.
+meta.policies = { balanced: meta.policy };
+for (const name of ["balanced", "strict"]) {
+  const f = join(modelDir, `policy-${name}.json`);
+  if (!existsSync(f)) continue;
+  const p = JSON.parse(await readFile(f, "utf8"));
+  if (name === "balanced" && ["temperature", "max_unknown", "min_top1", "min_proto"].some(k => p[k] !== meta.policy[k]))
+    throw new Error("policy-balanced.json does not match meta.json policy");
+  meta.policies[name] = name === "balanced" ? meta.policy : p;
+}
 await writeFile(join(out, "model.onnx"), model);
 await writeFile(join(out, "meta.json"), JSON.stringify(meta));
 await build({ entryPoints: { app: join(here, "app.mjs") }, bundle: true, format: "esm",
@@ -57,4 +67,4 @@ await writeFile(join(out, "vercel.json"), JSON.stringify({ headers: [{ source: "
   { key: "Permissions-Policy", value: "camera=(self)" }, { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; media-src 'self' blob:; img-src 'self' blob: data:; style-src 'self'; connect-src 'self'; frame-ancestors 'none'" },
 ] }] }, null, 1));
-console.log("built", out, "model", meta.model_sha256.slice(0, 12), "classes", meta.classes.length);
+console.log("built", out, "model", meta.model_sha256.slice(0, 12), "classes", meta.classes.length, "policies", Object.keys(meta.policies).join("+"));

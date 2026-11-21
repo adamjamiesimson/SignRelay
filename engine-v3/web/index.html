@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SignRelay V3 Lab</title>
+<title>SignRelay V3.1 Lab</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <h1>SignRelay Engine V3 — experimental ASL lab</h1>
+  <h1>SignRelay Engine V3.1 — experimental ASL lab</h1>
   <p class="mut">Isolated-sign recognizer trained on <b id="nclasses">…</b> ASL sign classes (PopSign ASL v2.1, CC BY 4.0).
   Camera frames and files are processed in this tab only; nothing is uploaded. Research preview — not a translator.</p>
   <p class="mut small" id="version">loading…</p>
@@ -16,6 +16,14 @@
   <p id="status" role="status">Loading…</p>
 </header>
 <main>
+  <section>
+    <h2>Recognition policy</h2>
+    <div class="row" role="radiogroup" aria-label="Recognition policy">
+      <label><input type="radio" name="policy" value="balanced"> Balanced</label>
+      <label><input type="radio" name="policy" value="strict"> Strict</label>
+    </div>
+    <p class="mut small" id="policyinfo"></p>
+  </section>
   <section>
     <h2>Camera</h2>
     <video id="cam" playsinline muted></video>
@@ -46,10 +54,12 @@
   </section>
   <section>
     <h2>Supported vocabulary</h2>
+    <input id="vocabsearch" type="search" placeholder="Search signs" aria-label="Search the vocabulary">
+    <p class="mut small" id="vocabcount"></p>
     <p class="small" id="vocablist"></p>
   </section>
 </main>
-<footer class="mut small">Training data: PopSign ASL v2.1, Starner et al., Georgia Tech / DPAN, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Landmarks: Google MediaPipe Tasks (Apache-2.0).</footer>
+<footer class="mut small">Training data: PopSign ASL v2.1, Starner et al., Georgia Tech / DPAN, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Unknown-motion negatives: FSBoard (Google), CC BY 4.0. Landmarks: Google MediaPipe Tasks (Apache-2.0). Model: Engine V3.1 (523 signs + UNKNOWN), experimental research build; accuracy on your own signing is not guaranteed.</footer>
 <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -28,7 +28,8 @@ const poseCall = SPLIT ? spawn() : null;
 const CLF = Q.get("clf") !== "0";
 const clfCall = CLF ? spawn() : call;
 
-const state = { ready: null, classes: [], events: [], trials: [], running: false, stats: null };
+const POLICY0 = Q.get("policy") === "strict" ? "strict" : "balanced";
+const state = { policy: POLICY0, ready: null, classes: [], events: [], trials: [], running: false, stats: null };
 const log = (...a) => { $("#status").textContent = a.join(" "); };
 
 // ------------------------------------------------------------------ startup
@@ -48,9 +49,27 @@ async function start() {
     (r.startup.delegateProbeMs ? ` · delegate probe ms/frame CPU ${r.startup.delegateProbeMs.CPU?.toFixed(0)} GPU ${Number.isFinite(r.startup.delegateProbeMs.GPU) ? r.startup.delegateProbeMs.GPU.toFixed(0) : "unavailable"} → ${r.delegate}` : "");
   const dl = $("#vocab"); dl.innerHTML = "";
   for (const c of meta.classes) { const o = document.createElement("option"); o.value = c; dl.appendChild(o); }
-  $("#vocablist").textContent = meta.classes.join(" · ");
+  renderVocab();
+  for (const el of document.querySelectorAll('input[name="policy"]')) {
+    el.disabled = !meta.policies?.[el.value]; el.checked = el.value === state.policy;
+    el.onchange = () => { if (el.checked) { state.policy = el.value; renderPolicy(); } };
+  }
+  renderPolicy();
   log("Ready.");
   document.body.dataset.ready = "1";
+}
+
+function renderVocab() {
+  const q = $("#vocabsearch").value.trim().toUpperCase();
+  const hits = state.classes.filter(c => c.includes(q));
+  $("#vocabcount").textContent = q ? `${hits.length} of ${state.classes.length} signs match "${q}"` : `${state.classes.length} trained signs (+ UNKNOWN output)`;
+  $("#vocablist").textContent = hits.join(" · ");
+}
+function renderPolicy() {
+  const p = state.meta?.policies?.[state.policy];
+  $("#policyinfo").textContent = p ? `${state.policy}: accepts when calibrated p(top-1) ≥ ${(p.min_top1 * 100).toFixed(1)}%, ` +
+    `p(unknown) < ${(p.max_unknown * 100).toFixed(0)}% and prototype cosine ≥ ${p.min_proto.toFixed(3)}. ` +
+    (state.policy === "strict" ? "Fewer wrong accepts and unknown-sign false accepts, more abstentions." : "Default; more signs accepted.") : "";
 }
 
 // ------------------------------------------------------------------ result rendering
@@ -71,7 +90,7 @@ function showResult(r, where = "#proposal") {
 }
 function addEvent(r, source, segment = null) {
   const e = { t: new Date().toISOString(), perf: performance.now(), segment, source, status: r.status, label: r.label, best: r.best,
-    scores: r.scores, top5: r.top5?.map(x => x.label), handFrames: r.handFrames, used: r.used };
+    scores: r.scores, top5: r.top5?.map(x => x.label), handFrames: r.handFrames, used: r.used, policy: r.policy };
   state.events.push(e);
   const li = document.createElement("li");
   li.textContent = `${e.t.slice(11, 19)} ${fmt(r)}`; li.className = r.status;
@@ -109,7 +128,7 @@ async function runFile(file) {
     $("#fileprog").textContent = `${k + 1}/${n} frames · hands on ${handN}`;
   }
   if (DEBUG) window.__lastFileFrames = frames.map(f => Array.from(f, x => (Number.isFinite(x) ? x : null)));
-  const res = (await call({ type: "classify", frames: frames.map(f => f.buffer) }, frames.map(f => f.buffer))).result;
+  const res = (await call({ type: "classify", policy: state.policy, frames: frames.map(f => f.buffer) }, frames.map(f => f.buffer))).result;
   URL.revokeObjectURL(v.src);
   res.fileName = file.name; res.analysisMs = performance.now() - t0; res.frameCount = n; res.handFrameCount = handN;
   showResult(res); addEvent(res, "file");
@@ -126,7 +145,7 @@ const GAP_MS = 500, MAX_MS = 4000, MIN_HAND = 3, MARGIN_MS = 600;
 
 async function classifySamples(samples, final) {
   const frames = resampleTo15Hz(samples);
-  const r = (await clfCall({ type: "classify", frames: frames.map(f => f.buffer) }, frames.map(f => f.buffer))).result;
+  const r = (await clfCall({ type: "classify", policy: state.policy, frames: frames.map(f => f.buffer) }, frames.map(f => f.buffer))).result;
   if (final) { showResult(r); addEvent(r, "camera", [samples[0].t, samples.at(-1).t]); } else showResult(r, "#proposal");
   if (!final) $("#proposal").textContent = "(provisional) " + $("#proposal").textContent;
   return r;
@@ -149,11 +168,23 @@ function onSample(t, frame) {
   }
 }
 
+function cameraError(e) {
+  const n = e?.name;
+  if (!window.isSecureContext) return "Camera needs a secure (https) page.";
+  if (n === "NotAllowedError" || n === "SecurityError") return "Camera permission was denied. Allow camera access for this site (padlock icon in the address bar → Site settings → Camera → Allow), then press Start camera again.";
+  if (n === "NotSupportedError") return "This browser cannot open the camera here. Use desktop Chrome or Edge on an https page.";
+  if (n === "NotFoundError" || n === "OverconstrainedError") return "No camera was found. Connect a webcam and try again.";
+  if (n === "NotReadableError" || n === "AbortError") return "The camera is in use by another application or could not be started. Close other apps using it and try again.";
+  return e?.message ?? String(e);
+}
 async function startCamera() {
+  if (state.running) return;
+  if (!navigator.mediaDevices?.getUserMedia) throw Object.assign(new Error("camera API unavailable"), { name: window.isSecureContext ? "NotFoundError" : "SecurityError" });
+  log("Starting camera…");
   const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, frameRate: 30 }, audio: false });
   const v = $("#cam"); v.srcObject = stream; await v.play();
   await Promise.all([call({ type: "reset" }), poseCall?.({ type: "reset" })]);
-  state.running = true; seg.samples = []; seg.active = false;
+  state.running = true; seg.samples = []; seg.active = false; document.body.dataset.camera = "on"; log("Camera running.");
   const stats = state.stats = { sent: 0, done: 0, skipped: 0, hands: 0, t0: performance.now(), ms: [], recent: [] };
   let busy = false, lastSent = -1e9, lastPose = null, pending = null;
   // Latest-frame scheduling: a camera frame that arrives while the tracker is busy is captured as
@@ -220,8 +251,10 @@ async function startCamera() {
   }, 500);
 }
 function stopCamera() {
-  state.running = false;
-  const v = $("#cam"); v.srcObject?.getTracks().forEach(t => t.stop()); v.srcObject = null;
+  const v = $("#cam"); const had = !!v.srcObject;
+  state.running = false; seg.active = false; seg.samples = [];
+  v.srcObject?.getTracks().forEach(t => t.stop()); v.srcObject = null;
+  document.body.dataset.camera = "off"; if (had) log("Camera stopped; camera released.");
 }
 
 // ------------------------------------------------------------------ trials + export
@@ -239,7 +272,7 @@ function renderTrials() {
 }
 function exportResults() {
   const blob = new Blob([JSON.stringify({
-    engine: state.meta?.version, model_sha256: state.meta?.model_sha256, commit: state.meta?.commit,
+    engine: state.meta?.version, model_sha256: state.meta?.model_sha256, commit: state.meta?.commit, policy: state.policy,
     exported: new Date().toISOString(), userAgent: navigator.userAgent, hardwareConcurrency: navigator.hardwareConcurrency,
     trials: state.trials, events: state.events,
     camera: state.stats ? { analysedFrames: state.stats.done, skipped: state.stats.skipped } : null,
@@ -248,7 +281,10 @@ function exportResults() {
 }
 
 // ------------------------------------------------------------------ wiring
-$("#startcam").onclick = () => startCamera().catch(e => log("Camera error:", e.message));
+$("#startcam").onclick = () => startCamera().catch(e => {
+  stopCamera(); const msg = cameraError(e); log("Camera error:", msg); window.__lastCameraError = { name: e?.name, message: msg };
+});
+$("#vocabsearch").oninput = renderVocab;
 $("#stopcam").onclick = stopCamera;
 $("#file").onchange = e => {
   const f = e.target.files[0];

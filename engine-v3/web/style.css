@@ -9,4 +9,7 @@ video { width: 100%; max-width: 480px; background: #000; transform: scaleX(-1); 
 .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
 button, input { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--fg); }
 button { cursor: pointer; }
+label { display: inline-flex; gap: 6px; align-items: center; }
+#vocablist { overflow-wrap: anywhere; }
+input[type=radio] { padding: 0; }
 .events li.accepted { color: var(--ok); } .events li.unknown, .events li.uncertain { color: var(--warn); } .events li.no-sign { color: var(--mut); }

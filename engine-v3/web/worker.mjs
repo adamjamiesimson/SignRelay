@@ -94,7 +94,8 @@ function track(image, width, height, ts, parts = "all") {
   return { frame, ms: { hand: t1 - t0, pose: t2 - t1, face: t3 - t2 }, hands: h ? h.landmarks.length : 0 };
 }
 
-async function classify(frames) {
+async function classify(frames, policyName) {
+  const policy = meta.policies?.[policyName] ?? meta.policy;
   const t0 = performance.now();
   const prep = prepareClip(frames);
   if (!prep) return { status: "no-sign", reason: "no hand observed", ms: performance.now() - t0 };
@@ -105,10 +106,10 @@ async function classify(frames) {
   };
   const out = await session.run(feeds);
   const logits = out.logits.data, emb = out.embedding.data;
-  const d = decide(logits, emb, meta);
+  const d = decide(logits, emb, { ...meta, policy });
   const handFrames = frames.filter(hasHand).length;
-  if (handFrames < (meta.policy.min_hand_frames ?? 3)) return { ...d, status: "no-sign", reason: "too few hand frames", handFrames };
-  return { ...d, logits: Array.from(logits), span: prep.span, used: prep.frames, handFrames, ms: performance.now() - t0 };
+  if (handFrames < (policy.min_hand_frames ?? 3)) return { ...d, status: "no-sign", reason: "too few hand frames", handFrames, policy: policyName ?? "balanced" };
+  return { ...d, policy: policyName ?? "balanced", logits: Array.from(logits), span: prep.span, used: prep.frames, handFrames, ms: performance.now() - t0 };
 }
 
 self.onmessage = async ({ data }) => {
@@ -128,7 +129,7 @@ self.onmessage = async ({ data }) => {
       return self.postMessage({ type: "frame", id: data.id, ts: data.ts, frame: r.frame, ms: r.ms, hands: r.hands }, [r.frame.buffer]);
     }
     if (data.type === "classify") {
-      const r = await classify(data.frames.map(f => (f instanceof Float32Array ? f : new Float32Array(f))));
+      const r = await classify(data.frames.map(f => (f instanceof Float32Array ? f : new Float32Array(f))), data.policy);
       return self.postMessage({ type: "result", id: data.id, result: r });
     }
   } catch (e) {
