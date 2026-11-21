@@ -1,0 +1,39 @@
+{
+ "diag": "analysed 13.0 fps (target 15) \u00b7 camera 640\u00d7480 \u00b7 hands on 27% of analysed frames \u00b7 hand 60 ms \u00b7 pose 14 ms \u00b7 face 0 ms \u00b7 skipped camera frames 1325",
+ "score": {
+  "intervals": 14,
+  "supported": 12,
+  "correct": 6,
+  "wrong": 0,
+  "missed": 0,
+  "abstained_on_supported": 6,
+  "unsupported_intervals": 2,
+  "unsupported_false_accepts": 1,
+  "duplicate_accepts": 0,
+  "spurious_events_in_gaps": 0,
+  "exact_sequence_match": false,
+  "expected_sequence": [
+   "WET",
+   "SOBIG",
+   "WET",
+   "WET",
+   "LAWNMOWER",
+   "SIDEWALK",
+   "UNCLE",
+   "WAKE",
+   "SIDEWALK",
+   "PLATE",
+   "WAS",
+   "LIVINGROOM"
+  ],
+  "accepted_sequence": [
+   "SOBIG",
+   "LAWNMOWER",
+   "WHERE",
+   "SIDEWALK",
+   "UNCLE",
+   "SIDEWALK",
+   "LIVINGROOM"
+  ]
+ }
+}

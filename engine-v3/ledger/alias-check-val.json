@@ -1,0 +1,200 @@
+[
+ {
+  "a": "SLIDE",
+  "b": "SLIDENOUN",
+  "n_a": 3,
+  "n_b": 4,
+  "recall_a": 1.0,
+  "recall_b": 0.25,
+  "a_as_b": 0.0,
+  "b_as_a": 0.5,
+  "propose_merge": false
+ },
+ {
+  "a": "SLIDE",
+  "b": "SLIDEVERB",
+  "n_a": 3,
+  "n_b": 4,
+  "recall_a": 1.0,
+  "recall_b": 0.75,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "SLIDENOUN",
+  "b": "SLIDEVERB",
+  "n_a": 4,
+  "n_b": 4,
+  "recall_a": 0.25,
+  "recall_b": 0.75,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "GOPOTTY",
+  "b": "TOILET",
+  "n_a": 4,
+  "n_b": 9,
+  "recall_a": 0.75,
+  "recall_b": 0.7777777777777778,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "HOSE",
+  "b": "WATERHOSE",
+  "n_a": 3,
+  "n_b": 4,
+  "recall_a": 0.6666666666666666,
+  "recall_b": 0.75,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "WINDOW",
+  "b": "GLASSWINDOW",
+  "n_a": 4,
+  "n_b": 3,
+  "recall_a": 0.75,
+  "recall_b": 0.6666666666666666,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "HORSE",
+  "b": "PONY",
+  "n_a": 6,
+  "n_b": 4,
+  "recall_a": 1.0,
+  "recall_b": 1.0,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "DOG",
+  "b": "PUPPY",
+  "n_a": 4,
+  "n_b": 2,
+  "recall_a": 0.5,
+  "recall_b": 1.0,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "INSIDEIN",
+  "b": "INTO",
+  "n_a": 2,
+  "n_b": 5,
+  "recall_a": 0.5,
+  "recall_b": 0.4,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "NIGHT",
+  "b": "NIGHTNIGHT",
+  "n_a": 6,
+  "n_b": 4,
+  "recall_a": 0.16666666666666666,
+  "recall_b": 0.25,
+  "a_as_b": 0.0,
+  "b_as_a": 0.25,
+  "propose_merge": false
+ },
+ {
+  "a": "FULL",
+  "b": "FULLFOOD",
+  "n_a": 4,
+  "n_b": 4,
+  "recall_a": 0.5,
+  "recall_b": 0.5,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "SHOE",
+  "b": "SNEAKER",
+  "n_a": 6,
+  "n_b": 4,
+  "recall_a": 0.6666666666666666,
+  "recall_b": 0.75,
+  "a_as_b": 0.3333333333333333,
+  "b_as_a": 0.25,
+  "propose_merge": false
+ },
+ {
+  "a": "SLEEP",
+  "b": "SLEEPY",
+  "n_a": 6,
+  "n_b": 1,
+  "recall_a": 0.6666666666666666,
+  "recall_b": 1.0,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "SLEEP",
+  "b": "NAP",
+  "n_a": 6,
+  "n_b": 1,
+  "recall_a": 0.6666666666666666,
+  "recall_b": 1.0,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "SLEEPY",
+  "b": "NAP",
+  "n_a": 1,
+  "n_b": 1,
+  "recall_a": 1.0,
+  "recall_b": 1.0,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "TOOTH",
+  "b": "TOOTHBRUSH",
+  "n_a": 6,
+  "n_b": 5,
+  "recall_a": 0.16666666666666666,
+  "recall_b": 0.6,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "CHILD",
+  "b": "CHILDREN",
+  "n_a": 4,
+  "n_b": 4,
+  "recall_a": 0.5,
+  "recall_b": 1.0,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ },
+ {
+  "a": "PERSON",
+  "b": "PEOPLE",
+  "n_a": 3,
+  "n_b": 4,
+  "recall_a": 0.6666666666666666,
+  "recall_b": 1.0,
+  "a_as_b": 0.0,
+  "b_as_a": 0.0,
+  "propose_merge": false
+ }
+]

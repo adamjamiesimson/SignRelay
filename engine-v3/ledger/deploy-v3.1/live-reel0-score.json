@@ -1,0 +1,41 @@
+{
+ "diag": "analysed 12.3 fps (target 15) \u00b7 camera 640\u00d7480 \u00b7 hands on 35% of analysed frames \u00b7 hand 46 ms \u00b7 pose 13 ms \u00b7 face 0 ms \u00b7 skipped camera frames 1534",
+ "score": {
+  "intervals": 14,
+  "supported": 12,
+  "correct": 9,
+  "wrong": 0,
+  "missed": 0,
+  "abstained_on_supported": 3,
+  "unsupported_intervals": 2,
+  "unsupported_false_accepts": 0,
+  "duplicate_accepts": 0,
+  "spurious_events_in_gaps": 0,
+  "exact_sequence_match": false,
+  "expected_sequence": [
+   "LATER",
+   "CAT",
+   "LATER",
+   "LATER",
+   "MONKEY",
+   "CALLONPHONE",
+   "CHEESE",
+   "SKIRT",
+   "WIPE",
+   "ROCKINGCHAIR",
+   "STROLLER",
+   "VITAMINS"
+  ],
+  "accepted_sequence": [
+   "LATER",
+   "CAT",
+   "LATER",
+   "LATER",
+   "CALLONPHONE",
+   "SKIRT",
+   "WIPE",
+   "ROCKINGCHAIR",
+   "VITAMINS"
+  ]
+ }
+}

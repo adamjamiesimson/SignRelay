@@ -1,0 +1,3721 @@
+{
+ "split": "fs_test",
+ "runs": [
+  "/home/user/data/runs/v31-s0",
+  "/home/user/data/runs/v31-bal"
+ ],
+ "policy": {
+  "temperature": 0.8097705718572318,
+  "max_unknown": 0.3,
+  "min_top1": 0.847086489200592,
+  "min_margin": null,
+  "min_proto": 0.812136709690094,
+  "min_hand_frames": 3,
+  "selection": {
+   "objective": "max(correct - wrong) s.t. unknown accept rate <= max_far",
+   "max_far": 0.1,
+   "fit_on": "validation signers (known) + calibration-only unknown signs (val+train clips)",
+   "val_point": {
+    "correct": 0.521181001283697,
+    "wrong": 0.019255455712451863,
+    "far": 0.09921671018276762
+   },
+   "n_known": 2337,
+   "n_unknown_cal": 383
+  }
+ },
+ "inference_seconds": 1.9553179740905762,
+ "clips_per_second": 153.42773092418938,
+ "trained_labels": 523,
+ "labels_with_eval_coverage": 0,
+ "known_clips": 0,
+ "no_sign_known_clips": 0,
+ "top1": null,
+ "top5": null,
+ "macro_recall": null,
+ "ece_top1": null,
+ "signers": {},
+ "weakest_classes": [],
+ "top_confusions": [],
+ "open_set": {
+  "known_clips": 0,
+  "unknown_clips": 300,
+  "known_coverage": null,
+  "known_accepted_precision": 0.0,
+  "known_correct_accept_rate": null,
+  "known_wrong_accept_rate": null,
+  "unknown_false_accept_rate": 0.0,
+  "abstention_rate_known": null,
+  "status_counts_known": {},
+  "status_counts_unknown": {
+   "unknown": 298,
+   "uncertain": 2
+  }
+ },
+ "per_class": [
+  {
+   "class": "A",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ABOUT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "AFTER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "AIRPLANE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ALL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ALLGONE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ALLIGATOR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ALOT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "AM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "AN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "AND",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ANIMAL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ANOTHER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ANT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ANY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "APPLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ARE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ARM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "AROUND",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "AUNT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "AWAKE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BAABAA",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BABY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BABYSITTER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BACKYARD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BAD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BALL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BALLOON",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BASEMENT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BASKET",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BAT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BATH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BATHROOM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BATHTUB",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BEADS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BEAR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BECAUSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BED",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BEDROOM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BEE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BEFORE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BELLYBUTTON",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BELT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BENCH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BESIDE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BIB",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BICYCLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BIG",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BIRD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BITE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BLACK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BLOCK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BLOW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BLUE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BOAT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BOOK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BOOTS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BOY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BREAK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BREAKFAST",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BRING",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BROKEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BROTHER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BROWN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BUBBLES",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BUG",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BUILD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BUMP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BUS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BUT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BUTTERFLY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BUTTON",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BUY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "BYE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CALLONPHONE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CAMERA",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CAN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CANDY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CAR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CAREFUL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CARROT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CARRY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CARTCARRIAGE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CAT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CATCH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CEREAL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CHAIR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CHALK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CHASE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CHEEK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CHEESE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CHICKEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CHILD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CHILDREN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CHOCOLATE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CHOOSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CLAP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CLEAN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CLIMB",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CLOSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CLOSET",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CLOUD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CLOWN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "COATS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "COFFEE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "COLD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "COOK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "COUCH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "COULD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "COVER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "COW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "COWBOY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CRAYON",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CRY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CUT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "CUTE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DAD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DANCE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DARK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DAY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DEER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DIAPER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DID",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DIME",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DINNER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DINOSAUR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DIRTY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DOCTOR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DOES",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DOG",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DOLL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DONKEY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DONT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DOOR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DOWN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DOWNTOWN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DRAW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DRAWER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DRESS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DRINK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DRIVE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DROP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DRY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DRYER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DUCK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "DUMP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "EACH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "EAR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "EAT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ELEPHANT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "EMPTY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ENTER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "EVERY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "EYE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FACE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FALL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FARM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FAST",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FEED",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FEET",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FIND",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FINE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FINGER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FINISH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FIREMAN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FIRETRUCK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FIRST",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FISH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FIT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FIX",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FLAG",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FLIPFLOP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FLOWER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FOOD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FOR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FRENCHFRIES",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FRIEND",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FROG",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FULL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "FULLFOOD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GAME",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GARBAGE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GARDEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GENTLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GET",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GIFT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GIRAFFE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GIRL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GIVE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GIVEMEFIVE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GLASSES",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GLASSWINDOW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GLOVES",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GLUE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GOINGTO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GOOD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GOOSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GOPOTTY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GOTTO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GRANDMA",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GRANDPA",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GRASS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "GREEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HAIR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HAMMER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HAND",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HARD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HAT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HATE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HAVE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HAVETO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HEAD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HEAR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HEAVY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HELLO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HELP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HESHEIT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HIDE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HIGH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HOLD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HOME",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HORSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HOSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HOT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HOW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HUG",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HURRY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "HURT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "IF",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "INSIDEIN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "INTO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "IS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "JACKET",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "JAR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "JEANS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "JELLY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "JUICE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "JUMP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "KICK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "KISS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "KITCHEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "KNIFE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "KNOCK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LADDER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LADY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LAMP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LAST",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LATER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LAWNMOWER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LETME",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LICK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LIGHTBULB",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LIKE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LION",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LIPS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LISTEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LITTLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LIVINGROOM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LONG",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LOOK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LOUD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LOVE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "LUNCH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MAD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MAILMAN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MAKE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MAN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MANY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MINEMY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MITTEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MOM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MONKEY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MOON",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MOOSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MORE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MORNING",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MOTORCYCLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MOUSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MOUTH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MUCH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "MUST",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NAP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NAUGHTY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NECKLACE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NEEDNEEDTO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NEW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NIGHT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NIGHTNIGHT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NOISY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NONE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NOSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NOT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NOW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NURSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "NUTS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "OF",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "OFF",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "OLD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ON",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "OPEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ORANGE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "OUTSIDE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "OVEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "OWIE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "OWL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PAINT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PAJAMAS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PANTS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PARTY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PEAS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PEEKABOO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PENCIL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PENGUIN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PENIS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PENNY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PEOPLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PERSON",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PETSNAME",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PICK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PIG",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PILLOW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PIZZA",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PLANTS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PLATE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PLAY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PLAYDOUGH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PLAYGROUNDSCHOOL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PLAYPEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PLEASE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "POLICE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PONY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "POOL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "POOR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "POPSICLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "POTATO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "POTATOCHIP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "POUR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PRESENT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PRETEND",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PRETTY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PULL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PUMPKIN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PUPPY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PUSH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PUT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "PUZZLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "QUIET",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "RABBIT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "RADIO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "RAIN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "READ",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "RED",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "REFRIGERATOR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "RIDE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "RIP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ROCK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ROCKINGCHAIR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ROOF",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ROOM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ROOSTER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "RUN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SAD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SAME",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SANDBOX",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SAY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SCARED",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SCARF",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SCISSORS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SEE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHAKE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHARE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHEEP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHHH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHIRT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHOE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHOPPING",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHORTS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHOULD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHOULDER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHOVEL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SHOW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SICK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SIDEWALK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SING",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SINK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SISTER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SIT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SKATE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SKIRT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SKY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SLED",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SLEEP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SLEEPY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SLIDE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SLIDENOUN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SLIDEVERB",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SLIPPER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SLOW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SMILE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SNACK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SNEAKER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SNOW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SNOWMAN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SNOWSUIT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SOBIG",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SOCK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SODAPOP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SOFT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SOME",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SPILL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SPLASH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SPRINKLER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SQUIRREL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "STAIRS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "STAY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "STICK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "STICKY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "STOP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "STORE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "STORY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "STREET",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "STROLLER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "STUCK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SUN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SWEATER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SWEEP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SWIM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "SWING",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TABLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TAKEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TALK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TALL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TASTE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TEACHER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TEAR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TEDDY-BEAR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "THANK-YOU",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "THAT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "THE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "THEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "THERE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "THINK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "THIRSTY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "THROW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TICKLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TIGER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TIGHTS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TIME",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TINY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TIRED",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TODAY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TOILET",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TOMORROW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TONGUE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TONIGHT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TOO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TOOTH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TOOTHBRUSH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TOUCH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TOY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TRACTOR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TRAIN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TRASH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TREE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TRUCK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TRYTRYTO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TURKEY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TURNAROUND",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "TV",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "UHOH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "UNCLE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "UNDERWEAR",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "UP",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "VACUUM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "VAGINA",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "VITAMINS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WAIT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WAKE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WALK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WANTTO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WAS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WASH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WASHINGMACHINE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WATCH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WATER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WATERHOSE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WERE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WET",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WEUS",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WHAT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WHEN",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WHERE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WHITE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WHO",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WHY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WILL",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WIND",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WINDOW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WINDY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WIPE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WISH",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WOLF",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WORK",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WOULD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "WRITE",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "YARD",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "YELLOW",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "YES",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "YESTERDAY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "YOGURT",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "YOURSELF",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "YUCKY",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "YUMYUM",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ZEBRA",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  },
+  {
+   "class": "ZIPPER",
+   "n": 0,
+   "recall": null,
+   "precision": null,
+   "signers": 0
+  }
+ ],
+ "unknown_signs_evaluated": [
+  "__fingerspelling__"
+ ]
+}

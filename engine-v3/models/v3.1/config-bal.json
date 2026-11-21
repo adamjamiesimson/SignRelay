@@ -1,0 +1,20 @@
+{
+ "cache": "/home/user/data/cache3",
+ "out": "/home/user/data/runs/v31-bal",
+ "kind": "convformer",
+ "dim": 192,
+ "depth": 2,
+ "epochs": 55,
+ "bs": 64,
+ "lr": 0.002,
+ "wd": 0.05,
+ "smooth": 0.1,
+ "unknown_weight": 0.3,
+ "seed": 0,
+ "no_face": true,
+ "threads": 2,
+ "late_drop_epoch": 0,
+ "policy": null,
+ "fs_negatives": true,
+ "balance": 0.5
+}
