@@ -6,7 +6,8 @@ import { chromium } from "playwright";
 import { readFile, writeFile } from "node:fs/promises";
 const [origin, reel, truthPath, out] = process.argv.slice(2);
 const truth = JSON.parse(await readFile(truthPath, "utf8"));
-const browser = await chromium.launch({ args: ["--no-sandbox", "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream",
+const proxy = origin.startsWith("https:") && process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {};
+const browser = await chromium.launch({ ...proxy, args: ["--no-sandbox", "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream",
   `--use-file-for-fake-video-capture=${reel}`] });
 const page = await browser.newPage();
 // Optional slower-device emulation (DevTools CPU throttling; applies to the page renderer).
