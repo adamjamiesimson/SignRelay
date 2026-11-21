@@ -94,7 +94,7 @@ async function runFile(file) {
   await new Promise((ok, err) => { v.onloadedmetadata = ok; v.onerror = () => err(new Error("cannot decode video")); });
   const [w, h] = analysisSize(v.videoWidth, v.videoHeight);
   const n = Math.max(1, Math.round(v.duration * FPS)); // same count as ffmpeg fps=15 (round half up)
-  if (n > FPS * 20) throw new Error("Videos up to 20 s are supported in file mode");
+  if (n > FPS * 60) throw new Error("Videos up to 60 s are supported in file mode");
   await call({ type: "reset" });
   const frames = [], t0 = performance.now(); let handN = 0;
   for (let k = 0; k < n; k++) {
@@ -230,7 +230,10 @@ function exportResults() {
 // ------------------------------------------------------------------ wiring
 $("#startcam").onclick = () => startCamera().catch(e => log("Camera error:", e.message));
 $("#stopcam").onclick = stopCamera;
-$("#file").onchange = e => { const f = e.target.files[0]; if (f) runFile(f).catch(err => log("File error:", err.message)); };
+$("#file").onchange = e => {
+  const f = e.target.files[0];
+  if (f) runFile(f).catch(err => { log("File error:", err.message); window.__lastFileError = err.message; });
+};
 $("#trialbtn").onclick = () => {
   const target = $("#target").value.trim().toUpperCase();
   if (!state.classes.includes(target)) { $("#trialstate").textContent = "Pick a sign from the vocabulary list."; return; }

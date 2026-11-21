@@ -18,9 +18,11 @@ const save = async () => writeFile(out, JSON.stringify({ startupMs, version, use
 for (const v of videos) {
   const s = Date.now();
   try {
-    await page.evaluate(() => { window.__lastFileResult = null; });
+    await page.evaluate(() => { window.__lastFileResult = null; window.__lastFileError = null; });
     await page.setInputFiles("#file", v);
-    await page.waitForFunction(() => window.__lastFileResult, null, { timeout: 600000 });
+    await page.waitForFunction(() => window.__lastFileResult || window.__lastFileError, null, { timeout: 600000 });
+    const fileError = await page.evaluate(() => window.__lastFileError);
+    if (fileError) throw new Error("lab file error: " + fileError);
     const r = await page.evaluate(() => ({ result: window.__lastFileResult, frames: window.__lastFileFrames }));
     r.video = v; r.wallMs = Date.now() - s; results.push(r);
     console.log(v.split("/").pop(), r.result.status, r.result.label ?? r.result.best, `${r.result.frameCount} frames, hands ${r.result.handFrameCount}, ${r.wallMs} ms`);
