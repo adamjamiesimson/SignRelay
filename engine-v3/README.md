@@ -3,7 +3,8 @@
 Engine V3 is a standalone research engine. It does not change the production SignRelay app.
 
 * **Decision record:** [RESEARCH-DECISION.md](RESEARCH-DECISION.md)
-* **Results:** [REPORT.md](REPORT.md) and `ledger/` (machine-readable evaluation reports)
+* **Results:** [REPORT-V3.1.md](REPORT-V3.1.md) (current: V3.1 model, camera path, holdout-2), [REPORT.md](REPORT.md) (V3.0) and `ledger/` (machine-readable evaluation reports)
+* **Models:** `models/v3.1/` (current, frozen) and `models/v3.0/` (preserved)
 * **Vocabulary:** [vocabulary/](vocabulary/) — frozen policy, class manifest
 
 ## Layout

@@ -10,6 +10,8 @@ const SPLIT = Q.get("split") === "1";
 // Pose landmarker on every 2nd analysed camera frame (default; ?pose=1 for every frame). A/B on 60 dev
 // signs: 29 vs 28 correct, same wrong count, ~12.0 vs ~10.3 analysed fps; validation simulation: no top-1 cost.
 const POSE_EVERY = Math.max(1, Number(Q.get("pose") ?? 2) | 0);
+// ?latest=0 restores "skip while busy" scheduling for A/B.
+const LATEST = Q.get("latest") !== "0";
 function spawn() {
   const w = new Worker(new URL("./worker.js", import.meta.url)); let seq = 0; const pending = new Map();
   w.onmessage = ({ data }) => {
@@ -153,16 +155,28 @@ async function startCamera() {
   await Promise.all([call({ type: "reset" }), poseCall?.({ type: "reset" })]);
   state.running = true; seg.samples = []; seg.active = false;
   const stats = state.stats = { sent: 0, done: 0, skipped: 0, hands: 0, t0: performance.now(), ms: [], recent: [] };
-  let busy = false, lastSent = -1e9, lastPose = null;
+  let busy = false, lastSent = -1e9, lastPose = null, pending = null;
+  // Latest-frame scheduling: a camera frame that arrives while the tracker is busy is captured as
+  // "pending" (replacing any older one) and processed as soon as the tracker frees, instead of
+  // waiting for the next camera callback (which halved the rate when work > frame interval; ledger).
+  const grab = async () => {
+    const [w, h] = analysisSize(v.videoWidth, v.videoHeight, Math.min(CAMERA_MAX_LONG_SIDE, Math.max(v.videoWidth, v.videoHeight)));
+    return { bmp: await createImageBitmap(v, { resizeWidth: w, resizeHeight: h, resizeQuality: "high" }), w, h, t: performance.now() };
+  };
   const tick = async () => {
     if (!state.running) return;
     v.requestVideoFrameCallback(tick);
+    if (busy) {
+      if (LATEST) { const g = await grab(); pending?.bmp.close(); pending = g; }
+      stats.skipped++; return;
+    }
     const t = performance.now();
-    if (busy || t - lastSent < 1000 / FPS - 4) { stats.skipped++; return; }
+    if (t - lastSent < 1000 / FPS - 4) { stats.skipped++; return; }
+    process(await grab());
+  };
+  const process = async ({ bmp, w, h, t }) => {
     busy = true; lastSent = t; stats.sent++;
     try {
-      const [w, h] = analysisSize(v.videoWidth, v.videoHeight, Math.min(CAMERA_MAX_LONG_SIDE, Math.max(v.videoWidth, v.videoHeight)));
-      const bmp = await createImageBitmap(v, { resizeWidth: w, resizeHeight: h, resizeQuality: "high" });
       let r;
       if (poseCall) {
         const bmp2 = await createImageBitmap(bmp);
@@ -187,7 +201,13 @@ async function startCamera() {
       if (DEBUG) (window.__camSamples ??= []).push({ t, sent: lastSent, done: performance.now(), hands: r.hands, ms: r.ms,
         f: Array.from(r.frame, x => (Number.isFinite(x) ? x : null)) });
       onSample(t, r.frame);
-    } finally { busy = false; }
+    } finally {
+      busy = false;
+      const p = pending; pending = null;
+      if (p && state.running) {
+        if (p.t - lastSent >= 1000 / FPS - 4) process(p); else p.bmp.close();
+      }
+    }
   };
   v.requestVideoFrameCallback(tick);
   const diag = setInterval(() => {
