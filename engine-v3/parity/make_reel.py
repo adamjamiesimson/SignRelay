@@ -7,7 +7,8 @@ and separated by 1.5 s of a neutral frame without hands, so ground-truth interva
 """
 import json, subprocess, sys
 
-W, H, FPS, GAP = 640, 480, 30, 1.5
+import os
+W, H, FPS, GAP = int(os.environ.get("REEL_W", 640)), int(os.environ.get("REEL_H", 480)), int(os.environ.get("REEL_FPS", 30)), 1.5
 
 def main(plan_path, out, truth_path):
     plan = json.load(open(plan_path)); parts, truth, t = [], [], 0.0

@@ -9,6 +9,11 @@ const truth = JSON.parse(await readFile(truthPath, "utf8"));
 const browser = await chromium.launch({ args: ["--no-sandbox", "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream",
   `--use-file-for-fake-video-capture=${reel}`] });
 const page = await browser.newPage();
+// Optional slower-device emulation (DevTools CPU throttling; applies to the page renderer).
+if (process.env.CPU_THROTTLE) {
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: Number(process.env.CPU_THROTTLE) });
+}
 await page.goto(`${origin}/${process.env.V3_QUERY ?? "?debug"}`);
 await page.waitForSelector("body[data-ready]", { state: "attached", timeout: 180000 });
 await page.evaluate(() => { window.__t0 = null; const v = document.querySelector("#cam");
