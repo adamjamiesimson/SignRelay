@@ -1,0 +1,4 @@
+
+> signrelay@0.1.0 lint
+> eslint . --ignore-pattern .next --ignore-pattern out --ignore-pattern .sites-runtime
+

@@ -25,3 +25,7 @@ Keep the checkout and prepared `out/` together, including the runtime manifest. 
 If a camera attempt fails, confirm browser and operating-system permissions and retry once. If tracking remains poor, stop live signing and demonstrate the transcript workflow or use a clearly identified, authorized development recording with its measured outcome. A browser fake camera is a software check. Keep any private evaluation material local and access-controlled.
 
 See [TEST_RESULTS.md](TEST_RESULTS.md) for executed offline checks and [PHYSICAL_TEST_CHECKLIST.md](PHYSICAL_TEST_CHECKLIST.md) for the device rehearsal.
+
+## Prepared cloud artifact
+
+The prepared archive is `/workspace/shared/signrelay-asl-demo.tar.gz`, with SHA-256 `50a48d6e24b2de0c6d1e7e8458a932f6a69244ea93dfe58f9a0b5ee4150067b5`. It includes the verified ASL export and a standalone loopback server. After extraction on a prepared Node 22.13+ host, the operator can run `node scripts/serve-export.mjs --host 127.0.0.1 --port 3000` from the extracted directory. Its START.txt supplies these instructions. The archive contains the tested worker and no participant footage. Camera hardware and offline operating-system speech still require the physical checklist.

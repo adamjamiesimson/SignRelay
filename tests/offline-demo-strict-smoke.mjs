@@ -35,6 +35,11 @@ export const QUIET_CHROME = ["--disable-background-networking", "--disable-compo
 // plants a page request to one of these hosts to prove it is still caught.
 export const BROWSER_INTERNAL_HOSTS = new Set(["www.google.com:443", "accounts.google.com:443", "android.clients.google.com:443",
   "www.gstatic.com:443", "update.googleapis.com:443"]);
+// Chromium 156 also sends its component-update check over HTTP when a
+// deny proxy refuses TLS. Reproduced on about:blank. CDP page/worker traffic
+// is checked independently, including the self-test below.
+const browserInternal = line => BROWSER_INTERNAL_HOSTS.has(line.replace(/^CONNECT /, ""))
+  || /^POST http:\/\/update\.googleapis\.com\/service\/update2\/json(?:\?|$)/.test(line);
 const outbound = [];
 const deny = createServer((request, response) => { outbound.push(`${request.method} ${request.url}`); response.writeHead(403); response.end(); });
 // Chrome may reset a refused tunnel; a reset socket is expected, not a test failure.
@@ -121,11 +126,11 @@ try {
     assert.ok(leaked.includes("https://cdn.jsdelivr.net/npm/signrelay-self-test"), "Self-test: worker leak was not detected");
     assert.ok(leaked.includes("https://www.gstatic.com/signrelay-self-test"), "Self-test: a page request to a browser-internal host was excused");
     assert.ok(outbound.some(line => line.includes("example.org")), "Self-test: the deny proxy did not see the page leak");
-    console.log(JSON.stringify({ self_test: "passed", detected: leaked, refused_by_proxy: outbound.filter(line => !BROWSER_INTERNAL_HOSTS.has(line.replace(/^CONNECT /, ""))) }));
+    console.log(JSON.stringify({ self_test: "passed", detected: leaked, refused_by_proxy: outbound.filter(line => !browserInternal(line)) }));
     process.exitCode = 0;
   } else {
   assert.deepEqual(leaked, [], `The page requested non-loopback URLs: ${leaked.join(", ")}`);
-  const unexplained = outbound.filter(line => !BROWSER_INTERNAL_HOSTS.has(line.replace(/^CONNECT /, "")));
+  const unexplained = outbound.filter(line => !browserInternal(line));
   assert.deepEqual(unexplained, [], `Outbound connections were attempted: ${unexplained.join(", ")}`);
   assert.ok(workers.some(url => url.includes("recognition.worker.js")), "The recognition worker was not observed, so its requests were not checked");
   assert.match(perf ?? "", /assets self-hosted/, "The ?perf readout must confirm self-hosted assets");

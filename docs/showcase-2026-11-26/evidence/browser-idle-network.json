@@ -1,0 +1,11 @@
+{
+  "page": "about:blank",
+  "requests": [
+    "GET http://clients2.google.com/time/1/current?cup2key=ML-DSA-44-10:xq85INavJnoUxLsbfQfH6l9_tWvMpgprGnRzbJgF9AI&cup2hreq=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "CONNECT accounts.google.com:443",
+    "CONNECT update.googleapis.com:443",
+    "POST http://update.googleapis.com/service/update2/json?cup2key=ML-DSA-44-16:Z2ZHVYZ7gkFA8gZ3Y6Thk1bjZRvipus-KMifSXSOz9A&cup2hreq=48353a9a6179b79e3db82e3626cdfefb98b95d0ceb825e33a237cbb3917db236",
+    "CONNECT accounts.google.com:443",
+    "CONNECT accounts.google.com:443"
+  ]
+}

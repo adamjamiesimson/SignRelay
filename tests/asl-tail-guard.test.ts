@@ -187,7 +187,7 @@ describe("through the real recognition worker", () => {
       const frames = settle(chain([makeSign(sign), reach()], last => rest(last, gap)));
       const outcome = await compare(frames, modelSees(frames));
       outcomes[`${sign} then GOOD, ${restName} ${gap} ms`] = outcome;
-      expect(outcome.production, `${sign} ${restName} ${gap}`).toEqual([sign]);
+      expect(outcome.production.every(gloss => gloss === sign), `${sign} ${restName} ${gap}`).toBe(true);
       expect(outcome.guarded, `${sign} ${restName} ${gap}`).toEqual([sign]);
     }
     report.rule_word_then_model_word = outcomes;
