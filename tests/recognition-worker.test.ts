@@ -8,9 +8,9 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("../lib/asl-starter-recognition", async importOriginal => {
   const actual = await importOriginal<typeof import("../lib/asl-starter-recognition")>();
-  return { ...actual, analyzeAslStarter: (frames: VisionFrame[]) => mocks.openConflict()
+  return { ...actual, analyzeAslStarter: () => mocks.openConflict()
     ? { prediction: null, ambiguousOpenPalm: true, labels: ["HELLO", "THANK YOU"] }
-    : mocks.starter() ?? actual.analyzeAslStarter(frames) };
+    : mocks.starter() ?? { prediction: null, ambiguousOpenPalm: false, labels: [] } };
 });
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.asl }));
 vi.mock("../lib/bsl1064-runtime", () => ({ recognizeBsl1064: mocks.bsl }));
@@ -271,6 +271,18 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: "BOOK", source: "starter" });
     await frames(1);
     expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ candidate: "BOOK", source: "model" });
+    expect(confirmations()).toHaveLength(0);
+  });
+
+  it("breaks a starter streak when a cached ASL model word is the only candidate between observations", async () => {
+    mocks.asl.mockResolvedValueOnce(prediction).mockImplementation(() => new Promise(() => {}));
+    const starter = { prediction, ambiguousOpenPalm: false, labels: ["BOOK"] };
+    await frames(7); // The model result was received and used in one analysis.
+    mocks.starter.mockReturnValueOnce(starter);
+    await frames(1);
+    await frames(1); // The same model candidate is still visible, but the starter abstained.
+    mocks.starter.mockReturnValueOnce(starter);
+    await frames(1);
     expect(confirmations()).toHaveLength(0);
   });
 

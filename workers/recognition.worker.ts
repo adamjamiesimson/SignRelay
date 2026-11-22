@@ -247,15 +247,16 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     return;
   }
   if (result === latestPrediction) {
-    if (consumedPredictionVersion === predictionVersion) return;
-    consumedPredictionVersion = predictionVersion;
     // The WLASL model's measured precision on camera landmarks is too low
     // to write into the transcript. Its output stays in the candidate bar.
     if (activeLanguage === "asl") {
+      consumedPredictionVersion = predictionVersion;
       candidateLabel = null;
       candidateStreak = 0;
       return;
     }
+    if (consumedPredictionVersion === predictionVersion) return;
+    consumedPredictionVersion = predictionVersion;
   }
   if (result === latestPersonal) {
     if (consumedPersonalVersion === personalVersion) return;

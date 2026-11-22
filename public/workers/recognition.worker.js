@@ -15432,13 +15432,14 @@ self.onmessage = async (event) => {
     return;
   }
   if (result === latestPrediction) {
-    if (consumedPredictionVersion === predictionVersion) return;
-    consumedPredictionVersion = predictionVersion;
     if (activeLanguage === "asl") {
+      consumedPredictionVersion = predictionVersion;
       candidateLabel = null;
       candidateStreak = 0;
       return;
     }
+    if (consumedPredictionVersion === predictionVersion) return;
+    consumedPredictionVersion = predictionVersion;
   }
   if (result === latestPersonal) {
     if (consumedPersonalVersion === personalVersion) return;
