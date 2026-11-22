@@ -16,8 +16,17 @@ const require = createRequire(import.meta.url);
 const sha = bytes => createHash("sha256").update(bytes).digest("hex");
 const fileSha = path => existsSync(path) ? sha(readFileSync(path)) : null;
 
+export const FULL_MODEL_FILES = {
+  "bdsl401-videomae": ["model.onnx", "labels.json", "manifest.json"],
+  "bsl1064-pose2sign": ["model.onnx", "labels.json", "model.json"],
+  "isl263-include": ["model.onnx", "labels.json", "model.json"],
+  "lse300-swl": ["model.onnx", "labels.json", "model.json"],
+  "psl776-hfad": ["templates.json.gz", "labels.json"],
+  "rsl1000-slovo": ["model.onnx", "labels.json", "manifest.json"],
+};
 /** Language model directories that the ASL demo profile must not ship. */
-export const NON_ASL_MODEL_DIRS = ["bdsl401-videomae", "bsl1064-pose2sign", "isl263-include", "lse300-swl", "psl776-hfad", "rsl1000-slovo"];
+export const NON_ASL_MODEL_DIRS = Object.keys(FULL_MODEL_FILES);
+export const NON_ASL_WORKERS = ["rsl.worker.js", "bdsl.worker.js"];
 export const REHEARSAL_HOOK = "__signrelayRehearsal";
 const jsFiles = dir => !existsSync(dir) ? [] : readdirSync(dir).flatMap(name => {
   const path = join(dir, name);
@@ -27,10 +36,10 @@ const jsFiles = dir => !existsSync(dir) ? [] : readdirSync(dir).flatMap(name => 
 export const KEPT_NOTICES = new Set(["ATTRIBUTION.md", "LICENSE.pdf"]);
 
 /** @param {{ root: string, wasmSource: string, ortSource: string, expectedAslPins?: string | null,
- *   expectedTemplateWorker?: string | null, committedWorker?: string | null, evaluated?: any[],
+ *   expectedTemplateWorker?: string | null, committedWorker?: string | null, evaluated?: any[], sourceRoot?: string,
  *   profile?: string, wasmFiles?: string[], models?: Record<string, { file: string, bytes: number, sha256: string }> }} options */
 export function verifyRuntime({ root, wasmSource, ortSource, expectedAslPins, expectedTemplateWorker,
-  committedWorker = null, evaluated = [], profile = "full",
+  committedWorker = null, evaluated = [], sourceRoot, profile = "full",
   wasmFiles = VISION_WASM_FILES, models = VISION_MODELS }) {
   const failures = [];
   const fail = (what, fix) => failures.push(`${what} — ${fix}`);
@@ -88,15 +97,28 @@ export function verifyRuntime({ root, wasmSource, ortSource, expectedAslPins, ex
     fail("workers/template-matching.worker.js differs from the built bundle", "run npm run build:worker and rebuild the export");
   const evidence = evaluated.find(entry => entry.worker_sha256 === worker);
   manifest.real_video_evidence = evidence ? { outcome: evidence.outcome, evidence: evidence.evidence } : null;
+  if (profile === "full" && sourceRoot) {
+    const modelPaths = Object.entries(FULL_MODEL_FILES).flatMap(([dir, files]) => files.map(file => `models/${dir}/${file}`));
+    for (const path of [...modelPaths, ...NON_ASL_WORKERS.map(file => `workers/${file}`)]) {
+      const actual = record(path, join(root, path));
+      if (!actual) fail(`missing ${path}`, "rebuild with npm run build:firebase");
+      else if (root !== sourceRoot && actual !== fileSha(join(sourceRoot, path)))
+        fail(`${path} differs from the source or built asset`, "restore the verified source asset and rebuild with npm run build:firebase");
+    }
+  }
   // The rehearsal hook must exist only in the rehearsal build.
   const scripts = jsFiles(join(root, "_next"));
   const hooked = scripts.filter(file => readFileSync(file, "utf8").includes(REHEARSAL_HOOK));
   manifest.rehearsal_hook = hooked.length > 0;
   if (profile !== "rehearsal" && hooked.length) fail(`${profile} export contains the automated rehearsal hook`, "rebuild without NEXT_PUBLIC_SIGNRELAY_PROFILE=rehearsal");
   if (profile === "rehearsal" && scripts.length && !hooked.length) fail("rehearsal export is missing its rehearsal hook", "rebuild with npm run build:rehearsal");
-  if (profile === "asl-demo" || profile === "rehearsal") for (const dir of NON_ASL_MODEL_DIRS) {
-    const shipped = existsSync(join(root, "models", dir)) ? readdirSync(join(root, "models", dir)).filter(name => !KEPT_NOTICES.has(name)) : [];
-    if (shipped.length) fail(`asl-demo export contains models/${dir}/${shipped.join(", ")}`, "the ASL profile must not ship other language models; rebuild with npm run build:asl-demo");
+  if (profile === "asl-demo" || profile === "rehearsal") {
+    for (const dir of NON_ASL_MODEL_DIRS) {
+      const shipped = existsSync(join(root, "models", dir)) ? readdirSync(join(root, "models", dir)).filter(name => !KEPT_NOTICES.has(name)) : [];
+      if (shipped.length) fail(`asl-demo export contains models/${dir}/${shipped.join(", ")}`, "the ASL profile must not ship other language models; rebuild with npm run build:asl-demo");
+    }
+    for (const file of NON_ASL_WORKERS) if (existsSync(join(root, "workers", file)))
+      fail(`asl-demo export contains workers/${file}`, "the ASL profile must not ship other languages' clip workers; rebuild with npm run build:asl-demo");
   }
   return { ok: failures.length === 0, failures, manifest };
 }
@@ -111,6 +133,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     wasmSource: join(dirname(require.resolve("@mediapipe/tasks-vision")), "wasm"), ortSource: dirname(require.resolve("onnxruntime-web")),
     expectedAslPins: committedAslPins.status === 0 ? sha(committedAslPins.stdout) : fileSha("public/models/asl2000-tgcn/sha256.txt"),
     expectedTemplateWorker: fileSha("public/workers/template-matching.worker.js"),
+    sourceRoot: "public",
     committedWorker: committed.status === 0 ? sha(committed.stdout) : null,
     evaluated: JSON.parse(readFileSync("docs/evaluation/evaluated-runtimes.json", "utf8")).runtimes });
   if (args.includes("--require-evaluated") && !result.manifest.real_video_evidence)

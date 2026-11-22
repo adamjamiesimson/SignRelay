@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { verifyRuntime } from "../scripts/verify-runtime.mjs";
+import { FULL_MODEL_FILES, NON_ASL_WORKERS, verifyRuntime } from "../scripts/verify-runtime.mjs";
 
 // Synthetic stand-in files only: small byte strings, not real models.
 const sha = (text: string) => createHash("sha256").update(text).digest("hex");
@@ -63,6 +63,26 @@ describe("deterministic runtime verifier", () => {
     const result = verifyRuntime({ ...withRsl(["ATTRIBUTION.md", "labels.json"]), profile: "asl-demo" });
     expect(result.failures.join("\n")).toContain("asl-demo export contains models/rsl1000-slovo/labels.json");
     expect(verifyRuntime({ ...withRsl(["ATTRIBUTION.md", "LICENSE.pdf"]), profile: "asl-demo" }).ok).toBe(true);
+    const withRslWorker = fixture(root => writeFileSync(join(root, "workers/rsl.worker.js"), "worker"));
+    expect(verifyRuntime({ ...withRslWorker, profile: "asl-demo" }).failures).toContainEqual(expect.stringContaining("asl-demo export contains workers/rsl.worker.js"));
+  });
+  it("checks all installed full-profile models and clip workers against their source assets", () => {
+    const setup = fixture();
+    const sourceRoot = join(dirname(setup.root), "public");
+    const paths = Object.entries(FULL_MODEL_FILES).flatMap(([dir, files]) => files.map(file => `models/${dir}/${file}`));
+    for (const base of [setup.root, sourceRoot]) {
+      for (const path of [...paths, ...NON_ASL_WORKERS.map(file => `workers/${file}`)]) {
+        const target = join(base, path);
+        mkdirSync(dirname(target), { recursive: true });
+        writeFileSync(target, path);
+      }
+    }
+    expect(verifyRuntime({ ...setup, sourceRoot }).ok).toBe(true);
+    writeFileSync(join(setup.root, "models/bsl1064-pose2sign/labels.json"), "changed");
+    rmSync(join(setup.root, "models/rsl1000-slovo/model.onnx"));
+    const result = verifyRuntime({ ...setup, sourceRoot });
+    expect(result.failures.join("\n")).toContain("models/bsl1064-pose2sign/labels.json differs from the source");
+    expect(result.failures.join("\n")).toContain("missing models/rsl1000-slovo/model.onnx");
   });
   it("allows the automated rehearsal hook only in the rehearsal profile", () => {
     const hooked = () => fixture(root => { mkdirSync(join(root, "_next/static/chunks"), { recursive: true }); writeFileSync(join(root, "_next/static/chunks/app.js"), "window.__signrelayRehearsal={}"); });

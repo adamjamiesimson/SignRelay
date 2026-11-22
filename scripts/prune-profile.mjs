@@ -5,9 +5,9 @@
 import { readdir, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { KEPT_NOTICES, NON_ASL_MODEL_DIRS } from "./verify-runtime.mjs";
+import { KEPT_NOTICES, NON_ASL_MODEL_DIRS, NON_ASL_WORKERS } from "./verify-runtime.mjs";
 
-export const NON_ASL_WORKERS = ["rsl.worker.js", "bdsl.worker.js"];
+export { NON_ASL_WORKERS };
 
 export async function pruneProfile(root, profile) {
   if (profile === "full") return { removed: [] };
