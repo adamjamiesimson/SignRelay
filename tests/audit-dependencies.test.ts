@@ -26,6 +26,19 @@ const braces = { vulnerabilities: {
 const clean = { vulnerabilities: {} };
 
 describe("fail-closed dependency gate", () => {
+  it("fails when the registry returns an error payload or an incomplete report", () => {
+    const result = evaluateAudit({
+      full: { error: { code: "E503" } },
+      production: {},
+      exceptions,
+      today: "2026-10-21",
+    });
+    expect(result.ok).toBe(false);
+    expect(result.failures).toEqual([
+      "Full npm audit did not return an advisory report.",
+      "Production npm audit did not return an advisory report.",
+    ]);
+  });
   it("accepts only the reviewed development braces chain before it expires", () => {
     const result = evaluateAudit({ full: braces, production: clean, exceptions, today: "2026-10-21" });
     expect(result.ok).toBe(true);
