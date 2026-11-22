@@ -71,7 +71,15 @@ try {
   await click("Start camera");
   await until(async () => /Ready\./.test(await status()), "Model/camera failed to become ready", 180000);
   console.log("Actual pretrained ONNX loaded in Chrome; fake camera ready.");
-  await click("Recognize one sign");
+  const scheduled = await evaluate(`(() => {
+    const button = Array.from(document.querySelectorAll('button')).find(b => b.textContent === 'Recognize one sign');
+    const raf = window.requestAnimationFrame;
+    let started = 0;
+    window.requestAnimationFrame = callback => { started++; return raf.call(window, callback); };
+    try { button.click(); button.click(); } finally { window.requestAnimationFrame = raf; }
+    return started;
+  })()`);
+  assert.equal(scheduled, 1, "Rapid repeated clicks must start exactly one capture loop");
   await until(async () => /Experimental suggestion|No confident match/.test(await status()), "Camera inference did not finish", 120000);
   console.log("Camera capture and worker inference completed:", await status());
   await writeFile("outputs/rsl-desktop.png", Buffer.from((await send("Page.captureScreenshot", { format: "png" })).data, "base64"));
