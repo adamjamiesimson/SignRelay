@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { isLanguageAvailable } from "../lib/build-profile";
-import { STEPS } from "../scripts/build-profile.mjs";
+import { profileEnvironment, STEPS } from "../scripts/build-profile.mjs";
 import { NON_ASL_WORKERS, pruneProfile } from "../scripts/prune-profile.mjs";
 import { NON_ASL_MODEL_DIRS } from "../scripts/verify-runtime.mjs";
 
@@ -43,6 +43,15 @@ describe("ASL demo build profile", () => {
     const root = fakeExport();
     expect((await pruneProfile(root, "full")).removed).toEqual([]);
     await expect(pruneProfile(root, "everything")).rejects.toThrow("Unknown profile");
+  });
+  it("build:firebase overrides an inherited demo profile and runs the full export gates", () => {
+    const env = { NEXT_PUBLIC_SIGNRELAY_PROFILE: "asl-demo", NEXT_PUBLIC_GA_MEASUREMENT_ID: "G-EXAMPLE" };
+    expect(profileEnvironment("full", env)).toEqual({ ...env, NEXT_PUBLIC_SIGNRELAY_PROFILE: "full" });
+    expect(profileEnvironment("asl-demo", env).NEXT_PUBLIC_GA_MEASUREMENT_ID).toBe("");
+    const steps = STEPS.full.map(step => step.join(" "));
+    for (const name of ["install:rsl-model", "verify-bdsl-assets", "verify-lse-assets", "verify-psl-assets", "secure-export"])
+      expect(steps.some(step => step.includes(name))).toBe(true);
+    expect(steps.at(-1)).toContain("verify-runtime.mjs --out out --profile full");
   });
   it("the asl-demo build keeps the private-route exclusion and security steps, then verifies the runtime", () => {
     const steps = STEPS["asl-demo"].map(step => step.join(" "));

@@ -1,32 +1,41 @@
-// One entry point per build profile. `full` is the existing multilingual
-// Firebase build (unchanged, including the RSL install). `asl-demo` skips the
-// RSL download and non-ASL asset checks, builds with the profile baked in,
-// prunes other language models, then verifies the exact runtime.
+// Bake the selected profile into every build. The ASL profiles skip the RSL
+// download and non-ASL asset checks, then prune other languages' runtime assets.
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
-/** @type {Record<string, string[][]>} */
-export const STEPS = {
-  "asl-demo": [
+function buildSteps(profile) {
+  const full = profile === "full";
+  return [
     ["node", "scripts/verify-vision-runtime.mjs"],
+    ...(full ? [
+      ["npm", "run", "install:rsl-model"],
+      ["node", "scripts/verify-bdsl-assets.mjs"],
+      ["node", "scripts/verify-lse-assets.mjs"],
+      ["node", "scripts/verify-psl-assets.mjs"],
+    ] : []),
     ["node", "scripts/prepare-export.mjs"],
     ["node", "scripts/install-vision-assets.mjs"],
     ["npm", "run", "build:worker"],
     ["npx", "next", "build"],
     ["node", "scripts/exclude-private-routes.mjs"],
-    ["node", "scripts/prune-profile.mjs", "asl-demo"],
+    ...(full ? [] : [["node", "scripts/prune-profile.mjs", profile]]),
     ["node", "scripts/secure-export.mjs"],
-    ["node", "scripts/verify-runtime.mjs", "--out", "out", "--profile", "asl-demo"],
-  ],
-};
-// Automated software rehearsal: the ASL demo build plus the labelled synthetic-landmark hook.
-STEPS.rehearsal = STEPS["asl-demo"].map(step => step.map(part => part === "asl-demo" ? "rehearsal" : part));
+    ["node", "scripts/verify-runtime.mjs", "--out", "out", "--profile", profile],
+  ];
+}
+
+export const STEPS = Object.fromEntries(["full", "asl-demo", "rehearsal"].map(profile => [profile, buildSteps(profile)]));
+
+export function profileEnvironment(profile, env = process.env) {
+  return { ...env, NEXT_PUBLIC_SIGNRELAY_PROFILE: profile,
+    ...(profile === "full" ? {} : { NEXT_PUBLIC_GA_MEASUREMENT_ID: "" }) };
+}
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const profile = process.argv[2];
-  if (!STEPS[profile]) throw new Error(`Usage: node scripts/build-profile.mjs ${Object.keys(STEPS).join("|")} (the full build is npm run build:firebase)`);
+  if (!Object.hasOwn(STEPS, profile)) throw new Error(`Usage: node scripts/build-profile.mjs ${Object.keys(STEPS).join("|")}`);
   // The offline demo must make no third-party requests, so analytics is never configured.
-  const env = { ...process.env, NEXT_PUBLIC_SIGNRELAY_PROFILE: profile, NEXT_PUBLIC_GA_MEASUREMENT_ID: "" };
+  const env = profileEnvironment(profile);
   for (const [command, ...args] of STEPS[profile]) {
     console.log(`\n▶ ${command} ${args.join(" ")}`);
     const result = spawnSync(command, args, { stdio: "inherit", env });

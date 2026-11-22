@@ -15,11 +15,14 @@ function fixture(edit: (root: string) => void = () => {}) {
   writeFileSync(join(root, "vision/models/hand.task"), "model-bytes");
   for (const dir of [ort, join(root, "workers")]) for (const file of ["ort-wasm-simd-threaded.jsep.wasm", "ort-wasm-simd-threaded.jsep.mjs"]) writeFileSync(join(dir, file), file);
   writeFileSync(join(root, "models/asl2000-tgcn/model.json"), "asl-model");
-  writeFileSync(join(root, "models/asl2000-tgcn/sha256.txt"), `${sha("asl-model")}  model.json\n`);
+  const pins = `${sha("asl-model")}  model.json\n${sha("[]")}  labels.json\n`;
+  writeFileSync(join(root, "models/asl2000-tgcn/sha256.txt"), pins);
   writeFileSync(join(root, "models/asl2000-tgcn/labels.json"), "[]");
   writeFileSync(join(root, "workers/recognition.worker.js"), "worker-v1");
+  writeFileSync(join(root, "workers/template-matching.worker.js"), "template-worker-v1");
   edit(root);
   return { root, wasmSource: wasm, ortSource: ort, wasmFiles: ["a.wasm"], committedWorker: sha("worker-v1"),
+    expectedAslPins: sha(pins), expectedTemplateWorker: sha("template-worker-v1"),
     models: { hand: { file: "hand.task", bytes: 11, sha256: sha("model-bytes") } },
     evaluated: [{ worker_sha256: sha("worker-v1"), outcome: { correct: 5 }, evidence: ["x"] }] };
 }
@@ -35,8 +38,12 @@ describe("deterministic runtime verifier", () => {
     ["a missing model", (root: string) => rmSync(join(root, "vision/models/hand.task")), "missing vision/models/hand.task"],
     ["a stale WASM copy", (root: string) => writeFileSync(join(root, "vision/wasm/a.wasm"), "old-wasm"), "differs from @mediapipe/tasks-vision"],
     ["a modified ASL model", (root: string) => writeFileSync(join(root, "models/asl2000-tgcn/model.json"), "patched"), "does not match sha256.txt"],
+    ["a rewritten ASL checksum list", (root: string) => writeFileSync(join(root, "models/asl2000-tgcn/sha256.txt"), `${sha("asl-model")}  model.json\n`), "differs from the source checksum list"],
+    ["missing ASL labels", (root: string) => rmSync(join(root, "models/asl2000-tgcn/labels.json")), "missing models/asl2000-tgcn/labels.json"],
     ["a missing ONNX Runtime file", (root: string) => rmSync(join(root, "workers/ort-wasm-simd-threaded.jsep.wasm")), "missing workers/ort-wasm"],
     ["an uncommitted worker build", (root: string) => writeFileSync(join(root, "workers/recognition.worker.js"), "worker-v2"), "differs from the committed bundle"],
+    ["a missing personal-template worker", (root: string) => rmSync(join(root, "workers/template-matching.worker.js")), "missing workers/template-matching.worker.js"],
+    ["a stale personal-template worker", (root: string) => writeFileSync(join(root, "workers/template-matching.worker.js"), "template-worker-v0"), "differs from the built bundle"],
   ])("fails with an actionable message for %s", (_name, edit, message) => {
     const result = verifyRuntime(fixture(edit));
     expect(result.ok).toBe(false);

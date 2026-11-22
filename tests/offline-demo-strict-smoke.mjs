@@ -50,17 +50,25 @@ try {
   // Chrome's own background services (sync, autofill, component updates, time
   // queries) are switched off so the proxy log measures only what SignRelay does.
   browser = await startChrome(executable, { proxy: `http://127.0.0.1:${deny.address().port}`, extraArgs: QUIET_CHROME });
-  const pageRequests = [], workers = [];
+  const pageRequests = [], workers = [], instrumentationErrors = [];
   browser.onEvent(message => {
     if (message.method === "Network.requestWillBeSent") pageRequests.push(message.params.request.url);
     if (message.method === "Target.attachedToTarget") {
       const { sessionId, targetInfo } = message.params;
       workers.push(targetInfo.url);
-      void browser.send("Network.enable", {}, sessionId).catch(() => {})
-        .then(() => browser.send("Runtime.runIfWaitingForDebugger", {}, sessionId)).catch(() => {});
+      void (async () => {
+        try {
+          await browser.send("Network.enable", {}, sessionId);
+          await browser.send("Network.setCacheDisabled", { cacheDisabled: true }, sessionId);
+          // CDP auto-attach covers direct children. Repeat for nested workers.
+          await browser.send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true }, sessionId);
+        } catch (error) { instrumentationErrors.push(`${targetInfo.url}: ${error}`); }
+        finally { await browser.send("Runtime.runIfWaitingForDebugger", {}, sessionId).catch(() => {}); }
+      })();
     }
   });
   await browser.send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
+  await browser.send("Network.setCacheDisabled", { cacheDisabled: true });
   const evaluate = browser.evaluate;
   const click = text => evaluate(`(() => { const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)}); if(!b||b.disabled) throw new Error('Missing button '+${JSON.stringify(text)}); b.click(); })()`);
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => { window.__qaTracks = [];
@@ -70,26 +78,43 @@ try {
   // so the leak reaches the network layer, as it would after a CSP regression.
   if (selfTest) await browser.send("Page.setBypassCSP", { enabled: true });
   await browser.send("Page.navigate", { url: `${origin}/?perf` });
-  await until(() => evaluate("Object.keys(document.querySelector('[role=radio]') ?? {}).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate");
+  const hydrated = () => evaluate("Object.keys(document.querySelector('[role=radio]') ?? {}).some(k=>k.startsWith('__reactFiber'))");
+  const active = () => evaluate("document.querySelector('.status-badge')?.textContent === 'Active'");
+  const tracksEnded = () => evaluate("window.__qaTracks.length > 0 && window.__qaTracks.every(t => t.readyState === 'ended')");
+  await until(hydrated, "Welcome screen did not hydrate");
+  assert.equal(await evaluate("window.isSecureContext"), true, "Loopback must be a secure context for camera access");
   const visited = ["/"];
   await click("Start translating");
-  await until(() => evaluate("document.querySelector('.status-badge')?.textContent === 'Active'"), "ASL vision did not start offline");
+  await until(active, "ASL vision did not start offline");
   // Long enough for one full 5 s throughput window after the first readout tick.
   await pause(6500);
   const perf = await evaluate("document.querySelector('[data-perf]')?.textContent");
   const throughputWarning = await evaluate("document.querySelector('[data-perf-warning]')?.textContent ?? null");
   const status = await evaluate("document.querySelector('.recognition-state')?.textContent.trim()");
   await click("Pause camera");
-  await until(() => evaluate("window.__qaTracks.length > 0 && window.__qaTracks.every(t => t.readyState === 'ended')"), "Camera tracks were not released");
+  await until(tracksEnded, "Camera tracks were not released");
+  if (!selfTest) {
+    const requestsBefore = pageRequests.length;
+    await browser.send("Page.reload", { ignoreCache: true });
+    await until(hydrated, "Welcome screen did not hydrate after reload");
+    await click("Start translating");
+    await until(active, "ASL vision did not restart offline after uncached reload");
+    const restarted = pageRequests.slice(requestsBefore);
+    assert.ok(restarted.some(url => url.includes("/vision/models/gesture_recognizer.task")), "Reload did not request a fresh local vision model");
+    assert.ok(restarted.some(url => url.includes("/workers/recognition.worker.js")), "Reload did not request a fresh recognition worker");
+    await click("Pause camera");
+    await until(tracksEnded, "Reloaded camera tracks were not released");
+  }
   for (const path of ["/languages", "/models", "/privacy"]) {
     await browser.send("Page.navigate", { url: `${origin}${path}` });
-    await until(() => evaluate("document.readyState === 'complete'"), `${path} did not load`);
+    await until(() => evaluate(`location.pathname === ${JSON.stringify(path)} && document.readyState === 'complete'`), `${path} did not load`);
     visited.push(path);
   }
   if (selfTest) await evaluate(`(() => { fetch('https://example.org/signrelay-self-test').catch(() => {});
     fetch('https://www.gstatic.com/signrelay-self-test').catch(() => {});
     new Worker(URL.createObjectURL(new Blob(["fetch('https://cdn.jsdelivr.net/npm/signrelay-self-test').catch(() => {})"], { type: "text/javascript" }))); })()`);
   await pause(1500);
+  assert.deepEqual(instrumentationErrors, [], "A worker's network requests could not be observed");
   const leaked = pageRequests.filter(url => !loopback(url));
   if (selfTest) {
     assert.ok(leaked.includes("https://example.org/signrelay-self-test"), "Self-test: page leak was not detected");
@@ -108,7 +133,7 @@ try {
   assert.equal(status, "waiting for hands");
   console.log(JSON.stringify({ passed: true, profile: manifest.profile, recognition_worker_sha256: manifest.recognition_worker_sha256,
     pages: visited, page_and_worker_requests: pageRequests.length, workers_observed: [...new Set(workers.map(url => new URL(url).pathname))],
-    non_loopback_requests: 0, refused_browser_internal: [...new Set(outbound)], perf_readout: perf,
+    non_loopback_requests: 0, uncached_restart: "passed", refused_browser_internal: [...new Set(outbound)], perf_readout: perf,
     // Headless frame rates say nothing about the demo laptop; recorded, not asserted.
     throughput_warning: throughputWarning,
     environment: "headless Chromium behind a deny-all proxy, synthetic fake camera (no hands); proves offline operation only" }));

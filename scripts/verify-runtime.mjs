@@ -26,9 +26,11 @@ const jsFiles = dir => !existsSync(dir) ? [] : readdirSync(dir).flatMap(name => 
 /** Licence and attribution documents stay in the ASL demo so linked notices keep working; no weights, labels or templates. */
 export const KEPT_NOTICES = new Set(["ATTRIBUTION.md", "LICENSE.pdf"]);
 
-/** @param {{ root: string, wasmSource: string, ortSource: string, committedWorker?: string | null, evaluated?: any[],
+/** @param {{ root: string, wasmSource: string, ortSource: string, expectedAslPins?: string | null,
+ *   expectedTemplateWorker?: string | null, committedWorker?: string | null, evaluated?: any[],
  *   profile?: string, wasmFiles?: string[], models?: Record<string, { file: string, bytes: number, sha256: string }> }} options */
-export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = null, evaluated = [], profile = "full",
+export function verifyRuntime({ root, wasmSource, ortSource, expectedAslPins, expectedTemplateWorker,
+  committedWorker = null, evaluated = [], profile = "full",
   wasmFiles = VISION_WASM_FILES, models = VISION_MODELS }) {
   const failures = [];
   const fail = (what, fix) => failures.push(`${what} — ${fix}`);
@@ -49,14 +51,26 @@ export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = n
     else if (digest !== model.sha256 || readFileSync(path).length !== model.bytes) fail(`vision/models/${model.file} does not match its pinned size and SHA-256`, "delete it and rerun npm run install:vision-assets");
   }
   const asl = join(root, "models/asl2000-tgcn");
-  const pins = existsSync(join(asl, "sha256.txt")) ? readFileSync(join(asl, "sha256.txt"), "utf8").trim().split("\n").map(line => line.trim().split(/\s+/)) : [];
-  if (!pins.length) fail("models/asl2000-tgcn/sha256.txt is missing", "the ASL model checksum list must ship with the model");
-  for (const [digest, name] of pins) {
+  const pinsPath = join(asl, "sha256.txt");
+  const pinsSha = record("models/asl2000-tgcn/sha256.txt", pinsPath);
+  const names = new Set();
+  if (!pinsSha) fail("models/asl2000-tgcn/sha256.txt is missing", "the ASL model checksum list must ship with the model");
+  else if (expectedAslPins !== undefined && pinsSha !== expectedAslPins) {
+    fail("models/asl2000-tgcn/sha256.txt differs from the source checksum list", "restore the committed ASL model files and rebuild");
+  } else for (const line of readFileSync(pinsPath, "utf8").trim().split("\n")) {
+    const entry = /^([a-f0-9]{64})\s+([a-zA-Z0-9][a-zA-Z0-9._-]*)$/.exec(line.trim());
+    if (!entry || names.has(entry[2])) {
+      fail("models/asl2000-tgcn/sha256.txt has invalid or duplicate entries", "restore the committed ASL model checksum list");
+      break;
+    }
+    const [, digest, name] = entry;
+    names.add(name);
     const actual = record(`models/asl2000-tgcn/${name}`, join(asl, name));
     if (!actual) fail(`missing models/asl2000-tgcn/${name}`, "restore the committed ASL-2000 model files");
     else if (actual !== digest) fail(`models/asl2000-tgcn/${name} does not match sha256.txt`, "the ASL model was modified; restore it from Git");
   }
-  record("models/asl2000-tgcn/labels.json", join(asl, "labels.json"));
+  if (pinsSha && (!names.has("model.json") || !names.has("labels.json")))
+    fail("models/asl2000-tgcn/sha256.txt does not pin the model and labels", "restore the committed ASL model checksum list");
   for (const file of ["ort-wasm-simd-threaded.jsep.wasm", "ort-wasm-simd-threaded.jsep.mjs"]) {
     const digest = record(`workers/${file}`, join(root, "workers", file));
     if (!digest) fail(`missing workers/${file}`, "run npm run build:worker (copies the locked onnxruntime-web files)");
@@ -68,6 +82,10 @@ export function verifyRuntime({ root, wasmSource, ortSource, committedWorker = n
   manifest.matches_committed_worker = committedWorker ? worker === committedWorker : null;
   if (worker && committedWorker && worker !== committedWorker)
     fail("workers/recognition.worker.js differs from the committed bundle", "rebuild with npm ci && npm run build:worker and commit the bundle with the recognition change, or this export is not the evaluated code");
+  const templateWorker = record("workers/template-matching.worker.js", join(root, "workers/template-matching.worker.js"));
+  if (!templateWorker) fail("missing workers/template-matching.worker.js", "run npm run build:worker and rebuild the export");
+  else if (expectedTemplateWorker !== undefined && templateWorker !== expectedTemplateWorker)
+    fail("workers/template-matching.worker.js differs from the built bundle", "run npm run build:worker and rebuild the export");
   const evidence = evaluated.find(entry => entry.worker_sha256 === worker);
   manifest.real_video_evidence = evidence ? { outcome: evidence.outcome, evidence: evidence.evidence } : null;
   // The rehearsal hook must exist only in the rehearsal build.
@@ -88,8 +106,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const option = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
   const root = option("--out", "out");
   const committed = spawnSync("git", ["show", "HEAD:public/workers/recognition.worker.js"], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 });
+  const committedAslPins = spawnSync("git", ["show", "HEAD:public/models/asl2000-tgcn/sha256.txt"], { encoding: "buffer" });
   const result = verifyRuntime({ root, profile: option("--profile", existsSync(join(root, "models/bdsl401-videomae/model.onnx")) ? "full" : "asl-demo"),
     wasmSource: join(dirname(require.resolve("@mediapipe/tasks-vision")), "wasm"), ortSource: dirname(require.resolve("onnxruntime-web")),
+    expectedAslPins: committedAslPins.status === 0 ? sha(committedAslPins.stdout) : fileSha("public/models/asl2000-tgcn/sha256.txt"),
+    expectedTemplateWorker: fileSha("public/workers/template-matching.worker.js"),
     committedWorker: committed.status === 0 ? sha(committed.stdout) : null,
     evaluated: JSON.parse(readFileSync("docs/evaluation/evaluated-runtimes.json", "utf8")).runtimes });
   if (args.includes("--require-evaluated") && !result.manifest.real_video_evidence)
