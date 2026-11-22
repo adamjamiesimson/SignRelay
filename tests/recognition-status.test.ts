@@ -19,6 +19,9 @@ describe("live workspace status", () => {
     expect(status.key).toBe("checking-sign");
     expect(status.detail).not.toContain("THANK YOU");
   });
+  it("shows a tentative candidate for completed movement after the hand left the frame", () => {
+    expect(recognitionStatus({ ...live, handsVisible: false, candidate: "BOOK", motionReason: "ready" }).key).toBe("checking-sign");
+  });
   it("distinguishes unfinished movement from a completed movement without a match", () => {
     expect(recognitionStatus({ ...live, motionReason: "moving" }).key).toBe("following-movement");
     expect(recognitionStatus(live).key).toBe("no-confident-match");

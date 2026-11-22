@@ -40,6 +40,7 @@ async function frames(count: number) {
   }
 }
 const confirmations = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "confirmed");
+const candidates = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).flatMap(m => m.type === "analysis" && m.candidate ? [m.candidate] : []);
 
 beforeEach(async () => {
   vi.resetModules();
@@ -103,10 +104,10 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(confirmations()).toHaveLength(0);
   });
 
-  it.each(["asl", "bsl", "isl", "lse", "psl"] as const)("confirms two fresh matching %s predictions", async language => {
+  it.each(["bsl", "isl", "lse", "psl"] as const)("confirms two fresh matching %s predictions", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks[language].mockResolvedValue(prediction);
-    await frames(language === "asl" ? 14 : 34);
+    await frames(34);
     expect(confirmations()).toHaveLength(1);
     expect(confirmations()[0]).toMatchObject({ gloss: "BOOK", text: "Book" });
     // Confirmation must consume the prediction; holding its cached output
@@ -114,6 +115,14 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     mocks[language].mockImplementation(() => new Promise(() => {}));
     await frames(50);
     expect(confirmations()).toHaveLength(1);
+  });
+
+  it("keeps matching ASL model predictions tentative", async () => {
+    mocks.asl.mockResolvedValue(prediction);
+    await frames(14);
+    expect(mocks.asl.mock.calls.length).toBeGreaterThan(1);
+    expect(candidates()).toContain("BOOK");
+    expect(confirmations()).toHaveLength(0);
   });
 
   it.each(["asl", "auslan", "bsl", "csl", "isl", "lse", "psl", "uaesl", "vsl"] as const)("preserves personal recognition for %s", async language => {
@@ -169,7 +178,20 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ feedback: expect.stringContaining("could not run") });
     mocks.asl.mockResolvedValue(prediction);
     await frames(20);
-    expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+    expect(candidates()).toContain("BOOK");
+    expect(confirmations()).toHaveLength(0);
+  });
+
+  it.each([0, -400, 1000])("invalidates an in-flight model when the frame clock jumps by %d ms", async gap => {
+    let finish!: (value: typeof prediction) => void;
+    mocks.asl.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    await frames(8);
+    timestamp += gap - 105;
+    await frames(1);
+    finish(prediction);
+    await frames(2);
+    expect(candidates()).toEqual([]);
+    expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ bufferSize: 3 });
   });
   it.each(["bsl", "isl"] as const)("allows a slow initial %s model download beyond 20 seconds", async language => {
     mocks[language].mockImplementation(() => new Promise(() => {}));

@@ -32,8 +32,8 @@ export function recognitionStatus(input: StatusInput) {
   else if (input.camera === "denied") key = "camera-denied";
   else if (input.camera === "error") key = "camera-error";
   else if (input.unavailable) key = "unavailable";
+  else if (input.candidate && (input.handsVisible || input.motionReason === "ready")) key = "checking-sign";
   else if (!input.handsVisible) key = "waiting-for-hands";
-  else if (input.candidate) key = "checking-sign";
   else if (input.motionReason === "moving") key = "following-movement";
   else if (input.bufferSize < 10) key = "building-context";
   else key = "no-confident-match";

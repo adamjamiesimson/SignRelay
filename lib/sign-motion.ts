@@ -2,13 +2,21 @@ import type { HandObservation, VisionFrame } from "./vision-types";
 import { bodyReference, distance2, handScale, validHand } from "./asl-starter-recognition";
 import { recentContinuousFrames } from "./frame-timing";
 
-export type SignMotion = { ready: boolean; sequence: VisionFrame[]; reason: "hands" | "moving" | "idle" | "ready" };
+export type SignMotion = { ready: boolean; sequence: VisionFrame[]; reason: "hands" | "moving" | "idle" | "ready";
+  completion?: "rest" | "departure" };
 
-/** Segment an isolated ASL sign using both hand travel and finger articulation. */
-export function analyzeSignMotion(frames: VisionFrame[]): SignMotion {
-  const end = frames.at(-1);
-  const reject = (reason: SignMotion["reason"]): SignMotion => ({ ready: false, sequence: [], reason });
-  if (!end?.hands.some(validHand)) return reject("hands");
+/** A hand that leaves the view ends a movement too. Wait this long first, so
+ * one frame the tracker missed is not read as leaving... */
+export const DEPARTURE_MIN_ABSENT_MS = 250;
+/** Keep the completed movement available for a slow model run. */
+const COMPLETED_AVAILABLE_MS = 2500;
+
+const reject = (reason: SignMotion["reason"]): SignMotion => ({ ready: false, sequence: [], reason });
+
+/** Find the latest movement while a hand was visible. In the rest case, the
+ * hand must have settled. A departure can end at the last observation. */
+function scan(frames: VisionFrame[], completion: "rest" | "departure"): SignMotion {
+  const end = frames.at(-1)!;
   let moving = false;
   for (const side of ["Left", "Right", "Unknown"] as const) {
     const recent = recentContinuousFrames(frames, 3600,
@@ -50,13 +58,34 @@ export function analyzeSignMotion(frames: VisionFrame[]): SignMotion {
     if (startIndex < 0) continue;
     const segment = recent.slice(startIndex);
     const settledFor = end.timestamp - lastActive;
-    if (settledFor < 140) { moving = true; continue; }
-    // Two real CPU predictions can take longer than one second. Keep a recent
-    // completed movement available while rejecting new motion and absent hands.
-    if (settledFor > 2500 || segment.length < 6 || end.timestamp - segment[0].timestamp < 220) continue;
-    return { ready: true, sequence: segment, reason: "ready" };
+    if (completion === "rest" && settledFor < 140) { moving = true; continue; }
+    if (settledFor > COMPLETED_AVAILABLE_MS || segment.length < 6 || end.timestamp - segment[0].timestamp < 220) continue;
+    return { ready: true, sequence: segment, reason: "ready", completion };
   }
-  return reject(moving ? "moving" : "idle");
+  return reject(completion === "departure" ? "hands" : moving ? "moving" : "idle");
+}
+
+/** Segment an isolated ASL sign using both hand travel and finger articulation.
+ * A movement is complete when the hand rests in view, or when it has left the
+ * view: signers often drop the hand straight after a sign, and until this was
+ * handled the research model never received a segment on any of the eleven
+ * development clips. Leaving is not enough by itself: the frames before it
+ * must pass the same movement, length and continuity checks as a rested
+ * movement, and only observed frames are ever returned. */
+export function analyzeSignMotion(frames: VisionFrame[]): SignMotion {
+  const end = frames.at(-1);
+  if (!end) return reject("hands");
+  if (!end.hands.some(validHand)) {
+    let last = frames.length - 1;
+    while (last >= 0 && !frames[last].hands.some(validHand)) last--;
+    if (last < 0) return reject("hands");
+    const absentFor = end.timestamp - frames[last].timestamp;
+    // Timestamps must run forward; a reset clock is not a departure.
+    if (!(absentFor >= DEPARTURE_MIN_ABSENT_MS) || absentFor > COMPLETED_AVAILABLE_MS
+      || frames.length - last - 1 < 2) return reject("hands");
+    return scan(frames.slice(0, last + 1), "departure");
+  }
+  return scan(frames, "rest");
 }
 
 function shapeDistance(a: HandObservation, b: HandObservation) {

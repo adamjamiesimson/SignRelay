@@ -1,5 +1,6 @@
 import type { InferenceOptions } from "./landmark-model-loader";
 import { downloadModelBytes } from "./model-download";
+import { BODY_NODE_COUNT, NODE_COUNT, prepareAsl2000Input } from "./tgcn-input";
 import type { Point, VisionFrame } from "./vision-types";
 
 type PackedArray = {
@@ -82,6 +83,35 @@ export type Asl1000Prediction = {
 const MODEL_MIN_CONFIDENCE = 0.62;
 const MODEL_MIN_MARGIN = 0.22;
 
+/** A window must contain observed hands on enough frames to be a sign at all.
+ * With no hand information the network still produces a confident winner
+ * (all-missing input: WOLF at 0.93), so confidence alone cannot reject it. */
+const MIN_HAND_FRAMES = 6;
+
+export function hasHandEvidence(window: Float32Array, sequenceLength = 50) {
+  const features = sequenceLength * 2;
+  let frames = 0;
+  let previous = -1;
+  for (let frame = 0; frame < sequenceLength; frame++) {
+    let observed = false;
+    let changed = previous < 0;
+    for (let node = BODY_NODE_COUNT; node < NODE_COUNT; node++) {
+      const offset = node * features + frame * 2;
+      const x = window[offset], y = window[offset + 1];
+      if (x !== -1 || y !== -1) observed = true;
+      if (!changed) {
+        const priorOffset = node * features + previous * 2;
+        changed = x !== window[priorOffset] || y !== window[priorOffset + 1];
+      }
+    }
+    if (!observed) continue;
+    // Padding repeats the final frame, so it contributes no new evidence.
+    if (changed && ++frames >= MIN_HAND_FRAMES) return true;
+    previous = frame;
+  }
+  return false;
+}
+
 let modelPromise: Promise<MaterialisedModel> | null = null;
 let loadController: AbortController | null = null;
 
@@ -100,7 +130,7 @@ function loadModel(signal?: AbortSignal) {
         throw new Error("This browser cannot unpack the ASL-2000 model");
       }
       const manifest = JSON.parse(new TextDecoder().decode(manifestBytes)) as TgcnManifest;
-      const labels = JSON.parse(new TextDecoder().decode(labelBytes)) as string[];
+      const labels: unknown = JSON.parse(new TextDecoder().decode(labelBytes));
       if (!Array.isArray(manifest.binaryParts) || manifest.binaryParts.length === 0) {
         throw new Error("ASL-2000 model shard manifest is invalid");
       }
@@ -128,7 +158,9 @@ function loadModel(signal?: AbortSignal) {
       if (manifest.format !== "signrelay-tgcn-v1" || binary.byteLength !== manifest.binaryBytes) {
         throw new Error("ASL-2000 model integrity check failed");
       }
-      if (labels.length !== manifest.classes) {
+      if (!Array.isArray(labels) || labels.length !== manifest.classes
+        || labels.some(label => typeof label !== "string" || !label.trim())
+        || new Set(labels).size !== labels.length) {
         throw new Error("ASL-2000 vocabulary does not match the model");
       }
       return materialiseTgcnModel(manifest, binary, labels);
@@ -152,17 +184,27 @@ export async function recognizeAsl1000(sequence: VisionFrame[], options: Inferen
   const model = await loadModel(options.signal);
   options.signal?.throwIfAborted();
   options.onPhase?.("inference");
-  const input = prepareTgcnInput(sequence, model.manifest.sequenceLength);
+  const input = prepareAsl2000Input(sequence, model.manifest.sequenceLength);
+  if (!hasHandEvidence(input, model.manifest.sequenceLength)) return null;
   const logits = await runMaterialisedTgcnCooperatively(model, input, options.signal);
+  const { label, confidence, margin, accepted } = decideAsl2000(logits, model.labels);
+  if (!accepted) return null;
+  return { label, text: title(label), confidence, margin };
+}
+
+/** The production confidence/margin decision, shared with offline diagnostics. */
+export function decideAsl2000(logits: Float32Array, labels: string[]) {
   const probabilities = softmax(logits);
   const [best, runnerUp] = topTwo(probabilities);
   const confidence = probabilities[best];
   const margin = confidence - probabilities[runnerUp];
-  const label = model.labels[best];
-  if (!label || confidence < MODEL_MIN_CONFIDENCE || margin < MODEL_MIN_MARGIN) return null;
-  return { label, text: title(label), confidence, margin };
+  const label = labels[best];
+  const accepted = Boolean(label) && confidence >= MODEL_MIN_CONFIDENCE && margin >= MODEL_MIN_MARGIN;
+  return { label, confidence, margin, accepted };
 }
 
+/** Production v1 input (hands erased by Tasks visibility 0, whole segment
+ * stretched). Kept as the reference for regression tests and old traces. */
 export function prepareTgcnInput(sequence: VisionFrame[], sequenceLength = 50) {
   const inputFeatures = sequenceLength * 2;
   const result = new Float32Array(55 * inputFeatures);
