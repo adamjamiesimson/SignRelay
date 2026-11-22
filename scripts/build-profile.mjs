@@ -16,7 +16,7 @@ function buildSteps(profile) {
     ["node", "scripts/prepare-export.mjs"],
     ["node", "scripts/install-vision-assets.mjs"],
     ["npm", "run", "build:worker"],
-    ["npx", "next", "build"],
+    [process.execPath, "node_modules/next/dist/bin/next", "build"],
     ["node", "scripts/exclude-private-routes.mjs"],
     ...(full ? [] : [["node", "scripts/prune-profile.mjs", profile]]),
     ["node", "scripts/secure-export.mjs"],
