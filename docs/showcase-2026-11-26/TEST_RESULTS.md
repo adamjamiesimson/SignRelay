@@ -22,11 +22,16 @@ All local checks used Node 24.22.3 on the cloud Linux host and Chromium 156.0.80
 | Strict offline check | Passed 110 observed page/worker requests with zero external requests, camera stop/release and uncached restart. Cloud tracking throughput was 1.4 frames/s under concurrent load, below the demo target |
 | Offline detector self-test | Passed detection of planted page and worker leaks, including a page request to a browser-internal host |
 | Dependency audit | Baseline 11 findings, patched full and production audit zero. No exceptions |
-| Secret scan and repository asset guard | Passed for fetched refs and working tree. A shallow clone limits historical coverage |
-| Real recorded-sign replay | One completed abstention and ten seek/runtime errors across eleven clips. The run failed its completeness gate |
+| Secret scan and repository asset guard | Passed after fetching full main history. Scanned 378 commits and 1,483 historical text blobs with zero findings. Pattern and 5 MiB text limits still apply |
+| Hosted recorded-sign replay | All eleven completed with 5 correct, 0 wrong, 6 abstentions and 0 runtime errors. Established baseline gate passed |
+| Local recorded-sign replay | Stress run had 1 abstention and 10 errors. Lower-load retry had 4 correct, 0 wrong, 5 abstentions and 2 errors. These retain failed completeness status |
 
 The strict offline test initially rejected Chromium's own HTTP component updater request. An independent about:blank run reproduced it. The check now recognizes only that updater path as browser traffic while retaining separate CDP page/worker checks and the leak self-test. The deny proxy refused the updater request. The first broad local test attempt also hit sandbox process restrictions. Network-enabled tool execution allowed the required local processes and loopback servers.
 
 The strict security gate passed with zero npm vulnerabilities, no secret findings in fetched refs and two rendered-export tests passed. The standalone archive server returned HTTP 200 for its landing page and recognition worker without node_modules.
 
+The skipped unit case is the optional full experiment comparison, enabled only by RUN_EXPERIMENTS=1. The standard regression suite ran completely.
+
 The aggregate evidence is under [evidence/](evidence/). Full suite and hosted CI outcomes are recorded in the final release status. [PR #66 checks](https://github.com/adamjamiesimson/SignRelay/pull/66/checks)
+
+Hosted checks on code commit d6e6f83 all passed, including Core CI, Firebase Static Build Check, its strict dependency gate, Offline ASL Demo and Rehearsal, and ASL Video Pilot. Later report and runtime-catalog updates preserve that worker hash.

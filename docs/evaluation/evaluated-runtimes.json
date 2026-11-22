@@ -37,6 +37,23 @@
         "errors": 0
       },
       "baseline_gate": "scripts/baseline-gate.mjs ok (0 changes on all 11 established trials) in CI run 39573034510 on Sprint 2 commit 2a6dfef"
+    },
+    {
+      "worker_sha256": "3510843cc821cbbdb9dc227d1f68dff8ded10dce77620bde0198bf4e7e2456c1",
+      "source_commit": "d6e6f8329cefa039418fdf0d667c7f2586b844f0",
+      "evidence": [
+        "docs/showcase-2026-11-26/evidence/hosted-pilot/development-candidate.jsonl",
+        "docs/showcase-2026-11-26/evidence/hosted-pilot/candidate.jsonl"
+      ],
+      "evidence_kind": "GitHub Actions real MediaPipe and production worker, clean exact commit. Reused publisher-labelled development recordings.",
+      "outcome": {
+        "signed_trials": 11,
+        "correct": 5,
+        "wrong_accepted": 0,
+        "abstained": 6,
+        "errors": 0
+      },
+      "baseline_gate": "CI run 45056292734 passed its established per-trial baseline gate."
     }
   ]
 }

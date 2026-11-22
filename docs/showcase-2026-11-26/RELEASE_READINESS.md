@@ -24,6 +24,8 @@ Check that `out/runtime-manifest.json` says `full` and that the private capture 
 
 ## Current acceptance decision
 
-**Engineering candidate available for supervised human acceptance testing. Public live-recognition approval is pending.** Full and offline exports passed, and the approved UI matched the four automated screenshots. Recognition reliability remains limited by ten failed development replays, sparse signed evidence, unmeasured real negatives, a synthetic starter-tail duplicate, and cloud frame rates below the target under concurrent load. Read the full [recognition evaluation](RECOGNITION_EVALUATION.md) before choosing the live vocabulary.
+**Engineering candidate available for supervised human acceptance testing. Public live-recognition approval is pending.** Full and offline exports passed, and the approved UI matched the four automated screenshots. Recognition reliability remains limited by local replay decode errors, sparse signed evidence, unmeasured real negatives, a synthetic starter-tail duplicate, and cloud frame rates below the target under concurrent load. Read the full [recognition evaluation](RECOGNITION_EVALUATION.md) before choosing the live vocabulary.
 
 Review is in [draft PR #66](https://github.com/adamjamiesimson/SignRelay/pull/66) on [showcase/november-2026-readiness](https://github.com/adamjamiesimson/SignRelay/tree/showcase/november-2026-readiness). The repository's existing Vercel integration automatically created a preview when the PR was opened. Production Firebase and main remain at the starting revision.
+
+The complete hosted candidate replay passed with 5 correct, 0 wrong, 6 abstentions and 0 errors across the eleven development recordings. All hosted checks passed on d6e6f83. This improves the engineering evidence while preserving the physical acceptance gates.
