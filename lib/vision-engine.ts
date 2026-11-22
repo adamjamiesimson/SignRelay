@@ -1,4 +1,5 @@
 import type { FaceLandmarker, GestureRecognizer, PoseLandmarker } from "@mediapipe/tasks-vision";
+import { MAX_TRACKING_GAP_MS } from "./frame-timing";
 import type { Point, VisionFrame } from "./vision-types";
 import { VISION_ASSET_SOURCES } from "./vision-runtime.mjs";
 
@@ -99,6 +100,10 @@ export class VisionEngine {
     this.handFramesSinceAux++;
     // Leave alternate frames for hands even when CPU inference is already slow.
     if (this.handFramesSinceAux >= 2 && timestamp - this.lastAuxTimestamp >= 150) {
+      // An auxiliary task may throw after advancing its video state. Discard
+      // the cached pair before refreshing so neither old result can be reused.
+      this.lastFace = [];
+      this.lastPose = [];
       const faceResult = this.parts.face.detectForVideo(video, timestamp);
       const poseResult = this.parts.pose.detectForVideo(video, timestamp);
       this.lastFace = pickPoints(faceResult.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
@@ -107,6 +112,7 @@ export class VisionEngine {
       this.handFramesSinceAux = 0;
     }
 
+    const auxiliaryFresh = timestamp - this.lastAuxTimestamp <= MAX_TRACKING_GAP_MS;
     return {
       timestamp,
       hands: handResult.landmarks.map((landmarks, index) => ({
@@ -116,8 +122,8 @@ export class VisionEngine {
         gesture: handResult.gestures[index]?.[0]?.categoryName ?? "None",
         gestureScore: handResult.gestures[index]?.[0]?.score ?? 0,
       })),
-      face: this.lastFace,
-      pose: this.lastPose,
+      face: auxiliaryFresh ? this.lastFace : [],
+      pose: auxiliaryFresh ? this.lastPose : [],
     };
   }
 
@@ -140,5 +146,10 @@ function pickPoints(
   landmarks: Array<{ x: number; y: number; z: number; visibility?: number }>,
   indices: number[],
 ) {
-  return indices.map((index) => landmarks[index]).filter(Boolean).map(toPoint);
+  const points = indices.map(index => landmarks[index]);
+  // These arrays have a fixed index contract with the recognition adapters.
+  // A missing or non-finite point makes the whole group unavailable.
+  return points.every(point => point && Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z))
+    ? points.map(toPoint)
+    : [];
 }

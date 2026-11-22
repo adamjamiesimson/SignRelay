@@ -16,10 +16,12 @@ export function RslRecognizer({ onBack }: { onBack: () => void }) {
   const generation = useRef(0);
   const animation = useRef(0);
   const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const captureInProgress = useRef(false);
   const frames = useRef<Uint8ClampedArray[]>([]);
   const starting = useRef(false);
 
   const release = useCallback(() => {
+    captureInProgress.current = false;
     generation.current++;
     starting.current = false;
     cancelAnimationFrame(animation.current);
@@ -36,7 +38,12 @@ export function RslRecognizer({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     const hidden = () => { if (document.hidden) stop(); };
     document.addEventListener("visibilitychange", hidden);
-    return () => { document.removeEventListener("visibilitychange", hidden); release(); };
+    window.addEventListener("pagehide", stop);
+    return () => {
+      document.removeEventListener("visibilitychange", hidden);
+      window.removeEventListener("pagehide", stop);
+      release();
+    };
   }, [release, stop]);
 
   const fail = useCallback((message: string) => {
@@ -64,6 +71,7 @@ export function RslRecognizer({ onBack }: { onBack: () => void }) {
       instance.onerror = instance.onmessageerror = () => { if (token === generation.current) fail("The model was interrupted. Start again to retry."); };
       instance.onmessage = ({ data }: MessageEvent<RslOutput>) => {
         if (token !== generation.current) return;
+        if (data.type === "result") captureInProgress.current = false;
         if (timeout.current) clearTimeout(timeout.current);
         if (data.type === "error") { fail(data.message); return; }
         setState("ready");
@@ -81,7 +89,8 @@ export function RslRecognizer({ onBack }: { onBack: () => void }) {
   }
 
   function recognize() {
-    if (state !== "ready" || !video.current || !worker.current) return;
+    if (state !== "ready" || captureInProgress.current || !video.current || !worker.current) return;
+    captureInProgress.current = true;
     setResult(null); setState("countdown"); frames.current = [];
     const token = generation.current, began = performance.now();
     const canvas = document.createElement("canvas"); canvas.width = canvas.height = RSL_SIZE;
@@ -90,6 +99,10 @@ export function RslRecognizer({ onBack }: { onBack: () => void }) {
     let lastSample = -Infinity, lastVideoTime = -1, lastProgress = began + 3000;
     const tick = (now: number) => {
       if (token !== generation.current) return;
+      if (!stream.current?.getVideoTracks().some(track => track.readyState === "live")) {
+        fail("The camera disconnected. Start again to reconnect.");
+        return;
+      }
       const remaining = 3000 - (now - began);
       if (remaining > 0) setMessage(`Get ready: ${Math.ceil(remaining / 1000)}…`);
       else {
@@ -110,7 +123,11 @@ export function RslRecognizer({ onBack }: { onBack: () => void }) {
           setState("processing"); setMessage("Recognizing locally… Allow 20–60 seconds on slower devices. You can cancel at any time.");
           const clip = frames.current; frames.current = [];
           timeout.current = setTimeout(() => fail("Recognition timed out on this device. No result was added."), 120000);
-          worker.current?.postMessage({ type: "recognize", frames: clip } satisfies RslInput, clip.map(frame => frame.buffer));
+          try {
+            worker.current?.postMessage({ type: "recognize", frames: clip } satisfies RslInput, clip.map(frame => frame.buffer));
+          } catch {
+            fail("Recognition could not receive the recording. Start again to retry.");
+          }
           return;
         }
         if (now - began > 6500) { fail("Could not capture the sign at the required frame rate. Try again with fewer apps open."); return; }

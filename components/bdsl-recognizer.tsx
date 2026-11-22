@@ -14,10 +14,12 @@ export function BdslRecognizer({ onBack }: { onBack: () => void }) {
   const stream = useRef<MediaStream | null>(null);
   const generation = useRef(0), animation = useRef(0);
   const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const captureInProgress = useRef(false);
   const frames = useRef<BdslFrame[]>([]);
   const starting = useRef(false), finishRequested = useRef(false);
 
   const release = useCallback(() => {
+    captureInProgress.current = false;
     generation.current++; starting.current = false; finishRequested.current = false;
     cancelAnimationFrame(animation.current);
     if (timeout.current) clearTimeout(timeout.current);
@@ -36,7 +38,12 @@ export function BdslRecognizer({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     const hidden = () => { if (document.hidden) stop(); };
     document.addEventListener("visibilitychange", hidden);
-    return () => { document.removeEventListener("visibilitychange", hidden); release(); };
+    window.addEventListener("pagehide", stop);
+    return () => {
+      document.removeEventListener("visibilitychange", hidden);
+      window.removeEventListener("pagehide", stop);
+      release();
+    };
   }, [release, stop]);
 
   async function start() {
@@ -62,6 +69,7 @@ export function BdslRecognizer({ onBack }: { onBack: () => void }) {
       };
       instance.onmessage = ({ data }: MessageEvent<BdslOutput>) => {
         if (token !== generation.current) return;
+        if (data.type === "result") captureInProgress.current = false;
         if (timeout.current) clearTimeout(timeout.current);
         timeout.current = null;
         if (data.type === "error") { fail(data.message); return; }
@@ -80,7 +88,8 @@ export function BdslRecognizer({ onBack }: { onBack: () => void }) {
   }
 
   function recognize() {
-    if (state !== "ready" || !video.current || !worker.current) return;
+    if (state !== "ready" || captureInProgress.current || !video.current || !worker.current) return;
+    captureInProgress.current = true;
     setResult(null); setState("countdown"); frames.current = []; finishRequested.current = false;
     const token = generation.current, began = performance.now();
     const canvas = document.createElement("canvas");
@@ -89,6 +98,10 @@ export function BdslRecognizer({ onBack }: { onBack: () => void }) {
     let lastSample = -Infinity, lastVideoTime = -1, lastProgress = began + 3000;
     const tick = (now: number) => {
       if (token !== generation.current) return;
+      if (!stream.current?.getVideoTracks().some(track => track.readyState === "live")) {
+        fail("The camera disconnected. Start again to reconnect.");
+        return;
+      }
       const elapsed = now - began - 3000;
       if (elapsed < 0) setMessage(`Get ready: ${Math.ceil(-elapsed / 1000)}…`);
       else {
@@ -110,7 +123,11 @@ export function BdslRecognizer({ onBack }: { onBack: () => void }) {
           setState("processing"); setMessage("Recognizing on your device… This can take 15–60 seconds. You can cancel at any time.");
           const clip = frames.current; frames.current = [];
           timeout.current = setTimeout(() => fail("Recognition timed out. No result was added."), 120000);
-          worker.current?.postMessage({ type: "recognize", frames: clip } satisfies BdslInput, clip.map(frame => frame.rgba.buffer));
+          try {
+            worker.current?.postMessage({ type: "recognize", frames: clip } satisfies BdslInput, clip.map(frame => frame.rgba.buffer));
+          } catch {
+            fail("Recognition could not receive the recording. Start again to retry.");
+          }
           return;
         }
       }

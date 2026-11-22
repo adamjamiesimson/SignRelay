@@ -24,14 +24,18 @@ try {
   browser = await startChrome(executable);
   const evaluate = browser.evaluate;
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => {
-    window.__qa = { tracks: [], workers: [], frames: 0 };
+    window.__qa = { tracks: [], workers: [], frames: 0, resets: 0 };
     const get = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getUserMedia = async options => { const stream = await get(options); window.__qa.tracks.push(...stream.getTracks()); return stream; };
     const NativeWorker = window.Worker;
     window.Worker = class extends NativeWorker {
       constructor(url, options) { super(url, options); this.__url = String(url); this.__alive = true; window.__qa.workers.push(this); }
       terminate() { this.__alive = false; return super.terminate(); }
-      postMessage(message, transfer) { if (message?.type === 'frame') window.__qa.frames++; return super.postMessage(message, transfer); }
+      postMessage(message, transfer) {
+        if (message?.type === 'frame') window.__qa.frames++;
+        if (message?.type === 'reset') window.__qa.resets++;
+        return super.postMessage(message, transfer);
+      }
     };
   })();` });
   const button = text => `[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)})`;
@@ -50,6 +54,9 @@ try {
   await click("Start translating");
   await until(active, "Camera did not start");
   const heapStart = await heapMb();
+  const sampleBegan = Date.now(), initialFrames = await frames();
+  await until(async () => await frames() >= initialFrames + 30, "Camera did not forward 30 frames");
+  report.forwarded_fps = Number(((await frames() - initialFrames) * 1000 / (Date.now() - sampleBegan)).toFixed(1));
 
   // 1. Repeated start/pause cycles.
   const cycleMs = [];
@@ -80,15 +87,33 @@ try {
   }
   report.checks.push({ name: "6 rapid start/cancel toggles", live_tracks_after_cancel: 0 });
 
-  // 3. Hidden tab stops analysis; visible resumes.
+  // 3. Hidden tab stops analysis and interrupts any personal capture.
+  await click("Record example");
+  await until(() => evaluate("document.querySelector('.calibration-message.countdown') !== null"), "Calibration did not begin");
   await evaluate("(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));})()");
   await pause(500);
+  assert.match(await evaluate("document.querySelector('.calibration-message.idle')?.textContent"), /Recording interrupted/);
   const hiddenFrames = await frames();
   await pause(1500);
   assert.equal(await frames(), hiddenFrames, "Frames were analysed while hidden");
   await evaluate("(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));})()");
   await until(async () => await frames() > hiddenFrames + 3, "Analysis did not resume after the tab became visible");
-  report.checks.push({ name: "hidden tab pauses and resumes analysis" });
+  report.checks.push({ name: "hidden tab cancels calibration, then resumes analysis on return" });
+
+  // A single processing error must invalidate previously queued output even
+  // when the next frame succeeds and the camera stays active.
+  const resets = await evaluate("window.__qa.resets");
+  await evaluate(`(() => {
+    const canvas = document.querySelector('video').parentElement.querySelector('canvas');
+    const context = canvas.getContext('2d');
+    const original = context.clearRect;
+    context.clearRect = function () { this.clearRect = original; throw new Error('Injected frame processing error'); };
+  })()`);
+  await until(async () => await evaluate("window.__qa.resets") === resets + 1, "Failed frame did not invalidate recognition");
+  const framesAfterFault = await frames();
+  await until(async () => await frames() > framesAfterFault + 3, "Processing did not resume after an isolated failure");
+  assert.equal(await active(), true);
+  report.checks.push({ name: "one processing failure resets recognition and recovers" });
 
   // 4. Camera track ended outside the app (unplugged device / revoked permission).
   await evaluate("window.__qa.tracks.filter(t => t.readyState === 'live').forEach(t => t.stop())");
@@ -113,6 +138,12 @@ try {
   }
   assert.equal(await aliveRecognition(), 1);
   report.checks.push({ name: "3 leave/re-enter workspace cycles" });
+
+  await evaluate("window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }))");
+  await until(async () => await released() && await has("Start camera"), "Pagehide did not release camera tracks");
+  await click("Start camera");
+  await until(active, "Camera did not restart after pagehide");
+  report.checks.push({ name: "pagehide releases camera with restart available" });
 
   await click("Pause camera");
   await until(released, "Final pause did not release the camera");

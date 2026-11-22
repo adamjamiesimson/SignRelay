@@ -41,6 +41,7 @@ import { recognitionStatus } from "@/lib/recognition-status";
 import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
 import { formatPerfReadout, RollingTimer, ThroughputMonitor } from "@/lib/frame-perf";
+import { shouldAnalyseFrame } from "@/lib/frame-timing";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
@@ -488,7 +489,7 @@ export function TranslatorExperience() {
       return;
     }
 
-    if (now - lastFrameRef.current >= 50 && video.currentTime !== lastVideoTimeRef.current) {
+    if (shouldAnalyseFrame(now, lastFrameRef.current, video.currentTime, lastVideoTimeRef.current)) {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
       try {
@@ -507,13 +508,24 @@ export function TranslatorExperience() {
           face: frame.face.length > 0,
           pose: frame.pose.length > 0,
         };
-        setDetection(nextDetection);
+        setDetection(current => current.person === nextDetection.person && current.hands === nextDetection.hands
+          && current.face === nextDetection.face && current.pose === nextDetection.pose ? current : nextDetection);
         drawOverlay(frame);
         if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
         else workerRef.current?.postMessage({ type: "frame", frame });
         frameErrorsRef.current = 0;
       } catch (error) {
         if (process.env.NODE_ENV === "development") console.warn("A video frame could not be processed", error);
+        if (frameErrorsRef.current === 0) {
+          workerRef.current?.postMessage({ type: "reset" });
+          setDetection(EMPTY_DETECTION);
+          setCandidate(null);
+          setConfidence(0);
+          setBufferSize(0);
+          setRecognitionState("listening");
+          setRecognitionFeedback("");
+          setMotionReason(null);
+        }
         if (++frameErrorsRef.current >= 5) {
           stopCamera();
           setCameraState("error");
@@ -600,6 +612,15 @@ export function TranslatorExperience() {
     const resume = () => {
       workerRef.current?.postMessage({ type: "reset" });
       cameraProgressRef.current = performance.now();
+      if (document.hidden) {
+        if (captureStateRef.current !== "saving") captureGenerationRef.current++;
+        if (captureStateRef.current === "countdown" || captureStateRef.current === "recording") {
+          captureStateRef.current = "idle";
+          captureFramesRef.current = [];
+          setCalibrationState("idle");
+          setCalibrationMessage("Recording interrupted. Start a new example when you are ready.");
+        }
+      }
       const video = videoRef.current;
       if (document.hidden || !engineRef.current || !video?.paused) return;
       const generation = cameraGenerationRef.current;
@@ -611,7 +632,11 @@ export function TranslatorExperience() {
       });
     };
     document.addEventListener("visibilitychange", resume);
-    return () => document.removeEventListener("visibilitychange", resume);
+    window.addEventListener("pagehide", stopCamera);
+    return () => {
+      document.removeEventListener("visibilitychange", resume);
+      window.removeEventListener("pagehide", stopCamera);
+    };
   }, [stopCamera]);
 
   const beginTranslation = () => {
