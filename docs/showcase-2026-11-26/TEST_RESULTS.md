@@ -9,7 +9,7 @@ All local checks used Node 24.22.3 on the cloud Linux host and Chromium 156.0.80
 | Offline ASL export | Passed with verified local MediaPipe, ASL model, workers and WASM |
 | Typecheck and ESLint | Passed |
 | Rendered HTML checks | Passed |
-| Full unit suite before final assertion correction | 917 passed, 1 failed, 1 skipped across 89 files. The failed assertion required no duplicate starter words in a pre-existing synthetic THANK YOU tail case |
+| Final full unit suite | 918 passed, 1 skipped across all 89 files |
 | Corrected tail regression | 10 passed. Requires the research-model word to stay out of both transcripts and records the production starter tail limitation |
 | Workspace Chromium smoke | Passed permission denial/recovery, late grant cleanup, language and transcript isolation, editing, speech queue, refresh persistence, concurrent IndexedDB limits and storage failures |
 | Lifecycle stress | Passed 12 start/pause cycles, 6 rapid toggles, hidden calibration interruption, processing fault reset, ended track recovery, 3 workspace re-entry cycles and pagehide cleanup. Heap sample 26 to 6 MB after collection. Contended cloud throughput was 2.9 frames/s |
@@ -26,5 +26,7 @@ All local checks used Node 24.22.3 on the cloud Linux host and Chromium 156.0.80
 | Real recorded-sign replay | One completed abstention and ten seek/runtime errors across eleven clips. The run failed its completeness gate |
 
 The strict offline test initially rejected Chromium's own HTTP component updater request. An independent about:blank run reproduced it. The check now recognizes only that updater path as browser traffic while retaining separate CDP page/worker checks and the leak self-test. The deny proxy refused the updater request. The first broad local test attempt also hit sandbox process restrictions. Network-enabled tool execution allowed the required local processes and loopback servers.
+
+The strict security gate passed with zero npm vulnerabilities, no secret findings in fetched refs and two rendered-export tests passed. The standalone archive server returned HTTP 200 for its landing page and recognition worker without node_modules.
 
 The aggregate evidence is under [evidence/](evidence/). Full suite and hosted CI outcomes are recorded in the final release status. [PR #66 checks](https://github.com/adamjamiesimson/SignRelay/pull/66/checks)

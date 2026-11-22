@@ -5,36 +5,10 @@
 
  RUN  v4.1.12 /workspace/SignRelay
 
- ❯ tests/asl-tail-guard.test.ts (10 tests | 1 failed) 292274ms
-     × keeps a subsequent model prediction outside the transcript after the hands rest 14162ms
-[0;93m2026-11-22 18:29:41.256062 [W:onnxruntime:Default, cpuid_info.cc:91 LogEarlyWarning] Unknown CPU vendor. cpuinfo_vendor value: 0[m
+[0;93m2026-11-22 18:37:34.055051 [W:onnxruntime:Default, cpuid_info.cc:91 LogEarlyWarning] Unknown CPU vendor. cpuinfo_vendor value: 0[m
 
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
-
- FAIL  tests/asl-tail-guard.test.ts > through the real recognition worker > keeps a subsequent model prediction outside the transcript after the hands rest
-AssertionError: THANK YOU held still 400: expected [ 'THANK YOU', 'THANK YOU' ] to deeply equal [ 'THANK YOU' ]
-
-- Expected
-+ Received
-
-  [
-    "THANK YOU",
-+   "THANK YOU",
-  ]
-
- ❯ tests/asl-tail-guard.test.ts:190:64
-    188|       const outcome = await compare(frames, modelSees(frames));
-    189|       outcomes[`${sign} then GOOD, ${restName} ${gap} ms`] = outcome;
-    190|       expect(outcome.production, `${sign} ${restName} ${gap}`).toEqual…
-       |                                                                ^
-    191|       expect(outcome.guarded, `${sign} ${restName} ${gap}`).toEqual([s…
-    192|     }
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
-
-
- Test Files  1 failed | 88 passed (89)
-      Tests  1 failed | 917 passed | 1 skipped (919)
-   Start at  18:24:20
-   Duration  488.40s (transform 18.15s, setup 0ms, import 48.17s, tests 761.09s, environment 104ms)
+ Test Files  89 passed (89)
+      Tests  918 passed | 1 skipped (919)
+   Start at  18:36:04
+   Duration  108.90s (transform 3.86s, setup 0ms, import 7.78s, tests 183.12s, environment 17ms)
 
