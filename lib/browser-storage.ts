@@ -55,8 +55,7 @@ export function saveSettings(settings: SpeechSettings) {
 export function loadHistory(): TranscriptSession[] {
   if (typeof window === "undefined") return [];
   try {
-    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]");
-    return Array.isArray(history) ? history.filter(validSession).slice(0, 8) : [];
+    return parseHistory(localStorage.getItem(HISTORY_KEY));
   } catch {
     return [];
   }
@@ -64,11 +63,21 @@ export function loadHistory(): TranscriptSession[] {
 
 export function saveSession(session: TranscriptSession) {
   if (!validSession(session) || !session.entries.length) return false;
-  const history = loadHistory();
   try {
+    // A storage read failure must not turn saving into a replacement of unread history.
+    const history = parseHistory(localStorage.getItem(HISTORY_KEY));
     localStorage.setItem(HISTORY_KEY, JSON.stringify([session, ...history].slice(0, 8)));
     return true;
   } catch { return false; }
+}
+
+function parseHistory(raw: string | null): TranscriptSession[] {
+  try {
+    const history: unknown = JSON.parse(raw ?? "[]");
+    return Array.isArray(history) ? history.filter(validSession).slice(0, 8) : [];
+  } catch {
+    return [];
+  }
 }
 
 function validSession(value: unknown): value is TranscriptSession {
@@ -82,8 +91,9 @@ function validSession(value: unknown): value is TranscriptSession {
 }
 
 export function clearLocalSignRelayData() {
-  try {
-    localStorage.removeItem(SETTINGS_KEY);
-    localStorage.removeItem(HISTORY_KEY);
-  } catch { /* Clearing site data through the browser remains available. */ }
+  let cleared = true;
+  for (const key of [SETTINGS_KEY, HISTORY_KEY]) {
+    try { localStorage.removeItem(key); } catch { cleared = false; }
+  }
+  return cleared;
 }

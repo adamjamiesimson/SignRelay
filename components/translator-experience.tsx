@@ -189,7 +189,9 @@ export function TranslatorExperience() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setSettings(loadSettings());
+      const storedSettings = loadSettings();
+      settingsRef.current = storedSettings;
+      setSettings(storedSettings);
       setHistory(loadHistory());
     }, 0);
     return () => window.clearTimeout(timer);
@@ -206,6 +208,19 @@ export function TranslatorExperience() {
     workerRef.current?.postMessage({ type: "templates", language: selected, templates: calibrationTemplates });
   }, [calibrationTemplates, selected]);
 
+  const updateEntries = useCallback((next: TranscriptEntry[]) => {
+    entriesRef.current = next;
+    setEntries(next);
+  }, []);
+
+  const changeSettings = (changes: Partial<SpeechSettings>) => {
+    const next = { ...settingsRef.current, ...changes };
+    settingsRef.current = next;
+    setSettings(next);
+    saveSettings(next);
+    if (changes.autoSpeak === false) window.speechSynthesis?.cancel();
+  };
+
   function selectLanguage(language: LanguageId) {
     if (language === selected) return true;
     // The ASL demo build does not ship other models; never open a workspace
@@ -216,19 +231,21 @@ export function TranslatorExperience() {
     }
     // All entry points share this boundary, including returning home before
     // selecting another language. Keep the original transcript on save failure.
-    if (entries.length) {
+    const currentEntries = entriesRef.current;
+    if (currentEntries.length) {
       const saved = saveSession({ id: String(sessionStartedRef.current), language: selected,
-        createdAt: sessionStartedRef.current, entries });
+        createdAt: sessionStartedRef.current, entries: currentEntries });
       if (!saved) {
         setStorageMessage("Couldn't save this transcript. It has been kept here. Free browser storage before changing languages.");
         return false;
       }
       setHistory(loadHistory());
     }
-    setEntries([]);
+    updateEntries([]);
     setEditingId(null);
     setStorageMessage("");
     setTranscriptMessage("");
+    setAnnouncement("");
     // Nothing from the previous language's transcript may keep speaking.
     window.speechSynthesis?.cancel();
     sessionStartedRef.current = Date.now();
@@ -245,21 +262,27 @@ export function TranslatorExperience() {
     return true;
   }
 
-  useEffect(() => { entriesRef.current = entries; }, [entries]);
-
-  useEffect(() => {
-    settingsRef.current = settings;
-    if (typeof window !== "undefined") saveSettings(settings);
-  }, [settings]);
-
-  const speak = useCallback((text: string) => {
-    if (!text || typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.volume = settingsRef.current.volume;
-    utterance.rate = settingsRef.current.rate;
-    utterance.lang = model.speechLocale;
-    window.speechSynthesis.speak(utterance);
+  const speak = useCallback((text: string, replaceQueue = true) => {
+    if (!text.trim()) return;
+    const speech = window.speechSynthesis;
+    const speechError = () => setTranscriptMessage("Speech is unavailable in this browser. The transcript is still available.");
+    if (!speech || typeof window.SpeechSynthesisUtterance !== "function") {
+      if (replaceQueue) speechError();
+      return;
+    }
+    try {
+      if (replaceQueue) speech.cancel();
+      const utterance = new window.SpeechSynthesisUtterance(text);
+      utterance.volume = settingsRef.current.volume;
+      utterance.rate = settingsRef.current.rate;
+      utterance.lang = model.speechLocale;
+      if (replaceQueue) utterance.onerror = (event) => {
+        if (event.error !== "canceled" && event.error !== "interrupted") speechError();
+      };
+      speech.speak(utterance);
+    } catch {
+      if (replaceQueue) speechError();
+    }
   }, [model.speechLocale]);
 
   const handleWorkerMessage = useCallback((message: WorkerMessage) => {
@@ -294,11 +317,10 @@ export function TranslatorExperience() {
     };
     // Decide once, synchronously, so a suppressed duplicate is neither shown nor spoken.
     if (isRecentDuplicate(entriesRef.current.at(-1), entry)) return;
-    entriesRef.current = [...entriesRef.current, entry];
-    setEntries(entriesRef.current);
+    updateEntries([...entriesRef.current, entry]);
     setAnnouncement(`Confirmed: ${message.text}`);
-    if (settingsRef.current.autoSpeak) speak(message.text);
-  }, [speak, perfMode]);
+    if (settingsRef.current.autoSpeak) speak(message.text, false);
+  }, [speak, perfMode, updateEntries]);
 
   useEffect(() => {
     if (step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
@@ -593,7 +615,7 @@ export function TranslatorExperience() {
   }, [stopCamera]);
 
   const beginTranslation = () => {
-    if (!entries.length) sessionStartedRef.current = Date.now();
+    if (!entriesRef.current.length) sessionStartedRef.current = Date.now();
     const generation = ++cameraGenerationRef.current;
     setStep("workspace");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -685,12 +707,17 @@ export function TranslatorExperience() {
   };
 
   const removeCalibration = useCallback(async (gloss: string) => {
-    captureGenerationRef.current++;
-    await deleteCalibrationGloss(gloss, selected);
-    setCalibrationTemplates(await loadCalibrationTemplates());
+    const captureGeneration = ++captureGenerationRef.current;
     captureStateRef.current = "idle";
+    captureFramesRef.current = [];
     setCalibrationState("idle");
-    setCalibrationMessage("Personal examples removed for this word.");
+    try {
+      await deleteCalibrationGloss(gloss, selected);
+      setCalibrationTemplates(await loadCalibrationTemplates());
+      if (captureGeneration === captureGenerationRef.current) setCalibrationMessage("Personal examples removed for this word.");
+    } catch {
+      if (captureGeneration === captureGenerationRef.current) setCalibrationMessage("Personal examples could not be deleted. Check browser storage and try again.");
+    }
   }, [selected]);
 
   const returnHome = () => {
@@ -703,13 +730,15 @@ export function TranslatorExperience() {
       id: String(sessionStartedRef.current),
       language: selected,
       createdAt: sessionStartedRef.current,
-      entries,
+      entries: entriesRef.current,
     });
     if (!saved) { setStorageMessage("Could not save on this device. Your transcript has been kept here."); return; }
     window.speechSynthesis?.cancel();
     setStorageMessage("");
     setEditingId(null);
-    setEntries([]);
+    updateEntries([]);
+    setAnnouncement("");
+    workerRef.current?.postMessage({ type: "reset" });
     sessionStartedRef.current = Date.now();
     setHistory(loadHistory());
     setTranscriptMessage("Transcript saved to this device's history and cleared.");
@@ -718,18 +747,18 @@ export function TranslatorExperience() {
   // An edit that leaves no text removes the entry, so Speak and Copy never see blanks.
   const finishEditing = (id: string) => {
     setEditingId(null);
-    setEntries((current) => current.flatMap((item) => item.id !== id ? [item] : item.text.trim() ? [{ ...item, text: item.text.trim() }] : []));
+    updateEntries(entriesRef.current.flatMap((item) => item.id !== id ? [item] : item.text.trim() ? [{ ...item, text: item.text.trim() }] : []));
   };
 
   const removeEntry = (entry: TranscriptEntry) => {
-    setEntries((current) => current.filter((item) => item.id !== entry.id));
+    updateEntries(entriesRef.current.filter((item) => item.id !== entry.id));
     setTranscriptMessage(`Removed "${entry.text}".`);
     // The pressed button disappears; keep keyboard focus in the transcript.
     transcriptHeadingRef.current?.focus();
   };
 
   const copyTranscript = async () => {
-    const text = entries.map((entry) => entry.text).join(" ");
+    const text = entriesRef.current.map((entry) => entry.text).join(" ");
     try {
       await navigator.clipboard.writeText(text);
       setTranscriptMessage("Transcript copied.");
@@ -740,19 +769,31 @@ export function TranslatorExperience() {
 
   const clearAllLocalData = async () => {
     window.speechSynthesis?.cancel();
-    clearLocalSignRelayData();
-    setEntries([]);
+    const localDataCleared = clearLocalSignRelayData();
+    updateEntries([]);
     setEditingId(null);
-    setHistory([]);
+    setAnnouncement("");
+    setTranscriptMessage("");
+    setStorageMessage("");
+    setHistory(localDataCleared ? [] : loadHistory());
+    settingsRef.current = DEFAULT_SETTINGS;
     setSettings(DEFAULT_SETTINGS);
     sessionStartedRef.current = Date.now();
+    captureGenerationRef.current++;
+    captureStateRef.current = "idle";
+    captureFramesRef.current = [];
+    setCalibrationState("idle");
+    workerRef.current?.postMessage({ type: "reset" });
     try {
       await clearCalibrationTemplates();
       setCalibrationTemplates([]);
-      setPrivacyMessage("Local transcripts, settings and personal signs were cleared from this browser.");
+      setPrivacyMessage(localDataCleared
+        ? "Local transcripts, settings and personal signs were cleared from this browser."
+        : "Personal signs were cleared, but some saved transcripts or settings could not be deleted. Clear this site's data in your browser settings.");
     } catch {
-      // Keep showing what is still stored rather than pretending it was deleted.
-      setPrivacyMessage("Transcripts and settings were cleared, but personal signs could not be deleted. Clear this site's data in your browser settings.");
+      setPrivacyMessage(localDataCleared
+        ? "Transcripts and settings were cleared, but personal signs could not be deleted. Clear this site's data in your browser settings."
+        : "Some local data could not be deleted. Clear this site's data in your browser settings.");
     }
   };
 
@@ -873,7 +914,7 @@ export function TranslatorExperience() {
                   <input
                     type="checkbox"
                     checked={settings.showOverlay}
-                    onChange={(event) => setSettings((current) => ({ ...current, showOverlay: event.target.checked }))}
+                    onChange={(event) => changeSettings({ showOverlay: event.target.checked })}
                   />
                   <span>Show landmarks</span>
                 </label>
@@ -936,7 +977,7 @@ export function TranslatorExperience() {
                             maxLength={500}
                             value={entry.text}
                             autoFocus
-                            onChange={(event) => setEntries((current) => current.map((item) => item.id === entry.id ? { ...item, text: event.target.value } : item))}
+                            onChange={(event) => updateEntries(entriesRef.current.map((item) => item.id === entry.id ? { ...item, text: event.target.value } : item))}
                             onBlur={() => finishEditing(entry.id)}
                             onKeyDown={(event) => event.key === "Enter" && finishEditing(entry.id)}
                             aria-label={`Edit ${entry.text}`}
@@ -960,12 +1001,12 @@ export function TranslatorExperience() {
                   <input
                     type="checkbox"
                     checked={settings.autoSpeak}
-                    onChange={(event) => setSettings((current) => ({ ...current, autoSpeak: event.target.checked }))}
+                    onChange={(event) => changeSettings({ autoSpeak: event.target.checked })}
                   />
                   <span><strong>Auto speak</strong></span>
                 </label>
                 <div className="speech-buttons">
-                  <button className="button secondary small" disabled={!entries.length} onClick={() => speak(entries.map((entry) => entry.text).join(" "))}>
+                  <button className="button secondary small" disabled={!entries.length} onClick={() => speak(entriesRef.current.map((entry) => entry.text).join(" "))}>
                     Speak
                   </button>
                   <button className="button ghost small" onClick={() => window.speechSynthesis?.cancel()}>
@@ -978,11 +1019,11 @@ export function TranslatorExperience() {
                 <div className="voice-ranges">
                 <label className="range-control">
                   <span>Volume <strong>{Math.round(settings.volume * 100)}%</strong></span>
-                  <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => setSettings((current) => ({ ...current, volume: Number(event.target.value) }))} />
+                  <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => changeSettings({ volume: Number(event.target.value) })} />
                 </label>
                 <label className="range-control">
                   <span>Rate <strong>{settings.rate.toFixed(2)}×</strong></span>
-                  <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => setSettings((current) => ({ ...current, rate: Number(event.target.value) }))} />
+                  <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => changeSettings({ rate: Number(event.target.value) })} />
                 </label>
                 </div>
               </details>
