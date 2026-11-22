@@ -26,6 +26,7 @@ function buildSteps(profile) {
 
 export const STEPS = Object.fromEntries(["full", "asl-demo", "rehearsal"].map(profile => [profile, buildSteps(profile)]));
 
+/** @param {string} profile @param {Record<string, string | undefined>} [env] */
 export function profileEnvironment(profile, env = process.env) {
   return { ...env, NEXT_PUBLIC_SIGNRELAY_PROFILE: profile,
     ...(profile === "full" ? {} : { NEXT_PUBLIC_GA_MEASUREMENT_ID: "" }) };
