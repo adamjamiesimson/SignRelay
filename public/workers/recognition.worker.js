@@ -22,13 +22,14 @@ function shouldConfirm({
 }
 
 // lib/frame-timing.ts
+var MAX_TRACKING_GAP_MS = 750;
 function trackingGapLimit(frames2) {
   const intervals = frames2.slice(-13).flatMap((frame, index, recent) => {
     const interval = index ? frame.timestamp - recent[index - 1].timestamp : 0;
-    return interval > 0 && interval <= 750 ? [interval] : [];
+    return interval > 0 && interval <= MAX_TRACKING_GAP_MS ? [interval] : [];
   }).sort((a, b) => a - b);
   const cadence = intervals[Math.floor(intervals.length / 2)] ?? 50;
-  return Math.min(750, Math.max(240, cadence * 2.5));
+  return Math.min(MAX_TRACKING_GAP_MS, Math.max(240, cadence * 2.5));
 }
 function recentContinuousFrames(frames2, duration, tracked) {
   const end = frames2.at(-1);
