@@ -67,6 +67,14 @@ can use, and a poor substitute for **your own** two minutes of teaching. If a bo
 that work today, teach them. If it needs a product that works for anyone, budget for PopSign plus a
 consented in-house cohort, and expect a training run rather than a download.
 
+## Adding a dataset to the existing model
+
+`engine-v3/pipeline/import_islr.py` converts a Kaggle ISLR download into the trainer's cache format and
+`engine-v3/pipeline/merge_cache.py` merges it into an existing cache without losing what was there (it
+copies the originals to `*.base.*`, is idempotent, and has `--restore`). The verified behaviour and the
+step-by-step runbook are in [islr-training-run.md](islr-training-run.md); the converter is tested
+against a synthetic dataset in the published schema by `training/test_islr_import.py`.
+
 ## If you retrain
 
 1. Confirm the licence in writing for every dataset used, and record it — the pipeline requires it.

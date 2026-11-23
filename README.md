@@ -184,7 +184,7 @@ Free GPU notebooks on Google Colab or Kaggle are appropriate for training; the d
 
 Dataset names, vocabulary size and availability do not imply a licence suitable for deployment. The training pipeline requires a human-confirmed licence record.
 
-[docs/training-datasets.md](docs/training-datasets.md) lists the shortlist with licence, format and fit, including the landmark-only Google ISLR set that maps directly into the 86 slots, and the measured answer to whether public video can substitute for a signer's own teaching.
+[docs/training-datasets.md](docs/training-datasets.md) lists the shortlist with licence, format and fit, including the landmark-only Google ISLR set that maps directly into the 86 slots, and the measured answer to whether public video can substitute for a signer's own teaching. [docs/islr-training-run.md](docs/islr-training-run.md) is the runbook for merging that dataset into the existing cache and retraining, with `engine-v3/pipeline/import_islr.py` and `merge_cache.py`.
 
 ## Testing
 
