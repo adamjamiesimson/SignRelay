@@ -57,7 +57,13 @@ export class AslV3Tracker {
   private latestPose: PoseSample | null = null;
   private framesSent = 0;
 
-  private constructor(private readonly worker: Worker, private readonly options: TrackerOptions) {
+  /** Developer diagnostics: the MediaPipe delegate and whether the parallel pose helper is running. */
+  get trackingMode() {
+    return `${this.delegate}${this.poseWorker && this.poseReady ? " + pose helper" : ""}`;
+  }
+
+  private constructor(private readonly worker: Worker, private readonly options: TrackerOptions,
+    readonly delegate: "CPU" | "GPU" = "CPU") {
     worker.onmessage = (event: MessageEvent<AslV3TrackerOutput>) => this.receive(event.data);
     worker.onerror = event => {
       event.preventDefault();
@@ -95,7 +101,7 @@ export class AslV3Tracker {
       });
       options.signal?.throwIfAborted();
       preferredDelegate = delegate;
-      const tracker = new AslV3Tracker(worker, options);
+      const tracker = new AslV3Tracker(worker, options, delegate);
       if ((navigator.hardwareConcurrency ?? 0) >= POSE_WORKER_MIN_CORES) tracker.startPoseWorker(delegate);
       return tracker;
     } catch (error) {

@@ -5,6 +5,7 @@ import { ASL_V31_ASSET_PATH, ASL_V31_ASSET_PINS, ASL_V31_POLICY } from "./asl-v3
 import { withLandmarkInference } from "./landmark-inference";
 import { abortable, type InferenceOptions } from "./landmark-model-loader";
 import { downloadModelBytes } from "./model-download";
+import { describeDecision, type AslV31Decision } from "./asl-v31-diagnostics";
 
 const CLASSES = 523;
 const EMBEDDING_SIZE = 384;
@@ -66,12 +67,19 @@ export async function warmAslV31Model() {
   await model();
 }
 
-export async function recognizeAslV31(frames: Float32Array[], options: InferenceOptions): Promise<AslV31Suggestion | null> {
+/** `onDecision` receives every completed classification, accepted or not, for developer diagnostics. */
+export async function recognizeAslV31(frames: Float32Array[],
+  options: InferenceOptions & { onDecision?: (decision: AslV31Decision) => void }): Promise<AslV31Suggestion | null> {
   const prepared = prepareClip(frames);
   if (!prepared) return null;
   options.signal?.throwIfAborted();
   const { session, meta } = await model();
-  if (frames.filter(hasHand).length < meta.policy.min_hand_frames) return null;
+  const handFrames = frames.filter(hasHand).length;
+  if (handFrames < meta.policy.min_hand_frames) {
+    options.onDecision?.({ status: "too-few-hands", best: "", top3: [], pTop1: 0, pUnknown: 0, proto: null, handFrames,
+      reason: `only ${handFrames} hand frame${handFrames === 1 ? "" : "s"} in the sign (needs ${meta.policy.min_hand_frames})` });
+    return null;
+  }
   return withLandmarkInference(session, options, async () => {
     const inputs = {
       x: new ort.Tensor("float32", prepared.x, [1, TMAX, N_POINTS, 3]),
@@ -87,6 +95,7 @@ export async function recognizeAslV31(frames: Float32Array[], options: Inference
         throw new Error("ASL V3.1 returned invalid inference outputs");
       }
       const decision = decide(logits, embedding, meta);
+      options.onDecision?.(describeDecision(decision, meta.policy, handFrames));
       if (decision.status !== "accepted" || !decision.label) return null;
       const text = decision.label.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter: string) => letter.toUpperCase());
       return { label: decision.label, text, confidence: decision.scores.p_top1 };

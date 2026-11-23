@@ -11,7 +11,11 @@ import { startChrome } from "./chrome-session.mjs";
 const [executable, origin, reel, truthFile, engine, output] = process.argv.slice(2);
 assert(executable && origin && reel && truthFile && output && ["engine1", "v3-balanced", "v3-strict", "integrated-v3"].includes(engine),
   "Supply Chromium executable, origin, Y4M reel, truth JSON, engine1|v3-balanced|v3-strict|integrated-v3 and output JSON");
-assert(["127.0.0.1", "localhost"].includes(new URL(origin).hostname), "Use a loopback export");
+// Loopback exports by default. ALLOW_PRODUCTION_ORIGIN=1 permits exactly the deployed site, to
+// check production asset loading, workers and suggestion delivery with the same reel.
+const productionOrigins = ["https://signrelay.web.app", "https://signrelay-76f34.web.app"];
+assert(["127.0.0.1", "localhost"].includes(new URL(origin).hostname)
+  || (process.env.ALLOW_PRODUCTION_ORIGIN === "1" && productionOrigins.includes(new URL(origin).origin)), "Use a loopback export");
 const isV3 = engine.startsWith("v3-");
 const integrated = engine === "integrated-v3";
 const clipPlan = JSON.parse(await readFile(truthFile, "utf8"));
@@ -54,7 +58,7 @@ function scores(truth, events, cameraStart) {
 const hash = createHash("sha256");
 for await (const chunk of createReadStream(reel)) hash.update(chunk);
 const browser = await startChrome(executable, {
-  proxy: null, dismissOnboarding: integrated,
+  proxy: ["127.0.0.1", "localhost"].includes(new URL(origin).hostname) ? null : process.env.HTTPS_PROXY, dismissOnboarding: integrated,
   extraArgs: [`--use-file-for-fake-video-capture=${resolve(reel)}`, "--disable-background-timer-throttling"],
 });
 try {

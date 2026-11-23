@@ -29,6 +29,12 @@ export class AslV31Segmenter {
   private active: OpenSegment | null = null;
   private waitingForRestSince: number | null = null;
   private readonly restAware: boolean;
+  /** Session counters for developer diagnostics; reset() keeps them, resetStats() clears them. */
+  readonly stats = { opened: 0, completed: 0, capped: 0, tooFewHands: 0 };
+
+  resetStats() {
+    Object.assign(this.stats, { opened: 0, completed: 0, capped: 0, tooFewHands: 0 });
+  }
 
   constructor(options: AslV31SegmenterOptions = {}) {
     this.restAware = options.restAware ?? true;
@@ -68,7 +74,10 @@ export class AslV31Segmenter {
     while (this.samples.length > MAX_SAMPLES || this.samples[0].t < timestamp - MAX_SEGMENT_MS - MARGIN_MS * 2) {
       this.samples.shift();
     }
-    if (!this.active && signingEvidence(features)) this.active = { start: timestamp, lastHand: timestamp };
+    if (!this.active && signingEvidence(features)) {
+      this.active = { start: timestamp, lastHand: timestamp };
+      this.stats.opened++;
+    }
     if (!this.active) return { reason: anyHand ? "idle" : "hands" };
     if (signing) this.active.lastHand = timestamp;
 
@@ -78,13 +87,20 @@ export class AslV31Segmenter {
     if (!ended && !reachedLimit) return { reason: "moving" };
 
     this.active = null;
-    if (!ended) this.waitingForRestSince = lastHand;
+    if (!ended) {
+      this.waitingForRestSince = lastHand;
+      this.stats.capped++;
+    }
     const end = Math.min(timestamp, lastHand + MARGIN_MS);
     const segment = this.samples.filter(sample => sample.t >= start - MARGIN_MS && sample.t <= end);
     // A capped or already-processed movement cannot reopen on its old samples.
     // Keep only preceding rest after its last observed hand for the next sign.
     this.samples = this.samples.filter(sample => sample.t > lastHand);
-    if (segment.filter(sample => hasHand(sample.f)).length < MIN_OBSERVED_HAND_FRAMES) return { reason: "hands" };
+    if (segment.filter(sample => hasHand(sample.f)).length < MIN_OBSERVED_HAND_FRAMES) {
+      this.stats.tooFewHands++;
+      return { reason: "hands" };
+    }
+    this.stats.completed++;
     return { reason: "ready", clip: resampleTo15Hz(segment) };
   }
 }
