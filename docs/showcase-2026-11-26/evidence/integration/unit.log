@@ -1,0 +1,14 @@
+
+> signrelay@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.12 /workspace/SignRelay
+
+[0;93m2026-11-23 05:35:00.449937 [W:onnxruntime:Default, cpuid_info.cc:91 LogEarlyWarning] Unknown CPU vendor. cpuinfo_vendor value: 0[m
+
+ Test Files  93 passed (93)
+      Tests  937 passed | 1 skipped (938)
+   Start at  05:32:57
+   Duration  148.86s (transform 1.95s, setup 0ms, import 4.99s, tests 126.02s, environment 12ms)
+

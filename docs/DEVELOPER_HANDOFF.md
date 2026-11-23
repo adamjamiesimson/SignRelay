@@ -1,6 +1,6 @@
 # SignRelay developer handoff
 
-Use `main` for new work once the Engine V3.1 integration has merged. Record `git rev-parse HEAD` alongside any test results so they can be reproduced. [Engine V3 research history](https://github.com/adamjamiesimson/SignRelay/pull/65) · [Original application repairs](https://github.com/adamjamiesimson/SignRelay/pull/66)
+The integration is published in [PR #67](https://github.com/adamjamiesimson/SignRelay/pull/67) on `integrate/asl-v31-event-2026-11-25`; use `main` for new work after that PR is merged. Record `git rev-parse HEAD` alongside any test results so they can be reproduced. [Engine V3 research history](https://github.com/adamjamiesimson/SignRelay/pull/65) · [Original application repairs](https://github.com/adamjamiesimson/SignRelay/pull/66)
 
 ## First checkout
 
@@ -17,7 +17,7 @@ npm run install:rsl-model
 npm run dev -- --hostname 127.0.0.1
 ```
 
-Open `http://127.0.0.1:3000` in Chrome, select American Sign Language and start the camera. The loopback origin gives the browser a secure context for camera permissions. The Slovo install enables the Russian workspace and is optional while working only on ASL. The full Firebase build installs and verifies Slovo automatically. The media installer checks the exact task model sizes and hashes before reusing cached or newly downloaded files.
+Open `http://127.0.0.1:3000` in Chrome, select American Sign Language and start the camera. The loopback origin gives the browser a secure context for camera permissions. The Slovo install enables the Russian workspace and is optional while working only on ASL. The full Firebase build installs and verifies Slovo automatically. The cloud fresh-clone verification used Node 24.22.3; its outbound proxy required `NODE_USE_ENV_PROXY=1` for Node asset downloads. Ordinary developer networks and GitHub-hosted CI do not require that environment-specific proxy setting. The media installer checks the exact task model sizes and hashes before reusing cached or newly downloaded files.
 
 Leave the variables in [.env.example](../.env.example) unset for local development. Its analytics ID is optional and public. Firebase deployment credentials belong in the authorized operator session or configured release workflow.
 
@@ -54,3 +54,16 @@ Use `npm run build:rehearsal` for the labeled Engine 1 software rehearsal with s
 - Start feature branches from the current `main`, open a PR, and link test evidence for the exact commit. Use local static exports for previews. After required checks and review, build the merged `main` for the Firebase `signrelay` Hosting site in `signrelay-76f34`. An authorized operator deploys through `scripts/deploy-firebase.sh`, verifies the served manifest, and retains the prior Hosting release for rollback.
 
 At rehearsal, prioritize camera denial and recovery, a cold start with Wi-Fi off, lighting and framing with the actual booth camera, and left- and right-handed trials with a fluent ASL reviewer. Record false accepts, abstentions, and duplicates alongside correct suggestions. V3.1 supports isolated ASL signs and still makes mistakes with unknown or neighboring signs. Keep its model suggestions under user control when adding text or speaking. [Physical testing checklist](showcase-2026-11-26/PHYSICAL_TEST_CHECKLIST.md)
+
+## Verified setup checkpoint
+
+A separate clone fetched from GitHub at `779fdfb` passed `npm ci`, both documented asset installers, typecheck, the full Firebase build and the normal `npm run dev -- --hostname 127.0.0.1 --port 18321` path. Headless Chromium initialized the real V3.1 tracking worker with its synthetic camera and reported no uncaught exceptions. No files were copied from the original checkout. The verification environment's proxy setting is described above. Later test/report-only changes do not add runtime dependencies.
+
+Deployment uses the existing project and site, with an authorized Firebase session. A global CLI is optional:
+
+```sh
+npm exec --yes --package=firebase-tools@15.37.0 -- firebase login --no-localhost
+npm exec --yes --package=firebase-tools@15.37.0 -- bash scripts/deploy-firebase.sh --deploy-only
+```
+
+The no-localhost login can be completed from a phone. Do not store its authorization code or credentials in repository files. Build from merged `main` before deploying. Record the previous Firebase release ID, deploy, then verify the live runtime manifest revision/model hash and asset caching. Missing Firebase credentials are a deployment blocker, not a reason to request access to Adam's laptop.

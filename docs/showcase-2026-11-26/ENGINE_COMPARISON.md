@@ -35,6 +35,18 @@ Engine 1 forwarded 741 frames (9.55 fps); reference Strict 583 (7.52 fps); integ
 
 This small development replay supports the engine choice and the manual-review boundary. It does not establish physical signing accuracy or reliable rejection of ordinary activity. Historical unknown-sign false accepts below are a material reason to retain user review.
 
+## Fresh broader-vocabulary development replay
+
+| 12 supported intervals plus four unsupported intervals | Supported correct | Supported wrong | Supported abstained | Unsupported false accepts | Gray-gap accepts |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Reference Strict | 2 | 1 | 9 | 0/4 | 0 |
+| Reference Balanced | 4 | 1 | 7 | 0/4 | 0 |
+| Integrated Strict | 2 | 2 | 8 | 0/4 | 0 |
+
+WATER and RED were correct in integrated Strict. EAT was suggested as FOOD and GOOD as THANK-YOU; both are counted wrong under the frozen labels. Balanced additionally recognized BOOK and GO in the reference lab. All runs completed without runtime errors, duplicate accepted outputs or leaked camera tracks. Integrated Strict forwarded 637 frames (8.36 fps). No unreviewed output entered the integrated transcript or speech. [Broad per-trial evidence](evidence/engine-comparison/broad-integrated-v3.json)
+
+This is weak coverage and includes incorrect suggestions. Do not advertise reliable automatic 523-word camera recognition or expand the booth script on the strength of the vocabulary size. Four unsupported clips and gray inter-clip frames are insufficient to estimate rejection of ordinary activity. Strict remains the conservative research default based on the shared replay and historical unknown rejection, with mandatory review; it is not shown universally better on every cohort. No weights or thresholds were tuned after seeing these trials.
+
 ## Historical broader evidence
 
 These figures are already published evaluation results on their original cohorts. No trial was rerun for this comparison.

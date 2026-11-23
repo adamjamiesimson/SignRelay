@@ -26,6 +26,8 @@ A verified startup defect was repaired: benchmarking GPU delegates through Swift
 
 The small replay and historical broader evidence support V3.1 Strict as the best-supported research default. Unknown-sign false acceptances remain a significant limitation; manual review is mandatory. These prerecorded, publisher-labeled browser trials are not independent live-signing accuracy claims. SORRY is absent from the frozen V3.1 vocabulary.
 
+The additional 12-sign browser reel gave integrated Strict 2 correct, 2 wrong and 8 abstentions, with all four unsupported clips rejected. The wrong proposals were EAT → FOOD and GOOD → THANK-YOU. This confirms weak broader camera coverage and supports retaining manual review and a narrow physically accepted booth script.
+
 ## Verification ledger
 
 All local measurements use Node 24.22.3 and Chromium 156.0.8078.79 on Linux. Fake cameras check software lifecycle; controlled tensors check real model execution. Neither supplies human accuracy evidence.
@@ -38,13 +40,19 @@ All local measurements use Node 24.22.3 and Chromium 156.0.8078.79 on Linux. Fak
 | Camera lifecycle | Passed 12 start/pause cycles, 6 rapid toggles, hidden-tab/calibration recovery, processing failure, tracking-worker crash/retry, ended track, 3 leave/re-enter cycles, pagehide and 60-second continuous fake-camera session |
 | Lifecycle measurements | 2,004 ms cold start; CPU; restart median 1,455 ms; 608 forwarded frames during the 60-second sustained portion; heap samples 5 to 6 MB after collection; no uncaught errors |
 | Fault injection | Passed recognition-worker crash budget/manual recovery, failed worker construction, actual missing/corrupt hand task network responses, camera release/retry and disabled storage |
-| UI comparison | Landing desktop and mobile matched live production PNG bytes exactly. Initial workspace mismatch isolated to status-string capitalization; approved strings restored before the final comparison |
+| UI comparison | All four full-page PNGs matched live production bytes exactly: desktop 1280×900 and mobile 390×844, landing and camera-permission workspace. The initial status-string mismatch was repaired by restoring approved copy |
 
-Additional final checks and publication status are recorded below as they execute. An unexecuted or failed check is not a pass.
+Unit/regression suite: **937 passed, 1 optional experiment skipped across 93 files**. Typecheck, lint, asset guard and dependency audit passed with zero vulnerabilities. The full fetched-history and working-tree secret scan covered 1,011 commits and 3,474 historical text blobs with zero findings.
+
+Additional checks passed: real V3.1 browser ONNX execution through a deny-all proxy; shared model cancellation/cached reuse; Russian, Bangla and Spanish fake-camera/model smokes; two rendered-page tests; axe WCAG checks on five public pages and the workspace (zero violations); the six-sign **Engine 1 synthetic** rehearsal; transcript keyboard, screen-reader announcement, touch target and reduced-motion regressions; strict V3.1 offline startup and uncached restart with 149 observed page/worker requests and zero non-loopback requests; and planted page/worker leak detection. Speech checks observe queue calls, not audible device speech.
+
+A separate GitHub clone at `779fdfb` passed npm install from the lockfile, both pinned asset installers, typecheck, full production build and ordinary development startup. Its actual V3.1 tracking worker initialized in Chromium with browser-provided fake media and no uncaught errors. The cloud proxy required the environment-specific `NODE_USE_ENV_PROXY=1` setting for asset downloads; no private files were copied into that checkout. [Executed evidence](evidence/integration/).
+
+Hosted checks initially caught stale assertions from the cyan UI and one misplaced test-only status assertion after page navigation. The production UI was kept intact and those assertions repaired; all affected checks must pass on the final source before merge. A ten-minute continuous cloud lifecycle trial is running separately. An unexecuted or failed check is not a pass.
 
 ## Publication and deployment status
 
-Integration branch: `integrate/asl-v31-event-2026-11-25`. Main and Firebase production have not yet been updated at this report checkpoint. Firebase CLI has no authorized account in the cloud environment; the no-localhost phone authentication flow was offered while independent engineering continued. No credential, token or browser profile is committed. Production deployment requires that missing authorization or a verified existing deployment credential path. A local build is not a production deployment.
+Published integration: [PR #67](https://github.com/adamjamiesimson/SignRelay/pull/67), branch `integrate/asl-v31-event-2026-11-25`, initial source commit `779fdfb`. Main and Firebase production have not yet been updated at this report checkpoint. Firebase CLI has no authorized account in the cloud environment; the no-localhost phone authentication flow was offered while independent engineering continued. No credential, token or browser profile is committed. Production deployment requires that missing authorization or a verified existing deployment credential path. A local build is not a production deployment.
 
 ## Human acceptance still required
 
