@@ -1,3 +1,4 @@
+import type { AslV31Diagnostics } from "./asl-v31-diagnostics";
 import type { LanguageId } from "./model-adapters";
 
 export type Point = {
@@ -34,6 +35,8 @@ export type WorkerAnalysis = {
   feedback?: string;
   source?: "personal" | "starter" | "model";
   motionReason?: string;
+  /** V3.1 stage counters, only when the page asked for diagnostics (?perf). */
+  diagnostics?: AslV31Diagnostics;
 };
 
 export type WorkerConfirmation = {
@@ -64,7 +67,7 @@ export type CalibrationTemplate = {
 export type WorkerInput = (
   | { type: "frame"; frame: VisionFrame }
   | { type: "reset" }
-  | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[]; aslEngine?: "v3.1" }
+  | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[]; aslEngine?: "v3.1"; diagnostics?: boolean }
 ) & { session?: number; frameId?: number };
 
 export type DetectionStatus = {

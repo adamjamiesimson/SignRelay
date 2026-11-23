@@ -1,0 +1,487 @@
+{
+  "scope": "publisher-labelled development footage through a Chromium fake camera; no physical camera or signer trial",
+  "engine": "integrated-v3",
+  "browser": "Google Chrome for Testing 153.0.8010.12",
+  "reel_sha256": "379cd8459e9631bd111160157a7d6c5e8857dc8f2ed0fa2834963cfe66d37142",
+  "policy": "strict",
+  "modelHash": "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090",
+  "applicationRevision": "c5c802df4728a5bff848d2cb47a423c8b06df241",
+  "trackerHash": "0cae02495c2ba02a19aa9670b9b0035b4612e32a80666a3f804761e1026df9dd",
+  "outputMeaning": "Policy-accepted model suggestions requiring manual review; scoring uses emission time, not segment end",
+  "transcriptEntries": 0,
+  "spoken": [],
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "frameRate": 15
+  },
+  "startupMs": {
+    "pageReadyMs": 825.3000000000175,
+    "cameraClickToActiveMs": 1648.7000000000116,
+    "playbackToTrackingMs": 1525.2999999999884
+  },
+  "playbackSeconds": 77.99968,
+  "mainThreadJsHeapBytes": {
+    "before": 4696516,
+    "after": 7431096
+  },
+  "tracking": {
+    "analysedOrForwardedFrames": 863,
+    "handFrames": 133,
+    "analysedOrForwardedFps": 11.064147955478791,
+    "perSign": [
+      {
+        "trial_id": "hello-gtsignstudy4a.8031",
+        "observations": 18,
+        "handObservations": 3,
+        "longestHandRun": 3
+      },
+      {
+        "trial_id": "hello-gtsignstudy4a.8033",
+        "observations": 15,
+        "handObservations": 5,
+        "longestHandRun": 5
+      },
+      {
+        "trial_id": "please-gtsignstudy4a.8031",
+        "observations": 16,
+        "handObservations": 7,
+        "longestHandRun": 7
+      },
+      {
+        "trial_id": "please-gtsignstudy4a.8033",
+        "observations": 22,
+        "handObservations": 22,
+        "longestHandRun": 22
+      },
+      {
+        "trial_id": "thankyou-gtsignstudy4a.8033",
+        "observations": 17,
+        "handObservations": 7,
+        "longestHandRun": 7
+      },
+      {
+        "trial_id": "thankyou-gtsignstudy4a.8031",
+        "observations": 16,
+        "handObservations": 1,
+        "longestHandRun": 1
+      },
+      {
+        "trial_id": "dev-thankyou-4a.7003",
+        "observations": 15,
+        "handObservations": 3,
+        "longestHandRun": 2
+      },
+      {
+        "trial_id": "dev-please-4a.8017",
+        "observations": 25,
+        "handObservations": 11,
+        "longestHandRun": 11
+      },
+      {
+        "trial_id": "dev-hello-4a.8006",
+        "observations": 16,
+        "handObservations": 6,
+        "longestHandRun": 6
+      },
+      {
+        "trial_id": "dev-yes-4a.8006",
+        "observations": 13,
+        "handObservations": 3,
+        "longestHandRun": 3
+      },
+      {
+        "trial_id": "dev-no-4a.8030",
+        "observations": 24,
+        "handObservations": 5,
+        "longestHandRun": 5
+      },
+      {
+        "trial_id": "val-hello",
+        "observations": 18,
+        "handObservations": 4,
+        "longestHandRun": 4
+      },
+      {
+        "trial_id": "val-thankyou",
+        "observations": 27,
+        "handObservations": 9,
+        "longestHandRun": 9
+      },
+      {
+        "trial_id": "val-please",
+        "observations": 14,
+        "handObservations": 14,
+        "longestHandRun": 14
+      },
+      {
+        "trial_id": "val-yes",
+        "observations": 18,
+        "handObservations": 6,
+        "longestHandRun": 6
+      },
+      {
+        "trial_id": "val-no",
+        "observations": 24,
+        "handObservations": 12,
+        "longestHandRun": 12
+      },
+      {
+        "trial_id": "val-no-repeat",
+        "observations": 24,
+        "handObservations": 11,
+        "longestHandRun": 11
+      }
+    ]
+  },
+  "fixtureDurationSeconds": 77.93333333333334,
+  "performance": "Tracking 66/118 ms (p50/p95) · recognition round trip 1/4 ms · queue wait 0/0 ms · 11.3 forwarded/s, 8 dropped (1%) · 11.3 frames analysed/s · assets self-hosted · recognition running, 0 recoveries · hand tracked in 15% of frames",
+  "modelTimingMs": [],
+  "outboundRequests": [],
+  "runtimeErrors": [],
+  "browserErrors": [
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "https://signrelay.web.app/languages"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "https://signrelay.web.app/privacy"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "https://signrelay.web.app/"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "https://signrelay.web.app/how-it-works"
+    }
+  ],
+  "cameraStatus": "Active",
+  "tracksStopped": true,
+  "intervals": [
+    {
+      "trial_id": "hello-gtsignstudy4a.8031",
+      "label": "HELLO",
+      "category": "shared",
+      "start": 8,
+      "end": 9.866666666666667,
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "c72b902e61fb6b97b5407fca80ed4d560bd9f5cd0f0dd79ab88712b3eb51e011",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "hello-gtsignstudy4a.8033",
+      "label": "HELLO",
+      "category": "shared",
+      "start": 11.866666666666667,
+      "end": 13.6,
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "b929cd2858bf5fa6ea3aa464aa958620eb5a537d7b4b3e8e105cc94995584a85",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "HELLO",
+          "source": "model-suggestion",
+          "at": 14497.100000000006,
+          "anchor": 13.546300097656232,
+          "outputAt": 13.546799999999989,
+          "delayFromClipEndMs": -53
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "please-gtsignstudy4a.8031",
+      "label": "PLEASE",
+      "category": "shared",
+      "start": 15.6,
+      "end": 17.266666666666666,
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "e517287d60d2e8fde92c090b30a9850472fc7a867bce7ba631b3ae7bbe0f8fd5",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "PLEASE",
+          "source": "model-suggestion",
+          "at": 18171.20000000001,
+          "anchor": 17.22030009765623,
+          "outputAt": 17.220899999999993,
+          "delayFromClipEndMs": -46
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "please-gtsignstudy4a.8033",
+      "label": "PLEASE",
+      "category": "shared",
+      "start": 19.266666666666666,
+      "end": 21.533333333333335,
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "36925d898229dc86a8b4a229f191ddaaa2ea081cd6083a9d4df690903e9832f6",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "PLEASE",
+          "source": "model-suggestion",
+          "at": 23028.300000000017,
+          "anchor": 22.076300097656233,
+          "outputAt": 22.078,
+          "delayFromClipEndMs": 545
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "thankyou-gtsignstudy4a.8033",
+      "label": "THANK YOU",
+      "category": "shared",
+      "start": 23.533333333333335,
+      "end": 25.333333333333332,
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "64c641c6538fb247d66d15e416d577e854596978c1766222c94ce7fd0333fbd5",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "THANK-YOU",
+          "source": "model-suggestion",
+          "at": 26309.300000000017,
+          "anchor": 25.358300097656233,
+          "outputAt": 25.359,
+          "delayFromClipEndMs": 26
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "thankyou-gtsignstudy4a.8031",
+      "label": "THANK YOU",
+      "category": "shared",
+      "start": 27.333333333333332,
+      "end": 28.866666666666667,
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "a2a6e355acd076235ff7901a4fb6977da7ef64aa302db2ed4e0867e548c5b8d1",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "dev-thankyou-4a.7003",
+      "label": "THANK YOU",
+      "category": "shared",
+      "start": 30.866666666666667,
+      "end": 32.4,
+      "source": "popsign-development-2026-10-16.json",
+      "sha256": "7fd6d132f2952a28513dab91f4ecd9dc251fa78349f2dc38a9e1c463cf5ec04e",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "dev-please-4a.8017",
+      "label": "PLEASE",
+      "category": "shared",
+      "start": 34.4,
+      "end": 36.733333333333334,
+      "source": "popsign-development-2026-10-16.json",
+      "sha256": "a3dd244a9ce266bdeb4f88aad5792b02c5e4f20fdd16d165c5cccf44a82f574f",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "PLEASE",
+          "source": "model-suggestion",
+          "at": 37597.399999999994,
+          "anchor": 36.64630009765623,
+          "outputAt": 36.64709999999997,
+          "delayFromClipEndMs": -86
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "dev-hello-4a.8006",
+      "label": "HELLO",
+      "category": "shared",
+      "start": 38.733333333333334,
+      "end": 40.46666666666667,
+      "source": "popsign-development-2026-10-16.json",
+      "sha256": "c6f032d16aefc0bc1e80ea6bcf4e672c9ac6946c5adc3c79945c2f1f42c20ca4",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "dev-yes-4a.8006",
+      "label": "YES",
+      "category": "shared",
+      "start": 42.46666666666667,
+      "end": 44,
+      "source": "popsign-development-2026-10-16.json",
+      "sha256": "825ec58bc90d8413a3f4f8f4e8da2b58bfafc0589f5feea747386f0fb24b4e0a",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "dev-no-4a.8030",
+      "label": "NO",
+      "category": "shared",
+      "start": 46,
+      "end": 48.53333333333333,
+      "source": "popsign-development-2026-10-16.json",
+      "sha256": "c05226e472bc0969b9422d1ccfe4a5f255d42eece42557687529926e532870b1",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "NO",
+          "source": "model-suggestion",
+          "at": 48600.70000000001,
+          "anchor": 47.64930009765623,
+          "outputAt": 47.6504,
+          "delayFromClipEndMs": -883
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-hello",
+      "label": "HELLO",
+      "category": "shared",
+      "start": 50.53333333333333,
+      "end": 52.333333333333336,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/hello/ebdb-hello-2023_01_30_17_27_10.580-0.mp4",
+      "sha256": "e22940a6ad5c6f7c34de9d61766c72264ba5b86c7ebc1ae139deeca5cf816cbe",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-thankyou",
+      "label": "THANK YOU",
+      "category": "shared",
+      "start": 54.333333333333336,
+      "end": 57,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/thankyou/2b19-thankyou-2023_01_26_14_11_00.691-0.mp4",
+      "sha256": "3eef30c986e5bfaa1071515522128000f534a6fd09247013099e90bda9f725df",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "THANK-YOU",
+          "source": "model-suggestion",
+          "at": 57183.50000000003,
+          "anchor": 56.232300097656235,
+          "outputAt": 56.23320000000001,
+          "delayFromClipEndMs": -767
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-please",
+      "label": "PLEASE",
+      "category": "shared",
+      "start": 59,
+      "end": 60.53333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/please/d5fd-please-2023_01_11_14_09_57.071-0.mp4",
+      "sha256": "4134fad07ed6db7e937a5dfedfb652b72b485f816004190782ffdf697d82ec0d",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-yes",
+      "label": "YES",
+      "category": "shared",
+      "start": 62.53333333333333,
+      "end": 64.4,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/yes/661f-yes-2023_01_30_17_31_25.896-0.mp4",
+      "sha256": "3c65234baaca6e9cc2b05966d9359fe63ede468f0657f995e52b8755c9d04fb8",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "YES",
+          "source": "model-suggestion",
+          "at": 65253.399999999994,
+          "anchor": 64.30230009765623,
+          "outputAt": 64.30309999999997,
+          "delayFromClipEndMs": -97
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-no",
+      "label": "NO",
+      "category": "shared",
+      "start": 66.4,
+      "end": 68.66666666666667,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/no/2b19-no-2023_01_26_17_20_25.488-0.mp4",
+      "sha256": "d13c24ec15716409fbcf5c4412a8084840a2923503905bfb7c63eb98584d642e",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "NO",
+          "source": "model-suggestion",
+          "at": 68976.00000000003,
+          "anchor": 68.02530009765623,
+          "outputAt": 68.02570000000001,
+          "delayFromClipEndMs": -641
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-no-repeat",
+      "label": "NO",
+      "category": "repeat",
+      "start": 70.66666666666667,
+      "end": 72.93333333333334,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/no/2b19-no-2023_01_26_17_20_25.488-0.mp4",
+      "sha256": "d13c24ec15716409fbcf5c4412a8084840a2923503905bfb7c63eb98584d642e",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "NO",
+          "source": "model-suggestion",
+          "at": 73284.4,
+          "anchor": 72.33330009765623,
+          "outputAt": 72.33409999999998,
+          "delayFromClipEndMs": -599
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    }
+  ],
+  "idleEvents": [],
+  "idleAccepts": 0
+}

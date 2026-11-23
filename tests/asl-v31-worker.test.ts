@@ -105,4 +105,27 @@ describe("selected V3.1 ASL worker", () => {
     expect(messages("suggestion")).toHaveLength(0);
     expect(mock.recognize).not.toHaveBeenCalled();
   });
+
+  it("reports stage diagnostics only when the page asks for them, including a rejected decision", async () => {
+    await configure();
+    await feed(9, true);
+    await feed(12, false);
+    expect(messages("analysis").every(message => !("diagnostics" in message))).toBe(true);
+
+    await worker.onmessage({ data: { type: "templates", language: "asl", templates: [], session: 2, aslEngine: "v3.1", diagnostics: true } });
+    mock.recognize.mockImplementation(async (_frames: unknown, options: { onDecision?: (decision: unknown) => void }) => {
+      options.onDecision?.({ status: "unknown", best: "PLEASE", top3: [{ label: "PLEASE", p: 0.9 }], pTop1: 0.9, pUnknown: 0,
+        proto: 0.7, handFrames: 9, reason: "unlike training examples of PLEASE (similarity 0.70 < 0.81)" });
+      return null;
+    });
+    await feed(9, true, 2);
+    await feed(12, false, 2);
+    const last = messages("analysis").at(-1);
+    expect(last?.type === "analysis" && last.diagnostics).toMatchObject({
+      observations: 21, handFrames: 9, segmentsOpened: 1, segmentsCompleted: 1, model: "ready", inferences: 1,
+      decisions: { accepted: 0, unknown: 1 }, suggestionsPosted: 0,
+      lastDecision: expect.objectContaining({ best: "PLEASE", reason: expect.stringContaining("similarity") }),
+    });
+    expect(messages("suggestion")).toHaveLength(1); // only the earlier, accepted session
+  });
 });

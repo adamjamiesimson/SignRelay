@@ -55,6 +55,8 @@ Use `npm run build:rehearsal` for the labeled Engine 1 software rehearsal with s
 
 ## Recognition diagnostics
 
+For a live camera problem, open the workspace with `?perf`. The developer panel shows each V3.1 stage (tracking, sign start/end, model, Strict decision and reason, suggestion delivery) and the first stage that is failing. See [LIVE_RECOGNITION_DIAGNOSTICS.md](LIVE_RECOGNITION_DIAGNOSTICS.md).
+
 V3.1 accuracy depends on analysed frames per second while hands are visible. On the booth machine, open the workspace with `?perf` and read the "Tracking p50/p95 · forwarded/s" line while signing.
 
 - Fake-camera replay: `scripts/diagnostics/run-engine-comparison.mjs … integrated-v3`.
