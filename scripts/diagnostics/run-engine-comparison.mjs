@@ -152,6 +152,7 @@ try {
     })) : probe.events;
     return { events, frames: probe.frames, errors: probe.errors, classifications: probe.classifications,
       currentTime, performance: document.querySelector("#diag, [data-perf]")?.textContent,
+      stages: [...(document.querySelector("[data-perf-stages]")?.children ?? [])].map(node => node.textContent),
       cameraStatus: document.querySelector("#status, .status-badge")?.textContent,
       analysed: lab?.stats.done, skipped: lab?.stats.skipped,
       modelHash: lab?.meta.model_sha256, labRevision: lab?.meta.commit,
@@ -194,7 +195,7 @@ try {
     camera: startup.camera, startupMs: { pageReadyMs, cameraClickToActiveMs: startup.active - requested,
       playbackToTrackingMs: startup.active - startup.cameraStart }, playbackSeconds: data.currentTime,
     mainThreadJsHeapBytes: { before: beforeHeap, after: afterHeap },
-    tracking, fixtureDurationSeconds: clipPlan.duration, performance: data.performance,
+    tracking, fixtureDurationSeconds: clipPlan.duration, performance: data.performance, stages: data.stages,
     reportedAnalysed: data.analysed, reportedSkipped: data.skipped, modelTimingMs: data.classifications,
     outboundRequests: attempted, runtimeErrors: data.errors, browserErrors: browser.errors,
     cameraStatus: data.cameraStatus, tracksStopped: true, ...display,
