@@ -79,9 +79,11 @@ export function aslV31Hint(d: AslV31Diagnostics, ui: AslV31UiCounts, trackedFram
   if (d.model === "failed") return `Model failed to start: ${d.modelError || "unknown error"}. Reload the page.`;
   if (trackedFrames === 0 || d.observations === 0) return "No camera frames have reached recognition yet.";
   if (d.handFrames === 0) return "No hands detected. Add light in front of you and keep both hands inside the picture.";
-  if (d.segmentsOpened === 0) return "No sign started. Raise your signing hand to chest height to begin a sign.";
+  if (d.segmentsOpened === 0) return d.shoulderFrames === 0
+    ? "No sign started. Shoulders are not in view, so a sign starts when your hand moves: sign normally, then pause."
+    : "No sign started. Raise your signing hand to chest height to begin a sign.";
   if (d.segmentsCompleted === 0 && d.segmentsTooFewHands === 0) {
-    if (d.shoulderFrames === 0) return "Signs never finish and shoulders are not visible. Sit back so both shoulders are in view, then lower or remove your hands between signs.";
+    if (d.shoulderFrames === 0) return "Signs never finish and shoulders are not visible, so a sign ends only when the hand stops moving or leaves the picture. Pause after each sign, or sit back so both shoulders are in view.";
     return d.segmentsCapped ? "Signs run together. After each sign, lower your hands below your chest for half a second."
       : "A sign is in progress. Lower your hands below your chest for half a second to finish it.";
   }

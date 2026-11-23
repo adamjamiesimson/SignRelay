@@ -9,7 +9,7 @@
     "install:ci": "npm ci",
     "build:worker": "esbuild workers/recognition.worker.ts workers/template-matching.worker.ts workers/rsl.worker.ts workers/bdsl.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outdir=public/workers && esbuild workers/asl-v3-tracker.worker.ts --bundle --format=iife --platform=browser --target=es2022 --outfile=public/workers/asl-v3-tracker.worker.js && node scripts/copy-onnx-runtime.mjs && node scripts/install-vision-assets.mjs --wasm-only",
     "install:rsl-model": "node scripts/install-rsl-model.mjs",
-    "dev": "npm run build:worker && node scripts/dev.mjs",
+    "dev": "npm run build:worker && npm run install:vision-assets && node scripts/dev.mjs",
     "build": "npm run build:firebase",
     "build:firebase": "node scripts/build-profile.mjs full",
     "start": "node scripts/serve-export.mjs",

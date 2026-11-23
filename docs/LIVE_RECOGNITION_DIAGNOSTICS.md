@@ -18,9 +18,11 @@ uploaded or saved. The normal page (without `?perf`) is unchanged.
 Typical outcomes, from first stage to last:
 
 - **No camera frames / no hands detected:** a camera, lighting or framing problem. Nothing reached the model.
-- **No sign started:** hands never reached signing space.
+- **No sign started:** hands never reached signing space (or, with the shoulders out of frame, never
+  moved).
 - **Signs run together / never finish:** the hands stayed up between signs. Lower them below the chest
-  briefly after each sign.
+  briefly after each sign. Without the shoulders in view a sign ends when the hand stops moving or leaves
+  the picture, so pause after each sign or sit back so both shoulders are visible.
 - **Strict rejected every sign:** the model ran. The decision line shows whether the right sign was in the
   top three and which threshold rejected it. This is a recognition-accuracy limit, not a broken app.
 - **Shown but not added:** working as designed. A suggestion needs **Add to transcript**.

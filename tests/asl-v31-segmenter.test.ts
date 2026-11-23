@@ -2,9 +2,20 @@ import { describe, expect, it } from "vitest";
 import { hasHand, N_POINTS } from "../engine-v3/web/preprocess.mjs";
 import { AslV31Segmenter } from "../lib/asl-v31-segmenter";
 
+/** Shoulders at y = 0.5, 0.2 apart put the signing-space limit at y = 0.76, so a hand at 0.4 is
+ * signing. Every case below uses this unless it is specifically testing a frame without pose. */
 function features(hand: boolean, x = 0.4) {
   const frame = new Float32Array(N_POINTS * 3).fill(NaN);
+  frame.set([0.4, 0.5, 0], (42 + 7) * 3);
+  frame.set([0.6, 0.5, 0], (42 + 8) * 3);
   if (hand) frame.set([x, 0.4, 0]);
+  return frame;
+}
+
+/** A frame with hands only: no pose, which is what a close-up webcam crop produces. */
+function unposed(wristY: number | null, x = 0.4) {
+  const frame = new Float32Array(N_POINTS * 3).fill(NaN);
+  if (wristY !== null) frame.set([x, wristY, 0]);
   return frame;
 }
 
@@ -49,8 +60,6 @@ describe("V3.1 segmentation (synthetic timing checks)", () => {
     // Shoulders at y = 0.5, 0.2 apart: signing space ends at y = 0.5 + 1.3 * 0.2 = 0.76.
     function posed(handY: number | null) {
       const frame = features(false);
-      frame.set([0.4, 0.5, 0], (42 + 7) * 3);
-      frame.set([0.6, 0.5, 0], (42 + 8) * 3);
       if (handY !== null) frame.set([0.5, handY, 0]);
       return frame;
     }
@@ -79,6 +88,44 @@ describe("V3.1 segmentation (synthetic timing checks)", () => {
       run(segmenter, new Array(7).fill(0.9), 4500);
       const next = run(segmenter, [0.4, 0.4, 0.4, 0.4, null, null, null, null, null, null, null], 5200);
       expect(next.filter(result => result.clip)).toHaveLength(1);
+    });
+  });
+
+  describe("no shoulders in view (close-up webcam crop)", () => {
+    // A 3 s triangle-wave stroke moving 0.02 of the frame per 100 ms frame, so any 250 ms
+    // window shows at least 0.05 of travel. A constant position is a hand resting in view.
+    const stroke = (index: number) => 0.35 + 0.3 * Math.abs(((index / 15) % 2) - 1);
+    const feed = (segmenter: AslV31Segmenter, start: number, count: number, position: (index: number) => number) =>
+      Array.from({ length: count }, (_, index) => segmenter.observe(start + index * 100, unposed(0.4, position(index))));
+    const moving = (segmenter: AslV31Segmenter, start: number, count: number, phase = 0) =>
+      feed(segmenter, start, count, index => stroke(index + phase));
+    const still = (segmenter: AslV31Segmenter, start: number, count: number, x = 0.5) =>
+      feed(segmenter, start, count, () => x);
+
+    it("recognises a second sign without the hand ever leaving the picture", () => {
+      const segmenter = new AslV31Segmenter();
+      const first = [...moving(segmenter, 0, 12), ...still(segmenter, 1200, 30)];
+      expect(first.filter(result => result.clip)).toHaveLength(1);
+      expect(segmenter.stats.capped).toBe(0);
+      const second = [...moving(segmenter, 4200, 12, 5), ...still(segmenter, 5400, 30)];
+      expect(second.filter(result => result.clip)).toHaveLength(1);
+    });
+
+    it("does not open a sign for a hand that is resting in view", () => {
+      const segmenter = new AslV31Segmenter();
+      const results = still(segmenter, 0, 30);
+      expect(results.filter(result => result.clip)).toHaveLength(0);
+      expect(segmenter.stats.opened).toBe(0);
+      expect(results.at(-1)?.reason).toBe("idle");
+    });
+
+    it("ends a capped sign when the movement stops and accepts the next one", () => {
+      const segmenter = new AslV31Segmenter();
+      const capped = moving(segmenter, 0, 45);
+      expect(capped.filter(result => result.clip)).toHaveLength(1);
+      expect(segmenter.stats.capped).toBe(1);
+      const after = [...still(segmenter, 4500, 10), ...moving(segmenter, 5500, 12, 5), ...still(segmenter, 6700, 30)];
+      expect(after.filter(result => result.clip)).toHaveLength(1);
     });
   });
 });

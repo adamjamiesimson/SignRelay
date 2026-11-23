@@ -15294,11 +15294,19 @@ var MAX_SEGMENT_MS = 4e3;
 var MARGIN_MS = 600;
 var MIN_OBSERVED_HAND_FRAMES = 3;
 var MAX_SAMPLES = 192;
+var MOTION_WINDOW_MS = 250;
+var MOTION_HOLD_MS = 600;
+var MOTION_EPSILON = 0.012;
+var SHOULDER_SLOTS = [42 + 7, 42 + 8];
+function shouldersVisible(features) {
+  return SHOULDER_SLOTS.every((slot) => Number.isFinite(features[slot * 3]) && Number.isFinite(features[slot * 3 + 1]));
+}
 var AslV31Segmenter = class {
   constructor(options = {}) {
     this.samples = [];
     this.active = null;
     this.waitingForRestSince = null;
+    this.lastMotionAt = -Infinity;
     /** Session counters for developer diagnostics; reset() keeps them, resetStats() clears them. */
     this.stats = { opened: 0, completed: 0, capped: 0, tooFewHands: 0 };
     this.restAware = options.restAware ?? true;
@@ -15310,12 +15318,35 @@ var AslV31Segmenter = class {
     this.samples = [];
     this.active = null;
     this.waitingForRestSince = null;
+    this.lastMotionAt = -Infinity;
+  }
+  /** Largest hand-point travel over the last MOTION_WINDOW_MS. Points missing in either frame
+   * are skipped, so a partly tracked hand still reports the movement it does show. */
+  travel(timestamp, features) {
+    const reference = this.samples.find((sample) => sample.t >= timestamp - MOTION_WINDOW_MS);
+    if (!reference) return 0;
+    let travel = 0;
+    for (let point3 = 0; point3 < 42; point3++) {
+      const offset = point3 * 3;
+      if (!Number.isFinite(features[offset]) || !Number.isFinite(features[offset + 1]) || !Number.isFinite(reference.f[offset]) || !Number.isFinite(reference.f[offset + 1])) continue;
+      const distance3 = Math.hypot(features[offset] - reference.f[offset], features[offset + 1] - reference.f[offset + 1]);
+      if (distance3 > travel) travel = distance3;
+    }
+    return travel;
+  }
+  /** Whether this frame shows a hand that is signing: inside signing space whenever the
+   * shoulders allow that test, and otherwise only while the hand is moving. */
+  isSigning(timestamp, features) {
+    if (!hasHand(features)) return false;
+    if (!this.restAware) return true;
+    if (shouldersVisible(features)) return signingEvidence(features);
+    return timestamp - this.lastMotionAt <= MOTION_HOLD_MS;
   }
   suppressCurrentSegment() {
     const last = this.samples.at(-1);
-    const stillVisible = last && hasHand(last.f);
+    const stillSigning = last ? this.isSigning(last.t, last.f) : false;
     this.reset();
-    if (stillVisible) this.waitingForRestSince = last.t;
+    if (last && stillSigning) this.waitingForRestSince = last.t;
   }
   observe(timestamp, features) {
     if (!Number.isFinite(timestamp) || features?.length !== N_POINTS * 3) {
@@ -15325,7 +15356,8 @@ var AslV31Segmenter = class {
     const previous = this.samples.at(-1);
     if (previous && timestamp <= previous.t) this.reset();
     const anyHand = hasHand(features);
-    const signing = this.restAware ? signingEvidence(features) : anyHand;
+    if (anyHand && this.restAware && !shouldersVisible(features) && this.travel(timestamp, features) >= MOTION_EPSILON) this.lastMotionAt = timestamp;
+    const signing = this.isSigning(timestamp, features);
     if (this.waitingForRestSince !== null) {
       if (signing) this.waitingForRestSince = timestamp;
       if (timestamp - this.waitingForRestSince <= HAND_GAP_MS) return { reason: anyHand ? "idle" : "hands" };
@@ -15335,7 +15367,7 @@ var AslV31Segmenter = class {
     while (this.samples.length > MAX_SAMPLES || this.samples[0].t < timestamp - MAX_SEGMENT_MS - MARGIN_MS * 2) {
       this.samples.shift();
     }
-    if (!this.active && signingEvidence(features)) {
+    if (!this.active && (this.restAware ? signing : signingEvidence(features))) {
       this.active = { start: timestamp, lastHand: timestamp };
       this.stats.opened++;
     }

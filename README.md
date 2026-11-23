@@ -116,7 +116,9 @@ npm ci
 npm run dev
 ```
 
-The camera requires a secure origin in production. Localhost is treated as secure by modern browsers.
+The first run also copies the MediaPipe runtime and installs the size- and SHA-256-pinned vision
+models into `public/vision/`; later runs reuse the verified files. The camera requires a secure
+origin in production. Localhost is treated as secure by modern browsers.
 
 ## Environment variables
 
