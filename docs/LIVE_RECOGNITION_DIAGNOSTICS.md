@@ -78,6 +78,19 @@ The 4 s segment cap was also wrong for this case. One captured HIGH scored 0.809
 4 s window and 0.987 (accepted) over its first 2.5 s, because a hand that keeps moving after the sign
 stays in the window. `MAX_SEGMENT_MS` is now 2500.
 
+## Reading a panel that is not in the copy
+
+Two parts of the panel were written into the text instead of read from the build: the gate row said
+`Strict:` and the segment row said `capped at 4 s` while the app shipped `policy-demo` and a 2.5 s
+cap. Both now come from `ASL_V31_POLICY` and `MAX_SEGMENT_MS`, so a panel can no longer name a
+threshold or a duration the build does not use - which cost a debugging round when a rejection was
+attributed to Strict.
+
+A high `capped` count is not a fault on its own: a signer whose hands keep moving between signs never
+shows a rest, so the cap closes the segment. Raising the movement threshold does not fix that - it was
+replayed at 0.012-0.030 on seven captured signs and the clips barely changed, while HELLO's score fell
+from 0.49 to 0.46. The useful lever is `MAX_SEGMENT_MS`.
+
 ## Fitting a policy to real signers
 
 The Strict gate is fitted on PopSign validation signers, so a live camera can produce the correct

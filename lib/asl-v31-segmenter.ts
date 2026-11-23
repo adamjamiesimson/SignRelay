@@ -10,7 +10,7 @@ const HAND_GAP_MS = 500;
 // A single sign is one to two seconds. The 4 s cap let a hand that kept moving after the sign stay in
 // the window, and the extra second cost recognition outright: the captured HIGH scored 0.809 (rejected)
 // over its 4 s cap and 0.987 (accepted) over its first 2.5 s.
-const MAX_SEGMENT_MS = 2500;
+export const MAX_SEGMENT_MS = 2500;
 const MARGIN_MS = 600;
 const MIN_OBSERVED_HAND_FRAMES = 3;
 const MAX_SAMPLES = 192;
@@ -35,6 +35,11 @@ export function shouldersVisible(features: Float32Array) {
 
 export type AslV31SegmenterOptions = {
   /**
+   * Movement that counts as signing, as a fraction of the frame over MOTION_WINDOW_MS. Exposed so a
+   * signer's own captures can be replayed at several values before this is tuned for them.
+   */
+  motionEpsilon?: number;
+  /**
    * End a sign when the hand stops moving for HAND_GAP_MS, instead of waiting for it to leave
    * signing space. Default true. A hand that rests visibly in frame - the normal case at a desk -
    * otherwise holds a segment open to the 4 s cap and then blocks recognition until it leaves the
@@ -50,6 +55,7 @@ export class AslV31Segmenter {
   private waitingForRestSince: number | null = null;
   private lastMotionAt = -Infinity;
   private readonly restAware: boolean;
+  private readonly motionEpsilon: number;
   /** Session counters for developer diagnostics; reset() keeps them, resetStats() clears them. */
   readonly stats = { opened: 0, completed: 0, capped: 0, tooFewHands: 0 };
 
@@ -59,6 +65,7 @@ export class AslV31Segmenter {
 
   constructor(options: AslV31SegmenterOptions = {}) {
     this.restAware = options.restAware ?? true;
+    this.motionEpsilon = options.motionEpsilon ?? MOTION_EPSILON;
   }
 
   reset() {
@@ -122,7 +129,7 @@ export class AslV31Segmenter {
     // A hand appearing where none was tracked counts as movement: the hand entered the picture.
     const appeared = anyHand && !!previous && !hasHand(previous.f);
     const moving = anyHand && this.restAware
-      && (appeared || this.travel(timestamp, features) >= MOTION_EPSILON);
+      && (appeared || this.travel(timestamp, features) >= this.motionEpsilon);
     if (moving) this.lastMotionAt = timestamp;
     // Signing continues while the hand keeps moving, or within MOTION_HOLD_MS of its last movement.
     const signing = this.isSigning(timestamp, features);

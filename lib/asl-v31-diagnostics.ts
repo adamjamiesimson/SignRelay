@@ -1,3 +1,6 @@
+import { ASL_V31_POLICY } from "./asl-v31-assets.mjs";
+import { MAX_SEGMENT_MS } from "./asl-v31-segmenter";
+
 /** Live V3.1 pipeline diagnostics, shown only in the developer/performance view (`?perf`).
  * Counts and the latest decision summary stay in memory on this device: nothing here is
  * uploaded or persisted, and no camera image or landmark data is included. */
@@ -12,7 +15,7 @@ export type AslV31Decision = {
   pUnknown: number;
   proto: number | null;
   handFrames: number;
-  /** Why Strict rejected the segment, in words a tester can act on; empty when accepted. */
+  /** Why the gate rejected the segment, in words a tester can act on; empty when accepted. */
   reason: string;
 };
 
@@ -92,8 +95,11 @@ export function aslV31Hint(d: AslV31Diagnostics, ui: AslV31UiCounts, trackedFram
   if (d.inferences === 0) return "Completed signs are waiting for the model.";
   if (d.decisions.accepted === 0) {
     const last = d.lastDecision;
-    return last ? `The model ran ${d.inferences}× but Strict rejected every sign. Last: ${last.reason}.`
-      : `The model ran ${d.inferences}× but Strict rejected every sign.`;
+    // The gate name is read from the shipped policy, not written into the copy: the panel said
+    // "Strict" for a week while the app shipped policy-demo, which sent the next reader hunting
+    // for a threshold that was not the one rejecting the sign.
+    return last ? `The model ran ${d.inferences}× but ${ASL_V31_POLICY} rejected every sign. Last: ${last.reason}.`
+      : `The model ran ${d.inferences}× but ${ASL_V31_POLICY} rejected every sign.`;
   }
   if (ui.received < d.suggestionsPosted) return "Some suggestions did not reach the page (tab hidden or camera stopped).";
   if (ui.received > ui.shown + ui.ignored) return "A suggestion arrived but was not displayed.";
@@ -108,9 +114,9 @@ export function formatAslV31Diagnostics(d: AslV31Diagnostics, ui: AslV31UiCounts
     : "No model decision yet.";
   return [
     `Tracking ${trackedFrames} frames (${delegate ?? "?"}) · to recognizer ${d.observations} · hands ${d.handFrames} · shoulders ${d.shoulderFrames}`,
-    `Signs started ${d.segmentsOpened} · completed ${d.segmentsCompleted} · capped at 4 s ${d.segmentsCapped} · too short ${d.segmentsTooFewHands} · skipped ${d.segmentsSkipped}`,
+    `Signs started ${d.segmentsOpened} · completed ${d.segmentsCompleted} · capped at ${MAX_SEGMENT_MS / 1000} s ${d.segmentsCapped} · too short ${d.segmentsTooFewHands} · skipped ${d.segmentsSkipped}`,
     `Model ${d.model}${d.modelError ? ` (${d.modelError})` : ""} · runs ${d.inferences}${d.lastInferenceMs === null ? "" : ` (${d.lastInferenceMs.toFixed(0)} ms)`} · failures ${d.inferenceFailures}`,
-    `Strict: accepted ${d.decisions.accepted} · uncertain ${d.decisions.uncertain} · unknown ${d.decisions.unknown} · too few hands ${d.decisions["too-few-hands"]}`,
+    `Gate ${ASL_V31_POLICY}: accepted ${d.decisions.accepted} · uncertain ${d.decisions.uncertain} · unknown ${d.decisions.unknown} · too few hands ${d.decisions["too-few-hands"]}`,
     `Suggestions sent ${d.suggestionsPosted} · stale ${d.suggestionsStale} · received ${ui.received} · shown ${ui.shown} · added ${ui.added} · spoken ${ui.spoken}`,
     lastLine,
     `Next step: ${aslV31Hint(d, ui, trackedFrames)}`,

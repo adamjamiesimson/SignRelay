@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ASL_V31_POLICY } from "../lib/asl-v31-assets.mjs";
 import { aslV31Hint, describeDecision, emptyAslV31Diagnostics, formatAslV31Diagnostics } from "../lib/asl-v31-diagnostics";
 
 const policy = { max_unknown: 0.3, min_top1: 0.847, min_margin: null, min_proto: 0.812, min_hand_frames: 3 };
@@ -31,7 +32,9 @@ describe("V3.1 developer diagnostics", () => {
     expect(aslV31Hint(d, ui, 50)).toMatch(/Signs run together/);
     Object.assign(d, { segmentsCompleted: 3, model: "ready", inferences: 3, decisions: { accepted: 0, uncertain: 3, unknown: 0, "too-few-hands": 0 },
       lastDecision: { status: "uncertain", best: "PLEASE", top3: [], pTop1: 0.6, pUnknown: 0, proto: 0.7, handFrames: 9, reason: "not confident (top score 0.60 < 0.85)", ageMs: 0 } });
-    expect(aslV31Hint(d, ui, 50)).toBe("The model ran 3× but Strict rejected every sign. Last: not confident (top score 0.60 < 0.85).");
+    // The gate is named from the shipped policy so the panel cannot claim "Strict" while a
+    // different gate is rejecting the sign.
+    expect(aslV31Hint(d, ui, 50)).toBe(`The model ran 3× but ${ASL_V31_POLICY} rejected every sign. Last: not confident (top score 0.60 < 0.85).`);
     Object.assign(d, { decisions: { ...d.decisions, accepted: 1 }, suggestionsPosted: 1 });
     expect(aslV31Hint(d, { ...ui, received: 1, shown: 1 }, 50)).toMatch(/Add to transcript/);
     expect(aslV31Hint({ ...d, model: "failed", modelError: "fingerprint mismatch" }, ui, 50)).toMatch(/fingerprint mismatch/);
