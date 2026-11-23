@@ -7,7 +7,10 @@ type Segmentation = { reason: "hands" | "idle" | "moving" | "ready"; clip?: Floa
 // These timings come from Engine V3.1's evaluated camera segmenter. The
 // model itself then trims and pads the selected window as it did in training.
 const HAND_GAP_MS = 500;
-const MAX_SEGMENT_MS = 4000;
+// A single sign is one to two seconds. The 4 s cap let a hand that kept moving after the sign stay in
+// the window, and the extra second cost recognition outright: the captured HIGH scored 0.809 (rejected)
+// over its 4 s cap and 0.987 (accepted) over its first 2.5 s.
+const MAX_SEGMENT_MS = 2500;
 const MARGIN_MS = 600;
 const MIN_OBSERVED_HAND_FRAMES = 3;
 const MAX_SAMPLES = 192;

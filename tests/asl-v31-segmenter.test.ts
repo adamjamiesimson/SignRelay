@@ -108,7 +108,8 @@ describe("V3.1 segmentation (synthetic timing checks)", () => {
     it("keeps the PR #67 behaviour when disabled: a visible resting hand holds the segment to the cap", () => {
       const segmenter = new AslV31Segmenter({ restAware: false });
       const results = [...move(segmenter, 0, 4), ...hold(segmenter, 400, 40, 0.4)];
-      expect(results.findIndex(result => result.clip)).toBeGreaterThan(30);
+      // Held to the cap rather than ended by the rest: 2.5 s at 100 ms frames.
+      expect(results.findIndex(result => result.clip)).toBeGreaterThan(24);
     });
 
     it("treats a resting hand as rest after a capped segment", () => {

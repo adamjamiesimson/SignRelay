@@ -55,6 +55,29 @@ That separates three causes that look identical in the panel:
 - it never reaches the top five: a recognition-accuracy limit for that signer. No threshold change
   can fix that; it needs calibration or training data from real signers.
 
+## The shipped gate: `policy-demo.json`
+
+Strict (`min_top1 0.847`, `min_proto 0.812`) was fitted on PopSign validation signers. A signer who
+learns the sign on the spot does not reach it: measured on one live signer's captures with the right
+gloss at rank 1 seven times out of seven, Strict accepted **3**. Booth mode therefore ships
+`policy-demo.json` (`min_top1 0.70`, `min_proto 0.55`, `min_margin 0.30`, `max_unknown` unchanged),
+selected by `ASL_V31_POLICY` in `lib/asl-v31-assets.mjs`.
+
+| gate | correct windows accepted | probes with destroyed hand geometry accepted |
+|---|---|---|
+| strict | 3/7 | 0/42 |
+| demo | 7/7 | 0/42 |
+
+So the looser bars admit this signer's own signs without admitting incoherent input. What they do
+accept is a *partial* sign (2 of 12 windows cut to 0.6 s) and the same pose in a scrambled order -
+both of which show the sign. It is not a calibration: no unknown-sign set was measured, so treat
+`min_top1`/`min_proto` as a booth decision, not an accuracy claim. Revert by setting
+`ASL_V31_POLICY` back to `"strict"`.
+
+The 4 s segment cap was also wrong for this case. One captured HIGH scored 0.809 (rejected) over its
+4 s window and 0.987 (accepted) over its first 2.5 s, because a hand that keeps moving after the sign
+stays in the window. `MAX_SEGMENT_MS` is now 2500.
+
 ## Fitting a policy to real signers
 
 The Strict gate is fitted on PopSign validation signers, so a live camera can produce the correct
