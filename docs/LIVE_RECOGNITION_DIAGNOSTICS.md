@@ -28,3 +28,23 @@ Typical outcomes, from first stage to last:
 - **Shown but not added:** working as designed. A suggestion needs **Add to transcript**.
 
 An empty transcript on its own does not mean recognition failed.
+
+## Saving one sign for offline replay
+
+When a sign is classified but rejected (or accepted as the wrong word), **Save last sign (landmarks
+only)** downloads a JSON with the exact 48-frame window the model scored, the policy decision with
+its top three and scores, and the stage counters. It contains hand, pose and face coordinates only —
+no image, no video, nothing is uploaded.
+
+```bash
+node --experimental-strip-types scripts/diagnostics/replay-live-clip.mjs sign.json --label HIGH
+```
+
+The replay prints the captured decision, then re-scores the same window with the hand slots swapped,
+time reversed, trimmed, and under both Strict and Balanced, and marks the rank of the expected gloss.
+That separates three causes that look identical in the panel:
+
+- the expected gloss appears at rank 1 with a lower score: thresholds/miscalibration;
+- it appears at a usable rank only after a variant: the live window or slot order is wrong;
+- it never reaches the top five: a recognition-accuracy limit for that signer. No threshold change
+  can fix that; it needs calibration or training data from real signers.

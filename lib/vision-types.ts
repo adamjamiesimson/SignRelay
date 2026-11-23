@@ -52,7 +52,10 @@ export type WorkerConfirmation = {
 export type WorkerSuggestion = Omit<WorkerConfirmation, "type" | "source"> & { type: "suggestion"; source: "model" };
 
 export type WorkerMessage = WorkerAnalysis | WorkerConfirmation | WorkerSuggestion
-  | { type: "fault"; session?: number; message: string };
+  | { type: "fault"; session?: number; message: string }
+  /** `?perf` only: the landmark window and decision behind the last sign, so a live
+   * misrecognition can be replayed offline. Landmarks only - no image or video. */
+  | { type: "clip"; session?: number; at: number; sign: Record<string, unknown> | null };
 
 export type CalibrationTemplate = {
   id: string;
@@ -67,6 +70,7 @@ export type CalibrationTemplate = {
 export type WorkerInput = (
   | { type: "frame"; frame: VisionFrame }
   | { type: "reset" }
+  | { type: "capture" }
   | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[]; aslEngine?: "v3.1"; diagnostics?: boolean }
 ) & { session?: number; frameId?: number };
 

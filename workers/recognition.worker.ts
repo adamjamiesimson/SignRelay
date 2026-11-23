@@ -16,7 +16,9 @@ import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 import { trackingGapLimit } from "@/lib/frame-timing";
 import { AslV31Segmenter } from "@/lib/asl-v31-segmenter";
 import { recognizeAslV31, warmAslV31Model } from "@/lib/asl-v31-runtime";
-import { emptyAslV31Diagnostics, type AslV31Diagnostics } from "@/lib/asl-v31-diagnostics";
+import { emptyAslV31Diagnostics, type AslV31Decision, type AslV31Diagnostics } from "@/lib/asl-v31-diagnostics";
+import { ASL_V31_ASSET_PINS, ASL_V31_POLICY } from "@/lib/asl-v31-assets.mjs";
+import { FPS, N_POINTS } from "../engine-v3/web/preprocess.mjs";
 
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
@@ -117,6 +119,7 @@ function resetEvidence() {
 }
 
 function resetSession() {
+  lastCapture = undefined;
   diagnostics = { ...emptyAslV31Diagnostics(), model: v3ModelReady ? "ready" : "not-started" };
   v3Segmenter.resetStats();
   for (const request of pending.values()) request.controller.abort();
@@ -126,6 +129,27 @@ function resetSession() {
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
+}
+
+/** `?perf` only: the last classified window, kept so a live misrecognition can be saved
+ * and replayed offline. Landmarks only; no camera image is ever retained. */
+type LastCapture = { clip: Float32Array[]; decision: AslV31Decision | null; at: number };
+let lastCapture: LastCapture | undefined;
+
+function captureSign() {
+  if (!lastCapture) return null;
+  const frames = lastCapture.clip.map(frame => Array.from(frame, value =>
+    Number.isFinite(value) ? Math.round(value * 1e5) / 1e5 : null));
+  return {
+    tool: "signrelay-live-clip-v1",
+    capturedAt: new Date(lastCapture.at).toISOString(),
+    model: { version: "v3.1", sha256: ASL_V31_ASSET_PINS["model.onnx"].sha256, policy: ASL_V31_POLICY },
+    contract: { points: N_POINTS, fps: FPS, order: "hand slots 0-41 (left, right), pose slots 42-54, face slots 55-85; NaN = missing" },
+    frames: frames.length,
+    decision: lastCapture.decision,
+    diagnostics: diagnosticsSnapshot(),
+    clip: frames,
+  };
 }
 
 function submitV3(now: number) {
@@ -144,6 +168,10 @@ function submitV3(now: number) {
   const generation = modelGeneration;
   const startedAt = performance.now();
   if (!segment) diagnostics.model = "loading";
+  // `?perf` only: keep the exact window and decision so a live misrecognition can be
+  // replayed offline. Landmarks are overwritten by the next sign and never leave the device.
+  const capture: LastCapture | undefined = segment ? { clip: segment.clip, decision: null, at: Date.now() } : undefined;
+  if (capture) lastCapture = capture;
   const task = segment
     ? recognizeAslV31(segment.clip, { signal: request.controller.signal, onDecision: decision => {
       diagnostics.inferences++;
@@ -151,6 +179,7 @@ function submitV3(now: number) {
       diagnostics.decisions[decision.status]++;
       diagnostics.lastDecision = { ...decision, ageMs: 0 };
       lastDecisionAt = performance.now();
+      if (capture) capture.decision = decision;
     } })
     : warmAslV31Model().then(() => { v3ModelReady = true; diagnostics.model = "ready"; });
 
@@ -194,6 +223,10 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
     resetSession();
     personalMatcher.configure(personalTemplates);
+    return;
+  }
+  if (event.data.type === "capture") {
+    self.postMessage({ type: "clip", session: event.data.session, at: Date.now(), sign: captureSign() } satisfies WorkerMessage);
     return;
   }
   if (event.data.type === "reset") { resetSession(); return; }

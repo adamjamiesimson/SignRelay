@@ -15674,6 +15674,7 @@ function resetEvidence() {
   candidateSource = void 0;
 }
 function resetSession() {
+  lastCapture = void 0;
   diagnostics = { ...emptyAslV31Diagnostics(), model: v3ModelReady ? "ready" : "not-started" };
   v3Segmenter.resetStats();
   for (const request of pending.values()) request.controller.abort();
@@ -15683,6 +15684,21 @@ function resetSession() {
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
+}
+var lastCapture;
+function captureSign() {
+  if (!lastCapture) return null;
+  const frames2 = lastCapture.clip.map((frame) => Array.from(frame, (value) => Number.isFinite(value) ? Math.round(value * 1e5) / 1e5 : null));
+  return {
+    tool: "signrelay-live-clip-v1",
+    capturedAt: new Date(lastCapture.at).toISOString(),
+    model: { version: "v3.1", sha256: ASL_V31_ASSET_PINS["model.onnx"].sha256, policy: ASL_V31_POLICY },
+    contract: { points: N_POINTS, fps: FPS, order: "hand slots 0-41 (left, right), pose slots 42-54, face slots 55-85; NaN = missing" },
+    frames: frames2.length,
+    decision: lastCapture.decision,
+    diagnostics: diagnosticsSnapshot(),
+    clip: frames2
+  };
 }
 function submitV3(now) {
   if (pending.has("asl") || now < retryAfter) return;
@@ -15698,12 +15714,15 @@ function submitV3(now) {
   const generation = modelGeneration;
   const startedAt = performance.now();
   if (!segment) diagnostics.model = "loading";
+  const capture = segment ? { clip: segment.clip, decision: null, at: Date.now() } : void 0;
+  if (capture) lastCapture = capture;
   const task = segment ? recognizeAslV31(segment.clip, { signal: request.controller.signal, onDecision: (decision) => {
     diagnostics.inferences++;
     diagnostics.lastInferenceMs = performance.now() - startedAt;
     diagnostics.decisions[decision.status]++;
     diagnostics.lastDecision = { ...decision, ageMs: 0 };
     lastDecisionAt = performance.now();
+    if (capture) capture.decision = decision;
   } }) : warmAslV31Model().then(() => {
     v3ModelReady = true;
     diagnostics.model = "ready";
@@ -15759,6 +15778,10 @@ self.onmessage = async (event) => {
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
     resetSession();
     personalMatcher.configure(personalTemplates);
+    return;
+  }
+  if (event.data.type === "capture") {
+    self.postMessage({ type: "clip", session: event.data.session, at: Date.now(), sign: captureSign() });
     return;
   }
   if (event.data.type === "reset") {

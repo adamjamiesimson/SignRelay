@@ -70,6 +70,14 @@ export class RecognitionSession {
     }
   }
 
+  /** `?perf` only: ask the worker for the last classified window. Does not disturb the
+   * session, the in-flight frame or any pending result. */
+  requestCapture() {
+    if (this.closed || !this.worker) return;
+    try { this.worker.postMessage({ type: "capture", session: this.session } satisfies WorkerInput); }
+    catch { /* the watchdog or the next frame recovers the worker */ }
+  }
+
   resetStats() {
     Object.assign(this.stats, { offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null, recoveries: 0 });
   }
@@ -113,7 +121,7 @@ export class RecognitionSession {
           }
           this.onMessage(message);
           this.pump();
-        } else if (message.type === "confirmed" || message.type === "suggestion") this.onMessage(message);
+        } else if (message.type === "confirmed" || message.type === "suggestion" || message.type === "clip") this.onMessage(message);
       };
       worker.onerror = worker.onmessageerror = () => {
         if (worker === this.worker) this.recover("Recognition was interrupted. Restarting…");

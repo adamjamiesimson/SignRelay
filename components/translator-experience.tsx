@@ -230,6 +230,23 @@ export function TranslatorExperience() {
       aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode });
   }, [calibrationTemplates, selected, useAslV3, perfMode]);
 
+  // `?perf` only: download the landmark window behind the last decision. Landmarks only;
+  // nothing is uploaded and no camera image is kept.
+  const saveSignCapture = useCallback((sign: Record<string, unknown> | null) => {
+    if (!sign) {
+      setRecognitionFeedback("No completed sign has been classified yet. Sign once, then save.");
+      return;
+    }
+    const url = URL.createObjectURL(new Blob([JSON.stringify(sign, null, 1)], { type: "application/json" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `signrelay-sign-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  }, []);
+
   const updateSuggestion = useCallback((next: WorkerSuggestion | null) => {
     if (next) stageCountsRef.current.shown++;
     suggestionRef.current = next;
@@ -361,11 +378,12 @@ export function TranslatorExperience() {
       if (useAslV3 && engineRef.current && !document.hidden) updateSuggestion(message);
       else stageCountsRef.current.ignored++;
     }
+    if (message.type === "clip") { saveSignCapture(message.sign ?? null); return; }
     if (message.type === "confirmed" && (!useAslV3 || message.source === "personal")) {
       updateSuggestion(null);
       appendWord(message);
     }
-  }, [appendWord, perfMode, updateSuggestion, useAslV3]);
+  }, [appendWord, perfMode, saveSignCapture, updateSuggestion, useAslV3]);
 
   const addSuggestedWord = () => {
     if (!suggestion || suggestion !== suggestionRef.current || document.hidden) return;
@@ -1091,6 +1109,14 @@ export function TranslatorExperience() {
                     <p className="calibration-message perf-readout" data-perf-stages>
                       {perfStages.map(line => <span key={line.slice(0, 12)} style={{ display: "block" }}>{line}</span>)}
                     </p>
+                  )}
+                  {perfMode && useAslV3 && (
+                    <div className="perf-actions" data-perf-actions>
+                      <button type="button" className="button secondary small" onClick={() => workerRef.current?.requestCapture()}>
+                        Save last sign (landmarks only)
+                      </button>
+                      <span className="calibration-message">Downloads the hand, pose and face points behind the last decision. No image or video leaves this device.</span>
+                    </div>
                   )}
                 </div>
               </details>
