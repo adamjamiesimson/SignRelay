@@ -45,6 +45,8 @@ import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { parseCalibrationExport, serialiseCalibration } from "@/lib/calibration-transfer";
 import { enrolmentReport, type EnrolmentReport } from "@/lib/asl-v31-personal";
+import { buildLanguageModel, displayText, predictNext, resolveAmbiguity } from "@/lib/asl-next-word";
+import { ASL_SENTENCE_PATTERNS } from "@/lib/asl-sentence-patterns";
 import { AslV3Tracker } from "@/lib/asl-v3-tracker";
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
@@ -73,6 +75,9 @@ type Step = "welcome" | "workspace";
 type CameraState = "idle" | "requesting" | "loading" | "active" | "denied" | "error";
 type RecognitionState = "listening" | "processing" | "uncertain";
 type CalibrationState = "idle" | "countdown" | "recording" | "saving" | "saved" | "error";
+
+// Built once at module load: a few hundred gloss sequences into three small maps.
+const NEXT_WORD_MODEL = buildLanguageModel(ASL_SENTENCE_PATTERNS);
 
 const EMPTY_DETECTION: DetectionStatus = {
   person: false,
@@ -118,6 +123,8 @@ export function TranslatorExperience() {
   const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
   const [countdown, setCountdown] = useState(3);
   const [tourOpen, setTourOpen] = useState(false);
+  /** Set when the sentence, not the detector, chose between two near-tied signs. */
+  const [contextNote, setContextNote] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const cameraButtonRef = useRef<HTMLButtonElement>(null);
@@ -258,6 +265,25 @@ export function TranslatorExperience() {
     setSuggestion(next);
   }, []);
 
+  /**
+   * When the detector reports two near-tied signs, the sentence so far gets a say, the way a keyboard
+   * uses context to pick between "there" and "their". The detector's candidates are only reordered,
+   * never replaced, and the gate still decides whether anything is added.
+   */
+  const withContext = useCallback((message: WorkerSuggestion): WorkerSuggestion => {
+    const alternatives = message.alternatives;
+    if (!alternatives || alternatives.length < 2) return message;
+    const transcript = entriesRef.current.map(entry => entry.gloss ?? entry.text);
+    const ranked = resolveAmbiguity(NEXT_WORD_MODEL, transcript, alternatives);
+    const chosen = ranked[0];
+    const original = alternatives[0];
+    if (chosen.gloss === original.gloss || chosen.reason !== "context") return message;
+    // Keep the detector's own probability for the gloss it actually ranked first.
+    const probability = alternatives.find(item => item.gloss === chosen.gloss)?.probability ?? message.confidence;
+    setContextNote(`Close call: the detector could not separate ${displayText(original.gloss)} and ${displayText(chosen.gloss)}, so the sentence chose ${displayText(chosen.gloss)}.`);
+    return { ...message, gloss: chosen.gloss, text: displayText(chosen.gloss), confidence: probability };
+  }, []);
+
   const resetRecognition = useCallback(() => {
     const tracker = engineRef.current;
     if (tracker && "schedule" in tracker) tracker.reset();
@@ -380,18 +406,20 @@ export function TranslatorExperience() {
     // RecognitionSession drops messages from before every reset.
     if (message.type === "suggestion") {
       stageCountsRef.current.received++;
-      if (useAslV3 && engineRef.current && !document.hidden) updateSuggestion(message);
-      else stageCountsRef.current.ignored++;
+      if (useAslV3 && engineRef.current && !document.hidden) {
+        updateSuggestion(withContext(message));
+      } else stageCountsRef.current.ignored++;
     }
     if (message.type === "clip") { saveSignCapture(message.sign ?? null); return; }
     if (message.type === "confirmed" && (!useAslV3 || message.source === "personal")) {
       updateSuggestion(null);
       appendWord(message);
     }
-  }, [appendWord, perfMode, saveSignCapture, updateSuggestion, useAslV3]);
+  }, [appendWord, perfMode, saveSignCapture, updateSuggestion, useAslV3, withContext]);
 
   const addSuggestedWord = () => {
     if (!suggestion || suggestion !== suggestionRef.current || document.hidden) return;
+    setContextNote(null);
     updateSuggestion(null);
     stageCountsRef.current.added++;
     if (settingsRef.current.autoSpeak) stageCountsRef.current.spoken++;
@@ -902,6 +930,21 @@ export function TranslatorExperience() {
     }
   }, [calibrationTemplates, calibrationWord, model.shortName, requestCamera, resetRecognition, selected, useAslV3]);
 
+  // Words that usually follow the transcript, limited to what this signer can actually sign.
+  const nextWords = useMemo(() => {
+    if (!entries.length) return [];
+    const glossary = new Set<string>();
+    for (const template of calibrationTemplates) if (template.gloss) glossary.add(template.gloss.toUpperCase());
+    for (const entry of entries) if (entry.gloss) glossary.add(entry.gloss.toUpperCase());
+    const vocabulary = useAslV3 && glossary.size >= 3 ? glossary : undefined;
+    return predictNext(NEXT_WORD_MODEL, entries.map(entry => entry.gloss ?? entry.text), { limit: 3, vocabulary });
+  }, [calibrationTemplates, entries, useAslV3]);
+
+  const addNextWord = useCallback((gloss: string, text: string) => {
+    // Added by an explicit click on a chip, so it is a confirmation rather than a detector guess.
+    appendWord({ type: "confirmed", source: "starter", gloss, text, confidence: 1, timestamp: Date.now() });
+  }, [appendWord]);
+
   const selectCustomWord = () => {
     const customWord = createCustomVocabularyEntry(customWordInput);
     if (!customWord) {
@@ -1192,6 +1235,7 @@ export function TranslatorExperience() {
                 <strong>{status.key === "checking-sign" ? displayedCandidate : status.detail}</strong>
               </div>
               {recognitionFeedback && !suggestion && <p className="calibration-message">{recognitionFeedback}</p>}
+              {contextNote && suggestion && <p className="calibration-message candidate-note">{contextNote}</p>}
               {suggestion && status.key === "checking-sign" && (
                 <button type="button" className="button secondary small" onClick={addSuggestedWord} aria-label={`Add to transcript: ${suggestion.text}`}>
                   Add to transcript
@@ -1235,6 +1279,18 @@ export function TranslatorExperience() {
                       </li>
                     ))}
                   </ol>
+                )}
+                {nextWords.length > 0 && (
+                  <div className="next-word-row">
+                    <span className="next-word-label">Next word</span>
+                    {nextWords.map((prediction) => (
+                      <button key={prediction.gloss} type="button" className="next-word-chip"
+                        onClick={() => addNextWord(prediction.gloss, prediction.text)}
+                        title={`${Math.round(prediction.probability * 100)}% of the words likely to follow`}>
+                        {prediction.text}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
 

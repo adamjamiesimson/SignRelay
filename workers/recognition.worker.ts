@@ -210,6 +210,7 @@ function submitV3(now: number) {
     diagnostics.suggestionsPosted++;
     self.postMessage({ type: "suggestion", session: segment.session, gloss: prediction.label, text: prediction.text,
       confidence: prediction.confidence, timestamp: Date.now(), source: "model",
+      alternatives: prediction.alternatives,
     } satisfies WorkerMessage);
   }).catch(error => {
     if (generation !== modelGeneration || request.controller.signal.aborted) return;

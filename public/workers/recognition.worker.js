@@ -15405,6 +15405,10 @@ var AslV31Segmenter = class {
   }
 };
 
+// lib/asl-next-word.ts
+var AMBIGUITY_MARGIN = 0.15;
+var ASL_SUGGESTION_AMBIGUITY_MARGIN = AMBIGUITY_MARGIN;
+
 // engine-v3/web/decision.mjs
 function softmax5(z, T = 1) {
   const m = Math.max(...z);
@@ -15608,7 +15612,9 @@ async function recognizeAslV31(frames2, options) {
       options.onEmbedding?.(vector);
       if (decision.status !== "accepted" || !decision.label) return null;
       const text = decision.label.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
-      return { label: decision.label, text, confidence: decision.scores.p_top1, embedding: vector };
+      const runnerUp = decision.top5[1];
+      const alternatives = runnerUp && decision.scores.p_top1 - runnerUp.p <= ASL_SUGGESTION_AMBIGUITY_MARGIN ? decision.top5.slice(0, 3).map((item) => ({ gloss: item.label, probability: item.p })) : void 0;
+      return { label: decision.label, text, confidence: decision.scores.p_top1, embedding: vector, alternatives };
     } finally {
       Object.values(inputs).forEach((tensor) => tensor.dispose());
       Object.values(results ?? {}).forEach((tensor) => tensor.dispose());
@@ -15847,7 +15853,8 @@ function submitV3(now) {
       text: prediction2.text,
       confidence: prediction2.confidence,
       timestamp: Date.now(),
-      source: "model"
+      source: "model",
+      alternatives: prediction2.alternatives
     });
   }).catch((error) => {
     if (generation !== modelGeneration || request.controller.signal.aborted) return;

@@ -1,4 +1,5 @@
 import * as ort from "onnxruntime-web";
+import { ASL_SUGGESTION_AMBIGUITY_MARGIN } from "./asl-next-word";
 import { decide } from "../engine-v3/web/decision.mjs";
 import { hasHand, N_POINTS, prepareClip, TMAX } from "../engine-v3/web/preprocess.mjs";
 import { ASL_V31_ASSET_PATH, ASL_V31_ASSET_PINS, ASL_V31_POLICY } from "./asl-v31-assets.mjs";
@@ -19,7 +20,10 @@ type DecisionMeta = {
 type Model = { session: ort.InferenceSession; meta: DecisionMeta };
 export type AslV31Suggestion = { label: string; text: string; confidence: number;
   /** Unit-length V3.1 embedding, so taught signs can be matched by cosine similarity. */
-  embedding?: number[] };
+  embedding?: number[];
+  /** Runner-up glosses with their probabilities, when they are close enough that the sentence
+   * should have a say in which one is shown. */
+  alternatives?: { gloss: string; probability: number }[] };
 
 let modelPromise: Promise<Model> | undefined;
 async function fetchPinned(file: keyof typeof ASL_V31_ASSET_PINS, signal: AbortSignal) {
@@ -136,8 +140,13 @@ export async function recognizeAslV31(frames: Float32Array[],
       options.onEmbedding?.(vector);
       if (decision.status !== "accepted" || !decision.label) return null;
       const text = decision.label.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter: string) => letter.toUpperCase());
+      // A near-tie between the top two is reported: the page can then let the sentence decide.
+      const runnerUp = decision.top5[1];
+      const alternatives = runnerUp && decision.scores.p_top1 - runnerUp.p <= ASL_SUGGESTION_AMBIGUITY_MARGIN
+        ? decision.top5.slice(0, 3).map((item: { label: string; p: number }) => ({ gloss: item.label, probability: item.p }))
+        : undefined;
       // The embedding rides along so the worker can compare against signs this signer taught.
-      return { label: decision.label, text, confidence: decision.scores.p_top1, embedding: vector };
+      return { label: decision.label, text, confidence: decision.scores.p_top1, embedding: vector, alternatives };
     } finally {
       Object.values(inputs).forEach(tensor => tensor.dispose());
       Object.values(results ?? {}).forEach(tensor => tensor.dispose());

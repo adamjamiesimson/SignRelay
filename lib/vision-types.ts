@@ -49,7 +49,9 @@ export type WorkerConfirmation = {
   source?: "personal" | "starter" | "model";
 };
 
-export type WorkerSuggestion = Omit<WorkerConfirmation, "type" | "source"> & { type: "suggestion"; source: "model" };
+export type WorkerSuggestion = Omit<WorkerConfirmation, "type" | "source"> & { type: "suggestion"; source: "model";
+  /** Close runner-up glosses, so the page can weigh them against the transcript's context. */
+  alternatives?: { gloss: string; probability: number }[] };
 
 export type WorkerMessage = WorkerAnalysis | WorkerConfirmation | WorkerSuggestion
   | { type: "fault"; session?: number; message: string }
