@@ -15545,6 +15545,30 @@ function model() {
 async function warmAslV31Model() {
   await model();
 }
+function normalise(values) {
+  const length = Math.hypot(...values);
+  return length ? Array.from(values, (value) => value / length) : Array.from(values);
+}
+async function embedAslV31(frames2, options = {}) {
+  options.signal?.throwIfAborted();
+  const prepared = prepareClip(frames2);
+  if (!prepared || frames2.filter(hasHand).length < 3) return null;
+  const { session } = await model();
+  const inputs = {
+    x: new qe("float32", prepared.x, [1, TMAX, N_POINTS, 3]),
+    valid: new qe("float32", prepared.valid, [1, TMAX, N_POINTS]),
+    fmask: new qe("float32", prepared.fmask, [1, TMAX])
+  };
+  let results;
+  try {
+    results = await session.run(inputs);
+    const embedding = results.embedding?.data;
+    return embedding instanceof Float32Array ? Float32Array.from(embedding) : null;
+  } finally {
+    Object.values(inputs).forEach((tensor) => tensor.dispose());
+    Object.values(results ?? {}).forEach((tensor) => tensor.dispose());
+  }
+}
 async function recognizeAslV31(frames2, options) {
   const prepared = prepareClip(frames2);
   if (!prepared) return null;
@@ -15578,15 +15602,43 @@ async function recognizeAslV31(frames2, options) {
         throw new Error("ASL V3.1 returned invalid inference outputs");
       }
       const decision = decide(logits, embedding, meta);
+      const vector = normalise(embedding);
       options.onDecision?.(describeDecision(decision, meta.policy, handFrames));
+      options.onEmbedding?.(vector);
       if (decision.status !== "accepted" || !decision.label) return null;
       const text = decision.label.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
-      return { label: decision.label, text, confidence: decision.scores.p_top1 };
+      return { label: decision.label, text, confidence: decision.scores.p_top1, embedding: vector };
     } finally {
       Object.values(inputs).forEach((tensor) => tensor.dispose());
       Object.values(results ?? {}).forEach((tensor) => tensor.dispose());
     }
   });
+}
+
+// lib/asl-v31-personal.ts
+var PERSONAL_EMBEDDING_MIN_SIMILARITY = 0.75;
+var PERSONAL_EMBEDDING_MIN_MARGIN = 0.15;
+function usable2(values) {
+  return Array.isArray(values) && values.length > 0 && values.every(Number.isFinite);
+}
+function cosineSimilarity(a, b) {
+  const length = Math.min(a.length, b.length);
+  if (!length) return 0;
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  return normA && normB ? dot / Math.sqrt(normA * normB) : 0;
+}
+function matchPersonalEmbedding(embedding, templates) {
+  if (!embedding?.length) return null;
+  const scored = templates.filter((template) => usable2(template.embedding)).map((template) => ({ template, similarity: cosineSimilarity(embedding, template.embedding) })).sort((a, b) => b.similarity - a.similarity);
+  const [best, runnerUp] = scored;
+  if (!best || best.similarity < PERSONAL_EMBEDDING_MIN_SIMILARITY) return null;
+  if (runnerUp && runnerUp.template.gloss !== best.template.gloss && best.similarity - runnerUp.similarity < PERSONAL_EMBEDDING_MIN_MARGIN) return null;
+  return best;
 }
 
 // workers/recognition.worker.ts
@@ -15728,6 +15780,7 @@ function submitV3(now) {
   const startedAt = performance.now();
   if (!segment) diagnostics.model = "loading";
   const capture = segment ? { clip: segment.clip, decision: null, at: Date.now() } : void 0;
+  const observed = {};
   if (capture) lastCapture = capture;
   const task = segment ? recognizeAslV31(segment.clip, { signal: request.controller.signal, onDecision: (decision) => {
     diagnostics.inferences++;
@@ -15736,6 +15789,8 @@ function submitV3(now) {
     diagnostics.lastDecision = { ...decision, ageMs: 0 };
     lastDecisionAt = performance.now();
     if (capture) capture.decision = decision;
+  }, onEmbedding: (embedding) => {
+    observed.embedding = embedding;
   } }) : warmAslV31Model().then(() => {
     v3ModelReady = true;
     diagnostics.model = "ready";
@@ -15743,7 +15798,21 @@ function submitV3(now) {
   task.then((prediction2) => {
     if (generation !== modelGeneration || request.controller.signal.aborted) return;
     modelProblem = false;
-    if (!prediction2 || !segment) return;
+    if (!segment) return;
+    const personal = matchPersonalEmbedding(observed.embedding, personalTemplates);
+    if (personal) {
+      self.postMessage({
+        type: "confirmed",
+        session: segment.session,
+        gloss: personal.template.gloss,
+        text: personal.template.text,
+        confidence: personal.similarity,
+        timestamp: Date.now(),
+        source: "personal"
+      });
+      return;
+    }
+    if (!prediction2) return;
     if ((frames.at(-1)?.timestamp ?? now) - segment.closedAt > MAX_PREDICTION_AGE_MS || performance.now() - segment.receivedAt > MAX_PREDICTION_AGE_MS) {
       diagnostics.suggestionsStale++;
       return;
@@ -15795,6 +15864,12 @@ self.onmessage = async (event) => {
   }
   if (event.data.type === "capture") {
     self.postMessage({ type: "clip", session: event.data.session, at: Date.now(), sign: captureSign() });
+    return;
+  }
+  if (event.data.type === "embed") {
+    const { requestId, frames: recorded, session } = event.data;
+    const reply = (embedding) => self.postMessage({ type: "embedding", session, requestId, embedding });
+    embedAslV31(recorded, {}).then((embedding) => reply(embedding ? Array.from(embedding) : null)).catch(() => reply(null));
     return;
   }
   if (event.data.type === "reset") {

@@ -17,7 +17,9 @@ type DecisionMeta = {
   prototypes: Float32Array;
 };
 type Model = { session: ort.InferenceSession; meta: DecisionMeta };
-export type AslV31Suggestion = { label: string; text: string; confidence: number };
+export type AslV31Suggestion = { label: string; text: string; confidence: number;
+  /** Unit-length V3.1 embedding, so taught signs can be matched by cosine similarity. */
+  embedding?: number[] };
 
 let modelPromise: Promise<Model> | undefined;
 async function fetchPinned(file: keyof typeof ASL_V31_ASSET_PINS, signal: AbortSignal) {
@@ -68,8 +70,42 @@ export async function warmAslV31Model() {
 }
 
 /** `onDecision` receives every completed classification, accepted or not, for developer diagnostics. */
+/** Unit-length copy, so cosine similarity is a dot product downstream. */
+function normalise(values: Float32Array) {
+  const length = Math.hypot(...values);
+  return length ? Array.from(values, value => value / length) : Array.from(values);
+}
+
+/**
+ * Embedding for one taught sign, so a signer's own examples can be matched later. Returns null
+ * rather than throwing when the model cannot load: teaching still works through the frame matcher.
+ */
+export async function embedAslV31(frames: Float32Array[], options: InferenceOptions = {}): Promise<Float32Array | null> {
+  options.signal?.throwIfAborted();
+  const prepared = prepareClip(frames);
+  if (!prepared || frames.filter(hasHand).length < 3) return null;
+  const { session } = await model();
+  const inputs = {
+    x: new ort.Tensor("float32", prepared.x, [1, TMAX, N_POINTS, 3]),
+    valid: new ort.Tensor("float32", prepared.valid, [1, TMAX, N_POINTS]),
+    fmask: new ort.Tensor("float32", prepared.fmask, [1, TMAX]),
+  };
+  let results: Record<string, ort.Tensor> | undefined;
+  try {
+    results = await session.run(inputs);
+    const embedding = results.embedding?.data;
+    return embedding instanceof Float32Array ? Float32Array.from(embedding) : null;
+  } finally {
+    Object.values(inputs).forEach(tensor => tensor.dispose());
+    Object.values(results ?? {}).forEach(tensor => tensor.dispose());
+  }
+}
+
 export async function recognizeAslV31(frames: Float32Array[],
-  options: InferenceOptions & { onDecision?: (decision: AslV31Decision) => void }): Promise<AslV31Suggestion | null> {
+  options: InferenceOptions & { onDecision?: (decision: AslV31Decision) => void;
+    /** Called with the unit-length embedding for every completed classification, accepted or not, so a
+     * taught sign can still be matched when the model's own gate declines the window. */
+    onEmbedding?: (embedding: number[]) => void }): Promise<AslV31Suggestion | null> {
   const prepared = prepareClip(frames);
   if (!prepared) return null;
   options.signal?.throwIfAborted();
@@ -95,10 +131,13 @@ export async function recognizeAslV31(frames: Float32Array[],
         throw new Error("ASL V3.1 returned invalid inference outputs");
       }
       const decision = decide(logits, embedding, meta);
+      const vector = normalise(embedding);
       options.onDecision?.(describeDecision(decision, meta.policy, handFrames));
+      options.onEmbedding?.(vector);
       if (decision.status !== "accepted" || !decision.label) return null;
       const text = decision.label.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter: string) => letter.toUpperCase());
-      return { label: decision.label, text, confidence: decision.scores.p_top1 };
+      // The embedding rides along so the worker can compare against signs this signer taught.
+      return { label: decision.label, text, confidence: decision.scores.p_top1, embedding: vector };
     } finally {
       Object.values(inputs).forEach(tensor => tensor.dispose());
       Object.values(results ?? {}).forEach(tensor => tensor.dispose());

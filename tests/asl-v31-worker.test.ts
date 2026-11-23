@@ -91,6 +91,20 @@ describe("selected V3.1 ASL worker", () => {
     expect(sign.contract.points).toBe(N_POINTS);
   });
 
+  it("confirms a sign the signer taught instead of guessing from the 523-class head", async () => {
+    const embedding = [1, 0, 0, 0];
+    mock.recognize.mockImplementation(async (_frames: Float32Array[], options: { onEmbedding?: (value: number[]) => void }) => {
+      options.onEmbedding?.(embedding);
+      return { ...suggestion, label: "HOME", text: "Home", confidence: 0.3 };
+    });
+    await worker.onmessage({ data: { type: "templates", language: "asl", aslEngine: "v3.1", session: 1, diagnostics: false,
+      templates: [{ id: "p", gloss: "MORE", text: "More", createdAt: 1, frames: [], language: "asl", embedding }] } });
+    await feed(9, true);
+    await feed(12, false);
+    expect(messages("confirmed")).toEqual([expect.objectContaining({ gloss: "MORE", text: "More", source: "personal" })]);
+    expect(messages("suggestion")).toHaveLength(0);
+  });
+
   it("does not run the ASL model in another language even when V3.1 was requested", async () => {
     await configure(2, "csl");
     await feed(9, true, 2);

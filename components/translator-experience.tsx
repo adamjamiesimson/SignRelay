@@ -848,6 +848,10 @@ export function TranslatorExperience() {
     }
 
     const createdAt = Date.now();
+    const embedding = useAslV3
+      ? await workerRef.current?.requestEmbedding(validFrames.map(frame => frame.aslV3Features).filter(Boolean) as Float32Array[])
+      : null;
+    if (captureGeneration !== captureGenerationRef.current) return;
     const template: CalibrationTemplate = {
       id: `${calibrationWord.gloss}-${createdAt}-${Math.random().toString(36).slice(2, 7)}`,
       language: selected,
@@ -855,6 +859,9 @@ export function TranslatorExperience() {
       text: calibrationWord.text,
       createdAt,
       frames: prepareCalibrationSequence(validFrames),
+      // V3.1 matches a signer to their own examples far more reliably than the 523-class head, so the
+      // embedding is stored with the example whenever the ASL V3.1 engine produced one.
+      ...(embedding ? { embedding } : {}),
     };
 
     try {

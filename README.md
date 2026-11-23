@@ -44,7 +44,7 @@ The [17 September handoff](docs/pretrained-expansion-2026-09-17.md) records the 
 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
-| ASL | Experimental | 523 model classes + user-defined personal words | Engine V3.1 ONNX, MediaPipe tracking and on-device personal DTW templates |
+| ASL | Experimental | 523 model classes + user-defined personal words | Engine V3.1 ONNX, MediaPipe tracking, on-device personal DTW templates, and V3.1 embedding match for taught signs |
 | BSL | Experimental | 1,064 automatic BSL-1K signs + unlimited signer-taught words | Official BSL-1K Pose2Sign model + personal DTW templates |
 | ISL | Experimental | 263 automatic INCLUDE signs + unlimited signer-taught words | Official AI4Bharat INCLUDE transformer + personal DTW templates |
 | RSL | Experimental, slow clip mode | 967 pretrained word/phrase classes + 33 fingerspelling letters | Official Slovo MViTv2-small-32-2 RGB ONNX; no personal recordings required |
@@ -79,6 +79,24 @@ The normal workspace uses the frozen Engine V3.1 isolated-sign model trained on 
 ### PSL installation and use
 
 The 775-sign HFAD dictionary bundle (`public/models/psl776-hfad/`) is checksum-verified during the Firebase build. Choose Pakistani Sign Language and sign naturally; recognition runs continuously like ASL/BSL/ISL/LSE, not as a slow single-capture mode. Unlike those four, PSL is **not a trained neural classifier** - each of the 775 signs has exactly one official reference performance from [HFAD, Lahore](https://github.com/sign-language-translator/sign-language-datasets) (CC BY 4.0), and recognition is one-shot dynamic-time-warping distance matching against that single reference, using the same matching code already used for a signer's own personal templates. No accuracy evaluation exists - not against held-out signers, not live-camera, not at all. See [PSL attribution and limitations](public/models/psl776-hfad/ATTRIBUTION.md).
+
+### Taught ASL signs are matched by embedding, not by DTW alone
+
+When the ASL V3.1 engine is active, teaching a sign stores the 384-d embedding of the recording
+alongside it. A later sign is compared against every taught example by cosine similarity, and a match
+at 0.75 or better (beat by 0.15) is confirmed straight into the transcript.
+
+This is the reliable path for a signer whose style the 523-class PopSign head does not recognise.
+Measured on one live signer's captures: two takes of the same sign recorded twelve minutes apart
+scored **0.93**, every pair of different signs stayed at or below **0.27** (mean 0.06), and a sign
+that was never taught matched nothing, leaving the model's own answer in place. Alternatives were
+measured and rejected first: the WLASL-2000 Pose-TGCN engine in this repo answered PLEASE with
+SNOWMAN (0.87) and YES with AUDIOLOGIST (0.91) on the same windows, and averaging nine windows per
+sign changed no top-1.
+
+What it does not do: examples belong to the signer who recorded them, so a visitor who signs
+differently will not match the operator's enrolment. It fixes "my own signs are unreliable", not
+"any stranger's first attempt is accurate".
 
 ## Architecture
 
