@@ -108,6 +108,40 @@ shows a rest, so the cap closes the segment. Raising the movement threshold does
 replayed at 0.012-0.030 on seven captured signs and the clips barely changed, while HELLO's score fell
 from 0.49 to 0.46. The useful lever is `MAX_SEGMENT_MS`.
 
+## Checking the model on video it never saw
+
+`scripts/diagnostics/video-to-features.py` decodes any video, runs the same MediaPipe tasks the
+browser runs, and writes the same 86-point rows, so the shipped model can be scored on a stranger's
+footage without a dataset:
+
+```bash
+pip install mediapipe opencv-python
+python3 scripts/diagnostics/video-to-features.py clip.mp4 out.json
+node --experimental-strip-types scripts/diagnostics/replay-live-clip.mjs out.json --label PLEASE
+```
+
+Measured on twelve public per-word clips (different signers, cameras and studios), top-1:
+
+| sign | videos | correct top-1 | note |
+|---|---|---|---|
+| PLEASE | 3 | 3 | 0.94 / 0.98 / 0.60, prototype 0.86-0.93 |
+| YES | 2 | 2 | 0.81, 0.69 |
+| WATER | 2 | 2 | 0.94, 0.60 |
+| THANK-YOU | 2 | 0 | YUMYUM 0.50, HEAD 0.54; THANK-YOU reaches rank 1 only reversed |
+| STOP | 2 | 0 | SINK 0.61, OVEN 0.23 |
+| HELLO | 1 | 0 | a 42 s greetings compilation, not a single sign - not a fair test |
+
+So the input contract generalises: an unseen signer's PLEASE, YES and WATER are read correctly from a
+downloaded video. THANK-YOU and STOP fail the same way the signer's own MORE failed, and the videos
+show why: the variant being taught is not the one the PopSign-trained head learned, and no window,
+mirror or time variant recovers it. That is a vocabulary-coverage limit, not a pipeline fault, and it
+is the reason teaching those signs as personal examples is the reliable route.
+
+Downloading video for **training** is a different question. It is how WLASL was built, and this repo
+ships the official WLASL-2000 Pose-TGCN checkpoint: on the same captured windows it answered PLEASE
+with SNOWMAN 0.87 and YES with AUDIOLOGIST 0.91. More YouTube data does not by itself beat a
+better-matched smaller model; matching the signer does.
+
 ## Fitting a policy to real signers
 
 The Strict gate is fitted on PopSign validation signers, so a live camera can produce the correct
