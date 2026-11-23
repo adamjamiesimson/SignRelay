@@ -15295,10 +15295,11 @@ var MARGIN_MS = 600;
 var MIN_OBSERVED_HAND_FRAMES = 3;
 var MAX_SAMPLES = 192;
 var AslV31Segmenter = class {
-  constructor() {
+  constructor(options = {}) {
     this.samples = [];
     this.active = null;
     this.waitingForRestSince = null;
+    this.restAware = options.restAware ?? true;
   }
   reset() {
     this.samples = [];
@@ -15319,8 +15320,9 @@ var AslV31Segmenter = class {
     const previous = this.samples.at(-1);
     if (previous && timestamp <= previous.t) this.reset();
     const anyHand = hasHand(features);
+    const signing = this.restAware ? signingEvidence(features) : anyHand;
     if (this.waitingForRestSince !== null) {
-      if (anyHand) this.waitingForRestSince = timestamp;
+      if (signing) this.waitingForRestSince = timestamp;
       if (timestamp - this.waitingForRestSince <= HAND_GAP_MS) return { reason: anyHand ? "idle" : "hands" };
       this.waitingForRestSince = null;
     }
@@ -15330,9 +15332,9 @@ var AslV31Segmenter = class {
     }
     if (!this.active && signingEvidence(features)) this.active = { start: timestamp, lastHand: timestamp };
     if (!this.active) return { reason: anyHand ? "idle" : "hands" };
-    if (anyHand) this.active.lastHand = timestamp;
+    if (signing) this.active.lastHand = timestamp;
     const { start, lastHand } = this.active;
-    const ended = !anyHand && timestamp - lastHand > HAND_GAP_MS;
+    const ended = !signing && timestamp - lastHand > HAND_GAP_MS;
     const reachedLimit = timestamp - start > MAX_SEGMENT_MS;
     if (!ended && !reachedLimit) return { reason: "moving" };
     this.active = null;

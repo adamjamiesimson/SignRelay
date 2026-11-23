@@ -12,10 +12,27 @@ const MARGIN_MS = 600;
 const MIN_OBSERVED_HAND_FRAMES = 3;
 const MAX_SAMPLES = 192;
 
+export type AslV31SegmenterOptions = {
+  /**
+   * End a sign when hands are absent *or resting below signing space* (the same shoulder-based
+   * rule that opens a segment) for HAND_GAP_MS. Default true. Without it, hands resting visibly
+   * in frame hold a segment open to the 4 s cap and then block recognition until they leave the
+   * frame. Identical results on all sprint replays, where signers lower their hands out of view;
+   * the in-view resting case is not yet measured on a physical camera. `false` is the PR #67
+   * behaviour, kept for offline comparisons.
+   */
+  restAware?: boolean;
+};
+
 export class AslV31Segmenter {
   private samples: Sample[] = [];
   private active: OpenSegment | null = null;
   private waitingForRestSince: number | null = null;
+  private readonly restAware: boolean;
+
+  constructor(options: AslV31SegmenterOptions = {}) {
+    this.restAware = options.restAware ?? true;
+  }
 
   reset() {
     this.samples = [];
@@ -39,8 +56,10 @@ export class AslV31Segmenter {
     if (previous && timestamp <= previous.t) this.reset();
 
     const anyHand = hasHand(features);
+    // Signing continues while a hand is visible, or (rest-aware) while one is in signing space.
+    const signing = this.restAware ? signingEvidence(features) : anyHand;
     if (this.waitingForRestSince !== null) {
-      if (anyHand) this.waitingForRestSince = timestamp;
+      if (signing) this.waitingForRestSince = timestamp;
       if (timestamp - this.waitingForRestSince <= HAND_GAP_MS) return { reason: anyHand ? "idle" : "hands" };
       this.waitingForRestSince = null;
     }
@@ -51,10 +70,10 @@ export class AslV31Segmenter {
     }
     if (!this.active && signingEvidence(features)) this.active = { start: timestamp, lastHand: timestamp };
     if (!this.active) return { reason: anyHand ? "idle" : "hands" };
-    if (anyHand) this.active.lastHand = timestamp;
+    if (signing) this.active.lastHand = timestamp;
 
     const { start, lastHand } = this.active;
-    const ended = !anyHand && timestamp - lastHand > HAND_GAP_MS;
+    const ended = !signing && timestamp - lastHand > HAND_GAP_MS;
     const reachedLimit = timestamp - start > MAX_SEGMENT_MS;
     if (!ended && !reachedLimit) return { reason: "moving" };
 

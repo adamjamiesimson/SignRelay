@@ -16,6 +16,9 @@ const isV3 = engine.startsWith("v3-");
 const integrated = engine === "integrated-v3";
 const clipPlan = JSON.parse(await readFile(truthFile, "utf8"));
 const firstSignMs = clipPlan.segments[0].start * 1000;
+// Optional: record the exact V3.1 landmark observations the integrated recognition
+// worker receives, for offline comparisons on identical inputs. Not committed.
+const captureFile = process.env.CAPTURE_OBSERVATIONS;
 
 async function waitFor(browser, condition, label, attempts = 400) {
   for (let i = 0; i < attempts; i++) {
@@ -86,6 +89,9 @@ try {
         super(url, options);
         this.isRecognition = String(url).includes("recognition.worker.js") || String(url).endsWith("/worker.js");
         this.addEventListener("error", error => probe.errors.push(error.message || "Worker error"));
+        if (${Boolean(captureFile)} && String(url).includes("asl-v3-tracker")) this.addEventListener("message", ({ data }) => {
+          if (data.type === "frame" && probe.start !== null) (probe.tracker ??= []).push({ t: data.frame.timestamp, at: performance.now(), ms: data.trackingMs, timings: data.timings });
+        });
         if (!this.isRecognition) return;
         this.addEventListener("message", ({ data }) => {
           if (probe.start === null) return;
@@ -107,6 +113,8 @@ try {
       postMessage(message, ...rest) {
         if (!isV3 && this.isRecognition && message.type === "frame" && probe.start !== null) {
           probe.frames.push({ at: message.frame.timestamp, hands: message.frame.hands.length > 0 });
+          if (${Boolean(captureFile)} && message.frame.aslV3Features) (probe.observations ??= []).push({ t: message.frame.timestamp,
+            f: Array.from(message.frame.aslV3Features, value => Number.isFinite(value) ? value : null) });
         }
         return super.postMessage(message, ...rest);
       }
@@ -145,6 +153,11 @@ try {
       modelHash: lab?.meta.model_sha256, labRevision: lab?.meta.commit,
       transcriptEntries: document.querySelectorAll(".transcript-entry").length, spoken: window.__comparisonSpoken };
   })()`);
+  if (captureFile) {
+    const observations = await browser.evaluate("window.__comparison.observations ?? []");
+    const tracker = await browser.evaluate("window.__comparison.tracker ?? []");
+    await writeFile(captureFile, JSON.stringify({ cameraStart: startup.cameraStart, observations, tracker }) + "\n", { flag: "wx" });
+  }
   const afterHeap = (await browser.send("Performance.getMetrics")).metrics.find(item => item.name === "JSHeapUsedSize")?.value;
   const stopButton = isV3
     ? "document.querySelector('#stopcam')"

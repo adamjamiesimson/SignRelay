@@ -33,7 +33,7 @@ try {
         super(url, options); this.__url = String(url); this.__alive = true; window.__qa.workers.push(this);
         this.addEventListener('message', ({ data }) => {
           if (this.__url.includes('asl-v3-tracker.worker')) {
-            if (data.type === 'ready') window.__qa.delegate = data.delegate;
+            if (data.type === 'ready') { window.__qa.delegate = data.delegate; this.__ready = true; }
             if (data.type === 'frame') {
               window.__qa.trackingMs.push(data.trackingMs);
               if (window.__qa.trackingMs.length > 240) window.__qa.trackingMs.shift();
@@ -44,6 +44,8 @@ try {
       }
       terminate() { this.__alive = false; return super.terminate(); }
       postMessage(message, transfer) {
+        // The V3.1 client may add one parallel pose helper (same script, role "pose").
+        if (this.__url.includes('asl-v3-tracker.worker') && message?.type === 'init') this.__role = message.role ?? 'tracker';
         if (this.__url.includes('recognition.worker')) {
           if (message?.type === 'frame') window.__qa.frames++;
           if (message?.type === 'reset') window.__qa.resets++;
@@ -59,7 +61,8 @@ try {
   const released = () => evaluate("window.__qa.tracks.length > 0 && window.__qa.tracks.every(t => t.readyState === 'ended')");
   const liveTracks = () => evaluate("window.__qa.tracks.filter(t => t.readyState === 'live').length");
   const aliveRecognition = () => evaluate("window.__qa.workers.filter(w => w.__alive && w.__url.includes('recognition.worker')).length");
-  const aliveTracking = () => evaluate("window.__qa.workers.filter(w => w.__alive && w.__url.includes('asl-v3-tracker.worker')).length");
+  const aliveTracking = () => evaluate("window.__qa.workers.filter(w => w.__alive && w.__url.includes('asl-v3-tracker.worker') && w.__role !== 'pose').length");
+  const alivePose = () => evaluate("window.__qa.workers.filter(w => w.__alive && w.__url.includes('asl-v3-tracker.worker') && w.__role === 'pose').length");
   const frames = () => evaluate("window.__qa.frames");
   const heapMb = async () => { await browser.send("HeapProfiler.collectGarbage").catch(() => {}); return evaluate("performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null"); };
   const report = { checks: [] };
@@ -71,6 +74,8 @@ try {
   await until(active, "Camera did not start");
   report.camera_startup_ms = Date.now() - cameraRequestedAt;
   assert.equal(await aliveTracking(), 1, "ASL must start exactly one V3.1 tracking worker");
+  assert.ok(await alivePose() <= 1, "ASL must start at most one parallel pose helper");
+  report.pose_helper = await alivePose() === 1;
   assert.equal(await liveTracks(), 1, "ASL must own exactly one camera stream");
   report.delegate = await evaluate("window.__qa.delegate");
   assert.match(report.delegate, /^(CPU|GPU)$/);
@@ -143,14 +148,30 @@ try {
   report.checks.push({ name: "one processing failure resets recognition and recovers" });
 
   await evaluate(`(() => {
-    const tracker = window.__qa.workers.find(w => w.__alive && w.__url.includes('asl-v3-tracker.worker'));
+    const tracker = window.__qa.workers.find(w => w.__alive && w.__url.includes('asl-v3-tracker.worker') && w.__role !== 'pose');
     tracker.onerror(new ErrorEvent('error', { message: 'Injected tracker crash' }));
   })()`);
-  await until(async () => await released() && await aliveTracking() === 0 && await has("Retry camera"),
+  await until(async () => await released() && await aliveTracking() === 0 && await alivePose() === 0 && await has("Retry camera"),
     "Tracker crash did not release the camera or expose retry");
   await click("Retry camera");
   await until(active, "Camera did not restart after tracker crash");
   report.checks.push({ name: "tracker crash releases the camera, then retries" });
+
+  // A pose-helper crash is not a camera fault: tracking continues with in-worker pose.
+  await until(async () => await alivePose() === 1 || !report.pose_helper, "Pose helper did not restart with the camera");
+  if (report.pose_helper) {
+    await until(() => evaluate("window.__qa.workers.some(w => w.__alive && w.__role === 'pose' && w.__ready)"), "Pose helper did not become ready");
+    await evaluate(`(() => {
+      const pose = window.__qa.workers.find(w => w.__alive && w.__role === 'pose');
+      pose.onerror(new ErrorEvent('error', { message: 'Injected pose helper crash' }));
+    })()`);
+    await until(async () => await alivePose() === 0, "Crashed pose helper was not released");
+    const framesAfterPoseCrash = await frames();
+    await until(async () => await frames() > framesAfterPoseCrash + 10, "Tracking did not continue after a pose helper crash");
+    assert.equal(await active(), true, "A pose helper crash must not stop the camera");
+    assert.equal(await aliveTracking(), 1);
+    report.checks.push({ name: "pose helper crash falls back to in-worker pose without a camera fault" });
+  }
 
   // 4. Camera track ended outside the app (unplugged device / revoked permission).
   await evaluate("window.__qa.tracks.filter(t => t.readyState === 'live').forEach(t => t.stop())");
@@ -171,6 +192,7 @@ try {
     await until(released, "Leaving the workspace did not release the camera");
     await until(async () => await aliveRecognition() === 0, "Leaving the workspace did not terminate the recognition worker");
     assert.equal(await aliveTracking(), 0, "Leaving the workspace did not terminate the tracking worker");
+    assert.equal(await alivePose(), 0, "Leaving the workspace did not terminate the pose helper");
     await click("Start signing");
     await until(active, "Workspace did not restart");
   }
@@ -178,8 +200,8 @@ try {
   report.checks.push({ name: "3 leave/re-enter workspace cycles" });
 
   await evaluate("window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }))");
-  await until(async () => await released() && await aliveTracking() === 0 && await has("Start camera"),
-    "Pagehide did not release camera or tracking worker");
+  await until(async () => await released() && await aliveTracking() === 0 && await alivePose() === 0 && await has("Start camera"),
+    "Pagehide did not release camera or tracking workers");
   await click("Start camera");
   await until(active, "Camera did not restart after pagehide");
   report.checks.push({ name: "pagehide releases camera with restart available" });

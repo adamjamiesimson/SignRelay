@@ -1,0 +1,944 @@
+{
+  "scope": "publisher-labelled development footage through a Chromium fake camera; no physical camera or signer trial",
+  "engine": "integrated-v3",
+  "browser": "Google Chrome for Testing 153.0.8010.12",
+  "reel_sha256": "61e22783aaeda3c0e0930b79b4297596e014d47b883e66e0c71ca83edc291db4",
+  "policy": "strict",
+  "modelHash": "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090",
+  "applicationRevision": "37ecdfaac4178fb4af78f3565e17237edbb81a54",
+  "trackerHash": "6109ff12058653b767a80a7c766bc5818cdc28271fbb251bfe6d503ed95a20cf",
+  "outputMeaning": "Policy-accepted model suggestions requiring manual review; scoring uses emission time, not segment end",
+  "transcriptEntries": 0,
+  "spoken": [],
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "frameRate": 15
+  },
+  "startupMs": {
+    "pageReadyMs": 211.59999999962747,
+    "cameraClickToActiveMs": 610.2000000001863,
+    "playbackToTrackingMs": 477.20000000018626
+  },
+  "playbackSeconds": 184.931977,
+  "mainThreadJsHeapBytes": {
+    "before": 4477620,
+    "after": 7636528
+  },
+  "tracking": {
+    "analysedOrForwardedFrames": 2466,
+    "handFrames": 516,
+    "analysedOrForwardedFps": 13.334632766079174,
+    "perSign": [
+      {
+        "trial_id": "sprint-sodapop-f56c-B",
+        "observations": 30,
+        "handObservations": 11,
+        "longestHandRun": 11
+      },
+      {
+        "trial_id": "sprint-little-c6e5-B",
+        "observations": 25,
+        "handObservations": 14,
+        "longestHandRun": 7
+      },
+      {
+        "trial_id": "sprint-squirrel-f56c-B",
+        "observations": 31,
+        "handObservations": 12,
+        "longestHandRun": 12
+      },
+      {
+        "trial_id": "sprint-hand-f56c-B",
+        "observations": 30,
+        "handObservations": 10,
+        "longestHandRun": 10
+      },
+      {
+        "trial_id": "sprint-wind-ebdb-B",
+        "observations": 33,
+        "handObservations": 17,
+        "longestHandRun": 17
+      },
+      {
+        "trial_id": "sprint-draw-ebdb-B",
+        "observations": 27,
+        "handObservations": 10,
+        "longestHandRun": 10
+      },
+      {
+        "trial_id": "sprint-belt-6aaa-B",
+        "observations": 24,
+        "handObservations": 12,
+        "longestHandRun": 7
+      },
+      {
+        "trial_id": "sprint-coats-c6e5-B",
+        "observations": 27,
+        "handObservations": 17,
+        "longestHandRun": 8
+      },
+      {
+        "trial_id": "sprint-new-f56c-B",
+        "observations": 34,
+        "handObservations": 9,
+        "longestHandRun": 5
+      },
+      {
+        "trial_id": "sprint-petsname-c6e5-B",
+        "observations": 38,
+        "handObservations": 19,
+        "longestHandRun": 19
+      },
+      {
+        "trial_id": "sprint-closet-c6e5-B",
+        "observations": 26,
+        "handObservations": 13,
+        "longestHandRun": 12
+      },
+      {
+        "trial_id": "sprint-hesheit-d5fd-B",
+        "observations": 18,
+        "handObservations": 16,
+        "longestHandRun": 14
+      },
+      {
+        "trial_id": "sprint-cheek-661f-B",
+        "observations": 33,
+        "handObservations": 15,
+        "longestHandRun": 15
+      },
+      {
+        "trial_id": "sprint-pencil-661f-B",
+        "observations": 29,
+        "handObservations": 9,
+        "longestHandRun": 9
+      },
+      {
+        "trial_id": "sprint-slow-6aaa-B",
+        "observations": 23,
+        "handObservations": 22,
+        "longestHandRun": 22
+      },
+      {
+        "trial_id": "sprint-lion-2b19-B",
+        "observations": 36,
+        "handObservations": 14,
+        "longestHandRun": 14
+      },
+      {
+        "trial_id": "sprint-crayon-ebdb-B",
+        "observations": 33,
+        "handObservations": 14,
+        "longestHandRun": 14
+      },
+      {
+        "trial_id": "sprint-goingto-ebdb-B",
+        "observations": 26,
+        "handObservations": 9,
+        "longestHandRun": 9
+      },
+      {
+        "trial_id": "sprint-sleep-d5fd-B",
+        "observations": 16,
+        "handObservations": 5,
+        "longestHandRun": 5
+      },
+      {
+        "trial_id": "sprint-carry-f56c-B",
+        "observations": 36,
+        "handObservations": 14,
+        "longestHandRun": 14
+      },
+      {
+        "trial_id": "sprint-jump-d5fd-B",
+        "observations": 22,
+        "handObservations": 10,
+        "longestHandRun": 9
+      },
+      {
+        "trial_id": "sprint-tomorrow-c6e5-B",
+        "observations": 23,
+        "handObservations": 10,
+        "longestHandRun": 10
+      },
+      {
+        "trial_id": "sprint-old-a459-B",
+        "observations": 18,
+        "handObservations": 4,
+        "longestHandRun": 3
+      },
+      {
+        "trial_id": "sprint-glue-c6e5-B",
+        "observations": 30,
+        "handObservations": 14,
+        "longestHandRun": 11
+      },
+      {
+        "trial_id": "sprint-cheese-6aaa-B",
+        "observations": 22,
+        "handObservations": 14,
+        "longestHandRun": 8
+      },
+      {
+        "trial_id": "sprint-diaper-f56c-B",
+        "observations": 34,
+        "handObservations": 10,
+        "longestHandRun": 5
+      },
+      {
+        "trial_id": "sprint-swing-ebdb-B",
+        "observations": 38,
+        "handObservations": 16,
+        "longestHandRun": 16
+      },
+      {
+        "trial_id": "sprint-soft-c6e5-B",
+        "observations": 24,
+        "handObservations": 11,
+        "longestHandRun": 11
+      },
+      {
+        "trial_id": "sprint-dinosaur-f56c-B",
+        "observations": 39,
+        "handObservations": 34,
+        "longestHandRun": 16
+      },
+      {
+        "trial_id": "sprint-sheep-c6e5-B",
+        "observations": 29,
+        "handObservations": 13,
+        "longestHandRun": 13
+      },
+      {
+        "trial_id": "sprint-asleep-6aaa-B",
+        "observations": 19,
+        "handObservations": 9,
+        "longestHandRun": 7
+      },
+      {
+        "trial_id": "sprint-grapes-f56c-B",
+        "observations": 36,
+        "handObservations": 13,
+        "longestHandRun": 13
+      },
+      {
+        "trial_id": "sprint-icecream-c6e5-B",
+        "observations": 33,
+        "handObservations": 2,
+        "longestHandRun": 2
+      },
+      {
+        "trial_id": "sprint-melon-f56c-B",
+        "observations": 36,
+        "handObservations": 18,
+        "longestHandRun": 18
+      },
+      {
+        "trial_id": "sprint-napkin-2b19-B",
+        "observations": 35,
+        "handObservations": 11,
+        "longestHandRun": 11
+      },
+      {
+        "trial_id": "sprint-nice-f56c-B",
+        "observations": 33,
+        "handObservations": 11,
+        "longestHandRun": 11
+      },
+      {
+        "trial_id": "sprint-over-c6e5-B",
+        "observations": 27,
+        "handObservations": 9,
+        "longestHandRun": 4
+      },
+      {
+        "trial_id": "sprint-porch-f56c-B",
+        "observations": 28,
+        "handObservations": 11,
+        "longestHandRun": 10
+      },
+      {
+        "trial_id": "sprint-stove-ebdb-B",
+        "observations": 38,
+        "handObservations": 19,
+        "longestHandRun": 19
+      },
+      {
+        "trial_id": "sprint-turtle-c6e5-B",
+        "observations": 30,
+        "handObservations": 11,
+        "longestHandRun": 11
+      }
+    ]
+  },
+  "fixtureDurationSeconds": 185.2,
+  "performance": "Tracking 36/70 ms (p50/p95) · recognition round trip 1/3 ms · queue wait 0/0 ms · 13.4 forwarded/s, 5 dropped (0%) · 13.4 frames analysed/s · assets self-hosted · recognition running, 0 recoveries · hand tracked in 21% of frames",
+  "modelTimingMs": [],
+  "outboundRequests": [],
+  "runtimeErrors": [],
+  "browserErrors": [
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:4304/"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:4304/languages"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:4304/how-it-works"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:4304/privacy"
+    }
+  ],
+  "cameraStatus": "Active",
+  "tracksStopped": true,
+  "intervals": [
+    {
+      "trial_id": "sprint-sodapop-f56c-B",
+      "label": "SODAPOP",
+      "category": "supported",
+      "start": 8,
+      "end": 10.4,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/sodapop/f56c-sodapop-2024_04_01_15_50_54.049-1.mp4",
+      "sha256": "164557012429d5d82ed01e61df042276d34c8ad1a9ca9b6608f71fd7817ec32f",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "SODAPOP",
+          "source": "model-suggestion",
+          "at": 10417.200000000186,
+          "anchor": 10.062800048828125,
+          "outputAt": 10.063700000000185,
+          "delayFromClipEndMs": -336
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-little-c6e5-B",
+      "label": "LITTLE",
+      "category": "supported",
+      "start": 12.4,
+      "end": 14.6,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/little/c6e5-little-2023_08_17_15_11_15.251-0.mp4",
+      "sha256": "005fbd3dc6f4da9ebad37963097ded5f82adf9b19ae6c94fcf2b19bf573e3ba8",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-squirrel-f56c-B",
+      "label": "SQUIRREL",
+      "category": "supported",
+      "start": 16.6,
+      "end": 19.133333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/squirrel/f56c-squirrel-2024_03_30_19_51_10.973-1.mp4",
+      "sha256": "f28d1c2748dd0deed75afcd22669c3e4faa84ff0a975239d6c9f0754457a299a",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "SQUIRREL",
+          "source": "model-suggestion",
+          "at": 18969.400000000373,
+          "anchor": 18.614800048828126,
+          "outputAt": 18.615900000000373,
+          "delayFromClipEndMs": -517
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-hand-f56c-B",
+      "label": "HAND",
+      "category": "supported",
+      "start": 21.133333333333333,
+      "end": 23.533333333333335,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/hand/f56c-hand-2024_03_28_18_49_18.622-1.mp4",
+      "sha256": "bb0c135d885cdf5ba96c16ab12517ddeff7917a0704ee8bf8568a3f6f450d156",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-wind-ebdb-B",
+      "label": "WIND",
+      "category": "supported",
+      "start": 25.533333333333335,
+      "end": 28.333333333333332,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/wind/ebdb-wind-2023_09_12_15_39_48.607-0.mp4",
+      "sha256": "478f09c920aa16a691b295d5004eaf2b2219ca40a6efb4d3e0e790bdb59d2b55",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-draw-ebdb-B",
+      "label": "DRAW",
+      "category": "supported",
+      "start": 30.333333333333332,
+      "end": 32.6,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/draw/ebdb-draw-2023_09_12_14_15_10.791-0.mp4",
+      "sha256": "e6d21b5912f384e75b1b91880271b91ff7414646dbbff5d21ed2861ea2eb9382",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "DRAW",
+          "source": "model-suggestion",
+          "at": 32814.200000000186,
+          "anchor": 32.452800048828124,
+          "outputAt": 32.46070000000019,
+          "delayFromClipEndMs": -139
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-belt-6aaa-B",
+      "label": "BELT",
+      "category": "supported",
+      "start": 34.6,
+      "end": 36.666666666666664,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/belt/6aaa-belt-2024_04_26_16_44_46.168-1.mp4",
+      "sha256": "2f12001b1559d39d042e3fd9db9c16bbc08764eee214654a633fb9d490d02061",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-coats-c6e5-B",
+      "label": "COATS",
+      "category": "supported",
+      "start": 38.666666666666664,
+      "end": 41.2,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/coats/c6e5-coats-2023_08_17_20_36_46.566-0.mp4",
+      "sha256": "b1eebde301c6bf28a0a29df05062e91b82e379efb921167c362a68b26472b49d",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-new-f56c-B",
+      "label": "NEW",
+      "category": "supported",
+      "start": 43.2,
+      "end": 46,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/new/f56c-new-2024_03_30_20_20_46.747-1.mp4",
+      "sha256": "1f932c38d0c768a75eb05ee670d98eb8040a71f18c736dfc5d9674932e92708c",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-petsname-c6e5-B",
+      "label": "PETSNAME",
+      "category": "supported",
+      "start": 48,
+      "end": 50.93333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/petsname/c6e5-petsname-2023_08_18_10_27_57.842-0.mp4",
+      "sha256": "b83427f223082473bd65216c4967f118f7b80412c17f020498a3f49bd06c1246",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "PETSNAME",
+          "source": "model-suggestion",
+          "at": 51164.700000000186,
+          "anchor": 50.80980004882812,
+          "outputAt": 50.811200000000184,
+          "delayFromClipEndMs": -122
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-closet-c6e5-B",
+      "label": "CLOSET",
+      "category": "supported",
+      "start": 52.93333333333333,
+      "end": 55.266666666666666,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/closet/c6e5-closet-2023_01_26_10_41_51.147-0.mp4",
+      "sha256": "7f56bb91c55cae9681a9c1a7050a1b7a696015b10dbc2230faacfc126dafe308",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-hesheit-d5fd-B",
+      "label": "HESHEIT",
+      "category": "supported",
+      "start": 57.266666666666666,
+      "end": 58.8,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/hesheit/d5fd-hesheit-2023_01_11_15_07_33.000-0.mp4",
+      "sha256": "29beb372efc15434d08b58e96e02f2541e173a3398b668b72d89dde89dc54a3a",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-cheek-661f-B",
+      "label": "CHEEK",
+      "category": "supported",
+      "start": 60.8,
+      "end": 63.4,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/cheek/661f-cheek-2023_01_29_19_05_42.429-2.mp4",
+      "sha256": "3ac213a5ebfeb10abb82cbc494f2b9687e5abf2adc191f9c03f1883d3d6c8dfc",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-pencil-661f-B",
+      "label": "PENCIL",
+      "category": "supported",
+      "start": 65.4,
+      "end": 67.53333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/pencil/661f-pencil-2023_01_30_17_29_12.251-0.mp4",
+      "sha256": "ba615bd52c08dc1f802f6b120f6a53fa218b018c01602c7ac1c443c0bfcbf335",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "PENCIL",
+          "source": "model-suggestion",
+          "at": 67548.90000000037,
+          "anchor": 67.19480004882813,
+          "outputAt": 67.19540000000038,
+          "delayFromClipEndMs": -338
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-slow-6aaa-B",
+      "label": "SLOW",
+      "category": "supported",
+      "start": 69.53333333333333,
+      "end": 71.6,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/slow/6aaa-slow-2024_04_26_11_35_23.503-1.mp4",
+      "sha256": "ca302deeba84f586d107abf9dc477f49169a4712bd688e856b93a012fab4a261",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-lion-2b19-B",
+      "label": "LION",
+      "category": "supported",
+      "start": 73.6,
+      "end": 76.4,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/lion/2b19-lion-2023_01_26_19_43_24.775-0.mp4",
+      "sha256": "1be6ab72ec9f6f3e581974d0fac2026a0d7fe8c99f82ebe303c753fd2680899f",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "LION",
+          "source": "model-suggestion",
+          "at": 76152.40000000037,
+          "anchor": 75.79780004882812,
+          "outputAt": 75.79890000000037,
+          "delayFromClipEndMs": -601
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-crayon-ebdb-B",
+      "label": "CRAYON",
+      "category": "supported",
+      "start": 78.4,
+      "end": 81.13333333333334,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/crayon/ebdb-crayon-2023_09_12_15_56_12.251-0.mp4",
+      "sha256": "86bb58cef24f7d6492c662438e9bab15194f54cb45da7eaa86251e6d1ade967e",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "CRAYON",
+          "source": "model-suggestion",
+          "at": 81319,
+          "anchor": 80.96480004882812,
+          "outputAt": 80.9655,
+          "delayFromClipEndMs": -168
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-goingto-ebdb-B",
+      "label": "GOINGTO",
+      "category": "supported",
+      "start": 83.13333333333334,
+      "end": 85.26666666666667,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/goingto/ebdb-goingto-2023_09_12_14_21_42.713-0.mp4",
+      "sha256": "46ae32667d210327d9e6de819b86c830ae327192701d942b2f6f7e66ff11c10a",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-sleep-d5fd-B",
+      "label": "SLEEP",
+      "category": "supported",
+      "start": 87.26666666666667,
+      "end": 88.66666666666667,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/sleep/d5fd-sleep-2023_01_11_13_28_30.898-0.mp4",
+      "sha256": "3ab2ce61434f66e567088b70145c43aeede669d69f10344992cec60686ca14b0",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "SLEEP",
+          "source": "model-suggestion",
+          "at": 88934.70000000019,
+          "anchor": 88.58080004882812,
+          "outputAt": 88.58120000000018,
+          "delayFromClipEndMs": -85
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-carry-f56c-B",
+      "label": "CARRY",
+      "category": "supported",
+      "start": 90.66666666666667,
+      "end": 93.53333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/carry/f56c-carry-2024_03_30_20_26_27.521-1.mp4",
+      "sha256": "ec71ee66322ce0c113b4fd0d3c958ca1caec91147877e0fa24fc4ee4d67d59c7",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-jump-d5fd-B",
+      "label": "JUMP",
+      "category": "supported",
+      "start": 95.53333333333333,
+      "end": 97.13333333333334,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/jump/d5fd-jump-2023_01_11_13_32_50.227-0.mp4",
+      "sha256": "bc65eedfaaf3c2c8789fbeca32aac9f70322dcf452b7ef062032be92124487b4",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "JUMP",
+          "source": "model-suggestion",
+          "at": 97959.29999999981,
+          "anchor": 97.60480004882812,
+          "outputAt": 97.60579999999982,
+          "delayFromClipEndMs": 472
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-tomorrow-c6e5-B",
+      "label": "TOMORROW",
+      "category": "supported",
+      "start": 99.13333333333334,
+      "end": 101.13333333333334,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/tomorrow/c6e5-tomorrow-2023_01_25_22_56_21.879-0.mp4",
+      "sha256": "02ff28c29115b5a6f59ac88323d0c821686b1c84268b75740634a62ce7db771d",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-old-a459-B",
+      "label": "OLD",
+      "category": "supported",
+      "start": 103.13333333333334,
+      "end": 104.53333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/old/a459-old-2023_01_18_21_40_54.607-0.mp4",
+      "sha256": "2e7e9f42b8e622f87d9ec8ac4fc65f6b975875e05d5ed001f28162a8fe448d6b",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-glue-c6e5-B",
+      "label": "GLUE",
+      "category": "supported",
+      "start": 106.53333333333333,
+      "end": 108.86666666666666,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/glue/c6e5-glue-2023_08_18_10_42_37.599-0.mp4",
+      "sha256": "da2551941d9cb294d85177ac4e54aa0a8a56ceebbffd9e1c4d4d0da426ca5ebf",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-cheese-6aaa-B",
+      "label": "CHEESE",
+      "category": "supported",
+      "start": 110.86666666666666,
+      "end": 112.73333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/cheese/6aaa-cheese-2024_04_26_16_46_23.676-1.mp4",
+      "sha256": "7623d46967dd0e883347c70d8a1095aa175eae48909c02d6323d86ae469ff1ac",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-diaper-f56c-B",
+      "label": "DIAPER",
+      "category": "supported",
+      "start": 114.73333333333333,
+      "end": 117.33333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/diaper/f56c-diaper-2024_03_27_19_42_36.106-1.mp4",
+      "sha256": "8fbf1d51f708d56748a43ad1dd53ab1710fa3829592bd72be11dd553f56920cd",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-swing-ebdb-B",
+      "label": "SWING",
+      "category": "supported",
+      "start": 119.33333333333333,
+      "end": 122.26666666666667,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/swing/ebdb-swing-2023_09_12_13_48_31.476-0.mp4",
+      "sha256": "33ce76d2e0b1a5bdc3d5476b8ebaa855fa09717bd77e8379b6c0406c6d114267",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "SWING",
+          "source": "model-suggestion",
+          "at": 122326.70000000019,
+          "anchor": 121.97280004882812,
+          "outputAt": 121.97320000000019,
+          "delayFromClipEndMs": -293
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-soft-c6e5-B",
+      "label": "SOFT",
+      "category": "supported",
+      "start": 124.26666666666667,
+      "end": 126.33333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/soft/c6e5-soft-2023_08_17_12_55_33.470-0.mp4",
+      "sha256": "e56053f8cf9220397baeb9d886978e80ec0c42436127107369054558425d6159",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-dinosaur-f56c-B",
+      "label": "DINOSAUR",
+      "category": "supported",
+      "start": 128.33333333333334,
+      "end": 131.46666666666667,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/dinosaur/f56c-dinosaur-2024_04_01_16_12_29.594-1.mp4",
+      "sha256": "6d6bba680916790b13cf5567fc51bcd06bdf1d468259d40bd84c4063a4f6c60d",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "DINOSAUR",
+          "source": "model-suggestion",
+          "at": 132282.2000000002,
+          "anchor": 131.92780004882812,
+          "outputAt": 131.9287000000002,
+          "delayFromClipEndMs": 462
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-sheep-c6e5-B",
+      "label": "SHEEP",
+      "category": "supported",
+      "start": 133.46666666666667,
+      "end": 135.66666666666666,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/sheep/c6e5-sheep-2023_08_17_15_55_35.848-0.mp4",
+      "sha256": "111b3da0db694bd53e0fac24c5b6e831e1a28a29900151cc8b3cbbbbd89c0df2",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "SHEEP",
+          "source": "model-suggestion",
+          "at": 136048.2999999998,
+          "anchor": 135.69380004882814,
+          "outputAt": 135.69479999999982,
+          "delayFromClipEndMs": 28
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-asleep-6aaa-B",
+      "label": "ASLEEP",
+      "category": "out_of_vocabulary",
+      "start": 137.66666666666666,
+      "end": 139.13333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/asleep/6aaa-asleep-2024_04_14_15_43_13.011-1.mp4",
+      "sha256": "91b245f98360990d66cfca04979da1e2f353af4fd576003e57c92fc50678bd0f",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-grapes-f56c-B",
+      "label": "GRAPES",
+      "category": "out_of_vocabulary",
+      "start": 141.13333333333333,
+      "end": 143.8,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/grapes/f56c-grapes-2024_03_29_19_24_15.919-1.mp4",
+      "sha256": "c7d44c6da651e48b0a358b8b5cbae8dc89a992246f5140df33e3597c52c49715",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-icecream-c6e5-B",
+      "label": "ICECREAM",
+      "category": "out_of_vocabulary",
+      "start": 145.8,
+      "end": 148.13333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/icecream/c6e5-icecream-2023_01_25_19_11_10.391-0.mp4",
+      "sha256": "c140ca63c1d3f8e38cefe944ae0f0d83f5ea8dbfd56c8f7c9ed0eee9015f1ae4",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-melon-f56c-B",
+      "label": "MELON",
+      "category": "out_of_vocabulary",
+      "start": 150.13333333333333,
+      "end": 153.06666666666666,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/melon/f56c-melon-2024_03_27_19_38_47.211-1.mp4",
+      "sha256": "724872b923aa24a3bd574db06da02ff91badc2921285ed7d871cb5240882a7c5",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-napkin-2b19-B",
+      "label": "NAPKIN",
+      "category": "out_of_vocabulary",
+      "start": 155.06666666666666,
+      "end": 157.86666666666667,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/napkin/2b19-napkin-2023_01_28_15_32_57.988-0.mp4",
+      "sha256": "470448aebfb7618f9d600309e7616d5e494e27a303961e18b7cb528fac2c05f3",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-nice-f56c-B",
+      "label": "NICE",
+      "category": "out_of_vocabulary",
+      "start": 159.86666666666667,
+      "end": 162.46666666666667,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/nice/f56c-nice-2024_03_30_20_03_33.328-1.mp4",
+      "sha256": "9372f10e2401aa3c4bb8ef9fb9abca424b4fea8626e8338d3d7edfd6fcbaa6b7",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-over-c6e5-B",
+      "label": "OVER",
+      "category": "out_of_vocabulary",
+      "start": 164.46666666666667,
+      "end": 166.73333333333332,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/over/c6e5-over-2023_08_17_12_52_29.873-0.mp4",
+      "sha256": "d05fe8effc838fd06a0ebff50055aef0ac9fd1df5bd4b07563a84cd4383b8e7a",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-porch-f56c-B",
+      "label": "PORCH",
+      "category": "out_of_vocabulary",
+      "start": 168.73333333333332,
+      "end": 171,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/porch/f56c-porch-2024_03_30_20_33_36.081-1.mp4",
+      "sha256": "8ce537ac2b3bb4afd3b179fade85fdd4d351dc982983876d8a3e97bb08d4f7bb",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-stove-ebdb-B",
+      "label": "STOVE",
+      "category": "out_of_vocabulary",
+      "start": 173,
+      "end": 175.93333333333334,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/stove/ebdb-stove-2023_09_12_17_21_51.290-0.mp4",
+      "sha256": "2674fe55a59933871a937257568e96267741b56c6919016819ca8037d02bc86a",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "sprint-turtle-c6e5-B",
+      "label": "TURTLE",
+      "category": "out_of_vocabulary",
+      "start": 177.93333333333334,
+      "end": 180.2,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/turtle/c6e5-turtle-2023_08_18_10_58_23.710-0.mp4",
+      "sha256": "1d7fd4bd3a9a961018a4c6052d30ac1e423874bbe1f32970e675d91e2a75b5eb",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    }
+  ],
+  "idleEvents": [],
+  "idleAccepts": 0
+}

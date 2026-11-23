@@ -1,0 +1,3489 @@
+{
+ "cap-base-A": {
+  "variant": "cap-base",
+  "policy": "strict",
+  "gapReset": true,
+  "observations": 2072,
+  "segments": 41,
+  "summary": {
+   "correct": 15,
+   "wrong": 0,
+   "abstained": 15,
+   "falseAccept": 2,
+   "rejected": 8,
+   "top1CorrectAbstained": 11,
+   "noSegment": 0,
+   "gapAccepts": 0
+  },
+  "rows": [
+   {
+    "trial_id": "sprint-make-c6e5-A",
+    "label": "MAKE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "MAKE",
+      "top5": [
+       "MAKE",
+       "TIGHTS",
+       "FAST",
+       "TOY",
+       "YES"
+      ],
+      "p": "0.972",
+      "unk": "0.000",
+      "proto": "0.782",
+      "hands": 12,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-allgone-6aaa-A",
+    "label": "ALLGONE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "ALLGONE",
+      "top5": [
+       "ALLGONE",
+       "MORNING",
+       "SKY",
+       "HAND",
+       "GOOD"
+      ],
+      "p": "0.996",
+      "unk": "0.000",
+      "proto": "0.886",
+      "hands": 16,
+      "frames": 31
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-close-d5fd-A",
+    "label": "CLOSE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "PUPPY",
+      "top5": [
+       "PUPPY",
+       "ROOM",
+       "CLOSE",
+       "BEDROOM",
+       "CAT"
+      ],
+      "p": "0.393",
+      "unk": "0.002",
+      "proto": "0.478",
+      "hands": 24,
+      "frames": 41
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-bee-a459-A",
+    "label": "BEE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "BEE",
+      "top5": [
+       "BEE",
+       "HATE",
+       "BROWN",
+       "COWBOY",
+       "MOUTH"
+      ],
+      "p": "0.995",
+      "unk": "0.000",
+      "proto": "0.924",
+      "hands": 7,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-who-a459-A",
+    "label": "WHO",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "WHO",
+      "top5": [
+       "WHO",
+       "MOUSE",
+       "SHHH",
+       "HEN",
+       "LUNCH"
+      ],
+      "p": "0.675",
+      "unk": "0.000",
+      "proto": "0.728",
+      "hands": 21,
+      "frames": 37
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-bunny-ebdb-A",
+    "label": "RABBIT",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "RABBIT",
+      "top5": [
+       "RABBIT",
+       "BROKEN",
+       "HIGH",
+       "THINK",
+       "TAKEN"
+      ],
+      "p": "0.990",
+      "unk": "0.000",
+      "proto": "0.954",
+      "hands": 12,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-day-ebdb-A",
+    "label": "DAY",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "DAY",
+      "top5": [
+       "DAY",
+       "FACE",
+       "ARM",
+       "SLIDE",
+       "HAVETO"
+      ],
+      "p": "0.990",
+      "unk": "0.000",
+      "proto": "0.939",
+      "hands": 12,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-taste-2b19-A",
+    "label": "TASTE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "TASTE",
+      "top5": [
+       "TASTE",
+       "MAD",
+       "FINGER",
+       "WAIT",
+       "SAD"
+      ],
+      "p": "0.943",
+      "unk": "0.000",
+      "proto": "0.765",
+      "hands": 14,
+      "frames": 30
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-green-ebdb-A",
+    "label": "GREEN",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "GREEN",
+      "top5": [
+       "GREEN",
+       "DRINK",
+       "DOG",
+       "OWIE",
+       "TINY"
+      ],
+      "p": "0.993",
+      "unk": "0.000",
+      "proto": "0.847",
+      "hands": 7,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-basket-f56c-A",
+    "label": "BASKET",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "BASKET",
+      "top5": [
+       "BASKET",
+       "TURNAROUND",
+       "LAWNMOWER",
+       "DOWN",
+       "SHORTS"
+      ],
+      "p": "0.825",
+      "unk": "0.148",
+      "proto": "0.877",
+      "hands": 19,
+      "frames": 35
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-lawnmower-c6e5-A",
+    "label": "LAWNMOWER",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "LAWNMOWER",
+      "top5": [
+       "LAWNMOWER",
+       "CRAYON",
+       "BASKET",
+       "PLAYGROUNDSCHOOL",
+       "GARDEN"
+      ],
+      "p": "0.943",
+      "unk": "0.000",
+      "proto": "0.845",
+      "hands": 18,
+      "frames": 35
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-knock-f56c-A",
+    "label": "KNOCK",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "KNOCK",
+      "top5": [
+       "KNOCK",
+       "A",
+       "YES",
+       "DONKEY",
+       "NUTS"
+      ],
+      "p": "0.995",
+      "unk": "0.000",
+      "proto": "0.933",
+      "hands": 16,
+      "frames": 32
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-on-2b19-A",
+    "label": "ON",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "COVER",
+      "top5": [
+       "COVER",
+       "SPILL",
+       "BITE",
+       "DUMP",
+       "INTO"
+      ],
+      "p": "0.301",
+      "unk": "0.001",
+      "proto": "0.402",
+      "hands": 9,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-teacher-c6e5-A",
+    "label": "TEACHER",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "TEACHER",
+      "top5": [
+       "TEACHER",
+       "PERSON",
+       "MAN",
+       "BESIDE",
+       "SUN"
+      ],
+      "p": "0.784",
+      "unk": "0.000",
+      "proto": "0.686",
+      "hands": 17,
+      "frames": 41
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-mailman-f56c-A",
+    "label": "MAILMAN",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "MAILMAN",
+      "top5": [
+       "MAILMAN",
+       "SNOWMAN",
+       "PUZZLE",
+       "NAP",
+       "SLIDE"
+      ],
+      "p": "0.987",
+      "unk": "0.000",
+      "proto": "0.932",
+      "hands": 19,
+      "frames": 38
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-where-c6e5-A",
+    "label": "WHERE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "WHERE",
+      "top5": [
+       "WHERE",
+       "PEOPLE",
+       "BUMP",
+       "MOUSE",
+       "UP"
+      ],
+      "p": "0.984",
+      "unk": "0.000",
+      "proto": "0.816",
+      "hands": 9,
+      "frames": 24
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-yesterday-c6e5-A",
+    "label": "YESTERDAY",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "STORE",
+      "top5": [
+       "STORE",
+       "EAR",
+       "AUNT",
+       "HORSE",
+       "AIRPLANE"
+      ],
+      "p": "0.194",
+      "unk": "0.000",
+      "proto": "0.365",
+      "hands": 12,
+      "frames": 29
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-dinner-f56c-A",
+    "label": "DINNER",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "DINNER",
+      "top5": [
+       "DINNER",
+       "SHAKE",
+       "EAT",
+       "CLOWN",
+       "LIGHTBULB"
+      ],
+      "p": "0.960",
+      "unk": "0.000",
+      "proto": "0.828",
+      "hands": 12,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-read-ebdb-A",
+    "label": "READ",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "READ",
+      "top5": [
+       "READ",
+       "SIT",
+       "POTATO",
+       "NO",
+       "RAIN"
+      ],
+      "p": "0.521",
+      "unk": "0.000",
+      "proto": "0.521",
+      "hands": 6,
+      "frames": 22
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-moose-ebdb-A",
+    "label": "MOOSE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "DEER",
+      "top5": [
+       "DEER",
+       "MOOSE",
+       "CLOUD",
+       "MOON",
+       "GRANDPA"
+      ],
+      "p": "0.629",
+      "unk": "0.000",
+      "proto": "0.840",
+      "hands": 20,
+      "frames": 35
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-cloud-c6e5-A",
+    "label": "CLOUD",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "CLOUD",
+      "top5": [
+       "CLOUD",
+       "RAIN",
+       "BOY",
+       "RADIO",
+       "SUN"
+      ],
+      "p": "0.915",
+      "unk": "0.000",
+      "proto": "0.638",
+      "hands": 13,
+      "frames": 28
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-stone-f56c-A",
+    "label": "ROCK",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "ROCK",
+      "top5": [
+       "ROCK",
+       "GIRL",
+       "COATS",
+       "WASH",
+       "INSIDEIN"
+      ],
+      "p": "0.990",
+      "unk": "0.000",
+      "proto": "0.898",
+      "hands": 16,
+      "frames": 40
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-backyard-c6e5-A",
+    "label": "BACKYARD",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "BACKYARD",
+      "top5": [
+       "BACKYARD",
+       "AUNT",
+       "BEE",
+       "GIRL",
+       "TOY"
+      ],
+      "p": "0.972",
+      "unk": "0.000",
+      "proto": "0.687",
+      "hands": 22,
+      "frames": 37
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-flower-661f-A",
+    "label": "FLOWER",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "FLOWER",
+      "top5": [
+       "FLOWER",
+       "CLOWN",
+       "BLOW",
+       "EYE",
+       "DINOSAUR"
+      ],
+      "p": "0.989",
+      "unk": "0.000",
+      "proto": "0.960",
+      "hands": 10,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-cowboy-ebdb-A",
+    "label": "COWBOY",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "COWBOY",
+      "top5": [
+       "COWBOY",
+       "BOY",
+       "BYE",
+       "MOOSE",
+       "COW"
+      ],
+      "p": "0.994",
+      "unk": "0.000",
+      "proto": "0.885",
+      "hands": 9,
+      "frames": 25
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-bad-c6e5-A",
+    "label": "BAD",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "BAD",
+      "top5": [
+       "BAD",
+       "THANK-YOU",
+       "HOT",
+       "KISS",
+       "GIRAFFE"
+      ],
+      "p": "0.941",
+      "unk": "0.000",
+      "proto": "0.756",
+      "hands": 8,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-sweater-f56c-A",
+    "label": "SWEATER",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "SWEATER",
+      "top5": [
+       "SWEATER",
+       "AFTER",
+       "WOULD",
+       "BESIDE",
+       "BELLYBUTTON"
+      ],
+      "p": "0.995",
+      "unk": "0.000",
+      "proto": "0.874",
+      "hands": 13,
+      "frames": 31
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-basement-f56c-A",
+    "label": "BASEMENT",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "BASEMENT",
+      "top5": [
+       "BASEMENT",
+       "ANIMAL",
+       "MONKEY",
+       "GAME",
+       "STICKY"
+      ],
+      "p": "0.991",
+      "unk": "0.000",
+      "proto": "0.928",
+      "hands": 18,
+      "frames": 33
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-snowsuit-f56c-A",
+    "label": "SNOWSUIT",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "SNOWSUIT",
+      "top5": [
+       "SNOWSUIT",
+       "HOSE",
+       "FRENCHFRIES",
+       "ROCKINGCHAIR",
+       "SAME"
+      ],
+      "p": "0.947",
+      "unk": "0.000",
+      "proto": "0.810",
+      "hands": 6,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-mouse-a459-A",
+    "label": "MOUSE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "MOUSE",
+      "top5": [
+       "MOUSE",
+       "WHO",
+       "BUG",
+       "HEAR",
+       "TOOTHBRUSH"
+      ],
+      "p": "0.875",
+      "unk": "0.000",
+      "proto": "0.682",
+      "hands": 21,
+      "frames": 37
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-asleep-ebdb-A",
+    "label": "ASLEEP",
+    "outcome": "false-accept",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "SLEEP",
+      "top5": [
+       "SLEEP",
+       "WOLF",
+       "MAD",
+       "PRETTY",
+       "UNDERWEAR"
+      ],
+      "p": "0.981",
+      "unk": "0.000",
+      "proto": "0.866",
+      "hands": 9,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-grapes-c6e5-A",
+    "label": "GRAPES",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "DINOSAUR",
+      "top5": [
+       "DINOSAUR",
+       "STAIRS",
+       "FULL",
+       "WEUS",
+       "PIG"
+      ],
+      "p": "0.872",
+      "unk": "0.000",
+      "proto": "0.790",
+      "hands": 23,
+      "frames": 40
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-icecream-c6e5-A",
+    "label": "ICECREAM",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "ON",
+      "top5": [
+       "ON",
+       "DINOSAUR",
+       "BOY",
+       "CHILD",
+       "OWL"
+      ],
+      "p": "0.166",
+      "unk": "0.002",
+      "proto": "0.415",
+      "hands": 17,
+      "frames": 36
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-melon-c6e5-A",
+    "label": "MELON",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "DROP",
+      "top5": [
+       "DROP",
+       "READ",
+       "PUMPKIN",
+       "LAMP",
+       "TONGUE"
+      ],
+      "p": "0.375",
+      "unk": "0.002",
+      "proto": "0.548",
+      "hands": 25,
+      "frames": 39
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-napkin-ebdb-A",
+    "label": "NAPKIN",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "BUTTERFLY",
+       "SING",
+       "BAD"
+      ],
+      "p": "0.621",
+      "unk": "0.000",
+      "proto": "0.643",
+      "hands": 8,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-nice-f56c-A",
+    "label": "NICE",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "WIPE",
+      "top5": [
+       "WIPE",
+       "CLEAN",
+       "YARD",
+       "FULL",
+       "CHILD"
+      ],
+      "p": "0.530",
+      "unk": "0.000",
+      "proto": "0.714",
+      "hands": 15,
+      "frames": 29
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-over-ebdb-A",
+    "label": "OVER",
+    "outcome": "false-accept",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "AFTER",
+      "top5": [
+       "AFTER",
+       "WILL",
+       "BOOK",
+       "PERSON",
+       "STOP"
+      ],
+      "p": "0.996",
+      "unk": "0.000",
+      "proto": "0.908",
+      "hands": 11,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-porch-c6e5-A",
+    "label": "PORCH",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "COUCH",
+      "top5": [
+       "COUCH",
+       "LOOK",
+       "TRAIN",
+       "BENCH",
+       "FALL"
+      ],
+      "p": "0.160",
+      "unk": "0.000",
+      "proto": "0.446",
+      "hands": 9,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-stove-f56c-A",
+    "label": "STOVE",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "OVEN",
+      "top5": [
+       "OVEN",
+       "CLOSE",
+       "SLED",
+       "BOAT",
+       "THERE"
+      ],
+      "p": "0.704",
+      "unk": "0.000",
+      "proto": "0.609",
+      "hands": 20,
+      "frames": 35
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-turtle-6aaa-A",
+    "label": "TURTLE",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "FULL",
+      "top5": [
+       "FULL",
+       "NAUGHTY",
+       "COVER",
+       "TOUCH",
+       "SODAPOP"
+      ],
+      "p": "0.679",
+      "unk": "0.003",
+      "proto": "0.579",
+      "hands": 6,
+      "frames": 20
+     },
+     {
+      "status": "uncertain",
+      "best": "BASEMENT",
+      "top5": [
+       "BASEMENT",
+       "LETME",
+       "GAME",
+       "BATHTUB",
+       "DIME"
+      ],
+      "p": "0.564",
+      "unk": "0.001",
+      "proto": "0.555",
+      "hands": 10,
+      "frames": 25
+     }
+    ]
+   }
+  ]
+ },
+ "cap-base-broad": {
+  "variant": "cap-base",
+  "policy": "strict",
+  "gapReset": true,
+  "observations": 876,
+  "segments": 16,
+  "summary": {
+   "correct": 2,
+   "wrong": 2,
+   "abstained": 8,
+   "falseAccept": 0,
+   "rejected": 4,
+   "top1CorrectAbstained": 6,
+   "noSegment": 0,
+   "gapAccepts": 0
+  },
+  "rows": [
+   {
+    "trial_id": "val-apple",
+    "label": "APPLE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "GIFT",
+      "top5": [
+       "GIFT",
+       "APPLE",
+       "CANDY",
+       "DRY",
+       "DOLL"
+      ],
+      "p": "0.575",
+      "unk": "0.000",
+      "proto": "0.505",
+      "hands": 4,
+      "frames": 19
+     }
+    ]
+   },
+   {
+    "trial_id": "val-book",
+    "label": "BOOK",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "BOOK",
+      "top5": [
+       "BOOK",
+       "MORNING",
+       "GIVE",
+       "WAIT",
+       "BOAT"
+      ],
+      "p": "0.614",
+      "unk": "0.000",
+      "proto": "0.524",
+      "hands": 6,
+      "frames": 20
+     }
+    ]
+   },
+   {
+    "trial_id": "val-dog",
+    "label": "DOG",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "DOG",
+      "top5": [
+       "DOG",
+       "PUPPY",
+       "THEN",
+       "LETME",
+       "WHEN"
+      ],
+      "p": "0.896",
+      "unk": "0.000",
+      "proto": "0.760",
+      "hands": 5,
+      "frames": 20
+     }
+    ]
+   },
+   {
+    "trial_id": "val-water",
+    "label": "WATER",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "WATER",
+      "top5": [
+       "WATER",
+       "ARE",
+       "WATERHOSE",
+       "TALK",
+       "VITAMINS"
+      ],
+      "p": "0.988",
+      "unk": "0.000",
+      "proto": "0.912",
+      "hands": 7,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "val-red",
+    "label": "RED",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "RED",
+      "top5": [
+       "RED",
+       "SAY",
+       "THIRSTY",
+       "IS",
+       "UHOH"
+      ],
+      "p": "0.984",
+      "unk": "0.000",
+      "proto": "0.886",
+      "hands": 10,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "val-eat",
+    "label": "EAT",
+    "outcome": "wrong",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "FOOD",
+      "top5": [
+       "FOOD",
+       "EAT",
+       "FEED",
+       "UNDERWEAR",
+       "IF"
+      ],
+      "p": "0.879",
+      "unk": "0.000",
+      "proto": "0.941",
+      "hands": 12,
+      "frames": 28
+     }
+    ]
+   },
+   {
+    "trial_id": "val-good",
+    "label": "GOOD",
+    "outcome": "wrong",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "CLOSE",
+       "WAIT",
+       "ALL"
+      ],
+      "p": "0.897",
+      "unk": "0.000",
+      "proto": "0.936",
+      "hands": 12,
+      "frames": 28
+     }
+    ]
+   },
+   {
+    "trial_id": "val-blue",
+    "label": "BLUE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "BLUE",
+      "top5": [
+       "BLUE",
+       "QUIET",
+       "BEE",
+       "BAD",
+       "SNACK"
+      ],
+      "p": "0.757",
+      "unk": "0.000",
+      "proto": "0.651",
+      "hands": 10,
+      "frames": 25
+     }
+    ]
+   },
+   {
+    "trial_id": "val-help",
+    "label": "HELP",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "HELP",
+      "top5": [
+       "HELP",
+       "UP",
+       "GAME",
+       "NOSE",
+       "PULL"
+      ],
+      "p": "0.834",
+      "unk": "0.092",
+      "proto": "0.767",
+      "hands": 16,
+      "frames": 30
+     }
+    ]
+   },
+   {
+    "trial_id": "val-home",
+    "label": "HOME",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "HOME",
+      "top5": [
+       "HOME",
+       "BIG",
+       "TEACHER",
+       "FIX",
+       "OWL"
+      ],
+      "p": "0.926",
+      "unk": "0.000",
+      "proto": "0.666",
+      "hands": 8,
+      "frames": 22
+     }
+    ]
+   },
+   {
+    "trial_id": "val-play",
+    "label": "PLAY",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "YELLOW",
+      "top5": [
+       "YELLOW",
+       "CALLONPHONE",
+       "GIRL",
+       "NIGHT",
+       "SHORTS"
+      ],
+      "p": "0.659",
+      "unk": "0.000",
+      "proto": "0.584",
+      "hands": 27,
+      "frames": 43
+     }
+    ]
+   },
+   {
+    "trial_id": "val-go",
+    "label": "GO",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "GO",
+      "top5": [
+       "GO",
+       "GIVE",
+       "GOINGTO",
+       "OUTSIDE",
+       "GOTTO"
+      ],
+      "p": "0.815",
+      "unk": "0.000",
+      "proto": "0.785",
+      "hands": 7,
+      "frames": 21
+     }
+    ]
+   },
+   {
+    "trial_id": "val-grapes",
+    "label": "GRAPES",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "DINOSAUR",
+      "top5": [
+       "DINOSAUR",
+       "NIGHT",
+       "FISH",
+       "CARRY",
+       "CHILD"
+      ],
+      "p": "0.694",
+      "unk": "0.000",
+      "proto": "0.661",
+      "hands": 15,
+      "frames": 30
+     }
+    ]
+   },
+   {
+    "trial_id": "val-icecream",
+    "label": "ICECREAM",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "AUNT",
+      "top5": [
+       "AUNT",
+       "DOLL",
+       "EAR",
+       "BIRD",
+       "CARROT"
+      ],
+      "p": "0.333",
+      "unk": "0.000",
+      "proto": "0.445",
+      "hands": 10,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "val-napkin",
+    "label": "NAPKIN",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "BUTTERFLY",
+       "HOT",
+       "TASTE"
+      ],
+      "p": "0.877",
+      "unk": "0.001",
+      "proto": "0.699",
+      "hands": 8,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "val-turtle",
+    "label": "TURTLE",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "BATH",
+      "top5": [
+       "BATH",
+       "HELP",
+       "MAKE",
+       "JACKET",
+       "ZIPPER"
+      ],
+      "p": "0.344",
+      "unk": "0.007",
+      "proto": "0.370",
+      "hands": 15,
+      "frames": 31
+     }
+    ]
+   }
+  ]
+ },
+ "cap-base-shared": {
+  "variant": "cap-base",
+  "policy": "strict",
+  "gapReset": true,
+  "observations": 911,
+  "segments": 16,
+  "summary": {
+   "correct": 9,
+   "wrong": 0,
+   "abstained": 8,
+   "falseAccept": 0,
+   "rejected": 0,
+   "top1CorrectAbstained": 5,
+   "noSegment": 1,
+   "gapAccepts": 0
+  },
+  "rows": [
+   {
+    "trial_id": "hello-gtsignstudy4a.8031",
+    "label": "HELLO",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "PERSON",
+      "top5": [
+       "PERSON",
+       "WILL",
+       "HELLO",
+       "MAN",
+       "PRETEND"
+      ],
+      "p": "0.176",
+      "unk": "0.001",
+      "proto": "0.424",
+      "hands": 8,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "hello-gtsignstudy4a.8033",
+    "label": "HELLO",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "HELLO",
+      "top5": [
+       "HELLO",
+       "TEACHER",
+       "PRETEND",
+       "WILL",
+       "LISTEN"
+      ],
+      "p": "0.991",
+      "unk": "0.000",
+      "proto": "0.846",
+      "hands": 11,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "please-gtsignstudy4a.8031",
+    "label": "PLEASE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "PLEASE",
+      "top5": [
+       "PLEASE",
+       "YUMYUM",
+       "MINEMY",
+       "WALK",
+       "ZEBRA"
+      ],
+      "p": "0.984",
+      "unk": "0.000",
+      "proto": "0.880",
+      "hands": 12,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "please-gtsignstudy4a.8033",
+    "label": "PLEASE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "PLEASE",
+      "top5": [
+       "PLEASE",
+       "YUMYUM",
+       "MINEMY",
+       "ZEBRA",
+       "TABLE"
+      ],
+      "p": "0.994",
+      "unk": "0.000",
+      "proto": "0.949",
+      "hands": 34,
+      "frames": 50
+     }
+    ]
+   },
+   {
+    "trial_id": "thankyou-gtsignstudy4a.8033",
+    "label": "THANK YOU",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "WAIT",
+       "SAD",
+       "ALL"
+      ],
+      "p": "0.974",
+      "unk": "0.000",
+      "proto": "0.969",
+      "hands": 12,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "thankyou-gtsignstudy4a.8031",
+    "label": "THANK YOU",
+    "outcome": "abstained",
+    "results": []
+   },
+   {
+    "trial_id": "dev-thankyou-4a.7003",
+    "label": "THANK YOU",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "MINEMY",
+       "BAD",
+       "GO"
+      ],
+      "p": "0.244",
+      "unk": "0.517",
+      "proto": "0.546",
+      "hands": 5,
+      "frames": 21
+     }
+    ]
+   },
+   {
+    "trial_id": "dev-please-4a.8017",
+    "label": "PLEASE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "PLEASE",
+      "top5": [
+       "PLEASE",
+       "YUMYUM",
+       "ZEBRA",
+       "WALK",
+       "BEAR"
+      ],
+      "p": "0.987",
+      "unk": "0.000",
+      "proto": "0.969",
+      "hands": 16,
+      "frames": 31
+     }
+    ]
+   },
+   {
+    "trial_id": "dev-hello-4a.8006",
+    "label": "HELLO",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "GIVEMEFIVE",
+      "top5": [
+       "GIVEMEFIVE",
+       "HELLO",
+       "FINISH",
+       "TOUCH",
+       "PUSH"
+      ],
+      "p": "0.842",
+      "unk": "0.000",
+      "proto": "0.652",
+      "hands": 10,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "dev-yes-4a.8006",
+    "label": "YES",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "YES",
+      "top5": [
+       "YES",
+       "SHOE",
+       "STROLLER",
+       "CAN",
+       "MOTORCYCLE"
+      ],
+      "p": "0.982",
+      "unk": "0.000",
+      "proto": "0.779",
+      "hands": 6,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "dev-no-4a.8030",
+    "label": "NO",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "NO",
+      "top5": [
+       "NO",
+       "LOUD",
+       "DUCK",
+       "PEN",
+       "READ"
+      ],
+      "p": "0.993",
+      "unk": "0.000",
+      "proto": "0.914",
+      "hands": 9,
+      "frames": 24
+     }
+    ]
+   },
+   {
+    "trial_id": "val-hello",
+    "label": "HELLO",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "HELLO",
+      "top5": [
+       "HELLO",
+       "LISTEN",
+       "TEACHER",
+       "WILL",
+       "PRETEND"
+      ],
+      "p": "0.979",
+      "unk": "0.000",
+      "proto": "0.785",
+      "hands": 8,
+      "frames": 22
+     }
+    ]
+   },
+   {
+    "trial_id": "val-thankyou",
+    "label": "THANK YOU",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "WET",
+       "TASTE",
+       "WAIT"
+      ],
+      "p": "0.989",
+      "unk": "0.000",
+      "proto": "0.900",
+      "hands": 12,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "val-please",
+    "label": "PLEASE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "PLEASE",
+      "top5": [
+       "PLEASE",
+       "YUMYUM",
+       "SOME",
+       "MINEMY",
+       "BATH"
+      ],
+      "p": "0.614",
+      "unk": "0.001",
+      "proto": "0.700",
+      "hands": 21,
+      "frames": 37
+     }
+    ]
+   },
+   {
+    "trial_id": "val-yes",
+    "label": "YES",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "YES",
+      "top5": [
+       "YES",
+       "CAN",
+       "ROCK",
+       "SHOE",
+       "MOTORCYCLE"
+      ],
+      "p": "0.996",
+      "unk": "0.000",
+      "proto": "0.923",
+      "hands": 10,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "val-no",
+    "label": "NO",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "NO",
+      "top5": [
+       "NO",
+       "DUCK",
+       "READ",
+       "TV",
+       "LOUD"
+      ],
+      "p": "0.971",
+      "unk": "0.000",
+      "proto": "0.845",
+      "hands": 16,
+      "frames": 31
+     }
+    ]
+   },
+   {
+    "trial_id": "val-no-repeat",
+    "label": "NO",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "NO",
+      "top5": [
+       "NO",
+       "DUCK",
+       "TV",
+       "READ",
+       "CHAIR"
+      ],
+      "p": "0.928",
+      "unk": "0.000",
+      "proto": "0.775",
+      "hands": 16,
+      "frames": 33
+     }
+    ]
+   }
+  ]
+ },
+ "native15-A": {
+  "variant": "baseline",
+  "policy": "strict",
+  "gapReset": true,
+  "observations": 2739,
+  "segments": 41,
+  "summary": {
+   "correct": 18,
+   "wrong": 0,
+   "abstained": 12,
+   "falseAccept": 2,
+   "rejected": 8,
+   "top1CorrectAbstained": 10,
+   "noSegment": 0,
+   "gapAccepts": 0
+  },
+  "rows": [
+   {
+    "trial_id": "sprint-make-c6e5-A",
+    "label": "MAKE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "MAKE",
+      "top5": [
+       "MAKE",
+       "TIGHTS",
+       "FAST",
+       "ORANGE",
+       "MOTORCYCLE"
+      ],
+      "p": "0.969",
+      "unk": "0.001",
+      "proto": "0.782",
+      "hands": 12,
+      "frames": 29
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-allgone-6aaa-A",
+    "label": "ALLGONE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "ALLGONE",
+      "top5": [
+       "ALLGONE",
+       "SKY",
+       "MORNING",
+       "HAND",
+       "GOOD"
+      ],
+      "p": "0.996",
+      "unk": "0.000",
+      "proto": "0.895",
+      "hands": 16,
+      "frames": 33
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-close-d5fd-A",
+    "label": "CLOSE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "PUPPY",
+      "top5": [
+       "PUPPY",
+       "ROOM",
+       "CLOSE",
+       "LIKE",
+       "BABYSITTER"
+      ],
+      "p": "0.508",
+      "unk": "0.008",
+      "proto": "0.525",
+      "hands": 23,
+      "frames": 40
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-bee-a459-A",
+    "label": "BEE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "BEE",
+      "top5": [
+       "BEE",
+       "HATE",
+       "COWBOY",
+       "MOUSE",
+       "BROWN"
+      ],
+      "p": "0.996",
+      "unk": "0.000",
+      "proto": "0.938",
+      "hands": 8,
+      "frames": 25
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-who-a459-A",
+    "label": "WHO",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "WHO",
+      "top5": [
+       "WHO",
+       "MOUSE",
+       "SHHH",
+       "HEN",
+       "SAME"
+      ],
+      "p": "0.685",
+      "unk": "0.000",
+      "proto": "0.766",
+      "hands": 21,
+      "frames": 38
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-bunny-ebdb-A",
+    "label": "RABBIT",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "RABBIT",
+      "top5": [
+       "RABBIT",
+       "THINK",
+       "HIGH",
+       "OUTSIDE",
+       "BLACK"
+      ],
+      "p": "0.984",
+      "unk": "0.000",
+      "proto": "0.897",
+      "hands": 12,
+      "frames": 29
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-day-ebdb-A",
+    "label": "DAY",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "DAY",
+      "top5": [
+       "DAY",
+       "FACE",
+       "ARM",
+       "SLIDE",
+       "HESHEIT"
+      ],
+      "p": "0.994",
+      "unk": "0.000",
+      "proto": "0.949",
+      "hands": 13,
+      "frames": 31
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-taste-2b19-A",
+    "label": "TASTE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "TASTE",
+      "top5": [
+       "TASTE",
+       "FINGER",
+       "GRASS",
+       "MAD",
+       "WAIT"
+      ],
+      "p": "0.989",
+      "unk": "0.000",
+      "proto": "0.878",
+      "hands": 14,
+      "frames": 31
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-green-ebdb-A",
+    "label": "GREEN",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "GREEN",
+      "top5": [
+       "GREEN",
+       "DRINK",
+       "TINY",
+       "DOG",
+       "PENCIL"
+      ],
+      "p": "0.996",
+      "unk": "0.000",
+      "proto": "0.908",
+      "hands": 7,
+      "frames": 24
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-basket-f56c-A",
+    "label": "BASKET",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "BASKET",
+      "top5": [
+       "BASKET",
+       "LAWNMOWER",
+       "SINK",
+       "DOWN",
+       "PONY"
+      ],
+      "p": "0.980",
+      "unk": "0.013",
+      "proto": "0.947",
+      "hands": 20,
+      "frames": 37
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-lawnmower-c6e5-A",
+    "label": "LAWNMOWER",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "LAWNMOWER",
+      "top5": [
+       "LAWNMOWER",
+       "CRAYON",
+       "BASKET",
+       "PLAYGROUNDSCHOOL",
+       "NAP"
+      ],
+      "p": "0.913",
+      "unk": "0.000",
+      "proto": "0.815",
+      "hands": 19,
+      "frames": 36
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-knock-f56c-A",
+    "label": "KNOCK",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "KNOCK",
+      "top5": [
+       "KNOCK",
+       "AUNT",
+       "A",
+       "NUTS",
+       "YES"
+      ],
+      "p": "0.991",
+      "unk": "0.000",
+      "proto": "0.883",
+      "hands": 16,
+      "frames": 33
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-on-2b19-A",
+    "label": "ON",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "COVER",
+      "top5": [
+       "COVER",
+       "DUMP",
+       "SPILL",
+       "POUR",
+       "STORY"
+      ],
+      "p": "0.573",
+      "unk": "0.001",
+      "proto": "0.532",
+      "hands": 8,
+      "frames": 25
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-teacher-c6e5-A",
+    "label": "TEACHER",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "TEACHER",
+      "top5": [
+       "TEACHER",
+       "PERSON",
+       "BESIDE",
+       "MAN",
+       "CHILD"
+      ],
+      "p": "0.705",
+      "unk": "0.000",
+      "proto": "0.683",
+      "hands": 18,
+      "frames": 42
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-mailman-f56c-A",
+    "label": "MAILMAN",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "MAILMAN",
+      "top5": [
+       "MAILMAN",
+       "SNOWMAN",
+       "MAN",
+       "GLOVES",
+       "PUZZLE"
+      ],
+      "p": "0.979",
+      "unk": "0.000",
+      "proto": "0.915",
+      "hands": 19,
+      "frames": 38
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-where-c6e5-A",
+    "label": "WHERE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "WHERE",
+      "top5": [
+       "WHERE",
+       "PEOPLE",
+       "MOUSE",
+       "TO",
+       "UP"
+      ],
+      "p": "0.990",
+      "unk": "0.000",
+      "proto": "0.871",
+      "hands": 8,
+      "frames": 25
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-yesterday-c6e5-A",
+    "label": "YESTERDAY",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "YESTERDAY",
+      "top5": [
+       "YESTERDAY",
+       "EAR",
+       "AUNT",
+       "OWL",
+       "STORE"
+      ],
+      "p": "0.587",
+      "unk": "0.000",
+      "proto": "0.613",
+      "hands": 9,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-dinner-f56c-A",
+    "label": "DINNER",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "DINNER",
+      "top5": [
+       "DINNER",
+       "SHAKE",
+       "SHOPPING",
+       "DID",
+       "GLUE"
+      ],
+      "p": "0.993",
+      "unk": "0.000",
+      "proto": "0.936",
+      "hands": 13,
+      "frames": 30
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-read-ebdb-A",
+    "label": "READ",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "READ",
+      "top5": [
+       "READ",
+       "SIT",
+       "CHAIR",
+       "NO",
+       "POTATO"
+      ],
+      "p": "0.955",
+      "unk": "0.000",
+      "proto": "0.753",
+      "hands": 6,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-moose-ebdb-A",
+    "label": "MOOSE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "MOOSE",
+      "top5": [
+       "MOOSE",
+       "DEER",
+       "CLOUD",
+       "MOON",
+       "TURNAROUND"
+      ],
+      "p": "0.509",
+      "unk": "0.000",
+      "proto": "0.904",
+      "hands": 17,
+      "frames": 34
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-cloud-c6e5-A",
+    "label": "CLOUD",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "CLOUD",
+      "top5": [
+       "CLOUD",
+       "COWBOY",
+       "SUN",
+       "DINOSAUR",
+       "RAIN"
+      ],
+      "p": "0.945",
+      "unk": "0.000",
+      "proto": "0.664",
+      "hands": 14,
+      "frames": 31
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-stone-f56c-A",
+    "label": "ROCK",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "ROCK",
+      "top5": [
+       "ROCK",
+       "GIRL",
+       "COATS",
+       "JACKET",
+       "WASH"
+      ],
+      "p": "0.981",
+      "unk": "0.000",
+      "proto": "0.852",
+      "hands": 18,
+      "frames": 39
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-backyard-c6e5-A",
+    "label": "BACKYARD",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "BACKYARD",
+      "top5": [
+       "BACKYARD",
+       "DROP",
+       "TOY",
+       "AUNT",
+       "GIRL"
+      ],
+      "p": "0.982",
+      "unk": "0.000",
+      "proto": "0.754",
+      "hands": 22,
+      "frames": 39
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-flower-661f-A",
+    "label": "FLOWER",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "FLOWER",
+      "top5": [
+       "FLOWER",
+       "CLOWN",
+       "EYE",
+       "BLOW",
+       "DINOSAUR"
+      ],
+      "p": "0.989",
+      "unk": "0.000",
+      "proto": "0.956",
+      "hands": 10,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-cowboy-ebdb-A",
+    "label": "COWBOY",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "COWBOY",
+      "top5": [
+       "COWBOY",
+       "BOY",
+       "BYE",
+       "COW",
+       "FIND"
+      ],
+      "p": "0.993",
+      "unk": "0.000",
+      "proto": "0.859",
+      "hands": 8,
+      "frames": 25
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-bad-c6e5-A",
+    "label": "BAD",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "BAD",
+      "top5": [
+       "BAD",
+       "THANK-YOU",
+       "HOT",
+       "KISS",
+       "GOOD"
+      ],
+      "p": "0.936",
+      "unk": "0.000",
+      "proto": "0.738",
+      "hands": 6,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-sweater-f56c-A",
+    "label": "SWEATER",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "SWEATER",
+      "top5": [
+       "SWEATER",
+       "WOULD",
+       "AFTER",
+       "BESIDE",
+       "QUIET"
+      ],
+      "p": "0.995",
+      "unk": "0.000",
+      "proto": "0.866",
+      "hands": 14,
+      "frames": 32
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-basement-f56c-A",
+    "label": "BASEMENT",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "BASEMENT",
+      "top5": [
+       "BASEMENT",
+       "HOSE",
+       "ANIMAL",
+       "MONKEY",
+       "BABY"
+      ],
+      "p": "0.994",
+      "unk": "0.000",
+      "proto": "0.950",
+      "hands": 18,
+      "frames": 35
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-snowsuit-f56c-A",
+    "label": "SNOWSUIT",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "SNOWSUIT",
+      "top5": [
+       "SNOWSUIT",
+       "HOSE",
+       "ROCKINGCHAIR",
+       "FRENCHFRIES",
+       "SNOWMAN"
+      ],
+      "p": "0.974",
+      "unk": "0.000",
+      "proto": "0.871",
+      "hands": 7,
+      "frames": 28
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-mouse-a459-A",
+    "label": "MOUSE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "MOUSE",
+      "top5": [
+       "MOUSE",
+       "DRAW",
+       "TONGUE",
+       "ARM",
+       "BUG"
+      ],
+      "p": "0.878",
+      "unk": "0.000",
+      "proto": "0.657",
+      "hands": 21,
+      "frames": 38
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-asleep-ebdb-A",
+    "label": "ASLEEP",
+    "outcome": "false-accept",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "SLEEP",
+      "top5": [
+       "SLEEP",
+       "BROWN",
+       "LION",
+       "BEFORE",
+       "HEAD"
+      ],
+      "p": "0.995",
+      "unk": "0.000",
+      "proto": "0.944",
+      "hands": 11,
+      "frames": 28
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-grapes-c6e5-A",
+    "label": "GRAPES",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "DINOSAUR",
+      "top5": [
+       "DINOSAUR",
+       "STAIRS",
+       "FULL",
+       "PIG",
+       "WEUS"
+      ],
+      "p": "0.886",
+      "unk": "0.000",
+      "proto": "0.794",
+      "hands": 24,
+      "frames": 41
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-icecream-c6e5-A",
+    "label": "ICECREAM",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "ON",
+      "top5": [
+       "ON",
+       "CHOCOLATE",
+       "DINOSAUR",
+       "PIG",
+       "NIGHT"
+      ],
+      "p": "0.093",
+      "unk": "0.002",
+      "proto": "0.305",
+      "hands": 17,
+      "frames": 38
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-melon-c6e5-A",
+    "label": "MELON",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "DROP",
+      "top5": [
+       "DROP",
+       "PUMPKIN",
+       "LAMP",
+       "READ",
+       "TONGUE"
+      ],
+      "p": "0.318",
+      "unk": "0.006",
+      "proto": "0.530",
+      "hands": 24,
+      "frames": 41
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-napkin-ebdb-A",
+    "label": "NAPKIN",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "BUTTERFLY",
+      "top5": [
+       "BUTTERFLY",
+       "SING",
+       "GOOD",
+       "THANK-YOU",
+       "ALL"
+      ],
+      "p": "0.505",
+      "unk": "0.000",
+      "proto": "0.501",
+      "hands": 8,
+      "frames": 25
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-nice-f56c-A",
+    "label": "NICE",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "CLEAN",
+      "top5": [
+       "CLEAN",
+       "WIPE",
+       "YARD",
+       "FULL",
+       "CHILD"
+      ],
+      "p": "0.879",
+      "unk": "0.000",
+      "proto": "0.811",
+      "hands": 13,
+      "frames": 31
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-over-ebdb-A",
+    "label": "OVER",
+    "outcome": "false-accept",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "AFTER",
+      "top5": [
+       "AFTER",
+       "WILL",
+       "BOOK",
+       "STOP",
+       "ROOM"
+      ],
+      "p": "0.988",
+      "unk": "0.000",
+      "proto": "0.849",
+      "hands": 12,
+      "frames": 29
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-porch-c6e5-A",
+    "label": "PORCH",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "COUCH",
+      "top5": [
+       "COUCH",
+       "BENCH",
+       "FALL",
+       "FROG",
+       "TONGUE"
+      ],
+      "p": "0.232",
+      "unk": "0.000",
+      "proto": "0.524",
+      "hands": 9,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-stove-f56c-A",
+    "label": "STOVE",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "OVEN",
+      "top5": [
+       "OVEN",
+       "AFTER",
+       "THERE",
+       "SLED",
+       "CLOSE"
+      ],
+      "p": "0.800",
+      "unk": "0.000",
+      "proto": "0.647",
+      "hands": 21,
+      "frames": 38
+     }
+    ]
+   },
+   {
+    "trial_id": "sprint-turtle-6aaa-A",
+    "label": "TURTLE",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "FULL",
+      "top5": [
+       "FULL",
+       "COVER",
+       "NAUGHTY",
+       "TOUCH",
+       "WIPE"
+      ],
+      "p": "0.863",
+      "unk": "0.001",
+      "proto": "0.655",
+      "hands": 6,
+      "frames": 24
+     },
+     {
+      "status": "uncertain",
+      "best": "BASEMENT",
+      "top5": [
+       "BASEMENT",
+       "LETME",
+       "GAME",
+       "YOURSELF",
+       "DIME"
+      ],
+      "p": "0.508",
+      "unk": "0.004",
+      "proto": "0.523",
+      "hands": 9,
+      "frames": 27
+     }
+    ]
+   }
+  ]
+ },
+ "native15-broad": {
+  "variant": "baseline",
+  "policy": "strict",
+  "gapReset": true,
+  "observations": 1149,
+  "segments": 16,
+  "summary": {
+   "correct": 5,
+   "wrong": 2,
+   "abstained": 5,
+   "falseAccept": 0,
+   "rejected": 4,
+   "top1CorrectAbstained": 4,
+   "noSegment": 0,
+   "gapAccepts": 0
+  },
+  "rows": [
+   {
+    "trial_id": "val-apple",
+    "label": "APPLE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "APPLE",
+      "top5": [
+       "APPLE",
+       "CANDY",
+       "DOLL",
+       "GIFT",
+       "EAR"
+      ],
+      "p": "0.725",
+      "unk": "0.000",
+      "proto": "0.717",
+      "hands": 6,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "val-book",
+    "label": "BOOK",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "BOOK",
+      "top5": [
+       "BOOK",
+       "OPEN",
+       "MORNING",
+       "GIVE",
+       "BOAT"
+      ],
+      "p": "0.795",
+      "unk": "0.000",
+      "proto": "0.548",
+      "hands": 6,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "val-dog",
+    "label": "DOG",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "DOG",
+      "top5": [
+       "DOG",
+       "HURT",
+       "PUPPY",
+       "HARD",
+       "FALL"
+      ],
+      "p": "0.983",
+      "unk": "0.000",
+      "proto": "0.821",
+      "hands": 5,
+      "frames": 22
+     }
+    ]
+   },
+   {
+    "trial_id": "val-water",
+    "label": "WATER",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "WATER",
+      "top5": [
+       "WATER",
+       "ARE",
+       "TALK",
+       "WATERHOSE",
+       "VITAMINS"
+      ],
+      "p": "0.992",
+      "unk": "0.000",
+      "proto": "0.934",
+      "hands": 7,
+      "frames": 24
+     }
+    ]
+   },
+   {
+    "trial_id": "val-red",
+    "label": "RED",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "RED",
+      "top5": [
+       "RED",
+       "THIRSTY",
+       "SAY",
+       "CUTE",
+       "IS"
+      ],
+      "p": "0.995",
+      "unk": "0.000",
+      "proto": "0.953",
+      "hands": 10,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "val-eat",
+    "label": "EAT",
+    "outcome": "wrong",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "FOOD",
+      "top5": [
+       "FOOD",
+       "EAT",
+       "FEED",
+       "UNDERWEAR",
+       "IF"
+      ],
+      "p": "0.903",
+      "unk": "0.000",
+      "proto": "0.950",
+      "hands": 12,
+      "frames": 31
+     }
+    ]
+   },
+   {
+    "trial_id": "val-good",
+    "label": "GOOD",
+    "outcome": "wrong",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "WAIT",
+       "CLOSE",
+       "ALL"
+      ],
+      "p": "0.864",
+      "unk": "0.000",
+      "proto": "0.927",
+      "hands": 11,
+      "frames": 28
+     }
+    ]
+   },
+   {
+    "trial_id": "val-blue",
+    "label": "BLUE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "BLUE",
+      "top5": [
+       "BLUE",
+       "BAD",
+       "NOISY",
+       "FINGER",
+       "FINISH"
+      ],
+      "p": "0.988",
+      "unk": "0.000",
+      "proto": "0.831",
+      "hands": 9,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "val-help",
+    "label": "HELP",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "HELP",
+      "top5": [
+       "HELP",
+       "UP",
+       "GAME",
+       "PULL",
+       "NOSE"
+      ],
+      "p": "0.427",
+      "unk": "0.462",
+      "proto": "0.762",
+      "hands": 16,
+      "frames": 33
+     }
+    ]
+   },
+   {
+    "trial_id": "val-home",
+    "label": "HOME",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "HOME",
+      "top5": [
+       "HOME",
+       "BIG",
+       "HEAD",
+       "TALL",
+       "OWL"
+      ],
+      "p": "0.989",
+      "unk": "0.000",
+      "proto": "0.831",
+      "hands": 7,
+      "frames": 24
+     }
+    ]
+   },
+   {
+    "trial_id": "val-play",
+    "label": "PLAY",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "YELLOW",
+      "top5": [
+       "YELLOW",
+       "CALLONPHONE",
+       "GIRL",
+       "NIGHT",
+       "PLAY"
+      ],
+      "p": "0.549",
+      "unk": "0.000",
+      "proto": "0.564",
+      "hands": 27,
+      "frames": 44
+     }
+    ]
+   },
+   {
+    "trial_id": "val-go",
+    "label": "GO",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "GO",
+      "top5": [
+       "GO",
+       "GIVE",
+       "GOINGTO",
+       "GOTTO",
+       "OUTSIDE"
+      ],
+      "p": "0.829",
+      "unk": "0.000",
+      "proto": "0.798",
+      "hands": 6,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "val-grapes",
+    "label": "GRAPES",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "DINOSAUR",
+      "top5": [
+       "DINOSAUR",
+       "FISH",
+       "SWEEP",
+       "CARRY",
+       "ON"
+      ],
+      "p": "0.324",
+      "unk": "0.000",
+      "proto": "0.546",
+      "hands": 15,
+      "frames": 32
+     }
+    ]
+   },
+   {
+    "trial_id": "val-icecream",
+    "label": "ICECREAM",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "DOLL",
+      "top5": [
+       "DOLL",
+       "AUNT",
+       "WRITE",
+       "PENCIL",
+       "PEN"
+      ],
+      "p": "0.301",
+      "unk": "0.000",
+      "proto": "0.434",
+      "hands": 10,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "val-napkin",
+    "label": "NAPKIN",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "BUTTERFLY",
+      "top5": [
+       "BUTTERFLY",
+       "THANK-YOU",
+       "GOOD",
+       "NEW",
+       "HOT"
+      ],
+      "p": "0.515",
+      "unk": "0.001",
+      "proto": "0.548",
+      "hands": 9,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "val-turtle",
+    "label": "TURTLE",
+    "outcome": "rejected",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "BATH",
+      "top5": [
+       "BATH",
+       "HELP",
+       "ZIPPER",
+       "TIGHTS",
+       "MAKE"
+      ],
+      "p": "0.156",
+      "unk": "0.007",
+      "proto": "0.331",
+      "hands": 14,
+      "frames": 31
+     }
+    ]
+   }
+  ]
+ },
+ "native15-shared": {
+  "variant": "baseline",
+  "policy": "strict",
+  "gapReset": true,
+  "observations": 1169,
+  "segments": 17,
+  "summary": {
+   "correct": 12,
+   "wrong": 0,
+   "abstained": 5,
+   "falseAccept": 0,
+   "rejected": 0,
+   "top1CorrectAbstained": 4,
+   "noSegment": 0,
+   "gapAccepts": 0
+  },
+  "rows": [
+   {
+    "trial_id": "hello-gtsignstudy4a.8031",
+    "label": "HELLO",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "WILL",
+      "top5": [
+       "WILL",
+       "HELLO",
+       "PERSON",
+       "DAD",
+       "BLUE"
+      ],
+      "p": "0.527",
+      "unk": "0.000",
+      "proto": "0.411",
+      "hands": 6,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "hello-gtsignstudy4a.8033",
+    "label": "HELLO",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "HELLO",
+      "top5": [
+       "HELLO",
+       "TEACHER",
+       "WILL",
+       "PRETEND",
+       "LISTEN"
+      ],
+      "p": "0.992",
+      "unk": "0.000",
+      "proto": "0.848",
+      "hands": 10,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "please-gtsignstudy4a.8031",
+    "label": "PLEASE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "PLEASE",
+      "top5": [
+       "PLEASE",
+       "YUMYUM",
+       "WALK",
+       "ZEBRA",
+       "MINEMY"
+      ],
+      "p": "0.993",
+      "unk": "0.000",
+      "proto": "0.966",
+      "hands": 12,
+      "frames": 29
+     }
+    ]
+   },
+   {
+    "trial_id": "please-gtsignstudy4a.8033",
+    "label": "PLEASE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "PLEASE",
+      "top5": [
+       "PLEASE",
+       "YUMYUM",
+       "ZEBRA",
+       "NECKLACE",
+       "WHITE"
+      ],
+      "p": "0.993",
+      "unk": "0.000",
+      "proto": "0.963",
+      "hands": 34,
+      "frames": 51
+     }
+    ]
+   },
+   {
+    "trial_id": "thankyou-gtsignstudy4a.8033",
+    "label": "THANK YOU",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "WAIT",
+       "SAD",
+       "ALL"
+      ],
+      "p": "0.956",
+      "unk": "0.000",
+      "proto": "0.970",
+      "hands": 11,
+      "frames": 28
+     }
+    ]
+   },
+   {
+    "trial_id": "thankyou-gtsignstudy4a.8031",
+    "label": "THANK YOU",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "GIRAFFE",
+       "BUTTERFLY",
+       "GIVE"
+      ],
+      "p": "0.733",
+      "unk": "0.005",
+      "proto": "0.654",
+      "hands": 3,
+      "frames": 20
+     }
+    ]
+   },
+   {
+    "trial_id": "dev-thankyou-4a.7003",
+    "label": "THANK YOU",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "MINEMY",
+       "BAD",
+       "TASTE"
+      ],
+      "p": "0.286",
+      "unk": "0.452",
+      "proto": "0.545",
+      "hands": 5,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "dev-please-4a.8017",
+    "label": "PLEASE",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "PLEASE",
+      "top5": [
+       "PLEASE",
+       "YUMYUM",
+       "ZEBRA",
+       "WALK",
+       "BEAR"
+      ],
+      "p": "0.986",
+      "unk": "0.000",
+      "proto": "0.968",
+      "hands": 16,
+      "frames": 33
+     }
+    ]
+   },
+   {
+    "trial_id": "dev-hello-4a.8006",
+    "label": "HELLO",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "uncertain",
+      "best": "HELLO",
+      "top5": [
+       "HELLO",
+       "CHEESE",
+       "GIVEMEFIVE",
+       "FINISH",
+       "PUSH"
+      ],
+      "p": "0.769",
+      "unk": "0.000",
+      "proto": "0.618",
+      "hands": 9,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "dev-yes-4a.8006",
+    "label": "YES",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "YES",
+      "top5": [
+       "YES",
+       "MOTORCYCLE",
+       "STROLLER",
+       "SHOE",
+       "CAN"
+      ],
+      "p": "0.992",
+      "unk": "0.000",
+      "proto": "0.834",
+      "hands": 6,
+      "frames": 23
+     }
+    ]
+   },
+   {
+    "trial_id": "dev-no-4a.8030",
+    "label": "NO",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "NO",
+      "top5": [
+       "NO",
+       "LOUD",
+       "DUCK",
+       "READ",
+       "CHAIR"
+      ],
+      "p": "0.993",
+      "unk": "0.000",
+      "proto": "0.899",
+      "hands": 9,
+      "frames": 26
+     }
+    ]
+   },
+   {
+    "trial_id": "val-hello",
+    "label": "HELLO",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "HELLO",
+      "top5": [
+       "HELLO",
+       "PRETEND",
+       "WILL",
+       "TEACHER",
+       "LISTEN"
+      ],
+      "p": "0.989",
+      "unk": "0.000",
+      "proto": "0.829",
+      "hands": 7,
+      "frames": 24
+     }
+    ]
+   },
+   {
+    "trial_id": "val-thankyou",
+    "label": "THANK YOU",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "THANK-YOU",
+      "top5": [
+       "THANK-YOU",
+       "GOOD",
+       "WET",
+       "WAIT",
+       "TASTE"
+      ],
+      "p": "0.973",
+      "unk": "0.000",
+      "proto": "0.916",
+      "hands": 13,
+      "frames": 30
+     }
+    ]
+   },
+   {
+    "trial_id": "val-please",
+    "label": "PLEASE",
+    "outcome": "abstained",
+    "results": [
+     {
+      "status": "unknown",
+      "best": "PLEASE",
+      "top5": [
+       "PLEASE",
+       "YUMYUM",
+       "ZEBRA",
+       "GO",
+       "FIRST"
+      ],
+      "p": "0.956",
+      "unk": "0.000",
+      "proto": "0.809",
+      "hands": 23,
+      "frames": 40
+     }
+    ]
+   },
+   {
+    "trial_id": "val-yes",
+    "label": "YES",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "YES",
+      "top5": [
+       "YES",
+       "CAN",
+       "ROCK",
+       "SHOE",
+       "CHAIR"
+      ],
+      "p": "0.996",
+      "unk": "0.000",
+      "proto": "0.939",
+      "hands": 10,
+      "frames": 27
+     }
+    ]
+   },
+   {
+    "trial_id": "val-no",
+    "label": "NO",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "NO",
+      "top5": [
+       "NO",
+       "DUCK",
+       "READ",
+       "TV",
+       "HORSE"
+      ],
+      "p": "0.943",
+      "unk": "0.000",
+      "proto": "0.837",
+      "hands": 16,
+      "frames": 33
+     }
+    ]
+   },
+   {
+    "trial_id": "val-no-repeat",
+    "label": "NO",
+    "outcome": "correct",
+    "results": [
+     {
+      "status": "accepted",
+      "best": "NO",
+      "top5": [
+       "NO",
+       "DUCK",
+       "READ",
+       "TV",
+       "HORSE"
+      ],
+      "p": "0.940",
+      "unk": "0.000",
+      "proto": "0.838",
+      "hands": 16,
+      "frames": 33
+     }
+    ]
+   }
+  ]
+ }
+}

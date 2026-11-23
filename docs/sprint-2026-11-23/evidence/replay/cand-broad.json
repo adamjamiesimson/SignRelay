@@ -1,0 +1,408 @@
+{
+  "scope": "publisher-labelled development footage through a Chromium fake camera; no physical camera or signer trial",
+  "engine": "integrated-v3",
+  "browser": "Google Chrome for Testing 153.0.8010.12",
+  "reel_sha256": "a823f8634e4d0434eebe7f6d3eea491f6cd65ead0e1c26a6ad022ab54b1fee5a",
+  "policy": "strict",
+  "modelHash": "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090",
+  "applicationRevision": "37ecdfaac4178fb4af78f3565e17237edbb81a54",
+  "trackerHash": "6109ff12058653b767a80a7c766bc5818cdc28271fbb251bfe6d503ed95a20cf",
+  "outputMeaning": "Policy-accepted model suggestions requiring manual review; scoring uses emission time, not segment end",
+  "transcriptEntries": 0,
+  "spoken": [],
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "frameRate": 15
+  },
+  "startupMs": {
+    "pageReadyMs": 170,
+    "cameraClickToActiveMs": 661.1999999997206,
+    "playbackToTrackingMs": 526.3999999999069
+  },
+  "playbackSeconds": 76.266439,
+  "mainThreadJsHeapBytes": {
+    "before": 4321920,
+    "after": 6338436
+  },
+  "tracking": {
+    "analysedOrForwardedFrames": 1052,
+    "handFrames": 136,
+    "analysedOrForwardedFps": 13.793747469971686,
+    "perSign": [
+      {
+        "trial_id": "val-apple",
+        "observations": 24,
+        "handObservations": 5,
+        "longestHandRun": 5
+      },
+      {
+        "trial_id": "val-book",
+        "observations": 36,
+        "handObservations": 5,
+        "longestHandRun": 5
+      },
+      {
+        "trial_id": "val-dog",
+        "observations": 26,
+        "handObservations": 3,
+        "longestHandRun": 3
+      },
+      {
+        "trial_id": "val-water",
+        "observations": 28,
+        "handObservations": 6,
+        "longestHandRun": 6
+      },
+      {
+        "trial_id": "val-red",
+        "observations": 27,
+        "handObservations": 8,
+        "longestHandRun": 8
+      },
+      {
+        "trial_id": "val-eat",
+        "observations": 33,
+        "handObservations": 12,
+        "longestHandRun": 11
+      },
+      {
+        "trial_id": "val-good",
+        "observations": 32,
+        "handObservations": 8,
+        "longestHandRun": 8
+      },
+      {
+        "trial_id": "val-blue",
+        "observations": 25,
+        "handObservations": 7,
+        "longestHandRun": 7
+      },
+      {
+        "trial_id": "val-help",
+        "observations": 25,
+        "handObservations": 12,
+        "longestHandRun": 12
+      },
+      {
+        "trial_id": "val-home",
+        "observations": 19,
+        "handObservations": 6,
+        "longestHandRun": 6
+      },
+      {
+        "trial_id": "val-play",
+        "observations": 27,
+        "handObservations": 21,
+        "longestHandRun": 21
+      },
+      {
+        "trial_id": "val-go",
+        "observations": 16,
+        "handObservations": 4,
+        "longestHandRun": 4
+      },
+      {
+        "trial_id": "val-grapes",
+        "observations": 28,
+        "handObservations": 12,
+        "longestHandRun": 12
+      },
+      {
+        "trial_id": "val-icecream",
+        "observations": 36,
+        "handObservations": 9,
+        "longestHandRun": 9
+      },
+      {
+        "trial_id": "val-napkin",
+        "observations": 24,
+        "handObservations": 7,
+        "longestHandRun": 7
+      },
+      {
+        "trial_id": "val-turtle",
+        "observations": 30,
+        "handObservations": 11,
+        "longestHandRun": 11
+      }
+    ]
+  },
+  "fixtureDurationSeconds": 76.6,
+  "performance": "Tracking 37/84 ms (p50/p95) · recognition round trip 1/3 ms · queue wait 0/0 ms · 13.9 forwarded/s, 5 dropped (0%) · 13.9 frames analysed/s · assets self-hosted · recognition running, 0 recoveries · hand tracked in 13% of frames",
+  "modelTimingMs": [],
+  "outboundRequests": [],
+  "runtimeErrors": [],
+  "browserErrors": [
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:4304/"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:4304/languages"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:4304/how-it-works"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:4304/privacy"
+    }
+  ],
+  "cameraStatus": "Active",
+  "tracksStopped": true,
+  "intervals": [
+    {
+      "trial_id": "val-apple",
+      "label": "APPLE",
+      "category": "broad",
+      "start": 8,
+      "end": 9.733333333333333,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/apple/ebdb-apple-2023_01_30_14_31_52.519-0.mp4",
+      "sha256": "d8699b7f3016b13c017dee9a834a05bda791c0aeccf4126ee03da87a28ad437a",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-book",
+      "label": "BOOK",
+      "category": "broad",
+      "start": 11.733333333333333,
+      "end": 14.4,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/book/2b19-book-2023_01_28_15_34_58.856-0.mp4",
+      "sha256": "9cb0b25b5468826d01b6f9582d940fc583bc5a9cab41ecd15340069b43001ab0",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-dog",
+      "label": "DOG",
+      "category": "broad",
+      "start": 16.4,
+      "end": 18.2,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/dog/ebdb-dog-2023_01_30_15_07_59.922-0.mp4",
+      "sha256": "0be1ad5587ca7cf3e68055c4a5e3c5cb0a50c1c11df32d8f987100950d9818cc",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-water",
+      "label": "WATER",
+      "category": "broad",
+      "start": 20.2,
+      "end": 22.2,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/water/ebdb-water-2023_01_30_17_17_00.244-0.mp4",
+      "sha256": "3ab7e1f9b53ad1cdd2624bde6faa1f3ed3898fcfd14b352cf7e8daed8e009edc",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "WATER",
+          "source": "model-suggestion",
+          "at": 22106.799999999814,
+          "anchor": 21.796300097656435,
+          "outputAt": 21.7965,
+          "delayFromClipEndMs": -403
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-red",
+      "label": "RED",
+      "category": "broad",
+      "start": 24.2,
+      "end": 26.4,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/red/661f-red-2023_01_30_16_37_10.449-0.mp4",
+      "sha256": "7aa9b67d0c543184597d73709236d37e937a4edad83b3d4064641a49e5379cc5",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "RED",
+          "source": "model-suggestion",
+          "at": 26412.399999999907,
+          "anchor": 26.101300097656438,
+          "outputAt": 26.102100000000092,
+          "delayFromClipEndMs": -298
+        }
+      ],
+      "outcome": "correct",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-eat",
+      "label": "EAT",
+      "category": "broad",
+      "start": 28.4,
+      "end": 30.8,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/eat/f56c-eat-2024_03_25_15_42_04.085-1.mp4",
+      "sha256": "4e1ea63452d76eeabd423196b54407fedfae7867bbf1f134dc825d1b43c0386b",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "FOOD",
+          "source": "model-suggestion",
+          "at": 30615.69999999972,
+          "anchor": 30.301300097656437,
+          "outputAt": 30.305399999999906,
+          "delayFromClipEndMs": -495
+        }
+      ],
+      "outcome": "wrong",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-good",
+      "label": "GOOD",
+      "category": "broad",
+      "start": 32.8,
+      "end": 35.46666666666667,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/good/f56c-good-2024_03_28_18_55_20.923-1.mp4",
+      "sha256": "aab231b2ee4152b045e430d26fbe0e029b447eb601d9ae957192148218a7a3e7",
+      "license": "CC BY 4.0",
+      "events": [
+        {
+          "status": "accepted",
+          "label": "THANK-YOU",
+          "source": "model-suggestion",
+          "at": 35155.89999999991,
+          "anchor": 34.845300097656434,
+          "outputAt": 34.84560000000009,
+          "delayFromClipEndMs": -621
+        }
+      ],
+      "outcome": "wrong",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-blue",
+      "label": "BLUE",
+      "category": "broad",
+      "start": 37.46666666666667,
+      "end": 39.4,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/blue/c6e5-blue-2023_01_25_18_01_34.441-0.mp4",
+      "sha256": "058b7e4271fcab535259dd7bfb38bacb933be4f849a8901da34fa56735067097",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-help",
+      "label": "HELP",
+      "category": "broad",
+      "start": 41.4,
+      "end": 43.6,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/help/c6e5-help-2023_08_17_15_47_29.581-0.mp4",
+      "sha256": "81a7f35d9e2c3cfa91465cde8e239f2afd98ec187152cc5c1ebbff01dad37f5c",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-home",
+      "label": "HOME",
+      "category": "broad",
+      "start": 45.6,
+      "end": 47,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/home/a459-home-2023_01_11_17_31_42.756-0.mp4",
+      "sha256": "9d01a56759b456a05019e24c0c91190cddb92e104666f46cb756a9c1fa1d3c08",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-play",
+      "label": "PLAY",
+      "category": "broad",
+      "start": 49,
+      "end": 51.2,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/play/c6e5-play-2023_08_17_15_38_21.776-0.mp4",
+      "sha256": "128674bd7509b6f25dcd1ca8eab9b4aa01c9e314c33ad09a85f9d46ca7a9749e",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-go",
+      "label": "GO",
+      "category": "broad",
+      "start": 53.2,
+      "end": 54.6,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/go/a459-go-2023_01_10_19_27_29.307-0.mp4",
+      "sha256": "a0aa2dedf2b86ed1b1c36db74291fa7498be5432d6cc668e2fd1516a7e6a813c",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "abstained",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-grapes",
+      "label": "GRAPES",
+      "category": "out_of_vocabulary",
+      "start": 56.6,
+      "end": 58.86666666666667,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/grapes/c6e5-grapes-2023_08_17_15_14_21.093-0.mp4",
+      "sha256": "b53450875079530c9bc125cbb10fd36c238ee95b6fe13161e485f76d0510d5b7",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-icecream",
+      "label": "ICECREAM",
+      "category": "out_of_vocabulary",
+      "start": 60.86666666666667,
+      "end": 63.4,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/icecream/2b19-icecream-2023_01_28_20_14_56.157-0.mp4",
+      "sha256": "c8e631a1a9e9689c20b60a3f067cad5f26219e894dcf9be5c3f51f372b59892e",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-napkin",
+      "label": "NAPKIN",
+      "category": "out_of_vocabulary",
+      "start": 65.4,
+      "end": 67.2,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/napkin/ebdb-napkin-2023_01_30_16_04_04.157-0.mp4",
+      "sha256": "de986120e49019f029fd5a8abbaa976de68a067b0eb533c0ad3abf835055e384",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    },
+    {
+      "trial_id": "val-turtle",
+      "label": "TURTLE",
+      "category": "out_of_vocabulary",
+      "start": 69.2,
+      "end": 71.6,
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/turtle/f56c-turtle-2024_04_01_15_39_37.408-1.mp4",
+      "sha256": "fd6ee89699e474517d60324e19f4540ce4df4dea35ce6db8f68c549c7093d794",
+      "license": "CC BY 4.0",
+      "events": [],
+      "outcome": "rejected",
+      "duplicateAccepts": 0
+    }
+  ],
+  "idleEvents": [],
+  "idleAccepts": 0
+}
