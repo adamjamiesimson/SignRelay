@@ -28,7 +28,18 @@ Not verified, because it needs things this machine does not have: the real datas
 sign-in and rule acceptance), and a training budget. Sizes and times below are estimates to plan with,
 not measurements.
 
-## Steps
+## One command
+
+```bash
+KAGGLE_USER=... KAGGLE_KEY=... ./engine-v3/pipeline/run_islr.sh ~/data
+```
+
+It downloads and unpacks the competition files, checks the layout of the first clip before doing
+anything expensive, converts with a per-class cap, merges reversibly, and trains a candidate — then
+reminds you that the candidate is not shipped until it beats the current model on the signer's own
+clips. Each step is skipped when its output already exists.
+
+## Steps, if you would rather run them one at a time
 
 ```bash
 # 1. Data (needs a Kaggle account and accepting the competition rules once)

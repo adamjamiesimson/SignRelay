@@ -111,6 +111,8 @@ def main():
     parser.add_argument("--limit", type=int, default=0, help="import at most this many clips (0 = all)")
     parser.add_argument("--max-per-class", type=int, default=0, help="cap clips per label (0 = no cap)")
     parser.add_argument("--min-hand-frames", type=int, default=3, help="drop clips with fewer hand frames")
+    parser.add_argument("--check", action="store_true",
+                        help="inspect one clip and report the layout, then stop (no import)")
     parser.add_argument("--val-fraction", type=float, default=0.1)
     parser.add_argument("--test-fraction", type=float, default=0.1)
     args = parser.parse_args()
@@ -121,6 +123,33 @@ def main():
         records = list(csv.DictReader(handle))
     if not records:
         raise SystemExit(f"{args.meta} has no rows")
+
+    if args.check:
+        record = records[0]
+        sequence = str(_column(record, ID_COLUMNS))
+        signer = str(_column(record, SIGNER_COLUMNS))
+        path = os.path.join(args.landmarks, signer, f"{sequence}.parquet")
+        if not os.path.exists(path):
+            raise SystemExit(f"{path} is missing — check that --landmarks points at train_landmark_files/")
+        table = pq.read_table(path)
+        columns = table.column_names
+        report = {"clip": path, "columns": columns, "rows": table.num_rows}
+        for group, expected in (("left_hand", 21), ("right_hand", 21), ("pose", 33), ("face", 468)):
+            if group not in columns:
+                report[group] = f"MISSING (expected {expected} points)"
+                continue
+            value = table.column(group).to_pylist()[0]
+            preview = _points(value, expected)
+            report[group] = {"points": int(preview.shape[0]), "expected": expected,
+                             "finite": int(np.isfinite(preview).sum())}
+        report["label"] = str(_column(record, SIGN_COLUMNS))
+        print(json.dumps(report, indent=2))
+        missing = [group for group in ("left_hand", "right_hand", "pose", "face") if group not in columns]
+        if missing:
+            raise SystemExit(f"unexpected layout: no {missing} column(s); the importer expects the competition's "
+                             "per-frame landmark columns")
+        print("layout looks importable")
+        return
 
     rows = []
     per_class = defaultdict(int)
