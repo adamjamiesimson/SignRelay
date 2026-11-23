@@ -52,7 +52,8 @@ I recorded the landmark observations the integrated recognition worker actually 
 native MediaPipe 0.10.35 (the training extractor's version) on every frame of the same reels. I then
 replayed both through the real segmenter, model and Strict policy offline
 (`scripts/diagnostics/offline-v31-replay.mjs`). Offline replay of the browser's own observations
-reproduces the browser outcome trial for trial.
+reproduces the browser outcome trial for trial. Every variant below is archived in
+[evidence/offline/variant-summary.jsonl](evidence/offline/variant-summary.jsonl).
 
 | Same reels (shared+broad+A, 59 supported) | Correct | Wrong |
 | --- | ---: | ---: |
@@ -149,6 +150,7 @@ pipelines do not use the V3.1 tracker or segmenter.
 | Engine 1 rehearsal and transcript accessibility smokes (rehearsal profile) | passed |
 | axe WCAG (5 pages and active workspace) | 0 violations |
 | Visual parity, baseline vs candidate ASL-demo export (desktop and mobile, landing and workspace) | all 4 screenshots byte-identical |
+| Fresh `git clone` of `f09b1f7` from GitHub, separate directory, nothing copied: `npm ci`, `install:vision-assets`, typecheck, `demo:prepare`, `demo:check` | passed. Clean source; model `b3e05424…`; tracker worker `6109ff12…`; offline startup and model load with a deny-all proxy. |
 
 Logs: [evidence/verification/](evidence/verification/). Not run here: the full `build:firebase` export (the Slovo host is blocked) and the Russian browser smoke. GitHub CI runs the full build.
 
