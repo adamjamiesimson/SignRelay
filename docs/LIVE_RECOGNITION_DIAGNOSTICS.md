@@ -54,3 +54,23 @@ That separates three causes that look identical in the panel:
 - it appears at a usable rank only after a variant: the live window or slot order is wrong;
 - it never reaches the top five: a recognition-accuracy limit for that signer. No threshold change
   can fix that; it needs calibration or training data from real signers.
+
+## Fitting a policy to real signers
+
+The Strict gate is fitted on PopSign validation signers, so a live camera can produce the correct
+gloss at rank 1 and still be rejected (measured: 4/5 correct, Strict accepted 1). Saved captures are
+enough to fit the gate to your own camera, because the model's scores are already extracted:
+
+```bash
+# labels.json maps a capture file name to the gloss that was signed, or "UNKNOWN"
+node --experimental-strip-types scripts/diagnostics/fit-live-policy.mjs captures/*.json \
+  --labels labels.json --max-false-accept 0.10
+```
+
+It prints the per-capture scores, what Strict and Balanced accept, and the best threshold rule within
+the false-accept budget — then refuses to write a policy below 40 signed and 15 not-supported
+captures, because a rule fitted to a handful of windows measures nothing. `--out policy-live.json`
+writes it once that bar is met (`--force` overrides, development only).
+
+Not-supported captures matter as much as signed ones: use signs the vocabulary does not cover, or an
+invented movement, and confirm the panel shows a decision so the window is recorded.
