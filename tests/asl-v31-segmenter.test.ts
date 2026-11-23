@@ -44,4 +44,41 @@ describe("V3.1 segmentation (synthetic timing checks)", () => {
     segmenter.reset();
     for (let t = 3000; t < 4000; t += 100) expect(segmenter.observe(t, features(false)).clip).toBeUndefined();
   });
+
+  describe("rest-aware sign ends (shoulders visible)", () => {
+    // Shoulders at y = 0.5, 0.2 apart: signing space ends at y = 0.5 + 1.3 * 0.2 = 0.76.
+    function posed(handY: number | null) {
+      const frame = features(false);
+      frame.set([0.4, 0.5, 0], (42 + 7) * 3);
+      frame.set([0.6, 0.5, 0], (42 + 8) * 3);
+      if (handY !== null) frame.set([0.5, handY, 0]);
+      return frame;
+    }
+    const run = (segmenter: AslV31Segmenter, ys: (number | null)[], start: number) =>
+      ys.map((y, index) => segmenter.observe(start + index * 100, posed(y)));
+
+    it("ends a sign when the hand rests visibly below signing space, then recognizes the next sign", () => {
+      const segmenter = new AslV31Segmenter();
+      const first = run(segmenter, [0.4, 0.4, 0.4, 0.4, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9], 0);
+      expect(first.filter(result => result.clip)).toHaveLength(1);
+      expect(first.at(-1)?.reason).toBe("idle");
+      const second = run(segmenter, [0.4, 0.4, 0.4, 0.4, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9], 2000);
+      expect(second.filter(result => result.clip)).toHaveLength(1);
+    });
+
+    it("keeps the PR #67 behaviour when disabled: a visible resting hand holds the segment to the cap", () => {
+      const segmenter = new AslV31Segmenter({ restAware: false });
+      const results = run(segmenter, [0.4, 0.4, 0.4, 0.4, ...new Array(40).fill(0.9)], 0);
+      expect(results.findIndex(result => result.clip)).toBeGreaterThan(30);
+    });
+
+    it("treats a visible resting hand as rest after a capped segment", () => {
+      const segmenter = new AslV31Segmenter();
+      const capped = run(segmenter, new Array(45).fill(0.4), 0);
+      expect(capped.filter(result => result.clip)).toHaveLength(1);
+      run(segmenter, new Array(7).fill(0.9), 4500);
+      const next = run(segmenter, [0.4, 0.4, 0.4, 0.4, null, null, null, null, null, null, null], 5200);
+      expect(next.filter(result => result.clip)).toHaveLength(1);
+    });
+  });
 });

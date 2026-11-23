@@ -20,6 +20,9 @@ const policyName = option("--policy", "strict");
 const variant = option("--variant", "baseline");
 const gapReset = !args.includes("--no-gap-reset");
 const segmenterOptions = JSON.parse(option("--segmenter", "{}"));
+// "time": emission anchor in [start - 0.10 s, end + 0.85 s] (the browser scorer). "overlap": the
+// interval overlapping the segment's observed hand span most (needed for back-to-back reels).
+const assign = option("--assign", "time");
 
 const modelDir = "public/models/asl-v31";
 const meta = JSON.parse(readFileSync(`${modelDir}/meta.json`, "utf8"));
@@ -50,6 +53,7 @@ const segmenter = new AslV31Segmenter(segmenterOptions);
 const recent = [];
 const segments = [];
 let resets = 0;
+let handTimes = [];
 for (const { t, f } of observations) {
   const features = Float32Array.from(f, value => (value === null ? NaN : value));
   const previous = recent.at(-1);
@@ -60,7 +64,11 @@ for (const { t, f } of observations) {
   recent.push({ timestamp: t });
   if (recent.length > 120) recent.shift();
   const result = segmenter.observe(t, features);
-  if (result.clip) segments.push({ closedAt: t, clip: result.clip });
+  if (hasHand(features)) handTimes.push(t);
+  if (result.clip) {
+    segments.push({ closedAt: t, clip: result.clip, span: [handTimes[0] ?? t, handTimes.at(-1) ?? t] });
+    handTimes = [];
+  }
 }
 
 const rows = truth.segments.map(row => ({ ...row, results: [] }));
@@ -68,11 +76,16 @@ const idle = [];
 for (const segment of segments) {
   const result = await classify(segment.clip);
   const anchor = (segment.closedAt + 50 - capture.cameraStart) / 1000; // ~inference latency
-  const row = rows.find(r => anchor >= r.start - 0.10 && anchor <= r.end + 0.85);
+  const [a, b] = segment.span.map(t => (t - capture.cameraStart) / 1000);
+  const overlap = r => Math.min(b, r.end) - Math.max(a, r.start);
+  const row = assign === "overlap"
+    ? rows.filter(r => overlap(r) > 0).sort((x, y) => overlap(y) - overlap(x))[0]
+    : rows.find(r => anchor >= r.start - 0.10 && anchor <= r.end + 0.85);
   (row?.results ?? idle).push({ anchor, ...result });
 }
 const norm = label => label?.replaceAll("-", " ").trim().toUpperCase();
-const summary = { correct: 0, wrong: 0, abstained: 0, falseAccept: 0, rejected: 0, top1CorrectAbstained: 0, noSegment: 0, gapAccepts: 0 };
+const duplicates = rows.reduce((n, r) => n + Math.max(0, r.results.filter(x => x.status === "accepted").length - 1), 0);
+const summary = { duplicates, correct: 0, wrong: 0, abstained: 0, falseAccept: 0, rejected: 0, top1CorrectAbstained: 0, noSegment: 0, gapAccepts: 0 };
 for (const row of rows) {
   const accepted = row.results.filter(r => r.status === "accepted");
   if (row.category === "out_of_vocabulary") row.outcome = accepted.length ? "false-accept" : "rejected";
