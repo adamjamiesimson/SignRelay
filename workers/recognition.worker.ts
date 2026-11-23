@@ -16,6 +16,7 @@ import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 import { trackingGapLimit } from "@/lib/frame-timing";
 import { AslV31Segmenter } from "@/lib/asl-v31-segmenter";
 import { recognizeAslV31, warmAslV31Model } from "@/lib/asl-v31-runtime";
+import { emptyAslV31Diagnostics, type AslV31Diagnostics } from "@/lib/asl-v31-diagnostics";
 
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
@@ -31,6 +32,10 @@ let useAslV31 = false;
 const v3Segmenter = new AslV31Segmenter();
 let v3ModelReady = false;
 let queuedV3: { clip: Float32Array[]; closedAt: number; receivedAt: number; session?: number } | undefined;
+// Developer diagnostics (?perf only): stage counters for the V3.1 path, kept in memory.
+let diagnosticsEnabled = false;
+let diagnostics: AslV31Diagnostics = emptyAslV31Diagnostics();
+let lastDecisionAt = 0;
 const classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
 const pending = new Map<LanguageId, { started: number; phase: "loading" | "inference"; controller: AbortController }>();
 const MODEL_LOAD_TIMEOUT_MS = 400000;
@@ -112,6 +117,8 @@ function resetEvidence() {
 }
 
 function resetSession() {
+  diagnostics = { ...emptyAslV31Diagnostics(), model: v3ModelReady ? "ready" : "not-started" };
+  v3Segmenter.resetStats();
   for (const request of pending.values()) request.controller.abort();
   pending.clear();
   resetEvidence();
@@ -124,7 +131,10 @@ function resetSession() {
 function submitV3(now: number) {
   if (pending.has("asl") || now < retryAfter) return;
   if (queuedV3 && (now - queuedV3.closedAt > MAX_PREDICTION_AGE_MS
-    || performance.now() - queuedV3.receivedAt > MAX_PREDICTION_AGE_MS)) queuedV3 = undefined;
+    || performance.now() - queuedV3.receivedAt > MAX_PREDICTION_AGE_MS)) {
+    queuedV3 = undefined;
+    diagnostics.segmentsSkipped++;
+  }
   const segment = v3ModelReady ? queuedV3 : undefined;
   if (v3ModelReady && !segment) return;
   if (segment) queuedV3 = undefined;
@@ -132,30 +142,55 @@ function submitV3(now: number) {
   const request = { started: now, phase: (segment ? "inference" : "loading") as "inference" | "loading", controller: new AbortController() };
   pending.set("asl", request);
   const generation = modelGeneration;
+  const startedAt = performance.now();
+  if (!segment) diagnostics.model = "loading";
   const task = segment
-    ? recognizeAslV31(segment.clip, { signal: request.controller.signal })
-    : warmAslV31Model().then(() => { v3ModelReady = true; });
+    ? recognizeAslV31(segment.clip, { signal: request.controller.signal, onDecision: decision => {
+      diagnostics.inferences++;
+      diagnostics.lastInferenceMs = performance.now() - startedAt;
+      diagnostics.decisions[decision.status]++;
+      diagnostics.lastDecision = { ...decision, ageMs: 0 };
+      lastDecisionAt = performance.now();
+    } })
+    : warmAslV31Model().then(() => { v3ModelReady = true; diagnostics.model = "ready"; });
 
   task.then(prediction => {
     if (generation !== modelGeneration || request.controller.signal.aborted) return;
     modelProblem = false;
     if (!prediction || !segment) return;
     if ((frames.at(-1)?.timestamp ?? now) - segment.closedAt > MAX_PREDICTION_AGE_MS
-      || performance.now() - segment.receivedAt > MAX_PREDICTION_AGE_MS) return;
+      || performance.now() - segment.receivedAt > MAX_PREDICTION_AGE_MS) {
+      diagnostics.suggestionsStale++;
+      return;
+    }
+    diagnostics.suggestionsPosted++;
     self.postMessage({ type: "suggestion", session: segment.session, gloss: prediction.label, text: prediction.text,
       confidence: prediction.confidence, timestamp: Date.now(), source: "model",
     } satisfies WorkerMessage);
-  }).catch(() => {
+  }).catch(error => {
     if (generation !== modelGeneration || request.controller.signal.aborted) return;
+    if (segment) diagnostics.inferenceFailures++;
+    else {
+      diagnostics.model = "failed";
+      diagnostics.modelError = error instanceof Error ? error.message : String(error);
+    }
     modelProblem = true;
     retryAfter = (frames.at(-1)?.timestamp ?? now) + 5000;
   }).finally(() => { if (pending.get("asl") === request) pending.delete("asl"); });
+}
+
+function diagnosticsSnapshot(): AslV31Diagnostics {
+  const { opened, completed, capped, tooFewHands } = v3Segmenter.stats;
+  return { ...diagnostics, segmentsOpened: opened, segmentsCompleted: completed, segmentsCapped: capped, segmentsTooFewHands: tooFewHands,
+    decisions: { ...diagnostics.decisions },
+    lastDecision: diagnostics.lastDecision && { ...diagnostics.lastDecision, ageMs: performance.now() - lastDecisionAt } };
 }
 
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
     useAslV31 = activeLanguage === "asl" && event.data.aslEngine === "v3.1";
+    diagnosticsEnabled = event.data.diagnostics === true;
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
     resetSession();
     personalMatcher.configure(personalTemplates);
@@ -178,6 +213,10 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     if (request.phase === "loading") {
       request.controller.abort(); pending.delete(language);
       modelProblem = true; retryAfter = now + 30000;
+      if (language === "asl" && useAslV31) {
+        diagnostics.model = "failed";
+        diagnostics.modelError = "model did not finish loading";
+      }
     } else {
       request.controller.abort(); invalidatePrediction(); pending.clear();
       self.postMessage({ type: "fault", session: event.data.session,
@@ -205,7 +244,14 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   // templates. Discard a rejected result so it cannot stall fresh inference.
   if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES"
     && starter?.label !== "YES") invalidatePrediction();
-  const v3Motion = useAslV31 ? v3Segmenter.observe(now, event.data.frame.aslV3Features) : null;
+  const v3Features = event.data.frame.aslV3Features;
+  if (useAslV31 && v3Features) {
+    diagnostics.observations++;
+    if (hasHand) diagnostics.handFrames++;
+    // V3.1 pose slots 7 and 8 hold the shoulders (pose landmarks 11 and 12).
+    if (Number.isFinite(v3Features[(42 + 7) * 3]) && Number.isFinite(v3Features[(42 + 8) * 3])) diagnostics.shoulderFrames++;
+  }
+  const v3Motion = useAslV31 ? v3Segmenter.observe(now, v3Features) : null;
   const observed = activeLanguage === "asl" && !useAslV31 ? analyzeSignMotion(frames) : null;
   const startsInConfirmedTail = observed?.completion === "departure" && !handReturnedAfterConfirmation
     && observed.sequence[0].timestamp - lastConfirmation.time < NEW_MOVEMENT_AFTER_WORD_MS;
@@ -218,7 +264,10 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (v3Motion) {
     // Limit the pipeline to one inference and one queued completed segment.
     // Camera analyses still receive their acknowledgement during model loading.
-    if (v3Motion.clip) queuedV3 = { clip: v3Motion.clip, closedAt: now, receivedAt: performance.now(), session: event.data.session };
+    if (v3Motion.clip) {
+      if (queuedV3) diagnostics.segmentsSkipped++;
+      queuedV3 = { clip: v3Motion.clip, closedAt: now, receivedAt: performance.now(), session: event.data.session };
+    }
     submitV3(now);
   } else if (!motion.ready || starterAnalysis?.ambiguousOpenPalm) invalidatePrediction();
   else {
@@ -286,6 +335,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     candidate: result?.label ?? null, confidence: result?.confidence ?? 0,
     bufferSize: frames.length, feedback,
     source, motionReason: motion.reason,
+    ...(diagnosticsEnabled && useAslV31 ? { diagnostics: diagnosticsSnapshot() } : {}),
   } satisfies WorkerMessage);
 
   if (!result || result.confidence < CONFIDENCE_THRESHOLD) {

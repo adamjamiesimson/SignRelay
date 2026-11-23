@@ -1,6 +1,6 @@
 # SignRelay developer handoff
 
-The integration is published in [PR #67](https://github.com/adamjamiesimson/SignRelay/pull/67) on `integrate/asl-v31-event-2026-11-25`; use `main` for new work after that PR is merged. Record `git rev-parse HEAD` alongside any test results so they can be reproduced. [Engine V3 research history](https://github.com/adamjamiesimson/SignRelay/pull/65) · [Original application repairs](https://github.com/adamjamiesimson/SignRelay/pull/66)
+The integration is published in [PR #67](https://github.com/adamjamiesimson/SignRelay/pull/67) on `integrate/asl-v31-event-2026-11-25`. The 2026-11-23 accuracy sprint ([PR #68](https://github.com/adamjamiesimson/SignRelay/pull/68), [report](sprint-2026-11-23/SPRINT_REPORT.md)) raised V3.1 analysis cadence and made sign ends rest-aware. Use `main` for new work after that PR is merged. Record `git rev-parse HEAD` alongside any test results so they can be reproduced. [Engine V3 research history](https://github.com/adamjamiesimson/SignRelay/pull/65) · [Original application repairs](https://github.com/adamjamiesimson/SignRelay/pull/66)
 
 ## First checkout
 
@@ -49,9 +49,25 @@ Use `npm run build:rehearsal` for the labeled Engine 1 software rehearsal with s
 ## Code and release workflow
 
 - `components/translator-experience.tsx` owns the translation workspace, camera session, user confirmation, transcript, and speech controls.
-- `workers/asl-v3-tracker.worker.ts` tracks hands and pose for V3.1. `workers/recognition.worker.ts` coordinates classification and language-specific prediction. The pinned MediaPipe runtime lives in `lib/vision-runtime.mjs`.
+- `workers/asl-v3-tracker.worker.ts` tracks hands and pose for V3.1. On machines with four or more logical cores, `lib/asl-v3-tracker.ts` starts a second instance in its `pose` role, which tracks pose in parallel on every second frame. The client merges that pose into each hand frame, and any failure falls back to in-worker pose. Face cues run at most every 400 ms and are used only for the overlay, framing and personal templates. `lib/asl-v31-segmenter.ts` ends a sign when hands are absent or rest below signing space for 500 ms. `workers/recognition.worker.ts` coordinates classification and language-specific prediction. The pinned MediaPipe runtime lives in `lib/vision-runtime.mjs`.
 - `engine-v3/` retains the originating research implementation, model training, and evaluation reports. `scripts/build-profile.mjs` produces the full, ASL demo, or rehearsal export. `scripts/verify-runtime.mjs` checks what the export ships.
 - Start feature branches from the current `main`, open a PR, and link test evidence for the exact commit. Use local static exports for previews. After required checks and review, build the merged `main` for the Firebase `signrelay` Hosting site in `signrelay-76f34`. An authorized operator deploys through `scripts/deploy-firebase.sh`, verifies the served manifest, and retains the prior Hosting release for rollback.
+
+## Recognition diagnostics
+
+For a live camera problem, open the workspace with `?perf`. The developer panel shows each V3.1 stage (tracking, sign start/end, model, Strict decision and reason, suggestion delivery) and the first stage that is failing. See [LIVE_RECOGNITION_DIAGNOSTICS.md](LIVE_RECOGNITION_DIAGNOSTICS.md).
+
+V3.1 accuracy depends on analysed frames per second while hands are visible. On the booth machine, open the workspace with `?perf` and read the "Tracking p50/p95 · forwarded/s" line while signing.
+
+- Fake-camera replay: `scripts/diagnostics/run-engine-comparison.mjs … integrated-v3`.
+- Optional observation capture: set `CAPTURE_OBSERVATIONS`.
+- Identical-observation comparison of segmenter, model and policy variants: `node --experimental-strip-types scripts/diagnostics/offline-v31-replay.mjs`.
+- Native MediaPipe reference: `scripts/diagnostics/native-reel-observations.py` (needs `mediapipe==0.10.35`).
+- Results summary: `scripts/diagnostics/summarize-replays.py`.
+- Development cohort and adoption rule: [protocol](sprint-2026-11-23/PROTOCOL.md).
+- Commands: [sprint report](sprint-2026-11-23/SPRINT_REPORT.md#reproduce).
+
+The sprint's A, shared and broad reels are tuning-contaminated. Do not quote them as validation.
 
 At rehearsal, prioritize camera denial and recovery, a cold start with Wi-Fi off, lighting and framing with the actual booth camera, and left- and right-handed trials with a fluent ASL reviewer. Record false accepts, abstentions, and duplicates alongside correct suggestions. V3.1 supports isolated ASL signs and still makes mistakes with unknown or neighboring signs. Keep its model suggestions under user control when adding text or speaking. [Physical testing checklist](showcase-2026-11-26/PHYSICAL_TEST_CHECKLIST.md)
 

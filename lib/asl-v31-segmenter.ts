@@ -12,10 +12,33 @@ const MARGIN_MS = 600;
 const MIN_OBSERVED_HAND_FRAMES = 3;
 const MAX_SAMPLES = 192;
 
+export type AslV31SegmenterOptions = {
+  /**
+   * End a sign when hands are absent *or resting below signing space* (the same shoulder-based
+   * rule that opens a segment) for HAND_GAP_MS. Default true. Without it, hands resting visibly
+   * in frame hold a segment open to the 4 s cap and then block recognition until they leave the
+   * frame. Identical results on all sprint replays, where signers lower their hands out of view;
+   * the in-view resting case is not yet measured on a physical camera. `false` is the PR #67
+   * behaviour, kept for offline comparisons.
+   */
+  restAware?: boolean;
+};
+
 export class AslV31Segmenter {
   private samples: Sample[] = [];
   private active: OpenSegment | null = null;
   private waitingForRestSince: number | null = null;
+  private readonly restAware: boolean;
+  /** Session counters for developer diagnostics; reset() keeps them, resetStats() clears them. */
+  readonly stats = { opened: 0, completed: 0, capped: 0, tooFewHands: 0 };
+
+  resetStats() {
+    Object.assign(this.stats, { opened: 0, completed: 0, capped: 0, tooFewHands: 0 });
+  }
+
+  constructor(options: AslV31SegmenterOptions = {}) {
+    this.restAware = options.restAware ?? true;
+  }
 
   reset() {
     this.samples = [];
@@ -39,8 +62,10 @@ export class AslV31Segmenter {
     if (previous && timestamp <= previous.t) this.reset();
 
     const anyHand = hasHand(features);
+    // Signing continues while a hand is visible, or (rest-aware) while one is in signing space.
+    const signing = this.restAware ? signingEvidence(features) : anyHand;
     if (this.waitingForRestSince !== null) {
-      if (anyHand) this.waitingForRestSince = timestamp;
+      if (signing) this.waitingForRestSince = timestamp;
       if (timestamp - this.waitingForRestSince <= HAND_GAP_MS) return { reason: anyHand ? "idle" : "hands" };
       this.waitingForRestSince = null;
     }
@@ -49,23 +74,33 @@ export class AslV31Segmenter {
     while (this.samples.length > MAX_SAMPLES || this.samples[0].t < timestamp - MAX_SEGMENT_MS - MARGIN_MS * 2) {
       this.samples.shift();
     }
-    if (!this.active && signingEvidence(features)) this.active = { start: timestamp, lastHand: timestamp };
+    if (!this.active && signingEvidence(features)) {
+      this.active = { start: timestamp, lastHand: timestamp };
+      this.stats.opened++;
+    }
     if (!this.active) return { reason: anyHand ? "idle" : "hands" };
-    if (anyHand) this.active.lastHand = timestamp;
+    if (signing) this.active.lastHand = timestamp;
 
     const { start, lastHand } = this.active;
-    const ended = !anyHand && timestamp - lastHand > HAND_GAP_MS;
+    const ended = !signing && timestamp - lastHand > HAND_GAP_MS;
     const reachedLimit = timestamp - start > MAX_SEGMENT_MS;
     if (!ended && !reachedLimit) return { reason: "moving" };
 
     this.active = null;
-    if (!ended) this.waitingForRestSince = lastHand;
+    if (!ended) {
+      this.waitingForRestSince = lastHand;
+      this.stats.capped++;
+    }
     const end = Math.min(timestamp, lastHand + MARGIN_MS);
     const segment = this.samples.filter(sample => sample.t >= start - MARGIN_MS && sample.t <= end);
     // A capped or already-processed movement cannot reopen on its old samples.
     // Keep only preceding rest after its last observed hand for the next sign.
     this.samples = this.samples.filter(sample => sample.t > lastHand);
-    if (segment.filter(sample => hasHand(sample.f)).length < MIN_OBSERVED_HAND_FRAMES) return { reason: "hands" };
+    if (segment.filter(sample => hasHand(sample.f)).length < MIN_OBSERVED_HAND_FRAMES) {
+      this.stats.tooFewHands++;
+      return { reason: "hands" };
+    }
+    this.stats.completed++;
     return { reason: "ready", clip: resampleTo15Hz(segment) };
   }
 }

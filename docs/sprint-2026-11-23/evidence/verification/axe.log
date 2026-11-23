@@ -1,0 +1,12 @@
+{
+ "passed": true,
+ "pages": [
+  "/",
+  "/languages",
+  "/models",
+  "/privacy",
+  "/about",
+  "workspace (camera active, no hands)"
+ ],
+ "violations": []
+}

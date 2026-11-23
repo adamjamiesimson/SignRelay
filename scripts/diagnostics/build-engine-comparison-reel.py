@@ -62,11 +62,11 @@ def verified_clip(row, fetch_validation: bool) -> Path:
     return path
 
 
-def make_reel(plan: Path, reel: Path, truth: Path, cohort: str | None, fetch_validation: bool) -> None:
+def make_reel(plan: Path, reel: Path, truth: Path, cohort: str | None, fetch_validation: bool, gap_frames: int = GAP_FRAMES) -> None:
     rows = json.loads(plan.read_text())
     if isinstance(rows, dict):
         if cohort is None:
-            raise ValueError("Choose --cohort shared or --cohort broad")
+            raise ValueError("Choose a --cohort key from the plan")
         rows = rows[cohort]
     if not rows:
         raise ValueError("No clips in the plan")
@@ -83,9 +83,9 @@ def make_reel(plan: Path, reel: Path, truth: Path, cohort: str | None, fetch_val
             segments.append({"trial_id": row["trial_id"], "label": row["label"], "category": row["category"],
                              "start": start / FPS, "end": frame_index / FPS,
                              "source": row["source"], "sha256": row["sha256"], "license": row["license"]})
-            for _ in range(GAP_FRAMES):
+            for _ in range(gap_frames):
                 output.write(GRAY)
-            frame_index += GAP_FRAMES
+            frame_index += gap_frames
         for _ in range(TAIL_FRAMES):
             output.write(GRAY)
         frame_index += TAIL_FRAMES
@@ -99,7 +99,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for path in ("plan", "reel", "truth"):
         parser.add_argument(path, type=Path)
-    parser.add_argument("--cohort", choices=("shared", "broad"))
+    parser.add_argument("--cohort", help="shared|broad for the showcase plan; A|B for the sprint development cohort")
     parser.add_argument("--fetch-validation", action="store_true", help="Download only the exact pinned publisher validation clips")
+    parser.add_argument("--gap-frames", type=int, default=GAP_FRAMES,
+                        help="grey frames between clips (0 = back-to-back signs separated only by each clip's own rest)")
     args = parser.parse_args()
-    make_reel(args.plan, args.reel, args.truth, args.cohort, args.fetch_validation)
+    make_reel(args.plan, args.reel, args.truth, args.cohort, args.fetch_validation, args.gap_frames)

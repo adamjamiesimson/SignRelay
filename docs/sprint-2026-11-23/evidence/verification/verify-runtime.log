@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "failures": [],
+  "recognition_worker_sha256": "45ddfa07d6d63a97307b9961964971eb7e9f7e473ba29be1f9653eb07513fc86",
+  "matches_committed_worker": true,
+  "asl_engine": {
+    "version": "engine-v3.1",
+    "source_commit": "ea4e5432df811fcfb91db926b741d21b12222098",
+    "policy": "strict",
+    "model_sha256": "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090",
+    "tracker_worker_sha256": "6109ff12058653b767a80a7c766bc5818cdc28271fbb251bfe6d503ed95a20cf"
+  },
+  "application_revision": "37ecdfaac4178fb4af78f3565e17237edbb81a54",
+  "real_video_evidence": "none recorded"
+}

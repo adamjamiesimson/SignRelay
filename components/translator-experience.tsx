@@ -50,6 +50,7 @@ import { recognitionStatus } from "@/lib/recognition-status";
 import { ASL_ONLY, ASL_V3_ENABLED, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
 import { formatPerfReadout, RollingTimer, ThroughputMonitor } from "@/lib/frame-perf";
+import { formatAslV31Diagnostics, type AslV31Diagnostics, type AslV31UiCounts } from "@/lib/asl-v31-diagnostics";
 import { shouldAnalyseFrame } from "@/lib/frame-timing";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE, workspaceModel } from "@/lib/capability-status";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
@@ -99,6 +100,7 @@ export function TranslatorExperience() {
   // Opt-in device-test readout (`?perf`): timings only, nothing is stored or sent.
   const [perfMode] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("perf"));
   const [perfReadout, setPerfReadout] = useState("");
+  const [perfStages, setPerfStages] = useState<string[]>([]);
   const [perfWarning, setPerfWarning] = useState<string | null>(null);
   const [entries, setEntries] = useState<TranscriptEntry[]>([]);
   const [storageMessage, setStorageMessage] = useState("");
@@ -151,6 +153,9 @@ export function TranslatorExperience() {
     };
     return () => { delete (window as unknown as { __signrelayRehearsal?: unknown }).__signrelayRehearsal; };
   }, []);
+  // ?perf only: V3.1 stage counters from the worker and what the page did with suggestions.
+  const diagnosticsRef = useRef<AslV31Diagnostics | null>(null);
+  const stageCountsRef = useRef<AslV31UiCounts>({ received: 0, ignored: 0, shown: 0, added: 0, spoken: 0 });
   const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(),
     throughput: new ThroughputMonitor(), analysed: 0, since: 0, frames: 0, handFrames: 0 });
 
@@ -222,10 +227,11 @@ export function TranslatorExperience() {
   useEffect(() => {
     templatesRef.current = calibrationTemplates;
     workerRef.current?.postMessage({ type: "templates", language: selected, templates: calibrationTemplates,
-      aslEngine: useAslV3 ? "v3.1" : undefined });
-  }, [calibrationTemplates, selected, useAslV3]);
+      aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode });
+  }, [calibrationTemplates, selected, useAslV3, perfMode]);
 
   const updateSuggestion = useCallback((next: WorkerSuggestion | null) => {
+    if (next) stageCountsRef.current.shown++;
     suggestionRef.current = next;
     setSuggestion(next);
   }, []);
@@ -345,11 +351,16 @@ export function TranslatorExperience() {
       setBufferSize(message.bufferSize);
       setRecognitionFeedback(message.feedback ?? "");
       setMotionReason(message.motionReason ?? null);
+      if (message.diagnostics) diagnosticsRef.current = message.diagnostics;
       return;
     }
     // Confirmations from a stopped or replaced session never reach here:
     // RecognitionSession drops messages from before every reset.
-    if (message.type === "suggestion" && useAslV3 && engineRef.current && !document.hidden) updateSuggestion(message);
+    if (message.type === "suggestion") {
+      stageCountsRef.current.received++;
+      if (useAslV3 && engineRef.current && !document.hidden) updateSuggestion(message);
+      else stageCountsRef.current.ignored++;
+    }
     if (message.type === "confirmed" && (!useAslV3 || message.source === "personal")) {
       updateSuggestion(null);
       appendWord(message);
@@ -359,6 +370,8 @@ export function TranslatorExperience() {
   const addSuggestedWord = () => {
     if (!suggestion || suggestion !== suggestionRef.current || document.hidden) return;
     updateSuggestion(null);
+    stageCountsRef.current.added++;
+    if (settingsRef.current.autoSpeak) stageCountsRef.current.spoken++;
     appendWord(suggestion);
     transcriptHeadingRef.current?.focus();
   };
@@ -380,13 +393,13 @@ export function TranslatorExperience() {
       },
     );
     worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current,
-      aslEngine: useAslV3 ? "v3.1" : undefined });
+      aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode });
     workerRef.current = worker;
     return () => {
       worker.terminate();
       workerRef.current = null;
     };
-  }, [step, selected, handleWorkerMessage, updateSuggestion, useAslV3]);
+  }, [step, selected, handleWorkerMessage, updateSuggestion, useAslV3, perfMode]);
 
   const stopCamera = useCallback(() => {
     cameraGenerationRef.current++;
@@ -422,6 +435,8 @@ export function TranslatorExperience() {
     const perf = perfRef.current;
     perf.tracking.reset(); perf.roundTrip.reset(); perf.queueWait.reset(); perf.throughput.reset();
     perf.analysed = 0; perf.frames = 0; perf.handFrames = 0; perf.since = performance.now();
+    diagnosticsRef.current = null;
+    stageCountsRef.current = { received: 0, ignored: 0, shown: 0, added: 0, spoken: 0 };
     workerRef.current?.resetStats();
     const timer = window.setInterval(() => {
       const session = workerRef.current;
@@ -432,8 +447,11 @@ export function TranslatorExperience() {
         assets: engineRef.current?.assetSource ?? null,
         recognition: session ? { state: session.state, recoveries: session.stats.recoveries } : null,
         hands: { seen: perf.handFrames, frames: perf.frames } }));
+      const engine = engineRef.current;
+      setPerfStages(diagnosticsRef.current && engine && "trackingMode" in engine
+        ? formatAslV31Diagnostics(diagnosticsRef.current, stageCountsRef.current, perf.frames, engine.trackingMode) : []);
     }, 1000);
-    return () => { window.clearInterval(timer); setPerfWarning(null); };
+    return () => { window.clearInterval(timer); setPerfWarning(null); setPerfStages([]); };
   }, [perfMode, cameraState]);
 
   useEffect(() => () => {
@@ -1069,6 +1087,11 @@ export function TranslatorExperience() {
                   </div>
                   {visionSource && <p className="calibration-message">Hand tracking loaded {visionSource === "self-hosted" ? "from this site, so it does not depend on an external CDN" : "from the public CDN fallback"}.</p>}
                   {perfMode && <p className="calibration-message perf-readout" data-perf>{perfReadout || "Collecting timings…"}</p>}
+                  {perfMode && perfStages.length > 0 && (
+                    <p className="calibration-message perf-readout" data-perf-stages>
+                      {perfStages.map(line => <span key={line.slice(0, 12)} style={{ display: "block" }}>{line}</span>)}
+                    </p>
+                  )}
                 </div>
               </details>
             </section>

@@ -11,11 +11,18 @@ import { startChrome } from "./chrome-session.mjs";
 const [executable, origin, reel, truthFile, engine, output] = process.argv.slice(2);
 assert(executable && origin && reel && truthFile && output && ["engine1", "v3-balanced", "v3-strict", "integrated-v3"].includes(engine),
   "Supply Chromium executable, origin, Y4M reel, truth JSON, engine1|v3-balanced|v3-strict|integrated-v3 and output JSON");
-assert(["127.0.0.1", "localhost"].includes(new URL(origin).hostname), "Use a loopback export");
+// Loopback exports by default. ALLOW_PRODUCTION_ORIGIN=1 permits exactly the deployed site, to
+// check production asset loading, workers and suggestion delivery with the same reel.
+const productionOrigins = ["https://signrelay.web.app", "https://signrelay-76f34.web.app"];
+assert(["127.0.0.1", "localhost"].includes(new URL(origin).hostname)
+  || (process.env.ALLOW_PRODUCTION_ORIGIN === "1" && productionOrigins.includes(new URL(origin).origin)), "Use a loopback export");
 const isV3 = engine.startsWith("v3-");
 const integrated = engine === "integrated-v3";
 const clipPlan = JSON.parse(await readFile(truthFile, "utf8"));
 const firstSignMs = clipPlan.segments[0].start * 1000;
+// Optional: record the exact V3.1 landmark observations the integrated recognition
+// worker receives, for offline comparisons on identical inputs. Not committed.
+const captureFile = process.env.CAPTURE_OBSERVATIONS;
 
 async function waitFor(browser, condition, label, attempts = 400) {
   for (let i = 0; i < attempts; i++) {
@@ -51,7 +58,7 @@ function scores(truth, events, cameraStart) {
 const hash = createHash("sha256");
 for await (const chunk of createReadStream(reel)) hash.update(chunk);
 const browser = await startChrome(executable, {
-  proxy: null, dismissOnboarding: integrated,
+  proxy: ["127.0.0.1", "localhost"].includes(new URL(origin).hostname) ? null : process.env.HTTPS_PROXY, dismissOnboarding: integrated,
   extraArgs: [`--use-file-for-fake-video-capture=${resolve(reel)}`, "--disable-background-timer-throttling"],
 });
 try {
@@ -86,6 +93,9 @@ try {
         super(url, options);
         this.isRecognition = String(url).includes("recognition.worker.js") || String(url).endsWith("/worker.js");
         this.addEventListener("error", error => probe.errors.push(error.message || "Worker error"));
+        if (${Boolean(captureFile)} && String(url).includes("asl-v3-tracker")) this.addEventListener("message", ({ data }) => {
+          if (data.type === "frame" && probe.start !== null) (probe.tracker ??= []).push({ t: data.frame.timestamp, at: performance.now(), ms: data.trackingMs, timings: data.timings });
+        });
         if (!this.isRecognition) return;
         this.addEventListener("message", ({ data }) => {
           if (probe.start === null) return;
@@ -107,6 +117,8 @@ try {
       postMessage(message, ...rest) {
         if (!isV3 && this.isRecognition && message.type === "frame" && probe.start !== null) {
           probe.frames.push({ at: message.frame.timestamp, hands: message.frame.hands.length > 0 });
+          if (${Boolean(captureFile)} && message.frame.aslV3Features) (probe.observations ??= []).push({ t: message.frame.timestamp,
+            f: Array.from(message.frame.aslV3Features, value => Number.isFinite(value) ? value : null) });
         }
         return super.postMessage(message, ...rest);
       }
@@ -140,11 +152,17 @@ try {
     })) : probe.events;
     return { events, frames: probe.frames, errors: probe.errors, classifications: probe.classifications,
       currentTime, performance: document.querySelector("#diag, [data-perf]")?.textContent,
+      stages: [...(document.querySelector("[data-perf-stages]")?.children ?? [])].map(node => node.textContent),
       cameraStatus: document.querySelector("#status, .status-badge")?.textContent,
       analysed: lab?.stats.done, skipped: lab?.stats.skipped,
       modelHash: lab?.meta.model_sha256, labRevision: lab?.meta.commit,
       transcriptEntries: document.querySelectorAll(".transcript-entry").length, spoken: window.__comparisonSpoken };
   })()`);
+  if (captureFile) {
+    const observations = await browser.evaluate("window.__comparison.observations ?? []");
+    const tracker = await browser.evaluate("window.__comparison.tracker ?? []");
+    await writeFile(captureFile, JSON.stringify({ cameraStart: startup.cameraStart, observations, tracker }) + "\n", { flag: "wx" });
+  }
   const afterHeap = (await browser.send("Performance.getMetrics")).metrics.find(item => item.name === "JSHeapUsedSize")?.value;
   const stopButton = isV3
     ? "document.querySelector('#stopcam')"
@@ -177,7 +195,7 @@ try {
     camera: startup.camera, startupMs: { pageReadyMs, cameraClickToActiveMs: startup.active - requested,
       playbackToTrackingMs: startup.active - startup.cameraStart }, playbackSeconds: data.currentTime,
     mainThreadJsHeapBytes: { before: beforeHeap, after: afterHeap },
-    tracking, fixtureDurationSeconds: clipPlan.duration, performance: data.performance,
+    tracking, fixtureDurationSeconds: clipPlan.duration, performance: data.performance, stages: data.stages,
     reportedAnalysed: data.analysed, reportedSkipped: data.skipped, modelTimingMs: data.classifications,
     outboundRequests: attempted, runtimeErrors: data.errors, browserErrors: browser.errors,
     cameraStatus: data.cameraStatus, tracksStopped: true, ...display,

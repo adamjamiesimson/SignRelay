@@ -1,0 +1,42 @@
+
+> signrelay@0.1.0 audit:security
+> npm audit --audit-level=moderate && npm run audit:secrets && npm run test:rendered
+
+found 0 vulnerabilities
+
+> signrelay@0.1.0 audit:secrets
+> node scripts/audit-secrets.mjs
+
+{
+  "scope": "All fetched Git refs and working tree; text blobs up to 5 MiB; known credential patterns. Values are never printed.",
+  "commits": 912,
+  "scannedHistoricalBlobs": 3398,
+  "skippedObjects": 4373,
+  "findings": []
+}
+
+> signrelay@0.1.0 test:rendered
+> node --test tests/rendered-html.test.mjs
+
+TAP version 13
+# Subtest: public pages contain metadata, working internal links, image alternatives and script protection
+ok 1 - public pages contain metadata, working internal links, image alternatives and script protection
+  ---
+  duration_ms: 44.265512
+  type: 'test'
+  ...
+# Subtest: export excludes sensitive files and source maps; Firebase protects responses
+ok 2 - export excludes sensitive files and source maps; Firebase protects responses
+  ---
+  duration_ms: 4.799623
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 96.695277
