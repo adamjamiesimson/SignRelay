@@ -98,6 +98,13 @@ What it does not do: examples belong to the signer who recorded them, so a visit
 differently will not match the operator's enrolment. It fixes "my own signs are unreliable", not
 "any stranger's first attempt is accurate".
 
+Teaching scales without code changes. Personal signs browse the same 2,093-word concept library in
+every language (the 440 curated everyday concepts plus the WLASL-2000 labels), so a word is picked
+from the list rather than typed; two or three recordings per word are stored with their embeddings;
+and **Export signs** / **Import signs** move the whole taught vocabulary to another browser or booth
+laptop as JSON, so a large personal dictionary is backed up and replicable rather than re-recorded.
+358 of the 523 V3.1 model classes overlap the library; the remaining 1,735 concepts are teach-only.
+
 ## Architecture
 
 ```text

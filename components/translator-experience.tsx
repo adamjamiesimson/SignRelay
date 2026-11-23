@@ -9,8 +9,8 @@ import {
   useState,
 } from "react";
 import {
-  ArrowLeft, BookPlus, Camera, CameraOff, ChevronDown, CircleHelp, Copy, History, Info, LockKeyhole, Pencil,
-  RotateCcw, Save, Square, Trash2, Volume2, X,
+  ArrowLeft, BookPlus, Camera, CameraOff, ChevronDown, CircleHelp, Copy, Download, History, Info, LockKeyhole, Pencil,
+  RotateCcw, Save, Square, Trash2, Upload, Volume2, X,
 } from "lucide-react";
 import {
   DEFAULT_SETTINGS,
@@ -43,6 +43,7 @@ import {
 } from "@/lib/model-adapters";
 import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
+import { parseCalibrationExport, serialiseCalibration } from "@/lib/calibration-transfer";
 import { AslV3Tracker } from "@/lib/asl-v3-tracker";
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
@@ -189,14 +190,17 @@ export function TranslatorExperience() {
 
 
   const filteredCalibrationVocabulary = useMemo(() => {
-    const builtInStarter = selected === "asl" ? [] : PERSONAL_STARTER_VOCABULARY;
+    // ASL used to offer only the words already taught, so a new word had to be typed by hand. The
+    // concept prompts are language-neutral labels, so ASL now browses the same starter dictionary:
+    // teaching does not claim any of these share a sign form, it just labels what the signer records.
+    const builtInStarter = PERSONAL_STARTER_VOCABULARY;
     const knownGlosses = new Set<string>();
     return [...calibrationVocabulary, ...builtInStarter].filter((word) => {
       if (knownGlosses.has(word.gloss)) return false;
       knownGlosses.add(word.gloss);
       return true;
     });
-  }, [calibrationVocabulary, selected]);
+  }, [calibrationVocabulary]);
 
   const visibleCalibrationVocabulary = useMemo(() => {
     const search = vocabularySearch.trim().toLocaleLowerCase();
@@ -896,6 +900,34 @@ export function TranslatorExperience() {
     setCalibrationMessage(`${customWord.text} is selected for ${model.shortName}. Record two or three examples for the most reliable match.`);
   };
 
+  const exportSigns = useCallback(() => {
+    const url = URL.createObjectURL(new Blob([serialiseCalibration(
+      calibrationTemplates.filter(template => (template.language ?? "asl") === selected))], { type: "application/json" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `signrelay-${selected}-signs-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    setCalibrationMessage(`Exported ${trainedGlosses.size} taught ${model.shortName} sign${trainedGlosses.size === 1 ? "" : "s"}.`);
+  }, [calibrationTemplates, model.shortName, selected, trainedGlosses.size]);
+
+  const importSigns = useCallback(async (file: File) => {
+    try {
+      const { templates, skipped } = parseCalibrationExport(await file.text());
+      const mine = templates.filter(template => (template.language ?? "asl") === selected);
+      for (const template of mine) await saveCalibrationTemplate(template);
+      setCalibrationTemplates(await loadCalibrationTemplates());
+      const words = new Set(mine.map(template => template.gloss)).size;
+      setCalibrationMessage(mine.length
+        ? `Imported ${mine.length} example${mine.length === 1 ? "" : "s"} for ${words} sign${words === 1 ? "" : "s"}${skipped ? `, skipped ${skipped}` : ""}.`
+        : `Nothing to import for ${model.shortName}${skipped ? ` (skipped ${skipped})` : ""}.`);
+    } catch (error) {
+      setCalibrationMessage(error instanceof Error ? error.message : "That file could not be imported.");
+    }
+  }, [model.shortName, selected]);
+
   const removeCalibration = useCallback(async (gloss: string) => {
     const captureGeneration = ++captureGenerationRef.current;
     captureStateRef.current = "idle";
@@ -1300,20 +1332,42 @@ export function TranslatorExperience() {
                 </ol>
                 <p className={`calibration-message ${calibrationState}`} role="status">{calibrationMessage}</p>
 
+                <div className="vocabulary-transfer">
+                  <span className="calibration-message">
+                    {trainedGlosses.size
+                      ? `${trainedGlosses.size} ${model.shortName} sign${trainedGlosses.size === 1 ? "" : "s"} taught with ${calibrationTemplates.filter(template => (template.language ?? "asl") === selected).length} examples.`
+                      : `Nothing taught yet: each sign needs one recording, and two or three makes it reliable.`}
+                  </span>
+                  <div className="vocabulary-transfer-actions">
+                    <button type="button" className="button secondary small" onClick={exportSigns} disabled={!trainedGlosses.size}>
+                      <Download aria-hidden="true" size={16} />Export signs
+                    </button>
+                    <label className="button secondary small vocabulary-import">
+                      <Upload aria-hidden="true" size={16} />Import signs
+                      <input type="file" accept="application/json,.json" className="sr-only"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          event.target.value = "";
+                          if (file) void importSigns(file);
+                        }} />
+                    </label>
+                  </div>
+                </div>
+
                 <div className="vocabulary-section">
                   <div className="vocabulary-section-heading">
-                    <h3>{selected === "asl" ? "Your signs" : `Your signs and ${model.shortName} concepts`}</h3>
+                    <h3>{`Sign library and your ${model.shortName} signs`}</h3>
                   </div>
                   {showVocabularySearch && (
                     <div className="custom-word-controls starter-library-search">
                       <label className="search-field">
-                        <span className="sr-only">{selected === "asl" ? "Search taught ASL signs" : `Search built-in ${model.shortName} concepts`}</span>
+                        <span className="sr-only">{`Search ${model.shortName} signs to teach`}</span>
                         <input
                           type="search"
                           value={vocabularySearch}
                           onChange={(event) => setVocabularySearch(event.target.value)}
-                          placeholder={selected === "asl" ? `Search your ${filteredCalibrationVocabulary.length.toLocaleString()} taught signs` : `Search ${model.vocabulary.length.toLocaleString()} concepts, e.g. doctor`}
-                          aria-label={selected === "asl" ? "Search taught ASL signs" : `Search built-in ${model.shortName} concepts`}
+                          placeholder={`Search ${filteredCalibrationVocabulary.length.toLocaleString()} words, e.g. doctor`}
+                          aria-label={`Search ${model.shortName} signs to teach`}
                         />
                       </label>
                     </div>
