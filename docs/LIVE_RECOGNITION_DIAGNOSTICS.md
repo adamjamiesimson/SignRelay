@@ -29,6 +29,12 @@ Typical outcomes, from first stage to last:
 
 An empty transcript on its own does not mean recognition failed.
 
+`Signs started` counting only 1 per session, with `capped 1`, was a real fault: the signing-space
+rule asked whether a wrist was above `shoulders + 1.3 x shoulder width`, which on a desk camera was
+true in every frame (61/61 captured), so the first sign ran to the 4 s cap and the segmenter then
+waited for a rest that never came. Only the first sign of a session was ever recognised. Signing is
+now measured by movement, with signing space deciding only where a sign may begin.
+
 ## Saving one sign for offline replay
 
 When a sign is classified but rejected (or accepted as the wrong word), **Save last sign (landmarks

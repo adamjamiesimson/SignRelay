@@ -26,7 +26,9 @@ async function configure(session = 1, language: "asl" | "csl" = "asl", withTempl
 async function feed(count: number, visible: boolean, session = 1) {
   for (let index = 0; index < count; index++) {
     const aslV3Features = new Float32Array(N_POINTS * 3).fill(NaN);
-    const point = { x: 0.4, y: 0.2, z: 0 };
+    // A sign is movement: the segmenter opens on a moving hand inside signing space, not on a
+    // hand that merely sits there, so the fixture strokes 0.02 of the frame per 100 ms frame.
+    const point = { x: 0.4 + 0.02 * (index % 5), y: 0.2, z: 0 };
     // Shoulders put the signing-space limit at y = 0.76, so y = 0.2 is a signing hand.
     aslV3Features.set([0.4, 0.5, 0], (42 + 7) * 3);
     aslV3Features.set([0.6, 0.5, 0], (42 + 8) * 3);

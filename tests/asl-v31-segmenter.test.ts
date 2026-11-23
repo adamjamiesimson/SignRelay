@@ -33,15 +33,18 @@ describe("V3.1 segmentation (synthetic timing checks)", () => {
 
   it("requires three actual hand frames, even when two observations could fill a 15 Hz grid", () => {
     const segmenter = new AslV31Segmenter();
-    const results = [true, true, false, false, false].map((hand, index) => segmenter.observe(index * 200, features(hand)));
+    const results = [true, true, false, false, false].map((hand, index) => segmenter.observe(index * 200, features(hand, index / 10)));
     expect(results.some(result => result.clip)).toBe(false);
+    expect(segmenter.stats.tooFewHands).toBe(1);
   });
 
-  it("caps a long visible event and does not reopen it before a hand-down rest", () => {
+  it("caps a long moving event and does not reopen it before the movement rests", () => {
     const segmenter = new AslV31Segmenter();
+    const stroke = (index: number) => 0.4 + 0.3 * Math.abs(((index / 15) % 2) - 1);
     const count = (steps: boolean[], start: number) => steps.reduce((total, hand, index) =>
-      total + Number(!!segmenter.observe(start + index * 100, features(hand)).clip), 0);
+      total + Number(!!segmenter.observe(start + index * 100, features(hand, stroke(index))).clip), 0);
     expect(count(Array.from({ length: 150 }, () => true), 0)).toBe(1);
+    expect(segmenter.stats.capped).toBe(1);
     expect(count(Array.from({ length: 8 }, () => false), 15000)).toBe(0);
     expect(count([true, true, true, false, false, false, false, false, false], 15800)).toBe(1);
   });
@@ -57,37 +60,66 @@ describe("V3.1 segmentation (synthetic timing checks)", () => {
   });
 
   describe("rest-aware sign ends (shoulders visible)", () => {
-    // Shoulders at y = 0.5, 0.2 apart: signing space ends at y = 0.5 + 1.3 * 0.2 = 0.76.
-    function posed(handY: number | null) {
+    // Shoulders at y = 0.5, 0.2 apart: signing space ends at y = 0.5 + 1.3 * 0.2 = 0.76, so a hand
+    // at y = 0.4 is inside signing space. A hand that moves is signing; a hand that holds still is
+    // resting, wherever it rests. A physical desk camera measured both wrists inside signing space
+    // in every frame, which is why position alone cannot end a sign.
+    const posed = (y: number, x: number) => {
       const frame = features(false);
-      if (handY !== null) frame.set([0.5, handY, 0]);
+      frame.set([x, y, 0]);
       return frame;
-    }
-    const run = (segmenter: AslV31Segmenter, ys: (number | null)[], start: number) =>
-      ys.map((y, index) => segmenter.observe(start + index * 100, posed(y)));
+    };
+    const stroke = (index: number) => 0.35 + 0.3 * Math.abs(((index / 15) % 2) - 1);
+    const move = (segmenter: AslV31Segmenter, start: number, count: number, y = 0.4, phase = 0) =>
+      Array.from({ length: count }, (_, index) => segmenter.observe(start + index * 100, posed(y, stroke(index + phase))));
+    const hold = (segmenter: AslV31Segmenter, start: number, count: number, y = 0.9) =>
+      Array.from({ length: count }, (_, index) => segmenter.observe(start + index * 100, posed(y, 0.5)));
+    const clips = (results: { clip?: unknown }[]) => results.filter(result => result.clip);
 
-    it("ends a sign when the hand rests visibly below signing space, then recognizes the next sign", () => {
+    it("ends a sign when the movement stops, then recognizes the next sign", () => {
       const segmenter = new AslV31Segmenter();
-      const first = run(segmenter, [0.4, 0.4, 0.4, 0.4, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9], 0);
-      expect(first.filter(result => result.clip)).toHaveLength(1);
+      const first = [...move(segmenter, 0, 12), ...hold(segmenter, 1200, 11)];
+      expect(clips(first)).toHaveLength(1);
       expect(first.at(-1)?.reason).toBe("idle");
-      const second = run(segmenter, [0.4, 0.4, 0.4, 0.4, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9], 2000);
-      expect(second.filter(result => result.clip)).toHaveLength(1);
+      expect(segmenter.stats.capped).toBe(0);
+      const second = [...move(segmenter, 2300, 12, 0.4, 5), ...hold(segmenter, 3500, 11)];
+      expect(clips(second)).toHaveLength(1);
+    });
+
+    it("recognises every sign when the hands never leave signing space (measured desk camera)", () => {
+      // Both wrists sat at y ~ 0.4-0.68 inside signing space for 61 of 61 captured frames, and the
+      // shoulders were tracked in all of them, so only movement separates a sign from a resting
+      // hand. Before this, the first sign capped at 4 s and the next three were never recognised.
+      const segmenter = new AslV31Segmenter();
+      const signs = [[0, 0.4], [2200, 0.55], [4400, 0.65]] as const;
+      const results = signs.flatMap(([start, y]) => [...move(segmenter, start, 12, y), ...hold(segmenter, start + 1200, 11, y)]);
+      expect(clips(results)).toHaveLength(3);
+      expect(segmenter.stats).toMatchObject({ opened: 3, completed: 3, capped: 0 });
+      expect(segmenter.stats.tooFewHands).toBe(0);
+    });
+
+    it("does not open a sign for a hand resting inside signing space", () => {
+      const segmenter = new AslV31Segmenter();
+      const results = hold(segmenter, 0, 30, 0.4);
+      expect(clips(results)).toHaveLength(0);
+      expect(segmenter.stats.opened).toBe(0);
     });
 
     it("keeps the PR #67 behaviour when disabled: a visible resting hand holds the segment to the cap", () => {
       const segmenter = new AslV31Segmenter({ restAware: false });
-      const results = run(segmenter, [0.4, 0.4, 0.4, 0.4, ...new Array(40).fill(0.9)], 0);
+      const results = [...move(segmenter, 0, 4), ...hold(segmenter, 400, 40, 0.4)];
       expect(results.findIndex(result => result.clip)).toBeGreaterThan(30);
     });
 
-    it("treats a visible resting hand as rest after a capped segment", () => {
+    it("treats a resting hand as rest after a capped segment", () => {
       const segmenter = new AslV31Segmenter();
-      const capped = run(segmenter, new Array(45).fill(0.4), 0);
-      expect(capped.filter(result => result.clip)).toHaveLength(1);
-      run(segmenter, new Array(7).fill(0.9), 4500);
-      const next = run(segmenter, [0.4, 0.4, 0.4, 0.4, null, null, null, null, null, null, null], 5200);
-      expect(next.filter(result => result.clip)).toHaveLength(1);
+      const capped = move(segmenter, 0, 45);
+      expect(clips(capped)).toHaveLength(1);
+      expect(segmenter.stats.capped).toBe(1);
+      // A cap owes a rest before the next sign: the wait is HAND_GAP_MS after the last movement.
+      hold(segmenter, 4500, 16);
+      const next = [...move(segmenter, 6100, 12, 0.4, 5), ...hold(segmenter, 7300, 11)];
+      expect(clips(next)).toHaveLength(1);
     });
   });
 
@@ -124,7 +156,7 @@ describe("V3.1 segmentation (synthetic timing checks)", () => {
       const capped = moving(segmenter, 0, 45);
       expect(capped.filter(result => result.clip)).toHaveLength(1);
       expect(segmenter.stats.capped).toBe(1);
-      const after = [...still(segmenter, 4500, 10), ...moving(segmenter, 5500, 12, 5), ...still(segmenter, 6700, 30)];
+      const after = [...still(segmenter, 4500, 16), ...moving(segmenter, 6100, 12, 5), ...still(segmenter, 7300, 30)];
       expect(after.filter(result => result.clip)).toHaveLength(1);
     });
   });

@@ -12,12 +12,13 @@ const MARGIN_MS = 600;
 const MIN_OBSERVED_HAND_FRAMES = 3;
 const MAX_SAMPLES = 192;
 
-// When the shoulders are out of frame (a close-up webcam crop is the common case) the
-// signing-space rule cannot tell a sign from a hand resting in view. Without it the only
-// boundary left was "the hand left the picture", so the first sign ran to the 4 s cap and the
-// segmenter then waited for a rest that a visible hand could never give: recognition stopped.
-// In that case a hand counts as signing while it is actually moving (or within MOTION_HOLD_MS
-// of its last movement), so a finished sign ends and the next one can start.
+// The signing-space rule alone cannot tell a sign from a hand resting inside it. On a physical
+// desk camera both wrists sat inside signing space in every single frame (61/61, 218/218), so
+// every sign ran to the 4 s cap and the segmenter then waited for a rest that never came: only
+// the first sign of a session was ever recognised. Signing is therefore measured by movement - a
+// hand counts as signing while it moves, or within MOTION_HOLD_MS of its last movement - so a
+// finished sign ends with its hold included and the next sign can start. Signing space still
+// gates where a sign may begin when the shoulders are visible, which keeps fidgeting out.
 const MOTION_WINDOW_MS = 250;
 const MOTION_HOLD_MS = 600;
 const MOTION_EPSILON = 0.012;
@@ -31,12 +32,11 @@ export function shouldersVisible(features: Float32Array) {
 
 export type AslV31SegmenterOptions = {
   /**
-   * End a sign when hands are absent *or resting below signing space* (the same shoulder-based
-   * rule that opens a segment) for HAND_GAP_MS. Default true. Without it, hands resting visibly
-   * in frame hold a segment open to the 4 s cap and then block recognition until they leave the
-   * frame. Identical results on all sprint replays, where signers lower their hands out of view;
-   * the in-view resting case is not yet measured on a physical camera. `false` is the PR #67
-   * behaviour, kept for offline comparisons.
+   * End a sign when the hand stops moving for HAND_GAP_MS, instead of waiting for it to leave
+   * signing space. Default true. A hand that rests visibly in frame - the normal case at a desk -
+   * otherwise holds a segment open to the 4 s cap and then blocks recognition until it leaves the
+   * picture, so only the first sign of a session was recognised. `false` is the PR #67 behaviour,
+   * kept for offline comparisons.
    */
   restAware?: boolean;
 };
@@ -81,13 +81,20 @@ export class AslV31Segmenter {
     return travel;
   }
 
-  /** Whether this frame shows a hand that is signing: inside signing space whenever the
-   * shoulders allow that test, and otherwise only while the hand is moving. */
+  /** Whether this frame continues a sign: a hand is present and it moved recently. Position is
+   * deliberately not part of this test - see the note on MOTION_WINDOW_MS. */
   private isSigning(timestamp: number, features: Float32Array) {
     if (!hasHand(features)) return false;
     if (!this.restAware) return true;
-    if (shouldersVisible(features)) return signingEvidence(features);
     return timestamp - this.lastMotionAt <= MOTION_HOLD_MS;
+  }
+
+  /** Where a sign may start: in signing space when the shoulders are visible, anywhere without
+   * them. The first moving frame opens the segment, so the hand's travel into the sign is part of
+   * the clip, and a hand that is merely resting never opens one. */
+  private canOpen(features: Float32Array, signing: boolean) {
+    if (!this.restAware) return signingEvidence(features);
+    return signing && (!shouldersVisible(features) || signingEvidence(features));
   }
 
   suppressCurrentSegment() {
@@ -109,31 +116,46 @@ export class AslV31Segmenter {
 
     const anyHand = hasHand(features);
     // Movement is measured against frames already observed, so it runs before this one is stored.
-    if (anyHand && this.restAware && !shouldersVisible(features)
-      && this.travel(timestamp, features) >= MOTION_EPSILON) this.lastMotionAt = timestamp;
-    // Signing continues while a hand is in signing space, or - without shoulders - while it moves.
+    // A hand appearing where none was tracked counts as movement: the hand entered the picture.
+    const appeared = anyHand && !!previous && !hasHand(previous.f);
+    const moving = anyHand && this.restAware
+      && (appeared || this.travel(timestamp, features) >= MOTION_EPSILON);
+    if (moving) this.lastMotionAt = timestamp;
+    // Signing continues while the hand keeps moving, or within MOTION_HOLD_MS of its last movement.
     const signing = this.isSigning(timestamp, features);
-    if (this.waitingForRestSince !== null) {
-      if (signing) this.waitingForRestSince = timestamp;
-      if (timestamp - this.waitingForRestSince <= HAND_GAP_MS) return { reason: anyHand ? "idle" : "hands" };
-      this.waitingForRestSince = null;
-    }
-
+    // Recorded before the rest wait returns, because travel is measured against these samples:
+    // skipping them left the wait with no reference and it could clear while the hand still moved.
     this.samples.push({ t: timestamp, f: features });
     while (this.samples.length > MAX_SAMPLES || this.samples[0].t < timestamp - MAX_SEGMENT_MS - MARGIN_MS * 2) {
       this.samples.shift();
     }
-    if (!this.active && (this.restAware ? signing : signingEvidence(features))) {
+    if (this.waitingForRestSince !== null) {
+      // The wait ends once a rest has lasted HAND_GAP_MS, and the frame that ends it may already be
+      // moving again - otherwise a sign started right after a capped one was never recognised.
+      if (timestamp - this.waitingForRestSince > HAND_GAP_MS) this.waitingForRestSince = null;
+      else {
+        if (signing) this.waitingForRestSince = timestamp;
+        return { reason: anyHand ? "idle" : "hands" };
+      }
+    }
+
+    if (!this.active && this.canOpen(features, signing)) {
       // The legacy path (restAware: false) opens on signing space and continues on any visible
-      // hand, exactly as PR #67 did; the rest-aware path uses one rule for both.
+      // hand, exactly as PR #67 did; the rest-aware path opens on movement inside signing space
+      // and continues on movement alone.
       this.active = { start: timestamp, lastHand: timestamp };
       this.stats.opened++;
     }
     if (!this.active) return { reason: anyHand ? "idle" : "hands" };
-    if (signing) this.active.lastHand = timestamp;
+    // The clip ends MARGIN_MS after the last frame with a hand in it, so a sign keeps the hold at
+    // its end and a dropped tracking frame in the middle does not split it.
+    if (signing || anyHand) this.active.lastHand = timestamp;
 
     const { start, lastHand } = this.active;
-    const ended = !signing && timestamp - lastHand > HAND_GAP_MS;
+    // A hand that is visible but no longer moving has finished signing (MOTION_HOLD_MS already
+    // covers the hold), while a hand that vanished may simply have been dropped for a frame, so
+    // that only ends the segment once it has been gone for HAND_GAP_MS.
+    const ended = !signing && (anyHand || timestamp - lastHand > HAND_GAP_MS);
     const reachedLimit = timestamp - start > MAX_SEGMENT_MS;
     if (!ended && !reachedLimit) return { reason: "moving" };
 

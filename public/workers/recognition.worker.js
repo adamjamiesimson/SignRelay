@@ -15334,13 +15334,19 @@ var AslV31Segmenter = class {
     }
     return travel;
   }
-  /** Whether this frame shows a hand that is signing: inside signing space whenever the
-   * shoulders allow that test, and otherwise only while the hand is moving. */
+  /** Whether this frame continues a sign: a hand is present and it moved recently. Position is
+   * deliberately not part of this test - see the note on MOTION_WINDOW_MS. */
   isSigning(timestamp, features) {
     if (!hasHand(features)) return false;
     if (!this.restAware) return true;
-    if (shouldersVisible(features)) return signingEvidence(features);
     return timestamp - this.lastMotionAt <= MOTION_HOLD_MS;
+  }
+  /** Where a sign may start: in signing space when the shoulders are visible, anywhere without
+   * them. The first moving frame opens the segment, so the hand's travel into the sign is part of
+   * the clip, and a hand that is merely resting never opens one. */
+  canOpen(features, signing) {
+    if (!this.restAware) return signingEvidence(features);
+    return signing && (!shouldersVisible(features) || signingEvidence(features));
   }
   suppressCurrentSegment() {
     const last = this.samples.at(-1);
@@ -15356,25 +15362,29 @@ var AslV31Segmenter = class {
     const previous = this.samples.at(-1);
     if (previous && timestamp <= previous.t) this.reset();
     const anyHand = hasHand(features);
-    if (anyHand && this.restAware && !shouldersVisible(features) && this.travel(timestamp, features) >= MOTION_EPSILON) this.lastMotionAt = timestamp;
+    const appeared = anyHand && !!previous && !hasHand(previous.f);
+    const moving = anyHand && this.restAware && (appeared || this.travel(timestamp, features) >= MOTION_EPSILON);
+    if (moving) this.lastMotionAt = timestamp;
     const signing = this.isSigning(timestamp, features);
-    if (this.waitingForRestSince !== null) {
-      if (signing) this.waitingForRestSince = timestamp;
-      if (timestamp - this.waitingForRestSince <= HAND_GAP_MS) return { reason: anyHand ? "idle" : "hands" };
-      this.waitingForRestSince = null;
-    }
     this.samples.push({ t: timestamp, f: features });
     while (this.samples.length > MAX_SAMPLES || this.samples[0].t < timestamp - MAX_SEGMENT_MS - MARGIN_MS * 2) {
       this.samples.shift();
     }
-    if (!this.active && (this.restAware ? signing : signingEvidence(features))) {
+    if (this.waitingForRestSince !== null) {
+      if (timestamp - this.waitingForRestSince > HAND_GAP_MS) this.waitingForRestSince = null;
+      else {
+        if (signing) this.waitingForRestSince = timestamp;
+        return { reason: anyHand ? "idle" : "hands" };
+      }
+    }
+    if (!this.active && this.canOpen(features, signing)) {
       this.active = { start: timestamp, lastHand: timestamp };
       this.stats.opened++;
     }
     if (!this.active) return { reason: anyHand ? "idle" : "hands" };
-    if (signing) this.active.lastHand = timestamp;
+    if (signing || anyHand) this.active.lastHand = timestamp;
     const { start, lastHand } = this.active;
-    const ended = !signing && timestamp - lastHand > HAND_GAP_MS;
+    const ended = !signing && (anyHand || timestamp - lastHand > HAND_GAP_MS);
     const reachedLimit = timestamp - start > MAX_SEGMENT_MS;
     if (!ended && !reachedLimit) return { reason: "moving" };
     this.active = null;
