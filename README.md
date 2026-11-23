@@ -251,5 +251,5 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 1. Create legally cleared, signer-independent ASL starter benchmarks.
 2. Train and export a compact temporal sequence model with a blank class.
 3. Add learned sign boundaries and continuous word error rate evaluation.
-4. Co-design shared adapters with native signers and language experts, prioritising the existing 40 language communities by data readiness and contributor interest.
+4. Co-design shared adapters with native signers and language experts, prioritising the existing 40+ language communities by data readiness and contributor interest.
 5. Add language-specific gloss-to-text decoding without hiding uncertainty.
