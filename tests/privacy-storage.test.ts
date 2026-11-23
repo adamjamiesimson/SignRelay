@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_SETTINGS, loadHistory, loadSettings, saveSession, saveSettings } from "../lib/browser-storage";
+import { clearLocalSignRelayData, DEFAULT_SETTINGS, loadHistory, loadSettings, saveSession, saveSettings } from "../lib/browser-storage";
 import { CONSENT_KEY, CONSENT_MAX_AGE, readConsent, startAnalytics } from "../lib/analytics-consent";
 import { createCustomVocabularyEntry } from "../lib/model-adapters";
 import { validCalibrationTemplate } from "../lib/calibration-storage";
@@ -24,6 +24,23 @@ describe("untrusted and unavailable browser storage", () => {
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
     expect(() => saveSettings(DEFAULT_SETTINGS)).not.toThrow();
     expect(saveSession({ id: "1", language: "asl", createdAt: 1, entries: [{ id: "1", text: "Hello", gloss: "HELLO", timestamp: 1, confidence: 0.9 }] })).toBe(false);
+  });
+  it("preserves existing history if reading storage fails while writing is possible", () => {
+    const setItem = vi.fn();
+    vi.stubGlobal("window", {});
+    vi.stubGlobal("localStorage", { getItem() { throw new Error("unreadable"); }, setItem });
+    expect(saveSession({ id: "1", language: "asl", createdAt: 1, entries: [{ id: "1", text: "Hello", gloss: "HELLO", timestamp: 1, confidence: 0.9 }] })).toBe(false);
+    expect(setItem).not.toHaveBeenCalled();
+  });
+  it("attempts every local-data removal and reports partial failures", () => {
+    const removeItem = vi.fn((key: string) => {
+      if (key === "signrelay.settings.v1") throw new Error("denied");
+    });
+    vi.stubGlobal("localStorage", { removeItem });
+    expect(clearLocalSignRelayData()).toBe(false);
+    expect(removeItem.mock.calls).toEqual([["signrelay.settings.v1"], ["signrelay.history.v1"], ["signrelay.onboarding.v1"]]);
+    removeItem.mockImplementation(() => {});
+    expect(clearLocalSignRelayData()).toBe(true);
   });
   it("rejects oversized labels and invalid landmark sequences", () => {
     expect(createCustomVocabularyEntry("a".repeat(49))).toBeNull();

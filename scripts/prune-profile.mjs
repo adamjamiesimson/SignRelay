@@ -5,9 +5,11 @@
 import { readdir, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { KEPT_NOTICES, NON_ASL_MODEL_DIRS } from "./verify-runtime.mjs";
+import { ASL_V31_ASSET_PATH, ASL_V31_ASSET_PINS, ASL_V31_TRACKER_FILE } from "../lib/asl-v31-assets.mjs";
+import { VISION_MODELS } from "../lib/vision-runtime.mjs";
+import { KEPT_NOTICES, NON_ASL_MODEL_DIRS, NON_ASL_WORKERS } from "./verify-runtime.mjs";
 
-export const NON_ASL_WORKERS = ["rsl.worker.js", "bdsl.worker.js"];
+export { NON_ASL_WORKERS };
 
 export async function pruneProfile(root, profile) {
   if (profile === "full") return { removed: [] };
@@ -15,7 +17,11 @@ export async function pruneProfile(root, profile) {
   const removed = [];
   const modelFiles = await Promise.all(NON_ASL_MODEL_DIRS.map(async dir =>
     (await readdir(join(root, "models", dir)).catch(() => [])).filter(name => !KEPT_NOTICES.has(name)).map(name => join("models", dir, name))));
-  for (const target of [...modelFiles.flat(), ...NON_ASL_WORKERS.map(file => join("workers", file))]) {
+  const rehearsalOnlyRemovals = profile === "rehearsal" ? [
+    ...Object.keys(ASL_V31_ASSET_PINS).map(file => join(ASL_V31_ASSET_PATH.slice(1), file)),
+    join("workers", ASL_V31_TRACKER_FILE), join("vision", "models", VISION_MODELS.hand.file),
+  ] : [];
+  for (const target of [...modelFiles.flat(), ...NON_ASL_WORKERS.map(file => join("workers", file)), ...rehearsalOnlyRemovals]) {
     if (await stat(join(root, target)).catch(() => null)) { await rm(join(root, target), { recursive: true, force: true }); removed.push(target); }
   }
   return { removed };

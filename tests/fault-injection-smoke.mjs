@@ -7,22 +7,41 @@
 //   node tests/fault-injection-smoke.mjs /path/to/chrome
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { createServer } from "node:http";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
 
 const executable = process.argv[2];
 if (!executable) throw new Error("Usage: node tests/fault-injection-smoke.mjs <chrome> (after building the export)");
 const port = 18500 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${port}`;
-const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", String(port)], { stdio: "ignore" });
+const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", String(port + 1000)], { stdio: "ignore" });
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function until(check, reason, attempts = 300) {
   for (let i = 0; i < attempts; i++) { if (await check()) return; await pause(100); }
   throw new Error(reason);
 }
+let trackerFault = null, injectedTrackerFaults = 0;
+// Inject at the real asset boundary. Worker Fetch-domain support varies across
+// Chromium versions; a no-cache loopback relay exercises the identical bytes.
+const relay = createServer(async (request, response) => {
+  try {
+    if (request.url.split("?")[0].endsWith("/hand_landmarker.task") && trackerFault) {
+      injectedTrackerFaults++;
+      response.writeHead(trackerFault === "missing" ? 404 : 200, { "Cache-Control": "no-store" });
+      response.end(trackerFault === "missing" ? "Not found" : "corrupted model bytes");
+      return;
+    }
+    const upstream = await fetch(`http://127.0.0.1:${port + 1000}${request.url}`);
+    response.writeHead(upstream.status, { ...Object.fromEntries([...upstream.headers].filter(([key]) =>
+      !["content-encoding", "content-length", "transfer-encoding"].includes(key))), "Cache-Control": "no-store" });
+    response.end(Buffer.from(await upstream.arrayBuffer()));
+  } catch { response.writeHead(502); response.end(); }
+});
+await new Promise(done => relay.listen(port, "127.0.0.1", done));
 let browser;
 const results = [];
 try {
   await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } }, "No static server");
-  browser = await startChrome(executable);
+  browser = await startChrome(executable, { dismissOnboarding: true });
   const evaluate = browser.evaluate;
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => {
     window.__qa = { tracks: [], workers: [], frames: 0, failWorkers: 0 };
@@ -38,7 +57,10 @@ try {
         super(url, options); this.__url = String(url); this.__alive = true; window.__qa.workers.push(this);
       }
       terminate() { this.__alive = false; return super.terminate(); }
-      postMessage(message, transfer) { if (message?.type === 'frame') window.__qa.frames++; return super.postMessage(message, transfer); }
+      postMessage(message, transfer) {
+        if (this.__url.includes('recognition.worker') && message?.type === 'frame') window.__qa.frames++;
+        return super.postMessage(message, transfer);
+      }
     };
   })();` });
   const button = text => `[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)})`;
@@ -53,7 +75,7 @@ try {
   const open = async () => {
     await browser.send("Page.navigate", { url: `${origin}/?perf` });
     await until(() => evaluate("Object.keys(document.querySelector('[role=radio]') ?? {}).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate");
-    await click("Start translating");
+    await click("Start signing");
   };
 
   // 1. Worker crashes: two automatic restarts per minute, then a manual restart.
@@ -79,39 +101,35 @@ try {
   // 2. Worker construction fails once.
   await click("Change language");
   await evaluate("window.__qa.failWorkers = 1");
-  await click("Start translating");
+  await click("Start signing");
   await until(active, "Camera did not start after an injected construction failure");
   await until(analysing, "Recognition did not recover from a failed worker construction");
   results.push({ fault: "recognition worker fails to construct once", recovered: true });
 
-  // 3. Missing tracking model (self-hosted and CDN both unavailable).
+  // 3. A missing local HandLandmarker model. The requests originate from
+  // the dedicated worker, not the page's DevTools network session.
   await click("Pause camera");
-  await browser.send("Network.setBlockedURLs", { urls: ["*gesture_recognizer.task*"] });
-  await browser.send("Network.setCacheDisabled", { cacheDisabled: true });
+  trackerFault = "missing";
   await open();
   await until(() => text("/tracking models could not load/"), "Missing model was not reported", 600);
+  assert.equal(injectedTrackerFaults, 1, "Expected interception of the actual tracking worker's hand model request");
   assert.equal(await liveTracks(), 0, "The camera must be released when tracking cannot start");
-  await browser.send("Network.setBlockedURLs", { urls: [] });
+  trackerFault = null;
   await click((await has("Retry camera")) ? "Retry camera" : "Start camera");
   await until(active, "Did not recover once the model was available", 600);
-  results.push({ fault: "missing gesture_recognizer.task", message: "tracking models could not load", camera_released: true, recovered: true });
+  results.push({ fault: "missing hand_landmarker.task", message: "tracking models could not load", camera_released: true, recovered: true });
 
   // 4. Corrupted tracking model bytes.
   await click("Pause camera");
-  await browser.send("Fetch.enable", { patterns: [{ urlPattern: "*gesture_recognizer.task*", requestStage: "Response" }] });
-  const detach = browser.onEvent(message => {
-    if (message.method !== "Fetch.requestPaused") return;
-    void browser.send("Fetch.fulfillRequest", { requestId: message.params.requestId, responseCode: 200,
-      responseHeaders: [{ name: "Content-Type", value: "application/octet-stream" }], body: Buffer.from("corrupted model bytes").toString("base64") });
-  });
+  trackerFault = "corrupt";
   await open();
   await until(() => text("/tracking models could not load/"), "Corrupted model was not reported", 600);
+  assert.equal(injectedTrackerFaults, 2, "Expected fingerprint verification against corrupted worker asset bytes");
   assert.equal(await liveTracks(), 0, "The camera must be released when the model is corrupted");
-  detach();
-  await browser.send("Fetch.disable");
+  trackerFault = null;
   await click((await has("Retry camera")) ? "Retry camera" : "Start camera");
   await until(active, "Did not recover once the model was intact", 600);
-  results.push({ fault: "corrupted gesture_recognizer.task", message: "tracking models could not load", camera_released: true, recovered: true });
+  results.push({ fault: "corrupted hand_landmarker.task", message: "tracking models could not load", camera_released: true, recovered: true });
 
   // 5. Browser storage throws on every access.
   await click("Pause camera");
@@ -127,4 +145,4 @@ try {
 } catch (error) {
   console.error(JSON.stringify({ results, errors: browser?.errors?.slice(-10) }));
   throw error;
-} finally { await browser?.close(); server.kill(); }
+} finally { await browser?.close(); server.kill(); await new Promise(done => relay.close(done)); }

@@ -1,0 +1,93 @@
+
+> signrelay@0.1.0 build:firebase
+> node scripts/build-profile.mjs full
+
+
+▶ node scripts/verify-vision-runtime.mjs
+Verified MediaPipe JS/WASM 0.10.35
+
+▶ npm run install:rsl-model
+
+> signrelay@0.1.0 install:rsl-model
+> node scripts/install-rsl-model.mjs
+
+Slovo pretrained model verified (1,000 sign classes).
+
+▶ node scripts/verify-bdsl-assets.mjs
+Bangla assets verified: 401 sign classes / 398 English glosses.
+
+▶ node scripts/verify-lse-assets.mjs
+Spanish model and all 300 labels match the reviewed training artifact.
+
+▶ node scripts/verify-psl-assets.mjs
+PSL template bundle and all 775 labels match the reviewed dataset build.
+
+▶ node scripts/prepare-export.mjs
+
+▶ node scripts/install-vision-assets.mjs
+Self-hosted 4 MediaPipe WASM files and verified models: gesture (cached), face (cached), pose (cached).
+
+▶ npm run build:worker
+
+> signrelay@0.1.0 build:worker
+> esbuild workers/recognition.worker.ts workers/template-matching.worker.ts workers/rsl.worker.ts workers/bdsl.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outdir=public/workers && node scripts/copy-onnx-runtime.mjs && node scripts/install-vision-assets.mjs --wasm-only
+
+
+  public/workers/recognition.worker.js        669.4kb
+  public/workers/rsl.worker.js                542.4kb
+  public/workers/bdsl.worker.js               497.1kb
+  public/workers/template-matching.worker.js   17.5kb
+
+⚡ Done in 3009ms
+Self-hosted 4 MediaPipe WASM files.
+
+▶ /opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/next/dist/bin/next build
+▲ Next.js 16.4.6 (Turbopack)
+✓ Running next.config.ts took 351ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 78s
+  Running TypeScript ...
+  Finished TypeScript in 53s ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/13) ...
+  Generating static pages using 2 workers (3/13)
+  Generating static pages using 2 workers (6/13)
+  Generating static pages using 2 workers (9/13)
+✓ Generating static pages using 2 workers (13/13) in 5.0s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /about
+├ ○ /field-test
+├ ○ /how-it-works
+├ ○ /languages
+├ ○ /models
+├ ○ /privacy
+├ ○ /roadmap
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+└ ○ /terms
+
+
+○  (Static)  prerendered as static content
+
+
+▶ node scripts/exclude-private-routes.mjs
+Public export: removed private /field-test (5 documents, 2 route-only assets).
+
+▶ node scripts/secure-export.mjs
+Added hash-based script policies to 10 exported pages.
+
+▶ node scripts/verify-runtime.mjs --out out --profile full
+{
+  "ok": true,
+  "failures": [],
+  "recognition_worker_sha256": "7dc8295ca56f46a67f76ec55bba6dbc3aa68b1c8fac643ec8290c5df2e192b6e",
+  "matches_committed_worker": true,
+  "real_video_evidence": "none recorded"
+}
+
+Profile full export ready in out/ (runtime-manifest.json records exactly what it contains).

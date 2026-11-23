@@ -12,6 +12,8 @@ const configured = process.env.NEXT_PUBLIC_SIGNRELAY_PROFILE;
 export const BUILD_PROFILE: BuildProfile = configured === "asl-demo" || configured === "rehearsal" ? configured : "full";
 /** Both GITEX profiles ship the ASL workspace only. */
 export const ASL_ONLY = BUILD_PROFILE !== "full";
+/** Synthetic landmark fixtures exercise the original engine in rehearsal builds. */
+export const ASL_V3_ENABLED = BUILD_PROFILE !== "rehearsal";
 
 export function isLanguageAvailable(language: LanguageId, profile: BuildProfile = BUILD_PROFILE) {
   return profile === "full" || language === "asl";

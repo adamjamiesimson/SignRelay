@@ -2,18 +2,22 @@
 // permission. Real Tasks/video accuracy is tested by the separate evaluator.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { build } from "esbuild";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
 const executable = process.argv[2]; if (!executable) throw new Error("Supply Chrome executable");
 const port = 18000 + Math.floor(Math.random() * 1000), origin = `http://127.0.0.1:${port}`;
 const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--port", String(port)], { stdio: "ignore" });
 let browser;
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
-async function until(check, description) {
-  for (let i = 0; i < 100; i++) { if (await check()) return; await pause(100); }
+async function until(check, description, attempts = 100) {
+  for (let i = 0; i < attempts; i++) { if (await check()) return; await pause(100); }
   throw new Error(description);
 }
 try {
-  browser = await startChrome(executable);
+  browser = await startChrome(executable, { dismissOnboarding: true });
+  const calibration = await build({ entryPoints: ["lib/calibration-storage.ts"], bundle: true,
+    format: "iife", globalName: "__qaCalibrationStorage", platform: "browser", write: false });
+  await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: calibration.outputFiles[0].text });
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => {
     window.__qaWorkers = []; window.__qaCameraRequests = 0; window.__qaStoppedTracks = 0; window.__qaCameraResolvers = [];
     const NativeWorker = window.Worker;
@@ -27,14 +31,21 @@ try {
         if (message.type === 'frame') this.onmessage?.({data:{type:'analysis',session:this.session,frameId:message.frameId,state:'listening',candidate:null,confidence:0,bufferSize:0}});
       }
       terminate() { this.closed = true; }
-      emit(gloss) { if (!this.closed) this.onmessage?.({data:{type:'confirmed',session:this.session,text:gloss,gloss,confidence:0.86,timestamp:Date.now(),source:'starter'}}); }
+      emit(gloss, session = this.session, type = 'confirmed', source = 'personal') {
+        if (!this.closed) this.onmessage?.({data:{type,session,text:gloss,gloss,confidence:0.86,timestamp:Date.now(),source}});
+      }
     };
+    const nativeGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
     navigator.mediaDevices.getUserMedia = () => { window.__qaCameraRequests++;
       if (window.__qaDenyCamera) return Promise.reject(new DOMException('Denied by controlled permission test','NotAllowedError'));
+      if (window.__qaRealCamera) return nativeGetUserMedia({video:true,audio:false});
       return new Promise(resolve => window.__qaCameraResolvers.push(() => resolve({getTracks:()=>[{stop:()=>window.__qaStoppedTracks++}]}))); };
-    window.__qaSpoken = []; window.__qaCopied = null;
+    window.__qaSpoken = []; window.__qaSpeechOptions = []; window.__qaCancels = 0; window.__qaCopied = null;
     window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
-    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: { speak: u => window.__qaSpoken.push(u.text), cancel: () => {} } });
+    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: {
+      speak: u => { window.__qaSpoken.push(u.text); window.__qaSpeechOptions.push([u.volume, u.rate, u.lang]); },
+      cancel: () => { window.__qaCancels++; },
+    } });
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__qaCopied = text; } } });
     window.__qaEmit = gloss => window.__qaWorkers.filter(w=>!w.closed).at(-1).emit(gloss);
     window.__qaDenyStorage = () => { const original=Storage.prototype.setItem;
@@ -52,7 +63,7 @@ try {
   const emit = gloss => evaluate(`window.__qaEmit(${JSON.stringify(gloss)})`);
   const language = () => evaluate("document.querySelector('select[aria-label=\"Change sign language\"]')?.value");
   const transcript = () => evaluate("document.querySelector('.transcript-body')?.textContent");
-  await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Welcome screen missing");
+  await until(() => evaluate("!!document.querySelector('.language-row [role=radio]')"), "Welcome screen missing");
   // The static export already contains the radios before React attaches its
   // handlers. Prove a real state change before issuing the one-shot Start click.
   await until(async () => {
@@ -61,13 +72,13 @@ try {
   }, "Welcome screen did not hydrate");
   await chooseWelcome("American");
   await until(() => evaluate("document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes('American')"), "Initial ASL selection failed");
-  assert.equal(await evaluate("[...document.querySelectorAll('footer a')].find(a=>a.textContent==='Translate')?.getAttribute('href')"), "/#languages");
-  await click("Start translating"); await until(async () => await language() === "asl", "ASL workspace missing");
+  assert.equal(await evaluate("[...document.querySelectorAll('footer a')].find(a=>a.textContent==='Translator')?.getAttribute('href')"), "/#translator");
+  await click("Start signing"); await until(async () => await language() === "asl", "ASL workspace missing");
   await until(() => evaluate("window.__qaCameraRequests===1"), "Automatic camera request missing");
   // Permission is still pending here: nothing may imply recognition is running.
   assert.match(await evaluate("document.querySelector('.candidate-bar strong')?.textContent"), /Allow camera access|Start the camera/,
     "An inactive camera must not imply recognition is collecting movement");
-  assert.match(await evaluate("document.querySelector('.recognition-state')?.textContent"), /camera off|waiting for permission/,
+  assert.match(await evaluate("document.querySelector('.recognition-state')?.textContent"), /Camera off|Waiting for permission/,
     "An inactive camera must not claim to be listening");
   assert.doesNotMatch(await evaluate("document.querySelector('.recognition-state')?.textContent"), /listening|watching|checking|following/);
   assert.equal(await evaluate("document.querySelector('.candidate-bar').hasAttribute('aria-live')"), false,
@@ -86,8 +97,16 @@ try {
     "Screen readers should hear the confirmed word");
   await click("Copy");
   await until(() => evaluate("window.__qaCopied === 'BOOK HELLO'"), "Copy did not place the transcript on the clipboard");
+  const queueCancels = await evaluate("window.__qaCancels");
+  await emit("WAVE"); await emit("THANK YOU");
+  assert.deepEqual(await evaluate("window.__qaSpoken"), ["HELLO", "WAVE", "THANK YOU"]);
+  assert.equal(await evaluate("window.__qaCancels"), queueCancels, "Automatic speech must append without cutting off the previous word");
+  await click("Speak");
+  assert.equal(await evaluate("window.__qaCancels"), queueCancels + 1, "Manual speech replaces pending speech");
+  assert.equal(await evaluate("window.__qaSpoken.at(-1)"), "BOOK HELLO WAVE THANK YOU");
   await evaluate("document.querySelector('.speech-controls input[type=checkbox]').click()");
-  assert.match(await evaluate("document.querySelector('.candidate-bar')?.nextElementSibling?.textContent"), /not measured translation accuracy/);
+  assert.doesNotMatch(await evaluate("document.querySelector('.candidate-bar')?.textContent"), /\d+\s*%/);
+  assert.match(await evaluate("document.querySelector('.honesty-banner')?.textContent"), /Research preview.*Check every result/);
   await browser.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
   assert(await evaluate("document.documentElement.scrollWidth <= 390"), "Match score UI overflows a phone viewport");
   await browser.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 960, deviceScaleFactor: 1, mobile: false });
@@ -96,9 +115,9 @@ try {
   assert.doesNotMatch(await transcript(), /BOOK/);
   await emit("CAR"); await until(async () => (await transcript())?.includes("CAR"), "BSL word missing");
   await click("Change language");
-  await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Back navigation failed");
+  await until(() => evaluate("!!document.querySelector('.language-row [role=radio]')"), "Back navigation failed");
   await chooseWelcome("Indian"); await until(async () => (await history())[0]?.language === "bsl", "Welcome language switch did not archive outgoing BSL");
-  await click("Start translating"); await until(async () => await language() === "isl", "Indian workspace missing");
+  await click("Start signing"); await until(async () => await language() === "isl", "Indian workspace missing");
   assert.doesNotMatch(await transcript(), /CAR/);
   await emit("HELP"); await until(async () => (await transcript())?.includes("HELP"), "Indian word missing");
   await evaluate("window.__qaDenyStorage()"); await select("asl"); await pause(200);
@@ -110,7 +129,7 @@ try {
   await click("Change language"); await evaluate("window.__qaDenyStorage()"); await chooseWelcome("British"); await pause(200);
   assert.match(await evaluate("document.querySelector('[role=alert]')?.textContent"), /Couldn't save/);
   assert.equal(await evaluate("document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes('American')"), true);
-  await evaluate("window.__qaRestoreStorage()"); await chooseWelcome("British"); await click("Start translating");
+  await evaluate("window.__qaRestoreStorage()"); await chooseWelcome("British"); await click("Start signing");
   await until(async () => await language() === "bsl", "Recovery after welcome save failure failed");
   await select("rsl"); await until(() => evaluate("!!document.querySelector('#rsl-title')"), "RSL view missing");
   const requests = await evaluate("window.__qaCameraRequests");
@@ -118,10 +137,10 @@ try {
   await until(() => evaluate(`window.__qaStoppedTracks===${requests}`), "Stale permission grants leaked camera tracks");
   await select("bdsl"); await until(() => evaluate("!!document.querySelector('#bdsl-title')"), "Bangla view missing");
   assert.equal(await evaluate("window.__qaCameraRequests"), requests);
-  await click("Back to languages"); await click("Start translating");
+  await click("Back to languages"); await click("Start signing");
   await until(() => evaluate("!!document.querySelector('#bdsl-title')"), "Bangla re-entry failed");
   assert.equal(await evaluate("window.__qaCameraRequests"), requests, "Bangla entry started the unused shared camera");
-  await select("rsl"); await click("Back to languages"); await click("Start translating");
+  await select("rsl"); await click("Back to languages"); await click("Start signing");
   await until(() => evaluate("!!document.querySelector('#rsl-title')"), "RSL re-entry failed");
   assert.equal(await evaluate("window.__qaCameraRequests"), requests, "RSL entry started the unused shared camera");
   await evaluate("window.__qaDenyCamera=true");
@@ -135,13 +154,109 @@ try {
   await select("rsl");
   await evaluate("window.__qaCameraResolvers.forEach(resolve=>resolve());window.__qaCameraResolvers=[]");
   await until(() => evaluate(`window.__qaStoppedTracks===${requests + 1}`), "Late retry grant leaked camera tracks");
+
+  await select("asl"); await until(async () => await language() === "asl", "ASL view missing for transcript race test");
+  await until(() => evaluate("window.__qaWorkers.some(w => !w.closed)"), "ASL worker missing for transcript race test");
+  await emit("ONE"); await until(async () => (await transcript())?.includes("ONE"), "ONE missing from transcript");
+  await evaluate(`(() => {
+    document.querySelector('button[aria-label="Remove ONE"]').click();
+    window.__qaEmit('TWO');
+  })()`);
+  await until(async () => (await transcript())?.includes("TWO"), "TWO missing from transcript");
+  assert.doesNotMatch(await transcript(), /ONE/, "Confirmation must not put back a removed entry");
+  await evaluate(`(() => {
+    const worker = window.__qaWorkers.filter(w => !w.closed).at(-1);
+    const savedSession = worker.session;
+    [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save & clear').click();
+    worker.emit('STALE', savedSession);
+  })()`);
+  await until(async () => (await history())[0]?.entries[0]?.text === "TWO", "Latest transcript did not save");
+  assert.doesNotMatch(await transcript(), /TWO|STALE/, "Cleared transcript must reject earlier-session confirmations");
+
+  const retained = await evaluate(`(async () => {
+    const storage = window.__qaCalibrationStorage;
+    const example = (id, createdAt, language) => ({id, createdAt, language, gloss:'TEST', text:'Test',
+      frames:Array.from({length:24},()=>Array(240).fill(0))});
+    await Promise.all([
+      ...[1,2,3,4,5].map(n=>storage.saveCalibrationTemplate(example('asl-'+n,n,n===1?undefined:'asl'))),
+      storage.saveCalibrationTemplate(example('bsl',6,'bsl')),
+    ]);
+    return (await storage.loadCalibrationTemplates()).map(t=>t.id);
+  })()`);
+  assert.deepEqual(retained, ["bsl", "asl-5", "asl-4", "asl-3"], "Concurrent writes must preserve the three-example cap by language");
+
+  await evaluate(`localStorage.setItem('signrelay.settings.v1', JSON.stringify({autoSpeak:true,volume:0.35,rate:1.2,showOverlay:false}))`);
+  await browser.send("Page.reload");
+  await until(() => evaluate("!!document.querySelector('.language-row [role=radio]')"), "Welcome screen missing after reload");
+  await until(async () => {
+    await chooseWelcome("British");
+    return evaluate("document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes('British')");
+  }, "Welcome screen did not hydrate after reload");
+  await chooseWelcome("American"); await click("Start signing");
+  await until(async () => await language() === "asl", "ASL workspace did not open after reload");
+  await until(() => evaluate("document.querySelector('.speech-controls input').checked && window.__qaWorkers.some(w => !w.closed)"), "Saved speech preference or worker did not survive reload");
+  await emit("RELOADED");
+  assert.deepEqual(await evaluate("window.__qaSpeechOptions.at(-1)"), [0.35, 1.2, "en-US"]);
+  assert.equal((await history())[0].entries[0].text, "TWO", "Saved history did not survive reload");
+
+  await evaluate(`(() => {
+    const original = Storage.prototype.removeItem;
+    Storage.prototype.removeItem = function(key) {
+      if (key === 'signrelay.settings.v1') throw new DOMException('denied','SecurityError');
+      return original.call(this,key);
+    };
+    window.__qaRestoreStorage = () => { Storage.prototype.removeItem = original; };
+  })()`);
+  await click("Clear local data");
+  await until(() => evaluate("document.querySelector('.privacy-disclosure [role=status]')?.textContent.includes('could not be deleted')"), "Partial deletion must report a storage error");
+  assert.equal((await history()).length, 0);
+  assert.equal(await evaluate("!!localStorage.getItem('signrelay.settings.v1')"), true);
+  await evaluate("window.__qaRestoreStorage()"); await click("Clear local data");
+  await until(() => evaluate("document.querySelector('.privacy-disclosure [role=status]')?.textContent.includes('were cleared from this browser')"), "Storage deletion did not recover");
+  assert.equal(await evaluate("localStorage.getItem('signrelay.settings.v1')"), null, "Deleting preferences must not write them back");
+  assert.equal(await evaluate("(async () => (await window.__qaCalibrationStorage.loadCalibrationTemplates()).length)()"), 0);
+
+  // Fake camera pixels exercise the native tracker, while these controlled
+  // recognition messages isolate the transcript's confirmation boundary.
+  await click("Cancel");
+  await evaluate("window.__qaRealCamera=true");
+  await click("Start camera");
+  await until(() => evaluate("document.querySelector('.status-badge')?.textContent === 'Active'"), "ASL camera did not initialize for review test", 300);
+  assert.equal(await evaluate("document.querySelector('.workspace-page')?.dataset.aslEngine"), "v3.1");
+  await evaluate("document.querySelector('.speech-controls input[type=checkbox]').click()");
+  const spokenBeforeReview = await evaluate("window.__qaSpoken.length");
+  await evaluate(`(() => {
+    const worker = window.__qaWorkers.find(w => !w.closed);
+    worker.emit('MODEL CONFIRMATION', worker.session, 'confirmed', 'model');
+    worker.emit('CANDIDATE', worker.session, 'suggestion', 'model');
+  })()`);
+  await until(() => evaluate("document.querySelector('.candidate-bar strong')?.textContent === 'CANDIDATE'"), "Completed result did not reach candidate review");
+  assert.doesNotMatch(await transcript(), /MODEL CONFIRMATION|CANDIDATE/);
+  assert.equal(await evaluate("window.__qaSpoken.length"), spokenBeforeReview, "Model output spoke before user confirmation");
+  await evaluate(`(() => {
+    const add = document.querySelector('button[aria-label="Add to transcript: CANDIDATE"]');
+    add.click(); add.click();
+  })()`);
+  await until(async () => (await transcript())?.includes("CANDIDATE"), "Adding the reviewed result did not populate the transcript");
+  assert.equal(await evaluate("window.__qaSpoken.length"), spokenBeforeReview + 1, "Reviewed word must be spoken only once");
+  assert.equal(await evaluate("document.querySelectorAll('.transcript-entry').length"), 1);
+  await evaluate(`(() => {
+    const worker = window.__qaWorkers.find(w => !w.closed);
+    const stale = worker.session;
+    [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save & clear').click();
+    worker.emit('STALE SUGGESTION', stale, 'suggestion', 'model');
+  })()`);
+  await until(async () => (await history())[0]?.entries[0]?.text === "CANDIDATE", "Reviewed word did not save to history");
+  assert.equal(await evaluate("!!document.querySelector('button[aria-label^=\"Add to transcript:\"]')"), false);
   console.log(JSON.stringify({ passed: true, checks: ["footer navigation", "workspace transcript isolation", "welcome transcript isolation",
-    "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "visible match-score qualification", "denied permission and cancelled retry",
-    "duplicate confirmation neither shown nor spoken", "confirmed-only screen-reader announcements", "transcript copy"],
+    "storage failure keeps transcript on both paths", "late permission releases tracks", "RSL/Bangla entry leaves shared camera off", "tentative result qualification", "denied permission and cancelled retry",
+    "duplicate confirmation neither shown nor spoken", "confirmed-only screen-reader announcements", "transcript copy", "queued and manual speech",
+    "confirmation concurrent with transcript removal", "stale confirmation after save and clear", "concurrent IndexedDB example cap", "speech settings and history after reload", "partial storage deletion and recovery",
+    "ASL V3.1 manual review gates transcript and speech", "duplicate review click and stale proposal suppressed"],
     camera_requests: await evaluate("window.__qaCameraRequests"), denied_requests: 1, stale_tracks_stopped: await evaluate("window.__qaStoppedTracks") }));
 } catch (error) {
   if (browser) console.error(JSON.stringify({ errors: browser.errors, diagnostics: await browser.evaluate(`({mediaDevices:typeof navigator.mediaDevices,
-    requests:window.__qaCameraRequests, workers:window.__qaWorkers?.length, camera:document.querySelector('.camera-guidance')?.textContent,
-    status:document.querySelector('.camera-message')?.textContent})`).catch(() => null) }));
+    requests:window.__qaCameraRequests, workers:window.__qaWorkers?.length, camera:document.querySelector('.status-badge')?.textContent,
+    status:document.querySelector('.camera-placeholder')?.textContent})`).catch(() => null) }));
   throw error;
 } finally { await browser?.close(); server.kill(); }

@@ -1,0 +1,303 @@
+{
+  "shared": [
+    {
+      "video": "evaluation/videos/popsign/hello-gtsignstudy4a.8031.mp4",
+      "label": "HELLO",
+      "category": "shared",
+      "trial_id": "hello-gtsignstudy4a.8031",
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "c72b902e61fb6b97b5407fca80ed4d560bd9f5cd0f0dd79ab88712b3eb51e011",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/popsign/hello-gtsignstudy4a.8033.mp4",
+      "label": "HELLO",
+      "category": "shared",
+      "trial_id": "hello-gtsignstudy4a.8033",
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "b929cd2858bf5fa6ea3aa464aa958620eb5a537d7b4b3e8e105cc94995584a85",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/popsign/please-gtsignstudy4a.8031.mp4",
+      "label": "PLEASE",
+      "category": "shared",
+      "trial_id": "please-gtsignstudy4a.8031",
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "e517287d60d2e8fde92c090b30a9850472fc7a867bce7ba631b3ae7bbe0f8fd5",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/popsign/please-gtsignstudy4a.8033.mp4",
+      "label": "PLEASE",
+      "category": "shared",
+      "trial_id": "please-gtsignstudy4a.8033",
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "36925d898229dc86a8b4a229f191ddaaa2ea081cd6083a9d4df690903e9832f6",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/popsign/thankyou-gtsignstudy4a.8033.mp4",
+      "label": "THANK YOU",
+      "category": "shared",
+      "trial_id": "thankyou-gtsignstudy4a.8033",
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "64c641c6538fb247d66d15e416d577e854596978c1766222c94ce7fd0333fbd5",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/popsign/thankyou-gtsignstudy4a.8031.mp4",
+      "label": "THANK YOU",
+      "category": "shared",
+      "trial_id": "thankyou-gtsignstudy4a.8031",
+      "source": "popsign-project-holdout-manifest.json",
+      "sha256": "a2a6e355acd076235ff7901a4fb6977da7ef64aa302db2ed4e0867e548c5b8d1",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/popsign-dev/thankyou-4a.7003.mp4",
+      "label": "THANK YOU",
+      "category": "shared",
+      "trial_id": "dev-thankyou-4a.7003",
+      "source": "popsign-development-2026-10-16.json",
+      "sha256": "7fd6d132f2952a28513dab91f4ecd9dc251fa78349f2dc38a9e1c463cf5ec04e",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/popsign-dev/please-4a.8017.mp4",
+      "label": "PLEASE",
+      "category": "shared",
+      "trial_id": "dev-please-4a.8017",
+      "source": "popsign-development-2026-10-16.json",
+      "sha256": "a3dd244a9ce266bdeb4f88aad5792b02c5e4f20fdd16d165c5cccf44a82f574f",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/popsign-dev/hello-4a.8006.mp4",
+      "label": "HELLO",
+      "category": "shared",
+      "trial_id": "dev-hello-4a.8006",
+      "source": "popsign-development-2026-10-16.json",
+      "sha256": "c6f032d16aefc0bc1e80ea6bcf4e672c9ac6946c5adc3c79945c2f1f42c20ca4",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/popsign-dev/yes-4a.8006.mp4",
+      "label": "YES",
+      "category": "shared",
+      "trial_id": "dev-yes-4a.8006",
+      "source": "popsign-development-2026-10-16.json",
+      "sha256": "825ec58bc90d8413a3f4f8f4e8da2b58bfafc0589f5feea747386f0fb24b4e0a",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/popsign-dev/no-4a.8030.mp4",
+      "label": "NO",
+      "category": "shared",
+      "trial_id": "dev-no-4a.8030",
+      "source": "popsign-development-2026-10-16.json",
+      "sha256": "c05226e472bc0969b9422d1ccfe4a5f255d42eece42557687529926e532870b1",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/hello.mp4",
+      "label": "HELLO",
+      "category": "shared",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/hello/ebdb-hello-2023_01_30_17_27_10.580-0.mp4",
+      "sha256": "e22940a6ad5c6f7c34de9d61766c72264ba5b86c7ebc1ae139deeca5cf816cbe",
+      "trial_id": "val-hello",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/thankyou.mp4",
+      "label": "THANK YOU",
+      "category": "shared",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/thankyou/2b19-thankyou-2023_01_26_14_11_00.691-0.mp4",
+      "sha256": "3eef30c986e5bfaa1071515522128000f534a6fd09247013099e90bda9f725df",
+      "trial_id": "val-thankyou",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/please.mp4",
+      "label": "PLEASE",
+      "category": "shared",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/please/d5fd-please-2023_01_11_14_09_57.071-0.mp4",
+      "sha256": "4134fad07ed6db7e937a5dfedfb652b72b485f816004190782ffdf697d82ec0d",
+      "trial_id": "val-please",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/yes.mp4",
+      "label": "YES",
+      "category": "shared",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/yes/661f-yes-2023_01_30_17_31_25.896-0.mp4",
+      "sha256": "3c65234baaca6e9cc2b05966d9359fe63ede468f0657f995e52b8755c9d04fb8",
+      "trial_id": "val-yes",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/no.mp4",
+      "label": "NO",
+      "category": "shared",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/no/2b19-no-2023_01_26_17_20_25.488-0.mp4",
+      "sha256": "d13c24ec15716409fbcf5c4412a8084840a2923503905bfb7c63eb98584d642e",
+      "trial_id": "val-no",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/no.mp4",
+      "label": "NO",
+      "category": "repeat",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/no/2b19-no-2023_01_26_17_20_25.488-0.mp4",
+      "sha256": "d13c24ec15716409fbcf5c4412a8084840a2923503905bfb7c63eb98584d642e",
+      "trial_id": "val-no-repeat",
+      "license": "CC BY 4.0"
+    }
+  ],
+  "broad": [
+    {
+      "video": "evaluation/videos/engine-comparison/apple.mp4",
+      "label": "APPLE",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/apple/ebdb-apple-2023_01_30_14_31_52.519-0.mp4",
+      "sha256": "d8699b7f3016b13c017dee9a834a05bda791c0aeccf4126ee03da87a28ad437a",
+      "trial_id": "val-apple",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/book.mp4",
+      "label": "BOOK",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/book/2b19-book-2023_01_28_15_34_58.856-0.mp4",
+      "sha256": "9cb0b25b5468826d01b6f9582d940fc583bc5a9cab41ecd15340069b43001ab0",
+      "trial_id": "val-book",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/dog.mp4",
+      "label": "DOG",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/dog/ebdb-dog-2023_01_30_15_07_59.922-0.mp4",
+      "sha256": "0be1ad5587ca7cf3e68055c4a5e3c5cb0a50c1c11df32d8f987100950d9818cc",
+      "trial_id": "val-dog",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/water.mp4",
+      "label": "WATER",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/water/ebdb-water-2023_01_30_17_17_00.244-0.mp4",
+      "sha256": "3ab7e1f9b53ad1cdd2624bde6faa1f3ed3898fcfd14b352cf7e8daed8e009edc",
+      "trial_id": "val-water",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/red.mp4",
+      "label": "RED",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/red/661f-red-2023_01_30_16_37_10.449-0.mp4",
+      "sha256": "7aa9b67d0c543184597d73709236d37e937a4edad83b3d4064641a49e5379cc5",
+      "trial_id": "val-red",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/eat.mp4",
+      "label": "EAT",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/eat/f56c-eat-2024_03_25_15_42_04.085-1.mp4",
+      "sha256": "4e1ea63452d76eeabd423196b54407fedfae7867bbf1f134dc825d1b43c0386b",
+      "trial_id": "val-eat",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/good.mp4",
+      "label": "GOOD",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/good/f56c-good-2024_03_28_18_55_20.923-1.mp4",
+      "sha256": "aab231b2ee4152b045e430d26fbe0e029b447eb601d9ae957192148218a7a3e7",
+      "trial_id": "val-good",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/blue.mp4",
+      "label": "BLUE",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/blue/c6e5-blue-2023_01_25_18_01_34.441-0.mp4",
+      "sha256": "058b7e4271fcab535259dd7bfb38bacb933be4f849a8901da34fa56735067097",
+      "trial_id": "val-blue",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/help.mp4",
+      "label": "HELP",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/help/c6e5-help-2023_08_17_15_47_29.581-0.mp4",
+      "sha256": "81a7f35d9e2c3cfa91465cde8e239f2afd98ec187152cc5c1ebbff01dad37f5c",
+      "trial_id": "val-help",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/home.mp4",
+      "label": "HOME",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/home/a459-home-2023_01_11_17_31_42.756-0.mp4",
+      "sha256": "9d01a56759b456a05019e24c0c91190cddb92e104666f46cb756a9c1fa1d3c08",
+      "trial_id": "val-home",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/play.mp4",
+      "label": "PLAY",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/play/c6e5-play-2023_08_17_15_38_21.776-0.mp4",
+      "sha256": "128674bd7509b6f25dcd1ca8eab9b4aa01c9e314c33ad09a85f9d46ca7a9749e",
+      "trial_id": "val-play",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/go.mp4",
+      "label": "GO",
+      "category": "broad",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/go/a459-go-2023_01_10_19_27_29.307-0.mp4",
+      "sha256": "a0aa2dedf2b86ed1b1c36db74291fa7498be5432d6cc668e2fd1516a7e6a813c",
+      "trial_id": "val-go",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/grapes.mp4",
+      "label": "GRAPES",
+      "category": "out_of_vocabulary",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/grapes/c6e5-grapes-2023_08_17_15_14_21.093-0.mp4",
+      "sha256": "b53450875079530c9bc125cbb10fd36c238ee95b6fe13161e485f76d0510d5b7",
+      "trial_id": "val-grapes",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/icecream.mp4",
+      "label": "ICECREAM",
+      "category": "out_of_vocabulary",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/icecream/2b19-icecream-2023_01_28_20_14_56.157-0.mp4",
+      "sha256": "c8e631a1a9e9689c20b60a3f067cad5f26219e894dcf9be5c3f51f372b59892e",
+      "trial_id": "val-icecream",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/napkin.mp4",
+      "label": "NAPKIN",
+      "category": "out_of_vocabulary",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/napkin/ebdb-napkin-2023_01_30_16_04_04.157-0.mp4",
+      "sha256": "de986120e49019f029fd5a8abbaa976de68a067b0eb533c0ad3abf835055e384",
+      "trial_id": "val-napkin",
+      "license": "CC BY 4.0"
+    },
+    {
+      "video": "evaluation/videos/engine-comparison/turtle.mp4",
+      "label": "TURTLE",
+      "category": "out_of_vocabulary",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/turtle/f56c-turtle-2024_04_01_15_39_37.408-1.mp4",
+      "sha256": "fd6ee89699e474517d60324e19f4540ce4df4dea35ce6db8f68c549c7093d794",
+      "trial_id": "val-turtle",
+      "license": "CC BY 4.0"
+    }
+  ]
+}

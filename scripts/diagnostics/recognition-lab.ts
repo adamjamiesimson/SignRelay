@@ -133,7 +133,8 @@ async function evaluateFile(file: File) {
     sourceMetadata.source_duration_s = video.duration;
     trial = startTrial(); const base = performance.now(); let previous = -1;
     process(base); previous = 0;
-    for (let time = 0.05; time < video.duration; time += 0.05) {
+    for (let sample = 1; sample / 20 < video.duration; sample++) {
+      const time = sample / 20;
       const decodedTime = await seekDecodedFrame(video, time, { signal: controller.signal });
       if (decodedTime > previous + 0.001) { process(base + decodedTime * 1000); previous = decodedTime; }
       await sleep(50);

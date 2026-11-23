@@ -1,0 +1,4206 @@
+{
+ "summary": {
+  "S1_iso": {
+   "top1": 45,
+   "accepted_correct": 32,
+   "n": 60
+  },
+  "S2_reel15": {
+   "top1": 43,
+   "accepted_correct": 31,
+   "n": 60
+  },
+  "S3_reelcam": {
+   "top1": 43,
+   "accepted_correct": 31,
+   "n": 60
+  },
+  "S4_chrome": {
+   "top1": 40,
+   "accepted_correct": 28,
+   "n": 60
+  },
+  "S5_live": {
+   "top1": 39,
+   "accepted_correct": 27,
+   "n": 60
+  },
+  "unknown_intervals": 5,
+  "unknown_false_accepts_live": 0,
+  "first_loss_stage": {
+   "top1": {
+    "S3_reelcam": 2,
+    "S2_reel15": 5,
+    "S4_chrome": 3
+   },
+   "accepted": {
+    "S2_reel15": 6,
+    "S3_reelcam": 5,
+    "S4_chrome": 3,
+    "S5_live": 1
+   }
+  },
+  "camera_fps_median": 8.130081300812991
+ },
+ "rows": [
+  {
+   "reel": "replay0-base.json",
+   "interval": 0,
+   "label": "CLAP",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "CLAP",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9412209391593933,
+    "hands": 17
+   },
+   "S2_reel15": {
+    "top1": "CLAP",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.3950042128562927,
+    "hands": 6
+   },
+   "camera_frames_in_interval": 33,
+   "camera_fps_in_interval": 8.455034588777863,
+   "S3_reelcam": {
+    "top1": null,
+    "ok1": false,
+    "status": "no-sign",
+    "acc_ok": false,
+    "hands": 0
+   },
+   "S4_chrome": {
+    "top1": null,
+    "ok1": false,
+    "status": "no-sign",
+    "acc_ok": false,
+    "hands": 0
+   },
+   "S5_live": {
+    "events": 0,
+    "statuses": [],
+    "best": [],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [],
+    "truth_s": [
+     1.5,
+     4.203
+    ],
+    "handFrames": []
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 1,
+   "label": "GOOD",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "GOOD",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.47460365295410156,
+    "hands": 4
+   },
+   "S2_reel15": {
+    "top1": "THANK-YOU",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.42355453968048096,
+    "hands": 4
+   },
+   "camera_frames_in_interval": 23,
+   "camera_fps_in_interval": 7.928300586004829,
+   "S3_reelcam": {
+    "top1": "GOOD",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.3614981174468994,
+    "hands": 5
+   },
+   "S4_chrome": {
+    "top1": "GOOD",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.4369555413722992,
+    "hands": 5
+   },
+   "S5_live": {
+    "events": 0,
+    "statuses": [],
+    "best": [],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [],
+    "truth_s": [
+     5.703,
+     7.404
+    ],
+    "handFrames": []
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 2,
+   "label": "CLAP",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "CLAP",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9412209391593933,
+    "hands": 17
+   },
+   "S2_reel15": {
+    "top1": "BESIDE",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.23032240569591522,
+    "hands": 8
+   },
+   "camera_frames_in_interval": 35,
+   "camera_fps_in_interval": 8.967460927491675,
+   "S3_reelcam": {
+    "top1": "CLAP",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.4229215383529663,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": null,
+    "ok1": false,
+    "status": "no-sign",
+    "acc_ok": false,
+    "hands": 0
+   },
+   "S5_live": {
+    "events": 0,
+    "statuses": [],
+    "best": [],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [],
+    "truth_s": [
+     8.904,
+     11.607
+    ],
+    "handFrames": []
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 3,
+   "label": "TOUCH",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "TOUCH",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9879289269447327,
+    "hands": 8
+   },
+   "S2_reel15": {
+    "top1": "TOUCH",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6527901291847229,
+    "hands": 7
+   },
+   "camera_frames_in_interval": 25,
+   "camera_fps_in_interval": 9.64506172839506,
+   "S3_reelcam": {
+    "top1": "TOUCH",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9560665488243103,
+    "hands": 10
+   },
+   "S4_chrome": {
+    "top1": "EMPTY",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.8076303601264954,
+    "hands": 8
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "EMPTY"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      12.63,
+      14.14
+     ]
+    ],
+    "truth_s": [
+     13.107,
+     14.499
+    ],
+    "handFrames": [
+     8
+    ]
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 4,
+   "label": "BIRD",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "BIRD",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.4653530716896057,
+    "hands": 9
+   },
+   "S2_reel15": {
+    "top1": "BIRD",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8544893860816956,
+    "hands": 9
+   },
+   "camera_frames_in_interval": 30,
+   "camera_fps_in_interval": 8.239494644328477,
+   "S3_reelcam": {
+    "top1": "BIRD",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.7393339276313782,
+    "hands": 5
+   },
+   "S4_chrome": {
+    "top1": "BIRD",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.7561557292938232,
+    "hands": 8
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "unknown"
+    ],
+    "best": [
+     "BIRD"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      16.71,
+      18.18
+     ]
+    ],
+    "truth_s": [
+     15.999,
+     18.44
+    ],
+    "handFrames": [
+     8
+    ]
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 5,
+   "label": "HARD",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "BROTHER",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.18965600430965424,
+    "hands": 16
+   },
+   "S2_reel15": {
+    "top1": "DAY",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6961551904678345,
+    "hands": 8
+   },
+   "camera_frames_in_interval": 31,
+   "camera_fps_in_interval": 8.759536592257696,
+   "S3_reelcam": {
+    "top1": "CUTE",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5790019631385803,
+    "hands": 5
+   },
+   "S4_chrome": {
+    "top1": "DAY",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6167910695075989,
+    "hands": 8
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "CUT"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      20.08,
+      21.97
+     ]
+    ],
+    "truth_s": [
+     19.94,
+     22.279
+    ],
+    "handFrames": [
+     10
+    ]
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 6,
+   "label": "__unknown__",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S2_reel15": {
+    "top1": "QUIET",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.2822069525718689,
+    "hands": 27
+   },
+   "camera_frames_in_interval": 30,
+   "camera_fps_in_interval": 8.47936687394007,
+   "S3_reelcam": {
+    "top1": "CLEAN",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5480255484580994,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": "CLEAN",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6191537380218506,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "CLEAN"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      23.64,
+      25.87
+     ]
+    ],
+    "truth_s": [
+     23.779,
+     26.117
+    ],
+    "handFrames": [
+     14
+    ]
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 7,
+   "label": "WHY",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "BAD",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.2587648034095764,
+    "hands": 5
+   },
+   "S2_reel15": {
+    "top1": "BAD",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.22068682312965393,
+    "hands": 8
+   },
+   "camera_frames_in_interval": 25,
+   "camera_fps_in_interval": 9.480470231323473,
+   "S3_reelcam": {
+    "top1": "BESIDE",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6174771785736084,
+    "hands": 4
+   },
+   "S4_chrome": {
+    "top1": "BAD",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.3653378188610077,
+    "hands": 4
+   },
+   "S5_live": {
+    "events": 0,
+    "statuses": [],
+    "best": [],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [],
+    "truth_s": [
+     27.617,
+     29.054
+    ],
+    "handFrames": []
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 8,
+   "label": "NEEDNEEDTO",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "CARTCARRIAGE",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.4191588759422302,
+    "hands": 15
+   },
+   "S2_reel15": {
+    "top1": "CARTCARRIAGE",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.2534445822238922,
+    "hands": 15
+   },
+   "camera_frames_in_interval": 32,
+   "camera_fps_in_interval": 8.726479410962627,
+   "S3_reelcam": {
+    "top1": "SHIRT",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.171228289604187,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "DRYER",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.1633259505033493,
+    "hands": 16
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "DRYER"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      30.47,
+      32.54
+     ]
+    ],
+    "truth_s": [
+     30.554,
+     33.021
+    ],
+    "handFrames": [
+     17
+    ]
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 9,
+   "label": "UNDERWEAR",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "UNDERWEAR",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9864504337310791,
+    "hands": 17
+   },
+   "S2_reel15": {
+    "top1": "UNDERWEAR",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9947159886360168,
+    "hands": 17
+   },
+   "camera_frames_in_interval": 27,
+   "camera_fps_in_interval": 9.100101112234585,
+   "S3_reelcam": {
+    "top1": "UNDERWEAR",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9939497709274292,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": "UNDERWEAR",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9834502339363098,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "UNDERWEAR"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      34.61,
+      36.34
+     ]
+    ],
+    "truth_s": [
+     34.521,
+     36.288
+    ],
+    "handFrames": [
+     12
+    ]
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 10,
+   "label": "GAME",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "GAME",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9160841107368469,
+    "hands": 16
+   },
+   "S2_reel15": {
+    "top1": "GAME",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9838306903839111,
+    "hands": 15
+   },
+   "camera_frames_in_interval": 43,
+   "camera_fps_in_interval": 9.772727272727261,
+   "S3_reelcam": {
+    "top1": "GAME",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.748981773853302,
+    "hands": 15
+   },
+   "S4_chrome": {
+    "top1": "GAME",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9920750856399536,
+    "hands": 17
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "GAME"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      38.03,
+      40.01
+     ]
+    ],
+    "truth_s": [
+     37.788,
+     40.988
+    ],
+    "handFrames": [
+     17
+    ]
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 11,
+   "label": "DAY",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "DAY",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9476893544197083,
+    "hands": 12
+   },
+   "S2_reel15": {
+    "top1": "DAY",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9930245876312256,
+    "hands": 13
+   },
+   "camera_frames_in_interval": 35,
+   "camera_fps_in_interval": 8.301707779886145,
+   "S3_reelcam": {
+    "top1": "DAY",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9361729621887207,
+    "hands": 13
+   },
+   "S4_chrome": {
+    "top1": "DAY",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8541111946105957,
+    "hands": 15
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "DAY"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      43.04,
+      44.76
+     ]
+    ],
+    "truth_s": [
+     42.488,
+     45.504
+    ],
+    "handFrames": [
+     13
+    ]
+   }
+  },
+  {
+   "reel": "replay0-base.json",
+   "interval": 12,
+   "label": "HELLO",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9504310344827587,
+   "S1_iso": {
+    "top1": "HELLO",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9236099720001221,
+    "hands": 9
+   },
+   "S2_reel15": {
+    "top1": "HELLO",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9907729625701904,
+    "hands": 9
+   },
+   "camera_frames_in_interval": 24,
+   "camera_fps_in_interval": 9.1708062667176,
+   "S3_reelcam": {
+    "top1": "HELLO",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9935817718505859,
+    "hands": 9
+   },
+   "S4_chrome": {
+    "top1": "HELLO",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9918493032455444,
+    "hands": 9
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "HELLO"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      47.41,
+      48.91
+     ]
+    ],
+    "truth_s": [
+     47.004,
+     48.421
+    ],
+    "handFrames": [
+     9
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 0,
+   "label": "TICKLE",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "TICKLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9865362048149109,
+    "hands": 21
+   },
+   "S2_reel15": {
+    "top1": "TICKLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9716613292694092,
+    "hands": 21
+   },
+   "camera_frames_in_interval": 29,
+   "camera_fps_in_interval": 7.837837837837839,
+   "S3_reelcam": {
+    "top1": "TICKLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9796804785728455,
+    "hands": 20
+   },
+   "S4_chrome": {
+    "top1": "TICKLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9776499271392822,
+    "hands": 20
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "TICKLE"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      1.2,
+      3.44
+     ]
+    ],
+    "truth_s": [
+     1.5,
+     4
+    ],
+    "handFrames": [
+     20
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 1,
+   "label": "STUCK",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "STUCK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9948263764381409,
+    "hands": 13
+   },
+   "S2_reel15": {
+    "top1": "STUCK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9914678335189819,
+    "hands": 12
+   },
+   "camera_frames_in_interval": 36,
+   "camera_fps_in_interval": 8.908685968819603,
+   "S3_reelcam": {
+    "top1": "STUCK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9918165802955627,
+    "hands": 13
+   },
+   "S4_chrome": {
+    "top1": "STUCK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9917660355567932,
+    "hands": 13
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "STUCK"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      5.74,
+      7.47
+     ]
+    ],
+    "truth_s": [
+     5.5,
+     8.341
+    ],
+    "handFrames": [
+     13
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 2,
+   "label": "TICKLE",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "TICKLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9865362048149109,
+    "hands": 21
+   },
+   "S2_reel15": {
+    "top1": "TICKLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8769097328186035,
+    "hands": 20
+   },
+   "camera_frames_in_interval": 28,
+   "camera_fps_in_interval": 7.567567567567569,
+   "S3_reelcam": {
+    "top1": "TICKLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9702703356742859,
+    "hands": 19
+   },
+   "S4_chrome": {
+    "top1": "TICKLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.971549391746521,
+    "hands": 22
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "TICKLE"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      9.57,
+      11.8
+     ]
+    ],
+    "truth_s": [
+     9.841,
+     12.341
+    ],
+    "handFrames": [
+     22
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 3,
+   "label": "GOTTO",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "GOINGTO",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.7170628309249878,
+    "hands": 13
+   },
+   "S2_reel15": {
+    "top1": "GOINGTO",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6160007119178772,
+    "hands": 14
+   },
+   "camera_frames_in_interval": 27,
+   "camera_fps_in_interval": 7.640067911714765,
+   "S3_reelcam": {
+    "top1": "GO",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6059662103652954,
+    "hands": 13
+   },
+   "S4_chrome": {
+    "top1": "GO",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6521102786064148,
+    "hands": 13
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "GO"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      13.9,
+      15.7
+     ]
+    ],
+    "truth_s": [
+     13.841,
+     16.175
+    ],
+    "handFrames": [
+     13
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 4,
+   "label": "SOME",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "SOME",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.3795812129974365,
+    "hands": 12
+   },
+   "S2_reel15": {
+    "top1": "SOME",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.2934814989566803,
+    "hands": 12
+   },
+   "camera_frames_in_interval": 28,
+   "camera_fps_in_interval": 8.078476630121175,
+   "S3_reelcam": {
+    "top1": "PERSON",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.32258763909339905,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": "PERSON",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.24696773290634155,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "PERSON"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      17.87,
+      19.5
+     ]
+    ],
+    "truth_s": [
+     17.675,
+     19.941
+    ],
+    "handFrames": [
+     12
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 5,
+   "label": "KISS",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "SPILL",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.1604129523038864,
+    "hands": 13
+   },
+   "S2_reel15": {
+    "top1": "POUR",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.26405832171440125,
+    "hands": 16
+   },
+   "camera_frames_in_interval": 23,
+   "camera_fps_in_interval": 7.8391274710292995,
+   "S3_reelcam": {
+    "top1": "POUR",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.35265326499938965,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "POUR",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.20915617048740387,
+    "hands": 14
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "POUR"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      21.0,
+      23.44
+     ]
+    ],
+    "truth_s": [
+     21.441,
+     23.175
+    ],
+    "handFrames": [
+     15
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 6,
+   "label": "__unknown__",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S2_reel15": {
+    "top1": "WRITE",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.4533086121082306,
+    "hands": 15
+   },
+   "camera_frames_in_interval": 34,
+   "camera_fps_in_interval": 8.519168128288642,
+   "S3_reelcam": {
+    "top1": "TEAR",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5455533266067505,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": "TEAR",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6092919111251831,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "TEAR"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      25.13,
+      27.1
+     ]
+    ],
+    "truth_s": [
+     24.675,
+     27.466
+    ],
+    "handFrames": [
+     12
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 7,
+   "label": "FOOD",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "EAT",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.8754366040229797,
+    "hands": 12
+   },
+   "S2_reel15": {
+    "top1": "FOOD",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8933315277099609,
+    "hands": 12
+   },
+   "camera_frames_in_interval": 24,
+   "camera_fps_in_interval": 8.27586206896551,
+   "S3_reelcam": {
+    "top1": "FOOD",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.7547056078910828,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": "FOOD",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6513556241989136,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "FOOD"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      28.43,
+      31.07
+     ]
+    ],
+    "truth_s": [
+     28.966,
+     30.666
+    ],
+    "handFrames": [
+     12
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 8,
+   "label": "BELLYBUTTON",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "BELLYBUTTON",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.978725254535675,
+    "hands": 24
+   },
+   "S2_reel15": {
+    "top1": "BELLYBUTTON",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9908406138420105,
+    "hands": 24
+   },
+   "camera_frames_in_interval": 29,
+   "camera_fps_in_interval": 8.130081300812991,
+   "S3_reelcam": {
+    "top1": "BELLYBUTTON",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9831526279449463,
+    "hands": 23
+   },
+   "S4_chrome": {
+    "top1": "BELLYBUTTON",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9824631214141846,
+    "hands": 23
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "BELLYBUTTON"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      31.83,
+      34.3
+     ]
+    ],
+    "truth_s": [
+     32.166,
+     34.533
+    ],
+    "handFrames": [
+     23
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 9,
+   "label": "READ",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "READ",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.7998007535934448,
+    "hands": 14
+   },
+   "S2_reel15": {
+    "top1": "READ",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.7714086174964905,
+    "hands": 17
+   },
+   "camera_frames_in_interval": 23,
+   "camera_fps_in_interval": 7.341206511330986,
+   "S3_reelcam": {
+    "top1": "READ",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.39171302318573,
+    "hands": 18
+   },
+   "S4_chrome": {
+    "top1": "READ",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.36266419291496277,
+    "hands": 15
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "READ"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      36.07,
+      38.07
+     ]
+    ],
+    "truth_s": [
+     36.033,
+     37.966
+    ],
+    "handFrames": [
+     16
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 10,
+   "label": "RIP",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "SHOVEL",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.4558439552783966,
+    "hands": 15
+   },
+   "S2_reel15": {
+    "top1": "RIP",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.9141336679458618,
+    "hands": 14
+   },
+   "camera_frames_in_interval": 29,
+   "camera_fps_in_interval": 7.295597484276727,
+   "S3_reelcam": {
+    "top1": "RIP",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9761940240859985,
+    "hands": 11
+   },
+   "S4_chrome": {
+    "top1": "RIP",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.3689541518688202,
+    "hands": 15
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "RIP"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      39.73,
+      42.1
+     ]
+    ],
+    "truth_s": [
+     39.466,
+     42.241
+    ],
+    "handFrames": [
+     14
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 11,
+   "label": "PUSH",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "PUSH",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9764178395271301,
+    "hands": 39
+   },
+   "S2_reel15": {
+    "top1": "PUSH",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9651600122451782,
+    "hands": 39
+   },
+   "camera_frames_in_interval": 29,
+   "camera_fps_in_interval": 7.647679324894511,
+   "S3_reelcam": {
+    "top1": "PUSH",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9767821431159973,
+    "hands": 37
+   },
+   "S4_chrome": {
+    "top1": "PUSH",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9756554961204529,
+    "hands": 37
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "PUSH"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      43.27,
+      46.8
+     ]
+    ],
+    "truth_s": [
+     43.741,
+     46.333
+    ],
+    "handFrames": [
+     37
+    ]
+   }
+  },
+  {
+   "reel": "replay1-base.json",
+   "interval": 12,
+   "label": "TEACHER",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9766355140186916,
+   "S1_iso": {
+    "top1": "TEACHER",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9570184350013733,
+    "hands": 15
+   },
+   "S2_reel15": {
+    "top1": "TEACHER",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9597455263137817,
+    "hands": 13
+   },
+   "camera_frames_in_interval": 27,
+   "camera_fps_in_interval": 8.709677419354835,
+   "S3_reelcam": {
+    "top1": "TEACHER",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.918471097946167,
+    "hands": 13
+   },
+   "S4_chrome": {
+    "top1": "TEACHER",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.8793028593063354,
+    "hands": 13
+   },
+   "S5_live": {
+    "events": 2,
+    "statuses": [
+     "uncertain",
+     "unknown"
+    ],
+    "best": [
+     "SQUIRREL",
+     "TEACHER"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      47.27,
+      48.73
+     ],
+     [
+      48.73,
+      50.1
+     ]
+    ],
+    "truth_s": [
+     47.833,
+     49.733
+    ],
+    "handFrames": [
+     6,
+     7
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 0,
+   "label": "AN",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "AN",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9823363423347473,
+    "hands": 16
+   },
+   "S2_reel15": {
+    "top1": "AN",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9820489287376404,
+    "hands": 14
+   },
+   "camera_frames_in_interval": 29,
+   "camera_fps_in_interval": 7.073170731707318,
+   "S3_reelcam": {
+    "top1": "AN",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9585630893707275,
+    "hands": 16
+   },
+   "S4_chrome": {
+    "top1": "AN",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9465932250022888,
+    "hands": 13
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "AN"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      3.23,
+      4.79
+     ]
+    ],
+    "truth_s": [
+     1.5,
+     4.4
+    ],
+    "handFrames": [
+     10
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 1,
+   "label": "SNACK",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "SNACK",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.8798020482063293,
+    "hands": 10
+   },
+   "S2_reel15": {
+    "top1": "SNACK",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.846282422542572,
+    "hands": 9
+   },
+   "camera_frames_in_interval": 31,
+   "camera_fps_in_interval": 9.488827670645854,
+   "S3_reelcam": {
+    "top1": "SNACK",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.7287966012954712,
+    "hands": 9
+   },
+   "S4_chrome": {
+    "top1": "SNACK",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.7557805180549622,
+    "hands": 9
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "unknown"
+    ],
+    "best": [
+     "SNACK"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      6.18,
+      7.76
+     ]
+    ],
+    "truth_s": [
+     5.9,
+     7.967
+    ],
+    "handFrames": [
+     9
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 2,
+   "label": "AN",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "AN",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9823363423347473,
+    "hands": 16
+   },
+   "S2_reel15": {
+    "top1": "AN",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.981687605381012,
+    "hands": 16
+   },
+   "camera_frames_in_interval": 33,
+   "camera_fps_in_interval": 8.048780487804878,
+   "S3_reelcam": {
+    "top1": "AN",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.9202921986579895,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "AN",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9514107704162598,
+    "hands": 14
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "AN"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      11.18,
+      12.84
+     ]
+    ],
+    "truth_s": [
+     9.467,
+     12.367
+    ],
+    "handFrames": [
+     10
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 3,
+   "label": "DANCE",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "DANCE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9676398038864136,
+    "hands": 11
+   },
+   "S2_reel15": {
+    "top1": "DANCE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9701775312423706,
+    "hands": 10
+   },
+   "camera_frames_in_interval": 23,
+   "camera_fps_in_interval": 8.761904761904768,
+   "S3_reelcam": {
+    "top1": "DANCE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9717179536819458,
+    "hands": 11
+   },
+   "S4_chrome": {
+    "top1": "DANCE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9824364185333252,
+    "hands": 9
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "DANCE"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      13.46,
+      14.96
+     ]
+    ],
+    "truth_s": [
+     13.867,
+     15.292
+    ],
+    "handFrames": [
+     9
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 4,
+   "label": "TIGHTS",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "TIGHTS",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9403135776519775,
+    "hands": 14
+   },
+   "S2_reel15": {
+    "top1": "FAST",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.4267655611038208,
+    "hands": 15
+   },
+   "camera_frames_in_interval": 26,
+   "camera_fps_in_interval": 7.22222222222222,
+   "S3_reelcam": {
+    "top1": "FAST",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.7818840742111206,
+    "hands": 15
+   },
+   "S4_chrome": {
+    "top1": "FAST",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.794574499130249,
+    "hands": 15
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "FAST"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      17.24,
+      19.04
+     ]
+    ],
+    "truth_s": [
+     16.792,
+     19.192
+    ],
+    "handFrames": [
+     15
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 5,
+   "label": "DRYER",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "DRY",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.7796983122825623,
+    "hands": 32
+   },
+   "S2_reel15": {
+    "top1": "DRY",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6834789514541626,
+    "hands": 30
+   },
+   "camera_frames_in_interval": 29,
+   "camera_fps_in_interval": 8.638665475126594,
+   "S3_reelcam": {
+    "top1": "DRY",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.8845498561859131,
+    "hands": 30
+   },
+   "S4_chrome": {
+    "top1": "DRY",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5467143654823303,
+    "hands": 20
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "DRY"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      20.34,
+      22.68
+     ]
+    ],
+    "truth_s": [
+     20.692,
+     22.849
+    ],
+    "handFrames": [
+     20
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 6,
+   "label": "__unknown__",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S2_reel15": {
+    "top1": "YOURSELF",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6006646156311035,
+    "hands": 10
+   },
+   "camera_frames_in_interval": 26,
+   "camera_fps_in_interval": 7.878787878787868,
+   "S3_reelcam": {
+    "top1": "YOURSELF",
+    "ok1": false,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.7818177342414856,
+    "hands": 8
+   },
+   "S4_chrome": {
+    "top1": "YOURSELF",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6693500280380249,
+    "hands": 8
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "unknown"
+    ],
+    "best": [
+     "YOURSELF"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      24.64,
+      26.01
+     ]
+    ],
+    "truth_s": [
+     24.349,
+     26.449
+    ],
+    "handFrames": [
+     9
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 7,
+   "label": "BEDROOM",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "BEDROOM",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9599372148513794,
+    "hands": 12
+   },
+   "S2_reel15": {
+    "top1": "BEDROOM",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9430153369903564,
+    "hands": 12
+   },
+   "camera_frames_in_interval": 28,
+   "camera_fps_in_interval": 8.139534883720927,
+   "S3_reelcam": {
+    "top1": "BEDROOM",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8419603705406189,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": "BEDROOM",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8820201754570007,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "BEDROOM"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      28.14,
+      29.91
+     ]
+    ],
+    "truth_s": [
+     27.949,
+     30.189
+    ],
+    "handFrames": [
+     12
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 8,
+   "label": "PAJAMAS",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "PAJAMAS",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9931208491325378,
+    "hands": 9
+   },
+   "S2_reel15": {
+    "top1": "PAJAMAS",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9914331436157227,
+    "hands": 10
+   },
+   "camera_frames_in_interval": 25,
+   "camera_fps_in_interval": 9.585889570552132,
+   "S3_reelcam": {
+    "top1": "PAJAMAS",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9864996671676636,
+    "hands": 8
+   },
+   "S4_chrome": {
+    "top1": "PAJAMAS",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.989959716796875,
+    "hands": 8
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "PAJAMAS"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      31.24,
+      32.71
+     ]
+    ],
+    "truth_s": [
+     31.689,
+     33.097
+    ],
+    "handFrames": [
+     9
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 9,
+   "label": "SHHH",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "SHHH",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9858629107475281,
+    "hands": 13
+   },
+   "S2_reel15": {
+    "top1": "SHHH",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9929323196411133,
+    "hands": 13
+   },
+   "camera_frames_in_interval": 27,
+   "camera_fps_in_interval": 7.864841246722984,
+   "S3_reelcam": {
+    "top1": "SHHH",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9851512312889099,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": "SHHH",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9776261448860168,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "SHHH"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      34.94,
+      36.64
+     ]
+    ],
+    "truth_s": [
+     34.597,
+     36.83
+    ],
+    "handFrames": [
+     12
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 10,
+   "label": "PUZZLE",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "PUZZLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9759077429771423,
+    "hands": 25
+   },
+   "S2_reel15": {
+    "top1": "PUZZLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9937644004821777,
+    "hands": 25
+   },
+   "camera_frames_in_interval": 23,
+   "camera_fps_in_interval": 7.494297816878456,
+   "S3_reelcam": {
+    "top1": "PUZZLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9963817596435547,
+    "hands": 24
+   },
+   "S4_chrome": {
+    "top1": "PUZZLE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.997363269329071,
+    "hands": 24
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "PUZZLE"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      37.84,
+      40.67
+     ]
+    ],
+    "truth_s": [
+     38.33,
+     40.199
+    ],
+    "handFrames": [
+     25
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 11,
+   "label": "BAT",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "BAT",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9966915845870972,
+    "hands": 15
+   },
+   "S2_reel15": {
+    "top1": "BAT",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9899527430534363,
+    "hands": 15
+   },
+   "camera_frames_in_interval": 35,
+   "camera_fps_in_interval": 8.055235903337158,
+   "S3_reelcam": {
+    "top1": "BAT",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9672119617462158,
+    "hands": 16
+   },
+   "S4_chrome": {
+    "top1": "BAT",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9861008524894714,
+    "hands": 16
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "BAT"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      42.21,
+      44.07
+     ]
+    ],
+    "truth_s": [
+     41.699,
+     44.844
+    ],
+    "handFrames": [
+     15
+    ]
+   }
+  },
+  {
+   "reel": "replay2-base.json",
+   "interval": 12,
+   "label": "WALK",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9768518518518519,
+   "S1_iso": {
+    "top1": "WALK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9815368056297302,
+    "hands": 19
+   },
+   "S2_reel15": {
+    "top1": "WALK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9614450335502625,
+    "hands": 19
+   },
+   "camera_frames_in_interval": 32,
+   "camera_fps_in_interval": 7.3698756333486894,
+   "S3_reelcam": {
+    "top1": "WALK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9564507603645325,
+    "hands": 19
+   },
+   "S4_chrome": {
+    "top1": "WALK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9561207890510559,
+    "hands": 19
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "WALK"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      46.56,
+      48.74
+     ]
+    ],
+    "truth_s": [
+     46.344,
+     49.486
+    ],
+    "handFrames": [
+     19
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 0,
+   "label": "SAD",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "SLEEP",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5031650066375732,
+    "hands": 13
+   },
+   "S2_reel15": {
+    "top1": "SLEEP",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.7378525137901306,
+    "hands": 13
+   },
+   "camera_frames_in_interval": 26,
+   "camera_fps_in_interval": 7.272727272727273,
+   "S3_reelcam": {
+    "top1": "SLEEP",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6233413815498352,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "SLEEP",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.47388774156570435,
+    "hands": 14
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "MAD"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      1.86,
+      3.73
+     ]
+    ],
+    "truth_s": [
+     1.5,
+     3.875
+    ],
+    "handFrames": [
+     15
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 1,
+   "label": "MOUSE",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "MOUSE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9942277669906616,
+    "hands": 12
+   },
+   "S2_reel15": {
+    "top1": "MOUSE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9916030764579773,
+    "hands": 12
+   },
+   "camera_frames_in_interval": 24,
+   "camera_fps_in_interval": 7.559055118110239,
+   "S3_reelcam": {
+    "top1": "MOUSE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9822630286216736,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "MOUSE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.971939206123352,
+    "hands": 14
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "MOUSE"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      5.23,
+      7.06
+     ]
+    ],
+    "truth_s": [
+     5.375,
+     7.35
+    ],
+    "handFrames": [
+     14
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 2,
+   "label": "SAD",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "SLEEP",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5031650066375732,
+    "hands": 13
+   },
+   "S2_reel15": {
+    "top1": "SLEEP",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.8222357034683228,
+    "hands": 13
+   },
+   "camera_frames_in_interval": 28,
+   "camera_fps_in_interval": 7.832167832167833,
+   "S3_reelcam": {
+    "top1": "MAD",
+    "ok1": false,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.813893735408783,
+    "hands": 11
+   },
+   "S4_chrome": {
+    "top1": "SLEEP",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.4692223072052002,
+    "hands": 11
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "SLEEP"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      9.26,
+      10.96
+     ]
+    ],
+    "truth_s": [
+     8.85,
+     11.225
+    ],
+    "handFrames": [
+     11
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 3,
+   "label": "KICK",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "PEOPLE",
+    "ok1": false,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.8049107789993286,
+    "hands": 10
+   },
+   "S2_reel15": {
+    "top1": "SWING",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.12231521308422089,
+    "hands": 12
+   },
+   "camera_frames_in_interval": 23,
+   "camera_fps_in_interval": 7.583250906693045,
+   "S3_reelcam": {
+    "top1": "PEOPLE",
+    "ok1": false,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.8135722875595093,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": "PEOPLE",
+    "ok1": false,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.7654129266738892,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "WHERE"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      13.26,
+      14.69
+     ]
+    ],
+    "truth_s": [
+     12.725,
+     14.558
+    ],
+    "handFrames": [
+     7
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 4,
+   "label": "STORY",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "STORY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5657325983047485,
+    "hands": 15
+   },
+   "S2_reel15": {
+    "top1": "STORY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5724573731422424,
+    "hands": 14
+   },
+   "camera_frames_in_interval": 33,
+   "camera_fps_in_interval": 8.114089009097611,
+   "S3_reelcam": {
+    "top1": "STORY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.2755849063396454,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "PUPPY",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.40869197249412537,
+    "hands": 14
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "PUPPY"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      16.23,
+      18.53
+     ]
+    ],
+    "truth_s": [
+     16.058,
+     18.925
+    ],
+    "handFrames": [
+     16
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 5,
+   "label": "CHICKEN",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "CHICKEN",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8444927930831909,
+    "hands": 20
+   },
+   "S2_reel15": {
+    "top1": "BIRD",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.9502062797546387,
+    "hands": 16
+   },
+   "camera_frames_in_interval": 31,
+   "camera_fps_in_interval": 7.439404847612188,
+   "S3_reelcam": {
+    "top1": "BIRD",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.8692321181297302,
+    "hands": 17
+   },
+   "S4_chrome": {
+    "top1": "BIRD",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.851656436920166,
+    "hands": 17
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "BIRD"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      20.82,
+      22.86
+     ]
+    ],
+    "truth_s": [
+     20.425,
+     23.392
+    ],
+    "handFrames": [
+     17
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 6,
+   "label": "__unknown__",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S2_reel15": {
+    "top1": "BASEMENT",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.2940777838230133,
+    "hands": 14
+   },
+   "camera_frames_in_interval": 24,
+   "camera_fps_in_interval": 7.912957467853598,
+   "S3_reelcam": {
+    "top1": "PUPPY",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.32310009002685547,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "BASEMENT",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.16322380304336548,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "BABY"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      24.37,
+      25.81
+     ]
+    ],
+    "truth_s": [
+     24.892,
+     26.725
+    ],
+    "handFrames": [
+     7
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 7,
+   "label": "TV",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "TV",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.8649634122848511,
+    "hands": 5
+   },
+   "S2_reel15": {
+    "top1": "TV",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9047367572784424,
+    "hands": 5
+   },
+   "camera_frames_in_interval": 27,
+   "camera_fps_in_interval": 8.511979823455231,
+   "S3_reelcam": {
+    "top1": "TV",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6732291579246521,
+    "hands": 8
+   },
+   "S4_chrome": {
+    "top1": "TOILET",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.2897728681564331,
+    "hands": 6
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "TOILET"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      28.52,
+      29.91
+     ]
+    ],
+    "truth_s": [
+     28.225,
+     30.197
+    ],
+    "handFrames": [
+     7
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 8,
+   "label": "SNACK",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "SNACK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.7563390731811523,
+    "hands": 14
+   },
+   "S2_reel15": {
+    "top1": "SNACK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9160857200622559,
+    "hands": 13
+   },
+   "camera_frames_in_interval": 27,
+   "camera_fps_in_interval": 8.019008019008018,
+   "S3_reelcam": {
+    "top1": "SNACK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9883403778076172,
+    "hands": 11
+   },
+   "S4_chrome": {
+    "top1": "SNACK",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9881004095077515,
+    "hands": 11
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "SNACK"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      31.94,
+      33.57
+     ]
+    ],
+    "truth_s": [
+     31.697,
+     33.864
+    ],
+    "handFrames": [
+     12
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 9,
+   "label": "CAN",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "COULD",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.7547822594642639,
+    "hands": 16
+   },
+   "S2_reel15": {
+    "top1": "CAN",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6556869745254517,
+    "hands": 16
+   },
+   "camera_frames_in_interval": 31,
+   "camera_fps_in_interval": 8.551724137931018,
+   "S3_reelcam": {
+    "top1": "CAN",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.7914825677871704,
+    "hands": 16
+   },
+   "S4_chrome": {
+    "top1": "CAN",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.7745834589004517,
+    "hands": 16
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "CAN"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      35.54,
+      37.47
+     ]
+    ],
+    "truth_s": [
+     35.364,
+     37.789
+    ],
+    "handFrames": [
+     16
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 10,
+   "label": "TOILET",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "TOILET",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.651259183883667,
+    "hands": 15
+   },
+   "S2_reel15": {
+    "top1": "TOILET",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.7369768619537354,
+    "hands": 15
+   },
+   "camera_frames_in_interval": 33,
+   "camera_fps_in_interval": 8.984481350394768,
+   "S3_reelcam": {
+    "top1": "TOILET",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.7757485508918762,
+    "hands": 15
+   },
+   "S4_chrome": {
+    "top1": "TOILET",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.7302385568618774,
+    "hands": 15
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "TOILET"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      39.44,
+      41.41
+     ]
+    ],
+    "truth_s": [
+     39.289,
+     41.762
+    ],
+    "handFrames": [
+     15
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 11,
+   "label": "TALK",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "FINE",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.9792863726615906,
+    "hands": 9
+   },
+   "S2_reel15": {
+    "top1": "FINE",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.9762639999389648,
+    "hands": 9
+   },
+   "camera_frames_in_interval": 26,
+   "camera_fps_in_interval": 7.917174177831915,
+   "S3_reelcam": {
+    "top1": "FINE",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.8261498808860779,
+    "hands": 10
+   },
+   "S4_chrome": {
+    "top1": "FINE",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.8510772585868835,
+    "hands": 10
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "FINE"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      43.17,
+      44.81
+     ]
+    ],
+    "truth_s": [
+     43.262,
+     45.346
+    ],
+    "handFrames": [
+     10
+    ]
+   }
+  },
+  {
+   "reel": "replay3-base.json",
+   "interval": 12,
+   "label": "NECKLACE",
+   "clock_offset_ms": 27,
+   "hand_agree": 0.9838337182448037,
+   "S1_iso": {
+    "top1": "NECKLACE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9876734614372253,
+    "hands": 15
+   },
+   "S2_reel15": {
+    "top1": "NECKLACE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.980166494846344,
+    "hands": 16
+   },
+   "camera_frames_in_interval": 35,
+   "camera_fps_in_interval": 8.219821512447139,
+   "S3_reelcam": {
+    "top1": "NECKLACE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8732851147651672,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "NECKLACE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8974165916442871,
+    "hands": 14
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "NECKLACE"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      47.54,
+      49.39
+     ]
+    ],
+    "truth_s": [
+     46.846,
+     49.904
+    ],
+    "handFrames": [
+     13
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 0,
+   "label": "PLEASE",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "PLEASE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.993101954460144,
+    "hands": 17
+   },
+   "S2_reel15": {
+    "top1": "PLEASE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9940190315246582,
+    "hands": 18
+   },
+   "camera_frames_in_interval": 28,
+   "camera_fps_in_interval": 7.621121393576484,
+   "S3_reelcam": {
+    "top1": "PLEASE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9843913316726685,
+    "hands": 18
+   },
+   "S4_chrome": {
+    "top1": "PLEASE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9845662713050842,
+    "hands": 18
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "PLEASE"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      1.44,
+      3.64
+     ]
+    ],
+    "truth_s": [
+     1.5,
+     3.974
+    ],
+    "handFrames": [
+     18
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 1,
+   "label": "FOOD",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "EAT",
+    "ok1": false,
+    "status": "accepted",
+    "acc_ok": false,
+    "p_top1": 0.8319861888885498,
+    "hands": 15
+   },
+   "S2_reel15": {
+    "top1": "EAT",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5871723294258118,
+    "hands": 15
+   },
+   "camera_frames_in_interval": 24,
+   "camera_fps_in_interval": 6.924408540103867,
+   "S3_reelcam": {
+    "top1": "EAT",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.559916079044342,
+    "hands": 13
+   },
+   "S4_chrome": {
+    "top1": "FOOD",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.4969276487827301,
+    "hands": 13
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "FOOD"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      5.67,
+      7.57
+     ]
+    ],
+    "truth_s": [
+     5.474,
+     7.74
+    ],
+    "handFrames": [
+     13
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 2,
+   "label": "PLEASE",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "PLEASE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.993101954460144,
+    "hands": 17
+   },
+   "S2_reel15": {
+    "top1": "PLEASE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.991814911365509,
+    "hands": 18
+   },
+   "camera_frames_in_interval": 30,
+   "camera_fps_in_interval": 8.165487207403377,
+   "S3_reelcam": {
+    "top1": "PLEASE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9935100674629211,
+    "hands": 17
+   },
+   "S4_chrome": {
+    "top1": "PLEASE",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9945047497749329,
+    "hands": 19
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "PLEASE"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      9.14,
+      11.29
+     ]
+    ],
+    "truth_s": [
+     9.24,
+     11.714
+    ],
+    "handFrames": [
+     19
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 3,
+   "label": "BUY",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "BUY",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9843368530273438,
+    "hands": 18
+   },
+   "S2_reel15": {
+    "top1": "BUY",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8339529633522034,
+    "hands": 20
+   },
+   "camera_frames_in_interval": 26,
+   "camera_fps_in_interval": 6.685523270763694,
+   "S3_reelcam": {
+    "top1": "BUY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5467637777328491,
+    "hands": 18
+   },
+   "S4_chrome": {
+    "top1": "BUY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5308253169059753,
+    "hands": 15
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "BUY"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      12.63,
+      15.04
+     ]
+    ],
+    "truth_s": [
+     13.214,
+     15.903
+    ],
+    "handFrames": [
+     15
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 4,
+   "label": "SO",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "HOLD",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6517437100410461,
+    "hands": 12
+   },
+   "S2_reel15": {
+    "top1": "HOLD",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.28927183151245117,
+    "hands": 12
+   },
+   "camera_frames_in_interval": 23,
+   "camera_fps_in_interval": 7.841800204568692,
+   "S3_reelcam": {
+    "top1": "HOLD",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.1661338359117508,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "TAKEN",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.15598280727863312,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "UP"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      16.94,
+      18.4
+     ]
+    ],
+    "truth_s": [
+     17.403,
+     19.136
+    ],
+    "handFrames": [
+     8
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 5,
+   "label": "IF",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "IF",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.952491819858551,
+    "hands": 8
+   },
+   "S2_reel15": {
+    "top1": "IF",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.8153038024902344,
+    "hands": 9
+   },
+   "camera_frames_in_interval": 36,
+   "camera_fps_in_interval": 8.834355828220852,
+   "S3_reelcam": {
+    "top1": "IF",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9894088506698608,
+    "hands": 8
+   },
+   "S4_chrome": {
+    "top1": "IF",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9790167212486267,
+    "hands": 8
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "IF"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      21.07,
+      22.71
+     ]
+    ],
+    "truth_s": [
+     20.636,
+     23.511
+    ],
+    "handFrames": [
+     7
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 6,
+   "label": "__unknown__",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S2_reel15": {
+    "top1": "PLANTS",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.2344447821378708,
+    "hands": 18
+   },
+   "camera_frames_in_interval": 33,
+   "camera_fps_in_interval": 8.160237388724028,
+   "S3_reelcam": {
+    "top1": "PLANTS",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.19223524630069733,
+    "hands": 17
+   },
+   "S4_chrome": {
+    "top1": "PLANTS",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5236892700195312,
+    "hands": 19
+   },
+   "S5_live": {
+    "events": 2,
+    "statuses": [
+     "unknown",
+     "uncertain"
+    ],
+    "best": [
+     "RIDE",
+     "AFTER"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      24.4,
+      25.87
+     ],
+     [
+      26.64,
+      28.29
+     ]
+    ],
+    "truth_s": [
+     25.011,
+     27.855
+    ],
+    "handFrames": [
+     8,
+     12
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 7,
+   "label": "WHEN",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "WHEN",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5492514371871948,
+    "hands": 15
+   },
+   "S2_reel15": {
+    "top1": "ABOUT",
+    "ok1": false,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.7958435416221619,
+    "hands": 18
+   },
+   "camera_frames_in_interval": 33,
+   "camera_fps_in_interval": 7.88907482667941,
+   "S3_reelcam": {
+    "top1": "ABOUT",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5839799642562866,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "JEANS",
+    "ok1": false,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.20089495182037354,
+    "hands": 14
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "JEANS"
+    ],
+    "ok1": false,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      29.33,
+      31.36
+     ]
+    ],
+    "truth_s": [
+     29.355,
+     32.338
+    ],
+    "handFrames": [
+     13
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 8,
+   "label": "NIGHT",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "NIGHT",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6087421178817749,
+    "hands": 12
+   },
+   "S2_reel15": {
+    "top1": "NIGHT",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9176816940307617,
+    "hands": 10
+   },
+   "camera_frames_in_interval": 30,
+   "camera_fps_in_interval": 9.765624999999991,
+   "S3_reelcam": {
+    "top1": "NIGHT",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9546313285827637,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": "NIGHT",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9738041758537292,
+    "hands": 10
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "NIGHT"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      33.9,
+      35.54
+     ]
+    ],
+    "truth_s": [
+     33.838,
+     35.71
+    ],
+    "handFrames": [
+     10
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 9,
+   "label": "STORY",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "STORY",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.9054996967315674,
+    "hands": 11
+   },
+   "S2_reel15": {
+    "top1": "STORY",
+    "ok1": true,
+    "status": "unknown",
+    "acc_ok": false,
+    "p_top1": 0.9336838722229004,
+    "hands": 13
+   },
+   "camera_frames_in_interval": 33,
+   "camera_fps_in_interval": 9.00163666121112,
+   "S3_reelcam": {
+    "top1": "STORY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5028702616691589,
+    "hands": 12
+   },
+   "S4_chrome": {
+    "top1": "STORY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5103886723518372,
+    "hands": 12
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "STORY"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      37.44,
+      39.27
+     ]
+    ],
+    "truth_s": [
+     37.21,
+     39.676
+    ],
+    "handFrames": [
+     12
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 10,
+   "label": "STICKY",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "STICKY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.7147212624549866,
+    "hands": 15
+   },
+   "S2_reel15": {
+    "top1": "STICKY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.5053682327270508,
+    "hands": 15
+   },
+   "camera_frames_in_interval": 21,
+   "camera_fps_in_interval": 6.960556844547557,
+   "S3_reelcam": {
+    "top1": "STICKY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.46188801527023315,
+    "hands": 13
+   },
+   "S4_chrome": {
+    "top1": "STICKY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6606543064117432,
+    "hands": 15
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "uncertain"
+    ],
+    "best": [
+     "STICKY"
+    ],
+    "ok1": true,
+    "acc_ok": false,
+    "segments_s": [
+     [
+      40.89,
+      42.77
+     ]
+    ],
+    "truth_s": [
+     41.176,
+     42.993
+    ],
+    "handFrames": [
+     15
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 11,
+   "label": "SPRINKLER",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "SPRINKLER",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9952355027198792,
+    "hands": 20
+   },
+   "S2_reel15": {
+    "top1": "SPRINKLER",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9938516616821289,
+    "hands": 20
+   },
+   "camera_frames_in_interval": 36,
+   "camera_fps_in_interval": 8.415147265077142,
+   "S3_reelcam": {
+    "top1": "SPRINKLER",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.986193835735321,
+    "hands": 18
+   },
+   "S4_chrome": {
+    "top1": "SPRINKLER",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9908696413040161,
+    "hands": 20
+   },
+   "S5_live": {
+    "events": 1,
+    "statuses": [
+     "accepted"
+    ],
+    "best": [
+     "SPRINKLER"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      44.64,
+      46.9
+     ]
+    ],
+    "truth_s": [
+     44.493,
+     47.571
+    ],
+    "handFrames": [
+     20
+    ]
+   }
+  },
+  {
+   "reel": "replay4-base.json",
+   "interval": 12,
+   "label": "TURKEY",
+   "clock_offset_ms": -6,
+   "hand_agree": 0.9819004524886877,
+   "S1_iso": {
+    "top1": "TURKEY",
+    "ok1": true,
+    "status": "uncertain",
+    "acc_ok": false,
+    "p_top1": 0.6775707602500916,
+    "hands": 17
+   },
+   "S2_reel15": {
+    "top1": "TURKEY",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9243263006210327,
+    "hands": 17
+   },
+   "camera_frames_in_interval": 26,
+   "camera_fps_in_interval": 8.617832283725546,
+   "S3_reelcam": {
+    "top1": "TURKEY",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.9001295566558838,
+    "hands": 14
+   },
+   "S4_chrome": {
+    "top1": "TURKEY",
+    "ok1": true,
+    "status": "accepted",
+    "acc_ok": true,
+    "p_top1": 0.8546022176742554,
+    "hands": 16
+   },
+   "S5_live": {
+    "events": 2,
+    "statuses": [
+     "uncertain",
+     "accepted"
+    ],
+    "best": [
+     "BELT",
+     "TURKEY"
+    ],
+    "ok1": true,
+    "acc_ok": true,
+    "segments_s": [
+     [
+      48.5,
+      50.07
+     ],
+     [
+      49.87,
+      51.37
+     ]
+    ],
+    "truth_s": [
+     49.071,
+     50.888
+    ],
+    "handFrames": [
+     8,
+     7
+    ]
+   }
+  }
+ ]
+}

@@ -28,12 +28,15 @@ export function demoExportProblems(root = "out", verify = () => spawnSync("node"
 /** What demo:serve prints. `real_video_evidence` is `{ outcome, evidence }` as
  * written by scripts/verify-runtime.mjs.
  * @param {{ recognition_worker_sha256: string, matches_committed_worker: boolean,
+ *   asl_engine?: { version: string, policy?: string, model_sha256?: string },
  *   real_video_evidence?: { outcome: { signed_trials: number, correct: number, wrong_accepted: number, abstained: number } } | null }} manifest
  * @param {string} port */
 export function serveBanner(manifest, port) {
   const outcome = manifest.real_video_evidence?.outcome;
+  const engine = manifest.asl_engine;
   return [
     `SignRelay ASL demo build — http://127.0.0.1:${port}/`,
+    ...(engine?.version === "engine-v3.1" ? [`Engine V3.1 · ${engine.policy} · model ${engine.model_sha256?.slice(0, 12)}`] : []),
     `Recognition worker ${manifest.recognition_worker_sha256.slice(0, 12)} (matches committed bundle: ${manifest.matches_committed_worker}).`,
     outcome ? `Recorded development evidence: ${outcome.correct} of ${outcome.signed_trials} previously inspected publisher clips correct, ${outcome.wrong_accepted} wrong, ${outcome.abstained} no match. Not live-camera or signer accuracy.`
       : "No real-video development evidence is recorded for this worker.",

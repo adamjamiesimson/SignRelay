@@ -1,0 +1,13 @@
+
+> signrelay@0.1.0 test
+> vitest run --maxWorkers=2 --testTimeout=20000
+
+
+ RUN  v4.1.12 /workspace/SignRelay
+
+[0;93m2026-11-22 18:37:34.055051 [W:onnxruntime:Default, cpuid_info.cc:91 LogEarlyWarning] Unknown CPU vendor. cpuinfo_vendor value: 0[m
+
+ Test Files  89 passed (89)
+      Tests  918 passed | 1 skipped (919)
+   Start at  18:36:04
+   Duration  108.90s (transform 3.86s, setup 0ms, import 7.78s, tests 183.12s, environment 17ms)

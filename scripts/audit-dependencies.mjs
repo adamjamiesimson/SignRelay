@@ -24,6 +24,11 @@ export function rootAdvisories(report) {
 export function evaluateAudit({ full, production, exceptions, today }) {
   const failures = [];
   const accepted = [];
+  for (const [scope, report] of [["Full", full], ["Production", production]]) {
+    if (report?.error || !report?.vulnerabilities || typeof report.vulnerabilities !== "object" || Array.isArray(report.vulnerabilities)) {
+      failures.push(`${scope} npm audit did not return an advisory report.`);
+    }
+  }
   for (const root of rootAdvisories(production)) {
     failures.push(`Production dependency advisory ${root.id ?? root.url} in ${root.package} (${root.severity}) — no exception mechanism applies.`);
   }

@@ -1,0 +1,489 @@
+{
+ "summary": {
+  "classes_tested": 523,
+  "chrome_top1_correct": 429,
+  "chrome_accepted": 366,
+  "chrome_accepted_correct": 346,
+  "chrome_wrong_accepts": 20,
+  "chrome_no_sign": 3,
+  "native_top1_correct": 431,
+  "statuses": {
+   "accepted": 366,
+   "uncertain": 151,
+   "unknown": 3,
+   "no-sign": 3
+  }
+ },
+ "misses": [
+  {
+   "class": "BAD",
+   "chrome_top1": "QUIET",
+   "status": "uncertain"
+  },
+  {
+   "class": "BATHTUB",
+   "chrome_top1": "BATH",
+   "status": "accepted"
+  },
+  {
+   "class": "BEFORE",
+   "chrome_top1": "SHOULDER",
+   "status": "accepted"
+  },
+  {
+   "class": "BELLYBUTTON",
+   "chrome_top1": "SHORTS",
+   "status": "accepted"
+  },
+  {
+   "class": "BENCH",
+   "chrome_top1": "COUCH",
+   "status": "uncertain"
+  },
+  {
+   "class": "BESIDE",
+   "chrome_top1": "BEFORE",
+   "status": "uncertain"
+  },
+  {
+   "class": "BIB",
+   "chrome_top1": "NECKLACE",
+   "status": "accepted"
+  },
+  {
+   "class": "BIG",
+   "chrome_top1": "TALL",
+   "status": "uncertain"
+  },
+  {
+   "class": "BITE",
+   "chrome_top1": "CATCH",
+   "status": "accepted"
+  },
+  {
+   "class": "BLUE",
+   "chrome_top1": "DOOR",
+   "status": "uncertain"
+  },
+  {
+   "class": "BRING",
+   "chrome_top1": "BABY",
+   "status": "uncertain"
+  },
+  {
+   "class": "BUY",
+   "chrome_top1": "GIVE",
+   "status": "uncertain"
+  },
+  {
+   "class": "CAREFUL",
+   "chrome_top1": "PEOPLE",
+   "status": "accepted"
+  },
+  {
+   "class": "CARTCARRIAGE",
+   "chrome_top1": "HAMMER",
+   "status": "uncertain"
+  },
+  {
+   "class": "CEREAL",
+   "chrome_top1": "NEW",
+   "status": "uncertain"
+  },
+  {
+   "class": "CHAIR",
+   "chrome_top1": "POTATO",
+   "status": "uncertain"
+  },
+  {
+   "class": "CHEESE",
+   "chrome_top1": "NAUGHTY",
+   "status": "uncertain"
+  },
+  {
+   "class": "CLOSE",
+   "chrome_top1": "GOOD",
+   "status": "uncertain"
+  },
+  {
+   "class": "COOK",
+   "chrome_top1": "KITCHEN",
+   "status": "accepted"
+  },
+  {
+   "class": "COULD",
+   "chrome_top1": "CAN",
+   "status": "uncertain"
+  },
+  {
+   "class": "DIRTY",
+   "chrome_top1": "NAUGHTY",
+   "status": "uncertain"
+  },
+  {
+   "class": "DOES",
+   "chrome_top1": "SIDEWALK",
+   "status": "uncertain"
+  },
+  {
+   "class": "DRAWER",
+   "chrome_top1": "SKATE",
+   "status": "accepted"
+  },
+  {
+   "class": "DRIVE",
+   "chrome_top1": "LAST",
+   "status": "uncertain"
+  },
+  {
+   "class": "ELEPHANT",
+   "chrome_top1": "INTO",
+   "status": "uncertain"
+  },
+  {
+   "class": "EYE",
+   "chrome_top1": "NOSE",
+   "status": "accepted"
+  },
+  {
+   "class": "FINGER",
+   "chrome_top1": "PLANTS",
+   "status": "uncertain"
+  },
+  {
+   "class": "FULL",
+   "chrome_top1": "COVER",
+   "status": "uncertain"
+  },
+  {
+   "class": "GIVEMEFIVE",
+   "chrome_top1": "PUSH",
+   "status": "uncertain"
+  },
+  {
+   "class": "GO",
+   "chrome_top1": "GOINGTO",
+   "status": "uncertain"
+  },
+  {
+   "class": "GOOD",
+   "chrome_top1": "THANK-YOU",
+   "status": "uncertain"
+  },
+  {
+   "class": "GREEN",
+   "chrome_top1": "OWIE",
+   "status": "uncertain"
+  },
+  {
+   "class": "HAND",
+   "chrome_top1": "MAD",
+   "status": "uncertain"
+  },
+  {
+   "class": "HEAVY",
+   "chrome_top1": "WHAT",
+   "status": "uncertain"
+  },
+  {
+   "class": "HELP",
+   "chrome_top1": "EACH",
+   "status": "unknown"
+  },
+  {
+   "class": "HESHEIT",
+   "chrome_top1": "PAJAMAS",
+   "status": "unknown"
+  },
+  {
+   "class": "HIDE",
+   "chrome_top1": "TRYTRYTO",
+   "status": "accepted"
+  },
+  {
+   "class": "HUG",
+   "chrome_top1": "LOVE",
+   "status": "uncertain"
+  },
+  {
+   "class": "KNOCK",
+   "chrome_top1": "WORK",
+   "status": "uncertain"
+  },
+  {
+   "class": "LIPS",
+   "chrome_top1": "MOUTH",
+   "status": "uncertain"
+  },
+  {
+   "class": "LOVE",
+   "chrome_top1": "HUG",
+   "status": "uncertain"
+  },
+  {
+   "class": "MAN",
+   "chrome_top1": "PERSON",
+   "status": "uncertain"
+  },
+  {
+   "class": "MONKEY",
+   "chrome_top1": "PLATE",
+   "status": "uncertain"
+  },
+  {
+   "class": "MORE",
+   "chrome_top1": "TEAR",
+   "status": "no-sign"
+  },
+  {
+   "class": "MOUTH",
+   "chrome_top1": "CRY",
+   "status": "accepted"
+  },
+  {
+   "class": "NEEDNEEDTO",
+   "chrome_top1": "SHOULD",
+   "status": "uncertain"
+  },
+  {
+   "class": "NIGHTNIGHT",
+   "chrome_top1": "INSIDEIN",
+   "status": "accepted"
+  },
+  {
+   "class": "OWIE",
+   "chrome_top1": "TOOTHBRUSH",
+   "status": "uncertain"
+  },
+  {
+   "class": "PARTY",
+   "chrome_top1": "YELLOW",
+   "status": "accepted"
+  },
+  {
+   "class": "PEN",
+   "chrome_top1": "WRITE",
+   "status": "accepted"
+  },
+  {
+   "class": "PENGUIN",
+   "chrome_top1": null,
+   "status": "no-sign"
+  },
+  {
+   "class": "PILLOW",
+   "chrome_top1": "BALL",
+   "status": "uncertain"
+  },
+  {
+   "class": "PLAY",
+   "chrome_top1": "PARTY",
+   "status": "accepted"
+  },
+  {
+   "class": "POOL",
+   "chrome_top1": "SWIM",
+   "status": "uncertain"
+  },
+  {
+   "class": "PRETTY",
+   "chrome_top1": "WOLF",
+   "status": "uncertain"
+  },
+  {
+   "class": "PULL",
+   "chrome_top1": "CHASE",
+   "status": "uncertain"
+  },
+  {
+   "class": "PUPPY",
+   "chrome_top1": null,
+   "status": "no-sign"
+  },
+  {
+   "class": "RED",
+   "chrome_top1": "DINNER",
+   "status": "uncertain"
+  },
+  {
+   "class": "RIDE",
+   "chrome_top1": "JUMP",
+   "status": "uncertain"
+  },
+  {
+   "class": "RIP",
+   "chrome_top1": "TEAR",
+   "status": "uncertain"
+  },
+  {
+   "class": "SHAKE",
+   "chrome_top1": "MORE",
+   "status": "uncertain"
+  },
+  {
+   "class": "SHOPPING",
+   "chrome_top1": "BUY",
+   "status": "uncertain"
+  },
+  {
+   "class": "SHORTS",
+   "chrome_top1": "SKIRT",
+   "status": "uncertain"
+  },
+  {
+   "class": "SHOULD",
+   "chrome_top1": "NEEDNEEDTO",
+   "status": "accepted"
+  },
+  {
+   "class": "SHOVEL",
+   "chrome_top1": "BICYCLE",
+   "status": "uncertain"
+  },
+  {
+   "class": "SKIRT",
+   "chrome_top1": "DRESS",
+   "status": "uncertain"
+  },
+  {
+   "class": "SKY",
+   "chrome_top1": "POLICE",
+   "status": "uncertain"
+  },
+  {
+   "class": "SLIDENOUN",
+   "chrome_top1": "SLIDE",
+   "status": "uncertain"
+  },
+  {
+   "class": "SLIPPER",
+   "chrome_top1": "INTO",
+   "status": "accepted"
+  },
+  {
+   "class": "SNACK",
+   "chrome_top1": "LIGHTBULB",
+   "status": "uncertain"
+  },
+  {
+   "class": "SNEAKER",
+   "chrome_top1": "SHOE",
+   "status": "accepted"
+  },
+  {
+   "class": "SNOWSUIT",
+   "chrome_top1": "STORY",
+   "status": "uncertain"
+  },
+  {
+   "class": "SOBIG",
+   "chrome_top1": "ALOT",
+   "status": "uncertain"
+  },
+  {
+   "class": "SOME",
+   "chrome_top1": "BESIDE",
+   "status": "uncertain"
+  },
+  {
+   "class": "STORE",
+   "chrome_top1": "FLAG",
+   "status": "uncertain"
+  },
+  {
+   "class": "TALL",
+   "chrome_top1": "BIG",
+   "status": "uncertain"
+  },
+  {
+   "class": "TEDDY-BEAR",
+   "chrome_top1": "BEAR",
+   "status": "uncertain"
+  },
+  {
+   "class": "THANK-YOU",
+   "chrome_top1": "GOOD",
+   "status": "uncertain"
+  },
+  {
+   "class": "THE",
+   "chrome_top1": "PENCIL",
+   "status": "uncertain"
+  },
+  {
+   "class": "THERE",
+   "chrome_top1": "SLED",
+   "status": "uncertain"
+  },
+  {
+   "class": "TO",
+   "chrome_top1": "CAMERA",
+   "status": "uncertain"
+  },
+  {
+   "class": "TONGUE",
+   "chrome_top1": "INSIDEIN",
+   "status": "uncertain"
+  },
+  {
+   "class": "TONIGHT",
+   "chrome_top1": "INSIDEIN",
+   "status": "accepted"
+  },
+  {
+   "class": "TOUCH",
+   "chrome_top1": "PUT",
+   "status": "uncertain"
+  },
+  {
+   "class": "UP",
+   "chrome_top1": "FACE",
+   "status": "uncertain"
+  },
+  {
+   "class": "VACUUM",
+   "chrome_top1": "CARTCARRIAGE",
+   "status": "uncertain"
+  },
+  {
+   "class": "WAKE",
+   "chrome_top1": "AWAKE",
+   "status": "uncertain"
+  },
+  {
+   "class": "WERE",
+   "chrome_top1": "BEFORE",
+   "status": "uncertain"
+  },
+  {
+   "class": "WET",
+   "chrome_top1": "WOLF",
+   "status": "accepted"
+  },
+  {
+   "class": "WHEN",
+   "chrome_top1": "ABOUT",
+   "status": "uncertain"
+  },
+  {
+   "class": "WIND",
+   "chrome_top1": "WINDY",
+   "status": "uncertain"
+  },
+  {
+   "class": "WOULD",
+   "chrome_top1": "WILL",
+   "status": "uncertain"
+  },
+  {
+   "class": "YELLOW",
+   "chrome_top1": "PARTY",
+   "status": "uncertain"
+  },
+  {
+   "class": "YUCKY",
+   "chrome_top1": "SCARF",
+   "status": "uncertain"
+  }
+ ]
+}

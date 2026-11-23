@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "profile": "asl-demo",
+  "tasks_version": "0.10.35",
+  "files": {
+    "vision/wasm/vision_wasm_internal.js": "e7fd9858e8e8f221d9b96eddc11f8e077f263e0b7bbd79d3cbe882b134274f8c",
+    "vision/wasm/vision_wasm_internal.wasm": "6a5c64584c2ab61c763b6e204afbdbc7ce1caf7f5216187322bca8df94f646bc",
+    "vision/wasm/vision_wasm_nosimd_internal.js": "438d1fe8ff7f4d946025bc211c291543c037d8a3785ed4eee60f1f521b236296",
+    "vision/wasm/vision_wasm_nosimd_internal.wasm": "8a3092d34c79d3f57e6ba8592105e8a90f6b07c27891ffecd14cca428bfd3e31",
+    "vision/models/gesture_recognizer.task": "97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482",
+    "vision/models/face_landmarker.task": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+    "vision/models/pose_landmarker_lite.task": "59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a",
+    "models/asl2000-tgcn/sha256.txt": "db324a1dc5907b2614f37dc0203488443307836d4db028ab7776eba8f6adc0ed",
+    "models/asl2000-tgcn/model.part00.bin": "0d38c52c54b7f0318a57e64f92fb80cb1465b7032eb2373e2ec7ad3064bbb5d3",
+    "models/asl2000-tgcn/model.part01.bin": "8a4f519c23623d16bb2a5d628a5ad9679d661b74e629399e6fc15768e607f23e",
+    "models/asl2000-tgcn/model.part02.bin": "189d09d2c059333095e9e7829c0fa0a4c5c0b45309bcc99d050703c1caf93755",
+    "models/asl2000-tgcn/model.part03.bin": "c00f99fcca5cb9d2e68fabc3466934282f60d8db9ca5823af58f657b9415cc0e",
+    "models/asl2000-tgcn/model.part04.bin": "8e9961df4bb56d8e3d70efc046689217cbb00c7705865453c17a21dccc882761",
+    "models/asl2000-tgcn/model.part05.bin": "957e15ffa38a6955f9d56ff49f05233264c1382e83aac2f5a8fce82fc47ba929",
+    "models/asl2000-tgcn/model.part06.bin": "6cae4ae49c39a3c00f5ba642b5edcab6cf213b80271c1200e0c79a500dcbf6de",
+    "models/asl2000-tgcn/model.part07.bin": "7f659bc373a7debd44d93bd00f07af0bc16d79b39b3eada68902cea08b1e11b3",
+    "models/asl2000-tgcn/model.part08.bin": "727a1eb21c6532358ecf276555487fdf8fb2fce466fbde105175fd203686edb3",
+    "models/asl2000-tgcn/model.json": "ebac604f1c4ee86a7b3b20cfaa9c3a8f157cc814ad0c94e6a87be7902b3ac466",
+    "models/asl2000-tgcn/labels.json": "4a4e1e6c024c19320557d0febdd7f3956960d77a691848a2101cbca72ce69380",
+    "models/asl2000-tgcn/adapter.json": "081e4e83fb40064cabfa14160bf8eb801ad2e7fd07b4c6dc0502db93b69429fd",
+    "models/asl2000-tgcn/metrics.json": "813e7fc425a6a34e8c7f165a0412416c391610445f5edcb39fa6ea3400a43fe8",
+    "models/asl2000-tgcn/dataset-card.md": "3012e0c5817dcbd1289ec3e4691b5393889e40ed1a2a2123e84d2830d9165b65",
+    "workers/ort-wasm-simd-threaded.jsep.wasm": "ac0d8f1cfbf2732420ad78a86072b8507253c63885a61c3fd640b3055256d31d",
+    "workers/ort-wasm-simd-threaded.jsep.mjs": "c7b70c8003f077c62849e15275d0b1f1d1cf1a6dfc63b967400567c7224bfdbe",
+    "workers/recognition.worker.js": "3510843cc821cbbdb9dc227d1f68dff8ded10dce77620bde0198bf4e7e2456c1",
+    "workers/template-matching.worker.js": "ab0f272a6c51eff16eabe350a0bc3669e930b991ca78667b8c4d7a3b6c7ce8cf"
+  },
+  "recognition_worker_sha256": "3510843cc821cbbdb9dc227d1f68dff8ded10dce77620bde0198bf4e7e2456c1",
+  "matches_committed_worker": true,
+  "real_video_evidence": {
+    "outcome": {
+      "signed_trials": 11,
+      "correct": 5,
+      "wrong_accepted": 0,
+      "abstained": 6,
+      "errors": 0
+    },
+    "evidence": [
+      "docs/showcase-2026-11-26/evidence/hosted-pilot/development-candidate.jsonl",
+      "docs/showcase-2026-11-26/evidence/hosted-pilot/candidate.jsonl"
+    ]
+  },
+  "rehearsal_hook": false
+}

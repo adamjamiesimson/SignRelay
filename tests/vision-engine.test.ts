@@ -49,6 +49,43 @@ describe("vision resources and capture cadence", () => {
     engine.close();
     expect(gesture.close).toHaveBeenCalledOnce();
   });
+  it("does not shift landmark indices when a task returns an incomplete group", async () => {
+    const points = (length: number) => Array.from({ length }, (_, index) => ({ x: index / 500, y: 0.4, z: 0 }));
+    const facePoints = points(478), posePoints = points(33);
+    const face = { close: vi.fn(), detectForVideo: vi.fn().mockReturnValue({ faceLandmarks: [facePoints] }) };
+    const pose = { close: vi.fn(), detectForVideo: vi.fn().mockReturnValue({ landmarks: [posePoints] }) };
+    delete facePoints[13];
+    posePoints[12].x = Number.NaN;
+    mocks.gesture.mockResolvedValue({ close: vi.fn(), recognizeForVideo: () => ({ landmarks: [], handedness: [], gestures: [] }) });
+    mocks.face.mockResolvedValue(face);
+    mocks.pose.mockResolvedValue(pose);
+    const { VisionEngine } = await import("../lib/vision-engine");
+    const engine = await VisionEngine.create();
+    const source = {} as HTMLVideoElement;
+    expect(engine.process(source, 0)).toMatchObject({ face: [], pose: [] });
+    face.detectForVideo.mockReturnValue({ faceLandmarks: [points(478)] });
+    pose.detectForVideo.mockReturnValue({ landmarks: [points(33)] });
+    engine.process(source, 50);
+    const recovered = engine.process(source, 150);
+    expect(recovered.face[3].x).toBe(13 / 500);
+    expect(recovered.pose[12].x).toBe(12 / 500);
+    engine.close();
+  });
+  it("does not reuse cached face and pose coordinates across a long camera gap", async () => {
+    const point = { x: 0.3, y: 0.4, z: 0 };
+    mocks.gesture.mockResolvedValue({ close: vi.fn(), recognizeForVideo: () => ({ landmarks: [], handedness: [], gestures: [] }) });
+    mocks.face.mockResolvedValue({ close: vi.fn(), detectForVideo: () => ({ faceLandmarks: [Array(478).fill(point)] }) });
+    mocks.pose.mockResolvedValue({ close: vi.fn(), detectForVideo: () => ({ landmarks: [Array(33).fill(point)] }) });
+    const { VisionEngine } = await import("../lib/vision-engine");
+    const engine = await VisionEngine.create();
+    const source = {} as HTMLVideoElement;
+    const initial = engine.process(source, 0);
+    expect(initial.face).toHaveLength(20);
+    expect(initial.pose).toHaveLength(33);
+    expect(engine.process(source, 800)).toMatchObject({ face: [], pose: [] });
+    expect(engine.process(source, 850).pose).toHaveLength(33);
+    engine.close();
+  });
 });
 
 it("preserves Tasks handedness and forwards the exact unmirrored source", async () => {

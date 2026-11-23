@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { capabilityStatus } from "../lib/capability-status";
+import { capabilityStatus, workspaceModel } from "../lib/capability-status";
 import { buildDashboard } from "../scripts/evaluation-dashboard.mjs";
 import { LANGUAGE_IDS } from "../lib/model-adapters";
 
@@ -11,12 +11,19 @@ describe("capability claims match the evidence", () => {
     const { summary } = buildDashboard([
       { label: "development", file: "d", rows: load("docs/evaluation/asl-stroke-repair-2026-10-17/final-development.jsonl") },
       { label: "historical", file: "h", rows: load("docs/evaluation/asl-stroke-repair-2026-10-17/final-historical.jsonl") }]);
-    const evidence = capabilityStatus("asl").evidence;
+    const evidence = capabilityStatus("asl", false).evidence;
     expect(evidence).toContain(`On ${summary.signed_trials} previously seen`);
     expect(evidence).toContain(`${summary.correct} correct, ${summary.wrong_accepted_trials} wrong, ${summary.abstentions} no-match`);
     for (const row of summary.per_gloss) expect(evidence).toContain(`${row.gloss} ${row.correct}/${row.trials}`);
     expect(summary.per_gloss.map((row: { gloss: string }) => row.gloss)).not.toContain("SORRY");
     expect(evidence).toContain("SORRY untested");
+  });
+  it("describes current ASL suggestions and their review requirement", () => {
+    const { headline, evidence } = capabilityStatus("asl");
+    expect(workspaceModel("asl").automaticVocabularyCount).toBe(523);
+    expect(headline).toContain("Engine V3.1");
+    expect(evidence).toMatch(/Add a suggestion to confirm it/);
+    expect(evidence).toMatch(/Unsupported signs can still be mistaken/);
   });
   it("describes PSL as one-shot reference matching, not a trained model", () => {
     const { headline } = capabilityStatus("psl");

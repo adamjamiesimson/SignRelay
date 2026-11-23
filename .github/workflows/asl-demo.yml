@@ -71,6 +71,9 @@ jobs:
       - name: Demo - self-hosted vision with CDNs blocked
         run: node tests/offline-vision-smoke.mjs "$CHROME"
 
+      - name: Demo - Engine V3.1 ONNX inference with CDNs blocked
+        run: node tests/asl-packed-model-browser-smoke.mjs "$CHROME"
+
       - name: Demo - camera and worker lifecycle stress
         run: node tests/lifecycle-stress-smoke.mjs "$CHROME"
 
@@ -81,6 +84,19 @@ jobs:
         run: |
           npm run test:rendered
           node scripts/verify-runtime.mjs --out out --profile asl-demo
+
+      - name: Upload the verified offline application and standalone server
+        uses: actions/upload-artifact@v4
+        with:
+          name: signrelay-v31-offline-${{ github.sha }}
+          path: |
+            out/
+            scripts/serve-export.mjs
+            scripts/security-policy.mjs
+            lib/vision-runtime.mjs
+            docs/showcase-2026-11-26/OFFLINE_DEMO.md
+          retention-days: 14
+          if-no-files-found: error
 
       - name: Preserve browser evidence
         if: always()

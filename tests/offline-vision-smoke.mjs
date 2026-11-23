@@ -20,9 +20,17 @@ async function until(check, reason, attempts = 600) {
 let browser, detach;
 try {
   await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } }, "No static server");
-  browser = await startChrome(executable);
+  browser = await startChrome(executable, { dismissOnboarding: true });
   const cdnRequests = [], visionRequests = [], responses = [], failures = [];
+  const cdnBlock = { urls: ["*cdn.jsdelivr.net*", "*storage.googleapis.com*"] };
   detach = browser.onEvent(message => {
+    if (message.method === "Target.attachedToTarget") {
+      const { sessionId } = message.params;
+      void browser.send("Network.enable", {}, sessionId)
+        .then(() => browser.send("Network.setBlockedURLs", cdnBlock, sessionId))
+        .catch(error => failures.push(String(error)))
+        .finally(() => browser.send("Runtime.runIfWaitingForDebugger", {}, sessionId).catch(() => {}));
+    }
     if (message.method === "Network.responseReceived" && /\/vision\/|jsdelivr|googleapis/.test(message.params.response.url))
       responses.push(`${message.params.response.status} ${message.params.response.mimeType} ${message.params.response.url}`);
     if (message.method === "Network.loadingFailed") failures.push(`${message.params.errorText} ${message.params.blockedReason ?? ""}`);
@@ -32,7 +40,9 @@ try {
     if (url.includes("/vision/")) visionRequests.push(new URL(url).pathname);
   });
   await browser.send("Network.enable");
-  await browser.send("Network.setBlockedURLs", { urls: ["*cdn.jsdelivr.net*", "*storage.googleapis.com*"] });
+  await browser.send("Network.setBlockedURLs", cdnBlock);
+  await browser.send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true,
+    filter: [{ type: "worker" }] });
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => {
     window.__qaTracks = []; window.__qaFrames = 0;
     const get = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
@@ -45,15 +55,16 @@ try {
   await browser.send("Page.navigate", { url: `${origin}/?perf` });
   const evaluate = browser.evaluate;
   const click = text => evaluate(`(() => { const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(text)}); if(!b||b.disabled) throw new Error('Missing button '+${JSON.stringify(text)}); b.click(); })()`);
-  await until(() => evaluate("!!document.querySelector('.figma-language-row [role=radio]')"), "Welcome screen missing");
+  await until(() => evaluate("!!document.querySelector('.language-row [role=radio]')"), "Welcome screen missing");
   // ASL is already checked in the static HTML, so selecting it proves nothing
   // about hydration. Prove React handles clicks by selecting BSL first; an
-  // unhydrated "Start translating" click is otherwise silently lost.
+  // unhydrated "Start signing" click is otherwise silently lost.
   const choose = name => evaluate(`[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes(${JSON.stringify(name)}))?.click()`);
   const checked = name => evaluate(`document.querySelector('[role=radio][aria-checked=true]')?.textContent.includes(${JSON.stringify(name)})`);
   // The ASL demo profile disables every other language, so there hydration is
   // proved by React's fiber on the radio and the disabled BSL choice must hold.
-  const profile = existsSync("out/runtime-manifest.json") ? JSON.parse(readFileSync("out/runtime-manifest.json", "utf8")).profile : "full";
+  const manifest = existsSync("out/runtime-manifest.json") ? JSON.parse(readFileSync("out/runtime-manifest.json", "utf8")) : null;
+  const profile = manifest?.profile ?? "full";
   if (profile === "asl-demo") {
     await until(() => evaluate("Object.keys(document.querySelector('[role=radio]')).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate", 100);
     assert.equal(await evaluate(`[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes('British'))?.disabled`), true, "BSL must be disabled in the ASL demo build");
@@ -66,7 +77,7 @@ try {
   const cycles = [];
   for (let cycle = 0; cycle < 3; cycle++) {
     const started = Date.now();
-    if (cycle === 0) await click("Start translating"); else await click("Start camera");
+    if (cycle === 0) await click("Start signing"); else await click("Start camera");
     await until(active, `Vision did not start without CDNs (cycle ${cycle + 1})`).catch(error => {
       console.error(JSON.stringify({ cdnRequests, visionRequests, responses, failures: failures.slice(-20) }));
       throw error;
@@ -90,20 +101,21 @@ try {
     const sequence = await evaluate("document.querySelector('.candidate-bar strong')?.textContent");
     await click("Pause camera");
     await until(() => evaluate("window.__qaTracks.length > 0 && window.__qaTracks.every(t => t.readyState === 'ended')"), "Camera tracks were not released");
-    await until(() => evaluate("document.querySelector('.recognition-state')?.textContent.includes('camera off')"), "Camera-off state not shown");
+    await until(() => evaluate("document.querySelector('.recognition-state')?.textContent.includes('Camera off')"), "Camera-off state not shown");
     await browser.send("HeapProfiler.collectGarbage").catch(() => {});
     const heapMb = await evaluate("performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null");
     cycles.push({ cold_start_ms: coldStartMs, frames_forwarded_per_s: framesPerSecond, status_while_no_hands: status, sequence_text: sequence, perf_readout: perf, js_heap_mb_after_pause: heapMb });
   }
   assert.equal(cdnRequests.length, 0, `CDN requests were attempted: ${cdnRequests.join(", ")}`);
-  assert.ok(visionRequests.some(path => path.endsWith("gesture_recognizer.task")), "Self-hosted models were not used");
+  const handModel = manifest?.asl_engine?.version === "engine-v3.1" ? "hand_landmarker.task" : "gesture_recognizer.task";
+  assert.ok(visionRequests.some(path => path.endsWith(handModel)), "Self-hosted models were not used");
   assert.ok(visionRequests.some(path => path.startsWith("/vision/wasm/")), "Self-hosted WASM was not used");
   for (const cycle of cycles) {
     assert.ok(cycle.cold_start_ms < 15000, `Cold start exceeded the 15 s contract: ${cycle.cold_start_ms} ms`);
     assert.ok(cycle.frames_forwarded_per_s > 0, "No frames reached recognition");
-    assert.match(cycle.sequence_text, /Waiting for hands/);
+    assert.match(cycle.sequence_text, /Show your hands to begin/);
     assert.match(cycle.perf_readout ?? "", /frames analysed\/s · assets self-hosted/, "The ?perf device readout is missing");
-    assert.equal(cycle.status_while_no_hands, "waiting for hands", "Camera on without hands must say so, not 'uncertain' or 'listening'");
+    assert.equal(cycle.status_while_no_hands, "Ready", "Approved ready state must be shown while the camera waits for hands");
   }
   console.log(JSON.stringify({ passed: true, cdn_blocked: true, cdn_requests: cdnRequests.length,
     self_hosted_paths: [...new Set(visionRequests)].sort(), cycles,

@@ -2,15 +2,15 @@
 
 SignRelay is a privacy-first research web application that recognises **isolated signs** from a live camera. It observes ordered hand, face and upper-body landmarks, evaluates a language-specific temporal adapter, confirms only high-confidence sequences, and can read confirmed words aloud. It does not translate continuous signing or full sentences.
 
-This repository is an engineering foundation, not a claim of full sign-language translation.
+Start with the [developer handoff](docs/DEVELOPER_HANDOFF.md) for a fresh checkout, asset installation and release verification.
 
 ## What works now
 
 - Forty sign-language workspaces have separate identities; RSL and Bangla have separate pretrained clip-recognition modes.
 - Camera permission is requested only after language selection.
-- MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
+- MediaPipe hand, face and pose tracking runs locally. The ASL workspace uses the Engine V3.1 tracking worker.
 - A Web Worker maintains an ordered temporal buffer for landmark recognition.
-- ASL, BSL and ISL include separate experimental browser models with 2,000, 1,064 and 263 isolated-sign outputs respectively.
+- ASL, BSL and ISL include separate experimental browser models with 523, 1,064 and 263 isolated-sign classes. ASL model results appear as suggestions for manual confirmation.
 - RSL adds the official pretrained Slovo video model: 967 word/phrase classes plus 33 letters, with no personal teaching required. It is explicit single-sign capture, not real-time; 141 MB first load and approximately 19 seconds per inference in the development WASM test.
 - Non-ASL/RSL/Bangla workspaces include 2,000+ searchable concept prompts plus unlimited custom words or short phrases; prompts activate only after the signer records examples in that language.
 - Personal and user-defined words are learned from one to three signer examples and matched on-device with dynamic time warping.
@@ -19,9 +19,9 @@ This repository is an engineering foundation, not a claim of full sign-language 
 - Auto speak, volume, rate and landmark overlay preferences are stored locally.
 - Camera frames are not uploaded or stored.
 
-## GITEX YouthX demo (research prototype)
+## Offline ASL demo and October research history
 
-The October 2026 demo scope is six isolated ASL words: HELLO, THANK YOU, PLEASE, SORRY, YES and NO. When the recognizer is unsure it says so. The evidence is thin: on 11 previously seen development clips, 5 were correct, 0 wrong and 6 no-match; see [the dashboard](docs/evaluation/dashboard-2026-10-21.md). No new-signer, live-camera or false-positive measurement exists yet.
+The October 2026 research demo covered HELLO, THANK YOU, PLEASE, SORRY, YES and NO on the original Engine 1. On 11 previously inspected development clips it recorded 5 correct, 0 wrong and 6 no-match. The normal ASL demo now uses Engine V3.1. [October dashboard](docs/evaluation/dashboard-2026-10-21.md) · [V3.1 research report](engine-v3/REPORT-V3.1.md)
 
 - Demo script, setup, fallbacks and go/no-go: [docs/gitex/demo-package-2026-10-21.md](docs/gitex/demo-package-2026-10-21.md)
 - Machine-checkable acceptance criteria: [docs/gitex/demo-contract.json](docs/gitex/demo-contract.json)
@@ -44,7 +44,7 @@ The [17 September handoff](docs/pretrained-expansion-2026-09-17.md) records the 
 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
-| ASL | Experimental | 2,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL2000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
+| ASL | Experimental | 523 model classes + user-defined personal words | Engine V3.1 ONNX, MediaPipe tracking and on-device personal DTW templates |
 | BSL | Experimental | 1,064 automatic BSL-1K signs + unlimited signer-taught words | Official BSL-1K Pose2Sign model + personal DTW templates |
 | ISL | Experimental | 263 automatic INCLUDE signs + unlimited signer-taught words | Official AI4Bharat INCLUDE transformer + personal DTW templates |
 | RSL | Experimental, slow clip mode | 967 pretrained word/phrase classes + 33 fingerspelling letters | Official Slovo MViTv2-small-32-2 RGB ONNX; no personal recordings required |
@@ -72,7 +72,9 @@ Choose **Russian Sign Language** (search for RSL), enter its workspace, start th
 
 See [Slovo attribution and licence](public/models/rsl1000-slovo/ATTRIBUTION.md). The source uses a custom attribution/share-alike licence, not the application-code licence. Its benchmark results are not SignRelay live-camera accuracy. RSL has not received independent native-signer evaluation. This addition meets 400+ pretrained word/phrase classes for RSL; it does **not** establish 400+ pretrained signs for every workspace.
 
-The 2,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL2000 OpenPose sequences. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. BSL and ISL likewise use their own official isolated-sign checkpoints. Typed custom words activate only after the signer records personal examples; they do not alter a shared model. The remaining languages never borrow, relabel or fabricate a checkpoint.
+### ASL installation and use
+
+The normal workspace uses the frozen Engine V3.1 isolated-sign model trained on PopSign ASL v2.1 and FSBoard. It uses the strict rejection preset and requires a person to add a model suggestion to the transcript before speech. Typed custom words activate after the signer records a personal example. The prior WLASL2000 checkpoint remains available to the Engine 1 rehearsal and historical QA. [V3.1 model attribution](public/models/asl-v31/ATTRIBUTION.md) · [V3.1 research report](engine-v3/REPORT-V3.1.md)
 
 ### PSL installation and use
 
@@ -95,6 +97,7 @@ Camera
 Important modules:
 
 - `lib/vision-engine.ts`: model loading and per-frame holistic tracking
+- `workers/asl-v3-tracker.worker.ts` and `lib/asl-v31-runtime.ts`: V3.1 tracking and checksum-verified ASL model inference
 - `workers/recognition.worker.ts`: temporal buffer, segmentation, automatic model routing and personal inference
 - `lib/model-adapters.ts`: 40-language registry and independent model contracts
 - `lib/decoder.ts`: confidence gating and duplicate suppression
@@ -234,7 +237,7 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 
 ## Known limitations
 
-- The installed ASL checkpoint is the official experimental 2,000-sign WLASL Pose-TGCN model. Its live MediaPipe input adapter and closed-set rejection gate must still be evaluated separately.
+- V3.1 can abstain on supported signs and can suggest the wrong word for unknown or neighboring signs. Independent physical live-camera accuracy is still unmeasured.
 - Personal template matching is signer-specific and is not a substitute for a signer-independent ASL benchmark.
 - Performance varies with viewpoint, signing speed, hand dominance, occlusion and lighting.
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.

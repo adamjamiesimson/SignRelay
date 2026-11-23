@@ -54,12 +54,12 @@ try {
   await send("Runtime.enable"); await send("Network.enable");
   await send("Target.setAutoAttach", { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
   await send("Page.navigate", { url: origin });
-  await until(() => evaluate("document.querySelectorAll('.figma-language-row [role=radio]').length === 7"), "Automatic language row missing");
+  await until(() => evaluate("document.querySelectorAll('.language-row [role=radio]').length === 7"), "Automatic language row missing");
   await until(async () => {
     await click("Russian Sign Language");
-    return await evaluate("Array.from(document.querySelectorAll('.figma-language-row [role=radio]')).some(b => b.textContent.includes('Russian Sign Language') && b.getAttribute('aria-checked') === 'true')");
+    return await evaluate("Array.from(document.querySelectorAll('.language-row [role=radio]')).some(b => b.textContent.includes('Russian Sign Language') && b.getAttribute('aria-checked') === 'true')");
   }, "Russian language choice did not hydrate");
-  await click("Start translating");
+  await click("Start signing");
   await until(() => evaluate("!!document.querySelector('#rsl-title')"), "RSL workspace missing");
   assert.equal(requests.filter(request => request.url.endsWith("model.onnx")).length, 0, "Weights should not load before start");
   await mkdir("outputs", { recursive: true });
@@ -71,7 +71,15 @@ try {
   await click("Start camera");
   await until(async () => /Ready\./.test(await status()), "Model/camera failed to become ready", 180000);
   console.log("Actual pretrained ONNX loaded in Chrome; fake camera ready.");
-  await click("Recognize one sign");
+  const scheduled = await evaluate(`(() => {
+    const button = Array.from(document.querySelectorAll('button')).find(b => b.textContent === 'Recognize one sign');
+    const raf = window.requestAnimationFrame;
+    let started = 0;
+    window.requestAnimationFrame = callback => { started++; return raf.call(window, callback); };
+    try { button.click(); button.click(); } finally { window.requestAnimationFrame = raf; }
+    return started;
+  })()`);
+  assert.equal(scheduled, 1, "Rapid repeated clicks must start exactly one capture loop");
   await until(async () => /Experimental suggestion|No confident match/.test(await status()), "Camera inference did not finish", 120000);
   console.log("Camera capture and worker inference completed:", await status());
   await writeFile("outputs/rsl-desktop.png", Buffer.from((await send("Page.captureScreenshot", { format: "png" })).data, "base64"));
@@ -84,7 +92,7 @@ try {
   assert.equal(await evaluate("document.querySelector('.rsl-result')"), null);
   assert.match(await status(), /Stopped/);
   await click("Back to languages");
-  await until(() => evaluate("document.querySelectorAll('.figma-language-row [role=radio]').length === 7"), "Back navigation failed");
+  await until(() => evaluate("document.querySelectorAll('.language-row [role=radio]').length === 7"), "Back navigation failed");
   assert.equal(errors.length, 0, JSON.stringify(errors));
   console.log("Cancellation, camera release, navigation and no-upload checks passed. No uncaught page errors.");
 } finally {

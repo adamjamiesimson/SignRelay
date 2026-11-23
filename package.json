@@ -7,11 +7,11 @@
   },
   "scripts": {
     "install:ci": "npm ci",
-    "build:worker": "esbuild workers/recognition.worker.ts workers/template-matching.worker.ts workers/rsl.worker.ts workers/bdsl.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outdir=public/workers && node scripts/copy-onnx-runtime.mjs && node scripts/install-vision-assets.mjs --wasm-only",
+    "build:worker": "esbuild workers/recognition.worker.ts workers/template-matching.worker.ts workers/rsl.worker.ts workers/bdsl.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outdir=public/workers && esbuild workers/asl-v3-tracker.worker.ts --bundle --format=iife --platform=browser --target=es2022 --outfile=public/workers/asl-v3-tracker.worker.js && node scripts/copy-onnx-runtime.mjs && node scripts/install-vision-assets.mjs --wasm-only",
     "install:rsl-model": "node scripts/install-rsl-model.mjs",
     "dev": "npm run build:worker && node scripts/dev.mjs",
     "build": "npm run build:firebase",
-    "build:firebase": "node scripts/verify-vision-runtime.mjs && npm run install:rsl-model && node scripts/verify-bdsl-assets.mjs && node scripts/verify-lse-assets.mjs && node scripts/verify-psl-assets.mjs && node scripts/prepare-export.mjs && node scripts/install-vision-assets.mjs && npm run build:worker && next build && node scripts/exclude-private-routes.mjs && node scripts/secure-export.mjs && node scripts/verify-runtime.mjs --out out --profile full",
+    "build:firebase": "node scripts/build-profile.mjs full",
     "start": "node scripts/serve-export.mjs",
     "test": "vitest run",
     "test:rendered": "node --test tests/rendered-html.test.mjs",
@@ -36,7 +36,7 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
     "lucide-react": "^0.468.0",
-    "next": "16.4.2",
+    "next": "16.4.6",
     "onnxruntime-web": "^1.23.2",
     "react": "19.2.6",
     "react-dom": "19.2.6"
@@ -48,11 +48,11 @@
     "@types/react-dom": "19.2.3",
     "esbuild": "0.28.1",
     "eslint": "9.39.4",
-    "eslint-config-next": "16.4.2",
+    "eslint-config-next": "16.4.6",
     "fast-glob": "file:tooling/fast-glob-shim",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "type": "module",
   "displayName": "SignRelay"

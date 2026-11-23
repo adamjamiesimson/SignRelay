@@ -40,7 +40,7 @@ export async function openRehearsal(executable, { extraInit = "" } = {}) {
   const port = 18700 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${port}`;
   const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", String(port)], { stdio: "ignore" });
   await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } }, "No static server");
-  const browser = await startChrome(executable);
+  const browser = await startChrome(executable, { dismissOnboarding: true });
   const pageRequests = [];
   browser.onEvent(message => { if (message.method === "Network.requestWillBeSent") pageRequests.push(message.params.request.url); });
   await browser.send("Page.addScriptToEvaluateOnNewDocument", { source: `(() => {
@@ -69,7 +69,7 @@ export async function openRehearsal(executable, { extraInit = "" } = {}) {
       await until(() => evaluate("Object.keys(document.querySelector('[role=radio]') ?? {}).some(k=>k.startsWith('__reactFiber'))"), "Welcome screen did not hydrate");
     },
     async start() {
-      await harness.click("Start translating");
+      await harness.click("Start signing");
       await until(harness.active, "Camera did not start");
       await until(() => evaluate("!!window.__signrelayRehearsal"), "Rehearsal hook missing");
     },

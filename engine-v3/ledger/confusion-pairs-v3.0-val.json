@@ -1,0 +1,562 @@
+[
+ {
+  "a": "AWAKE",
+  "b": "WAKE",
+  "a_as_b_count": 5,
+  "a_as_b": 0.83,
+  "b_as_a": 0.33,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "BENCH",
+  "b": "COUCH",
+  "a_as_b_count": 4,
+  "a_as_b": 1.0,
+  "b_as_a": 0.12,
+  "train_a": 25,
+  "train_b": 50,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "DEER",
+  "b": "MOOSE",
+  "a_as_b_count": 4,
+  "a_as_b": 1.0,
+  "b_as_a": 0.75,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "TOOTH",
+  "b": "GLASSWINDOW",
+  "a_as_b_count": 4,
+  "a_as_b": 0.67,
+  "b_as_a": 0.33,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "CLEAN",
+  "b": "WIPE",
+  "a_as_b_count": 3,
+  "a_as_b": 0.75,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "FOOD",
+  "b": "EAT",
+  "a_as_b_count": 3,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "TEDDY-BEAR",
+  "b": "BEAR",
+  "a_as_b_count": 3,
+  "a_as_b": 0.38,
+  "b_as_a": 0.0,
+  "train_a": 50,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "TOO",
+  "b": "SAME",
+  "a_as_b_count": 3,
+  "a_as_b": 0.75,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "WERE",
+  "b": "WAS",
+  "a_as_b_count": 3,
+  "a_as_b": 0.75,
+  "b_as_a": 0.25,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "AROUND",
+  "b": "TURNAROUND",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "BEFORE",
+  "b": "SHOULDER",
+  "a_as_b_count": 2,
+  "a_as_b": 0.4,
+  "b_as_a": 0.0,
+  "train_a": 22,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "BEFORE",
+  "b": "WAS",
+  "a_as_b_count": 2,
+  "a_as_b": 0.4,
+  "b_as_a": 0.25,
+  "train_a": 22,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "BIG",
+  "b": "TALL",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.25,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "BROKEN",
+  "b": "BREAK",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.25,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "BUG",
+  "b": "ANT",
+  "a_as_b_count": 2,
+  "a_as_b": 0.33,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "CAN",
+  "b": "COULD",
+  "a_as_b_count": 2,
+  "a_as_b": 0.33,
+  "b_as_a": 0.33,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "CHAIR",
+  "b": "POTATO",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "CUT",
+  "b": "SCISSORS",
+  "a_as_b_count": 2,
+  "a_as_b": 0.29,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "DRYER",
+  "b": "DRY",
+  "a_as_b_count": 2,
+  "a_as_b": 0.4,
+  "b_as_a": 0.0,
+  "train_a": 22,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "FAST",
+  "b": "TAKEN",
+  "a_as_b_count": 2,
+  "a_as_b": 0.4,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "GENTLE",
+  "b": "SOFT",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.5,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "GIFT",
+  "b": "PRESENT",
+  "a_as_b_count": 2,
+  "a_as_b": 0.33,
+  "b_as_a": 0.25,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "GOOD",
+  "b": "THANK-YOU",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "HAVETO",
+  "b": "MUST",
+  "a_as_b_count": 2,
+  "a_as_b": 0.33,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "HELLO",
+  "b": "PRETEND",
+  "a_as_b_count": 2,
+  "a_as_b": 0.2,
+  "b_as_a": 0.0,
+  "train_a": 50,
+  "train_b": 25,
+  "pattern": "occasional"
+ },
+ {
+  "a": "HIDE",
+  "b": "PULL",
+  "a_as_b_count": 2,
+  "a_as_b": 0.4,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "HOT",
+  "b": "DRESS",
+  "a_as_b_count": 2,
+  "a_as_b": 0.33,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "INTO",
+  "b": "ENTER",
+  "a_as_b_count": 2,
+  "a_as_b": 0.4,
+  "b_as_a": 0.25,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "KICK",
+  "b": "FULLFOOD",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "LIPS",
+  "b": "MOUTH",
+  "a_as_b_count": 2,
+  "a_as_b": 0.33,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "LISTEN",
+  "b": "MOM",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 21,
+  "train_b": 50,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "LUNCH",
+  "b": "RUN",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "MOUTH",
+  "b": "SAY",
+  "a_as_b_count": 2,
+  "a_as_b": 0.33,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "MUCH",
+  "b": "ALOT",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "MUST",
+  "b": "TO",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.25,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "NONE",
+  "b": "FIX",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "POUR",
+  "b": "DUMP",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "RIDE",
+  "b": "DANCE",
+  "a_as_b_count": 2,
+  "a_as_b": 0.33,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "SHOULD",
+  "b": "NEEDNEEDTO",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "SLIDENOUN",
+  "b": "SLIDE",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "STOP",
+  "b": "WOULD",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "WET",
+  "b": "WOLF",
+  "a_as_b_count": 2,
+  "a_as_b": 0.33,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "WHEN",
+  "b": "ABOUT",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.25,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "WIND",
+  "b": "WINDY",
+  "a_as_b_count": 2,
+  "a_as_b": 0.5,
+  "b_as_a": 0.33,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "mutual (near-identical / variant?)"
+ },
+ {
+  "a": "A",
+  "b": "THE",
+  "a_as_b_count": 1,
+  "a_as_b": 0.25,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "ALL",
+  "b": "GOOD",
+  "a_as_b_count": 1,
+  "a_as_b": 0.2,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "occasional"
+ },
+ {
+  "a": "ALL",
+  "b": "KITCHEN",
+  "a_as_b_count": 1,
+  "a_as_b": 0.2,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "occasional"
+ },
+ {
+  "a": "ALLGONE",
+  "b": "GRASS",
+  "a_as_b_count": 1,
+  "a_as_b": 0.25,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "ALLIGATOR",
+  "b": "SPILL",
+  "a_as_b_count": 1,
+  "a_as_b": 0.17,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "occasional"
+ },
+ {
+  "a": "ALOT",
+  "b": "CARRY",
+  "a_as_b_count": 1,
+  "a_as_b": 0.25,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "ALOT",
+  "b": "SKY",
+  "a_as_b_count": 1,
+  "a_as_b": 0.25,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "AND",
+  "b": "GENTLE",
+  "a_as_b_count": 1,
+  "a_as_b": 0.25,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "one-way absorption"
+ },
+ {
+  "a": "ANIMAL",
+  "b": "BATH",
+  "a_as_b_count": 1,
+  "a_as_b": 0.17,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "occasional"
+ },
+ {
+  "a": "ANIMAL",
+  "b": "HAVE",
+  "a_as_b_count": 1,
+  "a_as_b": 0.17,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "occasional"
+ },
+ {
+  "a": "APPLE",
+  "b": "CANDY",
+  "a_as_b_count": 1,
+  "a_as_b": 0.17,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 25,
+  "pattern": "occasional"
+ },
+ {
+  "a": "AUNT",
+  "b": "YESTERDAY",
+  "a_as_b_count": 1,
+  "a_as_b": 0.17,
+  "b_as_a": 0.0,
+  "train_a": 25,
+  "train_b": 23,
+  "pattern": "occasional"
+ }
+]

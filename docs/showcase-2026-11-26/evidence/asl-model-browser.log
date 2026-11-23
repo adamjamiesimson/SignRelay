@@ -1,0 +1,1 @@
+{"passed":true,"control":"synthetic landmarks, real ASL-2000 browser worker inference through a deny-all proxy","model_requests":11,"cold_load_ms":2592.2999999970198,"cold_inference_ms":3523.2000000029802,"warm_inference_ms":2354}

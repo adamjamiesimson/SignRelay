@@ -9,10 +9,17 @@ import {
   useState,
 } from "react";
 import {
+  ArrowLeft, BookPlus, Camera, CameraOff, ChevronDown, CircleHelp, Copy, History, Info, LockKeyhole, Pencil,
+  RotateCcw, Save, Square, Trash2, Volume2, X,
+} from "lucide-react";
+import {
   DEFAULT_SETTINGS,
   clearLocalSignRelayData,
   loadHistory,
   loadSettings,
+  onboardingState,
+  saveOnboarding,
+  type OnboardingStatus,
   saveSession,
   saveSettings,
   type SpeechSettings,
@@ -27,6 +34,7 @@ import {
 } from "@/lib/calibration-storage";
 import {
   createCustomVocabularyEntry,
+  isLanguageId,
   LANGUAGE_LIST,
   MODEL_ADAPTERS,
   PERSONAL_STARTER_VOCABULARY,
@@ -35,24 +43,28 @@ import {
 } from "@/lib/model-adapters";
 import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
+import { AslV3Tracker } from "@/lib/asl-v3-tracker";
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
 import { recognitionStatus } from "@/lib/recognition-status";
-import { ASL_ONLY, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
+import { ASL_ONLY, ASL_V3_ENABLED, OUT_OF_PROFILE_LABEL, isLanguageAvailable } from "@/lib/build-profile";
 import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
 import { formatPerfReadout, RollingTimer, ThroughputMonitor } from "@/lib/frame-perf";
-import { capabilityStatus, SIGN_LANGUAGE_NOTE } from "@/lib/capability-status";
+import { shouldAnalyseFrame } from "@/lib/frame-timing";
+import { capabilityStatus, SIGN_LANGUAGE_NOTE, workspaceModel } from "@/lib/capability-status";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
 const BdslRecognizer = dynamic(() => import("@/components/bdsl-recognizer").then(module => module.BdslRecognizer));
 import type {
   CalibrationTemplate,
   DetectionStatus,
   VisionFrame,
+  WorkerConfirmation,
   WorkerMessage,
+  WorkerSuggestion,
 } from "@/lib/vision-types";
 import { SiteFooter, SiteHeader } from "./site-chrome";
-import { FigmaMakeLanding } from "./figma-make-landing";
-import { SurfaceMotion } from "./surface-motion";
+import { Landing } from "./landing";
+import { OnboardingTour } from "./onboarding-tour";
 
 type Step = "welcome" | "workspace";
 type CameraState = "idle" | "requesting" | "loading" | "active" | "denied" | "error";
@@ -74,7 +86,7 @@ export function TranslatorExperience() {
   const [detection, setDetection] = useState<DetectionStatus>(EMPTY_DETECTION);
   const [recognitionState, setRecognitionState] = useState<RecognitionState>("listening");
   const [candidate, setCandidate] = useState<string | null>(null);
-  const [confidence, setConfidence] = useState(0);
+  const [suggestion, setSuggestion] = useState<WorkerSuggestion | null>(null);
   const [bufferSize, setBufferSize] = useState(0);
   const [recognitionFeedback, setRecognitionFeedback] = useState("");
   const [recognitionUnavailable, setRecognitionUnavailable] = useState(false);
@@ -101,14 +113,18 @@ export function TranslatorExperience() {
   const [calibrationState, setCalibrationState] = useState<CalibrationState>("idle");
   const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
   const [countdown, setCountdown] = useState(3);
+  const [tourOpen, setTourOpen] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const cameraButtonRef = useRef<HTMLButtonElement>(null);
+  const urlEntryRef = useRef<() => void>(() => {});
   const vocabularyRef = useRef<HTMLDetailsElement>(null);
   const transcriptHeadingRef = useRef<HTMLHeadingElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const engineRef = useRef<VisionEngine | null>(null);
+  const engineRef = useRef<VisionEngine | AslV3Tracker | null>(null);
   const workerRef = useRef<RecognitionSession | null>(null);
+  const suggestionRef = useRef<WorkerSuggestion | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
   const lastVideoTimeRef = useRef(-1);
@@ -116,6 +132,7 @@ export function TranslatorExperience() {
   const cameraProgressRef = useRef(0);
   const cameraGenerationRef = useRef(0);
   const cameraPendingRef = useRef(false);
+  const cameraStartupRef = useRef<AbortController | null>(null);
   const captureGenerationRef = useRef(0);
   const frameLoopRef = useRef<() => void>(() => {});
   const settingsRef = useRef(settings);
@@ -137,10 +154,8 @@ export function TranslatorExperience() {
   const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(),
     throughput: new ThroughputMonitor(), analysed: 0, since: 0, frames: 0, handFrames: 0 });
 
-  const model = useMemo(
-    () => LANGUAGE_LIST.find((item) => item.id === selected)!,
-    [selected],
-  );
+  const model = workspaceModel(selected);
+  const useAslV3 = ASL_V3_ENABLED && selected === "asl";
 
   const calibrationCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -167,7 +182,6 @@ export function TranslatorExperience() {
     return customWords;
   }, [calibrationTemplates, selected]);
 
-  const activeCustomCount = trainedGlosses.size;
 
   const filteredCalibrationVocabulary = useMemo(() => {
     const builtInStarter = selected === "asl" ? [] : PERSONAL_STARTER_VOCABULARY;
@@ -187,9 +201,13 @@ export function TranslatorExperience() {
     return matches.slice(0, search ? 200 : 80);
   }, [filteredCalibrationVocabulary, vocabularySearch]);
 
+  const showVocabularySearch = selected !== "asl" || filteredCalibrationVocabulary.length > 80 || vocabularySearch !== "";
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setSettings(loadSettings());
+      const storedSettings = loadSettings();
+      settingsRef.current = storedSettings;
+      setSettings(storedSettings);
       setHistory(loadHistory());
     }, 0);
     return () => window.clearTimeout(timer);
@@ -203,8 +221,34 @@ export function TranslatorExperience() {
 
   useEffect(() => {
     templatesRef.current = calibrationTemplates;
-    workerRef.current?.postMessage({ type: "templates", language: selected, templates: calibrationTemplates });
-  }, [calibrationTemplates, selected]);
+    workerRef.current?.postMessage({ type: "templates", language: selected, templates: calibrationTemplates,
+      aslEngine: useAslV3 ? "v3.1" : undefined });
+  }, [calibrationTemplates, selected, useAslV3]);
+
+  const updateSuggestion = useCallback((next: WorkerSuggestion | null) => {
+    suggestionRef.current = next;
+    setSuggestion(next);
+  }, []);
+
+  const resetRecognition = useCallback(() => {
+    const tracker = engineRef.current;
+    if (tracker && "schedule" in tracker) tracker.reset();
+    workerRef.current?.postMessage({ type: "reset" });
+    updateSuggestion(null);
+  }, [updateSuggestion]);
+
+  const updateEntries = useCallback((next: TranscriptEntry[]) => {
+    entriesRef.current = next;
+    setEntries(next);
+  }, []);
+
+  const changeSettings = (changes: Partial<SpeechSettings>) => {
+    const next = { ...settingsRef.current, ...changes };
+    settingsRef.current = next;
+    setSettings(next);
+    saveSettings(next);
+    if (changes.autoSpeak === false) window.speechSynthesis?.cancel();
+  };
 
   function selectLanguage(language: LanguageId) {
     if (language === selected) return true;
@@ -216,23 +260,25 @@ export function TranslatorExperience() {
     }
     // All entry points share this boundary, including returning home before
     // selecting another language. Keep the original transcript on save failure.
-    if (entries.length) {
+    const currentEntries = entriesRef.current;
+    if (currentEntries.length) {
       const saved = saveSession({ id: String(sessionStartedRef.current), language: selected,
-        createdAt: sessionStartedRef.current, entries });
+        createdAt: sessionStartedRef.current, entries: currentEntries });
       if (!saved) {
         setStorageMessage("Couldn't save this transcript. It has been kept here. Free browser storage before changing languages.");
         return false;
       }
       setHistory(loadHistory());
     }
-    setEntries([]);
+    updateEntries([]);
     setEditingId(null);
     setStorageMessage("");
     setTranscriptMessage("");
+    setAnnouncement("");
     // Nothing from the previous language's transcript may keep speaking.
     window.speechSynthesis?.cancel();
     sessionStartedRef.current = Date.now();
-    workerRef.current?.postMessage({ type: "reset" });
+    resetRecognition();
     captureGenerationRef.current++;
     setSelected(language);
     const personalSign = createCustomVocabularyEntry("Personal sign")!;
@@ -245,22 +291,44 @@ export function TranslatorExperience() {
     return true;
   }
 
-  useEffect(() => { entriesRef.current = entries; }, [entries]);
-
-  useEffect(() => {
-    settingsRef.current = settings;
-    if (typeof window !== "undefined") saveSettings(settings);
-  }, [settings]);
-
-  const speak = useCallback((text: string) => {
-    if (!text || typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.volume = settingsRef.current.volume;
-    utterance.rate = settingsRef.current.rate;
-    utterance.lang = model.speechLocale;
-    window.speechSynthesis.speak(utterance);
+  const speak = useCallback((text: string, replaceQueue = true) => {
+    if (!text.trim()) return;
+    const speech = window.speechSynthesis;
+    const speechError = () => setTranscriptMessage("Speech is unavailable in this browser. The transcript is still available.");
+    if (!speech || typeof window.SpeechSynthesisUtterance !== "function") {
+      if (replaceQueue) speechError();
+      return;
+    }
+    try {
+      if (replaceQueue) speech.cancel();
+      const utterance = new window.SpeechSynthesisUtterance(text);
+      utterance.volume = settingsRef.current.volume;
+      utterance.rate = settingsRef.current.rate;
+      utterance.lang = model.speechLocale;
+      if (replaceQueue) utterance.onerror = (event) => {
+        if (event.error !== "canceled" && event.error !== "interrupted") speechError();
+      };
+      speech.speak(utterance);
+    } catch {
+      if (replaceQueue) speechError();
+    }
   }, [model.speechLocale]);
+
+  const appendWord = useCallback((message: WorkerConfirmation | WorkerSuggestion) => {
+    const entry: TranscriptEntry = {
+      id: `${message.timestamp}-${message.gloss}`,
+      text: message.text,
+      gloss: message.gloss,
+      confidence: message.confidence,
+      timestamp: message.timestamp,
+      source: message.source,
+    };
+    const previous = entriesRef.current.at(-1);
+    if (previous?.id === entry.id || (message.type === "confirmed" && isRecentDuplicate(previous, entry))) return;
+    updateEntries([...entriesRef.current, entry]);
+    setAnnouncement(`Confirmed: ${message.text}`);
+    if (settingsRef.current.autoSpeak) speak(message.text, false);
+  }, [speak, updateEntries]);
 
   const handleWorkerMessage = useCallback((message: WorkerMessage) => {
     if (message.type === "analysis") {
@@ -274,7 +342,6 @@ export function TranslatorExperience() {
       setRecognitionUnavailable(false);
       setRecognitionState(message.state);
       setCandidate(message.candidate);
-      setConfidence(message.confidence);
       setBufferSize(message.bufferSize);
       setRecognitionFeedback(message.feedback ?? "");
       setMotionReason(message.motionReason ?? null);
@@ -282,52 +349,51 @@ export function TranslatorExperience() {
     }
     // Confirmations from a stopped or replaced session never reach here:
     // RecognitionSession drops messages from before every reset.
-    if (message.type !== "confirmed") return;
+    if (message.type === "suggestion" && useAslV3 && engineRef.current && !document.hidden) updateSuggestion(message);
+    if (message.type === "confirmed" && (!useAslV3 || message.source === "personal")) {
+      updateSuggestion(null);
+      appendWord(message);
+    }
+  }, [appendWord, perfMode, updateSuggestion, useAslV3]);
 
-    const entry: TranscriptEntry = {
-      id: `${message.timestamp}-${message.gloss}`,
-      text: message.text,
-      gloss: message.gloss,
-      confidence: message.confidence,
-      timestamp: message.timestamp,
-      source: message.source,
-    };
-    // Decide once, synchronously, so a suppressed duplicate is neither shown nor spoken.
-    if (isRecentDuplicate(entriesRef.current.at(-1), entry)) return;
-    entriesRef.current = [...entriesRef.current, entry];
-    setEntries(entriesRef.current);
-    setAnnouncement(`Confirmed: ${message.text}`);
-    if (settingsRef.current.autoSpeak) speak(message.text);
-  }, [speak, perfMode]);
+  const addSuggestedWord = () => {
+    if (!suggestion || suggestion !== suggestionRef.current || document.hidden) return;
+    updateSuggestion(null);
+    appendWord(suggestion);
+    transcriptHeadingRef.current?.focus();
+  };
 
   useEffect(() => {
     if (step !== "workspace" || selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental")) return;
     const worker = new RecognitionSession(
-      () => new Worker("/workers/recognition.worker.js?v=fist-motion-2", { type: "module" }),
+      () => new Worker("/workers/recognition.worker.js?v=asl-v3-1", { type: "module" }),
       handleWorkerMessage,
       status => {
         setRecognitionUnavailable(status.state === "failed");
         if (status.message) setRecognitionFeedback(status.message);
         if (status.state !== "running") {
+          updateSuggestion(null);
           setCandidate(null);
-          setConfidence(0);
           setBufferSize(0);
           setRecognitionState("listening");
         }
       },
     );
-    worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current });
+    worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current,
+      aslEngine: useAslV3 ? "v3.1" : undefined });
     workerRef.current = worker;
     return () => {
       worker.terminate();
       workerRef.current = null;
     };
-  }, [step, selected, handleWorkerMessage]);
+  }, [step, selected, handleWorkerMessage, updateSuggestion, useAslV3]);
 
   const stopCamera = useCallback(() => {
     cameraGenerationRef.current++;
     captureGenerationRef.current++;
     cameraPendingRef.current = false;
+    cameraStartupRef.current?.abort();
+    cameraStartupRef.current = null;
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     animationRef.current = null;
     engineRef.current?.close();
@@ -335,12 +401,11 @@ export function TranslatorExperience() {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
-    workerRef.current?.postMessage({ type: "reset" });
+    resetRecognition();
     setCameraState("idle");
     setCameraMessage("Camera is off");
     setDetection(EMPTY_DETECTION);
     setCandidate(null);
-    setConfidence(0);
     setBufferSize(0);
     setRecognitionFeedback("");
     setMotionReason(null);
@@ -350,25 +415,7 @@ export function TranslatorExperience() {
     captureStateRef.current = "idle";
     captureFramesRef.current = [];
     setCalibrationState("idle");
-  }, []);
-
-  const changeWorkspaceLanguage = (language: LanguageId) => {
-    if (language === selected) return;
-
-    if (!selectLanguage(language)) return;
-
-    const enteringSpecialRecognizer = language === "rsl" || language === "bdsl";
-    const leavingSharedRecognizer = selected !== "rsl" && selected !== "bdsl";
-    if (enteringSpecialRecognizer && leavingSharedRecognizer) stopCamera();
-
-    workerRef.current?.postMessage({ type: "reset" });
-    setCandidate(null);
-    setConfidence(0);
-    setBufferSize(0);
-    setRecognitionFeedback("");
-    setRecognitionUnavailable(false);
-    setRecognitionState("listening");
-  };
+  }, [resetRecognition]);
 
   useEffect(() => {
     if (!perfMode || cameraState !== "active") return;
@@ -392,6 +439,7 @@ export function TranslatorExperience() {
   useEffect(() => () => {
     cameraGenerationRef.current++;
     captureGenerationRef.current++;
+    cameraStartupRef.current?.abort();
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     engineRef.current?.close();
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -439,6 +487,45 @@ export function TranslatorExperience() {
     drawPoints(frame.pose, "rgba(190, 220, 255, .9)", 3.2);
   }, []);
 
+  const handleTrackedFrame = useCallback((frame: VisionFrame, trackingMs: number) => {
+    if (perfMode) {
+      perfRef.current.tracking.record(trackingMs);
+      perfRef.current.frames++;
+      if (frame.hands.length) perfRef.current.handFrames++;
+    }
+    const nextDetection = {
+      person: frame.face.length > 0 || frame.pose.length > 0,
+      hands: frame.hands.length > 0,
+      face: frame.face.length > 0,
+      pose: frame.pose.length > 0,
+    };
+    setDetection(current => current.person === nextDetection.person && current.hands === nextDetection.hands
+      && current.face === nextDetection.face && current.pose === nextDetection.pose ? current : nextDetection);
+    drawOverlay(frame);
+    if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
+    else if (captureStateRef.current !== "countdown" && captureStateRef.current !== "saving") {
+      workerRef.current?.postMessage({ type: "frame", frame });
+    }
+    frameErrorsRef.current = 0;
+  }, [drawOverlay, perfMode]);
+
+  const handleTrackingError = useCallback((error: unknown, fatal = false) => {
+    if (process.env.NODE_ENV === "development") console.warn("A video frame could not be processed", error);
+    if (frameErrorsRef.current === 0) {
+      resetRecognition();
+      setDetection(EMPTY_DETECTION);
+      setCandidate(null);
+      setBufferSize(0);
+      setRecognitionState("listening");
+      setRecognitionFeedback("");
+      setMotionReason(null);
+    }
+    if (++frameErrorsRef.current < 5 && !fatal) return;
+    stopCamera();
+    setCameraState("error");
+    setCameraMessage("Hand tracking stopped. Start the camera again to reload tracking.");
+  }, [resetRecognition, stopCamera]);
+
   const runFrameLoop = useCallback(() => {
     const video = videoRef.current;
     const engine = engineRef.current;
@@ -466,7 +553,12 @@ export function TranslatorExperience() {
       return;
     }
 
-    if (now - lastFrameRef.current >= 50 && video.currentTime !== lastVideoTimeRef.current) {
+    if ("schedule" in engine) {
+      if (video.currentTime !== lastVideoTimeRef.current) {
+        lastVideoTimeRef.current = video.currentTime;
+        engine.schedule(video, now);
+      }
+    } else if (shouldAnalyseFrame(now, lastFrameRef.current, video.currentTime, lastVideoTimeRef.current)) {
       lastFrameRef.current = now;
       lastVideoTimeRef.current = video.currentTime;
       try {
@@ -474,40 +566,20 @@ export function TranslatorExperience() {
         // Rehearsal builds only: while a script plays, synthetic landmarks replace
         // the tracker, which is not run (its output would be discarded).
         const frame = (REHEARSAL ? rehearsalRef.current?.next(now) : null) ?? engine.process(video, now);
-        if (perfMode) {
-          perfRef.current.tracking.record(performance.now() - trackingStarted);
-          perfRef.current.frames++;
-          if (frame.hands.length) perfRef.current.handFrames++;
-        }
-        const nextDetection = {
-          person: frame.face.length > 0 || frame.pose.length > 0,
-          hands: frame.hands.length > 0,
-          face: frame.face.length > 0,
-          pose: frame.pose.length > 0,
-        };
-        setDetection(nextDetection);
-        drawOverlay(frame);
-        if (captureStateRef.current === "recording") captureFramesRef.current.push(frame);
-        else workerRef.current?.postMessage({ type: "frame", frame });
-        frameErrorsRef.current = 0;
+        handleTrackedFrame(frame, performance.now() - trackingStarted);
       } catch (error) {
-        if (process.env.NODE_ENV === "development") console.warn("A video frame could not be processed", error);
-        if (++frameErrorsRef.current >= 5) {
-          stopCamera();
-          setCameraState("error");
-          setCameraMessage("Hand tracking stopped. Start the camera again to reload tracking.");
-          return;
-        }
+        handleTrackingError(error);
+        if (!engineRef.current) return;
       }
     }
     animationRef.current = requestAnimationFrame(frameLoopRef.current);
-  }, [drawOverlay, stopCamera, perfMode]);
+  }, [handleTrackedFrame, handleTrackingError, stopCamera]);
 
   useEffect(() => {
     frameLoopRef.current = runFrameLoop;
   }, [runFrameLoop]);
 
-  const requestCamera = useCallback(async () => {
+  const requestCameraForLanguage = useCallback(async (language: LanguageId) => {
     if (cameraPendingRef.current || engineRef.current) return;
     if (!navigator.mediaDevices?.getUserMedia) {
       setCameraState("error");
@@ -515,13 +587,18 @@ export function TranslatorExperience() {
       return;
     }
     const generation = ++cameraGenerationRef.current;
+    const trackerStartup = new AbortController();
+    const useV3Tracker = ASL_V3_ENABLED && language === "asl";
+    cameraStartupRef.current = trackerStartup;
     cameraPendingRef.current = true;
     setCameraState("requesting");
     setCameraMessage("Waiting for camera permission");
     let loadingVision = false;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: useV3Tracker
+          ? { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } }
+          : { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
       if (generation !== cameraGenerationRef.current) {
@@ -541,8 +618,17 @@ export function TranslatorExperience() {
       if (generation !== cameraGenerationRef.current) return;
 
       setCameraState("loading");
+      setCameraMessage("Preparing hand and pose tracking…");
       loadingVision = true;
-      const engine = await VisionEngine.create(message => {
+      const engine = useV3Tracker ? await AslV3Tracker.create({
+        signal: trackerStartup.signal,
+        onFrame: (frame, trackingMs) => {
+          if (generation === cameraGenerationRef.current && !document.hidden) handleTrackedFrame(frame, trackingMs);
+        },
+        onError: (error, fatal) => {
+          if (generation === cameraGenerationRef.current) handleTrackingError(error, fatal);
+        },
+      }) : await VisionEngine.create(message => {
         if (generation === cameraGenerationRef.current) setCameraMessage(message);
       });
       if (generation !== cameraGenerationRef.current) { engine.close(); return; }
@@ -570,14 +656,46 @@ export function TranslatorExperience() {
             ? "The camera is busy or unavailable. Close other apps using it, then start it again."
             : "The camera could not start. Check camera access in your browser and device settings, then try again.");
     } finally {
-      if (generation === cameraGenerationRef.current) cameraPendingRef.current = false;
+      if (generation === cameraGenerationRef.current) {
+        cameraPendingRef.current = false;
+        cameraStartupRef.current = null;
+      }
     }
-  }, [stopCamera]);
+  }, [handleTrackedFrame, handleTrackingError, stopCamera]);
+
+  const requestCamera = useCallback(() => requestCameraForLanguage(selected), [requestCameraForLanguage, selected]);
+
+  const changeWorkspaceLanguage = (language: LanguageId) => {
+    if (language === selected || !selectLanguage(language)) return;
+
+    const enteringSpecialRecognizer = language === "rsl" || language === "bdsl";
+    const leavingSharedRecognizer = selected !== "rsl" && selected !== "bdsl";
+    const changesTracker = ASL_V3_ENABLED && (language === "asl" || selected === "asl");
+    if (leavingSharedRecognizer && (enteringSpecialRecognizer || changesTracker)) {
+      const resumeCamera = !enteringSpecialRecognizer && Boolean(engineRef.current || cameraPendingRef.current);
+      stopCamera();
+      if (resumeCamera) void requestCameraForLanguage(language);
+    }
+    setCandidate(null);
+    setBufferSize(0);
+    setRecognitionFeedback("");
+    setRecognitionUnavailable(false);
+    setRecognitionState("listening");
+  };
 
   useEffect(() => {
     const resume = () => {
-      workerRef.current?.postMessage({ type: "reset" });
+      resetRecognition();
       cameraProgressRef.current = performance.now();
+      if (document.hidden) {
+        if (captureStateRef.current !== "saving") captureGenerationRef.current++;
+        if (captureStateRef.current === "countdown" || captureStateRef.current === "recording") {
+          captureStateRef.current = "idle";
+          captureFramesRef.current = [];
+          setCalibrationState("idle");
+          setCalibrationMessage("Recording interrupted. Start a new example when you are ready.");
+        }
+      }
       const video = videoRef.current;
       if (document.hidden || !engineRef.current || !video?.paused) return;
       const generation = cameraGenerationRef.current;
@@ -589,21 +707,71 @@ export function TranslatorExperience() {
       });
     };
     document.addEventListener("visibilitychange", resume);
-    return () => document.removeEventListener("visibilitychange", resume);
-  }, [stopCamera]);
+    window.addEventListener("pagehide", stopCamera);
+    return () => {
+      document.removeEventListener("visibilitychange", resume);
+      window.removeEventListener("pagehide", stopCamera);
+    };
+  }, [resetRecognition, stopCamera]);
 
-  const beginTranslation = () => {
-    if (!entries.length) sessionStartedRef.current = Date.now();
+  const enterWorkspace = ({ startCamera, tour = false, language = selected }: { startCamera: boolean; tour?: boolean; language?: LanguageId }) => {
+    if (!entriesRef.current.length) sessionStartedRef.current = Date.now();
     const generation = ++cameraGenerationRef.current;
     setStep("workspace");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     // RSL and Bangla use their own clip-capture components and cameras.
-    if (selected !== "rsl" && selected !== "bdsl") {
-      window.setTimeout(() => {
-        if (generation === cameraGenerationRef.current) void requestCamera();
-      }, 0);
-    }
+    if (language === "rsl" || language === "bdsl") return;
+    // A first visit opens the tour instead; nothing starts the camera behind it.
+    if (tour || onboardingState() === "due") { setTourOpen(true); return; }
+    if (!startCamera) return;
+    window.setTimeout(() => {
+      if (generation === cameraGenerationRef.current) void requestCameraForLanguage(language);
+    }, 0);
   };
+  const beginTranslation = () => enterWorkspace({ startCamera: true });
+
+  const closeTour = (status: OnboardingStatus) => {
+    saveOnboarding(status);
+    setTourOpen(false);
+    // The control that opened the tour may be gone; continue where signing starts.
+    window.setTimeout(() => cameraButtonRef.current?.focus(), 0);
+  };
+
+  // Links into the translator: /#translator, /#tour (from "Take a tour") and
+  // ?lang=<id> (from the languages page). The URL is tidied afterwards so a
+  // repeated click fires again; other parameters such as ?perf are kept.
+  useEffect(() => {
+    urlEntryRef.current = () => {
+      const url = new URL(window.location.href);
+      const requested = url.searchParams.get("lang");
+      const hash = url.hash;
+      if (!requested && hash !== "#translator" && hash !== "#tour") return;
+      url.searchParams.delete("lang");
+      window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}`);
+      let language: LanguageId = isLanguageId(requested) && isLanguageAvailable(requested) ? requested : selected;
+      // The tour points at the live workspace, which RSL and Bangla do not use.
+      if (hash === "#tour" && (language === "rsl" || language === "bdsl")) language = "asl";
+      if (language !== selected) {
+        if (step === "workspace") changeWorkspaceLanguage(language);
+        else if (!selectLanguage(language)) return;
+        if (step === "workspace") {
+          if (hash === "#tour") setTourOpen(true);
+          return;
+        }
+      }
+      if (step === "workspace") {
+        if (hash === "#tour") setTourOpen(true);
+        return;
+      }
+      enterWorkspace({ startCamera: false, tour: hash === "#tour", language });
+    };
+  });
+  useEffect(() => {
+    const open = () => urlEntryRef.current();
+    const timer = window.setTimeout(open, 0);
+    window.addEventListener("hashchange", open);
+    return () => { window.clearTimeout(timer); window.removeEventListener("hashchange", open); };
+  }, []);
 
   const recordCalibration = useCallback(async () => {
     if (captureStateRef.current !== "idle" && captureStateRef.current !== "saved" && captureStateRef.current !== "error") return;
@@ -617,6 +785,7 @@ export function TranslatorExperience() {
     }
 
     captureStateRef.current = "countdown";
+    if (useAslV3) resetRecognition();
     setCalibrationState("countdown");
     setCalibrationMessage(`Get ready to sign ${calibrationWord.text}.`);
     for (let value = 3; value >= 1; value -= 1) {
@@ -666,7 +835,7 @@ export function TranslatorExperience() {
       setCalibrationState("error");
       setCalibrationMessage("This browser could not save the example. Check private-browsing storage settings and try again.");
     }
-  }, [calibrationWord, model.shortName, requestCamera, selected]);
+  }, [calibrationWord, model.shortName, requestCamera, resetRecognition, selected, useAslV3]);
 
   const selectCustomWord = () => {
     const customWord = createCustomVocabularyEntry(customWordInput);
@@ -685,17 +854,31 @@ export function TranslatorExperience() {
   };
 
   const removeCalibration = useCallback(async (gloss: string) => {
-    captureGenerationRef.current++;
-    await deleteCalibrationGloss(gloss, selected);
-    setCalibrationTemplates(await loadCalibrationTemplates());
+    const captureGeneration = ++captureGenerationRef.current;
     captureStateRef.current = "idle";
+    captureFramesRef.current = [];
     setCalibrationState("idle");
-    setCalibrationMessage("Personal examples removed for this word.");
+    try {
+      await deleteCalibrationGloss(gloss, selected);
+      setCalibrationTemplates(await loadCalibrationTemplates());
+      if (captureGeneration === captureGenerationRef.current) setCalibrationMessage("Personal examples removed for this word.");
+    } catch {
+      if (captureGeneration === captureGenerationRef.current) setCalibrationMessage("Personal examples could not be deleted. Check browser storage and try again.");
+    }
   }, [selected]);
 
   const returnHome = () => {
     stopCamera();
+    setTourOpen(false);
     setStep("welcome");
+  };
+
+  const openVocabulary = () => {
+    const panel = vocabularyRef.current;
+    if (!panel) return;
+    panel.open = true;
+    panel.querySelector("summary")?.focus({ preventScroll: true });
+    panel.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   };
 
   const clearTranscript = () => {
@@ -703,33 +886,39 @@ export function TranslatorExperience() {
       id: String(sessionStartedRef.current),
       language: selected,
       createdAt: sessionStartedRef.current,
-      entries,
+      entries: entriesRef.current,
     });
     if (!saved) { setStorageMessage("Could not save on this device. Your transcript has been kept here."); return; }
     window.speechSynthesis?.cancel();
     setStorageMessage("");
     setEditingId(null);
-    setEntries([]);
+    updateEntries([]);
+    setAnnouncement("");
+    resetRecognition();
     sessionStartedRef.current = Date.now();
     setHistory(loadHistory());
     setTranscriptMessage("Transcript saved to this device's history and cleared.");
   };
 
   // An edit that leaves no text removes the entry, so Speak and Copy never see blanks.
-  const finishEditing = (id: string) => {
+  const finishEditing = (id: string, { restoreFocus = false } = {}) => {
     setEditingId(null);
-    setEntries((current) => current.flatMap((item) => item.id !== id ? [item] : item.text.trim() ? [{ ...item, text: item.text.trim() }] : []));
+    updateEntries(entriesRef.current.flatMap((item) => item.id !== id ? [item] : item.text.trim() ? [{ ...item, text: item.text.trim() }] : []));
+    if (restoreFocus) window.setTimeout(() => {
+      const entry = [...document.querySelectorAll<HTMLElement>("[data-entry-id]")].find(element => element.dataset.entryId === id);
+      (entry?.querySelector<HTMLElement>("[data-edit]") ?? transcriptHeadingRef.current)?.focus();
+    }, 0);
   };
 
   const removeEntry = (entry: TranscriptEntry) => {
-    setEntries((current) => current.filter((item) => item.id !== entry.id));
+    updateEntries(entriesRef.current.filter((item) => item.id !== entry.id));
     setTranscriptMessage(`Removed "${entry.text}".`);
     // The pressed button disappears; keep keyboard focus in the transcript.
     transcriptHeadingRef.current?.focus();
   };
 
   const copyTranscript = async () => {
-    const text = entries.map((entry) => entry.text).join(" ");
+    const text = entriesRef.current.map((entry) => entry.text).join(" ");
     try {
       await navigator.clipboard.writeText(text);
       setTranscriptMessage("Transcript copied.");
@@ -740,64 +929,66 @@ export function TranslatorExperience() {
 
   const clearAllLocalData = async () => {
     window.speechSynthesis?.cancel();
-    clearLocalSignRelayData();
-    setEntries([]);
+    const localDataCleared = clearLocalSignRelayData();
+    updateEntries([]);
     setEditingId(null);
-    setHistory([]);
+    setAnnouncement("");
+    setTranscriptMessage("");
+    setStorageMessage("");
+    setHistory(localDataCleared ? [] : loadHistory());
+    settingsRef.current = DEFAULT_SETTINGS;
     setSettings(DEFAULT_SETTINGS);
     sessionStartedRef.current = Date.now();
+    captureGenerationRef.current++;
+    captureStateRef.current = "idle";
+    captureFramesRef.current = [];
+    setCalibrationState("idle");
+    resetRecognition();
     try {
       await clearCalibrationTemplates();
       setCalibrationTemplates([]);
-      setPrivacyMessage("Local transcripts, settings and personal signs were cleared from this browser.");
+      setPrivacyMessage(localDataCleared
+        ? "Local transcripts, settings and personal signs were cleared from this browser."
+        : "Personal signs were cleared, but some saved transcripts or settings could not be deleted. Clear this site's data in your browser settings.");
     } catch {
-      // Keep showing what is still stored rather than pretending it was deleted.
-      setPrivacyMessage("Transcripts and settings were cleared, but personal signs could not be deleted. Clear this site's data in your browser settings.");
+      setPrivacyMessage(localDataCleared
+        ? "Transcripts and settings were cleared, but personal signs could not be deleted. Clear this site's data in your browser settings."
+        : "Some local data could not be deleted. Clear this site's data in your browser settings.");
     }
   };
 
-  if (step === "workspace" && selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental") {
+  if (step === "workspace" && (selected === "rsl" || (selected === "bdsl" && MODEL_ADAPTERS.bdsl.status === "experimental"))) {
     return (
       <div className="app-shell">
         <SiteHeader />
-        <main>
+        <main className="workspace-page clip-workspace" id="main">
           <div className="special-workspace-language-bar">
             <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
           </div>
-          <BdslRecognizer onBack={returnHome} />
+          {selected === "rsl" ? <RslRecognizer onBack={returnHome} /> : <BdslRecognizer onBack={returnHome} />}
         </main>
-      </div>
-    );
-  }
-  if (step === "workspace" && selected === "rsl") {
-    return (
-      <div className="app-shell">
-        <SiteHeader />
-        <main>
-          <div className="special-workspace-language-bar">
-            <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
-          </div>
-          <RslRecognizer onBack={returnHome} />
-        </main>
+        <SiteFooter />
       </div>
     );
   }
 
   if (step === "workspace") {
     const capability = capabilityStatus(selected);
+    const displayedCandidate = suggestion?.text ?? candidate;
     const status = recognitionStatus({ camera: cameraState, unavailable: recognitionUnavailable,
-      handsVisible: detection.hands, motionReason, candidate, bufferSize });
+      handsVisible: detection.hands, motionReason: suggestion ? "ready" : motionReason, candidate: displayedCandidate, bufferSize });
+    const cameraBusy = cameraState === "requesting" || cameraState === "loading";
+    const examples = calibrationCounts.get(calibrationWord.gloss) ?? 0;
     return (
       <div className="app-shell">
-        <SurfaceMotion scene={`workspace-${selected}`} cursor={false} />
         <SiteHeader />
-        <main className="workspace-page">
+        <main className="workspace-page" id="main" data-asl-engine={selected === "asl" ? (useAslV3 ? "v3.1" : "engine-1") : undefined}>
           <div className="workspace-topbar">
-            <button className="back-link" onClick={returnHome}>
-              Change language
+            <button type="button" className="back-link" onClick={returnHome}>
+              <ArrowLeft aria-hidden="true" size={16} />Change language
             </button>
             <div className="workspace-title">
-              <span className="language-code compact">{model.shortName}</span>
+              <span className="language-code">{model.shortName}</span>
               <div>
                 <h1>Live sign recognition</h1>
                 <p>{model.language}</p>
@@ -805,28 +996,27 @@ export function TranslatorExperience() {
             </div>
             <div className="workspace-topbar-actions">
               <WorkspaceLanguageSwitcher selected={selected} onChange={changeWorkspaceLanguage} />
-              <span className="local-badge">On-device processing</span>
+              <button type="button" className="button ghost small" onClick={() => setTourOpen(true)}>
+                <CircleHelp aria-hidden="true" size={16} />Take a tour
+              </button>
             </div>
           </div>
 
           <div className="honesty-banner" role="note">
-            <span className="honesty-label">Model status</span>
-            <p>{ASL_ONLY && <><strong>ASL demo build.</strong> Other language models are not included. </>}<strong>{capability.headline}</strong> {capability.evidence} Check every word before relying on it. <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
-            <button className="text-action" onClick={() => {
-              const panel = vocabularyRef.current;
-              if (!panel) return;
-              panel.open = true;
-              panel.querySelector("summary")?.focus({ preventScroll: true });
-              panel.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-            }}>Teach a sign</button>
+            <Info aria-hidden="true" size={18} />
+            <div>
+              <p>{ASL_ONLY && <span className="tag">ASL demo build · </span>}<strong>Research preview.</strong> Check every result.</p>
+              <details>
+                <summary>What this means <ChevronDown aria-hidden="true" size={14} /></summary>
+                <p>{ASL_ONLY && "Other language models are not included in this build. "}<strong>{capability.headline}</strong> {capability.evidence} <span className="language-note">{SIGN_LANGUAGE_NOTE}</span></p>
+              </details>
+            </div>
           </div>
 
           <div className="translator-grid">
-            <section className="camera-panel" aria-labelledby="camera-title">
+            <section className="camera-panel" aria-labelledby="camera-title" data-tour="camera">
               <div className="panel-heading">
-                <div>
-                  <h2 id="camera-title">Camera</h2>
-                </div>
+                <h2 id="camera-title">Camera</h2>
                 <StatusBadge active={cameraState === "active"} label={cameraMessage} />
               </div>
 
@@ -834,21 +1024,20 @@ export function TranslatorExperience() {
                 <video ref={videoRef} muted playsInline aria-label="Mirrored live camera preview" />
                 <canvas ref={canvasRef} aria-hidden="true" />
                 {cameraState !== "active" && (
-                  <div className="camera-placeholder">
-                    <span className={`camera-placeholder-label ${cameraState === "loading" || cameraState === "requesting" ? "loading" : ""}`}>Camera</span>
-                    <h3>{cameraState === "loading" ? "Preparing your camera" : cameraState === "requesting" ? "Allow camera access" : cameraState === "idle" ? "Ready when you are" : "Camera unavailable"}</h3>
-                    <p>{cameraMessage}</p>
-                    {(cameraState === "denied" || cameraState === "error" || cameraState === "idle") && (
-                      <button className="button secondary small" onClick={requestCamera}>
-                        {cameraState === "idle" ? "Start camera" : "Retry camera"}
+                  <div className={`camera-placeholder ${cameraState}`}>
+                    <span className="camera-placeholder-icon" aria-hidden="true">
+                      {cameraState === "denied" || cameraState === "error" ? <CameraOff size={22} /> : <Camera size={22} />}
+                    </span>
+                    <h3>{cameraState === "loading" ? "Preparing hand tracking" : cameraState === "requesting" ? "Allow camera access" : cameraState === "idle" ? "Camera is off" : "Camera unavailable"}</h3>
+                    <p>{cameraState === "idle" ? "Video stays on this device." : cameraMessage}</p>
+                    {(cameraState === "denied" || cameraState === "error") && (
+                      <button type="button" className="button secondary small" onClick={() => void requestCamera()}>
+                        Retry camera
                       </button>
                     )}
                   </div>
                 )}
-                {cameraState === "active" && (
-                  <div className="camera-guidance">Keep your hands, face and shoulders in frame.</div>
-                )}
-                {calibrationState !== "idle" && calibrationState !== "saved" && calibrationState !== "error" && (
+                                {calibrationState !== "idle" && calibrationState !== "saved" && calibrationState !== "error" && (
                   <div className={`calibration-capture ${calibrationState}`} role="status" aria-live="assertive">
                     <span>{calibrationState === "countdown" ? countdown : calibrationState === "recording" ? "REC" : "···"}</span>
                     <strong>{calibrationState === "countdown" ? `Get ready: ${calibrationWord.text}` : calibrationState === "recording" ? `Sign ${calibrationWord.text}` : "Saving example"}</strong>
@@ -856,286 +1045,288 @@ export function TranslatorExperience() {
                 )}
               </div>
 
-              <details className="workspace-disclosure camera-options">
-                <summary>Camera options</summary>
-              <div className="detection-grid" aria-label="Vision detection status">
-                <DetectionItem label="Camera" active={cameraState === "active"} />
-                <DetectionItem label="Person" active={detection.person} />
-                <DetectionItem label="Hands" active={detection.hands} />
-                <DetectionItem label="Face" active={detection.face} />
-                <DetectionItem label="Upper body" active={detection.pose} />
-              </div>
-
-              {perfMode && <p className="calibration-message perf-readout" data-perf>{perfReadout || "Collecting timings…"}</p>}
-              {visionSource && <p className="calibration-message">Hand tracking loaded {visionSource === "self-hosted" ? "from this site, so it does not depend on an external CDN" : "from the public CDN fallback"}.</p>}
-              <div className="camera-actions">
-                <label className="switch-row">
-                  <input
-                    type="checkbox"
-                    checked={settings.showOverlay}
-                    onChange={(event) => setSettings((current) => ({ ...current, showOverlay: event.target.checked }))}
-                  />
-                  <span>Show landmarks</span>
-                </label>
-              </div>
-              </details>
-              {perfMode && perfWarning && <p className="calibration-message error" role="status" data-perf-warning>{perfWarning}</p>}
               <div className="camera-session-actions">
-                <span>{cameraState === "active" ? "Camera on · video stays private" : "Video stays on this device"}</span>
-                <button className="button ghost small" onClick={cameraState === "active" || cameraState === "requesting" || cameraState === "loading" ? stopCamera : requestCamera}>
-                  {cameraState === "active" ? "Pause camera" : cameraState === "requesting" || cameraState === "loading" ? "Cancel" : "Start camera"}
+                <button type="button" ref={cameraButtonRef} className={`button ${cameraState === "active" || cameraBusy ? "secondary" : "primary"}`}
+                  onClick={cameraState === "active" || cameraBusy ? stopCamera : () => void requestCamera()}>
+                  {cameraState === "active" ? "Pause camera" : cameraBusy ? "Cancel" : "Start camera"}
                 </button>
               </div>
+              {perfMode && perfWarning && <p className="calibration-message error" role="status" data-perf-warning>{perfWarning}</p>}
+
+              <details className="workspace-disclosure camera-options">
+                <summary>Camera options <ChevronDown aria-hidden="true" size={16} /></summary>
+                <div className="disclosure-body">
+                  <label className="switch-row">
+                    <input type="checkbox" checked={settings.showOverlay} onChange={(event) => changeSettings({ showOverlay: event.target.checked })} />
+                    <span>Show hand landmarks on the preview</span>
+                  </label>
+                  <div className="detection-grid" aria-label="Vision detection status">
+                    <DetectionItem label="Camera" active={cameraState === "active"} />
+                    <DetectionItem label="Person" active={detection.person} />
+                    <DetectionItem label="Hands" active={detection.hands} />
+                    <DetectionItem label="Face" active={detection.face} />
+                    <DetectionItem label="Upper body" active={detection.pose} />
+                  </div>
+                  {visionSource && <p className="calibration-message">Hand tracking loaded {visionSource === "self-hosted" ? "from this site, so it does not depend on an external CDN" : "from the public CDN fallback"}.</p>}
+                  {perfMode && <p className="calibration-message perf-readout" data-perf>{perfReadout || "Collecting timings…"}</p>}
+                </div>
+              </details>
             </section>
 
-            <section className="transcript-panel" aria-labelledby="transcript-title">
+            <section className="transcript-panel" aria-labelledby="transcript-title" data-tour="transcript">
               <div className="panel-heading">
-                <div>
-                  <h2 id="transcript-title" ref={transcriptHeadingRef} tabIndex={-1}>Transcript</h2>
-                </div>
+                <h2 id="transcript-title" ref={transcriptHeadingRef} tabIndex={-1}>Transcript</h2>
                 <div className={`recognition-state ${status.tone}`} data-status={status.key} data-worker-state={recognitionState}>
-                  <span /> {status.chip}
+                  <span aria-hidden="true" /> {status.chip}
                 </div>
               </div>
 
               <div className="candidate-bar">
-                <div>
-                  <span className="candidate-label">{status.key === "checking-sign" ? "Possible match · not confirmed" : "Current sequence"}</span>
-                  <strong>{status.key === "checking-sign" ? candidate : status.detail}</strong>
-                </div>
-                <div className="confidence-ring" title="Match score, not a measured probability of correct translation" style={{ "--confidence": `${Math.round(confidence * 100)}%` } as React.CSSProperties}>
-                  <span aria-label={`Match score ${Math.round(confidence * 100)} out of 100`}>{Math.round(confidence * 100)}</span>
-                </div>
+                {status.key === "checking-sign" && <span className="candidate-label">Possible match · not confirmed</span>}
+                <strong>{status.key === "checking-sign" ? displayedCandidate : status.detail}</strong>
               </div>
-
-              <p className="calibration-message">Match score out of 100. It is not measured translation accuracy.</p>
-              {recognitionFeedback && <p className="calibration-message">{recognitionFeedback}</p>}
+              {recognitionFeedback && !suggestion && <p className="calibration-message">{recognitionFeedback}</p>}
+              {suggestion && status.key === "checking-sign" && (
+                <button type="button" className="button secondary small" onClick={addSuggestedWord} aria-label={`Add to transcript: ${suggestion.text}`}>
+                  Add to transcript
+                </button>
+              )}
               <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
               <p className="sr-only" role="status" aria-live="polite">{cameraState === "active" ? "Camera on. Hand tracking is running." : cameraState === "idle" ? "Camera off." : cameraMessage}</p>
               {recognitionUnavailable && (
-                <button className="button secondary small" onClick={() => workerRef.current?.restart()}>
-                  Restart recognition
+                <button type="button" className="button secondary small" onClick={() => workerRef.current?.restart()}>
+                  <RotateCcw aria-hidden="true" size={16} />Restart recognition
                 </button>
               )}
               <div className="transcript-body" aria-label="Confirmed words">
                 {!entries.length ? (
                   <div className="transcript-empty">
-                    <h3>Your words, here.</h3>
-                    <p>Complete each sign. Confident matches appear here.</p>
+                    <h3>Confirmed words appear here</h3>
+                    <button type="button" className="text-action" onClick={openVocabulary}><BookPlus aria-hidden="true" size={16} />Teach a sign</button>
                   </div>
                 ) : (
-                  <div className="transcript-list">
+                  <ol className="transcript-list">
                     {entries.map((entry) => (
-                      <article className="transcript-entry" key={entry.id}>
-                        <div className="entry-time">
-                          {new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </div>
+                      <li className="transcript-entry" key={entry.id} data-entry-id={entry.id}>
                         {editingId === entry.id ? (
                           <input
                             className="entry-editor"
                             maxLength={500}
                             value={entry.text}
                             autoFocus
-                            onChange={(event) => setEntries((current) => current.map((item) => item.id === entry.id ? { ...item, text: event.target.value } : item))}
+                            onChange={(event) => updateEntries(entriesRef.current.map((item) => item.id === entry.id ? { ...item, text: event.target.value } : item))}
                             onBlur={() => finishEditing(entry.id)}
-                            onKeyDown={(event) => event.key === "Enter" && finishEditing(entry.id)}
+                            onKeyDown={(event) => event.key === "Enter" && finishEditing(entry.id, { restoreFocus: true })}
                             aria-label={`Edit ${entry.text}`}
                           />
                         ) : (
                           <p>{entry.text}</p>
                         )}
                         <div className="entry-actions">
-                          <span>{Math.round(entry.confidence * 100)}/100 {entry.source === "starter" ? "rule match" : entry.source === "personal" ? "template match" : "match score"} · {entry.gloss}</span>
-                          <button onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`}>Edit</button>
-                          <button onClick={() => removeEntry(entry)} aria-label={`Remove ${entry.text}`}>Remove</button>
+                          <button type="button" className="icon-button" data-edit onClick={() => setEditingId(entry.id)} aria-label={`Edit ${entry.text}`} title="Edit"><Pencil aria-hidden="true" size={16} /></button>
+                          <button type="button" className="icon-button" onClick={() => removeEntry(entry)} aria-label={`Remove ${entry.text}`} title="Remove"><X aria-hidden="true" size={16} /></button>
                         </div>
-                      </article>
+                      </li>
                     ))}
-                  </div>
+                  </ol>
                 )}
               </div>
 
               <div className="speech-controls">
                 <label className="switch-row prominent">
-                  <input
-                    type="checkbox"
-                    checked={settings.autoSpeak}
-                    onChange={(event) => setSettings((current) => ({ ...current, autoSpeak: event.target.checked }))}
-                  />
-                  <span><strong>Auto speak</strong></span>
+                  <input type="checkbox" checked={settings.autoSpeak} onChange={(event) => changeSettings({ autoSpeak: event.target.checked })} />
+                  <span>Speak each word</span>
                 </label>
                 <div className="speech-buttons">
-                  <button className="button secondary small" disabled={!entries.length} onClick={() => speak(entries.map((entry) => entry.text).join(" "))}>
-                    Speak
+                  <button type="button" className="button secondary small" disabled={!entries.length} onClick={() => speak(entriesRef.current.map((entry) => entry.text).join(" "))}>
+                    <Volume2 aria-hidden="true" size={16} />Speak
                   </button>
-                  <button className="button ghost small" onClick={() => window.speechSynthesis?.cancel()}>
-                    Stop
+                  <button type="button" className="button ghost small" onClick={() => window.speechSynthesis?.cancel()}>
+                    <Square aria-hidden="true" size={14} />Stop
                   </button>
                 </div>
               </div>
-              <details className="workspace-disclosure voice-options">
-                <summary>Voice settings</summary>
-                <div className="voice-ranges">
-                <label className="range-control">
-                  <span>Volume <strong>{Math.round(settings.volume * 100)}%</strong></span>
-                  <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => setSettings((current) => ({ ...current, volume: Number(event.target.value) }))} />
-                </label>
-                <label className="range-control">
-                  <span>Rate <strong>{settings.rate.toFixed(2)}×</strong></span>
-                  <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => setSettings((current) => ({ ...current, rate: Number(event.target.value) }))} />
-                </label>
-                </div>
-              </details>
 
               <div className="transcript-actions">
-                <button className="button ghost small" onClick={() => setShowHistory((current) => !current)}>
-                  History ({history.length})
+                <button type="button" className="button ghost small" disabled={!entries.length} onClick={() => void copyTranscript()}>
+                  <Copy aria-hidden="true" size={16} />Copy
                 </button>
-                <button className="button ghost small" disabled={!entries.length} onClick={() => void copyTranscript()}>
-                  Copy
+                <button type="button" className="button ghost small" disabled={!entries.length} onClick={clearTranscript}>
+                  <Save aria-hidden="true" size={16} />Save &amp; clear
                 </button>
-                <button className="button danger small" disabled={!entries.length} onClick={clearTranscript}>
-                  Save & clear
+                <button type="button" className="button ghost small" aria-expanded={showHistory} aria-controls="transcript-history" onClick={() => setShowHistory((current) => !current)}>
+                  <History aria-hidden="true" size={16} />History ({history.length})
                 </button>
               </div>
               {transcriptMessage && <p className="calibration-message" role="status">{transcriptMessage}</p>}
-
               {storageMessage && <p className="calibration-message" role="status">{storageMessage}</p>}
               {showHistory && (
-                <div className="history-drawer">
-                  <div className="history-heading"><strong>Local history</strong><button onClick={() => setShowHistory(false)} aria-label="Close history">Close</button></div>
-                  {!history.length ? <p>No saved sessions on this device.</p> : history.map((session) => (
+                <div className="history-drawer" id="transcript-history">
+                  <div className="history-heading"><strong>Saved on this device</strong><button type="button" className="icon-button" onClick={() => setShowHistory(false)} aria-label="Close history"><X aria-hidden="true" size={16} /></button></div>
+                  {!history.length ? <p>No saved transcripts yet. Save &amp; clear keeps the last eight here.</p> : history.map((session) => (
                     <div className="history-session" key={session.id}>
-                      <span>{new Date(session.createdAt).toLocaleString()}</span>
+                      <span>{new Date(session.createdAt).toLocaleString()} · {MODEL_ADAPTERS[session.language].shortName}</span>
                       <p>{session.entries.map((entry) => entry.text).join(" ")}</p>
                     </div>
                   ))}
                 </div>
               )}
+
+              <details className="workspace-disclosure voice-options">
+                <summary>Voice settings <ChevronDown aria-hidden="true" size={16} /></summary>
+                <div className="voice-ranges">
+                  <label className="range-control">
+                    <span>Volume <strong>{Math.round(settings.volume * 100)}%</strong></span>
+                    <input type="range" min="0" max="1" step="0.05" value={settings.volume} onChange={(event) => changeSettings({ volume: Number(event.target.value) })} />
+                  </label>
+                  <label className="range-control">
+                    <span>Rate <strong>{settings.rate.toFixed(2)}×</strong></span>
+                    <input type="range" min="0.6" max="1.4" step="0.05" value={settings.rate} onChange={(event) => changeSettings({ rate: Number(event.target.value) })} />
+                  </label>
+                  <p className="field-hint">Speech uses your browser or device voices. Some voices are online services that receive the text spoken.</p>
+                </div>
+              </details>
             </section>
           </div>
 
-          <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef}>
-            <summary><span>Personal vocabulary <small>{activeCustomCount} signs taught</small></span></summary>
-            <div className="calibration-heading">
-              <div>
-                <h2 id="calibration-title">Teach a {model.shortName} sign</h2>
-                <p>Choose a word, then record its complete sign two or three times. Examples stay on this device.</p>
-              </div>
-              <div className="calibration-progress" aria-label={`${activeCustomCount} personal words active`}>
-                <strong>{activeCustomCount}</strong><span> personal</span>
-              </div>
-            </div>
-
-            <div className="calibration-controls">
-              <div className="selected-word-card">
-                <div>
-                  <span>Selected word</span>
-                  <strong>{calibrationWord.text}</strong>
-                  <small>{calibrationCounts.get(calibrationWord.gloss) ?? 0} of 3 examples recorded</small>
+          <div className="workspace-secondary" data-tour="teach">
+            <details className="calibration-panel workspace-disclosure vocabulary-disclosure" id="personal-vocabulary" ref={vocabularyRef} data-taught={trainedGlosses.size}>
+              <summary>
+                <span className="summary-title"><BookPlus aria-hidden="true" size={18} />Personal signs</span>
+                <ChevronDown aria-hidden="true" size={16} />
+              </summary>
+              <div className="calibration-body">
+                <div className="calibration-heading">
+                  <h2 id="calibration-title">Teach a {model.shortName} sign</h2>
+                  <p>Choose a word and record it two or three times. Video is not saved.</p>
                 </div>
-                <div className="selected-word-actions">
-                  <button className="button primary small" onClick={() => void recordCalibration()} disabled={calibrationState === "countdown" || calibrationState === "recording" || calibrationState === "saving"}>
-                    {cameraState === "active" ? "Record example" : "Start camera & record"}
-                  </button>
-                  {trainedGlosses.has(calibrationWord.gloss) && (
-                    <button className="button ghost small" onClick={() => void removeCalibration(calibrationWord.gloss)}>
-                      Remove
-                    </button>
+
+                <ol className="teach-steps">
+                  <li className="teach-step">
+                    <span className="teach-step-number" aria-hidden="true">1</span>
+                    <div className="custom-word-controls">
+                      <span className="custom-word-label">Choose a word</span>
+                      <div className="custom-word-input">
+                        <input
+                          value={customWordInput}
+                          maxLength={48}
+                          onChange={(event) => setCustomWordInput(event.target.value)}
+                          onKeyDown={(event) => event.key === "Enter" && selectCustomWord()}
+                          placeholder="Type a word, e.g. Pizza"
+                          aria-label="Word or short phrase to teach"
+                        />
+                        <button type="button" className="button secondary small" onClick={selectCustomWord} disabled={!customWordInput.trim()}>
+                          Select word
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                  <li className="teach-step">
+                    <span className="teach-step-number" aria-hidden="true">2</span>
+                    <div className="selected-word-card">
+                      <div>
+                        <strong>{calibrationWord.text}</strong>
+                        <small>{examples} of 3 examples recorded</small>
+                        <span className="example-meter" aria-hidden="true">{[0, 1, 2].map(i => <i key={i} className={i < examples ? "filled" : ""} />)}</span>
+                      </div>
+                      <div className="selected-word-actions">
+                        <button type="button" className="button primary small" onClick={() => void recordCalibration()} disabled={calibrationState === "countdown" || calibrationState === "recording" || calibrationState === "saving"}>
+                          {cameraState === "active" ? "Record example" : "Start camera & record"}
+                        </button>
+                        {trainedGlosses.has(calibrationWord.gloss) && (
+                          <button type="button" className="button ghost small" onClick={() => void removeCalibration(calibrationWord.gloss)}>
+                            <Trash2 aria-hidden="true" size={16} />Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                </ol>
+                <p className={`calibration-message ${calibrationState}`} role="status">{calibrationMessage}</p>
+
+                <div className="vocabulary-section">
+                  <div className="vocabulary-section-heading">
+                    <h3>{selected === "asl" ? "Your signs" : `Your signs and ${model.shortName} concepts`}</h3>
+                  </div>
+                  {showVocabularySearch && (
+                    <div className="custom-word-controls starter-library-search">
+                      <label className="search-field">
+                        <span className="sr-only">{selected === "asl" ? "Search taught ASL signs" : `Search built-in ${model.shortName} concepts`}</span>
+                        <input
+                          type="search"
+                          value={vocabularySearch}
+                          onChange={(event) => setVocabularySearch(event.target.value)}
+                          placeholder={selected === "asl" ? `Search your ${filteredCalibrationVocabulary.length.toLocaleString()} taught signs` : `Search ${model.vocabulary.length.toLocaleString()} concepts, e.g. doctor`}
+                          aria-label={selected === "asl" ? "Search taught ASL signs" : `Search built-in ${model.shortName} concepts`}
+                        />
+                      </label>
+                    </div>
+                  )}
+                  {visibleCalibrationVocabulary.length ? (
+                    <div className="vocabulary-grid" aria-label={`Personal ${model.shortName} vocabulary`}>
+                      {visibleCalibrationVocabulary.map((word) => {
+                        const exampleCount = calibrationCounts.get(word.gloss) ?? 0;
+                        return (
+                          <button
+                            type="button"
+                            key={word.gloss}
+                            aria-pressed={calibrationWord.gloss === word.gloss}
+                            className={`${calibrationWord.gloss === word.gloss ? "selected" : ""} ${exampleCount ? "trained" : ""}`}
+                            onClick={() => {
+                              captureGenerationRef.current++;
+                              setCalibrationWord(word);
+                              captureStateRef.current = "idle";
+                              setCalibrationState("idle");
+                              setCalibrationMessage(exampleCount ? `${word.text} is active. Add another example to improve consistency.` : `Record ${word.text} to activate it in your personal recognizer.`);
+                            }}
+                          >
+                            <span>{word.text}</span>
+                            {exampleCount > 0 && <span className="vocabulary-trained-label">Taught</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="empty-state">{vocabularySearch ? "No sign matches that search." : "No signs taught yet. Choose a word above and record it."}</p>
+                  )}
+                  {filteredCalibrationVocabulary.length > visibleCalibrationVocabulary.length && (
+                    <p className="calibration-message">Showing {visibleCalibrationVocabulary.length} of {filteredCalibrationVocabulary.length.toLocaleString()} words. Search to narrow the library.</p>
                   )}
                 </div>
               </div>
-            </div>
+            </details>
 
-            <div className="custom-word-controls">
-              <div>
-                <span className="custom-word-label">Type a word, then sign it</span>
-                <p>Type what you want SignRelay to say, select it, then record yourself signing it.</p>
+            <details className="workspace-disclosure privacy-disclosure">
+              <summary>
+                <span className="summary-title"><LockKeyhole aria-hidden="true" size={18} />Privacy &amp; data</span>
+                <ChevronDown aria-hidden="true" size={16} />
+              </summary>
+              <div className="disclosure-body">
+                <section className="privacy-strip" aria-labelledby="privacy-heading">
+                  <div>
+                    <h2 id="privacy-heading">Your camera stays private</h2>
+                    <p>Frames are analysed in this browser; video is never uploaded or stored. Transcripts, settings, personal signs and tour progress stay in this browser until you clear them.</p>
+                  </div>
+                  <button type="button" className="button danger small" onClick={() => void clearAllLocalData()}>Clear local data</button>
+                </section>
+                {privacyMessage && <p className="calibration-message" role="status">{privacyMessage}</p>}
+                <p className="model-detail-copy">{model.status === "experimental" ? `${model.automaticVocabularyCount.toLocaleString()} automatic ${model.shortName} test signs · ${model.version}. This is an isolated-sign research model, not a validated continuous sign-language interpreter.` : model.status === "preparing" ? `No shared automatic ${model.shortName} model is installed. Recognition uses only the private signs you teach.` : `${model.vocabulary.length.toLocaleString()} ${model.shortName} starter labels are available to teach. Labels are not pre-trained translations.`} Personal examples store normalised landmarks, never camera video.</p>
               </div>
-              <div className="custom-word-input">
-                <input
-                  value={customWordInput}
-                  maxLength={48}
-                  onChange={(event) => setCustomWordInput(event.target.value)}
-                  onKeyDown={(event) => event.key === "Enter" && selectCustomWord()}
-                  placeholder="e.g. Pizza"
-                  aria-label="Word or short phrase to teach"
-                />
-                <button className="button secondary small" onClick={selectCustomWord} disabled={!customWordInput.trim()}>
-                  Select word
-                </button>
-              </div>
-            </div>
-
-            {selected !== "asl" && (
-              <div className="custom-word-controls starter-library-search">
-                <div>
-                  <span className="custom-word-label">Search the {model.vocabulary.length.toLocaleString()} built-in concepts</span>
-                  <p>Choose a concept first, then record two or three examples of the sign you use for it.</p>
-                </div>
-                <div className="custom-word-input">
-                  <input
-                    value={vocabularySearch}
-                    onChange={(event) => setVocabularySearch(event.target.value)}
-                    placeholder="Search, e.g. doctor, travel, happy"
-                    aria-label={`Search built-in ${model.shortName} concepts`}
-                  />
-                </div>
-              </div>
-            )}
-
-            <p className={`calibration-message ${calibrationState}`} role="status">{calibrationMessage}</p>
-            <div className="vocabulary-grid" aria-label={`Personal ${model.shortName} vocabulary`}>
-              {visibleCalibrationVocabulary.map((word) => {
-                const exampleCount = calibrationCounts.get(word.gloss) ?? 0;
-                return (
-                  <button
-                    key={word.gloss}
-                    className={`${calibrationWord.gloss === word.gloss ? "selected" : ""} ${exampleCount ? "trained" : ""}`}
-                    onClick={() => {
-                      captureGenerationRef.current++;
-                      setCalibrationWord(word);
-                      captureStateRef.current = "idle";
-                      setCalibrationState("idle");
-                      setCalibrationMessage(exampleCount ? `${word.text} is active. Add another example to improve consistency.` : `Record ${word.text} to activate it in your personal recognizer.`);
-                    }}
-                  >
-                    <span>{word.text}</span>
-                    <small>{exampleCount ? `${exampleCount} example${exampleCount === 1 ? "" : "s"}` : word.category}</small>
-                    {exampleCount > 0 && <span className="vocabulary-trained-label">Taught</span>}
-                  </button>
-                );
-              })}
-            </div>
-            {filteredCalibrationVocabulary.length > visibleCalibrationVocabulary.length && (
-              <p className="calibration-message">Showing {visibleCalibrationVocabulary.length} of {filteredCalibrationVocabulary.length.toLocaleString()} words. Search to narrow the library.</p>
-            )}
-          </details>
-
-          <details className="workspace-disclosure privacy-disclosure">
-            <summary>Privacy &amp; model details</summary>
-            <p className="model-detail-copy">{model.status === "experimental" ? `${model.automaticVocabularyCount.toLocaleString()} automatic ${model.shortName} test signs · ${model.version}. This is an isolated-sign research model, not a validated continuous sign-language interpreter.` : model.status === "preparing" ? `No shared automatic ${model.shortName} model is installed. Recognition uses only the private signs you teach.` : `${model.vocabulary.length.toLocaleString()} ${model.shortName} starter labels are available to teach. Labels are not pre-trained translations.`} Personal examples store normalised landmarks, never camera video.</p>
-          <section className="privacy-strip" aria-labelledby="privacy-heading">
-            <div>
-              <h2 id="privacy-heading">Your camera stays private</h2>
-              <p>Frames are analysed in this browser. Raw video is not uploaded or stored. Settings and saved transcripts stay in local browser storage.</p>
-            </div>
-            <button className="button ghost small" onClick={() => void clearAllLocalData()}>Clear local data</button>
-          </section>
-          {privacyMessage && <p className="calibration-message" role="status">{privacyMessage}</p>}
-          </details>
+            </details>
+          </div>
         </main>
         <SiteFooter />
+        <OnboardingTour open={tourOpen} onClose={closeTour} />
       </div>
     );
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell home-shell">
       <SiteHeader />
-      <main>
-        {storageMessage && <p className="calibration-message" role="alert">{storageMessage}</p>}
-        <FigmaMakeLanding
+      <main id="main">
+        {storageMessage && <p className="notice error page-notice" role="alert">{storageMessage}</p>}
+        <Landing
           selected={selected}
           onSelect={selectLanguage}
           onStart={beginTranslation}
@@ -1157,15 +1348,15 @@ function WorkspaceLanguageSwitcher({
   const development = LANGUAGE_LIST.filter((language) => language.status !== "experimental");
 
   return (
-    <label className="workspace-language-switcher">
-      <span>Language</span>
-      <div className="workspace-language-select">
+    <label className="workspace-language-switcher" data-tour="language">
+      <span className="sr-only">Sign language</span>
+      <span className="workspace-language-select">
         <select
           value={selected}
           onChange={(event) => onChange(event.target.value as LanguageId)}
           aria-label="Change sign language"
         >
-          <optgroup label="Research models · live accuracy not measured">
+          <optgroup label="Automatic recognition · experimental">
             {automatic.map((language) => (
               <option key={language.id} value={language.id} disabled={!isLanguageAvailable(language.id)}>
                 {language.shortName} · {language.language}{isLanguageAvailable(language.id) ? "" : ` (${OUT_OF_PROFILE_LABEL.toLowerCase()})`}
@@ -1180,13 +1371,14 @@ function WorkspaceLanguageSwitcher({
             ))}
           </optgroup>
         </select>
-      </div>
+        <ChevronDown aria-hidden="true" size={16} />
+      </span>
     </label>
   );
 }
 
 function StatusBadge({ active, label }: { active: boolean; label: string }) {
-  return <span className={`status-badge ${active ? "active" : ""}`} title={label}><span />{active ? "Active" : label}</span>;
+  return <span className={`status-badge ${active ? "active" : ""}`} title={label}><span aria-hidden="true" />{active ? "Active" : label}</span>;
 }
 
 function DetectionItem({ label, active }: { label: string; active: boolean }) {

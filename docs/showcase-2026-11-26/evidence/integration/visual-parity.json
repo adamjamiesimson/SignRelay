@@ -1,0 +1,26 @@
+{
+  "desktop-landing": {
+    "byte_identical": true,
+    "sha256": "33bee5fe1145f05a2ff5f64e8e57fb6ad91b9ba1308f98360fdcdeb92d165c79",
+    "reference": "https://signrelay.web.app",
+    "candidate_revision": "779fdfb"
+  },
+  "desktop-workspace": {
+    "byte_identical": true,
+    "sha256": "d7896c5099de7054505c07b3935a8200f37d9c830c77c7164ae934db1367c69b",
+    "reference": "https://signrelay.web.app",
+    "candidate_revision": "779fdfb"
+  },
+  "mobile-landing": {
+    "byte_identical": true,
+    "sha256": "54ab22f924b7ecbf85fe11e7744783cc3be131ca962588591ed9b6a92282bc24",
+    "reference": "https://signrelay.web.app",
+    "candidate_revision": "779fdfb"
+  },
+  "mobile-workspace": {
+    "byte_identical": true,
+    "sha256": "64b82cf15a2253ef8aa7fac91a9719afd5f44b7a0d37c51c118e978652574b84",
+    "reference": "https://signrelay.web.app",
+    "candidate_revision": "779fdfb"
+  }
+}
