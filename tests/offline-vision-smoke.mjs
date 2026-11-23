@@ -101,7 +101,7 @@ try {
     const sequence = await evaluate("document.querySelector('.candidate-bar strong')?.textContent");
     await click("Pause camera");
     await until(() => evaluate("window.__qaTracks.length > 0 && window.__qaTracks.every(t => t.readyState === 'ended')"), "Camera tracks were not released");
-    await until(() => evaluate("document.querySelector('.recognition-state')?.textContent.includes('camera off')"), "Camera-off state not shown");
+    await until(() => evaluate("document.querySelector('.recognition-state')?.textContent.includes('Camera off')"), "Camera-off state not shown");
     await browser.send("HeapProfiler.collectGarbage").catch(() => {});
     const heapMb = await evaluate("performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null");
     cycles.push({ cold_start_ms: coldStartMs, frames_forwarded_per_s: framesPerSecond, status_while_no_hands: status, sequence_text: sequence, perf_readout: perf, js_heap_mb_after_pause: heapMb });
@@ -113,9 +113,9 @@ try {
   for (const cycle of cycles) {
     assert.ok(cycle.cold_start_ms < 15000, `Cold start exceeded the 15 s contract: ${cycle.cold_start_ms} ms`);
     assert.ok(cycle.frames_forwarded_per_s > 0, "No frames reached recognition");
-    assert.match(cycle.sequence_text, /Waiting for hands/);
+    assert.match(cycle.sequence_text, /Show your hands to begin/);
     assert.match(cycle.perf_readout ?? "", /frames analysed\/s · assets self-hosted/, "The ?perf device readout is missing");
-    assert.equal(cycle.status_while_no_hands, "waiting for hands", "Camera on without hands must say so, not 'uncertain' or 'listening'");
+    assert.equal(cycle.status_while_no_hands, "Ready", "Approved ready state must be shown while the camera waits for hands");
   }
   console.log(JSON.stringify({ passed: true, cdn_blocked: true, cdn_requests: cdnRequests.length,
     self_hosted_paths: [...new Set(visionRequests)].sort(), cycles,

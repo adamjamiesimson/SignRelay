@@ -74,7 +74,7 @@ try {
 
   // No inaccurate claims on the workspace, and nothing left the machine.
   const body = await h.evaluate("document.body.innerText");
-  assert.match(body, /not measured translation accuracy/i);
+  assert.match(body, /Research preview[\s\S]*Check every result/i);
   for (const claim of [/\b\d{1,3}(\.\d+)?\s?% (accura|correct)/i, /accurately translates/i, /understands (all|any) sign/i, /real-world accuracy of/i])
     assert.doesNotMatch(body, claim, `Inaccurate claim on the page: ${claim}`);
   assert.deepEqual(h.nonLoopback(), [], "Non-loopback requests");

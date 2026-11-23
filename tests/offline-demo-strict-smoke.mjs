@@ -139,7 +139,8 @@ try {
   assert.ok(workers.some(url => url.includes(ASL_V31_TRACKER_FILE)), "The V3.1 tracker was not observed, so its requests were not checked");
   assert.match(perf ?? "", /assets self-hosted/, "The ?perf readout must confirm self-hosted assets");
   assert.match(perf ?? "", /recognition running, 0 recoveries · hand tracked in 0% of frames/, "Recognition restarted, or the readout lost its worker and tracking fields");
-  assert.equal(status, "waiting for hands");
+  assert.equal(status, "Ready");
+  assert.equal(await evaluate("document.querySelector('.recognition-state')?.dataset.status"), "waiting-for-hands");
   console.log(JSON.stringify({ passed: true, profile: manifest.profile, asl_engine: manifest.asl_engine, recognition_worker_sha256: manifest.recognition_worker_sha256,
     pages: visited, page_and_worker_requests: pageRequests.length, workers_observed: [...new Set(workers.map(url => new URL(url).pathname))],
     non_loopback_requests: 0, uncached_restart: "passed", refused_browser_internal: [...new Set(outbound)], perf_readout: perf,
