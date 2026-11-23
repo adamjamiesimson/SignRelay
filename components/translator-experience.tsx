@@ -44,6 +44,7 @@ import {
 import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { parseCalibrationExport, serialiseCalibration } from "@/lib/calibration-transfer";
+import { enrolmentReport, type EnrolmentReport } from "@/lib/asl-v31-personal";
 import { AslV3Tracker } from "@/lib/asl-v3-tracker";
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
@@ -813,6 +814,21 @@ export function TranslatorExperience() {
     return () => { window.clearTimeout(timer); window.removeEventListener("hashchange", open); };
   }, []);
 
+  /** What the signer should do next, based on how this take compares with the ones already taught. */
+  const enrolmentMessage = (report: EnrolmentReport | null, word: string, shortName: string) => {
+    if (!report) return `${word} is now active for ${shortName}. Record two or three examples for better consistency.`;
+    if (report.verdict === "collides") {
+      return `${word} is saved, but it matched ${report.conflict!.gloss} too closely (${report.conflict!.similarity.toFixed(2)}), so the two cannot be told apart and neither will fire. Record ${word} again more clearly, or remove one of them.`;
+    }
+    if (report.verdict === "differs") {
+      return `These takes of ${word} disagree (${report.sameBest!.toFixed(2)}), so the sign would not be reliable. Record it again the same way as the first example.`;
+    }
+    if (report.verdict === "consistent") {
+      return `${word} matches your earlier example${report.sameBest! >= 0.9 ? " closely" : ""} (${report.sameBest!.toFixed(2)}). Two or three consistent takes is enough.`;
+    }
+    return `${word} is now active for ${shortName}. Record two or three examples for better consistency.`;
+  };
+
   const recordCalibration = useCallback(async () => {
     if (captureStateRef.current !== "idle" && captureStateRef.current !== "saved" && captureStateRef.current !== "error") return;
     const captureGeneration = ++captureGenerationRef.current;
@@ -868,6 +884,8 @@ export function TranslatorExperience() {
       ...(embedding ? { embedding } : {}),
     };
 
+    const report = useAslV3 ? enrolmentReport(embedding, calibrationWord.gloss, calibrationTemplates) : null;
+
     try {
       await saveCalibrationTemplate(template);
       const updated = await loadCalibrationTemplates();
@@ -875,14 +893,14 @@ export function TranslatorExperience() {
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "saved";
       setCalibrationState("saved");
-      setCalibrationMessage(`${calibrationWord.text} is now active for ${model.shortName}. Record two or three examples for better consistency.`);
+      setCalibrationMessage(enrolmentMessage(report, calibrationWord.text, model.shortName));
     } catch {
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "error";
       setCalibrationState("error");
       setCalibrationMessage("This browser could not save the example. Check private-browsing storage settings and try again.");
     }
-  }, [calibrationWord, model.shortName, requestCamera, resetRecognition, selected, useAslV3]);
+  }, [calibrationTemplates, calibrationWord, model.shortName, requestCamera, resetRecognition, selected, useAslV3]);
 
   const selectCustomWord = () => {
     const customWord = createCustomVocabularyEntry(customWordInput);

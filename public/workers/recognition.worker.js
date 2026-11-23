@@ -15485,6 +15485,7 @@ function emptyAslV31Diagnostics() {
     decisions: { accepted: 0, uncertain: 0, unknown: 0, "too-few-hands": 0 },
     suggestionsPosted: 0,
     suggestionsStale: 0,
+    personalMatches: 0,
     lastDecision: null
   };
 }
@@ -15621,6 +15622,20 @@ var PERSONAL_EMBEDDING_MIN_MARGIN = 0.15;
 function usable2(values) {
   return Array.isArray(values) && values.length > 0 && values.every(Number.isFinite);
 }
+function glossCentroids(templates) {
+  const sums = /* @__PURE__ */ new Map();
+  for (const template of templates) {
+    const sum = sums.get(template.gloss) ?? new Array(template.embedding.length).fill(0);
+    for (let i = 0; i < sum.length; i++) sum[i] += template.embedding[i];
+    sums.set(template.gloss, sum);
+  }
+  const centroids = /* @__PURE__ */ new Map();
+  for (const [gloss, sum] of sums) {
+    const length = Math.hypot(...sum);
+    centroids.set(gloss, length ? sum.map((value) => value / length) : sum);
+  }
+  return centroids;
+}
 function cosineSimilarity(a, b) {
   const length = Math.min(a.length, b.length);
   if (!length) return 0;
@@ -15634,7 +15649,13 @@ function cosineSimilarity(a, b) {
 }
 function matchPersonalEmbedding(embedding, templates) {
   if (!embedding?.length) return null;
-  const scored = templates.filter((template) => usable2(template.embedding)).map((template) => ({ template, similarity: cosineSimilarity(embedding, template.embedding) })).sort((a, b) => b.similarity - a.similarity);
+  const taught = templates.filter((template) => usable2(template.embedding));
+  const centroid = glossCentroids(taught);
+  const scored = taught.map((template) => {
+    const individual = cosineSimilarity(embedding, template.embedding);
+    const pooled = centroid.get(template.gloss);
+    return { template, similarity: Math.max(individual, pooled ? cosineSimilarity(embedding, pooled) : -Infinity) };
+  }).sort((a, b) => b.similarity - a.similarity);
   const [best, runnerUp] = scored;
   if (!best || best.similarity < PERSONAL_EMBEDDING_MIN_SIMILARITY) return null;
   if (runnerUp && runnerUp.template.gloss !== best.template.gloss && best.similarity - runnerUp.similarity < PERSONAL_EMBEDDING_MIN_MARGIN) return null;
@@ -15801,6 +15822,7 @@ function submitV3(now) {
     if (!segment) return;
     const personal = matchPersonalEmbedding(observed.embedding, personalTemplates);
     if (personal) {
+      diagnostics.personalMatches++;
       self.postMessage({
         type: "confirmed",
         session: segment.session,

@@ -195,6 +195,7 @@ function submitV3(now: number) {
     // repeats of the same sign sat at 0.93 cosine while different signs stayed under 0.27.
     const personal = matchPersonalEmbedding(observed.embedding, personalTemplates);
     if (personal) {
+      diagnostics.personalMatches++;
       self.postMessage({ type: "confirmed", session: segment.session, gloss: personal.template.gloss,
         text: personal.template.text, confidence: personal.similarity, timestamp: Date.now(), source: "personal",
       } satisfies WorkerMessage);

@@ -62,6 +62,8 @@ export type AslV31Diagnostics = {
   lastInferenceMs: number | null;
   decisions: Record<AslV31DecisionStatus, number>;
   suggestionsPosted: number;
+  /** Signs confirmed from the signer's own taught examples rather than the 523-class head. */
+  personalMatches: number;
   /** Accepted results discarded because the next movement had already moved on. */
   suggestionsStale: number;
   lastDecision: (AslV31Decision & { ageMs: number }) | null;
@@ -71,7 +73,7 @@ export function emptyAslV31Diagnostics(): AslV31Diagnostics {
   return { observations: 0, handFrames: 0, shoulderFrames: 0, segmentsOpened: 0, segmentsCompleted: 0, segmentsCapped: 0,
     segmentsTooFewHands: 0, segmentsSkipped: 0, model: "not-started", modelError: "", inferences: 0, inferenceFailures: 0,
     lastInferenceMs: null, decisions: { accepted: 0, uncertain: 0, unknown: 0, "too-few-hands": 0 },
-    suggestionsPosted: 0, suggestionsStale: 0, lastDecision: null };
+    suggestionsPosted: 0, suggestionsStale: 0, personalMatches: 0, lastDecision: null };
 }
 
 /** What the page did with the worker's suggestions (counted on the main thread). */
@@ -117,7 +119,7 @@ export function formatAslV31Diagnostics(d: AslV31Diagnostics, ui: AslV31UiCounts
     `Signs started ${d.segmentsOpened} · completed ${d.segmentsCompleted} · capped at ${MAX_SEGMENT_MS / 1000} s ${d.segmentsCapped} · too short ${d.segmentsTooFewHands} · skipped ${d.segmentsSkipped}`,
     `Model ${d.model}${d.modelError ? ` (${d.modelError})` : ""} · runs ${d.inferences}${d.lastInferenceMs === null ? "" : ` (${d.lastInferenceMs.toFixed(0)} ms)`} · failures ${d.inferenceFailures}`,
     `Gate ${ASL_V31_POLICY}: accepted ${d.decisions.accepted} · uncertain ${d.decisions.uncertain} · unknown ${d.decisions.unknown} · too few hands ${d.decisions["too-few-hands"]}`,
-    `Suggestions sent ${d.suggestionsPosted} · stale ${d.suggestionsStale} · received ${ui.received} · shown ${ui.shown} · added ${ui.added} · spoken ${ui.spoken}`,
+    `Suggestions sent ${d.suggestionsPosted} · taught-sign matches ${d.personalMatches} · stale ${d.suggestionsStale} · received ${ui.received} · shown ${ui.shown} · added ${ui.added} · spoken ${ui.spoken}`,
     lastLine,
     `Next step: ${aslV31Hint(d, ui, trackedFrames)}`,
   ];

@@ -142,6 +142,37 @@ ships the official WLASL-2000 Pose-TGCN checkpoint: on the same captured windows
 with SNOWMAN 0.87 and YES with AUDIOLOGIST 0.91. More YouTube data does not by itself beat a
 better-matched smaller model; matching the signer does.
 
+## Ideas that were measured and rejected
+
+Accuracy work has an obvious list; most of it does not help, and each of these was scored on
+twenty labelled clips (the signer's own captures plus twelve public per-word videos):
+
+| idea | result |
+|---|---|
+| average several windows of the segment | no change to top-1 (7/8 either way) |
+| pick the most confident sub-window | neutral overall and worse in kind: THANK-YOU fixed 0.54 -> 0.97, YES broken 0.69 -> HAVETO 0.89 |
+| raise the movement threshold to end signs sooner | clips barely shortened, HELLO fell 0.49 -> 0.46 |
+| assume hand-slot flapping from MediaPipe handedness | the signer's own clips flip a slot 0-2 times per clip, not per frame |
+| smooth or re-interpolate the 15 Hz grid | `resampleTo15Hz` already interpolates between samples |
+| switch to the WLASL-2000 YouTube-trained checkpoint | PLEASE -> SNOWMAN 0.87, YES -> AUDIOLOGIST 0.91 |
+
+The pattern: the model's top-1 is stable under everything that does not change *which sign* it sees.
+What moves accuracy is which examples the system has of *that signer*.
+
+## Keeping a taught dictionary honest
+
+Two ways a growing personal vocabulary silently degrades, both now reported at the moment of
+recording rather than discovered later at a booth:
+
+- **takes that disagree**: the new take is compared with the word's earlier takes; below 0.6 the
+  panel says so instead of pretending the sign is ready (measured repeats of one sign: 0.93).
+- **takes that collide**: the new take is compared with every *other* taught word; at or above the
+  matcher's own 0.75 bar the two can never be told apart, and the matcher would abstain silently.
+
+Several takes of one word are also pooled into a centroid, so one loose recording cannot outvote a
+good one, and when a word reaches its limit of three examples the take that agrees least with the
+others is dropped rather than the oldest.
+
 ## Fitting a policy to real signers
 
 The Strict gate is fitted on PopSign validation signers, so a live camera can produce the correct
