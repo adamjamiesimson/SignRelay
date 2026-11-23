@@ -55,7 +55,24 @@ That separates three causes that look identical in the panel:
 - it never reaches the top five: a recognition-accuracy limit for that signer. No threshold change
   can fix that; it needs calibration or training data from real signers.
 
-## The shipped gate: `policy-demo.json`
+## The shipped gate: `policy-top1.json`
+
+The booth now publishes the argmax: no confidence or prototype floor, so the top-1 label is shown
+whenever a sign completes. Measured on one live signer's eight captured signs (the window the app
+actually builds, margins included):
+
+| gate | signs published | of which correct | probes with destroyed hand geometry published |
+|---|---|---|---|
+| strict | 4/8 | 4 | 0/32 |
+| demo (0.70 / 0.55 / 0.30) | 6/8 | 6 | 0/32 |
+| **top1** | **8/8** | **7** | **32/32** |
+
+That last column is the trade: with no floor, any movement that completes a segment publishes a word
+- scrambled hand geometry scores under `max_unknown` too, so nothing else catches it. The transcript
+is where a wrong word gets corrected, and `min_hand_frames` plus `max_unknown` are all that is left.
+`policy-demo.json` (6/8, nothing from a wave) is one constant away in `ASL_V31_POLICY`.
+
+## The previous gate: `policy-demo.json`
 
 Strict (`min_top1 0.847`, `min_proto 0.812`) was fitted on PopSign validation signers. A signer who
 learns the sign on the spot does not reach it: measured on one live signer's captures with the right

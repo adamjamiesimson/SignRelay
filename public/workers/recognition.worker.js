@@ -15310,6 +15310,7 @@ var AslV31Segmenter = class {
     /** Session counters for developer diagnostics; reset() keeps them, resetStats() clears them. */
     this.stats = { opened: 0, completed: 0, capped: 0, tooFewHands: 0 };
     this.restAware = options.restAware ?? true;
+    this.motionEpsilon = options.motionEpsilon ?? MOTION_EPSILON;
   }
   resetStats() {
     Object.assign(this.stats, { opened: 0, completed: 0, capped: 0, tooFewHands: 0 });
@@ -15363,7 +15364,7 @@ var AslV31Segmenter = class {
     if (previous && timestamp <= previous.t) this.reset();
     const anyHand = hasHand(features);
     const appeared = anyHand && !!previous && !hasHand(previous.f);
-    const moving = anyHand && this.restAware && (appeared || this.travel(timestamp, features) >= MOTION_EPSILON);
+    const moving = anyHand && this.restAware && (appeared || this.travel(timestamp, features) >= this.motionEpsilon);
     if (moving) this.lastMotionAt = timestamp;
     const signing = this.isSigning(timestamp, features);
     this.samples.push({ t: timestamp, f: features });
@@ -15436,13 +15437,14 @@ function decide(logits, emb, meta) {
 
 // lib/asl-v31-assets.mjs
 var ASL_V31_ASSET_PATH = "/models/asl-v31";
-var ASL_V31_POLICY = "demo";
+var ASL_V31_POLICY = "top1";
 var ASL_V31_ASSET_PINS = {
   "model.onnx": { bytes: 13740990, sha256: "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090" },
   "meta.json": { bytes: 1077990, sha256: "50d59fdada18cc5c43ac61585f3af9c81d828402e2c2ba27c5ebeae86489ad22" },
   "policy-strict.json": { bytes: 535, sha256: "751fd950bde3ab3166653bb1dd4884a155fd831bb92bc4a7a16a6691c5fb48e0" },
   "policy-balanced.json": { bytes: 536, sha256: "feca858e67e0fa5bd89ee3be7ce80bd599a7c9ab0ac8d7f952c52648519e460a" },
-  "policy-demo.json": { bytes: 970, sha256: "e47b25fea6e79d5ab7fd9654e8355c3f14250d1287855c7bbecf4ddeebb1e41f" }
+  "policy-demo.json": { bytes: 970, sha256: "e47b25fea6e79d5ab7fd9654e8355c3f14250d1287855c7bbecf4ddeebb1e41f" },
+  "policy-top1.json": { bytes: 910, sha256: "bfb1862dd571c0572e72628d8f9051619e7df10dcbad8a8014d7e4db9f58b15d" }
 };
 
 // lib/asl-v31-diagnostics.ts
