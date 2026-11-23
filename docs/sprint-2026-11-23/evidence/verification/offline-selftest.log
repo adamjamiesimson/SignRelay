@@ -1,0 +1,1 @@
+{"self_test":"passed","detected":["https://example.org/signrelay-self-test","https://www.gstatic.com/signrelay-self-test","https://cdn.jsdelivr.net/npm/signrelay-self-test"],"refused_by_proxy":["CONNECT example.org:443","CONNECT cdn.jsdelivr.net:443"]}

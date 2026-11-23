@@ -1,0 +1,1 @@
+{"passed":true,"control":"synthetic landmarks, real Engine V3.1 ONNX browser worker inference through a deny-all proxy","model_sha256":"b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090","policy":"strict","model_requests":3,"cold_load_ms":698.7000000001863,"cold_inference_ms":100.70000000018626,"warm_inference_ms":41.39999999944121}
