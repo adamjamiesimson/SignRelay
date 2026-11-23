@@ -159,6 +159,16 @@ twenty labelled clips (the signer's own captures plus twelve public per-word vid
 The pattern: the model's top-1 is stable under everything that does not change *which sign* it sees.
 What moves accuracy is which examples the system has of *that signer*.
 
+## Could public video stand in for a signer's own takes?
+
+Measured by enrolling one stranger's video and testing another stranger's, in the embedding space the
+taught-sign matcher uses: same word 0.86-0.90 (PLEASE, three videos), 0.71 (YES), 0.59 (WATER), against
+0.32 or below for every different-word pair. The matcher's bar is 0.75, so a dictionary bootstrapped
+from public clips would cover signs like PLEASE and YES and miss WATER unless the bar came down, with
+more collision risk than the signer's own recordings (0.93 same sign, 0.27 different). THANK-YOU and
+STOP scored 0.24 and 0.13 across their two videos: those videos were not the same sign as each other,
+which is the variant problem again rather than a measurement artefact.
+
 ## Keeping a taught dictionary honest
 
 Two ways a growing personal vocabulary silently degrades, both now reported at the moment of
