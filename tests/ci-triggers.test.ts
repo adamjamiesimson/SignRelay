@@ -1,0 +1,55 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+
+const workflow = (name: string) => readFileSync(`.github/workflows/${name}`, "utf8");
+/** The `on.pull_request` block, up to the next top-level trigger key. */
+function pullRequestBlock(text: string) {
+  const lines = text.split("\n");
+  const start = lines.findIndex(line => line === "  pull_request:");
+  expect(start, "workflow must run on pull_request").toBeGreaterThanOrEqual(0);
+  const end = lines.findIndex((line, index) => index > start && /^ {2}\S/.test(line));
+  return lines.slice(start + 1, end < 0 ? undefined : end).join("\n");
+}
+
+describe("stacked pull requests receive checks", () => {
+  it.each(["ci.yml", "firebase-build-check.yml", "asl-video-pilot.yml", "field-test-browser.yml", "asl-demo.yml"])(
+    "%s does not restrict pull_request base branches", name => {
+      expect(pullRequestBlock(workflow(name))).not.toMatch(/^\s+branches:/m);
+    });
+  it("re-runs the real-video pilot when segmentation, confirmation or the ASL model change", () => {
+    const paths = pullRequestBlock(workflow("asl-video-pilot.yml"));
+    for (const file of ["lib/sign-motion.ts", "lib/frame-timing.ts", "lib/decoder.ts", "lib/asl1000-runtime.ts",
+      "lib/asl-starter-recognition.ts", "workers/recognition.worker.ts"]) expect(paths).toContain(`'${file}'`);
+  });
+});
+
+describe("the offline demo profiles are checked on every pull request", () => {
+  it("builds both demo profiles and runs every demo, rehearsal and fault-injection smoke", () => {
+    const demo = workflow("asl-demo.yml");
+    for (const step of ["npm run build:rehearsal", "npm run build:asl-demo", "npm run demo:check", "--self-test",
+      "tests/gitex-rehearsal-smoke.mjs", "tests/transcript-a11y-smoke.mjs", "tests/offline-vision-smoke.mjs",
+      "tests/lifecycle-stress-smoke.mjs", "tests/fault-injection-smoke.mjs", "--profile rehearsal", "--profile asl-demo"]) expect(demo).toContain(step);
+    expect(demo.indexOf("npm run build:asl-demo")).toBeGreaterThan(demo.indexOf("npm run build:rehearsal"));
+    expect(demo).not.toMatch(/continue-on-error|\|\| true/);
+  });
+});
+
+describe("strict dependency audit stays a release gate", () => {
+  const firebase = workflow("firebase-build-check.yml");
+  it("runs the unchanged audit:security script in its own job against the built export", () => {
+    const job = firebase.slice(firebase.indexOf("  strict-dependency-audit:"));
+    expect(job).toContain("needs: build");
+    expect(job).toContain("run: npm run audit:security");
+    expect(job).toContain("name: signrelay-firebase-out");
+    expect(job).not.toMatch(/continue-on-error|\|\| true/);
+  });
+  it("never lets audit:security become optional or silently skipped", () => {
+    expect(firebase).not.toMatch(/continue-on-error/);
+    const pkg = JSON.parse(readFileSync("package.json", "utf8"));
+    expect(pkg.scripts["audit:security"]).toBe("npm audit --audit-level=moderate && npm run audit:secrets && npm run test:rendered");
+  });
+  it("still runs the fail-closed dependency gate in the build job and Core CI", () => {
+    expect(firebase.slice(0, firebase.indexOf("  strict-dependency-audit:"))).toContain("npm run audit:deps");
+    expect(workflow("ci.yml")).toContain("npm run audit:deps");
+  });
+});

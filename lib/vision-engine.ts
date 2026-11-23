@@ -1,10 +1,9 @@
 import type { FaceLandmarker, GestureRecognizer, PoseLandmarker } from "@mediapipe/tasks-vision";
+import { MAX_TRACKING_GAP_MS } from "./frame-timing";
 import type { Point, VisionFrame } from "./vision-types";
+import { VISION_ASSET_SOURCES } from "./vision-runtime.mjs";
 
-const WASM_PATH = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm";
-const GESTURE_MODEL = "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task";
-const FACE_MODEL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
-const POSE_MODEL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+type AssetSource = typeof VISION_ASSET_SOURCES[number];
 
 const FACE_CUE_INDICES = [
   0, 4, 10, 13, 14, 17, 33, 61, 70, 105, 133, 145, 159, 263, 291, 300,
@@ -23,24 +22,41 @@ type EngineParts = {
 
 export class VisionEngine {
   private parts: EngineParts;
+  /** Which copy of the pinned runtime loaded: "self-hosted" or "cdn". */
+  readonly assetSource: AssetSource["id"];
   private lastAuxTimestamp = -Infinity;
   private handFramesSinceAux = 2;
   private lastFace: Point[] = [];
   private lastPose: Point[] = [];
 
-  private constructor(parts: EngineParts) {
+  private constructor(parts: EngineParts, assetSource: AssetSource["id"]) {
     this.parts = parts;
+    this.assetSource = assetSource;
   }
 
+  /** Self-hosted assets first, so a venue without CDN access still works;
+   * the CDN holds the same pinned bytes and is only a fallback. */
   static async create(onProgress?: (message: string) => void) {
     onProgress?.("Loading vision runtime");
     const vision = await import("@mediapipe/tasks-vision");
-    const files = await vision.FilesetResolver.forVisionTasks(WASM_PATH);
+    let lastError: unknown = new Error("Vision models could not start");
+    for (const source of VISION_ASSET_SOURCES) {
+      try {
+        return new VisionEngine(await VisionEngine.load(vision, source, onProgress), source.id);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError;
+  }
+
+  private static async load(vision: typeof import("@mediapipe/tasks-vision"), source: AssetSource, onProgress?: (message: string) => void) {
+    const files = await vision.FilesetResolver.forVisionTasks(source.wasm);
 
     onProgress?.("Loading hand, face and pose models");
     const results = await Promise.allSettled([
       vision.GestureRecognizer.createFromOptions(files, {
-        baseOptions: { modelAssetPath: GESTURE_MODEL, delegate: "CPU" },
+        baseOptions: { modelAssetPath: source.models.gesture, delegate: "CPU" },
         runningMode: "VIDEO",
         numHands: 2,
         minHandDetectionConfidence: 0.55,
@@ -49,7 +65,7 @@ export class VisionEngine {
         cannedGesturesClassifierOptions: { scoreThreshold: 0.55 },
       }),
       vision.FaceLandmarker.createFromOptions(files, {
-        baseOptions: { modelAssetPath: FACE_MODEL, delegate: "CPU" },
+        baseOptions: { modelAssetPath: source.models.face, delegate: "CPU" },
         runningMode: "VIDEO",
         numFaces: 1,
         minFaceDetectionConfidence: 0.55,
@@ -58,7 +74,7 @@ export class VisionEngine {
         outputFaceBlendshapes: false,
       }),
       vision.PoseLandmarker.createFromOptions(files, {
-        baseOptions: { modelAssetPath: POSE_MODEL, delegate: "CPU" },
+        baseOptions: { modelAssetPath: source.models.pose, delegate: "CPU" },
         runningMode: "VIDEO",
         numPoses: 1,
         minPoseDetectionConfidence: 0.55,
@@ -76,32 +92,38 @@ export class VisionEngine {
     if (gesture.status !== "fulfilled" || face.status !== "fulfilled" || pose.status !== "fulfilled") {
       throw new Error("Vision models could not start");
     }
-    return new VisionEngine({ gesture: gesture.value, face: face.value, pose: pose.value });
+    return { gesture: gesture.value, face: face.value, pose: pose.value };
   }
 
-  process(video: HTMLVideoElement, timestamp: number): VisionFrame {
+  process(video: HTMLVideoElement | HTMLCanvasElement, timestamp: number): VisionFrame {
     const handResult = this.parts.gesture.recognizeForVideo(video, timestamp);
     this.handFramesSinceAux++;
     // Leave alternate frames for hands even when CPU inference is already slow.
     if (this.handFramesSinceAux >= 2 && timestamp - this.lastAuxTimestamp >= 150) {
+      // An auxiliary task may throw after advancing its video state. Discard
+      // the cached pair before refreshing so neither old result can be reused.
+      this.lastFace = [];
+      this.lastPose = [];
       const faceResult = this.parts.face.detectForVideo(video, timestamp);
       const poseResult = this.parts.pose.detectForVideo(video, timestamp);
-      this.lastFace = pickPoints(faceResult.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
+      this.lastFace = faceCuePoints(faceResult.faceLandmarks[0] ?? []);
       this.lastPose = pickPoints(poseResult.landmarks[0] ?? [], POSE_CUE_INDICES);
       this.lastAuxTimestamp = timestamp;
       this.handFramesSinceAux = 0;
     }
 
+    const auxiliaryFresh = timestamp - this.lastAuxTimestamp <= MAX_TRACKING_GAP_MS;
     return {
       timestamp,
       hands: handResult.landmarks.map((landmarks, index) => ({
         landmarks: landmarks.map(toPoint),
-        handedness: (handResult.handedness[index]?.[0]?.categoryName as "Left" | "Right") ?? "Unknown",
+        // Preserve Tasks labels. CSS preview mirroring never changes this input.
+        handedness: taskHandedness(handResult.handedness[index]?.[0]?.categoryName),
         gesture: handResult.gestures[index]?.[0]?.categoryName ?? "None",
         gestureScore: handResult.gestures[index]?.[0]?.score ?? 0,
       })),
-      face: this.lastFace,
-      pose: this.lastPose,
+      face: auxiliaryFresh ? this.lastFace : [],
+      pose: auxiliaryFresh ? this.lastPose : [],
     };
   }
 
@@ -112,6 +134,14 @@ export class VisionEngine {
   }
 }
 
+export function faceCuePoints(landmarks: Point[]) {
+  return pickPoints(landmarks, FACE_CUE_INDICES);
+}
+
+export function taskHandedness(label: string | undefined): "Left" | "Right" | "Unknown" {
+  return label === "Left" || label === "Right" ? label : "Unknown";
+}
+
 function toPoint(point: { x: number; y: number; z: number; visibility?: number }): Point {
   return { x: point.x, y: point.y, z: point.z, visibility: point.visibility };
 }
@@ -120,5 +150,10 @@ function pickPoints(
   landmarks: Array<{ x: number; y: number; z: number; visibility?: number }>,
   indices: number[],
 ) {
-  return indices.map((index) => landmarks[index]).filter(Boolean).map(toPoint);
+  const points = indices.map(index => landmarks[index]);
+  // These arrays have a fixed index contract with the recognition adapters.
+  // A missing or non-finite point makes the whole group unavailable.
+  return points.every(point => point && Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z))
+    ? points.map(toPoint)
+    : [];
 }

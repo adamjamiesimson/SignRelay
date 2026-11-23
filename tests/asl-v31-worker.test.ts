@@ -1,0 +1,108 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { N_POINTS } from "../engine-v3/web/preprocess.mjs";
+import type { AslV31Suggestion } from "../lib/asl-v31-runtime";
+import type { WorkerInput, WorkerMessage } from "../lib/vision-types";
+import { installTemplateWorker } from "./helpers/template-worker";
+
+const mock = vi.hoisted(() => ({ warm: vi.fn(), recognize: vi.fn(), personal: vi.fn(), legacy: vi.fn() }));
+vi.mock("../lib/asl-v31-runtime", () => ({ warmAslV31Model: mock.warm, recognizeAslV31: mock.recognize }));
+vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mock.legacy }));
+vi.mock("../lib/personalized-recognition", () => ({
+  recognizePersonalTemplate: mock.personal,
+  recognizePersonalTemplateAsync: mock.personal,
+  templatesForLanguage: (templates: unknown[]) => templates,
+}));
+
+let worker: { onmessage: (event: { data: WorkerInput }) => Promise<void>; postMessage: ReturnType<typeof vi.fn> };
+let timestamp: number;
+const suggestion = { label: "THANK-YOU", text: "Thank You", confidence: 0.92 };
+const messages = (type: WorkerMessage["type"]) => worker.postMessage.mock.calls.map(([message]) => message as WorkerMessage).filter(message => message.type === type);
+
+async function configure(session = 1, language: "asl" | "csl" = "asl", withTemplate = false) {
+  const templates = withTemplate ? [{ id: "p", gloss: "SAVED", text: "Saved", createdAt: 1, frames: [] }] : [];
+  await worker.onmessage({ data: { type: "templates", language, templates, session, aslEngine: "v3.1" } });
+}
+
+async function feed(count: number, visible: boolean, session = 1) {
+  for (let index = 0; index < count; index++) {
+    const aslV3Features = new Float32Array(N_POINTS * 3).fill(NaN);
+    const point = { x: 0.4, y: 0.2, z: 0 };
+    if (visible) aslV3Features.set([point.x, point.y, point.z]);
+    await worker.onmessage({ data: { type: "frame", session, frameId: timestamp, frame: { timestamp, aslV3Features, pose: [], face: [],
+      hands: visible ? [{ handedness: "Right", gesture: "None", gestureScore: 0, landmarks: Array.from({ length: 21 }, () => point) }] : [],
+    } } });
+    timestamp += 100;
+    await Promise.resolve();
+  }
+}
+
+beforeEach(async () => {
+  vi.resetModules();
+  vi.resetAllMocks();
+  mock.warm.mockResolvedValue(undefined);
+  mock.recognize.mockResolvedValue(suggestion);
+  mock.personal.mockResolvedValue(null);
+  worker = { onmessage: async () => {}, postMessage: vi.fn() };
+  timestamp = 0;
+  vi.stubGlobal("self", worker);
+  installTemplateWorker();
+  await import("../workers/recognition.worker");
+});
+
+describe("selected V3.1 ASL worker", () => {
+  it("acknowledges every frame and offers one final candidate for manual review", async () => {
+    await configure();
+    await feed(9, true);
+    expect(mock.recognize).not.toHaveBeenCalled();
+    await feed(12, false);
+    expect(mock.warm).toHaveBeenCalledOnce();
+    expect(mock.recognize).toHaveBeenCalledOnce();
+    expect(mock.legacy).not.toHaveBeenCalled();
+    expect(messages("analysis")).toHaveLength(21);
+    expect(messages("confirmed")).toHaveLength(0);
+    expect(messages("suggestion")).toEqual([expect.objectContaining({ session: 1, gloss: "THANK-YOU", text: "Thank You", source: "model" })]);
+  });
+
+  it("does not run the ASL model in another language even when V3.1 was requested", async () => {
+    await configure(2, "csl");
+    await feed(9, true, 2);
+    await feed(12, false, 2);
+    expect(mock.warm).not.toHaveBeenCalled();
+    expect(mock.recognize).not.toHaveBeenCalled();
+  });
+
+  it("drops delayed candidates from prior camera and language sessions", async () => {
+    await configure();
+    let finish!: (result: AslV31Suggestion) => void;
+    mock.recognize.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    await feed(9, true);
+    await feed(10, false);
+    expect(mock.recognize).toHaveBeenCalledOnce();
+    await configure(2, "csl");
+    finish(suggestion);
+    await feed(2, false, 2);
+    expect(messages("suggestion")).toHaveLength(0);
+  });
+
+  it("keeps abstentions out of the transcript and allows a repeat after a fresh boundary", async () => {
+    await configure();
+    mock.recognize.mockResolvedValueOnce(null);
+    await feed(8, true);
+    await feed(8, false);
+    expect(messages("suggestion")).toHaveLength(0);
+    await feed(8, true);
+    await feed(8, false);
+    expect(messages("suggestion")).toHaveLength(1);
+    expect(messages("confirmed")).toHaveLength(0);
+  });
+
+  it("preserves personal-template confirmation with one arbitration path", async () => {
+    await configure(1, "asl", true);
+    mock.personal.mockReturnValue({ label: "SAVED", text: "Saved", confidence: 0.9 });
+    await feed(9, true);
+    await feed(10, false);
+    expect(messages("confirmed")).toEqual([expect.objectContaining({ source: "personal", gloss: "SAVED" })]);
+    expect(messages("suggestion")).toHaveLength(0);
+    expect(mock.recognize).not.toHaveBeenCalled();
+  });
+});

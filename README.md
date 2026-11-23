@@ -1,16 +1,16 @@
 # SignRelay
 
-SignRelay is a privacy-first research web application for continuous sign-language recognition. It observes ordered hand, face and upper-body landmarks, evaluates a language-specific temporal adapter, confirms only high-confidence sequences, and can read confirmed text aloud.
+SignRelay is a privacy-first research web application that recognises **isolated signs** from a live camera. It observes ordered hand, face and upper-body landmarks, evaluates a language-specific temporal adapter, confirms only high-confidence sequences, and can read confirmed words aloud. It does not translate continuous signing or full sentences.
 
-This repository is an engineering foundation, not a claim of full sign-language translation.
+Start with the [developer handoff](docs/DEVELOPER_HANDOFF.md) for a fresh checkout, asset installation and release verification.
 
 ## What works now
 
 - Forty sign-language workspaces have separate identities; RSL and Bangla have separate pretrained clip-recognition modes.
 - Camera permission is requested only after language selection.
-- MediaPipe Gesture Recognizer, Face Landmarker and Pose Landmarker run in the browser on CPU.
+- MediaPipe hand, face and pose tracking runs locally. The ASL workspace uses the Engine V3.1 tracking worker.
 - A Web Worker maintains an ordered temporal buffer for landmark recognition.
-- ASL, BSL and ISL include separate experimental browser models with 2,000, 1,064 and 263 isolated-sign outputs respectively.
+- ASL, BSL and ISL include separate experimental browser models with 523, 1,064 and 263 isolated-sign classes. ASL model results appear as suggestions for manual confirmation.
 - RSL adds the official pretrained Slovo video model: 967 word/phrase classes plus 33 letters, with no personal teaching required. It is explicit single-sign capture, not real-time; 141 MB first load and approximately 19 seconds per inference in the development WASM test.
 - Non-ASL/RSL/Bangla workspaces include 2,000+ searchable concept prompts plus unlimited custom words or short phrases; prompts activate only after the signer records examples in that language.
 - Personal and user-defined words are learned from one to three signer examples and matched on-device with dynamic time warping.
@@ -19,13 +19,32 @@ This repository is an engineering foundation, not a claim of full sign-language 
 - Auto speak, volume, rate and landmark overlay preferences are stored locally.
 - Camera frames are not uploaded or stored.
 
+## Offline ASL demo and October research history
+
+The October 2026 research demo covered HELLO, THANK YOU, PLEASE, SORRY, YES and NO on the original Engine 1. On 11 previously inspected development clips it recorded 5 correct, 0 wrong and 6 no-match. The normal ASL demo now uses Engine V3.1. [October dashboard](docs/evaluation/dashboard-2026-10-21.md) · [V3.1 research report](engine-v3/REPORT-V3.1.md)
+
+- Demo script, setup, fallbacks and go/no-go: [docs/gitex/demo-package-2026-10-21.md](docs/gitex/demo-package-2026-10-21.md)
+- Machine-checkable acceptance criteria: [docs/gitex/demo-contract.json](docs/gitex/demo-contract.json)
+- Integration report, current release status and the remaining manual checks: [docs/gitex/sprint-3/integration-report.md](docs/gitex/sprint-3/integration-report.md) and [docs/gitex/sprint-3/real-world-test-checklist.md](docs/gitex/sprint-3/real-world-test-checklist.md)
+
+The offline demo, from a clean checkout (network needed once, for `npm ci` and the pinned vision models):
+
+```bash
+npm ci
+npm run demo:prepare                 # ASL-only export, verified runtime
+npm run demo:serve                   # loopback only; works with networking off
+npm run demo:check -- /path/to/chrome   # strict check: no request may leave the machine
+```
+
+Add `?perf` to the URL for the device-test readout: tracking, round-trip and queue timings, forwarded and dropped frames, frames analysed per second, asset source, recognition state and recovery count, and the share of frames with a tracked hand. A warning appears if a full 5 s window stays below the 10 frames per second the demo needs. During live trials, record outcomes with `npm run eval:log` (see [Live-camera evaluation](#live-camera-evaluation)).
+
 ## Honest model status
 
 The [17 September handoff](docs/pretrained-expansion-2026-09-17.md) records the current installation, evaluation limits and Firebase update steps.
 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
-| ASL | Experimental | 2,000 built-in WLASL signs + user-defined personal words | Quantised official WLASL2000 Pose-TGCN, MediaPipe tracking and on-device personal DTW templates |
+| ASL | Experimental | 523 model classes + user-defined personal words | Engine V3.1 ONNX, MediaPipe tracking and on-device personal DTW templates |
 | BSL | Experimental | 1,064 automatic BSL-1K signs + unlimited signer-taught words | Official BSL-1K Pose2Sign model + personal DTW templates |
 | ISL | Experimental | 263 automatic INCLUDE signs + unlimited signer-taught words | Official AI4Bharat INCLUDE transformer + personal DTW templates |
 | RSL | Experimental, slow clip mode | 967 pretrained word/phrase classes + 33 fingerspelling letters | Official Slovo MViTv2-small-32-2 RGB ONNX; no personal recordings required |
@@ -53,7 +72,9 @@ Choose **Russian Sign Language** (search for RSL), enter its workspace, start th
 
 See [Slovo attribution and licence](public/models/rsl1000-slovo/ATTRIBUTION.md). The source uses a custom attribution/share-alike licence, not the application-code licence. Its benchmark results are not SignRelay live-camera accuracy. RSL has not received independent native-signer evaluation. This addition meets 400+ pretrained word/phrase classes for RSL; it does **not** establish 400+ pretrained signs for every workspace.
 
-The 2,000-word ASL model is the official Pose-TGCN checkpoint genuinely trained on WLASL2000 OpenPose sequences. The checkpoint is quantised for browser inference and adapted from live MediaPipe points, so it remains an experimental test model rather than a claim of unrestricted translation. BSL and ISL likewise use their own official isolated-sign checkpoints. Typed custom words activate only after the signer records personal examples; they do not alter a shared model. The remaining languages never borrow, relabel or fabricate a checkpoint.
+### ASL installation and use
+
+The normal workspace uses the frozen Engine V3.1 isolated-sign model trained on PopSign ASL v2.1 and FSBoard. It uses the strict rejection preset and requires a person to add a model suggestion to the transcript before speech. Typed custom words activate after the signer records a personal example. The prior WLASL2000 checkpoint remains available to the Engine 1 rehearsal and historical QA. [V3.1 model attribution](public/models/asl-v31/ATTRIBUTION.md) · [V3.1 research report](engine-v3/REPORT-V3.1.md)
 
 ### PSL installation and use
 
@@ -76,6 +97,7 @@ Camera
 Important modules:
 
 - `lib/vision-engine.ts`: model loading and per-frame holistic tracking
+- `workers/asl-v3-tracker.worker.ts` and `lib/asl-v31-runtime.ts`: V3.1 tracking and checksum-verified ASL model inference
 - `workers/recognition.worker.ts`: temporal buffer, segmentation, automatic model routing and personal inference
 - `lib/model-adapters.ts`: 40-language registry and independent model contracts
 - `lib/decoder.ts`: confidence gating and duplicate suppression
@@ -98,7 +120,7 @@ The camera requires a secure origin in production. Localhost is treated as secur
 
 ## Environment variables
 
-No application secrets or paid API keys are required. Vision model assets are fetched from the official public MediaPipe model bucket and inference runs locally after loading.
+No application secrets or paid API keys are required. The build copies the MediaPipe runtime from npm and installs size- and SHA-256-pinned vision models into `/vision/`, so the exported site serves its own tracking assets and inference runs locally.
 
 The only supported public variable is `NEXT_PUBLIC_GA_MEASUREMENT_ID` (see `.env.example`). Leave it empty to disable analytics. To enable GA4, configure your own measurement ID, turn off Enhanced Measurement in the Google Analytics data stream (to avoid automatic collection of form, search and navigation data), choose the appropriate retention settings, and rebuild. Visitors must opt in before any analytics script loads. Never put a secret in a `NEXT_PUBLIC_` variable or in `public/`; both are delivered to browsers.
 
@@ -139,25 +161,41 @@ Dataset names, vocabulary size and availability do not imply a licence suitable 
 
 ```bash
 npm run typecheck
-npm test
+npm test                 # unit, regression and synthetic recognition suites
 npm run lint
 npm run build:worker
-npm run repo:guard
-npm run build:firebase
-npm run audit:security
+npm run repo:guard       # asset size policy; no tracked live results or captures
+npm run audit:secrets
+npm run audit:deps       # production advisories fail; dev advisories need a dated review
+npm audit --omit=dev
+npm run build:firebase   # full multilingual export (downloads the RSL model once)
+npm run audit:security   # strict release gate: npm audit, secret scan, rendered export
+npm run build:asl-demo && npm run verify:runtime -- --out out --profile asl-demo
+npm run demo:check -- /path/to/chrome
+npm run readiness -- --label final --browser /path/to/chrome --build rehearsal,asl-demo
 ```
 
-Core CI runs typechecking, unit/regression tests, lint, worker compilation, secret checks and the repository asset policy on every pull request to `main`. The asset policy blocks new tracked files over 20 MiB; the two existing reviewed large ONNX files are explicit legacy exceptions and cannot grow without failing CI.
+Browser smokes take a Chrome executable: `tests/workspace-browser-smoke.mjs`, `landmark-lifecycle-browser-smoke.mjs`, `rsl-`, `bdsl-` and `lse-browser-smoke.mjs` and `a11y-axe-smoke.mjs` need the full export; `offline-vision-smoke.mjs`, `offline-demo-strict-smoke.mjs`, `lifecycle-stress-smoke.mjs` and `fault-injection-smoke.mjs` need the ASL demo export; `gitex-rehearsal-smoke.mjs` and `transcript-a11y-smoke.mjs` need `npm run build:rehearsal`. Do not run a build while a smoke is using `out/`.
 
-The unit suite verifies low-confidence rejection, temporal consensus and duplicate suppression. The rendered test checks all public routes and production metadata.
+Every pull request runs:
+
+- **Core CI**: typecheck, tests, lint, workers, matching benchmarks, secret scan, dependency gate, asset policy;
+- **Firebase Static Build Check**: the full export with all of its browser smokes, then the strict `audit:security` gate in its own job;
+- **Offline ASL Demo and Rehearsal**: both demo profiles with the strict offline check (and its leak-detector self-test), rehearsal, transcript/accessibility, lifecycle-stress and fault-injection smokes;
+- **ASL real-video pilot** when recognition code changes, and the private capture smoke when capture code changes.
+
+The asset policy blocks new tracked files over 20 MiB; the two existing reviewed large ONNX files are explicit legacy exceptions and cannot grow without failing CI. Synthetic and headless results are regression records. They are not live-camera accuracy or real-device performance.
 
 ## Live-camera evaluation
 
 Training metrics and synthetic tests are not treated as live-camera accuracy. SignRelay now has a language-specific, signer-independent evaluation protocol in [`evaluation/README.md`](evaluation/README.md), plus a JSONL summariser:
 
 ```bash
+npm run eval:log                                        # operator log during a live session
 npm run eval:live -- evaluation/results/<language>-<date>.jsonl
 ```
+
+`evaluation/results/` is git-ignored and `repo:guard` fails if anything in it is tracked. Operator-log rows are unreviewed observations and are summarised separately from reviewed results.
 
 The report separates signed-trial accuracy, accepted-sign coverage, precision among accepted predictions, common confusions and no-sign false-accept rate. Raw participant video and identifying participant data must not be committed to this repository. Experimental model status should only change after documented live-camera evaluation against thresholds chosen before the final results are inspected.
 
@@ -169,7 +207,7 @@ For future changes:
 
 1. branch from the current `main`;
 2. open a pull request back to `main`;
-3. require **Core CI** and **Firebase Static Build Check** to pass before merging;
+3. require **Core CI**, **Firebase Static Build Check** (including its strict dependency audit job) and **Offline ASL Demo and Rehearsal** to pass before merging;
 4. deploy Firebase only from the merged `main` commit.
 
 Before opening a pull request, run:
@@ -199,13 +237,14 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 
 ## Known limitations
 
-- The installed ASL checkpoint is the official experimental 2,000-sign WLASL Pose-TGCN model. Its live MediaPipe input adapter and closed-set rejection gate must still be evaluated separately.
+- V3.1 can abstain on supported signs and can suggest the wrong word for unknown or neighboring signs. Independent physical live-camera accuracy is still unmeasured.
 - Personal template matching is signer-specific and is not a substitute for a signer-independent ASL benchmark.
 - Performance varies with viewpoint, signing speed, hand dominance, occlusion and lighting.
 - Non-manual cues are represented in the feature structure but are not fully used by the starter decoder.
 - No continuous unrestricted grammar decoder is installed.
 - BSL and ISL use their own official isolated-sign checkpoints (1,064 and 263 labels respectively), still marked experimental because browser-side signer-independent evaluation has not yet been completed. Spanish adds a 300-class landmark model; Bangla and RSL use separate video models. The remaining workspaces are signer-specific until compatible, language-specific models are available and evaluated.
-- The first model load requires internet access to download official MediaPipe assets.
+- A build needs internet access once, for `npm ci` and the pinned MediaPipe models; the exported site then serves its own tracking assets. The full build also downloads the 141 MB RSL model.
+- With the hand kept in view, the motion segmenter does not split a sign's tail from the next movement, and a rule word can repeat from its own tail after a pause in view. An off-by-default guard is evaluated in [docs/gitex/sprint-3/tail-guard.md](docs/gitex/sprint-3/tail-guard.md); rest the hands between signs.
 
 ## Roadmap
 

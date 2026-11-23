@@ -1,3 +1,4 @@
+import { installTemplateWorker } from "./helpers/template-worker";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { recognizeAslStarter } from "../lib/asl-starter-recognition";
 import { prepareCalibrationSequence } from "../lib/personalized-recognition";
@@ -20,6 +21,7 @@ beforeEach(async () => {
   mocks.model.mockReset().mockResolvedValue(null);
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
   vi.stubGlobal("self", worker);
+  installTemplateWorker();
   await import("../workers/recognition.worker");
 });
 
@@ -94,7 +96,9 @@ describe("fist motion discrimination (synthetic regressions)", () => {
     mocks.model.mockResolvedValue({ label: "BOOK", text: "Book", confidence: 0.94, margin: 0.5 });
     await feed(makeFistMotion("bob", { duration: 2600, count: 53 })
       .map(frame => ({ ...frame, timestamp: frame.timestamp + 2650 })));
-    expect(confirmations()).toEqual(["BOOK"]);
+    expect(worker.postMessage.mock.calls.some(([message]) =>
+      message.type === "analysis" && message.source === "model" && message.candidate === "BOOK")).toBe(true);
+    expect(confirmations()).toEqual([]);
   });
   it("preserves an explicitly saved personal YES gesture", async () => {
     const frames = makeFistMotion("bob");

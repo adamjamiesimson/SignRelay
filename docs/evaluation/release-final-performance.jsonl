@@ -1,0 +1,6 @@
+{"benchmark":"frame-ack-real-threads","version":"pr21","examples":150,"offered":80,"acknowledged":45,"sent":45,"median_ms":0.78,"p95_ms":263.16,"max_ms":332.07}
+{"benchmark":"frame-ack-real-threads","version":"isolated","examples":150,"offered":80,"acknowledged":80,"sent":80,"median_ms":0.48,"p95_ms":2.69,"max_ms":50.33}
+{"benchmark":"frame-ack-real-threads","version":"pr21","examples":300,"offered":80,"acknowledged":51,"sent":51,"median_ms":0.55,"p95_ms":253.44,"max_ms":255.49}
+{"benchmark":"frame-ack-real-threads","version":"isolated","examples":300,"offered":80,"acknowledged":80,"sent":80,"median_ms":0.46,"p95_ms":0.78,"max_ms":94.88}
+{"benchmark":"actual-775-psl-local-assets","version":"pr21","cold_ms":626.51,"warm_median_ms":274.35,"max_event_loop_gap_ms":147.79,"prediction":null,"decision_equal":true,"network":"local file bytes, not connection speed"}
+{"benchmark":"actual-775-psl-local-assets","version":"isolated","cold_ms":397.35,"warm_median_ms":82.27,"max_event_loop_gap_ms":163.51,"prediction":null,"decision_equal":true,"network":"local file bytes, not connection speed"}

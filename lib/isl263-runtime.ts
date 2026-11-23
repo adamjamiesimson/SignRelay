@@ -1,5 +1,6 @@
 import * as ort from "onnxruntime-web";
-import { createLandmarkModelLoader } from "./landmark-model-loader";
+import { createLandmarkModelLoader, type InferenceOptions } from "./landmark-model-loader";
+import { withLandmarkInference } from "./landmark-inference";
 import type { Point, VisionFrame } from "./vision-types";
 
 export type Isl263Prediction = { label: string; text: string; confidence: number; margin: number };
@@ -13,28 +14,32 @@ const MIN_MARGIN = 0.18;
 const loadModel = createLandmarkModelLoader("/models/isl263-include", 263);
 
 /** Run the official 263-class AI4Bharat INCLUDE landmark transformer. */
-export async function recognizeIsl263(sequence: VisionFrame[]): Promise<Isl263Prediction | null> {
+export async function recognizeIsl263(sequence: VisionFrame[], options: InferenceOptions = {}): Promise<Isl263Prediction | null> {
   const prepared = prepareIncludeInput(sequence);
   if (prepared.visibleFrames < MIN_VISIBLE_FRAMES) return null;
-  const { session, labels } = await loadModel();
-  const input = new ort.Tensor("float32", prepared.values, [1, FRAME_COUNT, FEATURES_PER_FRAME]);
-  let output: Record<string, ort.Tensor> = {};
-  try {
-    output = await session.run({ landmarks: input });
-    const logits = output.logits?.data;
-    if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
-    const probabilities = softmax(logits);
-    const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
-    const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
-    const confidence = probabilities[best];
-    const margin = confidence - probabilities[runnerUp];
-    const label = labels[best];
-    if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
-    return { label, text: readable(label), confidence, margin };
-  } finally {
-    input.dispose();
-    Object.values(output).forEach(tensor => tensor.dispose());
-  }
+  options.onPhase?.("loading");
+  const { session, labels } = await loadModel(options.signal);
+  options.signal?.throwIfAborted();
+  return withLandmarkInference(session, options, async () => {
+    const input = new ort.Tensor("float32", prepared.values, [1, FRAME_COUNT, FEATURES_PER_FRAME]);
+    let output: Record<string, ort.Tensor> = {};
+    try {
+      output = await session.run({ landmarks: input });
+      const logits = output.logits?.data;
+      if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
+      const probabilities = softmax(logits);
+      const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
+      const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
+      const confidence = probabilities[best];
+      const margin = confidence - probabilities[runnerUp];
+      const label = labels[best];
+      if (!label || confidence < MIN_CONFIDENCE || margin < MIN_MARGIN) return null;
+      return { label, text: readable(label), confidence, margin };
+    } finally {
+      input.dispose();
+      Object.values(output).forEach(tensor => tensor.dispose());
+    }
+  });
 }
 
 /**

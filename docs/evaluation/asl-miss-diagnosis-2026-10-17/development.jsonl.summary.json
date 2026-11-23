@@ -1,0 +1,166 @@
+{
+  "diagnostic_only": true,
+  "source_frame_step": true,
+  "reviewed_pilot": false,
+  "assets_fetched_via_node": true,
+  "browser_errors": [
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17019/0b277732-fec3-4a64-baf2-50108d136fe8"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17019/741e00f6-3ca7-4de4-81a9-8d966d86d64a"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17019/edd22d4b-4739-4640-a5c2-90b479961b64"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17019/b42caa28-7719-4866-ac79-6f839358e290"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17019/b42caa28-7719-4866-ac79-6f839358e290"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17019/6f12c603-b1ed-47df-bd09-351632907bc3"
+    }
+  ],
+  "groups": [
+    {
+      "group": "asl/development",
+      "trials": 5,
+      "signed_trials": 5,
+      "correct": 1,
+      "signed_accuracy": 0.2,
+      "coverage": 0.2,
+      "precision_when_accepted": 1,
+      "wrong_accepted_trials": 0,
+      "abstentions": 2,
+      "signed_errors": 2,
+      "incorrect_acceptance_rate": 0,
+      "error_rate": 0.4,
+      "unique_recordings": 5,
+      "unique_participants": 4,
+      "sign_coverage": [
+        "HELLO",
+        "NO",
+        "PLEASE",
+        "THANK YOU",
+        "YES"
+      ],
+      "per_sign_recall": {
+        "HELLO": 0,
+        "NO": 1,
+        "PLEASE": 0,
+        "THANK YOU": 0,
+        "YES": 0
+      },
+      "confusion_matrix": {
+        "THANK YOU": {
+          "[ABSTAIN]": 1
+        },
+        "PLEASE": {
+          "[ERROR]": 1
+        },
+        "HELLO": {
+          "[ERROR]": 1
+        },
+        "YES": {
+          "[ABSTAIN]": 1
+        },
+        "NO": {
+          "NO": 1
+        }
+      },
+      "confusion_matrix_unit": "trials per distinct emitted label; multi-output/error cells may overlap",
+      "no_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "unknown_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "errors": 2,
+      "confusions": {},
+      "per_gloss": [
+        {
+          "gloss": "HELLO",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 1,
+          "hand_tracking": {
+            "measured_trials": 0,
+            "frames": 0,
+            "frames_with_hands": 0
+          }
+        },
+        {
+          "gloss": "NO",
+          "trials": 1,
+          "correct": 1,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 51,
+            "frames_with_hands": 11
+          }
+        },
+        {
+          "gloss": "PLEASE",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 1,
+          "hand_tracking": {
+            "measured_trials": 0,
+            "frames": 0,
+            "frames_with_hands": 0
+          }
+        },
+        {
+          "gloss": "THANK YOU",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 30,
+            "frames_with_hands": 6
+          }
+        },
+        {
+          "gloss": "YES",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 31,
+            "frames_with_hands": 5
+          }
+        }
+      ],
+      "holdout_verified": false
+    }
+  ]
+}

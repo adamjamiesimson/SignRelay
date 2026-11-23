@@ -1,0 +1,8 @@
+{
+  "expected_failure": true,
+  "exit_code": 1,
+  "reason": "Lost correct recognition on please-gtsignstudy4a.8031: PLEASE",
+  "source_run": 38882717284,
+  "artifact_id": 12038551298,
+  "artifact_sha256": "c809d44a2efa35e2ea75c2b80cfa6d5bc1b4e5a34919c5f439a529f31817f668"
+}

@@ -19,6 +19,8 @@ export type VisionFrame = {
   hands: HandObservation[];
   face: Point[];
   pose: Point[];
+  /** Training-ordered V3.1 features from the same processed camera image. */
+  aslV3Features?: Float32Array;
 };
 
 export type WorkerAnalysis = {
@@ -30,6 +32,8 @@ export type WorkerAnalysis = {
   confidence: number;
   bufferSize: number;
   feedback?: string;
+  source?: "personal" | "starter" | "model";
+  motionReason?: string;
 };
 
 export type WorkerConfirmation = {
@@ -39,9 +43,12 @@ export type WorkerConfirmation = {
   gloss: string;
   confidence: number;
   timestamp: number;
+  source?: "personal" | "starter" | "model";
 };
 
-export type WorkerMessage = WorkerAnalysis | WorkerConfirmation
+export type WorkerSuggestion = Omit<WorkerConfirmation, "type" | "source"> & { type: "suggestion"; source: "model" };
+
+export type WorkerMessage = WorkerAnalysis | WorkerConfirmation | WorkerSuggestion
   | { type: "fault"; session?: number; message: string };
 
 export type CalibrationTemplate = {
@@ -57,7 +64,7 @@ export type CalibrationTemplate = {
 export type WorkerInput = (
   | { type: "frame"; frame: VisionFrame }
   | { type: "reset" }
-  | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[] }
+  | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[]; aslEngine?: "v3.1" }
 ) & { session?: number; frameId?: number };
 
 export type DetectionStatus = {

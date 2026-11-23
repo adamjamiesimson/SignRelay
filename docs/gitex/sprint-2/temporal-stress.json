@@ -1,0 +1,179 @@
+{
+  "schema": 1,
+  "status": "Synthetic kinematics through the real worker; not recordings or accuracy.",
+  "generated_by": "UPDATE_TEMPORAL=1 npx vitest run tests/asl-temporal-stress.test.ts",
+  "earliest_confirmation": {
+    "HELLO": {
+      "first_confirming_frames": 6,
+      "movement_fraction": 0.33,
+      "other_words": []
+    },
+    "THANK YOU": {
+      "first_confirming_frames": 9,
+      "movement_fraction": 0.53,
+      "other_words": []
+    },
+    "PLEASE": {
+      "first_confirming_frames": 15,
+      "movement_fraction": 0.93,
+      "other_words": []
+    },
+    "SORRY": {
+      "first_confirming_frames": 15,
+      "movement_fraction": 0.93,
+      "other_words": []
+    },
+    "YES": {
+      "first_confirming_frames": 19,
+      "movement_fraction": 1,
+      "other_words": []
+    },
+    "NO": {
+      "first_confirming_frames": 10,
+      "movement_fraction": 0.6,
+      "other_words": []
+    }
+  },
+  "scenarios": {
+    "six words, 0 ms pause, hands lowered": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "six words, 0 ms pause, hands held": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "six words, 100 ms pause, hands lowered": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "six words, 100 ms pause, hands held": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "six words, 250 ms pause, hands lowered": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "six words, 250 ms pause, hands held": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "six words, 400 ms pause, hands lowered": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "six words, 400 ms pause, hands held": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "six words, 700 ms pause, hands lowered": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "six words, 700 ms pause, hands held": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "six words, 1500 ms pause, hands lowered": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "six words, 1500 ms pause, hands held": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "HELLO twice, 500 ms apart": {
+      "intended": 2,
+      "confirmed": 1,
+      "words": "HELLO"
+    },
+    "HELLO twice, 1500 ms apart": {
+      "intended": 2,
+      "confirmed": 2,
+      "words": "HELLO HELLO"
+    },
+    "HELLO twice, 3000 ms apart": {
+      "intended": 2,
+      "confirmed": 2,
+      "words": "HELLO HELLO"
+    },
+    "partial PLEASE (40%), then SORRY": {
+      "intended": 1,
+      "confirmed": 1,
+      "words": "SORRY"
+    },
+    "partial THANK YOU (30%), then NO": {
+      "intended": 1,
+      "confirmed": 1,
+      "words": "NO"
+    },
+    "SORRY interrupted by 400 ms tracking loss, then finished": {
+      "intended": 1,
+      "confirmed": 0,
+      "words": ""
+    },
+    "HELLO then an 8 s still hold": {
+      "intended": 1,
+      "confirmed": 1,
+      "words": "HELLO"
+    },
+    "six words with ±30% frame-interval jitter": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "six words at 5 fps": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "six words at 6 fps": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "six words at 7 fps": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "six words at 8 fps": {
+      "intended": 6,
+      "confirmed": 5,
+      "words": "HELLO THANK YOU PLEASE SORRY NO"
+    },
+    "frame rate drops from 22 to 10 fps mid-sequence": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "contract violation: every frame delivered twice with the same timestamp": {
+      "intended": 6,
+      "confirmed": 0,
+      "words": ""
+    },
+    "clock jumps backwards between words": {
+      "intended": 6,
+      "confirmed": 6,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO"
+    },
+    "six words repeated five times": {
+      "intended": 30,
+      "confirmed": 30,
+      "words": "HELLO THANK YOU PLEASE SORRY YES NO HELLO THANK YOU PLEASE SORRY YES NO HELLO THANK YOU PLEASE SORRY YES NO HELLO THANK YOU PLEASE SORRY YES NO HELLO THANK YOU PLEASE SORRY YES NO"
+    }
+  }
+}

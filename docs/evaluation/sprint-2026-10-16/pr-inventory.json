@@ -1,0 +1,122 @@
+[
+  {
+    "number": 18,
+    "title": "Security: update Next.js and resolve critical audit finding",
+    "base": "main",
+    "head": "fix/security-audit-2026-10-11",
+    "head_sha": "c7df0ffa9a31c45680716ffb6285c53ff71a198d",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  },
+  {
+    "number": 19,
+    "title": "Security: fail-closed dev-only advisory review gate (draft)",
+    "base": "main",
+    "head": "fix/audit-policy-dev-only-2026-10-12",
+    "head_sha": "f0015e7cc2fa630f567bf76ece661523d6f2b415",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  },
+  {
+    "number": 20,
+    "title": "Evaluation: paired ASL sign-confusion diagnostics",
+    "base": "main",
+    "head": "feature/asl-paired-confusion-report-2026-10-12",
+    "head_sha": "171297d7343e65b9899def53bb7ed7c122b42a74",
+    "draft": true,
+    "state": "closed",
+    "mergeable": true
+  },
+  {
+    "number": 21,
+    "title": "Performance: bounded DTW and cooperative PSL matching",
+    "base": "main",
+    "head": "fix/recognition-performance-and-correctness-2026-10-14",
+    "head_sha": "84e239e9a9a9b1423831c7560af39f050f158f8b",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  },
+  {
+    "number": 22,
+    "title": "Fix language switching, Unicode custom words and Spanish display labels",
+    "base": "main",
+    "head": "fix/workspace-language-unicode-2026-10-14",
+    "head_sha": "1eec439199fd3f229921a9f619fe982d291f9fa9",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  },
+  {
+    "number": 23,
+    "title": "Keep camera frames responsive with isolated personal and PSL matching",
+    "base": "fix/recognition-performance-and-correctness-2026-10-14",
+    "head": "fix/recognition-isolation-2026-10-14",
+    "head_sha": "419f28119a54e35f3541991002922d2f8c5bcf16",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  },
+  {
+    "number": 24,
+    "title": "Recover BSL and ISL loads without confusing downloads with inference hangs",
+    "base": "fix/recognition-isolation-2026-10-14",
+    "head": "fix/model-loading-recovery-2026-10-14",
+    "head_sha": "8f172637f621448d0e0531b66212858200471bcc",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  },
+  {
+    "number": 25,
+    "title": "Reject conflicting ASL windows and audit actual MediaPipe Tasks video results",
+    "base": "fix/model-loading-recovery-2026-10-14",
+    "head": "fix/recognition-evaluation-2026-10-14",
+    "head_sha": "d79774ce9398e563bd0dc01799d1f1bfc080c798",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  },
+  {
+    "number": 26,
+    "title": "Integrate recognition reliability fixes and preserve transcripts across language changes",
+    "base": "main",
+    "head": "fix/release-functional-readiness-2026-10-14",
+    "head_sha": "81f715f9fe7634625ff2a56bba885a36db8c4823",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  },
+  {
+    "number": 27,
+    "title": "Guard model reuse, expire stale matches and correct evaluation failures",
+    "base": "fix/release-functional-readiness-2026-10-14",
+    "head": "fix/reliability-followup-2026-10-14",
+    "head_sha": "6e099f94294942953138498666c561c562c8b50d",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  },
+  {
+    "number": 28,
+    "title": "ASL: require completed chest loops before PLEASE/SORRY recognition",
+    "base": "fix/reliability-followup-2026-10-14",
+    "head": "fix/asl-loop-completion-2026-10-16",
+    "head_sha": "dab687b509be799ff22e9e19187b482f5b59ede5",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  },
+  {
+    "number": 29,
+    "title": "Test ASL starter rules on frozen real-video pilot and expose false-positive gaps",
+    "base": "fix/asl-loop-completion-2026-10-16",
+    "head": "test/asl-video-evaluation-2026-10-16",
+    "head_sha": "a300483a464b1f648294c6827e778381fd6bbf3d",
+    "draft": true,
+    "state": "open",
+    "mergeable": true
+  }
+]

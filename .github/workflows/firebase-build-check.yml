@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
+  # Every PR base, including stacked feature branches; the export and browser
+  # smokes otherwise run only once a stack is retargeted to main.
   pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -76,6 +76,10 @@ jobs:
           test -f out/index.html
           test -f out/workers/ort-wasm-simd-threaded.jsep.wasm
           test -f out/workers/ort-wasm-simd-threaded.jsep.mjs
+          test ! -e out/field-test.html
+          test -f out/vision/wasm/vision_wasm_internal.wasm
+          test -f out/vision/models/gesture_recognizer.task
+          test ! -e out/.signrelay-private-capture-included
           echo "Static export created successfully."
 
       - name: Test recognition and model contracts
@@ -84,14 +88,37 @@ jobs:
       - name: Lint application source
         run: npm run lint
 
+      - name: Verify workspace switching, storage failures and delayed camera grants
+        run: node tests/workspace-browser-smoke.mjs "$(command -v google-chrome)"
+
+      - name: Verify cancelled model runs and cached session reuse in Chrome
+        run: node tests/landmark-lifecycle-browser-smoke.mjs "$(command -v google-chrome)"
+
+      - name: Verify Russian camera and model worker in headless Chrome
+        run: node tests/rsl-browser-smoke.mjs "$(command -v google-chrome)"
+
       - name: Verify Bangla camera flow in headless Chrome
         run: node tests/bdsl-browser-smoke.mjs "$(command -v google-chrome)"
 
       - name: Verify Spanish camera and model worker in headless Chrome
         run: node tests/lse-browser-smoke.mjs "$(command -v google-chrome)"
 
-      - name: Audit dependencies, history and exported pages
-        run: npm run audit:security
+      - name: Start ASL vision with CDNs blocked (self-hosted MediaPipe runtime)
+        run: node tests/offline-vision-smoke.mjs "$(command -v google-chrome)"
+
+      - name: Automated WCAG 2.x A/AA checks (axe-core, not added to the lockfile)
+        run: |
+          npm install --no-save axe-core@4.10.3
+          node tests/a11y-axe-smoke.mjs "$(command -v google-chrome)" node_modules/axe-core/axe.min.js
+
+      # Build verification: everything audit:security checks except the strict
+      # npm advisory gate, which runs as its own job below so a passing export
+      # is not reported as one opaque failure (and the gate is not weakened).
+      - name: Secret scan, rendered export and fail-closed dependency gate
+        run: |
+          npm run audit:secrets
+          npm run test:rendered
+          npm run audit:deps
 
       - name: Preserve browser evidence
         if: always()
@@ -108,3 +135,30 @@ jobs:
           name: signrelay-firebase-out
           path: out
           retention-days: 3
+
+  # Strict zero-advisory release gate, unchanged: `npm run audit:security`
+  # against the exact export built above. It stays red while any advisory is
+  # reported (currently the reviewed dev-only braces chain); accepting that is
+  # an owner decision, not something CI configuration may waive.
+  strict-dependency-audit:
+    name: Strict dependency audit (release gate)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.0'
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: signrelay-firebase-out
+          path: out
+      - name: npm audit --audit-level=moderate, secret scan and exported pages
+        run: npm run audit:security

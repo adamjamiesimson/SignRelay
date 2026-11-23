@@ -17,7 +17,7 @@ function makeSequence(x: number, y: number, count = 24): VisionFrame[] {
 
 function fakeResponse(body: unknown) {
   const gzipped = gzipSync(Buffer.from(JSON.stringify(body)));
-  return { ok: true, arrayBuffer: async () => gzipped.buffer.slice(gzipped.byteOffset, gzipped.byteOffset + gzipped.byteLength) };
+  return new Response(gzipped);
 }
 
 describe("recognizePsl776 (built-in official-reference DTW matching)", () => {
@@ -26,6 +26,12 @@ describe("recognizePsl776 (built-in official-reference DTW matching)", () => {
     { gloss: "ALPHA", text: "Alpha", frames: prepareCalibrationSequence(makeSequence(0.3, 0.4)) },
     { gloss: "BETA", text: "Beta", frames: prepareCalibrationSequence(makeSequence(0.8, 0.7)) },
   ];
+  // Bundle shape is production-validated. Fill remaining classes with distant
+  // references which cannot accept or veto the two controlled test words.
+  templates.push(...Array.from({ length: 773 }, (_, i) => ({
+    gloss: `DISTANT${i}`, text: `Distant ${i}`, frames: templates[0].frames.map(row => row.map((value, k) =>
+      [0, 66, 132, 173].includes(k) ? value : value + 5)),
+  })));
 
   beforeEach(() => {
     vi.resetModules();

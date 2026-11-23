@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "failures": [],
+  "recognition_worker_sha256": "3510843cc821cbbdb9dc227d1f68dff8ded10dce77620bde0198bf4e7e2456c1",
+  "matches_committed_worker": true,
+  "real_video_evidence": {
+    "signed_trials": 11,
+    "correct": 5,
+    "wrong_accepted": 0,
+    "abstained": 6,
+    "errors": 0
+  }
+}

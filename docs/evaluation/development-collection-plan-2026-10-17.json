@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "plan_id": "asl-development-2026-10-17",
+  "status": "planned-not-recordings",
+  "participant_ids": ["dev-20261017-p01", "dev-20261017-p02", "dev-20261017-p03", "dev-20261017-p04"],
+  "require_both_dominant_hands": true,
+  "signed_glosses": ["HELLO", "THANK YOU", "PLEASE", "SORRY", "YES", "NO"],
+  "signed_takes": ["comfortable natural pace", "comfortable slower pace", "comfortable faster pace"],
+  "no_sign_activities": ["idle hands visible", "ordinary conversation gestures", "adjusting clothing or glasses", "hand resting then moving near chest", "non-sign incomplete circular sweep", "camera repositioning"],
+  "negative_takes": 2,
+  "unknown_sign_slots": 3,
+  "unknown_sign_policy": "A fluent independent reviewer chooses three distinct glosses absent from the installed ASL-2000 plus starter vocabulary before predictions are inspected.",
+  "capture_instruction": "One continuous original take, at most 30 seconds and 100 MB. Keep the face, torso and signing hands in view. Include a short natural lead-in and ending; do not add, duplicate, crop or mirror frames. Sign naturally with the usual dominant hand. Record actual device and hand use.",
+  "privacy": "Store media and intake/review records under ignored evaluation/videos/ and evaluation/raw/. Public manifests contain pseudonyms and private-record references, never names or consent forms.",
+  "split": "development only; recruit separately from all reserved holdout participants",
+  "planned_counts": {"signed": 72, "no_sign": 48, "unknown_sign": 24, "total": 144},
+  "release_claim": "Development collection targets, not observed trials, a statistical power calculation, or release acceptance thresholds."
+}

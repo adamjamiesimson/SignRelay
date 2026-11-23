@@ -1,0 +1,282 @@
+[
+  {
+    "file": "public/models/asl100/labels.json",
+    "bytes": 791,
+    "sha256": "7a23f76a13610b0e2f7937ed0b59f058222066c349580d576822ede8201fd79e"
+  },
+  {
+    "file": "public/models/asl100/metrics.json",
+    "bytes": 427,
+    "sha256": "bb50636ee1a62c388c7b01ea84de5cef57e6ca351c3744958a0ad72d78c12e74"
+  },
+  {
+    "file": "public/models/asl100/model.json.gz",
+    "bytes": 641146,
+    "sha256": "52b089a05744b10819332e1979ba1efb8899871b03c0d13648d2c85371c545a5"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/adapter.json",
+    "bytes": 499,
+    "sha256": "de2aef850ab2564a8bd65808d217649a9868f20b3081ecb4fb3d3b10eab43408"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/dataset-card.md",
+    "bytes": 879,
+    "sha256": "783271e1abd39c2d714a26a804992a3d4e1038a58845accfbc4ca4e1ff48bcc5"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/labels.json",
+    "bytes": 11613,
+    "sha256": "e7e835816f804836c79b647d74e037ed413d5d9e4000e21bc8e0579894e47a24"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/metrics.json",
+    "bytes": 746,
+    "sha256": "4de08f05f66b54026861f52ae77d06e020ab7846f6fd8461257341adfb01ed1d"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/model.json",
+    "bytes": 51460,
+    "sha256": "845f6e59c5cd4e969ee62493f609a26080784422e34bce78368920c9fade8294"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/model.part00.bin",
+    "bytes": 716800,
+    "sha256": "eadb5b389c0e185ab8f632be04f60650123b258c574120e1b9b52d4e1b861deb"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/model.part01.bin",
+    "bytes": 716800,
+    "sha256": "996cbe46f14f366002da1468950c7ed92b4c68d46b4681ff5e7c3ef78debabff"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/model.part02.bin",
+    "bytes": 716800,
+    "sha256": "6fa477bb39cc6cb41d01877f201b711e763f50294002a75cb9171bea825000d1"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/model.part03.bin",
+    "bytes": 716800,
+    "sha256": "2e20a118156f0715f347dcc1383fd092bc5e1900acf3c7c0a5fce5c5d67dd907"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/model.part04.bin",
+    "bytes": 716800,
+    "sha256": "0bed9c26c18833070d0d70917f9e9418dcb8b5fa7ea13a1916bdbbea7a35a016"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/model.part05.bin",
+    "bytes": 716800,
+    "sha256": "6fbd0e4b53d8c796d3045f0b6fcebc9b5220936ea5ddf8c38e7c032a6c1889b3"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/model.part06.bin",
+    "bytes": 716800,
+    "sha256": "3a662e316f4c30aca157ee64d2eeceda2b6a8eeed8c00c9ea688cf697bb7ad6b"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/model.part07.bin",
+    "bytes": 716800,
+    "sha256": "7dbf838aa2dcf81716252a7993ad44699fde32891fcdf578d2bcb9d5cdec86b0"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/model.part08.bin",
+    "bytes": 333669,
+    "sha256": "e80d3911553615f6b628a14f53bdbae69e9b87e5ca9d81026f03f37b91167d03"
+  },
+  {
+    "file": "public/models/asl1000-tgcn/sha256.txt",
+    "bytes": 1142,
+    "sha256": "a14c3c4edc22a8253af2ab20856603bb0e1fcd253a275e623e9de67d66c86c8c"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/adapter.json",
+    "bytes": 499,
+    "sha256": "081e4e83fb40064cabfa14160bf8eb801ad2e7fd07b4c6dc0502db93b69429fd"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/dataset-card.md",
+    "bytes": 899,
+    "sha256": "3012e0c5817dcbd1289ec3e4691b5393889e40ed1a2a2123e84d2830d9165b65"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/labels.json",
+    "bytes": 24017,
+    "sha256": "4a4e1e6c024c19320557d0febdd7f3956960d77a691848a2101cbca72ce69380"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/metrics.json",
+    "bytes": 438,
+    "sha256": "813e7fc425a6a34e8c7f165a0412416c391610445f5edcb39fa6ea3400a43fe8"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/model.json",
+    "bytes": 51460,
+    "sha256": "ebac604f1c4ee86a7b3b20cfaa9c3a8f157cc814ad0c94e6a87be7902b3ac466"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/model.part00.bin",
+    "bytes": 716800,
+    "sha256": "0d38c52c54b7f0318a57e64f92fb80cb1465b7032eb2373e2ec7ad3064bbb5d3"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/model.part01.bin",
+    "bytes": 716800,
+    "sha256": "8a4f519c23623d16bb2a5d628a5ad9679d661b74e629399e6fc15768e607f23e"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/model.part02.bin",
+    "bytes": 716800,
+    "sha256": "189d09d2c059333095e9e7829c0fa0a4c5c0b45309bcc99d050703c1caf93755"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/model.part03.bin",
+    "bytes": 716800,
+    "sha256": "c00f99fcca5cb9d2e68fabc3466934282f60d8db9ca5823af58f657b9415cc0e"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/model.part04.bin",
+    "bytes": 716800,
+    "sha256": "8e9961df4bb56d8e3d70efc046689217cbb00c7705865453c17a21dccc882761"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/model.part05.bin",
+    "bytes": 716800,
+    "sha256": "957e15ffa38a6955f9d56ff49f05233264c1382e83aac2f5a8fce82fc47ba929"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/model.part06.bin",
+    "bytes": 716800,
+    "sha256": "6cae4ae49c39a3c00f5ba642b5edcab6cf213b80271c1200e0c79a500dcbf6de"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/model.part07.bin",
+    "bytes": 716800,
+    "sha256": "7f659bc373a7debd44d93bd00f07af0bc16d79b39b3eada68902cea08b1e11b3"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/model.part08.bin",
+    "bytes": 588366,
+    "sha256": "727a1eb21c6532358ecf276555487fdf8fb2fce466fbde105175fd203686edb3"
+  },
+  {
+    "file": "public/models/asl2000-tgcn/sha256.txt",
+    "bytes": 1142,
+    "sha256": "db324a1dc5907b2614f37dc0203488443307836d4db028ab7776eba8f6adc0ed"
+  },
+  {
+    "file": "public/models/bdsl401-videomae/ATTRIBUTION.md",
+    "bytes": 3365,
+    "sha256": "cd0a24f30043386e63f0bc2ebe21ba7e4a3da18575aee1dcd5b531d16d5f90a9"
+  },
+  {
+    "file": "public/models/bdsl401-videomae/class-codes.json",
+    "bytes": 4013,
+    "sha256": "39d88ba6e29336990cc99f1a28952cd6a7fc3b146b3b432fb6d44263c213b3dd"
+  },
+  {
+    "file": "public/models/bdsl401-videomae/labels.json",
+    "bytes": 6272,
+    "sha256": "31e115427f849fbe2f1f648e15203b1f801cfd94423b8b93f578af18e5b3732d"
+  },
+  {
+    "file": "public/models/bdsl401-videomae/manifest.json",
+    "bytes": 899,
+    "sha256": "1b7715cd95c02633724a0a57bb631b0cf6f6d46dc27cd7b51f421caf21aedb1b"
+  },
+  {
+    "file": "public/models/bdsl401-videomae/model.onnx",
+    "bytes": 96764338,
+    "sha256": "600c7a8064e5b41f24d145165990493c996ab7cf4b3a554aa7b354f18bad40a6"
+  },
+  {
+    "file": "public/models/bsl1064-pose2sign/labels.json",
+    "bytes": 12667,
+    "sha256": "f99394258861ab0cb8629ddb5bd133c7a1ca6703ed4e62011a2108ea9fc5d71f"
+  },
+  {
+    "file": "public/models/bsl1064-pose2sign/model.json",
+    "bytes": 356,
+    "sha256": "d01076096d6cde5861c31f3612279ba09b036c6d0940ef8de33688d59996bbeb"
+  },
+  {
+    "file": "public/models/bsl1064-pose2sign/model.onnx",
+    "bytes": 45941853,
+    "sha256": "f48ffce9ccfc419fa4047845c152cc4a4224151e6e2bf10873cf59cfcdbc278f"
+  },
+  {
+    "file": "public/models/isl263-include/labels.json",
+    "bytes": 3070,
+    "sha256": "16508c851ced89989dfe6a983e53d5fa2b70fec82d6932f6855d49846c39b1b8"
+  },
+  {
+    "file": "public/models/isl263-include/model.json",
+    "bytes": 384,
+    "sha256": "a5ea200a71295dfd3cb89a651dbc6d099bd4494f0f2f097f0d40d2ecd948fbd2"
+  },
+  {
+    "file": "public/models/isl263-include/model.onnx",
+    "bytes": 15412494,
+    "sha256": "122c9038eb1ac2143ebc91ab6e9752871132ff4d78dd6be589d98f50a67e13a6"
+  },
+  {
+    "file": "public/models/lse300-swl/ATTRIBUTION.md",
+    "bytes": 2075,
+    "sha256": "929797bdda21567dc7b816783d11e56eef927770043e5d6e9f9b01d42c294267"
+  },
+  {
+    "file": "public/models/lse300-swl/labels.json",
+    "bytes": 4808,
+    "sha256": "5cda31c42d0f9e45788d323c8d7f5af8c18bec9baf6178f0bfde428552038eff"
+  },
+  {
+    "file": "public/models/lse300-swl/model.json",
+    "bytes": 668,
+    "sha256": "43935387aabc00f43e953f16ae30ecfb84fee2f67e849a31fbca489a4cd7a31c"
+  },
+  {
+    "file": "public/models/lse300-swl/model.onnx",
+    "bytes": 3509107,
+    "sha256": "58ce0f861f7e095054386435bf1a506b933a68883befee60a33c163a152d0ae3"
+  },
+  {
+    "file": "public/models/psl776-hfad/ATTRIBUTION.md",
+    "bytes": 2206,
+    "sha256": "5a8ed345f6e44cd21df267e0304417d4662ea660e5ac238483a11ad0b40751ae"
+  },
+  {
+    "file": "public/models/psl776-hfad/labels.json",
+    "bytes": 9567,
+    "sha256": "de1f557f09b7e192e6109c2f2fd858084f59b5f38b9236dd4fb41f013adacd8d"
+  },
+  {
+    "file": "public/models/psl776-hfad/templates.json.gz",
+    "bytes": 6935772,
+    "sha256": "2cdcf70981178c6739392764846b7ef153fe993ab8d39c95792fd5665e462a14"
+  },
+  {
+    "file": "public/models/rsl1000-slovo/ATTRIBUTION.md",
+    "bytes": 2589,
+    "sha256": "18e1161d6f2bb4c4e58c370decfabe683819793e47c7a3131c799fc52d9c48d9"
+  },
+  {
+    "file": "public/models/rsl1000-slovo/LICENSE.pdf",
+    "bytes": 157632,
+    "sha256": "14f4845e9c8d3de875cbac4139491da368ab1040a7f565e02894477279134d22"
+  },
+  {
+    "file": "public/models/rsl1000-slovo/labels.json",
+    "bytes": 20723,
+    "sha256": "4f7d0ad8245bf226d90118a57101eebb0f03bd812b45066c4516f6d62501be11"
+  },
+  {
+    "file": "public/models/rsl1000-slovo/manifest.json",
+    "bytes": 813,
+    "sha256": "2d26c0a9778b3e18f426cd5695c63b9ae1f6f4aaf2ed5c06cc9d8f141d775736"
+  },
+  {
+    "file": "public/models/rsl1000-slovo/model.onnx",
+    "bytes": 140785735,
+    "sha256": "3414b1cca3619ba9a92994c261505d14361657fcc7a66f5a13696de526bc4975"
+  }
+]

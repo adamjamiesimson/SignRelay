@@ -1,0 +1,162 @@
+{
+  "diagnostic_only": true,
+  "source_frame_step": true,
+  "reviewed_pilot": false,
+  "assets_fetched_via_node": true,
+  "browser_errors": [
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17176/92ebdf29-1bd0-49f6-b6d4-291393908d9b"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17176/51f3cf73-119c-4c14-aa73-645f1c87a5a9"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17176/8440f899-ef2d-447c-9a87-a68145be8e75"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17176/689e4325-3682-4b54-97a3-ce827a6f1de3"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17176/a1fea3fe-ce11-4624-be4b-624ce25b5471"
+    }
+  ],
+  "groups": [
+    {
+      "group": "asl/development",
+      "trials": 5,
+      "signed_trials": 5,
+      "correct": 2,
+      "signed_accuracy": 0.4,
+      "coverage": 0.4,
+      "precision_when_accepted": 1,
+      "wrong_accepted_trials": 0,
+      "abstentions": 3,
+      "signed_errors": 0,
+      "incorrect_acceptance_rate": 0,
+      "error_rate": 0,
+      "unique_recordings": 5,
+      "unique_participants": 4,
+      "sign_coverage": [
+        "HELLO",
+        "NO",
+        "PLEASE",
+        "THANK YOU",
+        "YES"
+      ],
+      "per_sign_recall": {
+        "HELLO": 0,
+        "NO": 1,
+        "PLEASE": 1,
+        "THANK YOU": 0,
+        "YES": 0
+      },
+      "confusion_matrix": {
+        "THANK YOU": {
+          "[ABSTAIN]": 1
+        },
+        "PLEASE": {
+          "PLEASE": 1
+        },
+        "HELLO": {
+          "[ABSTAIN]": 1
+        },
+        "YES": {
+          "[ABSTAIN]": 1
+        },
+        "NO": {
+          "NO": 1
+        }
+      },
+      "confusion_matrix_unit": "trials per distinct emitted label; multi-output/error cells may overlap",
+      "no_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "unknown_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "errors": 0,
+      "confusions": {},
+      "per_gloss": [
+        {
+          "gloss": "HELLO",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 35,
+            "frames_with_hands": 12
+          }
+        },
+        {
+          "gloss": "NO",
+          "trials": 1,
+          "correct": 1,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 51,
+            "frames_with_hands": 11
+          }
+        },
+        {
+          "gloss": "PLEASE",
+          "trials": 1,
+          "correct": 1,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 47,
+            "frames_with_hands": 15
+          }
+        },
+        {
+          "gloss": "THANK YOU",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 30,
+            "frames_with_hands": 6
+          }
+        },
+        {
+          "gloss": "YES",
+          "trials": 1,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 1,
+            "frames": 31,
+            "frames_with_hands": 5
+          }
+        }
+      ],
+      "holdout_verified": false
+    }
+  ]
+}

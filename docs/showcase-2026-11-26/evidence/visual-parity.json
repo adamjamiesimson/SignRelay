@@ -1,0 +1,9 @@
+{
+  "artifactDir": "/workspace/SignRelay/outputs/showcase-visual-parity",
+  "comparisons": {
+    "desktop-landing": true,
+    "desktop-workspace": true,
+    "mobile-landing": true,
+    "mobile-workspace": true
+  }
+}

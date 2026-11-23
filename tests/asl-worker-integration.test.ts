@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-types";
+import { incompleteArcWithOutwardSuffix } from "./fixtures/asl-ambiguous-arc";
 import { makeSign } from "./fixtures/asl-motion";
+import { apparentCircleFromBodyMotion, approachMouthThenDepart, continuingChestCircle,
+  mouthDepartureWithReturningWrist } from "./fixtures/asl-stroke-boundaries";
 
 const mocks = vi.hoisted(() => ({ model: vi.fn() }));
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.model }));
 let worker: { onmessage: (event: { data: WorkerInput }) => Promise<void>; postMessage: ReturnType<typeof vi.fn> };
 const confirmations = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "confirmed");
+const candidates = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).flatMap(m => m.type === "analysis" && m.source === "model" && m.candidate ? [m.candidate] : []);
 async function feed(frames: VisionFrame[]) {
   for (const frame of frames) {
     await worker.onmessage({ data: { type: "frame", frame } });
@@ -24,6 +28,35 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
   it.each(["HELLO", "NO", "YES", "PLEASE", "SORRY", "THANK YOU"] as const)("confirms %s once without another label", async sign => {
     await feed(makeSign(sign));
     expect(confirmations().map(result => result.gloss)).toEqual([sign]);
+  });
+  it("does not expose an outward suffix or model winner after vetoing a partial chest arc", async () => {
+    mocks.model.mockResolvedValue({ label: "THANK YOU", text: "Thank you", confidence: 0.99, margin: 0.9 });
+    await feed(incompleteArcWithOutwardSuffix());
+    expect(confirmations()).toHaveLength(0);
+  });
+  it.each([
+    ["PLEASE", continuingChestCircle], ["THANK YOU", approachMouthThenDepart],
+  ] as const)("confirms %s using stroke boundaries instead of whole-window endpoints", async (sign, fixture) => {
+    await feed(fixture());
+    expect(confirmations().map(result => result.gloss)).toEqual([sign]);
+  });
+  it("does not speak a word from pose jitter or rigid body travel", async () => {
+    await feed(apparentCircleFromBodyMotion(false));
+    expect(confirmations()).toHaveLength(0);
+    await worker.onmessage({ data: { type: "reset" } });
+    await feed(apparentCircleFromBodyMotion(true));
+    expect(confirmations()).toHaveLength(0);
+  });
+  it("does not call an outward mouth stroke PLEASE just because its wrist closes a loop", async () => {
+    mocks.model.mockResolvedValue({ label: "PLEASE", text: "Please", confidence: 0.99, margin: 0.9 });
+    const frames = mouthDepartureWithReturningWrist();
+    const last = frames.at(-1)!;
+    await feed([...frames, ...Array.from({ length: 8 }, (_, i) => ({
+      ...structuredClone(last), timestamp: last.timestamp + (i + 1) * 50,
+    }))]);
+    expect(confirmations()).toEqual([]);
+    expect(worker.postMessage.mock.calls.some(([message]) => message.type === "analysis"
+      && message.feedback.includes("more than one sign"))).toBe(true);
   });
   it("recognizes successive different signs after consuming the first movement", async () => {
     await feed(makeSign("NO"));
@@ -45,7 +78,7 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     expect(mocks.model).not.toHaveBeenCalled();
     expect(confirmations()).toHaveLength(0);
   });
-  it("passes a short completed non-starter movement to the research model and confirms two fresh results", async () => {
+  it("passes a short completed non-starter movement to the research model as tentative evidence", async () => {
     mocks.model.mockResolvedValue({ label: "BOOK", text: "Book", confidence: 0.94, margin: 0.5 });
     const frames = makeSign("IDLE", { duration: 1600, count: 33 });
     frames.forEach((frame, index) => frame.hands[0].landmarks.forEach(point => {
@@ -54,7 +87,8 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     }));
     await feed(frames);
     expect(mocks.model.mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
+    expect(candidates()).toContain("BOOK");
+    expect(confirmations()).toEqual([]);
     expect(mocks.model.mock.calls[0][0].length).toBeLessThan(24);
   });
   it("recovers after lost tracking without replaying an old sign", async () => {
@@ -64,7 +98,7 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
     await feed(makeSign("NO").map(frame => ({ ...frame, timestamp: frame.timestamp + 1150 })));
     expect(confirmations().map(result => result.gloss)).toEqual(["NO"]);
   });
-  it("confirms two slow model results while still processing camera frames", async () => {
+  it("shows slow model results while continuing to process camera frames", async () => {
     vi.useFakeTimers();
     try {
       mocks.model.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({
@@ -79,8 +113,9 @@ describe("ASL worker with real temporal and confirmation code (synthetic input)"
         await worker.onmessage({ data: { type: "frame", frame } });
         await vi.advanceTimersByTimeAsync(50);
       }
-      expect(confirmations().map(result => result.gloss)).toEqual(["BOOK"]);
-      expect(mocks.model).toHaveBeenCalledTimes(2);
+      expect(candidates()).toContain("BOOK");
+      expect(confirmations()).toEqual([]);
+      expect(mocks.model.mock.calls.length).toBeGreaterThanOrEqual(2);
       expect(worker.postMessage.mock.calls.filter(([message]) => message.type === "analysis")).toHaveLength(81);
     } finally {
       vi.useRealTimers();

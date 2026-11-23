@@ -1,0 +1,159 @@
+{
+  "diagnostic_only": true,
+  "trials": [
+    {
+      "trial_id": "dev-thankyou-4a.7003",
+      "recording_sha256": "7fd6d132f2952a28513dab91f4ecd9dc251fa78349f2dc38a9e1c463cf5ec04e",
+      "worker_sha256": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
+      "source_commit": "9c579fa4ac408c0b6b284e97bb23584f702b464b",
+      "expected_gloss": "THANK YOU",
+      "accepted_glosses": [],
+      "frames": 30,
+      "worker_analyses": 30,
+      "valid_hand_frames": 6,
+      "longest_consecutive_hand_frames": 6,
+      "first_hand_ms": 400,
+      "last_hand_ms": 633,
+      "maximum_continuous_hand_span_ms": 233,
+      "starter_tracking_eligible_endpoints": 2,
+      "worker_motion_reasons": {
+        "hands": 24,
+        "idle": 5,
+        "moving": 1
+      },
+      "worker_candidates": {},
+      "worker_candidate_sources": {},
+      "worker_ambiguity_analyses": 0,
+      "abstention_prefix_probe": {
+        "labels": {},
+        "incomplete_labels": {},
+        "ambiguous_prefixes": 0
+      },
+      "note": "Aggregate development diagnostics. Tracking eligibility is necessary, not sufficient, for a starter match. Prefix probes are not model inference or a new accuracy result."
+    },
+    {
+      "trial_id": "dev-please-4a.8017",
+      "recording_sha256": "a3dd244a9ce266bdeb4f88aad5792b02c5e4f20fdd16d165c5cccf44a82f574f",
+      "worker_sha256": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
+      "source_commit": "9c579fa4ac408c0b6b284e97bb23584f702b464b",
+      "expected_gloss": "PLEASE",
+      "accepted_glosses": [
+        "PLEASE"
+      ],
+      "frames": 47,
+      "worker_analyses": 47,
+      "valid_hand_frames": 15,
+      "longest_consecutive_hand_frames": 6,
+      "first_hand_ms": 735,
+      "last_hand_ms": 1671,
+      "maximum_continuous_hand_span_ms": 936,
+      "starter_tracking_eligible_endpoints": 11,
+      "worker_motion_reasons": {
+        "hands": 32,
+        "idle": 10,
+        "moving": 5
+      },
+      "worker_candidates": {
+        "PLEASE": 2,
+        "THANK YOU": 1
+      },
+      "worker_candidate_sources": {
+        "starter": 3
+      },
+      "worker_ambiguity_analyses": 0,
+      "abstention_prefix_probe": null,
+      "note": "Aggregate development diagnostics. Tracking eligibility is necessary, not sufficient, for a starter match. Prefix probes are not model inference or a new accuracy result."
+    },
+    {
+      "trial_id": "dev-hello-4a.8006",
+      "recording_sha256": "c6f032d16aefc0bc1e80ea6bcf4e672c9ac6946c5adc3c79945c2f1f42c20ca4",
+      "worker_sha256": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
+      "source_commit": "9c579fa4ac408c0b6b284e97bb23584f702b464b",
+      "expected_gloss": "HELLO",
+      "accepted_glosses": [],
+      "frames": 35,
+      "worker_analyses": 35,
+      "valid_hand_frames": 12,
+      "longest_consecutive_hand_frames": 12,
+      "first_hand_ms": 468,
+      "last_hand_ms": 1036,
+      "maximum_continuous_hand_span_ms": 501,
+      "starter_tracking_eligible_endpoints": 7,
+      "worker_motion_reasons": {
+        "hands": 23,
+        "idle": 6,
+        "moving": 6
+      },
+      "worker_candidates": {},
+      "worker_candidate_sources": {},
+      "worker_ambiguity_analyses": 0,
+      "abstention_prefix_probe": {
+        "labels": {},
+        "incomplete_labels": {},
+        "ambiguous_prefixes": 0
+      },
+      "note": "Aggregate development diagnostics. Tracking eligibility is necessary, not sufficient, for a starter match. Prefix probes are not model inference or a new accuracy result."
+    },
+    {
+      "trial_id": "dev-yes-4a.8006",
+      "recording_sha256": "825ec58bc90d8413a3f4f8f4e8da2b58bfafc0589f5feea747386f0fb24b4e0a",
+      "worker_sha256": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
+      "source_commit": "9c579fa4ac408c0b6b284e97bb23584f702b464b",
+      "expected_gloss": "YES",
+      "accepted_glosses": [],
+      "frames": 31,
+      "worker_analyses": 31,
+      "valid_hand_frames": 5,
+      "longest_consecutive_hand_frames": 2,
+      "first_hand_ms": 635,
+      "last_hand_ms": 969,
+      "maximum_continuous_hand_span_ms": 334,
+      "starter_tracking_eligible_endpoints": 1,
+      "worker_motion_reasons": {
+        "hands": 26,
+        "idle": 5
+      },
+      "worker_candidates": {},
+      "worker_candidate_sources": {},
+      "worker_ambiguity_analyses": 0,
+      "abstention_prefix_probe": {
+        "labels": {},
+        "incomplete_labels": {},
+        "ambiguous_prefixes": 0
+      },
+      "note": "Aggregate development diagnostics. Tracking eligibility is necessary, not sufficient, for a starter match. Prefix probes are not model inference or a new accuracy result."
+    },
+    {
+      "trial_id": "dev-no-4a.8030",
+      "recording_sha256": "c05226e472bc0969b9422d1ccfe4a5f255d42eece42557687529926e532870b1",
+      "worker_sha256": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
+      "source_commit": "9c579fa4ac408c0b6b284e97bb23584f702b464b",
+      "expected_gloss": "NO",
+      "accepted_glosses": [
+        "NO"
+      ],
+      "frames": 51,
+      "worker_analyses": 51,
+      "valid_hand_frames": 11,
+      "longest_consecutive_hand_frames": 8,
+      "first_hand_ms": 635,
+      "last_hand_ms": 1170,
+      "maximum_continuous_hand_span_ms": 535,
+      "starter_tracking_eligible_endpoints": 7,
+      "worker_motion_reasons": {
+        "hands": 40,
+        "idle": 10,
+        "moving": 1
+      },
+      "worker_candidates": {
+        "NO": 2
+      },
+      "worker_candidate_sources": {
+        "starter": 2
+      },
+      "worker_ambiguity_analyses": 0,
+      "abstention_prefix_probe": null,
+      "note": "Aggregate development diagnostics. Tracking eligibility is necessary, not sufficient, for a starter match. Prefix probes are not model inference or a new accuracy result."
+    }
+  ]
+}

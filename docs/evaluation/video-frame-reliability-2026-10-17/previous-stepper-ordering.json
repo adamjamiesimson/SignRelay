@@ -1,0 +1,129 @@
+{
+  "diagnostic_only": true,
+  "unique_recordings": 5,
+  "repeated_passes": 2,
+  "repetitions_pooled_as_independent_evidence": false,
+  "natural_timeouts_reproduced": 0,
+  "callback_observations": 378,
+  "callbacks_while_seeking": 338,
+  "trials": [
+    {
+      "pass_index": 0,
+      "trial_id": "dev-thankyou-4a.7003",
+      "recording_sha256": "7fd6d132f2952a28513dab91f4ecd9dc251fa78349f2dc38a9e1c463cf5ec04e",
+      "frames": 30,
+      "hand_frames": 6,
+      "accepted_glosses": [],
+      "status": "complete",
+      "callbacks": 29,
+      "callbacks_while_seeking": 23
+    },
+    {
+      "pass_index": 0,
+      "trial_id": "dev-please-4a.8017",
+      "recording_sha256": "a3dd244a9ce266bdeb4f88aad5792b02c5e4f20fdd16d165c5cccf44a82f574f",
+      "frames": 47,
+      "hand_frames": 15,
+      "accepted_glosses": [
+        "PLEASE"
+      ],
+      "status": "complete",
+      "callbacks": 46,
+      "callbacks_while_seeking": 42
+    },
+    {
+      "pass_index": 0,
+      "trial_id": "dev-hello-4a.8006",
+      "recording_sha256": "c6f032d16aefc0bc1e80ea6bcf4e672c9ac6946c5adc3c79945c2f1f42c20ca4",
+      "frames": 35,
+      "hand_frames": 12,
+      "accepted_glosses": [],
+      "status": "complete",
+      "callbacks": 34,
+      "callbacks_while_seeking": 30
+    },
+    {
+      "pass_index": 0,
+      "trial_id": "dev-yes-4a.8006",
+      "recording_sha256": "825ec58bc90d8413a3f4f8f4e8da2b58bfafc0589f5feea747386f0fb24b4e0a",
+      "frames": 31,
+      "hand_frames": 5,
+      "accepted_glosses": [],
+      "status": "complete",
+      "callbacks": 30,
+      "callbacks_while_seeking": 27
+    },
+    {
+      "pass_index": 0,
+      "trial_id": "dev-no-4a.8030",
+      "recording_sha256": "c05226e472bc0969b9422d1ccfe4a5f255d42eece42557687529926e532870b1",
+      "frames": 51,
+      "hand_frames": 11,
+      "accepted_glosses": [
+        "NO"
+      ],
+      "status": "complete",
+      "callbacks": 50,
+      "callbacks_while_seeking": 45
+    },
+    {
+      "pass_index": 1,
+      "trial_id": "dev-thankyou-4a.7003",
+      "recording_sha256": "7fd6d132f2952a28513dab91f4ecd9dc251fa78349f2dc38a9e1c463cf5ec04e",
+      "frames": 30,
+      "hand_frames": 6,
+      "accepted_glosses": [],
+      "status": "complete",
+      "callbacks": 29,
+      "callbacks_while_seeking": 24
+    },
+    {
+      "pass_index": 1,
+      "trial_id": "dev-please-4a.8017",
+      "recording_sha256": "a3dd244a9ce266bdeb4f88aad5792b02c5e4f20fdd16d165c5cccf44a82f574f",
+      "frames": 47,
+      "hand_frames": 15,
+      "accepted_glosses": [
+        "PLEASE"
+      ],
+      "status": "complete",
+      "callbacks": 46,
+      "callbacks_while_seeking": 44
+    },
+    {
+      "pass_index": 1,
+      "trial_id": "dev-hello-4a.8006",
+      "recording_sha256": "c6f032d16aefc0bc1e80ea6bcf4e672c9ac6946c5adc3c79945c2f1f42c20ca4",
+      "frames": 35,
+      "hand_frames": 12,
+      "accepted_glosses": [],
+      "status": "complete",
+      "callbacks": 34,
+      "callbacks_while_seeking": 30
+    },
+    {
+      "pass_index": 1,
+      "trial_id": "dev-yes-4a.8006",
+      "recording_sha256": "825ec58bc90d8413a3f4f8f4e8da2b58bfafc0589f5feea747386f0fb24b4e0a",
+      "frames": 31,
+      "hand_frames": 5,
+      "accepted_glosses": [],
+      "status": "complete",
+      "callbacks": 30,
+      "callbacks_while_seeking": 27
+    },
+    {
+      "pass_index": 1,
+      "trial_id": "dev-no-4a.8030",
+      "recording_sha256": "c05226e472bc0969b9422d1ccfe4a5f255d42eece42557687529926e532870b1",
+      "frames": 51,
+      "hand_frames": 11,
+      "accepted_glosses": [
+        "NO"
+      ],
+      "status": "complete",
+      "callbacks": 50,
+      "callbacks_while_seeking": 46
+    }
+  ]
+}

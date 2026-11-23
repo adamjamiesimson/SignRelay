@@ -1,0 +1,157 @@
+{
+  "date": "2026-10-17",
+  "diagnostic_only": true,
+  "new_holdout": false,
+  "source_parent_before": "cc60c11c0aa160899ce6c371c0ae5c0c1e68dcf4",
+  "source_parent_candidate": "5bc014348c1d5ee4d0eb1bd660c26fd73d3b33e2",
+  "candidate_worktree_dirty_during_capture": true,
+  "source_sha256": {
+    "lib/asl-starter-recognition.ts": "d7a25b488f76a972fda111facdafc0dcbf6ff6f9511ceac3011c9dd33f0b7221",
+    "workers/recognition.worker.ts": "e7b2244153165c0f10be46e3777594c8fe2b7f1712c2caa34c4449e50754a19b",
+    "public/workers/recognition.worker.js": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
+    "scripts/verify-video-pilot.mjs": "726bf6181877a5168323b9c1f917082fc61fed655c4904aef454f2197d31c0d2",
+    "scripts/run-recognition-video-evaluation.mjs": "41fc64145ed802e0d75bf5033aa49aa5238bb8d449652d669b9446a327ebb8bc",
+    "scripts/diagnostics/recognition-lab.ts": "c47ee582d261c3f5c74f91ab2dff9daaaa18c9faa6a2659eca130aaab22510fc",
+    "scripts/prepare-recognition-lab.mjs": "d663a0c121f9b21dbead86a39d147d980dbc7d0e9603a0ed02954f2f9591e6b0",
+    "lib/vision-runtime.mjs": "ffb49792d3e37d88b409bd5e4fb17d697c2b9c1f652a05f28923013052aacca1",
+    "package.json": "3834dc4f66be77660087fb192598b233aad69c2820ae6dbb3138e26adb444196",
+    "package-lock.json": "e1f330f81ddabc4401d4515c3379819d20eba2e53775bfee3af11c91acd20422",
+    "tests/asl-stroke-boundaries.test.ts": "d74867a47efa366099dc0c45077b13a4af5155552ad196c9405203a084ec862d",
+    "tests/fixtures/asl-stroke-boundaries.ts": "0ab9d5895fa0fa96462892a10ddaf6df0cc32266e6ed93d86feb985dbca30774",
+    "tests/asl-worker-integration.test.ts": "678f69f187b6a8d989739c6c0c4b054dd0412bdd2605fb8c95196f6749230a57",
+    "tests/asl-open-palm-ambiguity.test.ts": "762a7d1f2c644b88e42867544b5e9993de8eb30f7b95d9953af348eb86c2cec0",
+    "tests/real-video-pilot.test.ts": "502032422957c43df0f3de8f29b82851b0f51ae2dbf006767211beedb98a4b5c",
+    "tests/evaluation-trace-policy.test.ts": "597b71144f29c7fadcaa8ab3f42a9d6853b4158f41a12ca43aa5c5463c7c88eb",
+    ".github/workflows/asl-video-pilot.yml": "b1dad7c35c0830381436debcafa8f2352181b72f2babb0fca7de0ca877200613"
+  },
+  "derived_sha256": {
+    "before-historical.jsonl": "1e9073ea9a2eecc88d56423eba0b6dc266dd2f279aa66b3bd360a2900ec5dbeb",
+    "before-development.jsonl": "e8869e2cd0eb0f508fc9bfa4dd82d7913995616a592bf1c4d4b153f2edebcab5",
+    "final-historical.jsonl": "dffc77f34cc0280d04edf4c20ab89af24827e3d3354426efd9f7b161a8eac858",
+    "final-development.jsonl": "f34ef66e85bd914e5b54e0cebb7f645d4f324477fe1385c3d49b06abff257c45",
+    "historical-paired.json": "fa0d2f54dff9585fc05f5c800f74af4a2844041d993616a34697431cb3edd3e6",
+    "development-paired.json": "c2690cfaa887ec9f4c04aa9ae44f5072353ff04e1ffe4ba9b9d3992458c5054c",
+    "historical-guard.json": "313dbdc850e335890e19ab2a4cf2de72131da654963c17acb1ebf4c488c9a2ef",
+    "pre28-prior-ci.jsonl": "3f9a8ca4e5717fb2660b8b3718556ce88865725e63b8ea8364a8d64fb01a1c2a",
+    "pre28-guard.json": "34c3ee10667db76570d8be1dc436540c16d700329f0ec72968ba1e1747b942ce",
+    "recall-negative-control.json": "1fa74cbf968ea4423bb87001ce30ab1df1de226eb47968e34f104dfdae96978f",
+    "installed-model-fingerprints.json": "6486af6417a16b4f849620aba300ac62085104b6502f518260ca9a1b75604fe8",
+    "starter-timing.json": "8f427fe08d972c47507ae50e2a955c5e089c8147244e6e9515c346bdaf245ca6",
+    "audit-full.json": "79f880df823b82a0182cd3af4a1c17ddddbd11165ab73b1eaa25433d5a7e4668",
+    "audit-production.json": "7b3ddce7c4b6baf91d7ada271a6291947400d0628777cc5de3849dd4e5e5ae45"
+  },
+  "runtime": {
+    "node": "v24.19.0",
+    "chrome": "151.0.7922.34",
+    "tasks_js": "0.10.35",
+    "tasks_wasm": "0.10.35"
+  },
+  "capture": {
+    "input_mirrored": false,
+    "unique_decoded_source_frames": true,
+    "maximum_hz": 20,
+    "added_ending_pause": false,
+    "fresh_tracker_worker_per_clip": true,
+    "before_explicit_local_frame_traces": true,
+    "final_frame_traces": false,
+    "reserved_holdout_evaluated": false
+  },
+  "checks": {
+    "unit": {
+      "log_sha256": "4266410b63092c08a5b69d2fdf03267569af9eb0efc3ec9af07149b7bbcd2a45",
+      "passed": 343,
+      "files": 43
+    },
+    "typecheck": {
+      "log_sha256": "2c3c9761d3bdf9811a0791739b5fd98ede89b5cddd24d99b6db5f4781272f2b7"
+    },
+    "lint": {
+      "log_sha256": "f9465235fffe9ecf7535a091b9f2c31ca4f3b2c51abad47223c9e4c6b8a49c5e"
+    },
+    "build": {
+      "log_sha256": "0011fd2666727fdc3f79cb9a063ecd6ca71fffa5c4edf299e05415d4be3743b1"
+    },
+    "rendered": {
+      "log_sha256": "4a46deda230d3edfdc139b575669dbca2ff1d9ed1be6f05b0d7e7c0436e8cac1",
+      "passed": 2
+    },
+    "asset_policy": {
+      "log_sha256": "23a57d4aae376f82318af27a9cd1789458a186fa6de553f356311f902740be6b"
+    },
+    "secret_scan": {
+      "log_sha256": "4aa31f2fa070ed303428da15db39761d812d3d50917ed5435b3d0080e04e550c"
+    },
+    "workspace_browser": {
+      "passed": true,
+      "checks": [
+        "footer navigation",
+        "workspace transcript isolation",
+        "welcome transcript isolation",
+        "storage failure keeps transcript on both paths",
+        "late permission releases tracks",
+        "RSL/Bangla entry leaves shared camera off",
+        "visible match-score qualification",
+        "denied permission and cancelled retry"
+      ],
+      "camera_requests": 5,
+      "denied_requests": 1,
+      "stale_tracks_stopped": 4
+    },
+    "model_lifecycle_browser": {
+      "passed": true,
+      "execution_only": true,
+      "checks": [
+        {
+          "language": "asl",
+          "cancelled_old_result": true,
+          "fresh_and_cached_runs_complete": true,
+          "matching_outputs": true
+        },
+        {
+          "language": "bsl",
+          "cancelled_old_result": true,
+          "fresh_and_cached_runs_complete": true,
+          "matching_outputs": true
+        },
+        {
+          "language": "isl",
+          "cancelled_old_result": true,
+          "fresh_and_cached_runs_complete": true,
+          "matching_outputs": true
+        },
+        {
+          "language": "lse",
+          "cancelled_old_result": true,
+          "fresh_and_cached_runs_complete": true,
+          "matching_outputs": true
+        }
+      ]
+    }
+  },
+  "model_files_matching_prior_fingerprints": 56,
+  "audit_vulnerabilities": {
+    "audit-full.json": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 5,
+      "critical": 0,
+      "total": 5
+    },
+    "audit-production.json": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    }
+  },
+  "limitations": [
+    "Reused publisher-labelled development recordings; no independent fluent-signer review.",
+    "No real no-sign or OOV trials; false-acceptance rates remain null.",
+    "No real SORRY example or physical-phone/handedness validation.",
+    "Current results correct only five of eleven development recordings.",
+    "Pre28 control rows came from the cited prior CI artifact; final PR CI separately rebuilds both workers."
+  ]
+}

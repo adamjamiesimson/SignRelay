@@ -1,0 +1,472 @@
+{
+  "schema": 1,
+  "status": "Synthetic kinematic stand-ins through the real recognition worker with no model output. Not recordings of people, not reviewed negatives, and not a false-acceptance rate. Real no-sign false acceptance is NOT MEASURED.",
+  "generated_by": "UPDATE_ADVERSARIAL=1 npx vitest run tests/asl-adversarial-inventory.test.ts",
+  "variation_axes": {
+    "side": [
+      "Right",
+      "Left"
+    ],
+    "speed": [
+      0.7,
+      1,
+      1.4
+    ],
+    "distance": [
+      0.85,
+      1.15
+    ],
+    "degradation": [
+      "clean",
+      "jitter",
+      "dropout"
+    ]
+  },
+  "variations_per_pattern": 36,
+  "totals": {
+    "patterns": 19,
+    "runs": 684,
+    "runs_with_accept": 280,
+    "accepted_by_gloss": {
+      "THANK YOU/starter": 136,
+      "HELLO/starter": 144
+    }
+  },
+  "categories": {
+    "glasses": {
+      "adjusting glasses": {
+        "variations": 36,
+        "runs_with_accept": 36,
+        "accepted": {
+          "THANK YOU/starter": 36
+        },
+        "accepting_variations": [
+          "Right/x0.7/d0.85/clean",
+          "Right/x0.7/d0.85/jitter",
+          "Right/x0.7/d0.85/dropout",
+          "Right/x0.7/d1.15/clean",
+          "Right/x0.7/d1.15/jitter",
+          "Right/x0.7/d1.15/dropout",
+          "Right/x1/d0.85/clean",
+          "Right/x1/d0.85/jitter",
+          "Right/x1/d0.85/dropout",
+          "Right/x1/d1.15/clean",
+          "Right/x1/d1.15/jitter",
+          "Right/x1/d1.15/dropout",
+          "Right/x1.4/d0.85/clean",
+          "Right/x1.4/d0.85/jitter",
+          "Right/x1.4/d0.85/dropout",
+          "Right/x1.4/d1.15/clean",
+          "Right/x1.4/d1.15/jitter",
+          "Right/x1.4/d1.15/dropout",
+          "Left/x0.7/d0.85/clean",
+          "Left/x0.7/d0.85/jitter",
+          "Left/x0.7/d0.85/dropout",
+          "Left/x0.7/d1.15/clean",
+          "Left/x0.7/d1.15/jitter",
+          "Left/x0.7/d1.15/dropout",
+          "Left/x1/d0.85/clean",
+          "Left/x1/d0.85/jitter",
+          "Left/x1/d0.85/dropout",
+          "Left/x1/d1.15/clean",
+          "Left/x1/d1.15/jitter",
+          "Left/x1/d1.15/dropout",
+          "Left/x1.4/d0.85/clean",
+          "Left/x1.4/d0.85/jitter",
+          "Left/x1.4/d0.85/dropout",
+          "Left/x1.4/d1.15/clean",
+          "Left/x1.4/d1.15/jitter",
+          "Left/x1.4/d1.15/dropout"
+        ]
+      },
+      "pushing glasses up the nose": {
+        "variations": 36,
+        "runs_with_accept": 36,
+        "accepted": {
+          "THANK YOU/starter": 36
+        },
+        "accepting_variations": [
+          "Right/x0.7/d0.85/clean",
+          "Right/x0.7/d0.85/jitter",
+          "Right/x0.7/d0.85/dropout",
+          "Right/x0.7/d1.15/clean",
+          "Right/x0.7/d1.15/jitter",
+          "Right/x0.7/d1.15/dropout",
+          "Right/x1/d0.85/clean",
+          "Right/x1/d0.85/jitter",
+          "Right/x1/d0.85/dropout",
+          "Right/x1/d1.15/clean",
+          "Right/x1/d1.15/jitter",
+          "Right/x1/d1.15/dropout",
+          "Right/x1.4/d0.85/clean",
+          "Right/x1.4/d0.85/jitter",
+          "Right/x1.4/d0.85/dropout",
+          "Right/x1.4/d1.15/clean",
+          "Right/x1.4/d1.15/jitter",
+          "Right/x1.4/d1.15/dropout",
+          "Left/x0.7/d0.85/clean",
+          "Left/x0.7/d0.85/jitter",
+          "Left/x0.7/d0.85/dropout",
+          "Left/x0.7/d1.15/clean",
+          "Left/x0.7/d1.15/jitter",
+          "Left/x0.7/d1.15/dropout",
+          "Left/x1/d0.85/clean",
+          "Left/x1/d0.85/jitter",
+          "Left/x1/d0.85/dropout",
+          "Left/x1/d1.15/clean",
+          "Left/x1/d1.15/jitter",
+          "Left/x1/d1.15/dropout",
+          "Left/x1.4/d0.85/clean",
+          "Left/x1.4/d0.85/jitter",
+          "Left/x1.4/d0.85/dropout",
+          "Left/x1.4/d1.15/clean",
+          "Left/x1.4/d1.15/jitter",
+          "Left/x1.4/d1.15/dropout"
+        ]
+      }
+    },
+    "hair": {
+      "pushing hair aside near the forehead": {
+        "variations": 36,
+        "runs_with_accept": 36,
+        "accepted": {
+          "HELLO/starter": 36
+        },
+        "accepting_variations": [
+          "Right/x0.7/d0.85/clean",
+          "Right/x0.7/d0.85/jitter",
+          "Right/x0.7/d0.85/dropout",
+          "Right/x0.7/d1.15/clean",
+          "Right/x0.7/d1.15/jitter",
+          "Right/x0.7/d1.15/dropout",
+          "Right/x1/d0.85/clean",
+          "Right/x1/d0.85/jitter",
+          "Right/x1/d0.85/dropout",
+          "Right/x1/d1.15/clean",
+          "Right/x1/d1.15/jitter",
+          "Right/x1/d1.15/dropout",
+          "Right/x1.4/d0.85/clean",
+          "Right/x1.4/d0.85/jitter",
+          "Right/x1.4/d0.85/dropout",
+          "Right/x1.4/d1.15/clean",
+          "Right/x1.4/d1.15/jitter",
+          "Right/x1.4/d1.15/dropout",
+          "Left/x0.7/d0.85/clean",
+          "Left/x0.7/d0.85/jitter",
+          "Left/x0.7/d0.85/dropout",
+          "Left/x0.7/d1.15/clean",
+          "Left/x0.7/d1.15/jitter",
+          "Left/x0.7/d1.15/dropout",
+          "Left/x1/d0.85/clean",
+          "Left/x1/d0.85/jitter",
+          "Left/x1/d0.85/dropout",
+          "Left/x1/d1.15/clean",
+          "Left/x1/d1.15/jitter",
+          "Left/x1/d1.15/dropout",
+          "Left/x1.4/d0.85/clean",
+          "Left/x1.4/d0.85/jitter",
+          "Left/x1.4/d0.85/dropout",
+          "Left/x1.4/d1.15/clean",
+          "Left/x1.4/d1.15/jitter",
+          "Left/x1.4/d1.15/dropout"
+        ]
+      },
+      "tucking hair behind the ear": {
+        "variations": 36,
+        "runs_with_accept": 12,
+        "accepted": {
+          "HELLO/starter": 12
+        },
+        "accepting_variations": [
+          "Right/x0.7/d0.85/clean",
+          "Right/x0.7/d1.15/clean",
+          "Right/x1/d0.85/clean",
+          "Right/x1/d0.85/jitter",
+          "Right/x1/d1.15/clean",
+          "Right/x1/d1.15/jitter",
+          "Left/x0.7/d0.85/clean",
+          "Left/x0.7/d1.15/clean",
+          "Left/x1/d0.85/clean",
+          "Left/x1/d0.85/jitter",
+          "Left/x1/d1.15/clean",
+          "Left/x1/d1.15/jitter"
+        ]
+      }
+    },
+    "face touching": {
+      "scratching the chin": {
+        "variations": 36,
+        "runs_with_accept": 0,
+        "accepted": {},
+        "accepting_variations": []
+      },
+      "resting the cheek on a hand": {
+        "variations": 36,
+        "runs_with_accept": 0,
+        "accepted": {},
+        "accepting_variations": []
+      },
+      "rubbing an eye": {
+        "variations": 36,
+        "runs_with_accept": 0,
+        "accepted": {},
+        "accepting_variations": []
+      }
+    },
+    "accidental salute": {
+      "raising an open hand from the chin toward the forehead": {
+        "variations": 36,
+        "runs_with_accept": 36,
+        "accepted": {
+          "HELLO/starter": 36
+        },
+        "accepting_variations": [
+          "Right/x0.7/d0.85/clean",
+          "Right/x0.7/d0.85/jitter",
+          "Right/x0.7/d0.85/dropout",
+          "Right/x0.7/d1.15/clean",
+          "Right/x0.7/d1.15/jitter",
+          "Right/x0.7/d1.15/dropout",
+          "Right/x1/d0.85/clean",
+          "Right/x1/d0.85/jitter",
+          "Right/x1/d0.85/dropout",
+          "Right/x1/d1.15/clean",
+          "Right/x1/d1.15/jitter",
+          "Right/x1/d1.15/dropout",
+          "Right/x1.4/d0.85/clean",
+          "Right/x1.4/d0.85/jitter",
+          "Right/x1.4/d0.85/dropout",
+          "Right/x1.4/d1.15/clean",
+          "Right/x1.4/d1.15/jitter",
+          "Right/x1.4/d1.15/dropout",
+          "Left/x0.7/d0.85/clean",
+          "Left/x0.7/d0.85/jitter",
+          "Left/x0.7/d0.85/dropout",
+          "Left/x0.7/d1.15/clean",
+          "Left/x0.7/d1.15/jitter",
+          "Left/x0.7/d1.15/dropout",
+          "Left/x1/d0.85/clean",
+          "Left/x1/d0.85/jitter",
+          "Left/x1/d0.85/dropout",
+          "Left/x1/d1.15/clean",
+          "Left/x1/d1.15/jitter",
+          "Left/x1/d1.15/dropout",
+          "Left/x1.4/d0.85/clean",
+          "Left/x1.4/d0.85/jitter",
+          "Left/x1.4/d0.85/dropout",
+          "Left/x1.4/d1.15/clean",
+          "Left/x1.4/d1.15/jitter",
+          "Left/x1.4/d1.15/dropout"
+        ]
+      },
+      "shielding the eyes from light": {
+        "variations": 36,
+        "runs_with_accept": 28,
+        "accepted": {
+          "THANK YOU/starter": 28
+        },
+        "accepting_variations": [
+          "Right/x0.7/d0.85/clean",
+          "Right/x0.7/d0.85/jitter",
+          "Right/x0.7/d0.85/dropout",
+          "Right/x0.7/d1.15/clean",
+          "Right/x0.7/d1.15/jitter",
+          "Right/x0.7/d1.15/dropout",
+          "Right/x1/d0.85/clean",
+          "Right/x1/d0.85/jitter",
+          "Right/x1/d0.85/dropout",
+          "Right/x1/d1.15/clean",
+          "Right/x1/d1.15/jitter",
+          "Right/x1/d1.15/dropout",
+          "Right/x1.4/d0.85/jitter",
+          "Right/x1.4/d1.15/jitter",
+          "Left/x0.7/d0.85/clean",
+          "Left/x0.7/d0.85/jitter",
+          "Left/x0.7/d0.85/dropout",
+          "Left/x0.7/d1.15/clean",
+          "Left/x0.7/d1.15/jitter",
+          "Left/x0.7/d1.15/dropout",
+          "Left/x1/d0.85/clean",
+          "Left/x1/d0.85/jitter",
+          "Left/x1/d0.85/dropout",
+          "Left/x1/d1.15/clean",
+          "Left/x1/d1.15/jitter",
+          "Left/x1/d1.15/dropout",
+          "Left/x1.4/d0.85/jitter",
+          "Left/x1.4/d1.15/jitter"
+        ]
+      },
+      "waving to someone across the room": {
+        "variations": 36,
+        "runs_with_accept": 36,
+        "accepted": {
+          "HELLO/starter": 36
+        },
+        "accepting_variations": [
+          "Right/x0.7/d0.85/clean",
+          "Right/x0.7/d0.85/jitter",
+          "Right/x0.7/d0.85/dropout",
+          "Right/x0.7/d1.15/clean",
+          "Right/x0.7/d1.15/jitter",
+          "Right/x0.7/d1.15/dropout",
+          "Right/x1/d0.85/clean",
+          "Right/x1/d0.85/jitter",
+          "Right/x1/d0.85/dropout",
+          "Right/x1/d1.15/clean",
+          "Right/x1/d1.15/jitter",
+          "Right/x1/d1.15/dropout",
+          "Right/x1.4/d0.85/clean",
+          "Right/x1.4/d0.85/jitter",
+          "Right/x1.4/d0.85/dropout",
+          "Right/x1.4/d1.15/clean",
+          "Right/x1.4/d1.15/jitter",
+          "Right/x1.4/d1.15/dropout",
+          "Left/x0.7/d0.85/clean",
+          "Left/x0.7/d0.85/jitter",
+          "Left/x0.7/d0.85/dropout",
+          "Left/x0.7/d1.15/clean",
+          "Left/x0.7/d1.15/jitter",
+          "Left/x0.7/d1.15/dropout",
+          "Left/x1/d0.85/clean",
+          "Left/x1/d0.85/jitter",
+          "Left/x1/d0.85/dropout",
+          "Left/x1/d1.15/clean",
+          "Left/x1/d1.15/jitter",
+          "Left/x1/d1.15/dropout",
+          "Left/x1.4/d0.85/clean",
+          "Left/x1.4/d0.85/jitter",
+          "Left/x1.4/d0.85/dropout",
+          "Left/x1.4/d1.15/clean",
+          "Left/x1.4/d1.15/jitter",
+          "Left/x1.4/d1.15/dropout"
+        ]
+      }
+    },
+    "fist lifting": {
+      "lifting a fist as if holding a cup": {
+        "variations": 36,
+        "runs_with_accept": 0,
+        "accepted": {},
+        "accepting_variations": []
+      },
+      "small fist shake at the chest": {
+        "variations": 36,
+        "runs_with_accept": 0,
+        "accepted": {},
+        "accepting_variations": []
+      },
+      "fist pump": {
+        "variations": 36,
+        "runs_with_accept": 0,
+        "accepted": {},
+        "accepting_variations": []
+      }
+    },
+    "conversation": {
+      "conversational beat gestures": {
+        "variations": 36,
+        "runs_with_accept": 0,
+        "accepted": {},
+        "accepting_variations": []
+      },
+      "open-palm shrug": {
+        "variations": 36,
+        "runs_with_accept": 0,
+        "accepted": {},
+        "accepting_variations": []
+      },
+      "pointing toward the screen": {
+        "variations": 36,
+        "runs_with_accept": 0,
+        "accepted": {},
+        "accepting_variations": []
+      }
+    },
+    "hand to mouth": {
+      "lowering a hand from the mouth to rest": {
+        "variations": 36,
+        "runs_with_accept": 36,
+        "accepted": {
+          "THANK YOU/starter": 36
+        },
+        "accepting_variations": [
+          "Right/x0.7/d0.85/clean",
+          "Right/x0.7/d0.85/jitter",
+          "Right/x0.7/d0.85/dropout",
+          "Right/x0.7/d1.15/clean",
+          "Right/x0.7/d1.15/jitter",
+          "Right/x0.7/d1.15/dropout",
+          "Right/x1/d0.85/clean",
+          "Right/x1/d0.85/jitter",
+          "Right/x1/d0.85/dropout",
+          "Right/x1/d1.15/clean",
+          "Right/x1/d1.15/jitter",
+          "Right/x1/d1.15/dropout",
+          "Right/x1.4/d0.85/clean",
+          "Right/x1.4/d0.85/jitter",
+          "Right/x1.4/d0.85/dropout",
+          "Right/x1.4/d1.15/clean",
+          "Right/x1.4/d1.15/jitter",
+          "Right/x1.4/d1.15/dropout",
+          "Left/x0.7/d0.85/clean",
+          "Left/x0.7/d0.85/jitter",
+          "Left/x0.7/d0.85/dropout",
+          "Left/x0.7/d1.15/clean",
+          "Left/x0.7/d1.15/jitter",
+          "Left/x0.7/d1.15/dropout",
+          "Left/x1/d0.85/clean",
+          "Left/x1/d0.85/jitter",
+          "Left/x1/d0.85/dropout",
+          "Left/x1/d1.15/clean",
+          "Left/x1/d1.15/jitter",
+          "Left/x1/d1.15/dropout",
+          "Left/x1.4/d0.85/clean",
+          "Left/x1.4/d0.85/jitter",
+          "Left/x1.4/d0.85/dropout",
+          "Left/x1.4/d1.15/clean",
+          "Left/x1.4/d1.15/jitter",
+          "Left/x1.4/d1.15/dropout"
+        ]
+      },
+      "covering a cough with a fist": {
+        "variations": 36,
+        "runs_with_accept": 0,
+        "accepted": {},
+        "accepting_variations": []
+      },
+      "blowing a kiss": {
+        "variations": 36,
+        "runs_with_accept": 24,
+        "accepted": {
+          "HELLO/starter": 24
+        },
+        "accepting_variations": [
+          "Right/x0.7/d0.85/clean",
+          "Right/x0.7/d0.85/jitter",
+          "Right/x0.7/d0.85/dropout",
+          "Right/x0.7/d1.15/clean",
+          "Right/x0.7/d1.15/jitter",
+          "Right/x0.7/d1.15/dropout",
+          "Right/x1/d0.85/clean",
+          "Right/x1/d0.85/jitter",
+          "Right/x1/d0.85/dropout",
+          "Right/x1/d1.15/clean",
+          "Right/x1/d1.15/jitter",
+          "Right/x1/d1.15/dropout",
+          "Left/x0.7/d0.85/clean",
+          "Left/x0.7/d0.85/jitter",
+          "Left/x0.7/d0.85/dropout",
+          "Left/x0.7/d1.15/clean",
+          "Left/x0.7/d1.15/jitter",
+          "Left/x0.7/d1.15/dropout",
+          "Left/x1/d0.85/clean",
+          "Left/x1/d0.85/jitter",
+          "Left/x1/d0.85/dropout",
+          "Left/x1/d1.15/clean",
+          "Left/x1/d1.15/jitter",
+          "Left/x1/d1.15/dropout"
+        ]
+      }
+    }
+  }
+}

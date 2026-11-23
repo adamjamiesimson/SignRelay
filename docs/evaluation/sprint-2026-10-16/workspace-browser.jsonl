@@ -1,0 +1,1 @@
+{"passed":true,"checks":["footer navigation","workspace transcript isolation","welcome transcript isolation","storage failure keeps transcript on both paths","late permission releases tracks","RSL/Bangla entry leaves shared camera off","visible match-score qualification","denied permission and cancelled retry"],"camera_requests":5,"denied_requests":1,"stale_tracks_stopped":4}

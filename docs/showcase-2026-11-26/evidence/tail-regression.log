@@ -1,0 +1,8 @@
+
+ RUN  v4.1.12 /workspace/SignRelay
+
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  18:32:58
+   Duration  111.68s (transform 1.30s, setup 0ms, import 1.60s, tests 108.61s, environment 0ms)

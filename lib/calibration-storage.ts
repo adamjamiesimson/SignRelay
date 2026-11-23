@@ -22,45 +22,54 @@ export async function loadCalibrationTemplates(): Promise<CalibrationTemplate[]>
   return new Promise((resolve, reject) => {
     const request = database.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).getAll();
     request.onsuccess = () => { database.close(); resolve(request.result.filter(validCalibrationTemplate).sort((a: CalibrationTemplate, b: CalibrationTemplate) => b.createdAt - a.createdAt)); };
-    request.onerror = () => reject(request.error);
+    request.onerror = () => { database.close(); reject(request.error); };
   });
 }
 
 export async function saveCalibrationTemplate(template: CalibrationTemplate) {
   if (!validCalibrationTemplate(template)) throw new Error("Invalid personal sign example");
-  const existing = (await loadCalibrationTemplates())
-    .filter((item) => item.gloss === template.gloss && (item.language ?? "asl") === (template.language ?? "asl"))
-    .sort((a, b) => b.createdAt - a.createdAt);
   const database = await openDatabase();
 
   await new Promise<void>((resolve, reject) => {
     const transaction = database.transaction(STORE_NAME, "readwrite");
     const store = transaction.objectStore(STORE_NAME);
-    store.put(template);
-    existing.slice(MAX_EXAMPLES_PER_GLOSS - 1).forEach((item) => store.delete(item.id));
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(transaction.error);
+    const request = store.getAll();
+    request.onsuccess = () => {
+      const existing = request.result.filter(validCalibrationTemplate)
+        .filter((item: CalibrationTemplate) => item.id !== template.id && item.gloss === template.gloss
+          && (item.language ?? "asl") === (template.language ?? "asl"))
+        .sort((a: CalibrationTemplate, b: CalibrationTemplate) => b.createdAt - a.createdAt);
+      store.put(template);
+      existing.slice(MAX_EXAMPLES_PER_GLOSS - 1).forEach((item: CalibrationTemplate) => store.delete(item.id));
+    };
+    transaction.oncomplete = () => { database.close(); resolve(); };
+    transaction.onerror = transaction.onabort = () => { database.close(); reject(transaction.error ?? new Error("Personal vocabulary storage was interrupted")); };
   });
 }
 
 export async function deleteCalibrationGloss(gloss: string, language: NonNullable<CalibrationTemplate["language"]>) {
-  const matching = (await loadCalibrationTemplates()).filter((item) => item.gloss === gloss && (item.language ?? "asl") === language);
   const database = await openDatabase();
   await new Promise<void>((resolve, reject) => {
     const transaction = database.transaction(STORE_NAME, "readwrite");
     const store = transaction.objectStore(STORE_NAME);
-    matching.forEach((item) => store.delete(item.id));
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(transaction.error);
+    const request = store.getAll();
+    request.onsuccess = () => {
+      request.result.filter(validCalibrationTemplate)
+        .filter((item: CalibrationTemplate) => item.gloss === gloss && (item.language ?? "asl") === language)
+        .forEach((item: CalibrationTemplate) => store.delete(item.id));
+    };
+    transaction.oncomplete = () => { database.close(); resolve(); };
+    transaction.onerror = transaction.onabort = () => { database.close(); reject(transaction.error ?? new Error("Personal vocabulary storage was interrupted")); };
   });
 }
 
 export async function clearCalibrationTemplates() {
   const database = await openDatabase();
   await new Promise<void>((resolve, reject) => {
-    const request = database.transaction(STORE_NAME, "readwrite").objectStore(STORE_NAME).clear();
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
+    const transaction = database.transaction(STORE_NAME, "readwrite");
+    transaction.objectStore(STORE_NAME).clear();
+    transaction.oncomplete = () => { database.close(); resolve(); };
+    transaction.onerror = transaction.onabort = () => { database.close(); reject(transaction.error ?? new Error("Personal vocabulary storage was interrupted")); };
   });
 }
 

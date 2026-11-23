@@ -36,54 +36,163 @@ export function recognizePersonalTemplate(
   frames: VisionFrame[],
   templates: CalibrationTemplate[],
 ) {
-  const now = frames.at(-1)?.timestamp;
-  if (!templates.length || frames.length < 8 || now === undefined || !frames.at(-1)?.hands.some(validHand)) return null;
+  return finishPersonalMatch(personalDistances(frames, templates));
+}
+
+export type MatchOptions = { signal?: AbortSignal; sliceMs?: number; onPhase?: (phase: "loading" | "matching") => void };
+
+/** Same windows, distance cutoff and ambiguity veto as the synchronous matcher.
+ * Run only in the dedicated matcher worker. Yielding lets reset/cancel messages
+ * interrupt a scan; no work is silently skipped when a slice expires.
+ */
+export async function recognizePersonalTemplateAsync(
+  frames: VisionFrame[], templates: CalibrationTemplate[], options: MatchOptions = {},
+) {
   const matches = new Map<string, { template: CalibrationTemplate; distance: number }>();
+  let yielded = performance.now();
+  for (const [template, distance] of personalDistances(frames, templates)) {
+    options.signal?.throwIfAborted();
+    if (distance < (matches.get(template.gloss)?.distance ?? Infinity)) matches.set(template.gloss, { template, distance });
+    if (performance.now() - yielded >= (options.sliceMs ?? 6)) {
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
+      options.signal?.throwIfAborted();
+      yielded = performance.now();
+    }
+  }
+  options.signal?.throwIfAborted();
+  return finishPersonalMatch([...matches.values()].map(({ template, distance }) => [template, distance] as const));
+}
+
+function* personalDistances(frames: VisionFrame[], templates: CalibrationTemplate[]) {
+  if (!templates.length || frames.length < 8 || !frames.at(-1)?.hands.some(validHand)) return;
   let previousLength = 0;
   for (const duration of [650, 1200, 2000, 3000, 4200]) {
     const recent = recentContinuousFrames(frames, duration, frame => frame.hands.some(validHand));
     if (recent.length === previousLength) continue;
     previousLength = recent.length;
     if (recent.length < 8 || recent.filter(frame => frame.hands.some(validHand)).length / recent.length < 0.7) continue;
-    const candidate = prepareCalibrationSequence(recent);
+    const candidate = compileDistanceSequence(prepareCalibrationSequence(recent));
     for (const template of templates) {
       if (template.frames.length !== CALIBRATION_SEQUENCE_LENGTH) continue;
-      const distance = sequenceDistance(candidate, template.frames);
-      if (distance < (matches.get(template.gloss)?.distance ?? Infinity)) matches.set(template.gloss, { template, distance });
+      const distance = compiledSequenceDistance(candidate, cachedTemplateSequence(template.frames), 0.56);
+      yield [template, distance] as const;
+    }
+  }
+}
+
+function finishPersonalMatch(distances: Iterable<readonly [CalibrationTemplate, number]>) {
+  const matches = new Map<string, { template: CalibrationTemplate; distance: number }>();
+  for (const [template, distance] of distances) {
+    if (Number.isFinite(distance) && distance < (matches.get(template.gloss)?.distance ?? Infinity)) {
+      matches.set(template.gloss, { template, distance });
     }
   }
   const [best, rival] = [...matches.values()].sort((a, b) => a.distance - b.distance);
-  // Ambiguous recordings of different words must not turn into an arbitrary winner.
   if (!best || best.distance > 0.5 || (rival && rival.distance - best.distance < 0.06)) return null;
-  const confidence = clamp(0.965 - best.distance * 0.24, 0, 0.96);
-  return {
-    label: best.template.gloss,
-    text: best.template.text,
-    confidence,
-  };
+  return { label: best.template.gloss, text: best.template.text,
+    confidence: clamp(0.965 - best.distance * 0.24, 0, 0.96) };
 }
 
-export function sequenceDistance(a: number[][], b: number[][]) {
-  if (!a.length || !b.length) return Number.POSITIVE_INFINITY;
-  // Previous versions used 17 pose points (208 features). Keep those saved examples readable.
-  const canonical = (sequence: number[][]) => sequence.map(row => row.length === 208 ? [...row, ...new Array(32).fill(0)] : row);
-  a = canonical(a);
-  b = canonical(b);
-  const length = a[0].length;
-  if (!length || [...a, ...b].some(row => row.length !== length || row.some(value => !Number.isFinite(value)))) return Infinity;
-  const rows = a.length + 1;
-  const cols = b.length + 1;
-  const matrix = Array.from({ length: rows }, () => new Float64Array(cols).fill(Number.POSITIVE_INFINITY));
-  matrix[0][0] = 0;
+// Only immutable template arrays are cached; live candidates are compiled once
+// per window. Canonicalisation/validation is never repeated in the inner scan.
+export type DistanceSequence = { rows: number[][]; length: number; valid: boolean };
+const compiledTemplates = new WeakMap<number[][], DistanceSequence>();
+export function cachedTemplateSequence(rows: number[][]) {
+  let compiled = compiledTemplates.get(rows);
+  if (!compiled) { compiled = compileDistanceSequence(rows); compiledTemplates.set(rows, compiled); }
+  return compiled;
+}
+export function compileDistanceSequence(rows: number[][]): DistanceSequence {
+  const canonical = rows.map(row => row.length === 208 ? [...row, ...new Array(32).fill(0)] : row);
+  const length = canonical[0]?.length ?? 0;
+  return { rows: canonical, length, valid: length > 0 && canonical.every(row =>
+    row.length === length && row.every(Number.isFinite)) };
+}
 
-  for (let i = 1; i < rows; i += 1) {
-    for (let j = 1; j < cols; j += 1) {
-      const cost = featureDistance(a[i - 1], b[j - 1]);
-      matrix[i][j] = cost + Math.min(matrix[i - 1][j], matrix[i][j - 1], matrix[i - 1][j - 1]);
+// Cache only immutable recorded-template envelopes, keyed by the existing
+// frame-array identity. A global (unrestricted-warp) envelope is conservative:
+ // every DTW path visits every query frame, and no frame can be cheaper than
+// its minimum possible distance to the template feature ranges.
+const distanceEnvelopes = new WeakMap<number[][], {
+  min: Float64Array; max: Float64Array; alwaysPresent: boolean[];
+}>();
+const FEATURE_GROUPS = [[0, 66], [66, 132], [132, 173], [173, 240]] as const;
+
+function envelopeLowerBound(query: number[][], template: number[][]) {
+  let envelope = distanceEnvelopes.get(template);
+  if (!envelope) {
+    const min = new Float64Array(240).fill(Infinity);
+    const max = new Float64Array(240).fill(-Infinity);
+    const alwaysPresent = FEATURE_GROUPS.map(([start]) =>
+      template.every(row => Boolean(row[start])));
+    for (const row of template) {
+      for (let k = 0; k < 240; k++) {
+        if (row[k] < min[k]) min[k] = row[k];
+        if (row[k] > max[k]) max[k] = row[k];
+      }
     }
+    envelope = { min, max, alwaysPresent };
+    distanceEnvelopes.set(template, envelope);
   }
 
-  return matrix[a.length][b.length] / Math.max(a.length, b.length);
+  let bound = 0;
+  for (const row of query) {
+    let minimumSquareSum = 0;
+    FEATURE_GROUPS.forEach(([start, end], group) => {
+      // MediaPipe hand features skip only when both hands are absent;
+      // face/pose features skip when either side is absent.
+      // An entire group is included only when every template frame
+      // guarantees it is compared for this query row.
+      if (!envelope!.alwaysPresent[group] || (group >= 2 && !row[start])) return;
+      for (let k = start; k < end; k++) {
+        const delta = Math.max(0, envelope!.min[k] - row[k], row[k] - envelope!.max[k]);
+        minimumSquareSum += Math.min(delta * delta, 4);
+      }
+    });
+    // Actual featureDistance divides by the *number of compared features*
+    // (<=240), so using 240 gives a guaranteed underestimate.
+    bound += Math.sqrt(minimumSquareSum / 240);
+  }
+  return bound / Math.max(query.length, template.length);
+}
+
+/**
+ * Exact DTW with rolling rows and an optional upper bound. Every DTW path
+ * passes through a cell in each row and costs are nonnegative, so a row whose
+ * cheapest path already exceeds the bound can be abandoned safely.
+ * Without a bound this returns the same distance as the original full matrix.
+ */
+export function sequenceDistance(a: number[][], b: number[][], maxDistance = Infinity) {
+  return compiledSequenceDistance(compileDistanceSequence(a), compileDistanceSequence(b), maxDistance);
+}
+
+export function compiledSequenceDistance(query: DistanceSequence, template: DistanceSequence, maxDistance = Infinity) {
+  if (!query.valid || !template.valid || query.length !== template.length) return Infinity;
+  const a = query.rows, b = template.rows, length = query.length;
+  const divisor = Math.max(a.length, b.length);
+  // The envelope bound is always <= exact DTW; only prune when mathematically
+  // unable to reach the acceptance/margin cutoff. Tolerance protects borders
+  // from floating-point rounding.
+  if (length === 240 && Number.isFinite(maxDistance)
+    && envelopeLowerBound(a, b) > maxDistance + 1e-9) return Infinity;
+  const cutoff = Number.isFinite(maxDistance) ? maxDistance * divisor : Infinity;
+  let previous = new Float64Array(b.length + 1).fill(Infinity);
+  let current = new Float64Array(b.length + 1).fill(Infinity);
+  previous[0] = 0;
+
+  for (let i = 1; i <= a.length; i++) {
+    current[0] = Infinity;
+    let minimumInRow = Infinity;
+    for (let j = 1; j <= b.length; j++) {
+      const cost = featureDistance(a[i - 1], b[j - 1]);
+      const value = cost + Math.min(previous[j], current[j - 1], previous[j - 1]);
+      current[j] = value;
+      if (value < minimumInRow) minimumInRow = value;
+    }
+    if (minimumInRow > cutoff) return Infinity;
+    [previous, current] = [current, previous];
+  }
+  return previous[b.length] / divisor;
 }
 
 function frameToFeatures(frame: VisionFrame) {
@@ -145,14 +254,15 @@ function featureDistance(a: number[], b: number[]) {
   if (!length) return Number.POSITIVE_INFINITY;
   let total = 0;
   let compared = 0;
-  for (let index = 0; index < length; index += 1) {
-    if (length === 240) {
-      const group = index < 66 ? 0 : index < 132 ? 66 : index < 173 ? 132 : 173;
-      if (group >= 132 ? (!a[group] || !b[group]) : (!a[group] && !b[group])) continue;
+  // Decide missing-landmark masks once per group, not 240 times per cell.
+  const groups: ReadonlyArray<readonly [number, number]> = length === 240 ? FEATURE_GROUPS : [[0, length]];
+  for (const [start, end] of groups) {
+    if (length === 240 && (start >= 132 ? (!a[start] || !b[start]) : (!a[start] && !b[start]))) continue;
+    for (let index = start; index < end; index++) {
+      const delta = a[index] - b[index];
+      total += Math.min(delta * delta, 4);
     }
-    const delta = a[index] - b[index];
-    total += Math.min(delta * delta, 4);
-    compared++;
+    compared += end - start;
   }
   return compared ? Math.sqrt(total / compared) : Infinity;
 }

@@ -1,0 +1,20 @@
+{
+ "temperature": 0.7908504267834419,
+ "max_unknown": 0.3,
+ "min_top1": 0.9243630170822144,
+ "min_margin": null,
+ "min_proto": 0.7097129821777344,
+ "min_hand_frames": 3,
+ "selection": {
+  "objective": "max(correct - wrong) s.t. unknown accept rate <= max_far",
+  "max_far": 0.1,
+  "fit_on": "validation signers (known) + calibration-only unknown signs (val+train clips)",
+  "val_point": {
+   "correct": 0.47325631151048353,
+   "wrong": 0.013692768506632435,
+   "far": 0.08896797153024912
+  },
+  "n_known": 2337,
+  "n_unknown_cal": 281
+ }
+}

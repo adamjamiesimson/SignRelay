@@ -1,0 +1,87 @@
+
+> signrelay@0.1.0 demo:prepare
+> node scripts/demo.mjs prepare
+
+
+> signrelay@0.1.0 build:asl-demo
+> node scripts/build-profile.mjs asl-demo
+
+
+▶ node scripts/verify-vision-runtime.mjs
+Verified MediaPipe JS/WASM 0.10.35
+
+▶ node scripts/prepare-export.mjs
+
+▶ node scripts/install-vision-assets.mjs
+Self-hosted 4 MediaPipe WASM files and verified models: gesture (cached), face (cached), pose (cached).
+
+▶ npm run build:worker
+
+> signrelay@0.1.0 build:worker
+> esbuild workers/recognition.worker.ts workers/template-matching.worker.ts workers/rsl.worker.ts workers/bdsl.worker.ts --bundle --format=esm --platform=browser --target=es2020 --outdir=public/workers && node scripts/copy-onnx-runtime.mjs && node scripts/install-vision-assets.mjs --wasm-only
+
+
+  public/workers/recognition.worker.js        669.4kb
+  public/workers/rsl.worker.js                542.4kb
+  public/workers/bdsl.worker.js               497.1kb
+  public/workers/template-matching.worker.js   17.5kb
+
+⚡ Done in 1086ms
+Self-hosted 4 MediaPipe WASM files.
+
+▶ /opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/next/dist/bin/next build
+▲ Next.js 16.4.6 (Turbopack)
+✓ Running next.config.ts took 582ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 105s
+  Running TypeScript ...
+✓ Finished writing to filesystem cache in 19.1s
+  Finished TypeScript in 120s ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/13) ...
+  Generating static pages using 2 workers (3/13)
+  Generating static pages using 2 workers (6/13)
+  Generating static pages using 2 workers (9/13)
+✓ Generating static pages using 2 workers (13/13) in 5.2s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /about
+├ ○ /field-test
+├ ○ /how-it-works
+├ ○ /languages
+├ ○ /models
+├ ○ /privacy
+├ ○ /roadmap
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+└ ○ /terms
+
+
+○  (Static)  prerendered as static content
+
+
+▶ node scripts/exclude-private-routes.mjs
+Public export: removed private /field-test (5 documents, 2 route-only assets).
+
+▶ node scripts/prune-profile.mjs asl-demo
+Profile asl-demo: removed 19 unsupported asset paths (models/bdsl401-videomae/class-codes.json, models/bdsl401-videomae/labels.json, models/bdsl401-videomae/manifest.json, models/bdsl401-videomae/model.onnx, models/bsl1064-pose2sign/labels.json, models/bsl1064-pose2sign/model.json, models/bsl1064-pose2sign/model.onnx, models/isl263-include/labels.json, models/isl263-include/model.json, models/isl263-include/model.onnx, models/lse300-swl/labels.json, models/lse300-swl/model.json, models/lse300-swl/model.onnx, models/psl776-hfad/labels.json, models/psl776-hfad/templates.json.gz, models/rsl1000-slovo/labels.json, models/rsl1000-slovo/manifest.json, workers/rsl.worker.js, workers/bdsl.worker.js).
+
+▶ node scripts/secure-export.mjs
+Added hash-based script policies to 10 exported pages.
+
+▶ node scripts/verify-runtime.mjs --out out --profile asl-demo
+{
+  "ok": true,
+  "failures": [],
+  "recognition_worker_sha256": "3510843cc821cbbdb9dc227d1f68dff8ded10dce77620bde0198bf4e7e2456c1",
+  "matches_committed_worker": true,
+  "real_video_evidence": "none recorded"
+}
+
+Profile asl-demo export ready in out/ (runtime-manifest.json records exactly what it contains).
+
+Demo export prepared. Next: npm run demo:serve (works with networking turned off).

@@ -1,3 +1,4 @@
+import { installTemplateWorker } from "./helpers/template-worker";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { recognizeAslStarter } from "../lib/asl-starter-recognition";
 import { analyzeSignMotion } from "../lib/sign-motion";
@@ -14,7 +15,7 @@ async function feed(frames: VisionFrame[]) {
     await worker.onmessage({ data: { type: "frame", frame } });
     // Browser worker messages run on separate event-loop turns, after the
     // previous inference's promise callbacks (including cleanup) have settled.
-    await new Promise<void>(resolve => setImmediate(resolve));
+    await new Promise<void>(resolve => setTimeout(resolve, 2));
   }
 }
 beforeEach(async () => {
@@ -22,6 +23,7 @@ beforeEach(async () => {
   mocks.model.mockReset().mockResolvedValue(null);
   worker = { onmessage: async () => {}, postMessage: vi.fn() };
   vi.stubGlobal("self", worker);
+  installTemplateWorker();
   await import("../workers/recognition.worker");
 });
 
@@ -35,7 +37,7 @@ describe("recognition with slow and uneven camera delivery", () => {
   it("admits completed finger movement without requiring a fast camera", () => {
     expect(analyzeSignMotion(makeSign("NO", { duration: 2400, count: 9 })).ready).toBe(true);
   });
-  it("runs and confirms fresh research-model results before a slow completion window closes", async () => {
+  it("displays fresh research-model candidates without confirming them on a slow stream", async () => {
     mocks.model.mockResolvedValue({ label: "BOOK", text: "Book", confidence: 0.94, margin: 0.5 });
     const frames = makeSign("IDLE", { duration: 3000, count: 11 });
     frames.forEach((frame, index) => frame.hands[0].landmarks.forEach(point => {
@@ -44,7 +46,8 @@ describe("recognition with slow and uneven camera delivery", () => {
     }));
     await feed(frames);
     expect(mocks.model.mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(confirmations().map(message => message.gloss)).toEqual(["BOOK"]);
+    expect(confirmations()).toEqual([]);
+    expect(worker.postMessage.mock.calls.some(([message]) => message.type === "analysis" && message.candidate === "BOOK")).toBe(true);
   });
   it("does not reinterpret slowly delivered idle hands as a sign", async () => {
     mocks.model.mockResolvedValue({ label: "BOOK", text: "Book", confidence: 0.99, margin: 0.9 });
@@ -62,7 +65,9 @@ describe("recognition with slow and uneven camera delivery", () => {
       id: "personal", language, gloss: "MY WORD", text: "My word", createdAt: 1,
       frames: prepareCalibrationSequence(movement(900, 21)),
     }] } });
-    await feed(movement(2400, 9));
+    const slow = movement(2400, 9);
+    // Independent asynchronous matches are consumed on the next camera tick.
+    await feed([...slow, { ...slow.at(-1)!, timestamp: slow.at(-1)!.timestamp + 300 }]);
     expect(confirmations().map(message => message.gloss)).toEqual(["MY WORD"]);
   });
   it("recovers when one camera delivery is delayed", async () => {

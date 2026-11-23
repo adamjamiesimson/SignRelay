@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "status": "Synthetic kinematic controls only. These are not reviewed negative recordings and not a false-acceptance rate. Real no-sign and unsupported-sign false acceptance is NOT MEASURED.",
+  "source": "tests/fixtures/asl-negative-controls.ts through the real recognition worker (tests/asl-negative-controls.test.ts)",
+  "synthetic_rule_outcomes": {
+    "hands resting at the chest": [],
+    "adjusting glasses": [
+      "THANK YOU/starter"
+    ],
+    "pushing hair aside near the forehead": [
+      "HELLO/starter"
+    ],
+    "conversational beat gestures": [],
+    "reaching toward the camera": [],
+    "reaching across the chest": [],
+    "scratching the chin": [],
+    "lowering a hand from the mouth to rest": [
+      "THANK YOU/starter"
+    ],
+    "lifting a fist as if holding a cup": [],
+    "small fist shake at the chest": [],
+    "raising an open hand from the chin toward the forehead": [
+      "HELLO/starter"
+    ]
+  },
+  "explanations": {
+    "adjusting glasses": "Descending from the eyes, the open hand passes the mouth and moves down and sideways. In 2-D landmarks this matches the THANK YOU rule's mouth-departure geometry. Not changed: no reviewed THANK YOU or glasses recordings exist to justify a stricter origin rule, and THANK YOU already abstains on 3/3 development clips.",
+    "pushing hair aside near the forehead": "An open hand moving sideways from the forehead matches the HELLO salute geometry. Not changed for the same reason.",
+    "lowering a hand from the mouth to rest": "Indistinguishable from THANK YOU in 2-D landmarks without handshape, palm-orientation or contact evidence.",
+    "lifting a fist as if holding a cup": "Fixed 2026-10-21: produced SORRY because circularMotion accumulated an arbitrary +/-pi at each crossing of the bounding-box centre by a straight up-and-down path. Loops must now enclose at least 0.3 of their normalized box (an ellipse encloses about 0.785).",
+    "raising an open hand from the chin toward the forehead": "The HELLO rule checks a raised, mostly open hand sweeping sideways near the head but not the sweep direction, so moving toward the forehead also matches. The salute moves away from the forehead; constraining direction needs reviewed HELLO recordings (HELLO is 1/3 on development clips) to avoid further recall loss."
+  },
+  "demo_mitigation": "Between signs, rest the hands below the chest or out of frame. Do not touch the face, glasses or hair, do not wave, shield the eyes or blow a kiss during the demonstration. Every confirmed word is labelled as a rule or model match and can be removed.",
+  "adversarial_inventory": "docs/gitex/adversarial-inventory.json (19 patterns x 36 capture variations through the real worker, tests/asl-adversarial-inventory.test.ts)",
+  "adversarial_explanations": {
+    "adjusting glasses": "As above: the descent from the eyes past the mouth matches the THANK YOU mouth-departure geometry under every variation (36/36).",
+    "pushing glasses up the nose": "Same mechanism as adjusting glasses: an open hand rises to the nose bridge and descends past the mouth, so THANK YOU fires under every variation (36/36).",
+    "pushing hair aside near the forehead": "As above: a sideways open-hand sweep at forehead height matches HELLO under every variation (36/36).",
+    "tucking hair behind the ear": "The final sideways sweep at ear height reaches the HELLO travel threshold only at the closer/farther camera distances and at normal or slow speed without dropout (12/36). Fast (x1.4) or dropout runs abstain.",
+    "raising an open hand from the chin toward the forehead": "As above: the HELLO rule does not check sweep direction (36/36).",
+    "shielding the eyes from light": "The hold at the brow followed by a descent past the mouth matches THANK YOU (28/36). Fast clean or fast dropout runs abstain because the descent is too short-lived.",
+    "waving to someone across the room": "A raised open hand oscillating sideways near head height is exactly the HELLO rule's geometry (36/36). HELLO is a greeting, so this may be the right word, but the rule cannot tell a wave from the ASL salute.",
+    "lowering a hand from the mouth to rest": "As above: indistinguishable from THANK YOU in 2-D landmarks (36/36).",
+    "blowing a kiss": "An open hand leaving the mouth outward and upward matches the HELLO sideways sweep near the head at slow and normal speed (24/36); every fast (x1.4) run abstains."
+  },
+  "adversarial_summary": "280 of 684 synthetic runs produced a word: HELLO 144, THANK YOU 136, and nothing else. Face touching, fist lifting, conversation and coughing produced no words under any variation. Mirrored left-handed runs behave exactly like right-handed ones. These are synthetic rule outcomes, not a false-acceptance rate."
+}

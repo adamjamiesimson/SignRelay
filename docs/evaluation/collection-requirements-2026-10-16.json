@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "status": "collection-required-not-recordings",
+  "signed_targets": ["HELLO", "THANK YOU", "PLEASE", "SORRY", "YES", "NO"],
+  "missing_signed_coverage": ["SORRY"],
+  "no_sign_activities_to_collect": ["idle camera with hands visible", "ordinary conversation gestures", "adjusting clothing or glasses", "resting and moving hand near chest", "incomplete circular sweep not intended as signing", "camera repositioning"],
+  "oov_policy": "A fluent reviewer must identify the actual sign and variant. Its normalized label must be absent from the installed ASL-2000 plus starter vocabulary. Freeze that vocabulary hash. The evaluation lab loads no personal templates.",
+  "consent_and_review": ["record a private consent or source license record", "record a pseudonymous reviewer reference and variant notes", "do not commit raw recordings, face imagery or landmarks", "freeze SHA-256 and source recording group before replay"],
+  "split_policy": "Reserve whole participants and whole source recordings before observing predictions. Never put crops, re-encodings or alias IDs of one recording or signer in both splits.",
+  "holdout_policy": "The five reserved PopSign clips remain unviewed and unpredicted. They have publisher labels, no independent fluent-signer review and unknown upstream-training identity overlap; they cannot establish deployment readiness alone.",
+  "negative_recordings_available": 0,
+  "negative_false_acceptance_rate": null
+}

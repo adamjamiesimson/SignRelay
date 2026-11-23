@@ -1,5 +1,7 @@
 # ASL movement and recovery fixes — 7 September 2026
 
+Latest follow-up: [17 October stroke-boundary repair and recall guard](evaluation/asl-stroke-repair-2026-10-17.md). The original evidence below is historical; the current draft restores one missed development PLEASE and abstains on a previously wrong THANK YOU, without establishing live accuracy.
+
 This change repairs reproducible recognition-pipeline failures. It does not
 retrain the WLASL model, establish live sign accuracy, or make SignRelay
 foolproof. The checkpoint is still an experimental isolated-sign classifier.

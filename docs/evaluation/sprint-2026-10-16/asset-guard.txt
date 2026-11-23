@@ -1,0 +1,3 @@
+Reviewed legacy large asset: public/models/bdsl401-videomae/model.onnx (92.3 MiB)
+Reviewed legacy large asset: public/models/bsl1064-pose2sign/model.onnx (43.8 MiB)
+Repository asset policy passed.

@@ -1,0 +1,18 @@
+{
+ "dark": {
+  "clips": 40,
+  "no_hands": 2,
+  "top1": 0.625,
+  "top5": 0.9,
+  "accepted": 0.575,
+  "accepted_precision": 0.8695652173913043
+ },
+ "far": {
+  "clips": 40,
+  "no_hands": 0,
+  "top1": 0.7,
+  "top5": 1.0,
+  "accepted": 0.7,
+  "accepted_precision": 0.9285714285714286
+ }
+}

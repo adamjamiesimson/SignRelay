@@ -1,0 +1,135 @@
+{
+  "diagnostic_only": true,
+  "source_frame_step": true,
+  "reviewed_pilot": true,
+  "assets_fetched_via_node": true,
+  "browser_errors": [
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17633/346fa5c7-df0a-41c3-abc0-6b96fb8fa508"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17633/bb6d990f-a654-40a9-b35e-275a2a1612e5"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17633/41b9c869-2865-49cb-9ed1-922ee253eace"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17633/4f9c6ade-94eb-496c-a164-3f7db9cbd19d"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17633/7600727e-ad5b-4acc-95cb-31c8a2b92be7"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17633/faa31241-095a-4364-91c8-3fa616fe16a0"
+    },
+    {
+      "error": "net::ERR_ABORTED",
+      "url": "blob:http://127.0.0.1:17633/faa31241-095a-4364-91c8-3fa616fe16a0"
+    }
+  ],
+  "groups": [
+    {
+      "group": "asl/development",
+      "trials": 6,
+      "signed_trials": 6,
+      "correct": 3,
+      "signed_accuracy": 0.5,
+      "coverage": 0.5,
+      "precision_when_accepted": 1,
+      "wrong_accepted_trials": 0,
+      "abstentions": 3,
+      "signed_errors": 0,
+      "incorrect_acceptance_rate": 0,
+      "error_rate": 0,
+      "unique_recordings": 6,
+      "unique_participants": 2,
+      "sign_coverage": [
+        "HELLO",
+        "PLEASE",
+        "THANK YOU"
+      ],
+      "per_sign_recall": {
+        "HELLO": 0.5,
+        "PLEASE": 1,
+        "THANK YOU": 0
+      },
+      "confusion_matrix": {
+        "HELLO": {
+          "[ABSTAIN]": 1,
+          "HELLO": 1
+        },
+        "PLEASE": {
+          "PLEASE": 2
+        },
+        "THANK YOU": {
+          "[ABSTAIN]": 2
+        }
+      },
+      "confusion_matrix_unit": "trials per distinct emitted label; multi-output/error cells may overlap",
+      "no_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "unknown_sign": {
+        "trials": 0,
+        "completed_trials": 0,
+        "errors": 0,
+        "false_accepts": 0,
+        "rate": null
+      },
+      "errors": 0,
+      "confusions": {},
+      "per_gloss": [
+        {
+          "gloss": "HELLO",
+          "trials": 2,
+          "correct": 1,
+          "wrong_accepted": 0,
+          "abstentions": 1,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 2,
+            "frames": 72,
+            "frames_with_hands": 20
+          }
+        },
+        {
+          "gloss": "PLEASE",
+          "trials": 2,
+          "correct": 2,
+          "wrong_accepted": 0,
+          "abstentions": 0,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 2,
+            "frames": 80,
+            "frames_with_hands": 62
+          }
+        },
+        {
+          "gloss": "THANK YOU",
+          "trials": 2,
+          "correct": 0,
+          "wrong_accepted": 0,
+          "abstentions": 2,
+          "errors": 0,
+          "hand_tracking": {
+            "measured_trials": 2,
+            "frames": 68,
+            "frames_with_hands": 19
+          }
+        }
+      ],
+      "holdout_verified": false
+    }
+  ]
+}

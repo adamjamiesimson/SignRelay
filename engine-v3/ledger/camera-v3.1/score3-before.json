@@ -1,0 +1,155 @@
+{
+ "summary": {
+  "intervals": 14,
+  "supported": 12,
+  "correct": 7,
+  "wrong": 1,
+  "missed": 0,
+  "abstained_on_supported": 4,
+  "unsupported_intervals": 2,
+  "unsupported_false_accepts": 0,
+  "duplicate_accepts": 0,
+  "spurious_events_in_gaps": 0,
+  "exact_sequence_match": false,
+  "expected_sequence": [
+   "HORSE",
+   "FOOD",
+   "HORSE",
+   "HORSE",
+   "BLUE",
+   "HURT",
+   "LICK",
+   "WATER",
+   "DOOR",
+   "LOVE",
+   "SHORTS",
+   "ALLIGATOR"
+  ],
+  "accepted_sequence": [
+   "FOOD",
+   "HORSE",
+   "HORSE",
+   "BLUE",
+   "HURT",
+   "LICK",
+   "DOOR",
+   "HUG"
+  ]
+ },
+ "intervals": [
+  {
+   "label": "HORSE",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "FOOD",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "FOOD"
+   ]
+  },
+  {
+   "label": "HORSE",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "HORSE"
+   ]
+  },
+  {
+   "label": "HORSE",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "HORSE"
+   ]
+  },
+  {
+   "label": "BLUE",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "BLUE"
+   ]
+  },
+  {
+   "label": "__unknown__",
+   "outcome": "rejected",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "HURT",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "HURT"
+   ]
+  },
+  {
+   "label": "LICK",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "LICK"
+   ]
+  },
+  {
+   "label": "WATER",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "__motion__",
+   "outcome": "rejected",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "DOOR",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "DOOR"
+   ]
+  },
+  {
+   "label": "LOVE",
+   "outcome": "wrong",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "HUG"
+   ]
+  },
+  {
+   "label": "SHORTS",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "ALLIGATOR",
+   "outcome": "unknown",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  }
+ ]
+}

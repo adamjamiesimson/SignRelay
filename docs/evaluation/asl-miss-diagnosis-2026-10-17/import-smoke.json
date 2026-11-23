@@ -1,0 +1,10 @@
+{
+  "synthetic_import_control": true,
+  "passed": true,
+  "recordings": 6,
+  "predictions_run": 0,
+  "original_cohorts_preserved": true,
+  "overwrite_rejected": true,
+  "signing_accuracy_claim": false,
+  "result_status": "frozen-reviewed-development"
+}

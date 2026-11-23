@@ -1,5 +1,6 @@
-import { prepareCalibrationSequence, sequenceDistance } from "./personalized-recognition";
+import { prepareCalibrationSequence, compileDistanceSequence, cachedTemplateSequence, compiledSequenceDistance, type MatchOptions } from "./personalized-recognition";
 import type { VisionFrame } from "./vision-types";
+import { downloadModelBytes } from "./model-download";
 
 export type Psl776Prediction = { label: string; text: string; confidence: number; margin: number };
 export type Psl776Template = { gloss: string; text: string; frames: number[][] };
@@ -10,20 +11,39 @@ export type Psl776Template = { gloss: string; text: string; frames: number[][] }
 const REJECT_DISTANCE = 0.5;
 const REJECT_MARGIN = 0.06;
 
-let templatesPromise: Promise<Psl776Template[]> | null = null;
+let templatesPromise: { promise: Promise<Psl776Template[]>; controller: AbortController } | null = null;
+let readyTemplates: Psl776Template[] | null = null;
 
 /** Cache a successful load, but allow the worker's backoff to retry failures. */
-function loadTemplates() {
-  templatesPromise ??= fetch("/models/psl776-hfad/templates.json.gz").then(async (response) => {
-    if (!response.ok) throw new Error("PSL template bundle could not load");
+function loadTemplates(signal?: AbortSignal) {
+  signal?.throwIfAborted();
+  if (readyTemplates) return Promise.resolve(readyTemplates);
+  if (templatesPromise?.controller.signal.aborted) templatesPromise = null;
+  if (!templatesPromise) {
+    const controller = new AbortController();
+    const attempt = { controller, promise: null! as Promise<Psl776Template[]> };
+    templatesPromise = attempt;
+    attempt.promise = downloadModelBytes("/models/psl776-hfad/templates.json.gz", { signal: controller.signal }).then(async bytes => {
     if (!("DecompressionStream" in globalThis)) throw new Error("This browser cannot unpack the PSL template bundle");
-    const stream = new Blob([await response.arrayBuffer()]).stream().pipeThrough(new DecompressionStream("gzip"));
-    return new Response(stream).json() as Promise<Psl776Template[]>;
+    const stream = new Blob([bytes as BlobPart]).stream().pipeThrough(new DecompressionStream("gzip"));
+    const templates: Psl776Template[] = await new Response(stream).json();
+    controller.signal.throwIfAborted();
+    if (!Array.isArray(templates) || templates.length !== 775 || new Set(templates.map(t => t.gloss)).size !== 775
+      || templates.some(t => !t.gloss || !t.text || !Array.isArray(t.frames) || t.frames.length !== 24
+        || !cachedTemplateSequence(t.frames).valid || cachedTemplateSequence(t.frames).length !== 240)) {
+      throw new Error("Invalid PSL reference bundle");
+    }
+    readyTemplates = templates;
+    return templates;
   }).catch(error => {
-    templatesPromise = null;
+    if (templatesPromise === attempt) templatesPromise = null;
     throw error;
   });
-  return templatesPromise;
+  }
+  const attempt = templatesPromise;
+  const abort = () => attempt.controller.abort(signal?.reason);
+  signal?.addEventListener("abort", abort, { once: true });
+  return attempt.promise.finally(() => signal?.removeEventListener("abort", abort));
 }
 
 /**
@@ -37,17 +57,38 @@ function loadTemplates() {
  * matching against a single well-performed personal recording, which
  * means real sensitivity to signing speed, style and camera framing.
  */
-export async function recognizePsl776(sequence: VisionFrame[]): Promise<Psl776Prediction | null> {
+export async function recognizePsl776(sequence: VisionFrame[], options: MatchOptions = {}): Promise<Psl776Prediction | null> {
   if (sequence.length < 8) return null;
-  const templates = await loadTemplates();
-  const candidate = prepareCalibrationSequence(sequence);
+  options.onPhase?.("loading");
+  const templates = await loadTemplates(options.signal);
+  options.signal?.throwIfAborted();
+  options.onPhase?.("matching");
+  return matchPslTemplates(sequence, templates, options);
+}
+
+export async function matchPslTemplates(sequence: VisionFrame[], templates: Psl776Template[], options: MatchOptions = {}): Promise<Psl776Prediction | null> {
+  const candidate = compileDistanceSequence(prepareCalibrationSequence(sequence));
   let best: { template: Psl776Template; distance: number } | null = null;
   let rival: { template: Psl776Template; distance: number } | null = null;
+  // The acceptance gate requires a distance <= 0.5 and rejects a
+  // competing sign less than 0.06 away. All distances > 0.56 are irrelevant.
+  // Yield during a large template scan so camera frames, resets and watchdog
+  // acknowledgements can still be processed in this same Web Worker.
+  let lastYield = performance.now();
   for (const template of templates) {
-    const distance = sequenceDistance(candidate, template.frames);
-    if (!best || distance < best.distance) { rival = best; best = { template, distance }; }
-    else if (!rival || distance < rival.distance) rival = { template, distance };
+    options.signal?.throwIfAborted();
+    const distance = compiledSequenceDistance(candidate, cachedTemplateSequence(template.frames), REJECT_DISTANCE + REJECT_MARGIN);
+    if (Number.isFinite(distance)) {
+      if (!best || distance < best.distance) { rival = best; best = { template, distance }; }
+      else if (!rival || distance < rival.distance) rival = { template, distance };
+    }
+    if (performance.now() - lastYield >= (options.sliceMs ?? 6)) {
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
+      options.signal?.throwIfAborted();
+      lastYield = performance.now();
+    }
   }
+  options.signal?.throwIfAborted();
   if (!best || best.distance > REJECT_DISTANCE || (rival && rival.distance - best.distance < REJECT_MARGIN)) return null;
   const confidence = clamp(0.9 - best.distance * 0.24, 0, 0.88);
   const margin = rival ? rival.distance - best.distance : 1;

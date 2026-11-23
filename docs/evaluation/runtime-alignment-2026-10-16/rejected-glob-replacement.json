@@ -1,0 +1,70 @@
+{
+  "experiment": "Rejected direct replacement of Next lint-plugin fast-glob with tinyglobby; no override was applied",
+  "node": "v24.19.0",
+  "fast_glob_version": "3.3.1",
+  "tinyglobby_version": "0.2.17",
+  "fixture": "temporary tree app/nested, with cwd at its parent; globSync(pattern, {onlyDirectories:true})",
+  "results": [
+    {
+      "pattern": "app",
+      "fast": [
+        "app"
+      ],
+      "tiny": [
+        "app/",
+        "app/nested/"
+      ]
+    },
+    {
+      "pattern": "app/",
+      "fast": [
+        "app/"
+      ],
+      "tiny": [
+        "app/",
+        "app/nested/"
+      ]
+    },
+    {
+      "pattern": "app/*",
+      "fast": [
+        "app/nested"
+      ],
+      "tiny": [
+        "app/nested/"
+      ]
+    },
+    {
+      "pattern": "app/**",
+      "fast": [
+        "app/nested"
+      ],
+      "tiny": [
+        "app/",
+        "app/nested/"
+      ]
+    },
+    {
+      "pattern": "{app,missing}",
+      "fast": [
+        "app"
+      ],
+      "tiny": [
+        "app/",
+        "app/nested/"
+      ]
+    },
+    {
+      "pattern": "**/*",
+      "fast": [
+        "app",
+        "app/nested"
+      ],
+      "tiny": [
+        "app/",
+        "app/nested/"
+      ]
+    }
+  ],
+  "conclusion": "Literal root patterns unexpectedly include descendants, in addition to trailing-slash differences. Direct alias is not equivalent for the actual getRootDirs caller."
+}

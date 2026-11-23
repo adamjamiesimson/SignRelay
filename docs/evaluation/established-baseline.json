@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "note": "The established development baseline: per-trial outcomes of the 11 previously inspected, publisher-labelled clips (6 historical-development + 5 development). Frozen from the committed JSONL of worker 8a7d967e; worker ccce84c8 reproduced every per-trial outcome in CI runs 39557282103 and 39558447150. Not an accuracy figure. The sealed holdout is excluded by the cohort lock.",
+  "source": [
+    "docs/evaluation/asl-stroke-repair-2026-10-17/final-development.jsonl",
+    "docs/evaluation/asl-stroke-repair-2026-10-17/final-historical.jsonl"
+  ],
+  "worker_sha256": "8a7d967e8c23ce76078cde1db5cb6672fcb5eef209ab207c7da539b829f860cd",
+  "reproduced_by_workers": [
+    "ccce84c876f95caf9cade9a93fad1b686d5009a77ada203049044ee17ceb5632"
+  ],
+  "cohort_lock_vocabulary": "c2b11ee3a62c929a1e88c8c15d3d42da090d17681d69ff407ea22abd0b2bf3d5",
+  "summary": {
+    "trials": 11,
+    "correct": 5,
+    "wrong": 0,
+    "abstained": 6
+  },
+  "trials": [
+    {
+      "trial_id": "dev-hello-4a.8006",
+      "recording_sha256": "c6f032d16aefc0bc1e80ea6bcf4e672c9ac6946c5adc3c79945c2f1f42c20ca4",
+      "manifest_sha256": "f0a8764ce995e3a5e52abd2d782ff196a67cb0ba7c9ca8bba4d584585da64d1a",
+      "expected_gloss": "HELLO",
+      "outcome": "abstained",
+      "accepted_glosses": []
+    },
+    {
+      "trial_id": "dev-no-4a.8030",
+      "recording_sha256": "c05226e472bc0969b9422d1ccfe4a5f255d42eece42557687529926e532870b1",
+      "manifest_sha256": "f0a8764ce995e3a5e52abd2d782ff196a67cb0ba7c9ca8bba4d584585da64d1a",
+      "expected_gloss": "NO",
+      "outcome": "correct",
+      "accepted_glosses": [
+        "NO"
+      ]
+    },
+    {
+      "trial_id": "dev-please-4a.8017",
+      "recording_sha256": "a3dd244a9ce266bdeb4f88aad5792b02c5e4f20fdd16d165c5cccf44a82f574f",
+      "manifest_sha256": "f0a8764ce995e3a5e52abd2d782ff196a67cb0ba7c9ca8bba4d584585da64d1a",
+      "expected_gloss": "PLEASE",
+      "outcome": "correct",
+      "accepted_glosses": [
+        "PLEASE"
+      ]
+    },
+    {
+      "trial_id": "dev-thankyou-4a.7003",
+      "recording_sha256": "7fd6d132f2952a28513dab91f4ecd9dc251fa78349f2dc38a9e1c463cf5ec04e",
+      "manifest_sha256": "f0a8764ce995e3a5e52abd2d782ff196a67cb0ba7c9ca8bba4d584585da64d1a",
+      "expected_gloss": "THANK YOU",
+      "outcome": "abstained",
+      "accepted_glosses": []
+    },
+    {
+      "trial_id": "dev-yes-4a.8006",
+      "recording_sha256": "825ec58bc90d8413a3f4f8f4e8da2b58bfafc0589f5feea747386f0fb24b4e0a",
+      "manifest_sha256": "f0a8764ce995e3a5e52abd2d782ff196a67cb0ba7c9ca8bba4d584585da64d1a",
+      "expected_gloss": "YES",
+      "outcome": "abstained",
+      "accepted_glosses": []
+    },
+    {
+      "trial_id": "hello-gtsignstudy4a.8031",
+      "recording_sha256": "c72b902e61fb6b97b5407fca80ed4d560bd9f5cd0f0dd79ab88712b3eb51e011",
+      "manifest_sha256": "4c820832a342dc4f226c4e8c30496cf5f1ed7264201f6c97393b3ba5e5d96966",
+      "expected_gloss": "HELLO",
+      "outcome": "abstained",
+      "accepted_glosses": []
+    },
+    {
+      "trial_id": "hello-gtsignstudy4a.8033",
+      "recording_sha256": "b929cd2858bf5fa6ea3aa464aa958620eb5a537d7b4b3e8e105cc94995584a85",
+      "manifest_sha256": "4c820832a342dc4f226c4e8c30496cf5f1ed7264201f6c97393b3ba5e5d96966",
+      "expected_gloss": "HELLO",
+      "outcome": "correct",
+      "accepted_glosses": [
+        "HELLO"
+      ]
+    },
+    {
+      "trial_id": "please-gtsignstudy4a.8031",
+      "recording_sha256": "e517287d60d2e8fde92c090b30a9850472fc7a867bce7ba631b3ae7bbe0f8fd5",
+      "manifest_sha256": "4c820832a342dc4f226c4e8c30496cf5f1ed7264201f6c97393b3ba5e5d96966",
+      "expected_gloss": "PLEASE",
+      "outcome": "correct",
+      "accepted_glosses": [
+        "PLEASE"
+      ]
+    },
+    {
+      "trial_id": "please-gtsignstudy4a.8033",
+      "recording_sha256": "36925d898229dc86a8b4a229f191ddaaa2ea081cd6083a9d4df690903e9832f6",
+      "manifest_sha256": "4c820832a342dc4f226c4e8c30496cf5f1ed7264201f6c97393b3ba5e5d96966",
+      "expected_gloss": "PLEASE",
+      "outcome": "correct",
+      "accepted_glosses": [
+        "PLEASE"
+      ]
+    },
+    {
+      "trial_id": "thankyou-gtsignstudy4a.8031",
+      "recording_sha256": "a2a6e355acd076235ff7901a4fb6977da7ef64aa302db2ed4e0867e548c5b8d1",
+      "manifest_sha256": "4c820832a342dc4f226c4e8c30496cf5f1ed7264201f6c97393b3ba5e5d96966",
+      "expected_gloss": "THANK YOU",
+      "outcome": "abstained",
+      "accepted_glosses": []
+    },
+    {
+      "trial_id": "thankyou-gtsignstudy4a.8033",
+      "recording_sha256": "64c641c6538fb247d66d15e416d577e854596978c1766222c94ce7fd0333fbd5",
+      "manifest_sha256": "4c820832a342dc4f226c4e8c30496cf5f1ed7264201f6c97393b3ba5e5d96966",
+      "expected_gloss": "THANK YOU",
+      "outcome": "abstained",
+      "accepted_glosses": []
+    }
+  ]
+}

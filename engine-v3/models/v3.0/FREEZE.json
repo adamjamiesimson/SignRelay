@@ -1,0 +1,19 @@
+{
+ "freeze_id": "v3.0",
+ "frozen_before_sealed_test": true,
+ "model_onnx_sha256": "350f76523af131e4c4d752cbb1ae42f717b120ef3b134eafaa4639a6cd212f88",
+ "meta_json_sha256": "4a828acaf136fa6396b95e985a97885787cd7f19c5294e0731db85870d3152df",
+ "policy_balanced_sha256": "ea279762631de290e6f943437c0ab2ff82d33e31f027cfea8019a6eee03ef671",
+ "policy_strict_sha256": "c76a54c5e3d56d933d47122966b3424b1daa10622d6b4507352853b95a841d3a",
+ "prototypes_sha256": "ca0a3a9200e120092f06e522c3a6f98a4894c5e384abdf03e7659b87e8341dbd",
+ "checkpoints_sha256": {
+  "B-main-s0/best.pt": "e861f9f4d8115066b8978657b9ee3c6280e3f9caf2c3408feeac4696a7f0e1d8",
+  "B-main-s1/best.pt": "6a80553c90670c6df083f489f854d1ea9a4eead894e3db22fdfe8452f253ecf7"
+ },
+ "classes": 523,
+ "default_policy": "balanced",
+ "uses_face": false,
+ "training_data": "PopSign v2.1 train split tranches A+B (13,876 clips, up to 25 signers per sign) + 600 FSBoard train windows as UNKNOWN",
+ "selection_data": "PopSign v2.1 val split tranche A-val (9 signers) + calibration-only unknown signs",
+ "sealed_test": "PopSign v2.1 test split tranche C-test-r0 (11 signers), unknown_test signs, FSBoard test windows, ASL Citizen test cohort \u2014 not yet evaluated"
+}

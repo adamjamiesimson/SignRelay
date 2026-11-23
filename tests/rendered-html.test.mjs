@@ -37,6 +37,13 @@ test("export excludes sensitive files and source maps; Firebase protects respons
     }
   }
   await visit("out");
+  // The private capture studio is development-only; noindex is not access control.
+  const privateMarker = await stat("out/.signrelay-private-capture-included").catch(() => null);
+  if (!privateMarker) {
+    for (const path of ["out/field-test.html", "out/field-test.txt", "out/field-test"]) {
+      assert.equal(await stat(path).catch(() => null), null, `${path} must not ship in a public export`);
+    }
+  }
   const config = JSON.parse(await readFile("firebase.json", "utf8"));
   assert.equal(config.hosting.public, "out");
   const headers = Object.fromEntries(config.hosting.headers.find(h => h.source === "**").headers.map(h => [h.key, h.value]));

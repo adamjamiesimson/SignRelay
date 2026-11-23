@@ -1,0 +1,11 @@
+{
+  "name": "fast-glob",
+  "version": "3.3.1",
+  "description": "Reviewed in-repo replacement for fast-glob inside @next/eslint-plugin-next. Uses Node's built-in fs.globSync so the braces/micromatch chain (GHSA-vfj7-8cjw-p6xm) is not installed.",
+  "private": true,
+  "license": "MIT",
+  "main": "index.cjs",
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

@@ -25,6 +25,18 @@ Store one JSON object per trial in a local file such as `evaluation/results/asl-
 
 Use pseudonymous participant IDs. Do not put names, email addresses, biometric images, or raw videos in committed evaluation files.
 
+## Logging a live demo session
+
+`npm run eval:log` is a terminal operator log for the manual demo gates (MAN-1 to MAN-4 in `docs/gitex/demo-contract.json`). Run it beside the demo browser:
+
+1. Start the demo (`npm run demo:serve`) and open `http://127.0.0.1:3000/?perf`.
+2. In a terminal, run `npm run eval:log`. Enter a session id, a participant pseudonym (for example `P01`, never a name), the device and camera, the conditions, and the frames analysed per second shown by `?perf`.
+3. For every attempt, choose what was attempted (one of the six signs, a no-sign movement or an unsupported sign) and what happened: **c** only that word appeared, **w** a different or extra word appeared (type the words), **m** nothing appeared, **f** the camera, tracking or recognition failed (describe it).
+
+Each row is validated with the same rules as `eval:live` and written atomically to `evaluation/results/`, which is git-ignored. `npm run repo:guard` fails if anything under `evaluation/results/`, `evaluation/raw/` or `evaluation/videos/` is ever tracked. The log records no video, landmarks, names, e-mail addresses or camera labels. The recognition worker hash is taken from `out/runtime-manifest.json` when an export is present.
+
+Rows are marked `source: "operator-live-log"` and `review.status: "unreviewed"`. `eval:live` summarises them in a separate `unreviewed_operator_observations` section. They are a record of what a demo operator saw. They are not reviewed results and must not be published as accuracy.
+
 ## Summarise results
 
 ```bash

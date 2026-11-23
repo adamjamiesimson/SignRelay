@@ -1,0 +1,423 @@
+{
+  "schema": 1,
+  "status": "Synthetic kinematic fixtures through the real worker. Not recordings, not real-video evidence, not accuracy. Every experiment is OFF in production.",
+  "generated_by": "RUN_EXPERIMENTS=1 npx vitest run tests/asl-experiments.test.ts",
+  "experiments": {
+    "hello-sideways-stroke": {
+      "objective": 8,
+      "description": "Veto HELLO when the stroke is mainly vertical (toward the forehead, or down from the mouth) or is a repeated wave of three or more reversals.",
+      "targets": [
+        "raising an open hand from the chin toward the forehead",
+        "blowing a kiss",
+        "waving to someone across the room"
+      ]
+    },
+    "thank-you-not-from-eyes": {
+      "objective": 9,
+      "description": "Veto THANK YOU when the fingertips were above the nose earlier in the stroke, i.e. the hand came down from the eyes or brow rather than starting at the mouth.",
+      "targets": [
+        "adjusting glasses",
+        "pushing glasses up the nose",
+        "shielding the eyes from light"
+      ]
+    },
+    "thank-you-over-incomplete-please": {
+      "objective": 9,
+      "description": "When the only competing open-palm evidence is an incomplete PLEASE circle, emit the completed THANK YOU instead of abstaining.",
+      "targets": [
+        "THANK YOU recall when a partial chest circle precedes the mouth stroke"
+      ]
+    },
+    "yes-gap-fill": {
+      "objective": 10,
+      "description": "If no rule matches, interpolate hand gaps of up to two frames (at most 200 ms) and accept only a YES from the filled sequence.",
+      "targets": [
+        "YES under sparse hand tracking"
+      ]
+    }
+  },
+  "positive_runs": "6 signs x 15 capture conditions",
+  "sparse_yes_runs": "12 loss patterns x 3 frame rates",
+  "adversarial_runs": "19 patterns x 36 variations",
+  "open_palm_edge_runs": "3 cases x 3 speeds x 12 variations",
+  "results": {
+    "baseline": {
+      "positives": {
+        "runs": 90,
+        "correct": 90,
+        "wrong": {},
+        "missed": []
+      },
+      "sparse_yes": {
+        "runs": 36,
+        "yes": 29,
+        "other": {},
+        "by_pattern": {
+          "every 2nd hand frame lost": 1,
+          "every 3rd hand frame lost": 2,
+          "2-frame bursts every 5": 3,
+          "20% random loss (seed 1)": 3,
+          "20% random loss (seed 2)": 3,
+          "20% random loss (seed 3)": 3,
+          "35% random loss (seed 1)": 3,
+          "35% random loss (seed 2)": 2,
+          "35% random loss (seed 3)": 3,
+          "50% random loss (seed 2)": 3,
+          "50% random loss (seed 3)": 3
+        }
+      },
+      "adversarial": {
+        "runs": 684,
+        "runs_with_accept": 280,
+        "by_gloss": {
+          "THANK YOU": 136,
+          "HELLO": 144
+        },
+        "by_pattern": {
+          "adjusting glasses": 36,
+          "pushing glasses up the nose": 36,
+          "pushing hair aside near the forehead": 36,
+          "tucking hair behind the ear": 12,
+          "raising an open hand from the chin toward the forehead": 36,
+          "shielding the eyes from light": 28,
+          "waving to someone across the room": 36,
+          "lowering a hand from the mouth to rest": 36,
+          "blowing a kiss": 24
+        }
+      },
+      "open_palm_edges": {
+        "THANK YOU after a partial chest arc": {
+          "expected": "THANK YOU",
+          "outcomes": {
+            "abstain": 36
+          }
+        },
+        "incomplete PLEASE circle then an outward sweep": {
+          "expected": null,
+          "outcomes": {
+            "abstain": 36
+          }
+        },
+        "PLEASE circle ending near the mouth": {
+          "expected": "PLEASE",
+          "outcomes": {
+            "PLEASE": 36
+          }
+        }
+      }
+    },
+    "hello-sideways-stroke": {
+      "positives": {
+        "runs": 90,
+        "correct": 90,
+        "wrong": {},
+        "missed": []
+      },
+      "sparse_yes": {
+        "runs": 36,
+        "yes": 29,
+        "other": {},
+        "by_pattern": {
+          "every 2nd hand frame lost": 1,
+          "every 3rd hand frame lost": 2,
+          "2-frame bursts every 5": 3,
+          "20% random loss (seed 1)": 3,
+          "20% random loss (seed 2)": 3,
+          "20% random loss (seed 3)": 3,
+          "35% random loss (seed 1)": 3,
+          "35% random loss (seed 2)": 2,
+          "35% random loss (seed 3)": 3,
+          "50% random loss (seed 2)": 3,
+          "50% random loss (seed 3)": 3
+        }
+      },
+      "adversarial": {
+        "runs": 684,
+        "runs_with_accept": 172,
+        "by_gloss": {
+          "THANK YOU": 136,
+          "HELLO": 36
+        },
+        "by_pattern": {
+          "adjusting glasses": 36,
+          "pushing glasses up the nose": 36,
+          "pushing hair aside near the forehead": 36,
+          "shielding the eyes from light": 28,
+          "lowering a hand from the mouth to rest": 36
+        }
+      },
+      "open_palm_edges": {
+        "THANK YOU after a partial chest arc": {
+          "expected": "THANK YOU",
+          "outcomes": {
+            "abstain": 36
+          }
+        },
+        "incomplete PLEASE circle then an outward sweep": {
+          "expected": null,
+          "outcomes": {
+            "abstain": 36
+          }
+        },
+        "PLEASE circle ending near the mouth": {
+          "expected": "PLEASE",
+          "outcomes": {
+            "PLEASE": 36
+          }
+        }
+      }
+    },
+    "thank-you-not-from-eyes": {
+      "positives": {
+        "runs": 90,
+        "correct": 90,
+        "wrong": {},
+        "missed": []
+      },
+      "sparse_yes": {
+        "runs": 36,
+        "yes": 29,
+        "other": {},
+        "by_pattern": {
+          "every 2nd hand frame lost": 1,
+          "every 3rd hand frame lost": 2,
+          "2-frame bursts every 5": 3,
+          "20% random loss (seed 1)": 3,
+          "20% random loss (seed 2)": 3,
+          "20% random loss (seed 3)": 3,
+          "35% random loss (seed 1)": 3,
+          "35% random loss (seed 2)": 2,
+          "35% random loss (seed 3)": 3,
+          "50% random loss (seed 2)": 3,
+          "50% random loss (seed 3)": 3
+        }
+      },
+      "adversarial": {
+        "runs": 684,
+        "runs_with_accept": 180,
+        "by_gloss": {
+          "HELLO": 144,
+          "THANK YOU": 36
+        },
+        "by_pattern": {
+          "pushing hair aside near the forehead": 36,
+          "tucking hair behind the ear": 12,
+          "raising an open hand from the chin toward the forehead": 36,
+          "waving to someone across the room": 36,
+          "lowering a hand from the mouth to rest": 36,
+          "blowing a kiss": 24
+        }
+      },
+      "open_palm_edges": {
+        "THANK YOU after a partial chest arc": {
+          "expected": "THANK YOU",
+          "outcomes": {
+            "abstain": 36
+          }
+        },
+        "incomplete PLEASE circle then an outward sweep": {
+          "expected": null,
+          "outcomes": {
+            "abstain": 36
+          }
+        },
+        "PLEASE circle ending near the mouth": {
+          "expected": "PLEASE",
+          "outcomes": {
+            "PLEASE": 36
+          }
+        }
+      }
+    },
+    "thank-you-over-incomplete-please": {
+      "positives": {
+        "runs": 90,
+        "correct": 90,
+        "wrong": {},
+        "missed": []
+      },
+      "sparse_yes": {
+        "runs": 36,
+        "yes": 29,
+        "other": {},
+        "by_pattern": {
+          "every 2nd hand frame lost": 1,
+          "every 3rd hand frame lost": 2,
+          "2-frame bursts every 5": 3,
+          "20% random loss (seed 1)": 3,
+          "20% random loss (seed 2)": 3,
+          "20% random loss (seed 3)": 3,
+          "35% random loss (seed 1)": 3,
+          "35% random loss (seed 2)": 2,
+          "35% random loss (seed 3)": 3,
+          "50% random loss (seed 2)": 3,
+          "50% random loss (seed 3)": 3
+        }
+      },
+      "adversarial": {
+        "runs": 684,
+        "runs_with_accept": 280,
+        "by_gloss": {
+          "THANK YOU": 136,
+          "HELLO": 144
+        },
+        "by_pattern": {
+          "adjusting glasses": 36,
+          "pushing glasses up the nose": 36,
+          "pushing hair aside near the forehead": 36,
+          "tucking hair behind the ear": 12,
+          "raising an open hand from the chin toward the forehead": 36,
+          "shielding the eyes from light": 28,
+          "waving to someone across the room": 36,
+          "lowering a hand from the mouth to rest": 36,
+          "blowing a kiss": 24
+        }
+      },
+      "open_palm_edges": {
+        "THANK YOU after a partial chest arc": {
+          "expected": "THANK YOU",
+          "outcomes": {
+            "THANK YOU": 36
+          }
+        },
+        "incomplete PLEASE circle then an outward sweep": {
+          "expected": null,
+          "outcomes": {
+            "abstain": 36
+          }
+        },
+        "PLEASE circle ending near the mouth": {
+          "expected": "PLEASE",
+          "outcomes": {
+            "PLEASE": 36
+          }
+        }
+      }
+    },
+    "yes-gap-fill": {
+      "positives": {
+        "runs": 90,
+        "correct": 90,
+        "wrong": {},
+        "missed": []
+      },
+      "sparse_yes": {
+        "runs": 36,
+        "yes": 31,
+        "other": {},
+        "by_pattern": {
+          "every 2nd hand frame lost": 1,
+          "every 3rd hand frame lost": 2,
+          "2-frame bursts every 5": 3,
+          "20% random loss (seed 1)": 3,
+          "20% random loss (seed 2)": 3,
+          "20% random loss (seed 3)": 3,
+          "35% random loss (seed 1)": 3,
+          "35% random loss (seed 2)": 2,
+          "35% random loss (seed 3)": 3,
+          "50% random loss (seed 1)": 2,
+          "50% random loss (seed 2)": 3,
+          "50% random loss (seed 3)": 3
+        }
+      },
+      "adversarial": {
+        "runs": 684,
+        "runs_with_accept": 280,
+        "by_gloss": {
+          "THANK YOU": 136,
+          "HELLO": 144
+        },
+        "by_pattern": {
+          "adjusting glasses": 36,
+          "pushing glasses up the nose": 36,
+          "pushing hair aside near the forehead": 36,
+          "tucking hair behind the ear": 12,
+          "raising an open hand from the chin toward the forehead": 36,
+          "shielding the eyes from light": 28,
+          "waving to someone across the room": 36,
+          "lowering a hand from the mouth to rest": 36,
+          "blowing a kiss": 24
+        }
+      },
+      "open_palm_edges": {
+        "THANK YOU after a partial chest arc": {
+          "expected": "THANK YOU",
+          "outcomes": {
+            "abstain": 36
+          }
+        },
+        "incomplete PLEASE circle then an outward sweep": {
+          "expected": null,
+          "outcomes": {
+            "abstain": 36
+          }
+        },
+        "PLEASE circle ending near the mouth": {
+          "expected": "PLEASE",
+          "outcomes": {
+            "PLEASE": 36
+          }
+        }
+      }
+    },
+    "all experiments": {
+      "positives": {
+        "runs": 90,
+        "correct": 90,
+        "wrong": {},
+        "missed": []
+      },
+      "sparse_yes": {
+        "runs": 36,
+        "yes": 31,
+        "other": {},
+        "by_pattern": {
+          "every 2nd hand frame lost": 1,
+          "every 3rd hand frame lost": 2,
+          "2-frame bursts every 5": 3,
+          "20% random loss (seed 1)": 3,
+          "20% random loss (seed 2)": 3,
+          "20% random loss (seed 3)": 3,
+          "35% random loss (seed 1)": 3,
+          "35% random loss (seed 2)": 2,
+          "35% random loss (seed 3)": 3,
+          "50% random loss (seed 1)": 2,
+          "50% random loss (seed 2)": 3,
+          "50% random loss (seed 3)": 3
+        }
+      },
+      "adversarial": {
+        "runs": 684,
+        "runs_with_accept": 72,
+        "by_gloss": {
+          "HELLO": 36,
+          "THANK YOU": 36
+        },
+        "by_pattern": {
+          "pushing hair aside near the forehead": 36,
+          "lowering a hand from the mouth to rest": 36
+        }
+      },
+      "open_palm_edges": {
+        "THANK YOU after a partial chest arc": {
+          "expected": "THANK YOU",
+          "outcomes": {
+            "THANK YOU": 36
+          }
+        },
+        "incomplete PLEASE circle then an outward sweep": {
+          "expected": null,
+          "outcomes": {
+            "abstain": 36
+          }
+        },
+        "PLEASE circle ending near the mouth": {
+          "expected": "PLEASE",
+          "outcomes": {
+            "PLEASE": 36
+          }
+        }
+      }
+    }
+  }
+}

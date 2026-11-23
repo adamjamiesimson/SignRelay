@@ -69,6 +69,19 @@ describe("ongoing recognition sessions", () => {
     oldWorkerMessage({ data: { type: "confirmed", session: oldFrame.session, text: "Old", gloss: "OLD", confidence: 0.9, timestamp: 1 } } as MessageEvent<WorkerMessage>);
     expect(onMessage).not.toHaveBeenCalled();
   });
+  it("forwards a current V3.1 suggestion without acknowledging a frame, and drops it after reset", () => {
+    session.postMessage({ type: "templates", language: "asl", aslEngine: "v3.1", templates: [] });
+    send(50);
+    const frame = workers[0].frames()[0];
+    const data = { type: "suggestion", session: frame.session, source: "model", text: "Thanks", gloss: "THANK-YOU", confidence: 0.9, timestamp: 1 } as const;
+    workers[0].onmessage?.({ data } as MessageEvent<WorkerMessage>);
+    expect(onMessage).toHaveBeenCalledOnce();
+    expect(onMessage).toHaveBeenCalledWith(data);
+    expect(session.stats.answered).toBe(0);
+    session.postMessage({ type: "reset" });
+    workers[0].onmessage?.({ data } as MessageEvent<WorkerMessage>);
+    expect(onMessage).toHaveBeenCalledOnce();
+  });
   it("resets queued frames when the camera pauses, without false watchdog restarts", () => {
     send(1); send(50);
     session.postMessage({ type: "reset" });
@@ -96,6 +109,19 @@ describe("ongoing recognition sessions", () => {
     send(21000); workers[3].acknowledge();
     expect(onMessage).toHaveBeenCalledOnce();
   });
+  it("reports its state and counts every recovery attempt for the ?perf readout", () => {
+    expect(session.state).toBe("running");
+    expect(session.stats.recoveries).toBe(0);
+    workers[0].onerror?.();
+    expect(session.state).toBe("recovering");
+    send(1); workers[1].acknowledge();
+    expect(session.state).toBe("running");
+    workers[1].onerror?.(); workers[2].onerror?.();
+    expect(session.state).toBe("failed");
+    expect(session.stats.recoveries).toBe(3);
+    session.resetStats();
+    expect(session.stats.recoveries).toBe(0);
+  });
   it("does not restart or post after the session is closed", () => {
     send(1);
     session.terminate();
@@ -104,5 +130,18 @@ describe("ongoing recognition sessions", () => {
     expect(workers).toHaveLength(1);
     expect(workers[0].terminate).toHaveBeenCalledOnce();
     expect(workers[0].frames()).toHaveLength(1);
+  });
+});
+
+describe("?perf session counters", () => {
+  it("counts offered, forwarded, replaced and answered frames and the forwarded frame's queue wait", () => {
+    send(0);
+    for (let index = 1; index <= 4; index++) { vi.advanceTimersByTime(50); send(index * 50); }
+    expect(session.stats).toMatchObject({ offered: 5, forwarded: 1, replaced: 3, answered: 0, lastQueueAgeMs: 0 });
+    vi.advanceTimersByTime(30);
+    workers[0].acknowledge(workers[0].frames()[0]);
+    expect(session.stats).toMatchObject({ offered: 5, forwarded: 2, replaced: 3, answered: 1, lastQueueAgeMs: 30 });
+    session.resetStats();
+    expect(session.stats).toEqual({ offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null, recoveries: 0 });
   });
 });

@@ -1,0 +1,10 @@
+{"benchmark":"frame-ack-real-threads","version":"pr21","examples":30,"offered":80,"acknowledged":46,"sent":46,"median_ms":98.65,"p95_ms":134.08,"max_ms":139.25}
+{"benchmark":"frame-ack-real-threads","version":"isolated","examples":30,"offered":80,"acknowledged":80,"sent":80,"median_ms":0.43,"p95_ms":3.65,"max_ms":17.01}
+{"benchmark":"frame-ack-real-threads","version":"pr21","examples":150,"offered":80,"acknowledged":45,"sent":45,"median_ms":0.69,"p95_ms":274.8,"max_ms":295.2}
+{"benchmark":"frame-ack-real-threads","version":"isolated","examples":150,"offered":80,"acknowledged":80,"sent":80,"median_ms":0.36,"p95_ms":1.16,"max_ms":46.43}
+{"benchmark":"frame-ack-real-threads","version":"pr21","examples":300,"offered":80,"acknowledged":55,"sent":55,"median_ms":0.47,"p95_ms":267.97,"max_ms":325.11}
+{"benchmark":"frame-ack-real-threads","version":"isolated","examples":300,"offered":80,"acknowledged":79,"sent":79,"median_ms":0.44,"p95_ms":1.03,"max_ms":102.39}
+{"benchmark":"psl-frame-ack-real-threads","version":"pr21","references":775,"offered":80,"acknowledged":79,"median_ms":0.76,"p95_ms":12.09,"max_ms":131.23}
+{"benchmark":"psl-frame-ack-real-threads","version":"isolated","references":775,"offered":80,"acknowledged":80,"median_ms":0.42,"p95_ms":1.62,"max_ms":3.27}
+{"benchmark":"actual-775-psl-local-assets","version":"pr21","cold_ms":540.19,"warm_median_ms":273.94,"max_event_loop_gap_ms":136.77,"prediction":null,"decision_equal":true,"network":"local file bytes, not connection speed"}
+{"benchmark":"actual-775-psl-local-assets","version":"isolated","cold_ms":370.45,"warm_median_ms":78.42,"max_event_loop_gap_ms":144.39,"prediction":null,"decision_equal":true,"network":"local file bytes, not connection speed"}

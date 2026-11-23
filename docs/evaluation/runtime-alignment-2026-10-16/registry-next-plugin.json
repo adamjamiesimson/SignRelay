@@ -1,0 +1,7 @@
+{
+  "version": "16.4.2",
+  "dependencies": {
+    "fast-glob": "3.3.1",
+    "@eslint-community/eslint-utils": "4.9.1"
+  }
+}
