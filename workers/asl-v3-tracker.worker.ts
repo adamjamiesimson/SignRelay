@@ -1,6 +1,6 @@
 import { FaceLandmarker, FilesetResolver, HandLandmarker, PoseLandmarker, type HandLandmarkerResult, type PoseLandmarkerResult } from "@mediapipe/tasks-vision";
 import { gatherFrame } from "../engine-v3/web/preprocess.mjs";
-import type { AslV3TrackerInput, AslV3TrackerOutput } from "../lib/asl-v3-tracker";
+import { POSE_SLOTS, type AslV3TrackerInput, type AslV3TrackerOutput, type AslV3TrackerTimings } from "../lib/asl-v3-tracker";
 import { MAX_TRACKING_GAP_MS } from "../lib/frame-timing";
 import { faceCuePoints } from "../lib/vision-engine";
 import { LOCAL_MODEL_PATH, LOCAL_WASM_PATH, VISION_MODELS } from "../lib/vision-runtime.mjs";
@@ -11,6 +11,9 @@ type TrackingTasks = { hand: HandLandmarker; pose: PoseLandmarker };
 type TaskFile = { file: string; bytes: number; sha256: string };
 
 let tasks: TrackingTasks | undefined;
+// "pose" role: a second worker instance that runs only the pose landmarker, in parallel
+// with hand tracking (see AslV3Tracker). The default role tracks hands, pose and face cues.
+let poseOnly: PoseLandmarker | undefined;
 let faceTask: FaceLandmarker | undefined;
 let canvas: OffscreenCanvas | undefined;
 let context: OffscreenCanvasRenderingContext2D | null;
@@ -18,7 +21,11 @@ let lastTaskTimestamp = -Infinity;
 let lastPoseTimestamp = -Infinity;
 let lastFaceTimestamp = -Infinity;
 let framesTracked = 0;
-let handFramesSinceFace = 2;
+// Face cues feed only the overlay, framing indicator and personal templates (V3.1 is
+// face-free). Sampling them every 150 ms, sometimes on the same frame as pose, cost the
+// camera-rate hand observations that V3.1 accuracy depends on (sprint 2026-11-23). They
+// are carried forward for up to MAX_TRACKING_GAP_MS, so every frame still has face cues.
+const FACE_INTERVAL_MS = 400;
 let lastPose: PoseLandmarkerResult | null = null;
 let lastFace: Point[] = [];
 
@@ -150,8 +157,18 @@ function trackerFrame(hands: HandLandmarkerResult, pose: PoseLandmarkerResult | 
   };
 }
 
-function track({ image, width, height, timestamp }: Extract<AslV3TrackerInput, { type: "frame" }>) {
-  if (!tasks) throw new Error("ASL tracking worker is not initialized");
+async function initializePoseOnly(delegate: Delegate) {
+  if (typeof OffscreenCanvas !== "function") throw new Error("This browser does not provide worker canvas support for ASL tracking");
+  const [files, poseBuffer] = await Promise.all([
+    FilesetResolver.forVisionTasks(new URL(LOCAL_WASM_PATH, self.location.origin).href),
+    loadTask(VISION_MODELS.pose),
+  ]);
+  poseOnly = await PoseLandmarker.createFromOptions(files, {
+    baseOptions: { modelAssetBuffer: poseBuffer, delegate }, runningMode: "VIDEO", numPoses: 1,
+  });
+}
+
+function draw(image: ImageBitmap, width: number, height: number, timestamp: number) {
   if (!canvas || canvas.width !== width || canvas.height !== height) {
     canvas = new OffscreenCanvas(width, height);
     context = canvas.getContext("2d");
@@ -160,36 +177,66 @@ function track({ image, width, height, timestamp }: Extract<AslV3TrackerInput, {
   context.drawImage(image, 0, 0, width, height);
   const taskTimestamp = Math.max(Math.round(timestamp), lastTaskTimestamp + 1);
   lastTaskTimestamp = taskTimestamp;
+  return { canvas, taskTimestamp };
+}
+
+function trackPose({ image, width, height, timestamp }: Extract<AslV3TrackerInput, { type: "frame" }>) {
+  if (!poseOnly) throw new Error("ASL pose worker is not initialized");
+  const { canvas, taskTimestamp } = draw(image, width, height, timestamp);
+  const pose = poseOnly.detectForVideo(canvas, taskTimestamp);
+  const toPoint = ({ x, y, z, visibility }: Point): Point => ({ x, y, z, visibility });
+  return { points: pose.landmarks[0]?.map(toPoint) ?? [], slots: gatherFrame(null, pose, null, width, height).slice(POSE_SLOTS[0], POSE_SLOTS[1]) };
+}
+
+function track({ image, width, height, timestamp, externalPose }: Extract<AslV3TrackerInput, { type: "frame" }>) {
+  if (!tasks) throw new Error("ASL tracking worker is not initialized");
+  const startedAt = performance.now();
+  const { canvas, taskTimestamp } = draw(image, width, height, timestamp);
+  const drawnAt = performance.now();
   const hands = tasks.hand.detectForVideo(canvas, taskTimestamp);
-  if (++framesTracked % 2 === 0 || !lastPose || timestamp - lastPoseTimestamp > MAX_TRACKING_GAP_MS) {
+  const handAt = performance.now();
+  // With a parallel pose worker the main thread merges its latest pose; never run it here.
+  const runPose = !externalPose && (++framesTracked % 2 === 0 || !lastPose || timestamp - lastPoseTimestamp > MAX_TRACKING_GAP_MS);
+  if (runPose) {
     lastPose = null;
     lastPose = tasks.pose.detectForVideo(canvas, taskTimestamp);
     lastPoseTimestamp = timestamp;
   }
-  if (++handFramesSinceFace >= 2 && timestamp - lastFaceTimestamp >= 150 && faceTask) {
+  const poseAt = performance.now();
+  // Never stack face on a pose frame; a stale face (> FACE_INTERVAL_MS) runs on the next hand-only frame.
+  if (faceTask && !runPose && timestamp - lastFaceTimestamp >= FACE_INTERVAL_MS) {
     lastFace = [];
     lastFace = faceCuePoints(faceTask.detectForVideo(canvas, taskTimestamp).faceLandmarks[0] ?? []);
     lastFaceTimestamp = timestamp;
-    handFramesSinceFace = 0;
   }
-  return trackerFrame(hands, lastPose, width, height, timestamp);
+  timings = { draw: drawnAt - startedAt, hand: handAt - drawnAt, pose: poseAt - handAt, face: performance.now() - poseAt,
+    hands: hands.landmarks.length };
+  return trackerFrame(hands, externalPose ? null : lastPose, width, height, timestamp);
 }
+let timings: AslV3TrackerTimings | undefined;
 
 self.onmessage = async ({ data }: MessageEvent<AslV3TrackerInput>) => {
   try {
     if (data.type === "init") {
+      if (data.role === "pose") {
+        await initializePoseOnly(data.delegate ?? "CPU");
+        self.postMessage({ type: "ready", delegate: data.delegate ?? "CPU" } satisfies AslV3TrackerOutput);
+        return;
+      }
       const delegate = await initialize(data.delegate);
       self.postMessage({ type: "ready", delegate } satisfies AslV3TrackerOutput);
     } else if (data.type === "reset") {
       framesTracked = 0;
       lastPose = null;
-      handFramesSinceFace = 2;
       lastFaceTimestamp = -Infinity;
       lastFace = [];
+    } else if (poseOnly) {
+      const result = trackPose(data);
+      self.postMessage({ type: "pose", id: data.id, timestamp: data.timestamp, ...result } satisfies AslV3TrackerOutput, [result.slots.buffer]);
     } else {
       const startedAt = performance.now();
       const frame = track(data);
-      self.postMessage({ type: "frame", id: data.id, frame, trackingMs: performance.now() - startedAt } satisfies AslV3TrackerOutput,
+      self.postMessage({ type: "frame", id: data.id, frame, trackingMs: performance.now() - startedAt, timings } satisfies AslV3TrackerOutput,
         [frame.aslV3Features.buffer]);
     }
   } catch (error) {

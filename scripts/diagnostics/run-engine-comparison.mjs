@@ -89,6 +89,9 @@ try {
         super(url, options);
         this.isRecognition = String(url).includes("recognition.worker.js") || String(url).endsWith("/worker.js");
         this.addEventListener("error", error => probe.errors.push(error.message || "Worker error"));
+        if (${Boolean(captureFile)} && String(url).includes("asl-v3-tracker")) this.addEventListener("message", ({ data }) => {
+          if (data.type === "frame" && probe.start !== null) (probe.tracker ??= []).push({ t: data.frame.timestamp, at: performance.now(), ms: data.trackingMs, timings: data.timings });
+        });
         if (!this.isRecognition) return;
         this.addEventListener("message", ({ data }) => {
           if (probe.start === null) return;
@@ -152,7 +155,8 @@ try {
   })()`);
   if (captureFile) {
     const observations = await browser.evaluate("window.__comparison.observations ?? []");
-    await writeFile(captureFile, JSON.stringify({ reel_sha256: null, cameraStart: startup.cameraStart, observations }) + "\n", { flag: "wx" });
+    const tracker = await browser.evaluate("window.__comparison.tracker ?? []");
+    await writeFile(captureFile, JSON.stringify({ cameraStart: startup.cameraStart, observations, tracker }) + "\n", { flag: "wx" });
   }
   const afterHeap = (await browser.send("Performance.getMetrics")).metrics.find(item => item.name === "JSHeapUsedSize")?.value;
   const stopButton = isV3

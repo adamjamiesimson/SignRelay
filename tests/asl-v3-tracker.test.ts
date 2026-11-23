@@ -16,19 +16,28 @@ class FakeTrackerWorker {
 }
 
 let instance: FakeTrackerWorker;
+let workers: FakeTrackerWorker[];
 const makeBitmap = () => ({ close: vi.fn() } as unknown as ImageBitmap);
 const capture = vi.fn<typeof createImageBitmap>();
 const film = () => ({ readyState: 2, currentTime: 1, videoWidth: 1920, videoHeight: 1080 } as HTMLVideoElement);
 const frame: VisionFrame = { timestamp: 1000, hands: [], face: [], pose: [] };
 
 beforeEach(() => {
-  instance = new FakeTrackerWorker();
+  workers = [];
   capture.mockReset().mockImplementation(async () => makeBitmap());
-  vi.stubGlobal("Worker", vi.fn(function () { return instance; }));
+  vi.stubGlobal("Worker", vi.fn(function () {
+    const worker = new FakeTrackerWorker();
+    workers.push(worker);
+    instance ??= worker;
+    return worker;
+  }));
+  // Single-worker behaviour unless a test opts into the parallel pose worker.
+  vi.stubGlobal("navigator", { hardwareConcurrency: 2 });
   vi.stubGlobal("createImageBitmap", capture);
 });
 
 afterEach(() => {
+  instance = undefined as unknown as FakeTrackerWorker;
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   vi.useRealTimers();
@@ -106,5 +115,98 @@ describe("ASL V3.1 camera tracking client", () => {
     expect(instance.terminate).toHaveBeenCalledOnce();
     instance.emit({ type: "frame", id: 1, frame, trackingMs: 8000 });
     expect(onFrame).not.toHaveBeenCalled();
+  });
+
+  describe("parallel pose worker", () => {
+    const features = () => new Float32Array(86 * 3).fill(Number.NaN);
+    const handFrame = (timestamp: number): VisionFrame => ({ timestamp, hands: [], face: [], pose: [], aslV3Features: features() });
+    const poseReply = (id: number, timestamp: number) => ({ type: "pose" as const, id, timestamp,
+      points: [{ x: 0.5, y: 0.4, z: 0 }], slots: new Float32Array(13 * 3).fill(0.25) });
+
+    async function readyWithPose() {
+      vi.stubGlobal("navigator", { hardwareConcurrency: 8 });
+      const started = await ready();
+      const pose = workers[1];
+      expect(pose.postMessage).toHaveBeenCalledWith({ type: "init", delegate: "CPU", role: "pose" });
+      return { ...started, pose };
+    }
+
+    it("tracks pose in parallel on alternate frames and merges it into the hand frame", async () => {
+      const { tracker, onFrame, pose } = await readyWithPose();
+      const video = film();
+      tracker.schedule(video, 1000);
+      await Promise.resolve();
+      // Not ready yet: the tracking worker still runs pose itself.
+      expect(instance.frames()[0].externalPose).toBe(false);
+      expect(pose.frames()).toEqual([]);
+      instance.emit({ type: "frame", id: 1, frame: handFrame(1000), trackingMs: 50 });
+      pose.emit({ type: "ready", delegate: "CPU" });
+
+      vi.spyOn(performance, "now").mockReturnValue(1100);
+      video.currentTime = 2;
+      tracker.schedule(video, 1100);
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(instance.frames()[1].externalPose).toBe(true);
+      expect(pose.frames().map(message => message.timestamp)).toEqual([1100]);
+      expect(capture).toHaveBeenCalledTimes(3); // two camera captures + one copy for the pose worker
+      pose.emit(poseReply(2, 1100));
+      const tracked = handFrame(1100);
+      instance.emit({ type: "frame", id: 2, frame: tracked, trackingMs: 50 });
+      expect(onFrame).toHaveBeenLastCalledWith(tracked, 50);
+      expect(tracked.pose).toEqual([{ x: 0.5, y: 0.4, z: 0 }]);
+      expect(Array.from(tracked.aslV3Features!.slice(42 * 3, 55 * 3))).toEqual(new Array(39).fill(0.25));
+      expect(Number.isNaN(tracked.aslV3Features![0])).toBe(true);
+
+      // The next frame reuses that pose without sending another pose request.
+      video.currentTime = 3;
+      tracker.schedule(video, 1170);
+      await Promise.resolve();
+      expect(instance.frames()[2].externalPose).toBe(true);
+      expect(pose.frames()).toHaveLength(1);
+      tracker.close();
+      expect(pose.terminate).toHaveBeenCalledOnce();
+    });
+
+    it("never merges pose from before a reset", async () => {
+      const { tracker, onFrame, pose } = await readyWithPose();
+      pose.emit({ type: "ready", delegate: "CPU" });
+      const video = film();
+      tracker.schedule(video, 1000);
+      await Promise.resolve();
+      await Promise.resolve();
+      tracker.reset();
+      pose.emit(poseReply(1, 1000));
+      instance.emit({ type: "frame", id: 1, frame: handFrame(1000), trackingMs: 40 }); // stale: dropped
+      expect(onFrame).not.toHaveBeenCalled();
+      vi.spyOn(performance, "now").mockReturnValue(1100);
+      video.currentTime = 2;
+      tracker.schedule(video, 1100);
+      await Promise.resolve();
+      const tracked = handFrame(1100);
+      instance.emit({ type: "frame", id: 2, frame: tracked, trackingMs: 40 });
+      expect(onFrame).toHaveBeenCalledWith(tracked, 40);
+      expect(tracked.pose).toEqual([]);
+      tracker.close();
+    });
+
+    it("falls back to in-worker pose when the pose worker fails, without a camera error", async () => {
+      const { tracker, onError, pose } = await readyWithPose();
+      pose.emit({ type: "ready", delegate: "CPU" });
+      pose.emit({ type: "error", message: "pose crashed" });
+      expect(pose.terminate).toHaveBeenCalledOnce();
+      tracker.schedule(film(), 1000);
+      await Promise.resolve();
+      expect(instance.frames()[0].externalPose).toBe(false);
+      expect(onError).not.toHaveBeenCalled();
+      tracker.close();
+    });
+
+    it("stays single-worker on machines with fewer cores", async () => {
+      vi.stubGlobal("navigator", { hardwareConcurrency: 2 });
+      const { tracker } = await ready();
+      expect(workers).toHaveLength(1);
+      tracker.close();
+    });
   });
 });
