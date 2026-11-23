@@ -63,6 +63,8 @@ next-env.d.ts
 
 # Built from workers/template-matching.worker.ts during build:worker.
 /public/workers/template-matching.worker.js
+# Built separately as a classic worker for the MediaPipe importScripts loader.
+/public/workers/asl-v3-tracker.worker.js
 
 # Ephemeral derived runs are reviewed and copied into docs explicitly.
 /evaluation/derived/

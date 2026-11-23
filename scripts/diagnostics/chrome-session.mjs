@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { TASKS_WASM_PATH } from "../../lib/vision-runtime.mjs";
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-export async function startChrome(executable, { forwardAssets = false, proxy = process.env.HTTPS_PROXY, extraArgs = [] } = {}) {
+export async function startChrome(executable, { forwardAssets = false, proxy = process.env.HTTPS_PROXY, extraArgs = [], dismissOnboarding = false } = {}) {
   const profile = await mkdtemp(join(tmpdir(), "signrelay-diagnostic-"));
   const port = 19000 + Math.floor(Math.random() * 1000);
   const args = ["--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--no-first-run",
@@ -75,6 +75,9 @@ export async function startChrome(executable, { forwardAssets = false, proxy = p
       return value.result?.value;
     };
     await send("Page.enable");
+    if (dismissOnboarding) await send("Page.addScriptToEvaluateOnNewDocument", {
+      source: `try { localStorage.setItem("signrelay.onboarding.v1", JSON.stringify({status:"dismissed", at:Date.now()})); } catch {}`,
+    });
     await send("Runtime.enable");
     await send("Network.enable");
     if (forwardAssets) await send("Fetch.enable", { patterns: [

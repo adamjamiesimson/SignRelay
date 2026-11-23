@@ -1,0 +1,1131 @@
+{
+ "origin": "https://signrelay-v3-lab.vercel.app",
+ "started": "2026-11-21T11:52:24.463Z",
+ "checks": {
+  "page loads (HTTP 200)": {
+   "ok": true,
+   "detail": 200
+  },
+  "model version is v3.1": {
+   "ok": true,
+   "detail": "v3.1 \u00b7 model b3e05424f467 \u00b7 commit 1fee28f020 \u00b7 CPU \u00b7 4 ORT threads"
+  },
+  "523 classes + UNKNOWN index 523": {
+   "ok": true,
+   "detail": "523"
+  },
+  "expected V3.1 model fingerprint in meta.json": {
+   "ok": true,
+   "detail": "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090"
+  },
+  "both policies shipped": {
+   "ok": true,
+   "detail": "balanced+strict"
+  },
+  "secure context + cross-origin isolated": {
+   "ok": true,
+   "detail": "secure=true coi=true"
+  },
+  "served model.onnx SHA-256 = V3.1 fingerprint": {
+   "ok": true,
+   "detail": "200 b3e05424f4674d82 13740990 B"
+  },
+  "asset hand_landmarker.task SHA-256": {
+   "ok": true,
+   "detail": 200
+  },
+  "asset pose_landmarker_lite.task SHA-256": {
+   "ok": true,
+   "detail": 200
+  },
+  "COOP/COEP/CSP headers": {
+   "ok": true,
+   "detail": "{\"cross-origin-opener-policy\":\"same-origin\",\"cross-origin-embedder-policy\":\"require-corp\",\"content-security-policy\":\"default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; "
+  },
+  "vocabulary browser lists 523 and searches": {
+   "ok": true,
+   "detail": "523 listed; search APP \u2192 1 of 523 signs match \"APP\": APPLE"
+  },
+  "video upload predictions match the validated V3.1 Chrome results": {
+   "ok": true,
+   "detail": "24/24 identical status+top-1"
+  },
+  "strict policy applied (same top-1, tighter acceptance)": {
+   "ok": true,
+   "detail": "8 clips; 2 downgraded from accepted"
+  },
+  "unknown-sign path runs (UNKNOWN / abstain shown); rejection rate reported": {
+   "ok": true,
+   "detail": "2/4 unsupported clips rejected (balanced): star\u2192accepted garage\u2192accepted highchair\u2192uncertain b5c1_59_20220921_160554_840900_850400.mp4\u2192unknown"
+  },
+  "camera starts via getUserMedia and analyses frames": {
+   "ok": true,
+   "detail": "analysed 8.3 fps (target 15) \u00b7 camera 640\u00d7480 \u00b7 hands on 45% of analysed frames \u00b7 hand 95 ms \u00b7 pose 13 ms \u00b7 face 0 ms \u00b7 skipped camera frames 554"
+  },
+  "camera events produced from live frames": {
+   "ok": true,
+   "detail": "5 recognition events in 20 s"
+  },
+  "stop releases the camera": {
+   "ok": true,
+   "detail": "Camera stopped; camera released."
+  },
+  "restart works": {
+   "ok": true,
+   "detail": "analysed 11.7 fps (target 15) \u00b7 camera 640\u00d7480 \u00b7 hands on 43% of analysed frames \u00b7 hand 94 ms \u00b7 pose 15 ms \u00b7 face 0 ms \u00b7 skipped camera frames 234"
+  },
+  "no 4xx/5xx responses": {
+   "ok": true,
+   "detail": ""
+  },
+  "no requests to other origins (frames stay on-device)": {
+   "ok": true,
+   "detail": ""
+  },
+  "no uncaught page errors": {
+   "ok": true,
+   "detail": ""
+  },
+  "no console errors (library info logs excluded)": {
+   "ok": true,
+   "detail": "82 library info lines"
+  },
+  "permission denial gives a useful message": {
+   "ok": true,
+   "detail": "Camera error: Camera permission was denied. Allow camera access for this site (padlock icon in the address bar \u2192 Site settings \u2192 Camera \u2192 Allow), then press Start camera again."
+  },
+  "mobile 390 px: no horizontal scroll": {
+   "ok": true,
+   "detail": "390 \u2264 390"
+  }
+ },
+ "smoke": [
+  {
+   "clip": "66d7-am-2023_09_03_12_59_04.844-0.mp4",
+   "truth": "AM",
+   "ref": {
+    "status": "accepted",
+    "label": "AM",
+    "best": "AM"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "AM",
+    "best": "AM",
+    "policy": "balanced",
+    "top5": [
+     "AM 98.8%",
+     "AN 0.3%",
+     "COWBOY 0.0%",
+     "BE 0.0%",
+     "LITTLE 0.0%"
+    ],
+    "shown": "AM",
+    "frames": 36,
+    "handFrames": 16,
+    "classifyMs": 66.96000000002095,
+    "analysisMs": 4098
+   },
+   "match": true
+  },
+  {
+   "clip": "66d7-bunny-2023_09_03_16_12_22.518-0.mp4",
+   "truth": "RABBIT",
+   "ref": {
+    "status": "accepted",
+    "label": "RABBIT",
+    "best": "RABBIT"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "RABBIT",
+    "best": "RABBIT",
+    "policy": "balanced",
+    "top5": [
+     "RABBIT 98.9%",
+     "CUTE 0.0%",
+     "CRY 0.0%",
+     "HIGH 0.0%",
+     "TIGER 0.0%"
+    ],
+    "shown": "RABBIT",
+    "frames": 39,
+    "handFrames": 21,
+    "classifyMs": 22.89000000001397,
+    "analysisMs": 4386
+   },
+   "match": true
+  },
+  {
+   "clip": "933d-catch-2024_03_13_15_32_05.854-1.mp4",
+   "truth": "CATCH",
+   "ref": {
+    "status": "accepted",
+    "label": "CATCH",
+    "best": "CATCH"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "CATCH",
+    "best": "CATCH",
+    "policy": "balanced",
+    "top5": [
+     "CATCH 98.6%",
+     "SPRINKLER 0.1%",
+     "TIGHTS 0.1%",
+     "PLAYDOUGH 0.1%",
+     "ORANGE 0.1%"
+    ],
+    "shown": "CATCH",
+    "frames": 64,
+    "handFrames": 16,
+    "classifyMs": 27.820000000006985,
+    "analysisMs": 7638
+   },
+   "match": true
+  },
+  {
+   "clip": "66d7-not-2023_01_25_20_23_18.765-0.mp4",
+   "truth": "NOT",
+   "ref": {
+    "status": "accepted",
+    "label": "NOT",
+    "best": "NOT"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "NOT",
+    "best": "NOT",
+    "policy": "balanced",
+    "top5": [
+     "NOT 92.1%",
+     "DONT 5.6%",
+     "OLD 0.3%",
+     "NUTS 0.1%",
+     "BLOW 0.1%"
+    ],
+    "shown": "NOT",
+    "frames": 34,
+    "handFrames": 5,
+    "classifyMs": 13.904999999998836,
+    "analysisMs": 3941
+   },
+   "match": true
+  },
+  {
+   "clip": "66d7-cowboy-2023_01_25_19_23_25.216-0.mp4",
+   "truth": "COWBOY",
+   "ref": {
+    "status": "accepted",
+    "label": "COWBOY",
+    "best": "COWBOY"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "COWBOY",
+    "best": "COWBOY",
+    "policy": "balanced",
+    "top5": [
+     "COWBOY 99.5%",
+     "BACKYARD 0.0%",
+     "COW 0.0%",
+     "BEE 0.0%",
+     "MAILMAN 0.0%"
+    ],
+    "shown": "COWBOY",
+    "frames": 40,
+    "handFrames": 17,
+    "classifyMs": 17.449999999982538,
+    "analysisMs": 5041
+   },
+   "match": true
+  },
+  {
+   "clip": "a1ba-bat-2023_08_30_23_20_49.208-0.mp4",
+   "truth": "BAT",
+   "ref": {
+    "status": "accepted",
+    "label": "BAT",
+    "best": "BAT"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "BAT",
+    "best": "BAT",
+    "policy": "balanced",
+    "top5": [
+     "BAT 97.0%",
+     "HAMMER 1.8%",
+     "CANDY 0.2%",
+     "ROCKINGCHAIR 0.1%",
+     "HOW 0.0%"
+    ],
+    "shown": "BAT",
+    "frames": 44,
+    "handFrames": 10,
+    "classifyMs": 19.05500000002212,
+    "analysisMs": 4949
+   },
+   "match": true
+  },
+  {
+   "clip": "66d7-cow-2023_01_25_19_21_42.762-0.mp4",
+   "truth": "COW",
+   "ref": {
+    "status": "accepted",
+    "label": "COW",
+    "best": "COW"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "COW",
+    "best": "COW",
+    "policy": "balanced",
+    "top5": [
+     "COW 99.0%",
+     "AIRPLANE 0.2%",
+     "YESTERDAY 0.0%",
+     "YELLOW 0.0%",
+     "HAIR 0.0%"
+    ],
+    "shown": "COW",
+    "frames": 30,
+    "handFrames": 9,
+    "classifyMs": 15.260000000009313,
+    "analysisMs": 4351
+   },
+   "match": true
+  },
+  {
+   "clip": "933d-sock-2024_03_13_17_16_51.006-1.mp4",
+   "truth": "SOCK",
+   "ref": {
+    "status": "accepted",
+    "label": "SOCK",
+    "best": "SOCK"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "SOCK",
+    "best": "SOCK",
+    "policy": "balanced",
+    "top5": [
+     "SOCK 96.7%",
+     "SHOE 0.5%",
+     "SNEAKER 0.2%",
+     "HESHEIT 0.2%",
+     "RUN 0.1%"
+    ],
+    "shown": "SOCK",
+    "frames": 54,
+    "handFrames": 31,
+    "classifyMs": 10.470000000001164,
+    "analysisMs": 7151
+   },
+   "match": true
+  },
+  {
+   "clip": "111c-flag-2023_01_26_17_58_08.352-0.mp4",
+   "truth": "FLAG",
+   "ref": {
+    "status": "accepted",
+    "label": "FLAG",
+    "best": "FLAG"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "FLAG",
+    "best": "FLAG",
+    "policy": "balanced",
+    "top5": [
+     "FLAG 99.0%",
+     "WINDY 0.1%",
+     "BEDROOM 0.0%",
+     "GRANDPA 0.0%",
+     "PEEKABOO 0.0%"
+    ],
+    "shown": "FLAG",
+    "frames": 51,
+    "handFrames": 19,
+    "classifyMs": 13.970000000001164,
+    "analysisMs": 7271
+   },
+   "match": true
+  },
+  {
+   "clip": "af36-cut-2023_01_05_10_46_00.501-0.mp4",
+   "truth": "CUT",
+   "ref": {
+    "status": "accepted",
+    "label": "CUT",
+    "best": "CUT"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "CUT",
+    "best": "CUT",
+    "policy": "balanced",
+    "top5": [
+     "CUT 93.4%",
+     "SCISSORS 5.3%",
+     "SHEEP 0.2%",
+     "BELT 0.2%",
+     "HIGH 0.0%"
+    ],
+    "shown": "CUT",
+    "frames": 64,
+    "handFrames": 42,
+    "classifyMs": 26.304999999993015,
+    "analysisMs": 8934
+   },
+   "match": true
+  },
+  {
+   "clip": "66e7-babysitter-2024_02_17_18_21_28.813-1.mp4",
+   "truth": "BABYSITTER",
+   "ref": {
+    "status": "accepted",
+    "label": "BABYSITTER",
+    "best": "BABYSITTER"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "BABYSITTER",
+    "best": "BABYSITTER",
+    "policy": "balanced",
+    "top5": [
+     "BABYSITTER 92.1%",
+     "PUPPY 5.9%",
+     "CAT 0.1%",
+     "PETSNAME 0.1%",
+     "PONY 0.1%"
+    ],
+    "shown": "BABYSITTER",
+    "frames": 34,
+    "handFrames": 18,
+    "classifyMs": 23.095000000001164,
+    "analysisMs": 4169
+   },
+   "match": true
+  },
+  {
+   "clip": "af36-yes-2022_12_21_10_55_04.041-0.mp4",
+   "truth": "YES",
+   "ref": {
+    "status": "accepted",
+    "label": "YES",
+    "best": "YES"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "YES",
+    "best": "YES",
+    "policy": "balanced",
+    "top5": [
+     "YES 97.4%",
+     "NEEDNEEDTO 0.5%",
+     "MOTORCYCLE 0.4%",
+     "MAKE 0.3%",
+     "ROCK 0.2%"
+    ],
+    "shown": "YES",
+    "frames": 48,
+    "handFrames": 48,
+    "classifyMs": 22.794999999983702,
+    "analysisMs": 7137
+   },
+   "match": true
+  },
+  {
+   "clip": "933d-break-2024_03_13_16_24_06.444-1.mp4",
+   "truth": "BREAK",
+   "ref": {
+    "status": "uncertain",
+    "label": null,
+    "best": "BREAK"
+   },
+   "deployed": {
+    "status": "uncertain",
+    "label": null,
+    "best": "BREAK",
+    "policy": "balanced",
+    "top5": [
+     "BREAK 75.1%",
+     "BROKEN 22.6%",
+     "RIP 0.3%",
+     "ZIPPER 0.2%",
+     "ANOTHER 0.2%"
+    ],
+    "shown": "Uncertain (closest: BREAK)",
+    "frames": 58,
+    "handFrames": 22,
+    "classifyMs": 15.595000000001164,
+    "analysisMs": 7362
+   },
+   "match": true
+  },
+  {
+   "clip": "111c-dirty-2023_01_26_17_25_54.331-0.mp4",
+   "truth": "DIRTY",
+   "ref": {
+    "status": "uncertain",
+    "label": null,
+    "best": "NAUGHTY"
+   },
+   "deployed": {
+    "status": "uncertain",
+    "label": null,
+    "best": "NAUGHTY",
+    "policy": "balanced",
+    "top5": [
+     "NAUGHTY 67.3%",
+     "DIRTY 31.0%",
+     "PIG 0.6%",
+     "FULLFOOD 0.0%",
+     "TONGUE 0.0%"
+    ],
+    "shown": "Uncertain (closest: NAUGHTY)",
+    "frames": 54,
+    "handFrames": 18,
+    "classifyMs": 17.164999999979045,
+    "analysisMs": 8804
+   },
+   "match": true
+  },
+  {
+   "clip": "66e7-heavy-2024_02_14_18_46_33.010-1.mp4",
+   "truth": "HEAVY",
+   "ref": {
+    "status": "uncertain",
+    "label": null,
+    "best": "WHAT"
+   },
+   "deployed": {
+    "status": "uncertain",
+    "label": null,
+    "best": "WHAT",
+    "policy": "balanced",
+    "top5": [
+     "WHAT 25.3%",
+     "ALOT 23.3%",
+     "HEAVY 17.8%",
+     "WANTTO 17.4%",
+     "CARRY 5.0%"
+    ],
+    "shown": "Uncertain (closest: WHAT)",
+    "frames": 33,
+    "handFrames": 4,
+    "classifyMs": 13.145000000018626,
+    "analysisMs": 4269
+   },
+   "match": true
+  },
+  {
+   "clip": "933d-was-2024_03_13_17_24_53.641-1.mp4",
+   "truth": "WAS",
+   "ref": {
+    "status": "uncertain",
+    "label": null,
+    "best": "WAS"
+   },
+   "deployed": {
+    "status": "uncertain",
+    "label": null,
+    "best": "WAS",
+    "policy": "balanced",
+    "top5": [
+     "WAS 71.1%",
+     "WERE 14.9%",
+     "BEFORE 12.5%",
+     "SLEEP 0.1%",
+     "RABBIT 0.0%"
+    ],
+    "shown": "Uncertain (closest: WAS)",
+    "frames": 70,
+    "handFrames": 16,
+    "classifyMs": 20.95499999995809,
+    "analysisMs": 8202
+   },
+   "match": true
+  },
+  {
+   "clip": "16f0-sodapop-2023_10_02_20_37_12.149-1.mp4",
+   "truth": "SODAPOP",
+   "ref": {
+    "status": "uncertain",
+    "label": null,
+    "best": "SODAPOP"
+   },
+   "deployed": {
+    "status": "uncertain",
+    "label": null,
+    "best": "SODAPOP",
+    "policy": "balanced",
+    "top5": [
+     "SODAPOP 36.2%",
+     "SPILL 8.9%",
+     "EMPTY 6.2%",
+     "SPLASH 5.1%",
+     "EVERY 4.6%"
+    ],
+    "shown": "Uncertain (closest: SODAPOP)",
+    "frames": 38,
+    "handFrames": 37,
+    "classifyMs": 11.135000000009313,
+    "analysisMs": 5204
+   },
+   "match": true
+  },
+  {
+   "clip": "af36-up-2022_12_16_12_44_42.629-0.mp4",
+   "truth": "UP",
+   "ref": {
+    "status": "uncertain",
+    "label": null,
+    "best": "FACE"
+   },
+   "deployed": {
+    "status": "uncertain",
+    "label": null,
+    "best": "FACE",
+    "policy": "balanced",
+    "top5": [
+     "FACE 44.4%",
+     "FIRST 19.6%",
+     "DAY 3.2%",
+     "PENNY 3.0%",
+     "UP 1.8%"
+    ],
+    "shown": "Uncertain (closest: FACE)",
+    "frames": 34,
+    "handFrames": 33,
+    "classifyMs": 13.864999999990687,
+    "analysisMs": 4725
+   },
+   "match": true
+  },
+  {
+   "clip": "111c-pen-2023_01_26_17_24_36.218-0.mp4",
+   "truth": "PEN",
+   "ref": {
+    "status": "accepted",
+    "label": "WRITE",
+    "best": "WRITE"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "WRITE",
+    "best": "WRITE",
+    "policy": "balanced",
+    "top5": [
+     "WRITE 92.3%",
+     "PEAS 4.8%",
+     "PEN 0.3%",
+     "POPSICLE 0.2%",
+     "CHALK 0.1%"
+    ],
+    "shown": "WRITE",
+    "frames": 47,
+    "handFrames": 13,
+    "classifyMs": 15.125,
+    "analysisMs": 7139
+   },
+   "match": true
+  },
+  {
+   "clip": "66d7-cook-2023_09_03_10_33_26.494-0.mp4",
+   "truth": "COOK",
+   "ref": {
+    "status": "accepted",
+    "label": "KITCHEN",
+    "best": "KITCHEN"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "KITCHEN",
+    "best": "KITCHEN",
+    "policy": "balanced",
+    "top5": [
+     "KITCHEN 96.8%",
+     "COOK 0.9%",
+     "PLAYDOUGH 0.3%",
+     "WIPE 0.2%",
+     "HOSE 0.2%"
+    ],
+    "shown": "KITCHEN",
+    "frames": 36,
+    "handFrames": 20,
+    "classifyMs": 11.190000000002328,
+    "analysisMs": 4402
+   },
+   "match": true
+  },
+  {
+   "clip": "66e7-bellybutton-2024_02_17_18_21_22.754-1.mp4",
+   "truth": "BELLYBUTTON",
+   "ref": {
+    "status": "accepted",
+    "label": "SHORTS",
+    "best": "SHORTS"
+   },
+   "deployed": {
+    "status": "accepted",
+    "label": "SHORTS",
+    "best": "SHORTS",
+    "policy": "balanced",
+    "top5": [
+     "SHORTS 96.3%",
+     "PANTS 1.4%",
+     "YUMYUM 0.6%",
+     "SKIRT 0.1%",
+     "MONKEY 0.1%"
+    ],
+    "shown": "SHORTS",
+    "frames": 34,
+    "handFrames": 12,
+    "classifyMs": 16.635000000009313,
+    "analysisMs": 3727
+   },
+   "match": true
+  },
+  {
+   "clip": "66e7-help-2024_02_17_18_36_50.657-1.mp4",
+   "truth": "HELP",
+   "ref": {
+    "status": "unknown",
+    "label": null,
+    "best": "EACH"
+   },
+   "deployed": {
+    "status": "unknown",
+    "label": null,
+    "best": "EACH",
+    "policy": "balanced",
+    "top5": [
+     "EACH 18.8%",
+     "CHASE 2.1%",
+     "YOGURT 1.2%",
+     "HELP 1.2%",
+     "PLAY 0.6%"
+    ],
+    "shown": "Not a supported sign (closest: EACH)",
+    "frames": 29,
+    "handFrames": 14,
+    "classifyMs": 15.885000000009313,
+    "analysisMs": 3644
+   },
+   "match": true
+  },
+  {
+   "clip": "66d7-hesheit-2023_01_25_20_23_54.429-0.mp4",
+   "truth": "HESHEIT",
+   "ref": {
+    "status": "unknown",
+    "label": null,
+    "best": "PAJAMAS"
+   },
+   "deployed": {
+    "status": "unknown",
+    "label": null,
+    "best": "PAJAMAS",
+    "policy": "balanced",
+    "top5": [
+     "PAJAMAS 0.6%",
+     "CLOSET 0.5%",
+     "PEAS 0.5%",
+     "NAP 0.4%",
+     "EMPTY 0.3%"
+    ],
+    "shown": "Not a supported sign (closest: PAJAMAS)",
+    "frames": 78,
+    "handFrames": 44,
+    "classifyMs": 12.470000000030268,
+    "analysisMs": 14663
+   },
+   "match": true
+  },
+  {
+   "clip": "af36-sticky-2022_12_16_12_45_21.899-0.mp4",
+   "truth": "STICKY",
+   "ref": {
+    "status": "unknown",
+    "label": null,
+    "best": "STICKY"
+   },
+   "deployed": {
+    "status": "unknown",
+    "label": null,
+    "best": "STICKY",
+    "policy": "balanced",
+    "top5": [
+     "STICKY 89.9%",
+     "CAT 2.1%",
+     "CHOOSE 0.9%",
+     "STORY 0.6%",
+     "HATE 0.5%"
+    ],
+    "shown": "Not a supported sign (closest: STICKY)",
+    "frames": 56,
+    "handFrames": 41,
+    "classifyMs": 12.950000000011642,
+    "analysisMs": 8166
+   },
+   "match": true
+  }
+ ],
+ "unknown": [
+  {
+   "clip": "a1ba-star-2023_08_30_23_16_44.843-0.mp4",
+   "status": "accepted",
+   "label": "BUMP",
+   "best": "BUMP",
+   "shown": "BUMP",
+   "err": null
+  },
+  {
+   "clip": "66e7-garage-2024_02_17_18_20_10.820-1.mp4",
+   "status": "accepted",
+   "label": "PEOPLE",
+   "best": "PEOPLE",
+   "shown": "PEOPLE",
+   "err": null
+  },
+  {
+   "clip": "a1ba-highchair-2023_08_30_23_14_06.172-0.mp4",
+   "status": "uncertain",
+   "label": null,
+   "best": "POTATO",
+   "shown": "Uncertain (closest: POTATO)",
+   "err": null
+  },
+  {
+   "clip": "fs-b5c1_59_20220921_160554_840900_850400.mp4",
+   "status": "unknown",
+   "label": null,
+   "best": "BASKET",
+   "shown": "Not a supported sign (closest: BASKET)",
+   "err": null
+  }
+ ],
+ "camera": {
+  "first": {
+   "diag": "analysed 8.3 fps (target 15) \u00b7 camera 640\u00d7480 \u00b7 hands on 45% of analysed frames \u00b7 hand 95 ms \u00b7 pose 13 ms \u00b7 face 0 ms \u00b7 skipped camera frames 554",
+   "stats": {
+    "sent": 175,
+    "done": 175,
+    "skipped": 554,
+    "hands": 78,
+    "t0": 321501.22
+   },
+   "events": 5,
+   "live": [
+    "live"
+   ]
+  },
+  "afterStop": {
+   "src": false,
+   "state": "off",
+   "status": "Camera stopped; camera released."
+  },
+  "restart": {
+   "diag": "analysed 11.7 fps (target 15) \u00b7 camera 640\u00d7480 \u00b7 hands on 43% of analysed frames \u00b7 hand 94 ms \u00b7 pose 15 ms \u00b7 face 0 ms \u00b7 skipped camera frames 234",
+   "stats": {
+    "sent": 71,
+    "done": 70,
+    "skipped": 234,
+    "hands": 30,
+    "t0": 342648.15
+   },
+   "events": 7,
+   "live": [
+    "live"
+   ]
+  },
+  "denied": {
+   "err": {
+    "name": "NotAllowedError",
+    "message": "Camera permission was denied. Allow camera access for this site (padlock icon in the address bar \u2192 Site settings \u2192 Camera \u2192 Allow), then press Start camera again."
+   },
+   "status": "Camera error: Camera permission was denied. Allow camera access for this site (padlock icon in the address bar \u2192 Site settings \u2192 Camera \u2192 Allow), then press Start camera again.",
+   "running": false
+  }
+ },
+ "perf": {
+  "startupWallMs": 18946,
+  "startupLabel": "startup 15273 ms (fetch 1169, vision 12740) \u00b7 delegate probe ms/frame CPU 55 GPU 486 \u2192 CPU",
+  "camera": {
+   "diag": "analysed 8.3 fps (target 15) \u00b7 camera 640\u00d7480 \u00b7 hands on 45% of analysed frames \u00b7 hand 95 ms \u00b7 pose 13 ms \u00b7 face 0 ms \u00b7 skipped camera frames 554",
+   "analysedFrames": 175,
+   "skippedCameraFrames": 554,
+   "windowSec": 20
+  }
+ },
+ "identity": {
+  "version": "v3.1 \u00b7 model b3e05424f467 \u00b7 commit 1fee28f020 \u00b7 CPU \u00b7 4 ORT threads",
+  "startup": "startup 15273 ms (fetch 1169, vision 12740) \u00b7 delegate probe ms/frame CPU 55 GPU 486 \u2192 CPU",
+  "title": "SignRelay V3.1 Lab",
+  "h1": "SignRelay Engine V3.1 \u2014 experimental ASL lab",
+  "nclasses": "523",
+  "secure": true,
+  "coi": true,
+  "meta": {
+   "version": "v3.1",
+   "sha": "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090",
+   "commit": "1fee28f02082f58218f65483f1d4765e2572aa1f",
+   "classes": 523,
+   "unknown_index": 523,
+   "policies": [
+    "balanced",
+    "strict"
+   ],
+   "assets": {
+    "hand_landmarker.task": "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1",
+    "pose_landmarker_lite.task": "59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a"
+   }
+  }
+ },
+ "headers": {
+  "cross-origin-opener-policy": "same-origin",
+  "cross-origin-embedder-policy": "require-corp",
+  "content-security-policy": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; media-src 'self' blob:; img-src 'self' blob: data:; style-src 'self'; connect-src 'self'; frame-ancestors 'none'",
+  "permissions-policy": "camera=(self)",
+  "strict-transport-security": "max-age=63072000; includeSubDomains; preload"
+ },
+ "strict": [
+  {
+   "clip": "66d7-am-2023_09_03_12_59_04.844-0.mp4",
+   "truth": "AM",
+   "balanced": "accepted",
+   "strict": "accepted",
+   "label": "AM",
+   "policy": "strict",
+   "proto": 0.9591808059902027
+  },
+  {
+   "clip": "66d7-bunny-2023_09_03_16_12_22.518-0.mp4",
+   "truth": "RABBIT",
+   "balanced": "accepted",
+   "strict": "accepted",
+   "label": "RABBIT",
+   "policy": "strict",
+   "proto": 0.9045588731229686
+  },
+  {
+   "clip": "933d-catch-2024_03_13_15_32_05.854-1.mp4",
+   "truth": "CATCH",
+   "balanced": "accepted",
+   "strict": "accepted",
+   "label": "CATCH",
+   "policy": "strict",
+   "proto": 0.8786978476392703
+  },
+  {
+   "clip": "66d7-not-2023_01_25_20_23_18.765-0.mp4",
+   "truth": "NOT",
+   "balanced": "accepted",
+   "strict": "unknown",
+   "label": "NOT",
+   "policy": "strict",
+   "proto": 0.7654419396636818
+  },
+  {
+   "clip": "66d7-cowboy-2023_01_25_19_23_25.216-0.mp4",
+   "truth": "COWBOY",
+   "balanced": "accepted",
+   "strict": "accepted",
+   "label": "COWBOY",
+   "policy": "strict",
+   "proto": 0.9622954115058218
+  },
+  {
+   "clip": "a1ba-bat-2023_08_30_23_20_49.208-0.mp4",
+   "truth": "BAT",
+   "balanced": "accepted",
+   "strict": "accepted",
+   "label": "BAT",
+   "policy": "strict",
+   "proto": 0.8918229884848303
+  },
+  {
+   "clip": "66d7-cow-2023_01_25_19_21_42.762-0.mp4",
+   "truth": "COW",
+   "balanced": "accepted",
+   "strict": "accepted",
+   "label": "COW",
+   "policy": "strict",
+   "proto": 0.9139921508156972
+  },
+  {
+   "clip": "933d-sock-2024_03_13_17_16_51.006-1.mp4",
+   "truth": "SOCK",
+   "balanced": "accepted",
+   "strict": "unknown",
+   "label": "SOCK",
+   "policy": "strict",
+   "proto": 0.8025378237458902
+  }
+ ],
+ "unknownRejected": "2/4",
+ "consoleBenign": [
+  "INFO: Created TensorFlow Lite XNNPACK delegate for CPU.",
+  "\u001b[0;93m2026-11-21 11:52:40.567815 [W:onnxruntime:Default, cpuid_info.cc:91 LogEarlyWarning] Unknown CPU vendor. cpuinfo_vendor value: 0\u001b[m",
+  "\u001b[0;93m2026-11-21 11:52:43.500450 [W:onnxruntime:Default, cpuid_info.cc:91 LogEarlyWarning] Unknown CPU vendor. cpuinfo_vendor value: 0\u001b[m"
+ ],
+ "network": {
+  "responses": 399,
+  "requestsFailed": [
+   "blob:https://signrelay-v3-lab.vercel.app/8fb13a61-f062-4c0a-b1a7-b252ce4d800c net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/9818583f-2d7c-4e1d-83c7-59646e81257e net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/9818583f-2d7c-4e1d-83c7-59646e81257e net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5e62011-b7e3-4c84-a28d-11e87c57deb0 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5e62011-b7e3-4c84-a28d-11e87c57deb0 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/68357817-5c3f-49d2-a067-a9c0c8f63dc8 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/68357817-5c3f-49d2-a067-a9c0c8f63dc8 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/13d727fe-3ecb-436e-9509-2b8d94b190d9 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/13d727fe-3ecb-436e-9509-2b8d94b190d9 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/fa7b245a-98cb-4994-a69d-b26fd8538be5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/fa7b245a-98cb-4994-a69d-b26fd8538be5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/0b288fa4-a2a7-4b71-989c-f62e5b59a8d5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/0b288fa4-a2a7-4b71-989c-f62e5b59a8d5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/9fade69e-1762-4340-89bc-441328633cc3 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/9fade69e-1762-4340-89bc-441328633cc3 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/524e2e93-91e8-45c0-b051-dbf374b72ffa net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/524e2e93-91e8-45c0-b051-dbf374b72ffa net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/92ff45c8-9161-424d-8ba9-af84f15172dd net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/92ff45c8-9161-424d-8ba9-af84f15172dd net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/92ff45c8-9161-424d-8ba9-af84f15172dd net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/92ff45c8-9161-424d-8ba9-af84f15172dd net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/0cbb9533-8784-4ce1-b6e6-3624fd69ba08 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/0cbb9533-8784-4ce1-b6e6-3624fd69ba08 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/80e6822f-696f-4baa-8177-20d47e213d88 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/80e6822f-696f-4baa-8177-20d47e213d88 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/53634802-f153-473c-9d6b-f786f1a05f69 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/53634802-f153-473c-9d6b-f786f1a05f69 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/5699cb6a-799c-4d61-a4f3-2c0018314a60 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/5699cb6a-799c-4d61-a4f3-2c0018314a60 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/5449e81c-8756-4cab-94ca-ef61e902dc96 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/5449e81c-8756-4cab-94ca-ef61e902dc96 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/666b5c0c-a576-4fd2-9e18-c2bdda3c163f net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/666b5c0c-a576-4fd2-9e18-c2bdda3c163f net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/666b5c0c-a576-4fd2-9e18-c2bdda3c163f net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/28e38a3d-f3ba-4700-82e9-ad7ae1b868af net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/28e38a3d-f3ba-4700-82e9-ad7ae1b868af net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/e5d357d1-4310-450f-a1b0-636e170190a8 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/e5d357d1-4310-450f-a1b0-636e170190a8 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/e5d357d1-4310-450f-a1b0-636e170190a8 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/e5d357d1-4310-450f-a1b0-636e170190a8 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/befc5211-69d9-4eda-8d2a-043c9ac50ae6 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/befc5211-69d9-4eda-8d2a-043c9ac50ae6 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/5c1a800a-9dd5-4701-a8d8-fb454c2af679 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/5c1a800a-9dd5-4701-a8d8-fb454c2af679 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/431ff069-d7b2-4f61-8de6-1f27db345bab net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/431ff069-d7b2-4f61-8de6-1f27db345bab net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3fc343b2-ae00-4947-9f59-dbb248eea3e5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3fc343b2-ae00-4947-9f59-dbb248eea3e5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3fc343b2-ae00-4947-9f59-dbb248eea3e5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3fc343b2-ae00-4947-9f59-dbb248eea3e5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3fc343b2-ae00-4947-9f59-dbb248eea3e5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3fc343b2-ae00-4947-9f59-dbb248eea3e5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3fc343b2-ae00-4947-9f59-dbb248eea3e5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3fc343b2-ae00-4947-9f59-dbb248eea3e5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3fc343b2-ae00-4947-9f59-dbb248eea3e5 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/bc34a4ed-bcab-4b77-99fd-d77cb29a0c0e net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/bc34a4ed-bcab-4b77-99fd-d77cb29a0c0e net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3ac70691-ec10-4437-ac9b-fbbb537c7e8d net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/3ac70691-ec10-4437-ac9b-fbbb537c7e8d net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/85ed1cec-04a2-4b2b-aea7-f239636f9063 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/ccbb794d-6aa4-4661-bf21-936dfac5f566 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/84a7c8d2-ed85-45f4-b4a2-ac63be9c30c8 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/84a7c8d2-ed85-45f4-b4a2-ac63be9c30c8 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/8dc64707-a8e3-4d3a-a570-2eb74f02c17b net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/7d341ca6-92c3-4aca-9092-3a7b77926e13 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a09eddcd-099b-425c-9f0e-4f90c270d448 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a09eddcd-099b-425c-9f0e-4f90c270d448 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/24badadc-64d7-41fe-87ef-070955276a9c net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/24badadc-64d7-41fe-87ef-070955276a9c net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/87d2c532-832b-4f07-9a23-f994d713d81f net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/87d2c532-832b-4f07-9a23-f994d713d81f net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/87d2c532-832b-4f07-9a23-f994d713d81f net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a4b00b65-c091-4185-8e65-c223220872ea net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a4b00b65-c091-4185-8e65-c223220872ea net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a4b00b65-c091-4185-8e65-c223220872ea net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/f2335e76-dc3a-4403-8e2e-744e1e38ede6 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/f2335e76-dc3a-4403-8e2e-744e1e38ede6 net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED",
+   "blob:https://signrelay-v3-lab.vercel.app/a5f33a93-baba-41ea-9a30-74b5b4983beb net::ERR_ABORTED"
+  ]
+ },
+ "finished": "2026-11-21T11:58:56.373Z",
+ "passed": 24,
+ "total": 24,
+ "environment": {
+  "runner": "Playwright headless Chromium",
+  "host_cpus": 4,
+  "gpu": "none (software GL)",
+  "note": "container, not a physical device"
+ }
+}

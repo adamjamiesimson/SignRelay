@@ -1,5 +1,7 @@
 # Executed verification
 
+> **Version scope:** the body below preserves PR #66's Engine 1 repair evidence. The current V3.1 integration, production UI reference, verification and publication status are recorded in [INTEGRATION_VERIFICATION.md](INTEGRATION_VERIFICATION.md). Recognition results from different engines must not be combined.
+
 All local checks used Node 24.22.3 on the cloud Linux host and Chromium 156.0.8078.79. The tested worker is `3510843cc821cbbdb9dc227d1f68dff8ded10dce77620bde0198bf4e7e2456c1`. Browser camera checks used browser-generated media. Model probes used controlled inputs and the installed checkpoints. Physical camera, device audio and signing accuracy need independent acceptance evidence.
 
 | Check | Observed result |

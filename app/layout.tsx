@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import "./refinement.css";
-import "./figma-ui.css";
+import "./site.css";
+import "./workspace.css";
 import { REHEARSAL, REHEARSAL_BANNER } from "@/lib/rehearsal";
 
 export const metadata: Metadata = {
@@ -11,11 +11,11 @@ export const metadata: Metadata = {
     template: "%s · SignRelay",
   },
   description:
-    "A privacy-first, on-device sign-language recognition research platform for clear, respectful communication.",
+    "SignRelay turns supported signs into words you can read, edit and speak. Camera video is analysed in your browser and never uploaded.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "SignRelay",
-    description: "Sign freely. Connect naturally.",
+    description: "Every sign deserves to be understood.",
     type: "website", url: "/", siteName: "SignRelay", images: [{ url: "/signrelay-social-v2.png", width: 1200, height: 630, alt: "SignRelay, private on-device sign-language recognition" }],
   },
   twitter: {
@@ -32,6 +32,11 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#0a0c0e",
+  colorScheme: "dark",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -45,6 +50,7 @@ export default function RootLayout({
           description: "Privacy-first browser research platform for sign-language recognition.",
           logo: "https://signrelay.web.app/signrelay-mark.webp", sameAs: ["https://github.com/adamjamiesimson/SignRelay"],
         }) }} />
+        <a className="skip-link" href="#main">Skip to content</a>
         {REHEARSAL && <div role="alert" className="rehearsal-banner" style={{ position: "sticky", top: 0, zIndex: 1000, padding: "8px 16px", background: "#7a1f1f", color: "#fff", fontWeight: 700, textAlign: "center" }}>{REHEARSAL_BANNER}</div>}
         {children}
       </body>

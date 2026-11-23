@@ -14,6 +14,8 @@ import { TemplateMatchingClient, type TemplatePrediction } from "@/lib/template-
 import { validHand } from "@/lib/asl-starter-recognition";
 import { MODEL_ADAPTERS, type LanguageId } from "@/lib/model-adapters";
 import { trackingGapLimit } from "@/lib/frame-timing";
+import { AslV31Segmenter } from "@/lib/asl-v31-segmenter";
+import { recognizeAslV31, warmAslV31Model } from "@/lib/asl-v31-runtime";
 
 const CONFIDENCE_THRESHOLD = 0.62;
 const COOLDOWN_MS = 2600;
@@ -25,6 +27,10 @@ let candidateSource: "personal" | "starter" | "model" | undefined;
 let lastConfirmation = { label: "", time: 0 };
 let personalTemplates: CalibrationTemplate[] = [];
 let activeLanguage: LanguageId = "asl";
+let useAslV31 = false;
+const v3Segmenter = new AslV31Segmenter();
+let v3ModelReady = false;
+let queuedV3: { clip: Float32Array[]; closedAt: number; receivedAt: number; session?: number } | undefined;
 const classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
 const pending = new Map<LanguageId, { started: number; phase: "loading" | "inference"; controller: AbortController }>();
 const MODEL_LOAD_TIMEOUT_MS = 400000;
@@ -86,6 +92,8 @@ function invalidatePrediction() {
 }
 
 function resetEvidence() {
+  v3Segmenter.reset();
+  queuedV3 = undefined;
   invalidatePersonal();
   frames.length = 0;
   receivedFrames = 0;
@@ -113,9 +121,41 @@ function resetSession() {
   personalProblem = false;
 }
 
+function submitV3(now: number) {
+  if (pending.has("asl") || now < retryAfter) return;
+  if (queuedV3 && (now - queuedV3.closedAt > MAX_PREDICTION_AGE_MS
+    || performance.now() - queuedV3.receivedAt > MAX_PREDICTION_AGE_MS)) queuedV3 = undefined;
+  const segment = v3ModelReady ? queuedV3 : undefined;
+  if (v3ModelReady && !segment) return;
+  if (segment) queuedV3 = undefined;
+
+  const request = { started: now, phase: (segment ? "inference" : "loading") as "inference" | "loading", controller: new AbortController() };
+  pending.set("asl", request);
+  const generation = modelGeneration;
+  const task = segment
+    ? recognizeAslV31(segment.clip, { signal: request.controller.signal })
+    : warmAslV31Model().then(() => { v3ModelReady = true; });
+
+  task.then(prediction => {
+    if (generation !== modelGeneration || request.controller.signal.aborted) return;
+    modelProblem = false;
+    if (!prediction || !segment) return;
+    if ((frames.at(-1)?.timestamp ?? now) - segment.closedAt > MAX_PREDICTION_AGE_MS
+      || performance.now() - segment.receivedAt > MAX_PREDICTION_AGE_MS) return;
+    self.postMessage({ type: "suggestion", session: segment.session, gloss: prediction.label, text: prediction.text,
+      confidence: prediction.confidence, timestamp: Date.now(), source: "model",
+    } satisfies WorkerMessage);
+  }).catch(() => {
+    if (generation !== modelGeneration || request.controller.signal.aborted) return;
+    modelProblem = true;
+    retryAfter = (frames.at(-1)?.timestamp ?? now) + 5000;
+  }).finally(() => { if (pending.get("asl") === request) pending.delete("asl"); });
+}
+
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
+    useAslV31 = activeLanguage === "asl" && event.data.aslEngine === "v3.1";
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
     resetSession();
     personalMatcher.configure(personalTemplates);
@@ -158,22 +198,29 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     || performance.now() - personalReceivedAt > MAX_PREDICTION_AGE_MS)) latestPersonal = null;
   if (hasHand) personalMatcher.submit(frames);
   const personal = latestPersonal;
-  const starterAnalysis = activeLanguage === "asl" ? analyzeAslStarter(frames) : null;
+  const starterAnalysis = activeLanguage === "asl" && !useAslV31 ? analyzeAslStarter(frames) : null;
   const starter = starterAnalysis?.prediction ?? null;
   // The closed-set model can also label fist preparation YES. Require the
   // same completed wrist nod for automatic YES, while preserving personal
   // templates. Discard a rejected result so it cannot stall fresh inference.
   if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES"
     && starter?.label !== "YES") invalidatePrediction();
-  const observed = activeLanguage === "asl" ? analyzeSignMotion(frames) : null;
+  const v3Motion = useAslV31 ? v3Segmenter.observe(now, event.data.frame.aslV3Features) : null;
+  const observed = activeLanguage === "asl" && !useAslV31 ? analyzeSignMotion(frames) : null;
   const startsInConfirmedTail = observed?.completion === "departure" && !handReturnedAfterConfirmation
     && observed.sequence[0].timestamp - lastConfirmation.time < NEW_MOVEMENT_AFTER_WORD_MS;
   const motion = startsInConfirmedTail ? { ready: false, sequence: [], reason: "hands" as const }
-    : observed ?? { ...analyzeGenericSignMotion(frames), sequence: frames };
+    : v3Motion ? { ready: Boolean(v3Motion.clip), sequence: [], reason: v3Motion.reason }
+      : observed ?? { ...analyzeGenericSignMotion(frames), sequence: frames };
   const departureEnd = observed?.completion === "departure" && !startsInConfirmedTail
     ? observed.sequence.at(-1)?.timestamp : undefined;
 
-  if (!motion.ready || starterAnalysis?.ambiguousOpenPalm) invalidatePrediction();
+  if (v3Motion) {
+    // Limit the pipeline to one inference and one queued completed segment.
+    // Camera analyses still receive their acknowledgement during model loading.
+    if (v3Motion.clip) queuedV3 = { clip: v3Motion.clip, closedAt: now, receivedAt: performance.now(), session: event.data.session };
+    submitV3(now);
+  } else if (!motion.ready || starterAnalysis?.ambiguousOpenPalm) invalidatePrediction();
   else {
     if (latestPrediction && (now - predictionTimestamp > MAX_PREDICTION_AGE_MS
       || performance.now() - predictionReceivedAt > MAX_PREDICTION_AGE_MS)) invalidatePrediction();
@@ -228,7 +275,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   const source = result ? result === personal ? "personal" : result === starter ? "starter" : "model" : undefined;
   const feedback = starterAnalysis?.ambiguousOpenPalm && !personal ? "This movement resembles more than one sign. Pause and try again."
     : personalProblem ? "Saved signs could not be checked. Retrying shortly…" : modelProblem
-    ? activeLanguage === "asl"
+    ? activeLanguage === "asl" && !useAslV31
       ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly…"
       : "The research model could not run. Saved personal signs are still available. Retrying shortly…"
     : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically."
@@ -277,6 +324,10 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     } satisfies WorkerMessage);
     lastConfirmation = { label: result.label, time: now };
     handReturnedAfterConfirmation = false;
+    if (useAslV31) {
+      v3Segmenter.suppressCurrentSegment();
+      queuedV3 = undefined;
+    }
     if (activeLanguage === "asl" && !candidateIsModel) {
       blockedStarter = result.label;
       starterSeenAt = now;

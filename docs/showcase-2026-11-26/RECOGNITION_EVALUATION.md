@@ -1,5 +1,7 @@
 # Recognition evaluation
 
+> **Version scope:** the body below preserves PR #66's Engine 1 repair evidence. The current V3.1 integration, production UI reference, verification and publication status are recorded in [INTEGRATION_VERIFICATION.md](INTEGRATION_VERIFICATION.md). Recognition results from different engines must not be combined.
+
 The candidate preserves checkpoint weights and confidence thresholds. ASL-2000 input preprocessing was repaired, and its predictions remain tentative in the existing candidate display. Starter geometry and personal templates can confirm isolated signs. The ASL checkpoint runs through packed JavaScript Pose-TGCN. BSL, ISL, LSE, RSL and Bangla use ONNX inference. PSL uses reference-template DTW.
 
 ## Complete hosted candidate evaluation

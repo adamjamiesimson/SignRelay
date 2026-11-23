@@ -1,0 +1,130 @@
+{
+ "summary": {
+  "intervals": 12,
+  "supported": 10,
+  "correct": 1,
+  "wrong": 4,
+  "missed": 0,
+  "abstained_on_supported": 5,
+  "unsupported_intervals": 2,
+  "unsupported_false_accepts": 0,
+  "duplicate_accepts": 0,
+  "spurious_events_in_gaps": 0,
+  "exact_sequence_match": false,
+  "expected_sequence": [
+   "TO",
+   "PIZZA",
+   "TO",
+   "TO",
+   "COUCH",
+   "NIGHTNIGHT",
+   "LAWNMOWER",
+   "TURNAROUND",
+   "HURT",
+   "STUCK"
+  ],
+  "accepted_sequence": [
+   "HAVETO",
+   "HAVETO",
+   "HAVETO",
+   "NIGHT",
+   "STUCK"
+  ]
+ },
+ "intervals": [
+  {
+   "label": "TO",
+   "outcome": "wrong",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "HAVETO"
+   ]
+  },
+  {
+   "label": "PIZZA",
+   "outcome": "unknown",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "TO",
+   "outcome": "wrong",
+   "n_events": 2,
+   "n_accepted": 1,
+   "accepted": [
+    "HAVETO"
+   ]
+  },
+  {
+   "label": "TO",
+   "outcome": "wrong",
+   "n_events": 2,
+   "n_accepted": 1,
+   "accepted": [
+    "HAVETO"
+   ]
+  },
+  {
+   "label": "COUCH",
+   "outcome": "uncertain",
+   "n_events": 2,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "__unknown__",
+   "outcome": "rejected",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "NIGHTNIGHT",
+   "outcome": "wrong",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "NIGHT"
+   ]
+  },
+  {
+   "label": "LAWNMOWER",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "__motion__",
+   "outcome": "rejected",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "TURNAROUND",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "HURT",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "STUCK",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "STUCK"
+   ]
+  }
+ ]
+}

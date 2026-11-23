@@ -3,7 +3,7 @@ import { downloadModelBytes } from "./model-download";
 
 export type InferenceOptions = { signal?: AbortSignal; onPhase?: (phase: "loading" | "inference") => void };
 
-function abortable<T>(task: Promise<T>, signal: AbortSignal, dispose?: (value: T) => void) {
+export function abortable<T>(task: Promise<T>, signal: AbortSignal, dispose?: (value: T) => void) {
   return new Promise<T>((resolve, reject) => {
     const abort = () => reject(signal.reason ?? new DOMException("Cancelled", "AbortError"));
     if (signal.aborted) abort(); else signal.addEventListener("abort", abort, { once: true });

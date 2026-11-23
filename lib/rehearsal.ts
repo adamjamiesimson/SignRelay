@@ -1,11 +1,10 @@
-import { BUILD_PROFILE } from "./build-profile";
 import type { VisionFrame } from "./vision-types";
 
 /** Automated software rehearsal (rehearsal build profile only). A script plays
  * synthetic hand landmarks in place of the tracker's output while the real
  * camera, frame loop, recognition worker and transcript run unchanged. It is
  * labelled on every page and is never part of the demo or the public site. */
-export const REHEARSAL = BUILD_PROFILE === "rehearsal";
+export const REHEARSAL = process.env.NEXT_PUBLIC_SIGNRELAY_PROFILE === "rehearsal";
 export const REHEARSAL_BANNER = "AUTOMATED SOFTWARE REHEARSAL: synthetic hand landmarks, not a person signing. This is not a recognition accuracy test.";
 
 export class RehearsalScript {

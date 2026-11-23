@@ -20,9 +20,13 @@ function fixture(edit: (root: string) => void = () => {}) {
   writeFileSync(join(root, "models/asl2000-tgcn/labels.json"), "[]");
   writeFileSync(join(root, "workers/recognition.worker.js"), "worker-v1");
   writeFileSync(join(root, "workers/template-matching.worker.js"), "template-worker-v1");
+  mkdirSync(join(root, "models/asl-v31"));
+  writeFileSync(join(root, "models/asl-v31/model.onnx"), "model-v31");
+  writeFileSync(join(root, "workers/asl-v3-tracker.worker.js"), "tracker-v31");
   edit(root);
   return { root, wasmSource: wasm, ortSource: ort, wasmFiles: ["a.wasm"], committedWorker: sha("worker-v1"),
     expectedAslPins: sha(pins), expectedTemplateWorker: sha("template-worker-v1"),
+    v31Pins: { "model.onnx": { bytes: 9, sha256: sha("model-v31") } },
     models: { hand: { file: "hand.task", bytes: 11, sha256: sha("model-bytes") } },
     evaluated: [{ worker_sha256: sha("worker-v1"), outcome: { correct: 5 }, evidence: ["x"] }] };
 }
@@ -44,6 +48,8 @@ describe("deterministic runtime verifier", () => {
     ["an uncommitted worker build", (root: string) => writeFileSync(join(root, "workers/recognition.worker.js"), "worker-v2"), "differs from the committed bundle"],
     ["a missing personal-template worker", (root: string) => rmSync(join(root, "workers/template-matching.worker.js")), "missing workers/template-matching.worker.js"],
     ["a stale personal-template worker", (root: string) => writeFileSync(join(root, "workers/template-matching.worker.js"), "template-worker-v0"), "differs from the built bundle"],
+    ["a missing V3.1 tracking worker", (root: string) => rmSync(join(root, "workers/asl-v3-tracker.worker.js")), "missing workers/asl-v3-tracker.worker.js"],
+    ["a tampered V3.1 model", (root: string) => writeFileSync(join(root, "models/asl-v31/model.onnx"), "model-v30"), "differs from its pinned size or SHA-256"],
   ])("fails with an actionable message for %s", (_name, edit, message) => {
     const result = verifyRuntime(fixture(edit));
     expect(result.ok).toBe(false);
@@ -77,6 +83,7 @@ describe("deterministic runtime verifier", () => {
         writeFileSync(target, path);
       }
     }
+    writeFileSync(join(sourceRoot, "workers/asl-v3-tracker.worker.js"), "tracker-v31");
     expect(verifyRuntime({ ...setup, sourceRoot }).ok).toBe(true);
     writeFileSync(join(setup.root, "models/bsl1064-pose2sign/labels.json"), "changed");
     rmSync(join(setup.root, "models/rsl1000-slovo/model.onnx"));
@@ -88,7 +95,11 @@ describe("deterministic runtime verifier", () => {
     const hooked = () => fixture(root => { mkdirSync(join(root, "_next/static/chunks"), { recursive: true }); writeFileSync(join(root, "_next/static/chunks/app.js"), "window.__signrelayRehearsal={}"); });
     expect(verifyRuntime({ ...hooked(), profile: "asl-demo" }).failures.join("\n")).toContain("contains the automated rehearsal hook");
     expect(verifyRuntime({ ...hooked(), profile: "full" }).failures.join("\n")).toContain("contains the automated rehearsal hook");
-    expect(verifyRuntime({ ...hooked(), profile: "rehearsal" }).ok).toBe(true);
+    const rehearsal = hooked();
+    expect(verifyRuntime({ ...rehearsal, profile: "rehearsal" }).failures).toContainEqual(expect.stringContaining("rehearsal export contains models/asl-v31/model.onnx"));
+    rmSync(join(rehearsal.root, "models/asl-v31/model.onnx"));
+    rmSync(join(rehearsal.root, "workers/asl-v3-tracker.worker.js"));
+    expect(verifyRuntime({ ...rehearsal, profile: "rehearsal" })).toMatchObject({ ok: true, manifest: { asl_engine: { version: "engine-1" } } });
     const plain = fixture(root => { mkdirSync(join(root, "_next/static/chunks"), { recursive: true }); writeFileSync(join(root, "_next/static/chunks/app.js"), "console.log(1)"); });
     expect(verifyRuntime({ ...plain, profile: "rehearsal" }).failures.join("\n")).toContain("missing its rehearsal hook");
   });

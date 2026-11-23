@@ -1,5 +1,7 @@
 # November 26 showcase release readiness
 
+> **Version scope:** the body below preserves PR #66's Engine 1 repair evidence. The current V3.1 integration, production UI reference, verification and publication status are recorded in [INTEGRATION_VERIFICATION.md](INTEGRATION_VERIFICATION.md). Recognition results from different engines must not be combined.
+
 The showcase candidate targets operator-led testing of isolated ASL signs at Dubai International Academic City. The [recognition report](RECOGNITION_EVALUATION.md) and [test report](TEST_RESULTS.md) record the evidence for the candidate. Physical webcam behavior, fresh-sign performance, independently reviewed false acceptances, and offline voice availability must clear the [physical checklist](PHYSICAL_TEST_CHECKLIST.md) before public live signing.
 
 The offline ASL export and full Firebase export serve different purposes. Use the [offline booth runbook](OFFLINE_DEMO.md) for the showcase. Keep the loopback server and verified static bundle available as a fallback. Keep the demo script within the signs that pass human acceptance. If the live rehearsal fails its gates, demonstrate the software as a research prototype and disclose the recorded evaluation scope.

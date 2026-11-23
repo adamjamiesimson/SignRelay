@@ -1,0 +1,11 @@
+# Raw recordings, landmark caches and restricted-data derivatives never enter git.
+data/
+runs/
+cache*/
+*.npz
+*.mp4
+__pycache__/
+web/dist/
+web/node_modules/
+
+node_modules/

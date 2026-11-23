@@ -1,5 +1,7 @@
 # SignRelay showcase audit
 
+> **Version scope:** the body below preserves PR #66's Engine 1 repair evidence. The current V3.1 integration, production UI reference, verification and publication status are recorded in [INTEGRATION_VERIFICATION.md](INTEGRATION_VERIFICATION.md). Recognition results from different engines must not be combined.
+
 The starting revision was `e63fffe64e6cc7136cf5191bd3beb07058c24200` on `main`. The public Firebase URL returned HTTP 200 over HTTPS at kickoff. That check established reachability. Release evidence for the candidate is in [TEST_RESULTS.md](TEST_RESULTS.md).
 
 ## Application and runtime

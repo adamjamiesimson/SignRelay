@@ -1,0 +1,124 @@
+{
+ "summary": {
+  "intervals": 12,
+  "supported": 10,
+  "correct": 3,
+  "wrong": 0,
+  "missed": 0,
+  "abstained_on_supported": 7,
+  "unsupported_intervals": 2,
+  "unsupported_false_accepts": 0,
+  "duplicate_accepts": 0,
+  "spurious_events_in_gaps": 0,
+  "exact_sequence_match": false,
+  "expected_sequence": [
+   "FLOWER",
+   "BUTTON",
+   "FLOWER",
+   "FLOWER",
+   "DOES",
+   "DRESS",
+   "JUMP",
+   "SODAPOP",
+   "WEUS",
+   "DOWN"
+  ],
+  "accepted_sequence": [
+   "BUTTON",
+   "FLOWER",
+   "DOWN"
+  ]
+ },
+ "intervals": [
+  {
+   "label": "FLOWER",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "BUTTON",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "BUTTON"
+   ]
+  },
+  {
+   "label": "FLOWER",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "FLOWER",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "FLOWER"
+   ]
+  },
+  {
+   "label": "DOES",
+   "outcome": "unknown",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "__unknown__",
+   "outcome": "rejected",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "DRESS",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "JUMP",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "__motion__",
+   "outcome": "rejected",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "SODAPOP",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "WEUS",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "DOWN",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "DOWN"
+   ]
+  }
+ ]
+}

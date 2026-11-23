@@ -1,0 +1,139 @@
+{
+ "summary": {
+  "intervals": 12,
+  "supported": 10,
+  "correct": 4,
+  "wrong": 3,
+  "missed": 0,
+  "abstained_on_supported": 3,
+  "unsupported_intervals": 2,
+  "unsupported_false_accepts": 1,
+  "duplicate_accepts": 0,
+  "spurious_events_in_gaps": 0,
+  "exact_sequence_match": false,
+  "expected_sequence": [
+   "DONT",
+   "BEDROOM",
+   "DONT",
+   "DONT",
+   "HOLD",
+   "HEAR",
+   "LADDER",
+   "MAILMAN",
+   "DUMP",
+   "SLIDEVERB"
+  ],
+  "accepted_sequence": [
+   "NOT",
+   "BEDROOM",
+   "NOT",
+   "WISH",
+   "HEAR",
+   "LADDER",
+   "MAILMAN",
+   "POUR"
+  ]
+ },
+ "intervals": [
+  {
+   "label": "DONT",
+   "outcome": "wrong",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "NOT"
+   ]
+  },
+  {
+   "label": "BEDROOM",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "BEDROOM"
+   ]
+  },
+  {
+   "label": "DONT",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "DONT",
+   "outcome": "wrong",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "NOT"
+   ]
+  },
+  {
+   "label": "HOLD",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "__unknown__",
+   "outcome": "false-accept",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "WISH"
+   ]
+  },
+  {
+   "label": "HEAR",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "HEAR"
+   ]
+  },
+  {
+   "label": "LADDER",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "LADDER"
+   ]
+  },
+  {
+   "label": "__motion__",
+   "outcome": "rejected",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  },
+  {
+   "label": "MAILMAN",
+   "outcome": "correct",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "MAILMAN"
+   ]
+  },
+  {
+   "label": "DUMP",
+   "outcome": "wrong",
+   "n_events": 1,
+   "n_accepted": 1,
+   "accepted": [
+    "POUR"
+   ]
+  },
+  {
+   "label": "SLIDEVERB",
+   "outcome": "uncertain",
+   "n_events": 1,
+   "n_accepted": 0,
+   "accepted": []
+  }
+ ]
+}

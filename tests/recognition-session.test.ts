@@ -69,6 +69,19 @@ describe("ongoing recognition sessions", () => {
     oldWorkerMessage({ data: { type: "confirmed", session: oldFrame.session, text: "Old", gloss: "OLD", confidence: 0.9, timestamp: 1 } } as MessageEvent<WorkerMessage>);
     expect(onMessage).not.toHaveBeenCalled();
   });
+  it("forwards a current V3.1 suggestion without acknowledging a frame, and drops it after reset", () => {
+    session.postMessage({ type: "templates", language: "asl", aslEngine: "v3.1", templates: [] });
+    send(50);
+    const frame = workers[0].frames()[0];
+    const data = { type: "suggestion", session: frame.session, source: "model", text: "Thanks", gloss: "THANK-YOU", confidence: 0.9, timestamp: 1 } as const;
+    workers[0].onmessage?.({ data } as MessageEvent<WorkerMessage>);
+    expect(onMessage).toHaveBeenCalledOnce();
+    expect(onMessage).toHaveBeenCalledWith(data);
+    expect(session.stats.answered).toBe(0);
+    session.postMessage({ type: "reset" });
+    workers[0].onmessage?.({ data } as MessageEvent<WorkerMessage>);
+    expect(onMessage).toHaveBeenCalledOnce();
+  });
   it("resets queued frames when the camera pauses, without false watchdog restarts", () => {
     send(1); send(50);
     session.postMessage({ type: "reset" });

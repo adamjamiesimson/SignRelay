@@ -4,13 +4,17 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
+import { createServer as createHttpServer } from "node:http";
 import { resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
 
 const [executable, referenceDir, candidateDir] = process.argv.slice(2);
 assert(executable && referenceDir && candidateDir, "Supply Chromium executable and both export checkout directories");
-const profile = async checkout => JSON.parse(await readFile(resolve(checkout, "out/runtime-manifest.json"), "utf8")).profile;
+const remote = value => /^https?:\/\//.test(value);
+const profile = async checkout => remote(checkout)
+  ? (await (await fetch(`${checkout}/runtime-manifest.json`)).json()).profile
+  : JSON.parse(await readFile(resolve(checkout, "out/runtime-manifest.json"), "utf8")).profile;
 assert.equal(await profile(candidateDir), await profile(referenceDir), "Compare two exports of the same build profile");
 const artifactDir = resolve("outputs/showcase-visual-parity");
 await mkdir(artifactDir, { recursive: true });
@@ -42,18 +46,29 @@ async function availablePort() {
 async function capture(checkout, label) {
   const port = await availablePort();
   const origin = `http://127.0.0.1:${port}`;
-  const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", String(port)], {
-    cwd: resolve(checkout),
-    stdio: ["ignore", "ignore", "inherit"],
+  // Node validates the live site's TLS using the environment's trusted CA.
+  // A read-only loopback relay lets Chromium render those exact public bytes
+  // when its own isolated certificate store does not trust the cloud proxy.
+  const relay = remote(checkout) ? createHttpServer(async (request, response) => {
+    try {
+      const upstream = await fetch(new URL(request.url, checkout), { redirect: "error" });
+      response.writeHead(upstream.status, Object.fromEntries([...upstream.headers].filter(([key]) =>
+        !["content-encoding", "content-length", "transfer-encoding"].includes(key))));
+      response.end(Buffer.from(await upstream.arrayBuffer()));
+    } catch (error) { response.writeHead(502); response.end(String(error)); }
+  }) : null;
+  if (relay) await new Promise(done => relay.listen(port, "127.0.0.1", done));
+  const server = remote(checkout) ? null : spawn(process.execPath, ["scripts/serve-export.mjs", "--host", "127.0.0.1", "--port", String(port)], {
+    cwd: resolve(checkout), stdio: ["ignore", "ignore", "inherit"],
   });
   const images = new Map();
   try {
     await waitFor(async () => {
-      if (server.exitCode !== null) throw new Error(`Export server exited in ${checkout}`);
+      if (server && server.exitCode !== null) throw new Error(`Export server exited in ${checkout}`);
       return fetch(origin).then(response => response.ok).catch(() => false);
     }, `Export server unavailable in ${checkout}`);
     for (const { name, ...viewport } of viewports) {
-      const browser = await startChrome(executable, { proxy: null });
+      const browser = await startChrome(executable, { proxy: null, dismissOnboarding: true });
       try {
         await browser.send("Emulation.setDeviceMetricsOverride", { ...viewport, deviceScaleFactor: 1 });
         await browser.send("Emulation.setTouchEmulationEnabled", { enabled: viewport.mobile });
@@ -68,12 +83,12 @@ async function capture(checkout, label) {
             }));`,
         });
         await browser.send("Page.navigate", { url: origin });
-        await waitFor(() => browser.evaluate("!!document.querySelector('.figma-hero')"), "Landing page absent");
+        await waitFor(() => browser.evaluate("!!document.querySelector('.hero')"), "Landing page absent");
         for (const page of ["landing", "workspace"]) {
           if (page === "workspace") {
             await waitFor(async () => {
               if (await browser.evaluate("!!document.querySelector('.transcript-body')")) return true;
-              await browser.evaluate("document.querySelector('.figma-hero-actions button')?.click()");
+              await browser.evaluate("document.querySelector('.hero-actions button')?.click()");
               return false;
             }, "Start translating did not open the ASL workspace");
             await waitFor(() => browser.evaluate(
@@ -106,7 +121,8 @@ async function capture(checkout, label) {
     }
     return images;
   } finally {
-    server.kill();
+    server?.kill();
+    if (relay) await new Promise(done => relay.close(done));
   }
 }
 

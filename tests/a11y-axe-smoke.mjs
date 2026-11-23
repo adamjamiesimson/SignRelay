@@ -11,7 +11,7 @@ const port = 18600 + Math.floor(Math.random() * 100), origin = `http://127.0.0.1
 const server = spawn(process.execPath, ["scripts/serve-export.mjs", "--port", String(port)], { stdio: "ignore"});
 const pause = ms => new Promise(r => setTimeout(r, ms));
 await pause(1500);
-const browser = await startChrome(process.argv[2]);
+const browser = await startChrome(process.argv[2], { dismissOnboarding: true });
 const results = {};
 try {
   const run = async (label) => {
@@ -30,7 +30,7 @@ try {
   }
   await browser.evaluate("[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent.includes('American'))?.click()");
   await pause(300);
-  await browser.evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Start translating')?.click()");
+  await browser.evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Start signing')?.click()");
   await pause(6000);
   await run("workspace (camera active, no hands)");
   const violations = Object.entries(results).flatMap(([page, list]) => list.map(item => ({ page, ...item })));

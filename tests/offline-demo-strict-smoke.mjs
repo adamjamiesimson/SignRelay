@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { startChrome } from "../scripts/diagnostics/chrome-session.mjs";
+import { ASL_V31_ASSET_PINS, ASL_V31_TRACKER_FILE } from "../lib/asl-v31-assets.mjs";
 
 const executable = process.argv[2];
 // --self-test plants an outbound fetch in the page and in a worker and passes only if both are caught.
@@ -52,9 +53,11 @@ try {
   await until(async () => { try { return (await fetch(origin)).ok; } catch { return false; } }, "No static server");
   const manifest = await (await fetch(`${origin}/runtime-manifest.json`)).json();
   assert.equal(manifest.profile, "asl-demo", "Serve the ASL demo export (npm run demo:prepare)");
+  assert.equal(manifest.asl_engine?.version, "engine-v3.1", "Serve the V3.1 demo export");
+  assert.equal(manifest.asl_engine?.model_sha256, ASL_V31_ASSET_PINS["model.onnx"].sha256);
   // Chrome's own background services (sync, autofill, component updates, time
   // queries) are switched off so the proxy log measures only what SignRelay does.
-  browser = await startChrome(executable, { proxy: `http://127.0.0.1:${deny.address().port}`, extraArgs: QUIET_CHROME });
+  browser = await startChrome(executable, { dismissOnboarding: true,  proxy: `http://127.0.0.1:${deny.address().port}`, extraArgs: QUIET_CHROME });
   const pageRequests = [], workers = [], instrumentationErrors = [];
   browser.onEvent(message => {
     if (message.method === "Network.requestWillBeSent") pageRequests.push(message.params.request.url);
@@ -89,7 +92,7 @@ try {
   await until(hydrated, "Welcome screen did not hydrate");
   assert.equal(await evaluate("window.isSecureContext"), true, "Loopback must be a secure context for camera access");
   const visited = ["/"];
-  await click("Start translating");
+  await click("Start signing");
   await until(active, "ASL vision did not start offline");
   // Long enough for one full 5 s throughput window after the first readout tick.
   await pause(6500);
@@ -102,10 +105,10 @@ try {
     const requestsBefore = pageRequests.length;
     await browser.send("Page.reload", { ignoreCache: true });
     await until(hydrated, "Welcome screen did not hydrate after reload");
-    await click("Start translating");
+    await click("Start signing");
     await until(active, "ASL vision did not restart offline after uncached reload");
     const restarted = pageRequests.slice(requestsBefore);
-    assert.ok(restarted.some(url => url.includes("/vision/models/gesture_recognizer.task")), "Reload did not request a fresh local vision model");
+    assert.ok(restarted.some(url => url.includes("/vision/models/hand_landmarker.task")), "Reload did not request a fresh local hand model");
     assert.ok(restarted.some(url => url.includes("/workers/recognition.worker.js")), "Reload did not request a fresh recognition worker");
     await click("Pause camera");
     await until(tracksEnded, "Reloaded camera tracks were not released");
@@ -133,10 +136,11 @@ try {
   const unexplained = outbound.filter(line => !browserInternal(line));
   assert.deepEqual(unexplained, [], `Outbound connections were attempted: ${unexplained.join(", ")}`);
   assert.ok(workers.some(url => url.includes("recognition.worker.js")), "The recognition worker was not observed, so its requests were not checked");
+  assert.ok(workers.some(url => url.includes(ASL_V31_TRACKER_FILE)), "The V3.1 tracker was not observed, so its requests were not checked");
   assert.match(perf ?? "", /assets self-hosted/, "The ?perf readout must confirm self-hosted assets");
   assert.match(perf ?? "", /recognition running, 0 recoveries · hand tracked in 0% of frames/, "Recognition restarted, or the readout lost its worker and tracking fields");
   assert.equal(status, "waiting for hands");
-  console.log(JSON.stringify({ passed: true, profile: manifest.profile, recognition_worker_sha256: manifest.recognition_worker_sha256,
+  console.log(JSON.stringify({ passed: true, profile: manifest.profile, asl_engine: manifest.asl_engine, recognition_worker_sha256: manifest.recognition_worker_sha256,
     pages: visited, page_and_worker_requests: pageRequests.length, workers_observed: [...new Set(workers.map(url => new URL(url).pathname))],
     non_loopback_requests: 0, uncached_restart: "passed", refused_browser_internal: [...new Set(outbound)], perf_readout: perf,
     // Headless frame rates say nothing about the demo laptop; recorded, not asserted.

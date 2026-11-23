@@ -578,11 +578,11 @@ function median(values) {
 }
 function framingTransform(nodes) {
   const target = TRAINING_FRAME;
-  const model = (node) => node && { x: 2 * (node.x - 0.5), y: 2 * (node.y - 0.5) };
-  const necks = nodes.map((frame) => model(frame[1])).filter(Boolean);
+  const model2 = (node) => node && { x: 2 * (node.x - 0.5), y: 2 * (node.y - 0.5) };
+  const necks = nodes.map((frame) => model2(frame[1])).filter(Boolean);
   const widths = nodes.map((frame) => frame[2] && frame[5] ? Math.abs(2 * (frame[2].x - frame[5].x)) : NaN);
   const heights = nodes.map((frame) => {
-    const neck2 = model(frame[1]), right = model(frame[9]), left = model(frame[10]);
+    const neck2 = model2(frame[1]), right = model2(frame[9]), left = model2(frame[10]);
     return neck2 && right && left ? neck2.y - (right.y + left.y) / 2 : NaN;
   });
   const neck = { x: median(necks.map((n) => n.x)), y: median(necks.map((n) => n.y)) };
@@ -711,13 +711,13 @@ async function recognizeAsl1000(sequence, options = {}) {
   options.signal?.throwIfAborted();
   if (sequence.length < 6) return null;
   options.onPhase?.("loading");
-  const model = await loadModel(options.signal);
+  const model2 = await loadModel(options.signal);
   options.signal?.throwIfAborted();
   options.onPhase?.("inference");
-  const input = prepareAsl2000Input(sequence, model.manifest.sequenceLength);
-  if (!hasHandEvidence(input, model.manifest.sequenceLength)) return null;
-  const logits = await runMaterialisedTgcnCooperatively(model, input, options.signal);
-  const { label, confidence, margin, accepted } = decideAsl2000(logits, model.labels);
+  const input = prepareAsl2000Input(sequence, model2.manifest.sequenceLength);
+  if (!hasHandEvidence(input, model2.manifest.sequenceLength)) return null;
+  const logits = await runMaterialisedTgcnCooperatively(model2, input, options.signal);
+  const { label, confidence, margin, accepted } = decideAsl2000(logits, model2.labels);
   if (!accepted) return null;
   return { label, text: title(label), confidence, margin };
 }
@@ -755,9 +755,9 @@ function materialiseTgcnModel(manifest, binary, labels) {
     labels
   };
 }
-async function runMaterialisedTgcnCooperatively(model, input, signal) {
+async function runMaterialisedTgcnCooperatively(model2, input, signal) {
   signal?.throwIfAborted();
-  const steps = tgcnSteps(model, input);
+  const steps = tgcnSteps(model2, input);
   let sliceStarted = performance.now();
   let step = steps.next();
   while (!step.done) {
@@ -771,13 +771,13 @@ async function runMaterialisedTgcnCooperatively(model, input, signal) {
   signal?.throwIfAborted();
   return step.value;
 }
-function* tgcnSteps(model, input) {
+function* tgcnSteps(model2, input) {
   let activations = input;
   let pendingResidual = null;
-  for (let index = 0; index < model.layers.length; index += 1) {
-    const layer = model.layers[index];
-    if (!layer.residual && model.layers[index + 1]?.residual) pendingResidual = activations;
-    const output = applyGraphLayer(activations, layer, model.manifest.nodes);
+  for (let index = 0; index < model2.layers.length; index += 1) {
+    const layer = model2.layers[index];
+    if (!layer.residual && model2.layers[index + 1]?.residual) pendingResidual = activations;
+    const output = applyGraphLayer(activations, layer, model2.manifest.nodes);
     if (layer.residual && pendingResidual) {
       for (let value = 0; value < output.length; value += 1) output[value] += pendingResidual[value];
       pendingResidual = null;
@@ -785,13 +785,13 @@ function* tgcnSteps(model, input) {
     activations = output;
     yield;
   }
-  const pooled = new Float32Array(model.manifest.hiddenFeatures);
-  for (let node = 0; node < model.manifest.nodes; node += 1) {
-    const offset = node * model.manifest.hiddenFeatures;
+  const pooled = new Float32Array(model2.manifest.hiddenFeatures);
+  for (let node = 0; node < model2.manifest.nodes; node += 1) {
+    const offset = node * model2.manifest.hiddenFeatures;
     for (let feature = 0; feature < pooled.length; feature += 1) pooled[feature] += activations[offset + feature];
   }
-  for (let feature = 0; feature < pooled.length; feature += 1) pooled[feature] /= model.manifest.nodes;
-  const { classifier } = model;
+  for (let feature = 0; feature < pooled.length; feature += 1) pooled[feature] /= model2.manifest.nodes;
+  const { classifier } = model2;
   const logits = new Float32Array(classifier.outputFeatures);
   for (let output = 0; output < classifier.outputFeatures; output += 1) {
     let sum = 0;
@@ -11047,7 +11047,7 @@ function abortable(task, signal, dispose) {
 function createLandmarkModelLoader(directory, classes) {
   let pending2 = null;
   let ready = null;
-  return function loadModel5(signal) {
+  return function loadModel6(signal) {
     signal?.throwIfAborted();
     if (ready) return Promise.resolve(ready);
     if (pending2?.controller.signal.aborted) pending2 = null;
@@ -15215,6 +15215,262 @@ var MODEL_ADAPTERS = {
 };
 var LANGUAGE_LIST = LANGUAGE_IDS.map((id2) => MODEL_ADAPTERS[id2]);
 
+// engine-v3/web/preprocess.mjs
+var N_POINTS = 86;
+var TMAX = 48;
+var PAD = 2;
+var FPS = 15;
+var finite3 = (f, i) => Number.isFinite(f[i * 3]) && Number.isFinite(f[i * 3 + 1]) && Number.isFinite(f[i * 3 + 2]);
+var hasHand = (f) => {
+  for (let i = 0; i < 42; i++) if (Number.isFinite(f[i * 3])) return true;
+  return false;
+};
+function prepareClip(frames2, tmax = TMAX) {
+  let first = -1, last = -1;
+  frames2.forEach((f, i) => {
+    if (hasHand(f)) {
+      if (first < 0) first = i;
+      last = i;
+    }
+  });
+  if (first < 0) return null;
+  const a = Math.max(0, first - PAD), b = Math.min(frames2.length - 1, last + PAD);
+  let seg = frames2.slice(a, b + 1);
+  if (seg.length > tmax) {
+    const n = seg.length;
+    seg = Array.from({ length: tmax }, (_, k) => seg[Math.floor(k * (n - 1) / Math.max(tmax - 1, 1) + 0.5)]);
+  }
+  const x = new Float32Array(tmax * N_POINTS * 3), valid = new Float32Array(tmax * N_POINTS), fmask = new Float32Array(tmax);
+  seg.forEach((f, t) => {
+    fmask[t] = 1;
+    for (let i = 0; i < N_POINTS; i++) {
+      if (!finite3(f, i)) continue;
+      valid[t * N_POINTS + i] = 1;
+      const o = (t * N_POINTS + i) * 3;
+      x[o] = f[i * 3];
+      x[o + 1] = f[i * 3 + 1];
+      x[o + 2] = f[i * 3 + 2];
+    }
+  });
+  return { x, valid, fmask, span: [a, b], frames: seg.length };
+}
+function resampleTo15Hz(samples, t0 = samples[0]?.t, t1 = samples.at(-1)?.t) {
+  if (!samples.length) return [];
+  const out = [], step = 1e3 / FPS;
+  let j = 0;
+  for (let t = t0; t <= t1 + 1e-6; t += step) {
+    while (j + 1 < samples.length && samples[j + 1].t <= t) j++;
+    const A = samples[j], B = samples[Math.min(j + 1, samples.length - 1)];
+    const f = new Float32Array(N_POINTS * 3).fill(NaN);
+    const w = B.t > A.t ? Math.min(1, Math.max(0, (t - A.t) / (B.t - A.t))) : 0;
+    for (let i = 0; i < N_POINTS; i++) {
+      const ha2 = finite3(A.f, i), hb = finite3(B.f, i);
+      for (let c = 0; c < 3; c++) {
+        const k = i * 3 + c;
+        if (ha2 && hb) f[k] = A.f[k] * (1 - w) + B.f[k] * w;
+        else if (ha2 && w <= 0.5) f[k] = A.f[k];
+        else if (hb && w > 0.5) f[k] = B.f[k];
+      }
+    }
+    out.push(f);
+  }
+  return out;
+}
+function signingEvidence(f) {
+  const ls2 = 42 + 7, rs2 = 42 + 8;
+  const haveSh = Number.isFinite(f[ls2 * 3 + 1]) && Number.isFinite(f[rs2 * 3 + 1]);
+  let limit = Infinity;
+  if (haveSh) {
+    const sw = Math.hypot(f[ls2 * 3] - f[rs2 * 3], f[ls2 * 3 + 1] - f[rs2 * 3 + 1]);
+    limit = (f[ls2 * 3 + 1] + f[rs2 * 3 + 1]) / 2 + 1.3 * sw;
+  }
+  for (const w of [0, 21]) if (Number.isFinite(f[w * 3 + 1]) && f[w * 3 + 1] < limit) return true;
+  return false;
+}
+
+// lib/asl-v31-segmenter.ts
+var HAND_GAP_MS = 500;
+var MAX_SEGMENT_MS = 4e3;
+var MARGIN_MS = 600;
+var MIN_OBSERVED_HAND_FRAMES = 3;
+var MAX_SAMPLES = 192;
+var AslV31Segmenter = class {
+  constructor() {
+    this.samples = [];
+    this.active = null;
+    this.waitingForRestSince = null;
+  }
+  reset() {
+    this.samples = [];
+    this.active = null;
+    this.waitingForRestSince = null;
+  }
+  suppressCurrentSegment() {
+    const last = this.samples.at(-1);
+    const stillVisible = last && hasHand(last.f);
+    this.reset();
+    if (stillVisible) this.waitingForRestSince = last.t;
+  }
+  observe(timestamp, features) {
+    if (!Number.isFinite(timestamp) || features?.length !== N_POINTS * 3) {
+      this.reset();
+      return { reason: "hands" };
+    }
+    const previous = this.samples.at(-1);
+    if (previous && timestamp <= previous.t) this.reset();
+    const anyHand = hasHand(features);
+    if (this.waitingForRestSince !== null) {
+      if (anyHand) this.waitingForRestSince = timestamp;
+      if (timestamp - this.waitingForRestSince <= HAND_GAP_MS) return { reason: anyHand ? "idle" : "hands" };
+      this.waitingForRestSince = null;
+    }
+    this.samples.push({ t: timestamp, f: features });
+    while (this.samples.length > MAX_SAMPLES || this.samples[0].t < timestamp - MAX_SEGMENT_MS - MARGIN_MS * 2) {
+      this.samples.shift();
+    }
+    if (!this.active && signingEvidence(features)) this.active = { start: timestamp, lastHand: timestamp };
+    if (!this.active) return { reason: anyHand ? "idle" : "hands" };
+    if (anyHand) this.active.lastHand = timestamp;
+    const { start, lastHand } = this.active;
+    const ended = !anyHand && timestamp - lastHand > HAND_GAP_MS;
+    const reachedLimit = timestamp - start > MAX_SEGMENT_MS;
+    if (!ended && !reachedLimit) return { reason: "moving" };
+    this.active = null;
+    if (!ended) this.waitingForRestSince = lastHand;
+    const end = Math.min(timestamp, lastHand + MARGIN_MS);
+    const segment = this.samples.filter((sample) => sample.t >= start - MARGIN_MS && sample.t <= end);
+    this.samples = this.samples.filter((sample) => sample.t > lastHand);
+    if (segment.filter((sample) => hasHand(sample.f)).length < MIN_OBSERVED_HAND_FRAMES) return { reason: "hands" };
+    return { reason: "ready", clip: resampleTo15Hz(segment) };
+  }
+};
+
+// engine-v3/web/decision.mjs
+function softmax5(z, T = 1) {
+  const m = Math.max(...z);
+  const e = z.map((v) => Math.exp((v - m) / T));
+  const s = e.reduce((a, b) => a + b, 0);
+  return e.map((v) => v / s);
+}
+function decide(logits, emb, meta) {
+  const P2 = meta.policy, C = meta.classes.length;
+  const prob = softmax5(Array.from(logits), P2.temperature);
+  const known = prob.slice(0, C);
+  const order = known.map((p, i) => [p, i]).sort((a, b) => b[0] - a[0]);
+  const [p1, i1] = order[0], p2 = order[1][0];
+  const pUnknown = prob[C];
+  let proto = null;
+  if (meta.prototypes && emb) {
+    const D = emb.length, row = meta.prototypes.subarray(i1 * D, (i1 + 1) * D);
+    let dot = 0;
+    for (let k = 0; k < D; k++) dot += row[k] * emb[k];
+    proto = dot;
+  }
+  const scores = { p_top1: p1, margin: p1 - p2, p_unknown: pUnknown, proto_cos: proto };
+  const top5 = order.slice(0, 5).map(([p, i]) => ({ label: meta.classes[i], p }));
+  let status = "accepted";
+  if (pUnknown >= P2.max_unknown) status = "unknown";
+  else if (p1 < P2.min_top1 || P2.min_margin != null && p1 - p2 < P2.min_margin) status = "uncertain";
+  else if (P2.min_proto != null && proto != null && proto < P2.min_proto) status = "unknown";
+  return { status, label: status === "accepted" ? meta.classes[i1] : null, best: meta.classes[i1], index: i1, top5, scores };
+}
+
+// lib/asl-v31-assets.mjs
+var ASL_V31_ASSET_PATH = "/models/asl-v31";
+var ASL_V31_POLICY = "strict";
+var ASL_V31_ASSET_PINS = {
+  "model.onnx": { bytes: 13740990, sha256: "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090" },
+  "meta.json": { bytes: 1077990, sha256: "50d59fdada18cc5c43ac61585f3af9c81d828402e2c2ba27c5ebeae86489ad22" },
+  "policy-strict.json": { bytes: 535, sha256: "751fd950bde3ab3166653bb1dd4884a155fd831bb92bc4a7a16a6691c5fb48e0" },
+  "policy-balanced.json": { bytes: 536, sha256: "feca858e67e0fa5bd89ee3be7ce80bd599a7c9ab0ac8d7f952c52648519e460a" }
+};
+
+// lib/asl-v31-runtime.ts
+var CLASSES = 523;
+var EMBEDDING_SIZE = 384;
+var POLICY_FILE = `policy-${ASL_V31_POLICY}.json`;
+var modelPromise2;
+async function fetchPinned(file, signal) {
+  const pin = ASL_V31_ASSET_PINS[file];
+  const bytes = await downloadModelBytes(`${ASL_V31_ASSET_PATH}/${file}`, { maxBytes: pin.bytes, signal });
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const sha = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  if (bytes.byteLength !== pin.bytes || sha !== pin.sha256) throw new Error(`ASL V3.1 ${file} failed integrity verification`);
+  return bytes;
+}
+async function loadModel5() {
+  const downloads = new AbortController();
+  const [modelBytes, metaBytes, policyBytes] = await Promise.all([
+    fetchPinned("model.onnx", downloads.signal),
+    fetchPinned("meta.json", downloads.signal),
+    fetchPinned(POLICY_FILE, downloads.signal)
+  ]).catch((error) => {
+    downloads.abort(error);
+    throw error;
+  });
+  const decoder = new TextDecoder();
+  const meta = JSON.parse(decoder.decode(metaBytes));
+  const policy = JSON.parse(decoder.decode(policyBytes));
+  const prototypes = new Float32Array(Uint8Array.from(atob(meta.prototypes_b64), (byte) => byte.charCodeAt(0)).buffer);
+  if (meta.version !== "v3.1" || meta.model_sha256 !== ASL_V31_ASSET_PINS["model.onnx"].sha256 || meta.classes.length !== CLASSES || new Set(meta.classes).size !== CLASSES || meta.unknown_index !== CLASSES || meta.input.tmax !== TMAX || meta.input.points !== N_POINTS || prototypes.length !== CLASSES * EMBEDDING_SIZE) {
+    throw new Error("ASL V3.1 metadata does not match the model contract");
+  }
+  const compile = new AbortController();
+  const timeout = setTimeout(() => compile.abort(new Error("ASL V3.1 initialization timed out")), 9e4);
+  try {
+    const session = await abortable(
+      Kp.create(modelBytes, { executionProviders: ["wasm"], graphOptimizationLevel: "all" }),
+      compile.signal,
+      (value) => {
+        void value.release().catch(() => {
+        });
+      }
+    );
+    return { session, meta: { classes: meta.classes, policy, prototypes } };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+function model() {
+  modelPromise2 ?? (modelPromise2 = loadModel5().catch((error) => {
+    modelPromise2 = void 0;
+    throw error;
+  }));
+  return modelPromise2;
+}
+async function warmAslV31Model() {
+  await model();
+}
+async function recognizeAslV31(frames2, options) {
+  const prepared = prepareClip(frames2);
+  if (!prepared) return null;
+  options.signal?.throwIfAborted();
+  const { session, meta } = await model();
+  if (frames2.filter(hasHand).length < meta.policy.min_hand_frames) return null;
+  return withLandmarkInference(session, options, async () => {
+    const inputs = {
+      x: new qe("float32", prepared.x, [1, TMAX, N_POINTS, 3]),
+      valid: new qe("float32", prepared.valid, [1, TMAX, N_POINTS]),
+      fmask: new qe("float32", prepared.fmask, [1, TMAX])
+    };
+    let results;
+    try {
+      results = await session.run(inputs);
+      const logits = results.logits?.data, embedding = results.embedding?.data;
+      if (!(logits instanceof Float32Array) || logits.length !== CLASSES + 1 || !logits.every(Number.isFinite) || !(embedding instanceof Float32Array) || embedding.length !== EMBEDDING_SIZE || !embedding.every(Number.isFinite)) {
+        throw new Error("ASL V3.1 returned invalid inference outputs");
+      }
+      const decision = decide(logits, embedding, meta);
+      if (decision.status !== "accepted" || !decision.label) return null;
+      const text = decision.label.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+      return { label: decision.label, text, confidence: decision.scores.p_top1 };
+    } finally {
+      Object.values(inputs).forEach((tensor) => tensor.dispose());
+      Object.values(results ?? {}).forEach((tensor) => tensor.dispose());
+    }
+  });
+}
+
 // workers/recognition.worker.ts
 var CONFIDENCE_THRESHOLD = 0.62;
 var COOLDOWN_MS = 2600;
@@ -15226,6 +15482,10 @@ var candidateSource;
 var lastConfirmation = { label: "", time: 0 };
 var personalTemplates = [];
 var activeLanguage = "asl";
+var useAslV31 = false;
+var v3Segmenter = new AslV31Segmenter();
+var v3ModelReady = false;
+var queuedV3;
 var classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
 var pending = /* @__PURE__ */ new Map();
 var MODEL_LOAD_TIMEOUT_MS = 4e5;
@@ -15287,6 +15547,8 @@ function invalidatePrediction() {
   modelGeneration += 1;
 }
 function resetEvidence() {
+  v3Segmenter.reset();
+  queuedV3 = void 0;
   invalidatePersonal();
   frames.length = 0;
   receivedFrames = 0;
@@ -15312,9 +15574,44 @@ function resetSession() {
   retryAfter = 0;
   personalProblem = false;
 }
+function submitV3(now) {
+  if (pending.has("asl") || now < retryAfter) return;
+  if (queuedV3 && (now - queuedV3.closedAt > MAX_PREDICTION_AGE_MS || performance.now() - queuedV3.receivedAt > MAX_PREDICTION_AGE_MS)) queuedV3 = void 0;
+  const segment = v3ModelReady ? queuedV3 : void 0;
+  if (v3ModelReady && !segment) return;
+  if (segment) queuedV3 = void 0;
+  const request = { started: now, phase: segment ? "inference" : "loading", controller: new AbortController() };
+  pending.set("asl", request);
+  const generation = modelGeneration;
+  const task = segment ? recognizeAslV31(segment.clip, { signal: request.controller.signal }) : warmAslV31Model().then(() => {
+    v3ModelReady = true;
+  });
+  task.then((prediction2) => {
+    if (generation !== modelGeneration || request.controller.signal.aborted) return;
+    modelProblem = false;
+    if (!prediction2 || !segment) return;
+    if ((frames.at(-1)?.timestamp ?? now) - segment.closedAt > MAX_PREDICTION_AGE_MS || performance.now() - segment.receivedAt > MAX_PREDICTION_AGE_MS) return;
+    self.postMessage({
+      type: "suggestion",
+      session: segment.session,
+      gloss: prediction2.label,
+      text: prediction2.text,
+      confidence: prediction2.confidence,
+      timestamp: Date.now(),
+      source: "model"
+    });
+  }).catch(() => {
+    if (generation !== modelGeneration || request.controller.signal.aborted) return;
+    modelProblem = true;
+    retryAfter = (frames.at(-1)?.timestamp ?? now) + 5e3;
+  }).finally(() => {
+    if (pending.get("asl") === request) pending.delete("asl");
+  });
+}
 self.onmessage = async (event) => {
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
+    useAslV31 = activeLanguage === "asl" && event.data.aslEngine === "v3.1";
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
     resetSession();
     personalMatcher.configure(personalTemplates);
@@ -15354,22 +15651,26 @@ self.onmessage = async (event) => {
   receivedFrames += 1;
   frames.push(event.data.frame);
   while (frames.length > (activeLanguage === "asl" ? 120 : 80)) frames.shift();
-  const hasHand = event.data.frame.hands.some(validHand);
-  if (hasHand && handWasAbsent) handReturnedAfterConfirmation = true;
-  handWasAbsent = !hasHand;
-  if (!hasHand && hadPersonalTracking) invalidatePersonal();
-  hadPersonalTracking = hasHand;
+  const hasHand2 = event.data.frame.hands.some(validHand);
+  if (hasHand2 && handWasAbsent) handReturnedAfterConfirmation = true;
+  handWasAbsent = !hasHand2;
+  if (!hasHand2 && hadPersonalTracking) invalidatePersonal();
+  hadPersonalTracking = hasHand2;
   if (latestPersonal && (now - personalTimestamp > MAX_PREDICTION_AGE_MS || performance.now() - personalReceivedAt > MAX_PREDICTION_AGE_MS)) latestPersonal = null;
-  if (hasHand) personalMatcher.submit(frames);
+  if (hasHand2) personalMatcher.submit(frames);
   const personal = latestPersonal;
-  const starterAnalysis = activeLanguage === "asl" ? analyzeAslStarter(frames) : null;
+  const starterAnalysis = activeLanguage === "asl" && !useAslV31 ? analyzeAslStarter(frames) : null;
   const starter = starterAnalysis?.prediction ?? null;
   if (activeLanguage === "asl" && latestPrediction?.label.trim().toUpperCase() === "YES" && starter?.label !== "YES") invalidatePrediction();
-  const observed = activeLanguage === "asl" ? analyzeSignMotion(frames) : null;
+  const v3Motion = useAslV31 ? v3Segmenter.observe(now, event.data.frame.aslV3Features) : null;
+  const observed = activeLanguage === "asl" && !useAslV31 ? analyzeSignMotion(frames) : null;
   const startsInConfirmedTail = observed?.completion === "departure" && !handReturnedAfterConfirmation && observed.sequence[0].timestamp - lastConfirmation.time < NEW_MOVEMENT_AFTER_WORD_MS;
-  const motion = startsInConfirmedTail ? { ready: false, sequence: [], reason: "hands" } : observed ?? { ...analyzeGenericSignMotion(frames), sequence: frames };
+  const motion = startsInConfirmedTail ? { ready: false, sequence: [], reason: "hands" } : v3Motion ? { ready: Boolean(v3Motion.clip), sequence: [], reason: v3Motion.reason } : observed ?? { ...analyzeGenericSignMotion(frames), sequence: frames };
   const departureEnd = observed?.completion === "departure" && !startsInConfirmedTail ? observed.sequence.at(-1)?.timestamp : void 0;
-  if (!motion.ready || starterAnalysis?.ambiguousOpenPalm) invalidatePrediction();
+  if (v3Motion) {
+    if (v3Motion.clip) queuedV3 = { clip: v3Motion.clip, closedAt: now, receivedAt: performance.now(), session: event.data.session };
+    submitV3(now);
+  } else if (!motion.ready || starterAnalysis?.ambiguousOpenPalm) invalidatePrediction();
   else {
     if (latestPrediction && (now - predictionTimestamp > MAX_PREDICTION_AGE_MS || performance.now() - predictionReceivedAt > MAX_PREDICTION_AGE_MS)) invalidatePrediction();
     const language = activeLanguage;
@@ -15413,7 +15714,7 @@ self.onmessage = async (event) => {
   const rawResult = direct?.label === blockedStarter ? null : direct ?? latestPrediction;
   const result = rawResult && Number.isFinite(rawResult.confidence) ? rawResult : null;
   const source = result ? result === personal ? "personal" : result === starter ? "starter" : "model" : void 0;
-  const feedback = starterAnalysis?.ambiguousOpenPalm && !personal ? "This movement resembles more than one sign. Pause and try again." : personalProblem ? "Saved signs could not be checked. Retrying shortly\u2026" : modelProblem ? activeLanguage === "asl" ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly\u2026" : "The research model could not run. Saved personal signs are still available. Retrying shortly\u2026" : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically." : motion.reason === "moving" ? "Following your movement\u2026" : result ? "Checking your sign\u2026" : "Ready. Sign naturally, then pause briefly between words.";
+  const feedback = starterAnalysis?.ambiguousOpenPalm && !personal ? "This movement resembles more than one sign. Pause and try again." : personalProblem ? "Saved signs could not be checked. Retrying shortly\u2026" : modelProblem ? activeLanguage === "asl" && !useAslV31 ? "The research model could not run. Common ASL signs and saved personal signs are still available. Retrying shortly\u2026" : "The research model could not run. Saved personal signs are still available. Retrying shortly\u2026" : motion.reason === "hands" ? "Keep your signing hand in view. Tracking will resume automatically." : motion.reason === "moving" ? "Following your movement\u2026" : result ? "Checking your sign\u2026" : "Ready. Sign naturally, then pause briefly between words.";
   self.postMessage({
     type: "analysis",
     session: event.data.session,
@@ -15471,6 +15772,10 @@ self.onmessage = async (event) => {
     });
     lastConfirmation = { label: result.label, time: now };
     handReturnedAfterConfirmation = false;
+    if (useAslV31) {
+      v3Segmenter.suppressCurrentSegment();
+      queuedV3 = void 0;
+    }
     if (activeLanguage === "asl" && !candidateIsModel) {
       blockedStarter = result.label;
       starterSeenAt = now;

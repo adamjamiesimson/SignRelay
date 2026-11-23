@@ -71,7 +71,7 @@ jobs:
       - name: Demo - self-hosted vision with CDNs blocked
         run: node tests/offline-vision-smoke.mjs "$CHROME"
 
-      - name: Demo - packed ASL model inference with CDNs blocked
+      - name: Demo - Engine V3.1 ONNX inference with CDNs blocked
         run: node tests/asl-packed-model-browser-smoke.mjs "$CHROME"
 
       - name: Demo - camera and worker lifecycle stress

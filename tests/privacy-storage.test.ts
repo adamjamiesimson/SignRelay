@@ -32,13 +32,13 @@ describe("untrusted and unavailable browser storage", () => {
     expect(saveSession({ id: "1", language: "asl", createdAt: 1, entries: [{ id: "1", text: "Hello", gloss: "HELLO", timestamp: 1, confidence: 0.9 }] })).toBe(false);
     expect(setItem).not.toHaveBeenCalled();
   });
-  it("attempts both removals and reports partial failures", () => {
+  it("attempts every local-data removal and reports partial failures", () => {
     const removeItem = vi.fn((key: string) => {
       if (key === "signrelay.settings.v1") throw new Error("denied");
     });
     vi.stubGlobal("localStorage", { removeItem });
     expect(clearLocalSignRelayData()).toBe(false);
-    expect(removeItem.mock.calls).toEqual([["signrelay.settings.v1"], ["signrelay.history.v1"]]);
+    expect(removeItem.mock.calls).toEqual([["signrelay.settings.v1"], ["signrelay.history.v1"], ["signrelay.onboarding.v1"]]);
     removeItem.mockImplementation(() => {});
     expect(clearLocalSignRelayData()).toBe(true);
   });

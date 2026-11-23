@@ -4,8 +4,8 @@ import { recognitionStatus, type CameraPhase } from "../lib/recognition-status";
 const live = { camera: "active" as const, unavailable: false, handsVisible: true, motionReason: "idle", candidate: null, bufferSize: 40 };
 
 describe("live workspace status", () => {
-  it.each<[CameraPhase, string]>([["idle", "camera off"], ["requesting", "waiting for permission"], ["loading", "starting"],
-    ["denied", "camera blocked"], ["error", "camera unavailable"]])("never claims recognition while the camera is %s", (camera, chip) => {
+  it.each<[CameraPhase, string]>([["idle", "Camera off"], ["requesting", "Waiting for permission"], ["loading", "Starting"],
+    ["denied", "Camera blocked"], ["error", "Camera unavailable"]])("never claims recognition while the camera is %s", (camera, chip) => {
     const status = recognitionStatus({ ...live, camera, candidate: "HELLO" });
     expect(status.chip).toBe(chip);
     expect(status.tone).toBe("paused");

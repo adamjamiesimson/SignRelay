@@ -1,5 +1,7 @@
 # Showcase changes
 
+> **Version scope:** the body below preserves PR #66's Engine 1 repair evidence. The current V3.1 integration, production UI reference, verification and publication status are recorded in [INTEGRATION_VERIFICATION.md](INTEGRATION_VERIFICATION.md). Recognition results from different engines must not be combined.
+
 | Area | Defect and repair |
 | --- | --- |
 | ASL model input | MediaPipe reports zero for unset hand visibility. The ASL adapter now uses complete finite hand coordinates, associates hands with pose wrist cues when available, and supplies the model with the expected 25 fps framing and tail padding. Model checkpoints and label maps are preserved. |

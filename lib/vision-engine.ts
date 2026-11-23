@@ -106,7 +106,7 @@ export class VisionEngine {
       this.lastPose = [];
       const faceResult = this.parts.face.detectForVideo(video, timestamp);
       const poseResult = this.parts.pose.detectForVideo(video, timestamp);
-      this.lastFace = pickPoints(faceResult.faceLandmarks[0] ?? [], FACE_CUE_INDICES);
+      this.lastFace = faceCuePoints(faceResult.faceLandmarks[0] ?? []);
       this.lastPose = pickPoints(poseResult.landmarks[0] ?? [], POSE_CUE_INDICES);
       this.lastAuxTimestamp = timestamp;
       this.handFramesSinceAux = 0;
@@ -132,6 +132,10 @@ export class VisionEngine {
     this.parts.face.close();
     this.parts.pose.close();
   }
+}
+
+export function faceCuePoints(landmarks: Point[]) {
+  return pickPoints(landmarks, FACE_CUE_INDICES);
 }
 
 export function taskHandedness(label: string | undefined): "Left" | "Right" | "Unknown" {

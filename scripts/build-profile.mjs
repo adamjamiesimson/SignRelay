@@ -20,7 +20,7 @@ function buildSteps(profile) {
     ["node", "scripts/exclude-private-routes.mjs"],
     ...(full ? [] : [["node", "scripts/prune-profile.mjs", profile]]),
     ["node", "scripts/secure-export.mjs"],
-    ["node", "scripts/verify-runtime.mjs", "--out", "out", "--profile", profile],
+    ["node", "scripts/verify-runtime.mjs", "--out", "out", "--profile", profile, "--record-revision"],
   ];
 }
 

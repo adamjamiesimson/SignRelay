@@ -92,8 +92,32 @@ function validSession(value: unknown): value is TranscriptSession {
 
 export function clearLocalSignRelayData() {
   let cleared = true;
-  for (const key of [SETTINGS_KEY, HISTORY_KEY]) {
+  for (const key of [SETTINGS_KEY, HISTORY_KEY, ONBOARDING_KEY]) {
     try { localStorage.removeItem(key); } catch { cleared = false; }
   }
   return cleared;
+}
+
+/** First-run tour progress. The version is in the key, so a substantially new
+ * tour can be shown once more by moving to a new key. */
+export const ONBOARDING_KEY = "signrelay.onboarding.v1";
+export type OnboardingStatus = "completed" | "dismissed";
+
+/** "due" only when storage can be read and holds no valid record. If storage
+ * is blocked the choice could not be remembered, so the tour is not forced on
+ * every visit; it stays available from "Take a tour". */
+export function onboardingState(): OnboardingStatus | "due" | "unavailable" {
+  if (typeof window === "undefined") return "unavailable";
+  let stored: string | null;
+  try { stored = localStorage.getItem(ONBOARDING_KEY); } catch { return "unavailable"; }
+  try {
+    const value = JSON.parse(stored ?? "null");
+    return value && (value.status === "completed" || value.status === "dismissed") && Number.isFinite(value.at) ? value.status : "due";
+  } catch {
+    return "due";
+  }
+}
+
+export function saveOnboarding(status: OnboardingStatus) {
+  try { localStorage.setItem(ONBOARDING_KEY, JSON.stringify({ status, at: Date.now() })); return true; } catch { return false; }
 }
