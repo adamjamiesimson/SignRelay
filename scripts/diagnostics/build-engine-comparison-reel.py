@@ -66,7 +66,7 @@ def make_reel(plan: Path, reel: Path, truth: Path, cohort: str | None, fetch_val
     rows = json.loads(plan.read_text())
     if isinstance(rows, dict):
         if cohort is None:
-            raise ValueError("Choose --cohort shared or --cohort broad")
+            raise ValueError("Choose a --cohort key from the plan")
         rows = rows[cohort]
     if not rows:
         raise ValueError("No clips in the plan")
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for path in ("plan", "reel", "truth"):
         parser.add_argument(path, type=Path)
-    parser.add_argument("--cohort", choices=("shared", "broad"))
+    parser.add_argument("--cohort", help="shared|broad for the showcase plan; A|B for the sprint development cohort")
     parser.add_argument("--fetch-validation", action="store_true", help="Download only the exact pinned publisher validation clips")
     args = parser.parse_args()
     make_reel(args.plan, args.reel, args.truth, args.cohort, args.fetch_validation)
