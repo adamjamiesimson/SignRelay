@@ -560,15 +560,15 @@ function assignHands(frame) {
   };
   const poseLeft = wrist(15), poseRight = wrist(16);
   if (!hands.length || !poseLeft || !poseRight) return [byLabel("Left"), byLabel("Right")];
-  const distance3 = (hand5, target) => Math.hypot(hand5.landmarks[0].x - target.x, hand5.landmarks[0].y - target.y);
+  const distance4 = (hand5, target) => Math.hypot(hand5.landmarks[0].x - target.x, hand5.landmarks[0].y - target.y);
   if (hands.length >= 2) {
     const [a, b] = hands;
-    const straight = distance3(a, poseLeft) + distance3(b, poseRight);
-    const crossed = distance3(a, poseRight) + distance3(b, poseLeft);
+    const straight = distance4(a, poseLeft) + distance4(b, poseRight);
+    const crossed = distance4(a, poseRight) + distance4(b, poseLeft);
     return straight <= crossed ? [a, b] : [b, a];
   }
   const [hand4] = hands;
-  const toLeft = distance3(hand4, poseLeft), toRight = distance3(hand4, poseRight);
+  const toLeft = distance4(hand4, poseLeft), toRight = distance4(hand4, poseRight);
   if (Math.abs(toLeft - toRight) < 0.03) return hand4.handedness === "Right" ? [void 0, hand4] : hand4.handedness === "Left" ? [hand4, void 0] : [void 0, void 0];
   return toLeft < toRight ? [hand4, void 0] : [void 0, hand4];
 }
@@ -11221,37 +11221,319 @@ function readable(label) {
   return words.replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
+// lib/bsl-pose2sign-input.ts
+var BSL_FPS = 25;
+var BSL_FRAMES = 16;
+var BSL_STRIDE = 8;
+var BSL_LANDMARKS = 60;
+var STEP_MS = 1e3 / BSL_FPS;
+var MAX_HOLD_MS = 160;
+var MIN_BODY_VISIBILITY = 0.5;
+var WRIST_MATCH_RATIO = 0.75;
+var DEFAULTS = { hands: "pose-wrist", zeroInvisibleBody: true };
+var COCO18_FROM_MEDIAPIPE = [0, -1, 12, 14, 16, 11, 13, 15, 24, 26, 28, 23, 25, 27, 5, 2, 8, 7];
+function usable2(point3) {
+  return Boolean(point3 && Number.isFinite(point3.x) && Number.isFinite(point3.y));
+}
+function distance3(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+function visibleWrist(pose, index) {
+  const point3 = pose[index];
+  return usable2(point3) && (point3.visibility ?? 1) >= MIN_BODY_VISIBILITY ? point3 : void 0;
+}
+function assignHandSlots(frame, mode = "pose-wrist") {
+  const hands = frame.hands.filter((hand4) => hand4.landmarks.length >= 21 && usable2(hand4.landmarks[0]));
+  const byLabel = (side) => hands.find((hand4) => hand4.handedness === side)?.landmarks;
+  const labelled = { left: byLabel("Left"), right: byLabel("Right"), method: "tasks-label", disagreed: false };
+  if (mode === "tasks-label" || !hands.length) return labelled;
+  const leftWrist = visibleWrist(frame.pose, 15), rightWrist = visibleWrist(frame.pose, 16);
+  const shoulders = usable2(frame.pose[11]) && usable2(frame.pose[12]) ? distance3(frame.pose[11], frame.pose[12]) : 0;
+  if (!leftWrist || !rightWrist || shoulders <= 0) return labelled;
+  let slots;
+  if (hands.length >= 2) {
+    const [a, b] = hands;
+    const straight = distance3(a.landmarks[0], leftWrist) + distance3(b.landmarks[0], rightWrist);
+    const crossed = distance3(a.landmarks[0], rightWrist) + distance3(b.landmarks[0], leftWrist);
+    slots = straight <= crossed ? { left: a.landmarks, right: b.landmarks, method: "pose-wrist", disagreed: false } : { left: b.landmarks, right: a.landmarks, method: "pose-wrist", disagreed: false };
+  } else {
+    const hand4 = hands[0];
+    const toLeft = distance3(hand4.landmarks[0], leftWrist), toRight = distance3(hand4.landmarks[0], rightWrist);
+    const nearest = Math.min(toLeft, toRight), other = Math.max(toLeft, toRight);
+    if (nearest > WRIST_MATCH_RATIO * shoulders || nearest > 0.6 * other) return labelled;
+    slots = toLeft < toRight ? { left: hand4.landmarks, method: "pose-wrist", disagreed: false } : { right: hand4.landmarks, method: "pose-wrist", disagreed: false };
+  }
+  slots.disagreed = slots.left !== void 0 && slots.left !== labelled.left || slots.right !== void 0 && slots.right !== labelled.right;
+  return slots;
+}
+function frameKeypoints(frame, options = {}) {
+  const settings = { ...DEFAULTS, ...options };
+  const values = new Float32Array(BSL_LANDMARKS * 3);
+  const put = (index, point3, score = 1) => {
+    if (!usable2(point3) || !(score > 0)) return;
+    values[index * 3] = point3.x;
+    values[index * 3 + 1] = point3.y;
+    values[index * 3 + 2] = score;
+  };
+  const bodyPoint = (mediapipe) => {
+    const point3 = frame.pose[mediapipe];
+    if (!usable2(point3)) return void 0;
+    const visibility = point3.visibility ?? 1;
+    if (settings.zeroInvisibleBody && (visibility < MIN_BODY_VISIBILITY || point3.x < 0 || point3.x > 1 || point3.y < 0 || point3.y > 1)) return void 0;
+    return point3;
+  };
+  COCO18_FROM_MEDIAPIPE.forEach((mediapipe, index) => {
+    if (mediapipe >= 0) {
+      const point3 = bodyPoint(mediapipe);
+      put(index, point3, point3?.visibility ?? 1);
+      return;
+    }
+    const left = bodyPoint(11), right = bodyPoint(12);
+    if (left && right) put(
+      index,
+      { x: (left.x + right.x) / 2, y: (left.y + right.y) / 2, z: 0 },
+      Math.min(left.visibility ?? 1, right.visibility ?? 1)
+    );
+  });
+  const slots = assignHandSlots(frame, settings.hands);
+  slots.left?.slice(0, 21).forEach((point3, index) => put(18 + index, point3));
+  slots.right?.slice(0, 21).forEach((point3, index) => put(39 + index, point3));
+  return { values, slots };
+}
+function sameValues(a, b, from, to2) {
+  for (let index = from; index < to2; index++) if (a[index] !== b[index]) return false;
+  return true;
+}
+function sampleTrack(track, time, out, from, to2) {
+  let next = track.findIndex((entry) => entry.time >= time);
+  if (next < 0) next = track.length;
+  const before = track[next - 1], after = track[next];
+  for (let landmark = from; landmark < to2; landmark++) {
+    const offset = landmark * 3;
+    const has = (entry) => Boolean(entry && entry.values[offset + 2] > 0);
+    const a = has(before) ? before : void 0, b = has(after) ? after : void 0;
+    if (a && b && b.time - a.time <= MAX_HOLD_MS) {
+      const weight = b.time === a.time ? 0 : (time - a.time) / (b.time - a.time);
+      for (let axis = 0; axis < 3; axis++) out[offset + axis] = a.values[offset + axis] * (1 - weight) + b.values[offset + axis] * weight;
+    } else {
+      const gap = (entry) => time < entry.time ? entry.time - time : Math.max(0, time - entry.until);
+      const nearest = [a, b].filter((entry) => Boolean(entry)).sort((x, y) => gap(x) - gap(y))[0];
+      if (nearest && gap(nearest) <= STEP_MS) for (let axis = 0; axis < 3; axis++) out[offset + axis] = nearest.values[offset + axis];
+    }
+  }
+}
+function resampleBslTimeline(sequence, options = {}) {
+  const body = [], hands = [];
+  let slotDisagreements = 0, observedHandFrames = 0;
+  for (const frame of sequence) {
+    if (!Number.isFinite(frame.timestamp)) continue;
+    const { values, slots } = frameKeypoints(frame, options);
+    if (slots.left || slots.right) observedHandFrames++;
+    if (slots.disagreed) slotDisagreements++;
+    const previous = body.at(-1);
+    if (!previous || !sameValues(previous.values, values, 0, 18 * 3)) body.push({ time: frame.timestamp, until: frame.timestamp, values });
+    else previous.until = frame.timestamp;
+    hands.push({ time: frame.timestamp, until: frame.timestamp, values });
+  }
+  const start = sequence[0]?.timestamp, end = sequence.at(-1)?.timestamp;
+  const frames2 = [], times = [];
+  let handFrames = 0;
+  if (Number.isFinite(start) && Number.isFinite(end)) {
+    for (let time = start; time <= end + 1e-6; time += STEP_MS) {
+      const out = new Float32Array(BSL_LANDMARKS * 3);
+      sampleTrack(body, time, out, 0, 18);
+      sampleTrack(hands, time, out, 18, BSL_LANDMARKS);
+      let present = false;
+      for (let landmark = 18; landmark < BSL_LANDMARKS && !present; landmark += 21) present = out[landmark * 3 + 2] > 0;
+      if (present) handFrames++;
+      frames2.push(out);
+      times.push(time);
+    }
+  }
+  return { frames: frames2, times, handFrames, slotDisagreements, observedHandFrames };
+}
+function activity(frames2) {
+  const speeds = frames2.map(() => 0);
+  for (let index = 1; index < frames2.length; index++) {
+    const now = frames2[index], before = frames2[index - 1];
+    const shoulder = Math.hypot(now[2 * 3] - now[5 * 3], now[2 * 3 + 1] - now[5 * 3 + 1]) || 0.25;
+    let speed = 0;
+    for (const wrist of [18, 39]) {
+      const o = wrist * 3;
+      if (now[o + 2] > 0 && before[o + 2] > 0) speed = Math.max(speed, Math.hypot(now[o] - before[o], now[o + 1] - before[o + 1]) / shoulder);
+    }
+    speeds[index] = speed;
+  }
+  return speeds.map((_, index) => {
+    const window2 = speeds.slice(Math.max(0, index - 2), index + 3);
+    return window2.reduce((sum, value) => sum + value, 0) / window2.length;
+  });
+}
+function selectSignSpan(frames2) {
+  if (!frames2.length) return null;
+  const speeds = activity(frames2);
+  const peak = Math.max(...speeds);
+  if (!(peak > 0)) return null;
+  const threshold = Math.max(0.012, peak * 0.2);
+  let end = -1;
+  for (let index = speeds.length - 1; index >= 0; index--) if (speeds[index] >= threshold) {
+    end = index;
+    break;
+  }
+  if (end < 0) return null;
+  let start = end, quiet = 0;
+  for (let index = end - 1; index >= 0; index--) {
+    if (speeds[index] >= threshold) {
+      start = index;
+      quiet = 0;
+    } else if (++quiet > 5) break;
+  }
+  return { start, end, peak };
+}
+function windowStarts(length, span2) {
+  if (length < BSL_FRAMES) return [];
+  const clamp = (start) => Math.min(Math.max(0, start), length - BSL_FRAMES);
+  if (!span2) return [length - BSL_FRAMES];
+  const from = Math.max(0, span2.start - 2), to2 = Math.min(length - 1, span2.end + 2);
+  const spanLength = to2 - from + 1;
+  if (spanLength <= BSL_FRAMES) return [clamp(Math.round((from + to2 + 1 - BSL_FRAMES) / 2))];
+  const starts = [];
+  for (let start = from; start + BSL_FRAMES <= to2 + 1; start += BSL_STRIDE) starts.push(start);
+  if (starts.at(-1) + BSL_FRAMES < to2 + 1) starts.push(to2 + 1 - BSL_FRAMES);
+  return [...new Set(starts.map(clamp))];
+}
+function packWindow(frames2, start) {
+  const values = new Float32Array(3 * BSL_FRAMES * BSL_LANDMARKS);
+  for (let frame = 0; frame < BSL_FRAMES; frame++) {
+    const source = frames2[start + frame];
+    for (let landmark = 0; landmark < BSL_LANDMARKS; landmark++) {
+      for (let channel = 0; channel < 3; channel++) {
+        values[channel * BSL_FRAMES * BSL_LANDMARKS + frame * BSL_LANDMARKS + landmark] = source[landmark * 3 + channel];
+      }
+    }
+  }
+  return values;
+}
+function buildBslWindows(sequence, options = {}) {
+  const timeline = resampleBslTimeline(sequence, options);
+  const span2 = selectSignSpan(timeline.frames);
+  const starts = windowStarts(timeline.frames.length, span2);
+  return { windows: starts.map((start) => packWindow(timeline.frames, start)), starts, span: span2, timeline };
+}
+
+// lib/bsl-diagnostics.ts
+function describeBslDecision(input, policy) {
+  const fixed = (value) => value.toFixed(2);
+  let status = "accepted", reason = "";
+  if (input.windows === 0) {
+    status = "no-movement";
+    reason = "no complete 16-frame sign window";
+  } else if (input.handFrames < policy.minHandFrames) {
+    status = "too-few-hands";
+    reason = `only ${input.handFrames} hand frame${input.handFrames === 1 ? "" : "s"} in the sign (needs ${policy.minHandFrames})`;
+  } else if (input.pTop1 < policy.minTop1) {
+    status = "uncertain";
+    reason = `not confident (top score ${fixed(input.pTop1)} < ${fixed(policy.minTop1)})`;
+  } else if (input.margin < policy.minMargin) {
+    status = "uncertain";
+    reason = `two signs too close (margin ${fixed(input.margin)} < ${fixed(policy.minMargin)})`;
+  }
+  return { ...input, status, reason };
+}
+function emptyBslDiagnostics(engine = "v2") {
+  return {
+    engine,
+    observations: 0,
+    handFrames: 0,
+    shoulderFrames: 0,
+    signsCompleted: 0,
+    signsSkipped: 0,
+    model: "not-started",
+    modelError: "",
+    inferences: 0,
+    inferenceFailures: 0,
+    lastInferenceMs: null,
+    decisions: { accepted: 0, uncertain: 0, "too-few-hands": 0, "no-movement": 0 },
+    suggestionsPosted: 0,
+    suggestionsStale: 0,
+    duplicatesSuppressed: 0,
+    lastDecision: null
+  };
+}
+
 // lib/bsl1064-runtime.ts
-var FRAMES = 16;
-var LANDMARKS = 60;
+var FRAMES = BSL_FRAMES;
+var LANDMARKS = BSL_LANDMARKS;
 var MIN_CONFIDENCE2 = 0.82;
 var MIN_MARGIN2 = 0.14;
+var BSL_POLICY = { minTop1: MIN_CONFIDENCE2, minMargin: MIN_MARGIN2, minHandFrames: 8 };
 var loadModel3 = createLandmarkModelLoader("/models/bsl1064-pose2sign", 1064);
-async function recognizeBsl1064(sequence, options = {}) {
+async function warmBsl1064(signal) {
+  await loadModel3(signal);
+}
+async function analyzeBsl1064(sequence, options = {}) {
+  const engine = options.engine ?? "legacy";
   if (sequence.length < FRAMES) return null;
+  const policy = options.policy ?? BSL_POLICY;
+  const prepared = engine === "v2" ? buildBslWindows(sequence, options.input) : null;
+  const windows = prepared ? prepared.windows : [prepareBslInput(sequence)];
+  const handFrames = prepared ? prepared.starts.reduce((total, start) => total + countHandFrames(prepared.timeline.frames.slice(start, start + FRAMES)), 0) / Math.max(1, prepared.starts.length) : sequence.slice(-FRAMES).filter((frame) => frame.hands.some((hand4) => hand4.landmarks.length >= 21)).length;
+  const base = {
+    spanFrames: prepared?.span ? prepared.span.end - prepared.span.start + 1 : FRAMES,
+    handFrames: Math.round(handFrames),
+    slotDisagreements: prepared?.timeline.slotDisagreements ?? 0,
+    windows: windows.length
+  };
+  if (!windows.length) {
+    const decision = describeBslDecision({ ...base, best: "", top5: [], pTop1: 0, margin: 0, inferenceMs: 0 }, policy);
+    options.onDecision?.(decision);
+    return { prediction: null, decision };
+  }
   options.onPhase?.("loading");
   const { session, labels } = await loadModel3(options.signal);
   options.signal?.throwIfAborted();
   return withLandmarkInference(session, options, async () => {
-    const input = new qe("float32", prepareBslInput(sequence), [1, 3, FRAMES, LANDMARKS]);
-    let output = {};
-    try {
-      output = await session.run({ pose: input });
-      const logits = output.logits?.data;
-      if (!(logits instanceof Float32Array) || logits.length !== labels.length || !logits.every(Number.isFinite)) return null;
-      const probabilities = softmax3(logits);
-      const best = probabilities.reduce((winner, value, index) => value > probabilities[winner] ? index : winner, 0);
-      const runnerUp = probabilities.reduce((winner, value, index) => index !== best && value > probabilities[winner] ? index : winner, best ? 0 : 1);
-      const confidence = probabilities[best];
-      const margin = confidence - probabilities[runnerUp];
-      const label = labels[best];
-      if (!label || confidence < MIN_CONFIDENCE2 || margin < MIN_MARGIN2) return null;
-      return { label, text: readable2(label), confidence, margin };
-    } finally {
-      input.dispose();
-      Object.values(output).forEach((tensor) => tensor.dispose());
+    const started = performance.now();
+    const sum = new Float64Array(labels.length);
+    for (const values of windows) {
+      const logits = await runWindow(session, values, options.signal);
+      if (!logits || logits.length !== labels.length) return null;
+      for (let index = 0; index < logits.length; index++) sum[index] += logits[index];
     }
+    const probabilities = softmax3(Array.from(sum, (value) => value / windows.length));
+    const order = probabilities.map((p, index) => ({ p, index })).sort((a, b) => b.p - a.p);
+    const [best, runnerUp] = order;
+    const top5 = order.slice(0, 5).map(({ p, index }) => ({ label: labels[index], p }));
+    const decision = describeBslDecision({
+      ...base,
+      best: labels[best.index] ?? "",
+      top5,
+      pTop1: best.p,
+      margin: best.p - (runnerUp?.p ?? 0),
+      inferenceMs: performance.now() - started
+    }, policy);
+    options.onDecision?.(decision);
+    const label = labels[best.index];
+    const prediction2 = decision.status === "accepted" && label ? { label, text: readable2(label), confidence: best.p, margin: decision.margin } : null;
+    return { prediction: prediction2, decision };
   });
+}
+async function runWindow(session, values, signal) {
+  signal?.throwIfAborted();
+  const input = new qe("float32", values, [1, 3, FRAMES, LANDMARKS]);
+  let output = {};
+  try {
+    output = await session.run({ pose: input });
+    const logits = output.logits?.data;
+    if (!(logits instanceof Float32Array) || !logits.every(Number.isFinite)) return null;
+    return Float32Array.from(logits);
+  } finally {
+    input.dispose();
+    Object.values(output).forEach((tensor) => tensor.dispose());
+  }
+}
+function countHandFrames(frames2) {
+  return frames2.filter((values) => values[18 * 3 + 2] > 0 || values[39 * 3 + 2] > 0).length;
 }
 function prepareBslInput(sequence) {
   const samples = sequence.slice(-FRAMES);
@@ -11284,10 +11566,11 @@ function midpoint(a, b) {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, score: Math.min(a.score, b.score) };
 }
 function softmax3(logits) {
-  const maximum = Math.max(...logits);
-  const values = Array.from(logits, (value) => Math.exp(value - maximum));
-  const total = values.reduce((sum, value) => sum + value, 0);
-  return values.map((value) => value / total);
+  const values = Array.from(logits);
+  const maximum = Math.max(...values);
+  const exps = values.map((value) => Math.exp(value - maximum));
+  const total = exps.reduce((sum, value) => sum + value, 0);
+  return exps.map((value) => value / total);
 }
 function readable2(label) {
   return label.toLowerCase().replace(/[_.-]+/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
@@ -15562,7 +15845,13 @@ var queuedV3;
 var diagnosticsEnabled = false;
 var diagnostics = emptyAslV31Diagnostics();
 var lastDecisionAt = 0;
-var classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
+var classifiers = { asl: recognizeAsl1000, isl: recognizeIsl263, lse: recognizeLse300 };
+var DEFAULT_BSL_ENGINE = "legacy";
+var bslEngine = DEFAULT_BSL_ENGINE;
+var bslDiagnostics = emptyBslDiagnostics(bslEngine);
+var bslEpisodeEvaluated = false;
+var lastBslSuggestion = { label: "", time: -Infinity };
+var lastBslDecisionAt = 0;
 var pending = /* @__PURE__ */ new Map();
 var MODEL_LOAD_TIMEOUT_MS = 4e5;
 var NORMAL_INFERENCE_TIMEOUT_MS = 2e4;
@@ -15624,6 +15913,7 @@ function invalidatePrediction() {
 }
 function resetEvidence() {
   v3Segmenter.reset();
+  bslEpisodeEvaluated = false;
   queuedV3 = void 0;
   invalidatePersonal();
   frames.length = 0;
@@ -15648,6 +15938,8 @@ function resetSession() {
   pending.clear();
   resetEvidence();
   lastConfirmation = { label: "", time: 0 };
+  lastBslSuggestion = { label: "", time: -Infinity };
+  bslDiagnostics = { ...emptyBslDiagnostics(bslEngine), model: bslDiagnostics.model === "ready" ? "ready" : "not-started" };
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
@@ -15719,14 +16011,113 @@ function diagnosticsSnapshot() {
     lastDecision: diagnostics.lastDecision && { ...diagnostics.lastDecision, ageMs: performance.now() - lastDecisionAt }
   };
 }
+function warmBsl() {
+  if (bslDiagnostics.model === "ready" || pending.has("bsl")) return;
+  const request = { started: frames.at(-1)?.timestamp ?? -1, phase: "loading", controller: new AbortController() };
+  pending.set("bsl", request);
+  bslDiagnostics.model = "loading";
+  const generation = modelGeneration;
+  warmBsl1064(request.controller.signal).then(() => {
+    bslDiagnostics.model = "ready";
+  }).catch((error) => {
+    if (request.controller.signal.aborted || generation !== modelGeneration) {
+      bslDiagnostics.model = "not-started";
+      return;
+    }
+    bslDiagnostics.model = "failed";
+    bslDiagnostics.modelError = error instanceof Error ? error.message : String(error);
+  }).finally(() => {
+    if (pending.get("bsl") === request) pending.delete("bsl");
+  });
+}
+function observeBsl(now, ready, session) {
+  if (!ready) {
+    bslEpisodeEvaluated = false;
+    return;
+  }
+  if (bslEpisodeEvaluated) return;
+  if (pending.get("bsl")?.phase === "loading") return;
+  bslEpisodeEvaluated = true;
+  bslDiagnostics.signsCompleted++;
+  if (pending.has("bsl") || now < retryAfter) {
+    bslDiagnostics.signsSkipped++;
+    return;
+  }
+  const request = {
+    started: now,
+    phase: bslDiagnostics.model === "ready" ? "inference" : "loading",
+    controller: new AbortController()
+  };
+  pending.set("bsl", request);
+  const generation = modelGeneration;
+  const submittedAt = performance.now();
+  const sequence = [...frames];
+  analyzeBsl1064(sequence, { engine: bslEngine, signal: request.controller.signal, onPhase: (phase) => {
+    if (pending.get("bsl") !== request) return;
+    request.phase = phase;
+    request.started = frames.at(-1)?.timestamp ?? now;
+  }, onDecision: (decision) => {
+    if (decision.windows) bslDiagnostics.inferences++;
+    bslDiagnostics.lastInferenceMs = decision.inferenceMs || bslDiagnostics.lastInferenceMs;
+    bslDiagnostics.decisions[decision.status]++;
+    bslDiagnostics.lastDecision = { ...decision, ageMs: 0 };
+    lastBslDecisionAt = performance.now();
+  } }).then((result) => {
+    if (generation !== modelGeneration || request.controller.signal.aborted) return;
+    bslDiagnostics.model = "ready";
+    modelProblem = false;
+    const prediction2 = result?.prediction;
+    if (!prediction2) return;
+    if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS || performance.now() - submittedAt > MAX_PREDICTION_AGE_MS) {
+      bslDiagnostics.suggestionsStale++;
+      return;
+    }
+    if (prediction2.label === lastBslSuggestion.label && now - lastBslSuggestion.time < COOLDOWN_MS) {
+      bslDiagnostics.duplicatesSuppressed++;
+      return;
+    }
+    lastBslSuggestion = { label: prediction2.label, time: now };
+    bslDiagnostics.suggestionsPosted++;
+    self.postMessage({
+      type: "suggestion",
+      session,
+      gloss: prediction2.label,
+      text: prediction2.text,
+      confidence: prediction2.confidence,
+      timestamp: Date.now(),
+      source: "model"
+    });
+  }).catch((error) => {
+    if (generation !== modelGeneration || request.controller.signal.aborted) return;
+    bslDiagnostics.inferenceFailures++;
+    if (bslDiagnostics.model !== "ready") {
+      bslDiagnostics.model = "failed";
+      bslDiagnostics.modelError = error instanceof Error ? error.message : String(error);
+    }
+    modelProblem = true;
+    retryAfter = (frames.at(-1)?.timestamp ?? now) + 5e3;
+  }).finally(() => {
+    if (pending.get("bsl") === request) pending.delete("bsl");
+  });
+}
+function bslDiagnosticsSnapshot() {
+  return {
+    ...bslDiagnostics,
+    decisions: { ...bslDiagnostics.decisions },
+    lastDecision: bslDiagnostics.lastDecision && { ...bslDiagnostics.lastDecision, ageMs: performance.now() - lastBslDecisionAt }
+  };
+}
 self.onmessage = async (event) => {
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
     useAslV31 = activeLanguage === "asl" && event.data.aslEngine === "v3.1";
     diagnosticsEnabled = event.data.diagnostics === true;
+    bslEngine = event.data.bslEngine ?? DEFAULT_BSL_ENGINE;
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
     resetSession();
+    bslDiagnostics = emptyBslDiagnostics(bslEngine);
     personalMatcher.configure(personalTemplates);
+    if (activeLanguage === "bsl") warmBsl();
     return;
   }
   if (event.data.type === "reset") {
@@ -15741,6 +16132,7 @@ self.onmessage = async (event) => {
     else if (gap === 0 || gap > trackingGapLimit([...frames.slice(-12), event.data.frame])) resetEvidence();
   }
   for (const [language, request] of pending) {
+    if (request.started < 0) request.started = now;
     const deadline = request.phase === "loading" ? MODEL_LOAD_TIMEOUT_MS : NORMAL_INFERENCE_TIMEOUT_MS;
     if (now - request.started < deadline) continue;
     if (request.phase === "loading") {
@@ -15784,11 +16176,18 @@ self.onmessage = async (event) => {
     if (hasHand2) diagnostics.handFrames++;
     if (Number.isFinite(v3Features[(42 + 7) * 3]) && Number.isFinite(v3Features[(42 + 8) * 3])) diagnostics.shoulderFrames++;
   }
+  if (activeLanguage === "bsl") {
+    bslDiagnostics.observations++;
+    if (hasHand2) bslDiagnostics.handFrames++;
+    const pose = event.data.frame.pose;
+    if ((pose[11]?.visibility ?? 0) >= 0.5 && (pose[12]?.visibility ?? 0) >= 0.5) bslDiagnostics.shoulderFrames++;
+  }
   const v3Motion = useAslV31 ? v3Segmenter.observe(now, v3Features) : null;
   const observed = activeLanguage === "asl" && !useAslV31 ? analyzeSignMotion(frames) : null;
   const startsInConfirmedTail = observed?.completion === "departure" && !handReturnedAfterConfirmation && observed.sequence[0].timestamp - lastConfirmation.time < NEW_MOVEMENT_AFTER_WORD_MS;
   const motion = startsInConfirmedTail ? { ready: false, sequence: [], reason: "hands" } : v3Motion ? { ready: Boolean(v3Motion.clip), sequence: [], reason: v3Motion.reason } : observed ?? { ...analyzeGenericSignMotion(frames), sequence: frames };
   const departureEnd = observed?.completion === "departure" && !startsInConfirmedTail ? observed.sequence.at(-1)?.timestamp : void 0;
+  if (activeLanguage === "bsl") observeBsl(now, motion.ready, event.data.session);
   if (v3Motion) {
     if (v3Motion.clip) {
       if (queuedV3) diagnostics.segmentsSkipped++;
@@ -15851,7 +16250,8 @@ self.onmessage = async (event) => {
     feedback,
     source,
     motionReason: motion.reason,
-    ...diagnosticsEnabled && useAslV31 ? { diagnostics: diagnosticsSnapshot() } : {}
+    ...diagnosticsEnabled && useAslV31 ? { diagnostics: diagnosticsSnapshot() } : {},
+    ...diagnosticsEnabled && activeLanguage === "bsl" ? { bslDiagnostics: bslDiagnosticsSnapshot() } : {}
   });
   if (!result || result.confidence < CONFIDENCE_THRESHOLD) {
     candidateLabel = null;
@@ -15912,6 +16312,9 @@ self.onmessage = async (event) => {
     if (activeLanguage === "asl") frames.length = 0;
     else frames.splice(0, Math.max(0, frames.length - 5));
   }
+};
+export {
+  DEFAULT_BSL_ENGINE
 };
 /*! Bundled license information:
 
