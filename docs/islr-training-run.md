@@ -38,7 +38,34 @@ Not verified, because it needs things this machine does not have: the real datas
 sign-in and rule acceptance), and a training budget. Sizes and times below are estimates to plan with,
 not measurements.
 
-## One command
+## Run it in a Kaggle notebook (recommended — no download)
+
+From a laptop the competition data is the bottleneck: the bundle is ~40 GB and the API served it at a
+measured ~37-166 KB/s here, so even a thin subset costs hours. Inside a Kaggle notebook the same files
+are already mounted read-only, so the work needs no download and can use the free GPU:
+
+```python
+# Cell 1 — the repository and the two libraries the trainer needs
+!git clone https://github.com/friendlyfoe241-cyber/SignRelay.git
+!pip install -q pyarrow onnx onnxruntime onnxscript
+
+# Cell 2 — attach the competition: Add data -> Competitions -> Google - Isolated Sign Language Recognition
+!ls /kaggle/input/asl-signs
+
+# Cell 3 — convert, merge and train (30 epochs on the free GPU)
+!python SignRelay/engine-v3/pipeline/kaggle_islr_run.py \
+  --out-root /kaggle/working/islr --per-class 40 --epochs 30 --balance 0.5 --device auto
+```
+
+`kaggle_islr_run.py` runs the same four scripts as the laptop path (`import_islr.py`, `merge_cache.py`,
+`train.py`, and optionally `export_onnx.py`) and prints the best epoch's top-1 and top-5. Its output
+directory holds the merged `cache/` (a few hundred MB, downloadable and reusable on a laptop) and
+`run/` with `best.pt`, `classes.json` and `log.jsonl`. Add `--export` to also produce ONNX.
+
+`train.py` now selects a device automatically — CUDA on a GPU box, MPS on Apple silicon, CPU otherwise —
+and always saves checkpoints on the CPU, so a run started in a notebook can be resumed on a laptop.
+
+## One command (from a laptop, after downloading)
 
 ```bash
 KAGGLE_USER=... KAGGLE_KEY=... ./engine-v3/pipeline/run_islr.sh ~/data
