@@ -1,0 +1,62 @@
+[
+  {
+    "word": "PLEASE",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/please/661f-please-2023_01_31_17_50_34.135-0.mp4",
+    "sha256": "fc70b8a83d1b0b6d4ca29dac3e708837346b9191b1d7e509524aa31af3ec8c38",
+    "license": "CC BY 4.0"
+  },
+  {
+    "word": "DRINK",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/drink/a459-drink-2023_01_19_00_37_17.712-0.mp4",
+    "sha256": "30399d43d814e7400929f0373506507c1165868554c2d84e7f0152985f8de735",
+    "license": "CC BY 4.0"
+  },
+  {
+    "word": "DRAW",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/draw/f56c-draw-2024_04_01_15_39_22.981-1.mp4",
+    "sha256": "e53a7b79d4930198b503a6e61bcd503a71e46960c83b7f2cfe904e668cb01b7a",
+    "license": "CC BY 4.0"
+  },
+  {
+    "word": "JUMP",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/jump/ebdb-jump-2023_01_30_14_30_51.847-0.mp4",
+    "sha256": "4900e38b93f428d9eba36f553b4d0c5f681aa3d93805df8fcd1fdf20d991db2b",
+    "license": "CC BY 4.0"
+  },
+  {
+    "word": "GREEN",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/green/2b19-green-2023_01_28_09_45_44.391-0.mp4",
+    "sha256": "902ea88e2eb10823c1f7b4f53ad4ad5a29fdd2403d3ac86daa72e965d1ad3f06",
+    "license": "CC BY 4.0"
+  },
+  {
+    "word": "STOP",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/stop/f56c-stop-2024_04_01_15_43_53.730-1.mp4",
+    "sha256": "701884f5cb21005786252dfba7963e3cfa7e6663f2fe7357026ca1b39cb9729f",
+    "license": "CC BY 4.0"
+  },
+  {
+    "word": "SLEEP",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/sleep/d5fd-sleep-2023_01_10_19_26_19.194-0.mp4",
+    "sha256": "5d836fce0ae4cc424e620ddfd447e115f5d72bd968ecd94b0d7bdb5ba794eca7",
+    "license": "CC BY 4.0"
+  },
+  {
+    "word": "WHO",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/who/d5fd-who-2023_01_11_15_20_00.813-0.mp4",
+    "sha256": "c356b578370fcc8e727480402e8e785444b59382848025cfe90acfbad53eaa13",
+    "license": "CC BY 4.0"
+  },
+  {
+    "word": "ROCK",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/rock/f56c-rock-2024_03_28_18_57_16.395-1.mp4",
+    "sha256": "c404049d8b999c005b1dadf59348468fab27f0df211643cc9ab7409ecb01f30c",
+    "license": "CC BY 4.0"
+  },
+  {
+    "word": "PENCIL",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/pencil/661f-pencil-2023_01_30_18_04_46.262-0.mp4",
+    "sha256": "9c85607027405f0803c60b9e6164a07bb46d1132b85fb8d5bfd5a35c41e98313",
+    "license": "CC BY 4.0"
+  }
+]

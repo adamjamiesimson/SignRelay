@@ -1,0 +1,24 @@
+[
+  {
+    "path": "model/model.onnx",
+    "upstream": "public/models/asl-v31/model.onnx",
+    "sha256": "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090",
+    "url": "https://raw.githubusercontent.com/adamjamiesimson/SignRelay/1b888fa73aaa6c0d0b0708081f9143fa10c272c9/public/models/asl-v31/model.onnx"
+  },
+  {
+    "path": "model/meta.json",
+    "upstream": "public/models/asl-v31/meta.json",
+    "sha256": "50d59fdada18cc5c43ac61585f3af9c81d828402e2c2ba27c5ebeae86489ad22",
+    "url": "https://raw.githubusercontent.com/adamjamiesimson/SignRelay/1b888fa73aaa6c0d0b0708081f9143fa10c272c9/public/models/asl-v31/meta.json"
+  },
+  {
+    "path": "vision/hand_landmarker.task",
+    "sha256": "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1",
+    "url": "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+  },
+  {
+    "path": "vision/pose_landmarker_lite.task",
+    "sha256": "59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a",
+    "url": "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
+  }
+]

@@ -1,0 +1,5883 @@
+{
+  "selecting": false,
+  "sparse": true,
+  "scramble": false,
+  "targets": [
+    "please",
+    "drink",
+    "draw",
+    "jump",
+    "green",
+    "stop",
+    "sleep",
+    "who",
+    "rock",
+    "pencil"
+  ],
+  "errors": [],
+  "summary": {
+    "0.5": [
+      {
+        "target": "please",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          1600
+        ]
+      },
+      {
+        "target": "drink",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2000,
+          3200
+        ]
+      },
+      {
+        "target": "draw",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1200,
+          2800
+        ]
+      },
+      {
+        "target": "jump",
+        "correct": 0,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 3,
+        "acceptedAtMs": []
+      },
+      {
+        "target": "green",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "stop",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          1600
+        ]
+      },
+      {
+        "target": "sleep",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          1600,
+          2800
+        ]
+      },
+      {
+        "target": "who",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1600,
+          1600
+        ]
+      },
+      {
+        "target": "rock",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2800,
+          2400
+        ]
+      },
+      {
+        "target": "pencil",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          2000,
+          2000
+        ]
+      }
+    ],
+    "0.55": [
+      {
+        "target": "please",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          1600
+        ]
+      },
+      {
+        "target": "drink",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2000,
+          3200
+        ]
+      },
+      {
+        "target": "draw",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1200,
+          2800
+        ]
+      },
+      {
+        "target": "jump",
+        "correct": 0,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 3,
+        "acceptedAtMs": []
+      },
+      {
+        "target": "green",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "stop",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          1600
+        ]
+      },
+      {
+        "target": "sleep",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          1600,
+          2800
+        ]
+      },
+      {
+        "target": "who",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1600,
+          1600
+        ]
+      },
+      {
+        "target": "rock",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2800,
+          2400
+        ]
+      },
+      {
+        "target": "pencil",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          2000,
+          2000
+        ]
+      }
+    ],
+    "0.6": [
+      {
+        "target": "please",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          1600
+        ]
+      },
+      {
+        "target": "drink",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2000,
+          3200
+        ]
+      },
+      {
+        "target": "draw",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1200,
+          2800
+        ]
+      },
+      {
+        "target": "jump",
+        "correct": 0,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 3,
+        "acceptedAtMs": []
+      },
+      {
+        "target": "green",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "stop",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          1600
+        ]
+      },
+      {
+        "target": "sleep",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          1600,
+          2800
+        ]
+      },
+      {
+        "target": "who",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1600,
+          1600
+        ]
+      },
+      {
+        "target": "rock",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2800,
+          2400
+        ]
+      },
+      {
+        "target": "pencil",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          2000,
+          2000
+        ]
+      }
+    ],
+    "0.65": [
+      {
+        "target": "please",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "drink",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2000,
+          3200
+        ]
+      },
+      {
+        "target": "draw",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1200,
+          2800
+        ]
+      },
+      {
+        "target": "jump",
+        "correct": 0,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 3,
+        "acceptedAtMs": []
+      },
+      {
+        "target": "green",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "stop",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          1600
+        ]
+      },
+      {
+        "target": "sleep",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          1600,
+          2800
+        ]
+      },
+      {
+        "target": "who",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1600,
+          1600
+        ]
+      },
+      {
+        "target": "rock",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2800,
+          2400
+        ]
+      },
+      {
+        "target": "pencil",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          2000,
+          2000
+        ]
+      }
+    ],
+    "0.69": [
+      {
+        "target": "please",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "drink",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2000,
+          3200
+        ]
+      },
+      {
+        "target": "draw",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1200,
+          2800
+        ]
+      },
+      {
+        "target": "jump",
+        "correct": 0,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 3,
+        "acceptedAtMs": []
+      },
+      {
+        "target": "green",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "stop",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          1600
+        ]
+      },
+      {
+        "target": "sleep",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          1600,
+          2800
+        ]
+      },
+      {
+        "target": "who",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1600,
+          1600
+        ]
+      },
+      {
+        "target": "rock",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2800,
+          2400
+        ]
+      },
+      {
+        "target": "pencil",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          2000,
+          2000
+        ]
+      }
+    ],
+    "0.75": [
+      {
+        "target": "please",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "drink",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "draw",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1200,
+          2800
+        ]
+      },
+      {
+        "target": "jump",
+        "correct": 0,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 3,
+        "acceptedAtMs": []
+      },
+      {
+        "target": "green",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "stop",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          1600
+        ]
+      },
+      {
+        "target": "sleep",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          1600,
+          2800
+        ]
+      },
+      {
+        "target": "who",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2400
+        ]
+      },
+      {
+        "target": "rock",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2800,
+          2400
+        ]
+      },
+      {
+        "target": "pencil",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          2000,
+          2000
+        ]
+      }
+    ],
+    "0.79": [
+      {
+        "target": "please",
+        "correct": 0,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 3,
+        "acceptedAtMs": []
+      },
+      {
+        "target": "drink",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "draw",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          1600,
+          2800
+        ]
+      },
+      {
+        "target": "jump",
+        "correct": 0,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 3,
+        "acceptedAtMs": []
+      },
+      {
+        "target": "green",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2000
+        ]
+      },
+      {
+        "target": "stop",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          1600
+        ]
+      },
+      {
+        "target": "sleep",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          1600,
+          2800
+        ]
+      },
+      {
+        "target": "who",
+        "correct": 1,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 2,
+        "acceptedAtMs": [
+          2800
+        ]
+      },
+      {
+        "target": "rock",
+        "correct": 2,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 1,
+        "acceptedAtMs": [
+          2800,
+          2400
+        ]
+      },
+      {
+        "target": "pencil",
+        "correct": 3,
+        "positives": 3,
+        "unrelatedAccepted": 0,
+        "unrelated": 36,
+        "transformedAccepted": 0,
+        "transformed": 0,
+        "scrambledAccepted": 0,
+        "scrambled": 0,
+        "emptyAccepted": 0,
+        "noAccept": 0,
+        "acceptedAtMs": [
+          2000,
+          2000,
+          2000
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/draw/66d7-draw-2023_09_04_10_33_17.446-0.mp4",
+      "file": "draw-test-0.mp4",
+      "sign": "draw",
+      "variant": "sparse",
+      "duration": 2.75,
+      "frameCount": 14,
+      "tracked": 3,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/draw/16f0-draw-2023_10_30_14_41_10.845-1.mp4",
+      "file": "draw-test-1.mp4",
+      "sign": "draw",
+      "variant": "sparse",
+      "duration": 2.291667,
+      "frameCount": 12,
+      "tracked": 9,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": 1200,
+          "0.55": 1200,
+          "0.6": 1200,
+          "0.65": 1200,
+          "0.69": 1200,
+          "0.75": 1200,
+          "0.79": 1600
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0.9709755532328914,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        81,
+        87,
+        68,
+        88
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/draw/933d-draw-2024_03_18_18_06_27.215-1.mp4",
+      "file": "draw-test-2.mp4",
+      "sign": "draw",
+      "variant": "sparse",
+      "duration": 4.541667,
+      "frameCount": 23,
+      "tracked": 8,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": 2800,
+          "0.55": 2800,
+          "0.6": 2800,
+          "0.65": 2800,
+          "0.69": 2800,
+          "0.75": 2800,
+          "0.79": 2800
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0.9961330105691417,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        121,
+        120,
+        73,
+        29,
+        30
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/drink/66d7-drink-2023_01_26_13_51_27.018-0.mp4",
+      "file": "drink-test-0.mp4",
+      "sign": "drink",
+      "variant": "sparse",
+      "duration": 1.625,
+      "frameCount": 9,
+      "tracked": 2,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/drink/616e-drink-2023_01_26_16_47_58.863-0.mp4",
+      "file": "drink-test-1.mp4",
+      "sign": "drink",
+      "variant": "sparse",
+      "duration": 2.541667,
+      "frameCount": 13,
+      "tracked": 4,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": 2000,
+          "0.55": 2000,
+          "0.6": 2000,
+          "0.65": 2000,
+          "0.69": 2000,
+          "0.75": 2000,
+          "0.79": 2000
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0.9698629239329494,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        79,
+        54,
+        32
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/drink/af36-drink-2022_12_16_12_44_01.846-0.mp4",
+      "file": "drink-test-2.mp4",
+      "sign": "drink",
+      "variant": "sparse",
+      "duration": 3.458333,
+      "frameCount": 18,
+      "tracked": 16,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": 3200,
+          "0.55": 3200,
+          "0.6": 3200,
+          "0.65": 3200,
+          "0.69": 3200,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0.9264855270708234,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        99,
+        105,
+        112,
+        119,
+        109,
+        106,
+        73
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/eat/933d-eat-2024_03_18_18_00_51.844-1.mp4",
+      "file": "eat-test-0.mp4",
+      "sign": "eat",
+      "variant": "sparse",
+      "duration": 4.75,
+      "frameCount": 24,
+      "tracked": 8,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        90,
+        117,
+        74,
+        35,
+        49
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/eat/66d7-eat-2023_09_04_10_27_34.922-0.mp4",
+      "file": "eat-test-1.mp4",
+      "sign": "eat",
+      "variant": "sparse",
+      "duration": 2.083333,
+      "frameCount": 11,
+      "tracked": 6,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        70,
+        39,
+        42
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/eat/3d3f-eat-2024_03_25_21_32_55.469-1.mp4",
+      "file": "eat-test-2.mp4",
+      "sign": "eat",
+      "variant": "sparse",
+      "duration": 1.791667,
+      "frameCount": 9,
+      "tracked": 7,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0.13321025070276057,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        105,
+        117,
+        112
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/green/af6d-green-2023_01_26_13_26_09.916-0.mp4",
+      "file": "green-test-0.mp4",
+      "sign": "green",
+      "variant": "sparse",
+      "duration": 1.708333,
+      "frameCount": 9,
+      "tracked": 9,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0.16255611400809403,
+        "draw": 0,
+        "jump": 0,
+        "green": 0.6013900661861253,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0.2571855903869837
+      },
+      "cpuMs": [
+        138,
+        170,
+        169
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/green/66d7-green-2023_01_26_14_21_38.912-0.mp4",
+      "file": "green-test-1.mp4",
+      "sign": "green",
+      "variant": "sparse",
+      "duration": 2.125,
+      "frameCount": 11,
+      "tracked": 4,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": 2000,
+          "0.55": 2000,
+          "0.6": 2000,
+          "0.65": 2000,
+          "0.69": 2000,
+          "0.75": 2000,
+          "0.79": 2000
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0.9337966803054822,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        97,
+        49
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/green/111c-green-2023_02_01_15_20_02.549-0.mp4",
+      "file": "green-test-2.mp4",
+      "sign": "green",
+      "variant": "sparse",
+      "duration": 2.208333,
+      "frameCount": 12,
+      "tracked": 2,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/hello/616e-hello-2023_01_26_17_05_12.134-0.mp4",
+      "file": "hello-test-0.mp4",
+      "sign": "hello",
+      "variant": "sparse",
+      "duration": 2.291667,
+      "frameCount": 12,
+      "tracked": 5,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        177,
+        132
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/hello/111c-hello-2023_01_30_12_30_10.139-0.mp4",
+      "file": "hello-test-1.mp4",
+      "sign": "hello",
+      "variant": "sparse",
+      "duration": 2.541667,
+      "frameCount": 13,
+      "tracked": 3,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/hello/af6d-hello-2023_01_26_08_56_15.618-0.mp4",
+      "file": "hello-test-2.mp4",
+      "sign": "hello",
+      "variant": "sparse",
+      "duration": 1.666667,
+      "frameCount": 9,
+      "tracked": 9,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0.12816498380211083,
+        "jump": 0,
+        "green": 0,
+        "stop": 0.3026795334672838,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        114,
+        109,
+        104
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/help/66d7-help-2023_09_04_13_05_27.040-0.mp4",
+      "file": "help-test-0.mp4",
+      "sign": "help",
+      "variant": "sparse",
+      "duration": 2.625,
+      "frameCount": 14,
+      "tracked": 8,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        90,
+        107,
+        75,
+        51
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/help/a1ba-help-2023_09_03_15_32_40.590-0.mp4",
+      "file": "help-test-1.mp4",
+      "sign": "help",
+      "variant": "sparse",
+      "duration": 2.291667,
+      "frameCount": 12,
+      "tracked": 5,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/help/16f0-help-2023_10_01_22_08_42.457-1.mp4",
+      "file": "help-test-2.mp4",
+      "sign": "help",
+      "variant": "sparse",
+      "duration": 2.625,
+      "frameCount": 14,
+      "tracked": 13,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        92,
+        89,
+        125,
+        135
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/jump/a1ba-jump-2023_01_12_23_46_08.922-0.mp4",
+      "file": "jump-test-0.mp4",
+      "sign": "jump",
+      "variant": "sparse",
+      "duration": 1.708333,
+      "frameCount": 9,
+      "tracked": 3,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/jump/af36-jump-2023_01_29_20_53_23.516-0.mp4",
+      "file": "jump-test-1.mp4",
+      "sign": "jump",
+      "variant": "sparse",
+      "duration": 4.708333,
+      "frameCount": 24,
+      "tracked": 18,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0.5059154826460134,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0.15425354561620924,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        143,
+        102,
+        217,
+        88,
+        130,
+        139,
+        119,
+        101,
+        61,
+        87
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/jump/66d7-jump-2023_01_26_14_18_49.688-0.mp4",
+      "file": "jump-test-2.mp4",
+      "sign": "jump",
+      "variant": "sparse",
+      "duration": 1.916667,
+      "frameCount": 10,
+      "tracked": 2,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/pencil/616e-pencil-2023_01_26_16_47_58.863-0.mp4",
+      "file": "pencil-test-0.mp4",
+      "sign": "pencil",
+      "variant": "sparse",
+      "duration": 2.583333,
+      "frameCount": 13,
+      "tracked": 4,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": 2000,
+          "0.55": 2000,
+          "0.6": 2000,
+          "0.65": 2000,
+          "0.69": 2000,
+          "0.75": 2000,
+          "0.79": 2000
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0.9936762814246074
+      },
+      "cpuMs": [
+        76,
+        47,
+        31
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/pencil/af36-pencil-2022_12_21_10_51_17.131-0.mp4",
+      "file": "pencil-test-1.mp4",
+      "sign": "pencil",
+      "variant": "sparse",
+      "duration": 2.916667,
+      "frameCount": 15,
+      "tracked": 14,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": 2000,
+          "0.55": 2000,
+          "0.6": 2000,
+          "0.65": 2000,
+          "0.69": 2000,
+          "0.75": 2000,
+          "0.79": 2000
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0.12361090139540366,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0.9529185623343903
+      },
+      "cpuMs": [
+        70,
+        79,
+        67,
+        81,
+        93,
+        106
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/pencil/af6d-pencil-2023_01_25_14_22_55.323-0.mp4",
+      "file": "pencil-test-2.mp4",
+      "sign": "pencil",
+      "variant": "sparse",
+      "duration": 2.333333,
+      "frameCount": 12,
+      "tracked": 3,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": 2000,
+          "0.55": 2000,
+          "0.6": 2000,
+          "0.65": 2000,
+          "0.69": 2000,
+          "0.75": 2000,
+          "0.79": 2000
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0.9936245599624938
+      },
+      "cpuMs": [
+        58,
+        32
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/please/a1ba-please-2023_01_12_15_22_59.603-0.mp4",
+      "file": "please-test-0.mp4",
+      "sign": "please",
+      "variant": "sparse",
+      "duration": 1.875,
+      "frameCount": 10,
+      "tracked": 3,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/please/66d7-please-2023_01_26_17_12_54.681-0.mp4",
+      "file": "please-test-1.mp4",
+      "sign": "please",
+      "variant": "sparse",
+      "duration": 2.083333,
+      "frameCount": 11,
+      "tracked": 5,
+      "decisions": {
+        "please": {
+          "0.5": 1600,
+          "0.55": 1600,
+          "0.6": 1600,
+          "0.65": 2000,
+          "0.69": 2000,
+          "0.75": 2000,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0.7758416014498687,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        127,
+        86,
+        94
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/please/111c-please-2023_01_30_12_34_19.555-0.mp4",
+      "file": "please-test-2.mp4",
+      "sign": "please",
+      "variant": "sparse",
+      "duration": 2.333333,
+      "frameCount": 12,
+      "tracked": 3,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/rock/a1ba-rock-2023_08_28_20_58_33.084-0.mp4",
+      "file": "rock-test-0.mp4",
+      "sign": "rock",
+      "variant": "sparse",
+      "duration": 3.041667,
+      "frameCount": 16,
+      "tracked": 4,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": 2800,
+          "0.55": 2800,
+          "0.6": 2800,
+          "0.65": 2800,
+          "0.69": 2800,
+          "0.75": 2800,
+          "0.79": 2800
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0.847947525561747,
+        "pencil": 0
+      },
+      "cpuMs": [
+        76,
+        45
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/rock/933d-rock-2024_03_22_13_24_03.663-1.mp4",
+      "file": "rock-test-1.mp4",
+      "sign": "rock",
+      "variant": "sparse",
+      "duration": 3.875,
+      "frameCount": 20,
+      "tracked": 5,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": 2400,
+          "0.55": 2400,
+          "0.6": 2400,
+          "0.65": 2400,
+          "0.69": 2400,
+          "0.75": 2400,
+          "0.79": 2400
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0.9958751339436325,
+        "pencil": 0
+      },
+      "cpuMs": [
+        101,
+        75,
+        30,
+        38
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/rock/16f0-rock-2023_10_24_19_04_37.893-1.mp4",
+      "file": "rock-test-2.mp4",
+      "sign": "rock",
+      "variant": "sparse",
+      "duration": 2.291667,
+      "frameCount": 12,
+      "tracked": 7,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0.8415410593937118,
+        "pencil": 0
+      },
+      "cpuMs": [
+        125,
+        106
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/sleep/111c-sleep-2023_01_30_11_56_57.571-0.mp4",
+      "file": "sleep-test-0.mp4",
+      "sign": "sleep",
+      "variant": "sparse",
+      "duration": 3.041667,
+      "frameCount": 16,
+      "tracked": 5,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": 2000,
+          "0.55": 2000,
+          "0.6": 2000,
+          "0.65": 2000,
+          "0.69": 2000,
+          "0.75": 2000,
+          "0.79": 2000
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0.9974767655242929,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        115,
+        83,
+        40,
+        41
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/sleep/af6d-sleep-2023_01_26_11_11_30.685-0.mp4",
+      "file": "sleep-test-1.mp4",
+      "sign": "sleep",
+      "variant": "sparse",
+      "duration": 1.791667,
+      "frameCount": 9,
+      "tracked": 9,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": 1600,
+          "0.55": 1600,
+          "0.6": 1600,
+          "0.65": 1600,
+          "0.69": 1600,
+          "0.75": 1600,
+          "0.79": 1600
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0.9729226258571306,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        133,
+        270,
+        161
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/sleep/66d7-sleep-2023_01_26_14_06_06.918-0.mp4",
+      "file": "sleep-test-2.mp4",
+      "sign": "sleep",
+      "variant": "sparse",
+      "duration": 3.166667,
+      "frameCount": 16,
+      "tracked": 4,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": 2800,
+          "0.55": 2800,
+          "0.6": 2800,
+          "0.65": 2800,
+          "0.69": 2800,
+          "0.75": 2800,
+          "0.79": 2800
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0.8534342257292988,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        225,
+        71
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/stop/16f0-stop-2023_10_30_14_31_07.282-1.mp4",
+      "file": "stop-test-0.mp4",
+      "sign": "stop",
+      "variant": "sparse",
+      "duration": 2,
+      "frameCount": 10,
+      "tracked": 10,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": 1600,
+          "0.55": 1600,
+          "0.6": 1600,
+          "0.65": 1600,
+          "0.69": 1600,
+          "0.75": 1600,
+          "0.79": 1600
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0.9973039707084725,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        149,
+        285,
+        268
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/stop/a1ba-stop-2023_08_27_23_48_55.279-0.mp4",
+      "file": "stop-test-1.mp4",
+      "sign": "stop",
+      "variant": "sparse",
+      "duration": 2.875,
+      "frameCount": 15,
+      "tracked": 4,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/stop/66d7-stop-2023_09_05_16_20_04.327-0.mp4",
+      "file": "stop-test-2.mp4",
+      "sign": "stop",
+      "variant": "sparse",
+      "duration": 2.291667,
+      "frameCount": 12,
+      "tracked": 5,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0.16153773987625905,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        171,
+        102,
+        68
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/who/a1ba-who-2023_01_13_22_28_00.844-0.mp4",
+      "file": "who-test-0.mp4",
+      "sign": "who",
+      "variant": "sparse",
+      "duration": 1.666667,
+      "frameCount": 9,
+      "tracked": 3,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/who/af36-who-2023_01_30_01_00_59.145-0.mp4",
+      "file": "who-test-1.mp4",
+      "sign": "who",
+      "variant": "sparse",
+      "duration": 3.75,
+      "frameCount": 19,
+      "tracked": 12,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": 1600,
+          "0.55": 1600,
+          "0.6": 1600,
+          "0.65": 1600,
+          "0.69": 1600,
+          "0.75": 2400,
+          "0.79": 2800
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0.9532719901335382,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        122,
+        102,
+        105,
+        118,
+        103,
+        81,
+        36
+      ]
+    },
+    {
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/who/616e-who-2023_01_26_20_09_36.713-0.mp4",
+      "file": "who-test-2.mp4",
+      "sign": "who",
+      "variant": "sparse",
+      "duration": 1.791667,
+      "frameCount": 9,
+      "tracked": 8,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": 1600,
+          "0.55": 1600,
+          "0.6": 1600,
+          "0.65": 1600,
+          "0.69": 1600,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0.8204561863089437,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": [
+        134,
+        87,
+        153
+      ]
+    },
+    {
+      "sign": "blank",
+      "variant": "synthetic-empty",
+      "duration": 2.6,
+      "frameCount": 39,
+      "tracked": 0,
+      "decisions": {
+        "please": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "drink": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "draw": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "jump": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "green": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "stop": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "sleep": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "who": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "rock": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        },
+        "pencil": {
+          "0.5": null,
+          "0.55": null,
+          "0.6": null,
+          "0.65": null,
+          "0.69": null,
+          "0.75": null,
+          "0.79": null
+        }
+      },
+      "max": {
+        "please": 0,
+        "drink": 0,
+        "draw": 0,
+        "jump": 0,
+        "green": 0,
+        "stop": 0,
+        "sleep": 0,
+        "who": 0,
+        "rock": 0,
+        "pencil": 0
+      },
+      "cpuMs": []
+    }
+  ]
+}

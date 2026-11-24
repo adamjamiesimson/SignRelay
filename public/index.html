@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1410">
+  <meta name="description" content="Spin. Sign. Score. Play five quick ASL challenges at the SignRelay exhibition booth.">
+  <title>SignRelay GameShow</title>
+  <link rel="icon" href="./brand/signrelay-mark.webp">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./main.mjs"></script>
+</head>
+<body data-stage="loading">
+  <a class="skiplink" href="#stage">Skip to game</a>
+  <div class="shell">
+    <header class="masthead">
+      <button class="brand" data-action="attract" aria-label="SignRelay GameShow home">
+        <img src="./brand/signrelay-mark.webp" alt="" width="36" height="36">
+        <span>SignRelay <span class="brand-suffix">GameShow</span></span>
+      </button>
+      <div class="head-actions">
+        <button class="icon-button" data-action="mute" title="Mute sound" aria-label="Mute sound"></button>
+        <button class="icon-button" data-action="fullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen"></button>
+        <button class="icon-button" data-action="host" title="Host controls (Alt + H)" aria-label="Host controls"></button>
+      </div>
+    </header>
+
+    <main class="layout" id="stage" tabindex="-1">
+      <div class="game">
+        <section id="wheel-stage" class="stage wheel-stage" aria-labelledby="wheel-title">
+          <div class="wheel-copy" id="wheel-copy"></div>
+          <div class="wheel-visual">
+            <div class="wheel-frame">
+              <canvas id="wheel" width="640" height="640" aria-label="Wheel with ten ASL signs" role="img"></canvas>
+              <div class="wheel-pointer" aria-hidden="true"></div>
+              <button class="wheel-hub" id="wheel-hub" data-action="spin" aria-label="Spin the wheel">
+                <img src="./brand/signrelay-mark.webp" width="40" height="40" alt="">
+              </button>
+            </div>
+          </div>
+        </section>
+        <section id="teaching-stage" class="stage lesson" hidden aria-labelledby="lesson-title">
+          <div class="lesson-copy" id="lesson-copy"></div>
+          <div class="video-box lesson-video">
+            <video id="lesson-video" muted playsinline loop preload="metadata" aria-label="ASL sign demonstration"></video>
+            <button class="media-control" data-action="replay" aria-label="Replay demonstration"></button>
+          </div>
+        </section>
+        <section id="challenge-stage" class="stage challenge" hidden aria-labelledby="challenge-title">
+          <div class="camera-box">
+            <video id="camera" muted playsinline aria-label="Mirrored live camera"></video>
+            <canvas id="overlay" aria-hidden="true"></canvas>
+            <div class="camera-guides" aria-hidden="true"></div>
+            <div id="camera-message" class="camera-message"></div>
+          </div>
+          <div class="challenge-side">
+            <div class="challenge-copy" id="challenge-copy"></div>
+            <div class="countdown" id="countdown" aria-label="Seconds remaining"><span id="seconds">20</span><span class="seconds-unit">s</span></div>
+            <div class="time-track" aria-hidden="true"><div id="time-fill"></div></div>
+            <p id="feedback" class="feedback" role="status"></p>
+            <details class="reference">
+              <summary>Show the sign</summary>
+              <video id="reference-video" muted playsinline loop preload="none" aria-label="Reference sign"></video>
+            </details>
+            <div id="challenge-actions"></div>
+          </div>
+        </section>
+        <section id="result-stage" class="stage result" hidden></section>
+        <section id="completion-stage" class="stage result completion" hidden></section>
+        <noscript>Enable JavaScript to play SignRelay GameShow.</noscript>
+      </div>
+
+      <aside class="side">
+        <section class="leaderboard" aria-labelledby="leader-title">
+          <header class="board-head">
+            <div><p class="eyebrow"><span class="status-dot"></span> LIVE SCORES</p><h2 id="leader-title">Leaderboard</h2></div>
+            <button class="icon-button" data-action="leaderboard" title="Open leaderboard" aria-label="Open leaderboard"></button>
+          </header>
+          <ol id="board-list" aria-label="Participant rankings"></ol>
+          <div class="board-footer"><span id="board-count"></span><button class="text-button" data-action="leaderboard">Full leaderboard</button></div>
+        </section>
+        <section id="player-card" class="player-card" aria-label="Current player"></section>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <span>AMERICAN SIGN LANGUAGE</span><span>5 rounds <b>·</b> 20 seconds each <b>·</b> 50 points to win</span>
+      <button class="text-button" data-action="open-players">Switch player</button>
+    </footer>
+  </div>
+
+  <dialog id="players" aria-labelledby="players-title">
+    <header class="dialog-head"><h2 id="players-title">Players</h2><button class="icon-button" data-close="players" aria-label="Close players"></button></header>
+    <form id="register" class="inline-form">
+      <label for="name">Name or nickname</label><input id="name" name="name" maxlength="36" autocomplete="off" required>
+      <button class="primary" type="submit">Add player</button>
+    </form>
+    <label class="search">Find a player<input id="search" type="search" placeholder="Search name or player ID" autocomplete="off"></label>
+    <div id="people" class="people"></div>
+  </dialog>
+  <dialog id="leader-dialog" class="leader-dialog" aria-labelledby="full-leader-title">
+    <header class="dialog-head"><div><p class="eyebrow">LIVE SCORES</p><h2 id="full-leader-title">Leaderboard</h2></div><div class="head-actions"><button class="icon-button" data-action="leader-fullscreen" title="Fullscreen leaderboard" aria-label="Fullscreen leaderboard"></button><button class="icon-button" data-close="leader-dialog" aria-label="Close leaderboard"></button></div></header>
+    <ol id="full-board" aria-label="All participant rankings"></ol>
+  </dialog>
+  <dialog id="host" class="host-dialog" aria-labelledby="host-title">
+    <header class="dialog-head"><h2 id="host-title">Host controls</h2><button class="icon-button" data-close="host" aria-label="Close host controls"></button></header>
+    <div id="host-round"></div>
+    <details open><summary>Camera and recognition</summary>
+      <div class="host-settings">
+        <label>Camera<select id="camera-select" data-setting="camera"></select></label>
+        <label>Sensitivity<select id="sensitivity" data-setting="mode"><option value="relaxed">Relaxed · 60</option><option value="standard">Standard · 69</option><option value="strict">Strict · 79</option><option value="custom">Custom</option></select></label>
+        <label id="custom-row">Custom threshold <output id="custom-value"></output><input type="range" id="custom" data-setting="custom" min="40" max="95" step="1"></label>
+        <label class="check"><input type="checkbox" id="manual" data-setting="manual"> Host judging only</label>
+        <label class="check"><input type="checkbox" id="overlay-setting" data-setting="overlay"> Show hand tracking overlay</label>
+        <label>Volume <output id="volume-value"></output><input type="range" id="volume" data-setting="volume" min="0" max="100" step="1"></label>
+      </div>
+      <div class="button-row"><button data-action="retry">Retry camera and models</button><button data-action="fullscreen">Toggle fullscreen</button></div>
+    </details>
+    <details><summary>Readiness and diagnostics</summary><div id="diagnostics" class="diagnostics" aria-live="off"></div><div class="button-row"><button data-action="offline">Verify offline cache</button><button data-action="persist">Request durable storage</button></div></details>
+    <details><summary>Session and backups</summary><div class="button-row">
+      <button data-action="open-players">Manage players</button><button data-action="attract">Attract mode</button>
+      <button data-action="backup">Export JSON</button><button data-action="csv">Export CSV</button>
+      <button data-action="import">Restore JSON</button><button class="danger" data-action="reset">Reset session</button>
+    </div><input type="file" id="backup-file" accept=".json,application/json" hidden></details>
+    <details id="attribution"><summary>Teaching clip credits</summary><div id="credits"></div></details>
+  </dialog>
+  <dialog id="confirm" aria-labelledby="confirm-title">
+    <header class="dialog-head"><h2 id="confirm-title">Confirm change</h2></header>
+    <form method="dialog"><p id="confirm-message"></p><div class="button-row"><button value="cancel" autofocus>Cancel</button><button id="confirm-yes" class="danger" value="yes">Confirm</button></div></form>
+  </dialog>
+  <dialog id="rename" aria-labelledby="rename-title">
+    <header class="dialog-head"><h2 id="rename-title">Edit player name</h2></header>
+    <form id="rename-form"><label for="new-name">Name or nickname</label><input id="new-name" maxlength="36" required><div class="button-row"><button type="button" data-close="rename">Cancel</button><button class="primary">Save name</button></div></form>
+  </dialog>
+  <div id="toast" role="status" hidden></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+</body>
+</html>
+
