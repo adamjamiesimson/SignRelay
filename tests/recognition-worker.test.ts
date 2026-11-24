@@ -4,7 +4,7 @@ import type { VisionFrame, WorkerInput, WorkerMessage } from "../lib/vision-type
 
 const mocks = vi.hoisted(() => ({
   asl: vi.fn(), bsl: vi.fn(), isl: vi.fn(), lse: vi.fn(), psl: vi.fn(),
-  motion: vi.fn(), personal: vi.fn(), openConflict: vi.fn(), starter: vi.fn(),
+  warm: vi.fn(), motion: vi.fn(), personal: vi.fn(), openConflict: vi.fn(), starter: vi.fn(),
 }));
 vi.mock("../lib/asl-starter-recognition", async importOriginal => {
   const actual = await importOriginal<typeof import("../lib/asl-starter-recognition")>();
@@ -13,7 +13,17 @@ vi.mock("../lib/asl-starter-recognition", async importOriginal => {
     : mocks.starter() ?? { prediction: null, ambiguousOpenPalm: false, labels: [] } };
 });
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.asl }));
-vi.mock("../lib/bsl1064-runtime", () => ({ recognizeBsl1064: mocks.bsl }));
+vi.mock("../lib/bsl1064-runtime", () => ({
+  // The real runtime returns its decision alongside the (possibly null) prediction.
+  analyzeBsl1064: async (sequence: VisionFrame[], options: unknown) => {
+    const result = await mocks.bsl(sequence, options);
+    const decision = { status: result ? "accepted" : "uncertain", best: result?.label ?? "", top5: [],
+      pTop1: result?.confidence ?? 0, margin: result?.margin ?? 0, windows: 1, spanFrames: 16, handFrames: 16, slotDisagreements: 0, inferenceMs: 1, reason: "" };
+    (options as { onDecision?: (value: typeof decision) => void }).onDecision?.(decision);
+    return { prediction: result ?? null, decision };
+  },
+  warmBsl1064: () => mocks.warm(),
+}));
 vi.mock("../lib/isl263-runtime", () => ({ recognizeIsl263: mocks.isl }));
 vi.mock("../lib/lse300-runtime", () => ({ recognizeLse300: mocks.lse }));
 vi.mock("../lib/psl776-runtime", () => ({ recognizePsl776: mocks.psl }));
@@ -39,6 +49,7 @@ async function frames(count: number) {
     await Promise.resolve();
   }
 }
+const suggestions = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "suggestion");
 const confirmations = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "confirmed");
 const candidates = () => worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).flatMap(m => m.type === "analysis" && m.candidate ? [m.candidate] : []);
 
@@ -47,6 +58,7 @@ beforeEach(async () => {
   vi.resetAllMocks();
   timestamp = 0;
   for (const id of ["asl", "bsl", "isl", "lse", "psl"] as const) mocks[id].mockResolvedValue(null);
+  mocks.warm.mockResolvedValue(undefined);
   mocks.motion.mockReturnValue(true);
   mocks.openConflict.mockReturnValue(false);
   mocks.personal.mockReturnValue(null);
@@ -57,7 +69,7 @@ beforeEach(async () => {
 });
 
 describe("live worker regression coverage (synthetic control inputs, not sign accuracy)", () => {
-  it.each(["asl", "bsl", "isl", "lse", "psl"] as const)("keeps %s inference running after the rolling buffer fills", async language => {
+  it.each(["asl", "isl", "lse", "psl"] as const)("keeps %s inference running after the rolling buffer fills", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     await frames(90);
     const before = mocks[language].mock.calls.length;
@@ -104,7 +116,62 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(confirmations()).toHaveLength(0);
   });
 
-  it.each(["bsl", "isl", "lse", "psl"] as const)("confirms two fresh matching %s predictions", async language => {
+  it("evaluates each completed BSL movement once, including after the rolling buffer fills", async () => {
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [] } });
+    await frames(90);
+    expect(mocks.bsl).toHaveBeenCalledOnce();
+    mocks.motion.mockReturnValue(false);
+    await frames(5);
+    mocks.motion.mockReturnValue(true);
+    await frames(30);
+    expect(mocks.bsl).toHaveBeenCalledTimes(2);
+  });
+
+  it("turns a BSL model match into one reviewable suggestion, never a transcript confirmation", async () => {
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [] } });
+    mocks.bsl.mockResolvedValue(prediction);
+    await frames(4);
+    expect(confirmations()).toHaveLength(0);
+    expect(suggestions()).toHaveLength(1);
+    expect(suggestions()[0]).toMatchObject({ gloss: "BOOK", text: "Book", source: "model" });
+    // The same sign repeated straight away is a duplicate, not a second word.
+    mocks.motion.mockReturnValue(false);
+    await frames(2);
+    mocks.motion.mockReturnValue(true);
+    await frames(4);
+    expect(mocks.bsl).toHaveBeenCalledTimes(2);
+    expect(suggestions()).toHaveLength(1);
+    // After the cooldown the same sign may be suggested again.
+    mocks.motion.mockReturnValue(false);
+    await frames(30);
+    mocks.motion.mockReturnValue(true);
+    await frames(4);
+    expect(suggestions()).toHaveLength(2);
+    expect(confirmations()).toHaveLength(0);
+  });
+
+  it("uses the legacy BSL input by default and the BSL-1K v2 contract only when requested", async () => {
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [] } });
+    await frames(4);
+    expect(mocks.bsl.mock.calls[0][1]).toMatchObject({ engine: "legacy" });
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [], bslEngine: "v2" } });
+    await frames(4);
+    expect(mocks.bsl.mock.calls[1][1]).toMatchObject({ engine: "v2" });
+  });
+
+  it("reports BSL stage diagnostics only when the page asks for them", async () => {
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [] } });
+    await frames(30);
+    expect(worker.postMessage.mock.calls.some(([m]) => "bslDiagnostics" in m)).toBe(false);
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [], diagnostics: true } });
+    mocks.bsl.mockResolvedValue(prediction);
+    await frames(30);
+    const last = worker.postMessage.mock.calls.map(([m]) => m as WorkerMessage).filter(m => m.type === "analysis").at(-1);
+    expect(last?.type === "analysis" && last.bslDiagnostics).toMatchObject({ engine: "legacy", signsCompleted: 1, inferences: 1,
+      suggestionsPosted: 1, decisions: { accepted: 1 } });
+  });
+
+  it.each(["isl", "lse", "psl"] as const)("confirms two fresh matching %s predictions", async language => {
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     mocks[language].mockResolvedValue(prediction);
     await frames(34);
@@ -193,7 +260,15 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     expect(candidates()).toEqual([]);
     expect(worker.postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ bufferSize: 3 });
   });
-  it.each(["bsl", "isl"] as const)("allows a slow initial %s model download beyond 20 seconds", async language => {
+  it("lets a completed BSL sign wait for a slow initial model download instead of faulting", async () => {
+    mocks.warm.mockImplementation(() => new Promise(() => {}));
+    await worker.onmessage({ data: { type: "templates", language: "bsl", templates: [] } });
+    await frames(270);
+    expect(worker.postMessage.mock.calls.some(([m]) => m.type === "fault")).toBe(false);
+    expect(mocks.bsl).not.toHaveBeenCalled();
+  });
+
+  it.each(["isl"] as const)("allows a slow initial %s model download beyond 20 seconds", async language => {
     mocks[language].mockImplementation(() => new Promise(() => {}));
     await worker.onmessage({ data: { type: "templates", language, templates: [] } });
     await frames(270);
@@ -236,6 +311,9 @@ describe("live worker regression coverage (synthetic control inputs, not sign ac
     mocks[language].mockImplementation((_frames, options) => {
       options.onPhase("inference"); return new Promise(() => {});
     });
+    // BSL evaluates once per completed movement: let the first finish, then start a new one.
+    await frames(2);
+    mocks.motion.mockReturnValueOnce(false);
     await frames(210);
     expect(worker.postMessage.mock.calls.filter(([m]) => m.type === "fault")).toHaveLength(1);
   });

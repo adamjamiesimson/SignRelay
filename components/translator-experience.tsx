@@ -51,6 +51,7 @@ import { ASL_ONLY, ASL_V3_ENABLED, OUT_OF_PROFILE_LABEL, isLanguageAvailable } f
 import { REHEARSAL, RehearsalScript } from "@/lib/rehearsal";
 import { formatPerfReadout, RollingTimer, ThroughputMonitor } from "@/lib/frame-perf";
 import { formatAslV31Diagnostics, type AslV31Diagnostics, type AslV31UiCounts } from "@/lib/asl-v31-diagnostics";
+import { formatBslDiagnostics, type BslDiagnostics } from "@/lib/bsl-diagnostics";
 import { shouldAnalyseFrame } from "@/lib/frame-timing";
 import { capabilityStatus, SIGN_LANGUAGE_NOTE, workspaceModel } from "@/lib/capability-status";
 const RslRecognizer = dynamic(() => import("@/components/rsl-recognizer").then(module => module.RslRecognizer));
@@ -99,6 +100,14 @@ export function TranslatorExperience() {
   const [privacyMessage, setPrivacyMessage] = useState("");
   // Opt-in device-test readout (`?perf`): timings only, nothing is stored or sent.
   const [perfMode] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("perf"));
+  // Developer preview only: `?perf&bslEngine=v2` selects the BSL-1K contract input on this device.
+  // Ignored without ?perf, so the normal page always uses the worker default.
+  const [bslEngine] = useState<"v2" | "legacy" | undefined>(() => {
+    if (typeof window === "undefined") return undefined;
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get("bslEngine");
+    return params.has("perf") && (value === "v2" || value === "legacy") ? value : undefined;
+  });
   const [perfReadout, setPerfReadout] = useState("");
   const [perfStages, setPerfStages] = useState<string[]>([]);
   const [perfWarning, setPerfWarning] = useState<string | null>(null);
@@ -155,12 +164,15 @@ export function TranslatorExperience() {
   }, []);
   // ?perf only: V3.1 stage counters from the worker and what the page did with suggestions.
   const diagnosticsRef = useRef<AslV31Diagnostics | null>(null);
+  const bslDiagnosticsRef = useRef<BslDiagnostics | null>(null);
   const stageCountsRef = useRef<AslV31UiCounts>({ received: 0, ignored: 0, shown: 0, added: 0, spoken: 0 });
   const perfRef = useRef({ tracking: new RollingTimer(), roundTrip: new RollingTimer(), queueWait: new RollingTimer(),
     throughput: new ThroughputMonitor(), analysed: 0, since: 0, frames: 0, handFrames: 0 });
 
   const model = workspaceModel(selected);
   const useAslV3 = ASL_V3_ENABLED && selected === "asl";
+  // Model output that must be reviewed before it reaches the transcript or speech.
+  const reviewsModelSuggestions = useAslV3 || selected === "bsl";
 
   const calibrationCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -227,8 +239,8 @@ export function TranslatorExperience() {
   useEffect(() => {
     templatesRef.current = calibrationTemplates;
     workerRef.current?.postMessage({ type: "templates", language: selected, templates: calibrationTemplates,
-      aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode });
-  }, [calibrationTemplates, selected, useAslV3, perfMode]);
+      aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode, bslEngine });
+  }, [calibrationTemplates, selected, useAslV3, perfMode, bslEngine]);
 
   const updateSuggestion = useCallback((next: WorkerSuggestion | null) => {
     if (next) stageCountsRef.current.shown++;
@@ -352,20 +364,22 @@ export function TranslatorExperience() {
       setRecognitionFeedback(message.feedback ?? "");
       setMotionReason(message.motionReason ?? null);
       if (message.diagnostics) diagnosticsRef.current = message.diagnostics;
+      if (message.bslDiagnostics) bslDiagnosticsRef.current = message.bslDiagnostics;
       return;
     }
     // Confirmations from a stopped or replaced session never reach here:
     // RecognitionSession drops messages from before every reset.
     if (message.type === "suggestion") {
       stageCountsRef.current.received++;
-      if (useAslV3 && engineRef.current && !document.hidden) updateSuggestion(message);
+      if (reviewsModelSuggestions && engineRef.current && !document.hidden) updateSuggestion(message);
       else stageCountsRef.current.ignored++;
     }
-    if (message.type === "confirmed" && (!useAslV3 || message.source === "personal")) {
+    // Model words for reviewed languages only reach the transcript through "Add to transcript".
+    if (message.type === "confirmed" && (!reviewsModelSuggestions || message.source === "personal")) {
       updateSuggestion(null);
       appendWord(message);
     }
-  }, [appendWord, perfMode, updateSuggestion, useAslV3]);
+  }, [appendWord, perfMode, updateSuggestion, reviewsModelSuggestions]);
 
   const addSuggestedWord = () => {
     if (!suggestion || suggestion !== suggestionRef.current || document.hidden) return;
@@ -393,13 +407,13 @@ export function TranslatorExperience() {
       },
     );
     worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current,
-      aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode });
+      aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode, bslEngine });
     workerRef.current = worker;
     return () => {
       worker.terminate();
       workerRef.current = null;
     };
-  }, [step, selected, handleWorkerMessage, updateSuggestion, useAslV3, perfMode]);
+  }, [step, selected, handleWorkerMessage, updateSuggestion, useAslV3, perfMode, bslEngine]);
 
   const stopCamera = useCallback(() => {
     cameraGenerationRef.current++;
@@ -436,6 +450,7 @@ export function TranslatorExperience() {
     perf.tracking.reset(); perf.roundTrip.reset(); perf.queueWait.reset(); perf.throughput.reset();
     perf.analysed = 0; perf.frames = 0; perf.handFrames = 0; perf.since = performance.now();
     diagnosticsRef.current = null;
+    bslDiagnosticsRef.current = null;
     stageCountsRef.current = { received: 0, ignored: 0, shown: 0, added: 0, spoken: 0 };
     workerRef.current?.resetStats();
     const timer = window.setInterval(() => {
@@ -449,7 +464,8 @@ export function TranslatorExperience() {
         hands: { seen: perf.handFrames, frames: perf.frames } }));
       const engine = engineRef.current;
       setPerfStages(diagnosticsRef.current && engine && "trackingMode" in engine
-        ? formatAslV31Diagnostics(diagnosticsRef.current, stageCountsRef.current, perf.frames, engine.trackingMode) : []);
+        ? formatAslV31Diagnostics(diagnosticsRef.current, stageCountsRef.current, perf.frames, engine.trackingMode)
+        : bslDiagnosticsRef.current ? formatBslDiagnostics(bslDiagnosticsRef.current, stageCountsRef.current, perf.frames) : []);
     }, 1000);
     return () => { window.clearInterval(timer); setPerfWarning(null); setPerfStages([]); };
   }, [perfMode, cameraState]);

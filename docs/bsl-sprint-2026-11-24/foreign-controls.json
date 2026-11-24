@@ -1,0 +1,371 @@
+{
+ "description": "ASL recordings (PopSign v1.0 game/test and v2.1 game/val, CC BY 4.0, Georgia Tech CCG / DPAN) used ONLY as non-BSL signing controls for BSL false-accept measurement and real-tracker statistics. Never scored as BSL signs. Media stay in ignored evaluation/videos/.",
+ "trials": [
+  {
+   "trial_id": "asl-hello-gtsignstudy4a.8031",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-gtsignstudy4a.8031",
+   "cohort": "controls",
+   "file": "evaluation/videos/popsign/hello-gtsignstudy4a.8031.mp4",
+   "recording_sha256": "c72b902e61fb6b97b5407fca80ed4d560bd9f5cd0f0dd79ab88712b3eb51e011",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v1_0/game/test/hello.tar#hello/gtsignstudy4a.8031-hello-2023_01_25_18_45_25.698-1.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-hello",
+    "form-similar-to-bsl-hello"
+   ]
+  },
+  {
+   "trial_id": "asl-hello-gtsignstudy4a.8033",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-gtsignstudy4a.8033",
+   "cohort": "controls",
+   "file": "evaluation/videos/popsign/hello-gtsignstudy4a.8033.mp4",
+   "recording_sha256": "b929cd2858bf5fa6ea3aa464aa958620eb5a537d7b4b3e8e105cc94995584a85",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v1_0/game/test/hello.tar#hello/gtsignstudy4a.8033-hello-2023_01_29_11_53_17.074-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-hello",
+    "form-similar-to-bsl-hello"
+   ]
+  },
+  {
+   "trial_id": "asl-please-gtsignstudy4a.8031",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-gtsignstudy4a.8031",
+   "cohort": "controls",
+   "file": "evaluation/videos/popsign/please-gtsignstudy4a.8031.mp4",
+   "recording_sha256": "e517287d60d2e8fde92c090b30a9850472fc7a867bce7ba631b3ae7bbe0f8fd5",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v1_0/game/test/please.tar#please/gtsignstudy4a.8031-please-2023_01_25_13_45_56.442-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-please"
+   ]
+  },
+  {
+   "trial_id": "asl-please-gtsignstudy4a.8033",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-gtsignstudy4a.8033",
+   "cohort": "controls",
+   "file": "evaluation/videos/popsign/please-gtsignstudy4a.8033.mp4",
+   "recording_sha256": "36925d898229dc86a8b4a229f191ddaaa2ea081cd6083a9d4df690903e9832f6",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v1_0/game/test/please.tar#please/gtsignstudy4a.8033-please-2023_01_29_11_35_51.440-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-please"
+   ]
+  },
+  {
+   "trial_id": "asl-thankyou-gtsignstudy4a.8033",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-gtsignstudy4a.8033",
+   "cohort": "controls",
+   "file": "evaluation/videos/popsign/thankyou-gtsignstudy4a.8033.mp4",
+   "recording_sha256": "64c641c6538fb247d66d15e416d577e854596978c1766222c94ce7fd0333fbd5",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v1_0/game/test/thankyou.tar#thankyou/gtsignstudy4a.8033-thankyou-2023_01_29_18_43_21.819-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-thank-you"
+   ]
+  },
+  {
+   "trial_id": "asl-thankyou-gtsignstudy4a.8031",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-gtsignstudy4a.8031",
+   "cohort": "controls",
+   "file": "evaluation/videos/popsign/thankyou-gtsignstudy4a.8031.mp4",
+   "recording_sha256": "a2a6e355acd076235ff7901a4fb6977da7ef64aa302db2ed4e0867e548c5b8d1",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v1_0/game/test/thankyou.tar#thankyou/gtsignstudy4a.8031-thankyou-2023_01_25_18_06_25.399-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-thank-you"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-make-c6e5-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-c6e5",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/make/c6e5-make-2023_01_25_18_03_28.033-0.mp4",
+   "recording_sha256": "f711e2871958c510fd59cc68da355651d21141fc868730d132f7e7fec624de47",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/make/c6e5-make-2023_01_25_18_03_28.033-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-make"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-allgone-6aaa-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-6aaa",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/allgone/6aaa-allgone-2024_04_26_16_41_39.102-1.mp4",
+   "recording_sha256": "4441eac991aa2b8ae6555f0cc73c67006ce819c02fed093007c1b48bb641e935",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/allgone/6aaa-allgone-2024_04_26_16_41_39.102-1.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-allgone"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-close-d5fd-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-d5fd",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/close/d5fd-close-2023_01_11_14_46_03.293-0.mp4",
+   "recording_sha256": "b9edc8f1f4eed1e0e455a42a4f15832a67e447d3fc40a700c7179af1eb9b0f7f",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/close/d5fd-close-2023_01_11_14_46_03.293-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-close"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-bee-a459-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-a459",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/bee/a459-bee-2023_01_11_17_48_15.230-0.mp4",
+   "recording_sha256": "590c1f9546df84e1ef54129f298510aaf6dd9b446443094b7d7d402d54f523e3",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/bee/a459-bee-2023_01_11_17_48_15.230-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-bee"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-who-a459-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-a459",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/who/a459-who-2023_01_19_00_16_50.441-0.mp4",
+   "recording_sha256": "dda12ee93fed99b199f224e1d28913782317f841c81db765263badce2ed0f69e",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/who/a459-who-2023_01_19_00_16_50.441-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-who"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-bunny-ebdb-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-ebdb",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/bunny/ebdb-bunny-2023_09_12_13_48_31.476-0.mp4",
+   "recording_sha256": "b56383ffb4a0e5da0848a47f40349084be773df5b5a8c03b8326081fb4dc8374",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/bunny/ebdb-bunny-2023_09_12_13_48_31.476-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-rabbit"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-day-ebdb-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-ebdb",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/day/ebdb-day-2023_09_12_14_16_26.434-0.mp4",
+   "recording_sha256": "acdb9ae0b07454e643e2a778faadd939193e8967195602a66e6ffcd8ad0fa12c",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/day/ebdb-day-2023_09_12_14_16_26.434-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-day"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-taste-2b19-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-2b19",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/taste/2b19-taste-2023_01_26_11_25_53.024-0.mp4",
+   "recording_sha256": "6d3cbe399d37bb4293e1df0c4d5a9a7ed6612720dcc5c9539bdf2cd3d59cd34e",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/taste/2b19-taste-2023_01_26_11_25_53.024-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-taste"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-green-ebdb-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-ebdb",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/green/ebdb-green-2023_01_30_12_56_58.163-0.mp4",
+   "recording_sha256": "410c2b6093b57aa680c1a1529ed663fd0a819572242d1f6cf6fefb137b3a467b",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/green/ebdb-green-2023_01_30_12_56_58.163-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-green"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-basket-f56c-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-f56c",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/basket/f56c-basket-2024_04_01_15_42_35.228-1.mp4",
+   "recording_sha256": "7c2fde8a2dc5b22d0b769ca6e162060e43a5ce7906771dc6d80d4e7e10270dfd",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/basket/f56c-basket-2024_04_01_15_42_35.228-1.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-basket"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-lawnmower-c6e5-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-c6e5",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/lawnmower/c6e5-lawnmower-2023_08_17_15_16_33.493-0.mp4",
+   "recording_sha256": "27cb7ba089c5ef380ea1ab08be5938add2622b6f3528dca984bf129b76e3bdf1",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/lawnmower/c6e5-lawnmower-2023_08_17_15_16_33.493-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-lawnmower"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-knock-f56c-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-f56c",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/knock/f56c-knock-2024_03_30_20_16_51.353-1.mp4",
+   "recording_sha256": "9b44c3f13dd133d66a65b5c7a5e0ac4f61648f254cef488337c5349f51667b5a",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/knock/f56c-knock-2024_03_30_20_16_51.353-1.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-knock"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-on-2b19-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-2b19",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/on/2b19-on-2023_01_28_19_49_31.974-0.mp4",
+   "recording_sha256": "86f97a84dff58e897edb3bf328d31056275407428f8779edcfdbcd9566f01b0e",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/on/2b19-on-2023_01_28_19_49_31.974-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-on"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-teacher-c6e5-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-c6e5",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/teacher/c6e5-teacher-2023_08_17_11_59_44.446-0.mp4",
+   "recording_sha256": "7dea3f446cd1cdeb1d0f162c64389a2d5d16e5812a435c67533a72d8bd9c738e",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/teacher/c6e5-teacher-2023_08_17_11_59_44.446-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-teacher"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-mailman-f56c-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-f56c",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/mailman/f56c-mailman-2024_04_02_14_03_42.445-1.mp4",
+   "recording_sha256": "0458a3cd560e394d64a5daba1b6ac4e1fc6c3f4f693a4add1743e3ead54fea93",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/mailman/f56c-mailman-2024_04_02_14_03_42.445-1.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-mailman"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-where-c6e5-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-c6e5",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/where/c6e5-where-2023_01_25_18_28_28.458-0.mp4",
+   "recording_sha256": "9a5f33c0e8f1d93b7b471fd25541273c667e9348149e6d083b8bc1379ef091f2",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/where/c6e5-where-2023_01_25_18_28_28.458-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-where"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-yesterday-c6e5-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-c6e5",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/yesterday/c6e5-yesterday-2023_01_25_19_12_39.656-0.mp4",
+   "recording_sha256": "88e732d4e001d15fe9c5d309065437455d546eeb89f2491e07d19dcb4688e3d5",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/yesterday/c6e5-yesterday-2023_01_25_19_12_39.656-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-yesterday"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-dinner-f56c-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-f56c",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/dinner/f56c-dinner-2024_04_01_15_50_24.046-1.mp4",
+   "recording_sha256": "b464a23c942173ad2fd10f49beaf8fc3e0fa18e2d50c4ef8e7adcac00830e118",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/dinner/f56c-dinner-2024_04_01_15_50_24.046-1.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-dinner"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-read-ebdb-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-ebdb",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/read/ebdb-read-2023_01_30_13_45_18.767-0.mp4",
+   "recording_sha256": "ac198bdf0920a1282168a414064c4eb2590a11a14cfe0455715894cb0c20ede7",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/read/ebdb-read-2023_01_30_13_45_18.767-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-read"
+   ]
+  },
+  {
+   "trial_id": "asl-sprint-moose-ebdb-A",
+   "category": "foreign_sign",
+   "expected_gloss": null,
+   "signer_id": "popsign-v2-ebdb",
+   "cohort": "controls",
+   "file": "evaluation/videos/engine-comparison/sprint/moose/ebdb-moose-2023_09_12_13_46_53.481-0.mp4",
+   "recording_sha256": "feed719c3fb3968638b6ef07924901f8bbb8f20bfea5bcf37ac23dd57ebceaa1",
+   "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/moose/ebdb-moose-2023_09_12_13_46_53.481-0.mp4",
+   "license": "CC BY 4.0",
+   "tags": [
+    "asl-moose"
+   ]
+  }
+ ]
+}

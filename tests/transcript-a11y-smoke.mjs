@@ -95,7 +95,10 @@ try {
   await key("Enter", "Enter", 13);
   await until(async () => !(await h.words()).includes("Thank you") && !(await h.words()).includes(""), "Emptied entry was kept");
   assert.deepEqual(await h.words(), ["Hello there", "Please", "Sorry", "Yes", "No"], "Only the emptied entry is removed");
-  checks.push({ check: "emptying an entry removes it" });
+  // finishEditing restores focus after the re-render (setTimeout 0). Wait for it, so it cannot
+  // move focus off the next control between our focus() call and the key press.
+  await until(() => h.evaluate("document.activeElement?.id === 'transcript-title'"), "Focus was not restored to the transcript after the emptied entry was removed");
+  checks.push({ check: "emptying an entry removes it and restores focus to the transcript" });
 
   // Removing an entry keeps keyboard focus in the transcript and says what happened.
   await h.evaluate("[...document.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === 'Remove Please').focus()");

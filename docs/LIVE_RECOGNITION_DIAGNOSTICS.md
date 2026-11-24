@@ -1,4 +1,4 @@
-# Live ASL recognition: reading the diagnostics
+# Live recognition (ASL V3.1 and BSL): reading the diagnostics
 
 Open the workspace with `?perf` (for example `https://signrelay.web.app/?perf`), choose American Sign
 Language and start the camera. Below the timing line, a developer panel shows what each stage of
@@ -26,3 +26,20 @@ Typical outcomes, from first stage to last:
 - **Shown but not added:** working as designed. A suggestion needs **Add to transcript**.
 
 An empty transcript on its own does not mean recognition failed.
+
+## British Sign Language (BSL)
+
+Choose British Sign Language with `?perf`. The panel shows the BSL pipeline instead:
+
+| Line | What it tells you |
+| --- | --- |
+| `BSL legacy|v2 · tracking · to recognizer · hands · shoulders` | Which input adapter is active, and whether hands and both shoulders are visible. The body-wrist hand assignment needs the shoulders and wrists in view. |
+| `Signs completed · skipped (model busy)` | A BSL sign completes when the hands have moved and then hold still for about a quarter of a second. Each completed sign is checked once. |
+| `Model … runs … failures` | The 1,064-sign BSL-1K model (downloaded when BSL is selected) and its last run time. |
+| `Decisions: accepted · uncertain · too few hands · no movement` | What the confidence policy decided for each completed sign. |
+| `Suggestions sent · stale · duplicates suppressed · received · shown · added · spoken` | BSL words are suggestions: they reach the transcript and speech only after **Add to transcript**. |
+| `Last BSL decision …` | Top three signs, how many 16-frame windows were scored, frames in the sign, hand frames, and how often the body-wrist check corrected the tracker's left/right hand label. |
+| `Next step` | The first stage that is not working, as one thing to try. |
+
+BSL recognition accuracy is unmeasured on real BSL video and on physical cameras. See
+`docs/bsl-sprint-2026-11-24/` for the audit, protocol and rehearsal procedure.

@@ -1,0 +1,46 @@
+[
+ {
+  "trial": "asl-sprint-mailman-f56c-A",
+  "observed_fps": 20.2,
+  "legacy_window_ms": 739,
+  "movement_ms": 280,
+  "legacy_frames_in_movement": "5/16",
+  "legacy_frames_after_movement": 3,
+  "v2_windows": 1,
+  "v2_movement_coverage": 1,
+  "label_corrections": "0/21"
+ },
+ {
+  "trial": "asl-please-gtsignstudy4a.8033",
+  "observed_fps": 20.3,
+  "legacy_window_ms": 737,
+  "movement_ms": 1680,
+  "legacy_frames_in_movement": "14/16",
+  "legacy_frames_after_movement": 2,
+  "v2_windows": 5,
+  "v2_movement_coverage": 1,
+  "label_corrections": "4/36"
+ },
+ {
+  "trial": "asl-sprint-basket-f56c-A",
+  "observed_fps": 20.2,
+  "legacy_window_ms": 733,
+  "movement_ms": 760,
+  "legacy_frames_in_movement": "8/16",
+  "legacy_frames_after_movement": 8,
+  "v2_windows": 2,
+  "v2_movement_coverage": 1,
+  "label_corrections": "0/19"
+ },
+ {
+  "trial": "asl-sprint-moose-ebdb-A",
+  "observed_fps": 20.2,
+  "legacy_window_ms": 733,
+  "movement_ms": 720,
+  "legacy_frames_in_movement": "15/16",
+  "legacy_frames_after_movement": 1,
+  "v2_windows": 2,
+  "v2_movement_coverage": 1,
+  "label_corrections": "0/15"
+ }
+]
