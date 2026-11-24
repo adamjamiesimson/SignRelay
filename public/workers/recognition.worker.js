@@ -15439,6 +15439,8 @@ var ASL_SUGGESTION_AMBIGUITY_MARGIN = AMBIGUITY_MARGIN;
 
 // lib/asl-v31-text.ts
 var DISPLAY = {
+  CALLONPHONE: "Call on phone",
+  TURNONLIGHT: "Turn on light",
   MINEMY: "Me",
   WEUS: "We",
   HESHEIT: "He/She",

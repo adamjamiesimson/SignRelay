@@ -98,8 +98,19 @@ def main():
                   f"top-5 {best['val_top5']:.3f} over {best['val_n']} clips")
 
     if args.export:
+        print("== calibrate ==", flush=True)
+        # A model without its own fitted gate ships placeholder thresholds and no prototypes, so the
+        # prototype cosine and max_unknown checks in the browser would do nothing.
+        code = run("calibrate.py", "--run", run_dir, "--cache", cache, check=False)
+        policy = os.path.join(run_dir, "policy.json")
+        prototypes = os.path.join(run_dir, "prototypes.npy")
         print("== export ==", flush=True)
-        code = run("export_onnx.py", "--run", run_dir, "--out", os.path.join(args.out_root, "onnx"), check=False)
+        export = ["--run", run_dir, "--out", os.path.join(args.out_root, "onnx")]
+        if os.path.exists(policy):
+            export += ["--policy", policy]
+        if os.path.exists(prototypes):
+            export += ["--prototypes", prototypes]
+        code = run("export_onnx.py", *export, check=False)
         if code:
             print("export step failed; the checkpoint is still in", run_dir)
 

@@ -46,6 +46,8 @@ import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalize
 import { parseCalibrationExport, serialiseCalibration } from "@/lib/calibration-transfer";
 import { enrolmentReport, type EnrolmentReport } from "@/lib/asl-v31-personal";
 import { displayText, predictNext, resolveAmbiguity } from "@/lib/asl-next-word";
+import { teachFirstSuggestions } from "@/lib/asl-v31-text";
+import MODEL_CLASSES from "../public/models/asl-v31/classes.json";
 import { nextWordModel } from "@/lib/next-word-corpus";
 import { AslV3Tracker } from "@/lib/asl-v3-tracker";
 import { VisionEngine } from "@/lib/vision-engine";
@@ -75,6 +77,10 @@ type Step = "welcome" | "workspace";
 type CameraState = "idle" | "requesting" | "loading" | "active" | "denied" | "error";
 type RecognitionState = "listening" | "processing" | "uncertain";
 type CalibrationState = "idle" | "countdown" | "recording" | "saving" | "saved" | "error";
+
+/** The glosses the pretrained model itself can recognise: signable without teaching. */
+const MODEL_BACKED_WORDS: ReadonlySet<string> = new Set<string>(MODEL_CLASSES as readonly string[]);
+const entry_text_for = (word: string) => word.charAt(0) + word.slice(1).toLowerCase();
 
 const EMPTY_DETECTION: DetectionStatus = {
   person: false,
@@ -216,6 +222,13 @@ export function TranslatorExperience() {
   }, [filteredCalibrationVocabulary, vocabularySearch]);
 
   const showVocabularySearch = selected !== "asl" || filteredCalibrationVocabulary.length > 80 || vocabularySearch !== "";
+
+  /** Everyday words the pretrained model has no class for: teaching them is the only way to sign them. */
+  const teachFirst = useMemo(() => {
+    if (!useAslV3) return [];
+    const taught = new Set(calibrationTemplates.map(template => template.gloss.toUpperCase()));
+    return teachFirstSuggestions().filter(word => !taught.has(word)).slice(0, 8);
+  }, [calibrationTemplates, useAslV3]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -948,6 +961,9 @@ export function TranslatorExperience() {
     const glossary = new Set<string>();
     for (const template of calibrationTemplates) if (template.gloss) glossary.add(template.gloss.toUpperCase());
     for (const entry of entries) if (entry.gloss) glossary.add(entry.gloss.toUpperCase());
+    // A word the model itself can recognise is signable without teaching, so it belongs in the row too;
+    // a taught-only word only appears once it has actually been taught.
+    for (const word of MODEL_BACKED_WORDS) glossary.add(word);
     const vocabulary = useAslV3 && glossary.size >= 3 ? glossary : undefined;
     return predictNext(languageModel, entries.map(entry => entry.gloss ?? entry.text), { limit: 3, vocabulary });
   }, [calibrationTemplates, entries, selected, useAslV3]);
@@ -1456,6 +1472,25 @@ export function TranslatorExperience() {
                           aria-label={`Search ${model.shortName} signs to teach`}
                         />
                       </label>
+                    </div>
+                  )}
+                  {teachFirst.length > 0 && (
+                    <div className="next-word-row" role="group" aria-label="Words the model has no class for">
+                      <span className="next-word-label">Teach first</span>
+                      {teachFirst.map((word) => (
+                        <button key={word} type="button" className="next-word-chip"
+                          onClick={() => {
+                            const entry = createCustomVocabularyEntry(word);
+                            if (!entry) return;
+                            captureGenerationRef.current++;
+                            setCalibrationWord(entry);
+                            captureStateRef.current = "idle";
+                            setCalibrationState("idle");
+                            setCalibrationMessage(`The pretrained model has no word for ${entry.text}, so recording it here is what will recognise it.`);
+                          }}>
+                          {entry_text_for(word)}
+                        </button>
+                      ))}
                     </div>
                   )}
                   {visibleCalibrationVocabulary.length ? (
