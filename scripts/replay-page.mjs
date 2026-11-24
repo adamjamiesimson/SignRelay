@@ -1,5 +1,5 @@
 import { startWorkers } from '../src/workers.mjs';
-import { PROFILE, WINDOWS, windowFor } from '../src/verification.mjs';
+import { PROFILE, verificationInterval, verificationWindows } from '../src/verification.mjs';
 
 const workers = startWorkers();
 globalThis.ready = workers.ready;
@@ -22,13 +22,13 @@ function event(element, type, action = () => {}) {
   });
 }
 
-globalThis.replay = async ({ file, targets, variant }) => {
+globalThis.replay = async ({ file, targets, variant, strategies = ['baseline'], fps: requestedFps }) => {
   const video = document.createElement('video');
   const history = [];
-  const timeline = [];
+  const schedules = strategies.map(name => ({ name, timeline: [], last: -Infinity, windows: 0 }));
+  const trackingMs = [];
   let frameCount = 0;
   let tracked = 0;
-  let lastVerification = -Infinity;
   const start = performance.now();
   const previousClock = clock;
   const transformed = ['mirror', 'dim'].includes(variant);
@@ -39,7 +39,8 @@ globalThis.replay = async ({ file, targets, variant }) => {
       await event(video, 'loadeddata', () => { video.src = '/fixtures/' + encodeURIComponent(file); });
     }
     const duration = file ? Math.min(7, video.duration) : 2.6;
-    const fps = variant === 'sparse' ? 5 : 15;
+    const fps = requestedFps ?? (variant === 'sparse' ? 5 : 15);
+    const sparse = fps < PROFILE.sparseFps;
     const frames = Math.ceil(duration * fps);
     const speed = variant === 'fast' ? 0.73 : variant === 'slow' ? 1.3 : 1;
     const sequence = Array.from({ length: frames }, (_, n) => n);
@@ -66,22 +67,29 @@ globalThis.replay = async ({ file, targets, variant }) => {
         bitmap = await createImageBitmap(canvas);
       } else bitmap = await createImageBitmap(video);
       clock = previousClock + n * 1000 / fps * speed;
-      const reply = await workers.tracker.request('frame', { bitmap, timestamp: clock, compact: fps < PROFILE.sparseFps }, [bitmap]);
+      const reply = await workers.tracker.request('frame', { bitmap, timestamp: clock, compact: sparse }, [bitmap]);
       frameCount++;
+      trackingMs.push(reply.ms);
       if (reply.hands.length) tracked++;
       history.push({ t: clock, f: reply.observation });
       while (history[0]?.t < clock - PROFILE.historyMs) history.shift();
-      if (clock - lastVerification < PROFILE.evaluateEvery - 0.001) continue;
-      const windows = WINDOWS.map(ms => windowFor(history, ms, fps < PROFILE.sparseFps)).filter(Boolean).map(window => window.frames);
-      lastVerification = clock;
-      if (!windows.length) {
-        timeline.push({ t: Math.round(clock - previousClock), values: targets.map(() => ({ score: 0 })) });
-        continue;
+      for (const schedule of schedules) {
+        const baseline = schedule.name === 'baseline';
+        if (clock - schedule.last < verificationInterval(sparse, baseline) - 0.001) continue;
+        const windows = verificationWindows(history, sparse, baseline);
+        schedule.last = clock;
+        const t = Math.round(clock - previousClock);
+        if (!windows.length) {
+          schedule.timeline.push({ t, values: targets.map(() => ({ score: 0 })) });
+          continue;
+        }
+        schedule.windows += windows.length;
+        const check = await workers.classifier.request('verify', { windows, targets, timestamp: clock });
+        schedule.timeline.push({ t, values: check.values, cpuMs: check.ms });
       }
-      const check = await workers.classifier.request('verify', { windows, targets, timestamp: clock });
-      timeline.push({ t: Math.round(clock - previousClock), values: check.values, cpuMs: check.ms });
     }
-    return { duration, frameCount, tracked, timeline, wallMs: Math.round(performance.now() - start) };
+    return { duration, frameCount, tracked, trackingMs, timeline: schedules[0].timeline,
+      schedules, wallMs: Math.round(performance.now() - start) };
   } finally {
     clock += 1000;
     video.removeAttribute('src');

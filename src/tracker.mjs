@@ -31,7 +31,7 @@ async function initialize() {
   lastTimestamp = 1;
 }
 
-function track({ bitmap, timestamp, id, compact }) {
+function track({ bitmap, timestamp, id, compact, overlay = true }) {
   const began = performance.now();
   const long = Math.max(bitmap.width, bitmap.height);
   const ratio = Math.min(1, (compact ? 352 : 960) / long);
@@ -51,7 +51,8 @@ function track({ bitmap, timestamp, id, compact }) {
   const detected = hand.detectForVideo(canvas, lastTimestamp);
   if (!prevPose || sequence++ % (compact ? 3 : 2) === 0) prevPose = pose.detectForVideo(canvas, lastTimestamp);
   const observation = gatherFrame(detected, prevPose, null, width, height);
-  self.postMessage({ type: 'frame', id, timestamp, observation, hands: detected.landmarks,
+  self.postMessage({ type: 'frame', id, timestamp, observation, handCount: detected.landmarks.length,
+    hands: overlay ? detected.landmarks : [],
     ms: Math.round(performance.now() - began) }, [observation.buffer]);
 }
 

@@ -16,6 +16,16 @@ test('wheel has exactly ten distinct supported entries with lessons', () => {
   assert.equal(new Set(signIds).size, 10);
   assert.ok(SIGNS.every(s => s.word && s.cue));
 });
+test('a switch or pause at the deadline records a timeout exactly once', () => {
+  let setup = join(join(initial(), 'second'), 'first');
+  setup = start(play(setup), key('first'));
+  const expired = send(setup, { type: 'select', personId: 'second', now: at + ROUND_MS });
+  assert.equal(expired.people.find(p => p.id === 'first').results[0].method, 'timeout');
+  assert.equal(expired.people.find(p => p.id === 'first').pending, null);
+  const paused = send(setup, { type: 'pause', ...key('first'), now: at + ROUND_MS });
+  assert.equal(player(paused).results.length, 1);
+  assert.equal(result(paused, key('first'), 'timeout', ROUND_MS), paused);
+});
 test('perfect game, unique signs, all five awards and persisted streak', () => {
   let s = join(initial(), 'p1', 'Player One');
   for (const [index, sign] of signIds.slice(0, 5).entries()) {

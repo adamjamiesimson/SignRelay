@@ -1,4 +1,4 @@
-# SignRelay GameShow release verification
+# SignRelay GameShow initial release verification
 
 ## Browser and game logic
 
@@ -17,7 +17,5 @@ Chrome verified **33 cache assets** against the release manifest. The test reope
 
 **Production runtime:** 00a370b8357984cf. See the booth steps for physical Wi-Fi disconnection, human signer checks, and the multi-hour soak on the intended laptop.
 
-## Publication status
-
-The existing SignRelay site was outside the release process. The Firebase CLI had no authorized account. The preferred GitHub repository was unavailable, and the automatic review blocked source upload to the public fallback repository. The source archive contains the complete project, lockfile, pinned asset installer, tests, evidence and deployment configuration.
+The final exhibition sprint has its own recognition and readiness evidence in **docs/READINESS.md**. The initial release metrics above serve as historical baselines.
 

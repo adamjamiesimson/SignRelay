@@ -89,11 +89,18 @@ try {
   await connect();
   await page.goto(url);
   await stage('wheel');
+  assert.equal(await host().isVisible(), false);
   await openHost();
   await page.locator('#host summary').getByText('Readiness and diagnostics', { exact: true }).click();
   await waitText('#diagnostics', 'Model  Ready');
   await waitText('#diagnostics', 'Offline  Ready');
+  await page.locator('#sensitivity').selectOption('strict');
+  await waitText('#diagnostics', 'Threshold  0.79');
+  await page.locator('#sensitivity').selectOption('relaxed');
+  await waitText('#diagnostics', 'Threshold  0.60');
   await closeHost();
+  assert.equal(await host().isVisible(), false);
+  success('discreet host panel and working sensitivity controls');
   success('real MediaPipe and ONNX workers loaded; verified offline cache');
   for (const [width,height] of [[1280,720],[1366,768],[1920,1080],[390,844]]) {
     await page.setViewportSize({ width, height });

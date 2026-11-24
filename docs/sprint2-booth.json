@@ -1,0 +1,81 @@
+{
+  "elapsedSeconds": 190.03,
+  "spin": {
+    "frames": 215,
+    "spanMs": 3568,
+    "rafFps": 60,
+    "longestFrameGapMs": 17,
+    "oscillatorStarts": 50
+  },
+  "phases": {
+    "overlayOn": {
+      "elapsedSeconds": 7.01,
+      "analyzedFrames": 27,
+      "analyzedFps": 3.85,
+      "framesWithHands": 26,
+      "trackingP50Ms": 226,
+      "trackingP95Ms": 393,
+      "classifierP50Ms": 137,
+      "classifierP95Ms": 184,
+      "classifierBatches": 23,
+      "classifierWindows": 60,
+      "chromeCpuSeconds": 14.32
+    },
+    "overlayOff": {
+      "elapsedSeconds": 7.01,
+      "analyzedFrames": 35,
+      "analyzedFps": 4.99,
+      "framesWithHands": 35,
+      "trackingP50Ms": 184,
+      "trackingP95Ms": 272,
+      "classifierP50Ms": 125,
+      "classifierP95Ms": 161,
+      "classifierBatches": 30,
+      "classifierWindows": 87,
+      "chromeCpuSeconds": 12.34
+    }
+  },
+  "soak": {
+    "cycles": 24,
+    "liveHoldSeconds": 144,
+    "wallSeconds": 163.37,
+    "chromeCpuSeconds": 266.39,
+    "heapSamples": [
+      {
+        "usedMB": 2.978,
+        "embedderMB": 1.815
+      },
+      {
+        "usedMB": 3.093,
+        "embedderMB": 1.893
+      },
+      {
+        "usedMB": 3.114,
+        "embedderMB": 1.82
+      },
+      {
+        "usedMB": 3.131,
+        "embedderMB": 2.189
+      },
+      {
+        "usedMB": 3.141,
+        "embedderMB": 2.142
+      },
+      {
+        "usedMB": 3.132,
+        "embedderMB": 1.775
+      }
+    ]
+  },
+  "recovery": "one injected tracking worker fault, workers recreated and round resumed",
+  "workers": {
+    "tracker": 2,
+    "classifier": 2
+  },
+  "sound": {
+    "starts": 106,
+    "stops": 106,
+    "ended": 106
+  },
+  "pageErrors": []
+}

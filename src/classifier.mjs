@@ -30,9 +30,10 @@ async function initialize() {
   await verify({ windows: [[neutral]], targets: [] });
 }
 
-async function verify({ windows, targets }) {
+async function verify({ windows, targets, stopAbove }) {
   const indices = targets.map(target => metadata.indices.get(target) ?? -1);
   const best = targets.map(() => ({ score: 0, p: 0, cosine: 0, unknown: 0 }));
+  let windowsRun = 0;
   for (const frames of windows) {
     const clip = prepareClip(frames);
     if (!clip) continue;
@@ -44,6 +45,7 @@ async function verify({ windows, targets }) {
     let output;
     try {
       output = await session.run(feeds);
+      windowsRun++;
       const values = targetEvidence(output.logits.data, output.embedding.data, metadata, indices);
       values.forEach((value, index) => {
         if (value.score > best[index].score || (value.score === best[index].score && value.p > best[index].p)) best[index] = value;
@@ -51,8 +53,9 @@ async function verify({ windows, targets }) {
     } finally {
       for (const tensor of [...Object.values(feeds), ...Object.values(output ?? {})]) tensor.dispose();
     }
+    if (indices.length === 1 && best[0].score >= stopAbove) break;
   }
-  return best;
+  return { values: best, windowsRun };
 }
 
 self.onmessage = async ({ data }) => {
@@ -62,8 +65,8 @@ self.onmessage = async ({ data }) => {
       self.postMessage({ type: 'ready' });
     } else if (data.type === 'verify') {
       const start = performance.now();
-      const values = await verify(data);
-      self.postMessage({ type: 'verified', id: data.id, timestamp: data.timestamp, values, ms: Math.round(performance.now() - start) });
+      const result = await verify(data);
+      self.postMessage({ type: 'verified', id: data.id, timestamp: data.timestamp, ...result, ms: Math.round(performance.now() - start) });
     }
   } catch (error) {
     self.postMessage({ type: 'error', detail: error.message || String(error) });

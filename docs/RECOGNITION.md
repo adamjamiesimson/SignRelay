@@ -1,4 +1,6 @@
-# Recognition and evaluation
+# Recognition and evaluation in the initial kiosk
+
+The final exhibition release changes the sparse-camera schedule and reports a fresh signer-disjoint comparison in [Exhibition readiness](READINESS.md). The original evidence remains reproducible with the baseline replay mode.
 
 GameShow reuses SignRelay’s pinned Engine V3.1 ONNX checkpoint, MediaPipe version and landmark preprocessing. The upstream November reports describe difficulties with HELLO and YES and confusions such as GOOD versus THANK YOU and EAT versus FOOD. GameShow maintains its own verification policy. [Upstream handoff](https://github.com/adamjamiesimson/SignRelay/blob/1b888fa73aaa6c0d0b0708081f9143fa10c272c9/docs/DEVELOPER_HANDOFF.md) · [November accuracy sprint](https://github.com/adamjamiesimson/SignRelay/blob/1b888fa73aaa6c0d0b0708081f9143fa10c272c9/docs/sprint-2026-11-23/SPRINT_REPORT.md)
 

@@ -1,0 +1,23 @@
+{
+  "participants": 120,
+  "games": 120,
+  "rounds": 600,
+  "resumed": 150,
+  "staleRejected": 300,
+  "timeouts": 120,
+  "duplicates": 600,
+  "measuredTransactions": 2912,
+  "elapsedMs": 9900,
+  "txP50Ms": 1.9,
+  "txP95Ms": 3.9,
+  "initialTxP95Ms": 2.6,
+  "finalTxP95Ms": 4.6,
+  "totalPoints": 4800,
+  "browserCpuSeconds": 14.71,
+  "jsHeapMB": {
+    "before": 1.14,
+    "afterGC": 1.513
+  },
+  "uiCountAfterReload": 120,
+  "pageErrors": []
+}

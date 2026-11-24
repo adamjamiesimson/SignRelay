@@ -12,7 +12,7 @@ const digest = b => createHash('sha256').update(b).digest('hex');
 const publisher = 'https://signdata.cc.gatech.edu/data/popsign_v2_1/game/';
 await mkdir(out, { recursive: true });
 for (const row of rows) {
-  if (!row.source.startsWith(publisher) || !/^[a-z]+-(val|test)-\d+\.mp4$/.test(row.file)) throw new Error('Unexpected replay row');
+  if (!row.source.startsWith(publisher) || !/^[a-z]+-(val|test)-(?:new)?\d+\.mp4$/.test(row.file)) throw new Error('Unexpected replay row');
   const file = resolve(out, row.file);
   const raw = file + '.raw.mp4';
   const present = await readFile(file).catch(() => null);

@@ -1,7 +1,7 @@
 import { hasHand, resampleTo15Hz } from './upstream-preprocess.mjs';
 
 const clamp = (value, low = 0, high = 1) => Math.max(low, Math.min(high, value));
-export const PROFILE = Object.freeze({ minimumFrames: 6, maxGap: 300, sparseGap: 640, sparseFps: 8, sampleMs: 64, evaluateEvery: 205, historyMs: 1900 });
+export const PROFILE = Object.freeze({ minimumFrames: 6, maxGap: 300, sparseGap: 640, sparseFps: 8, sampleMs: 64, evaluateEvery: 205, sparseEvaluateEvery: 120, historyMs: 1900 });
 export const WINDOWS = [700, 1150, 1800];
 
 function handExcursion(frames, offset, minimum) {
@@ -30,19 +30,35 @@ function handExcursion(frames, offset, minimum) {
   return travel / (scale / count);
 }
 
-export function windowFor(history, millis, sparse = false) {
+export function windowFor(history, millis, sparse = false, minSpan = sparse ? 510 : 260) {
   if (!history.length) return null;
   const end = history.at(-1).t;
   const samples = history.filter(item => item.t >= end - millis);
   const visible = samples.filter(item => hasHand(item.f));
   const minFrames = sparse ? 3 : PROFILE.minimumFrames;
   const maxGap = sparse ? PROFILE.sparseGap : PROFILE.maxGap;
-  if (visible.length < minFrames || visible.at(-1).t - visible[0].t < (sparse ? 510 : 260) ||
+  if (visible.length < minFrames || visible.at(-1).t - visible[0].t < minSpan ||
       visible.some((item, i) => i && item.t - visible[i - 1].t > maxGap)) return null;
   const minimum = sparse ? 3 : 4;
   const motion = Math.max(handExcursion(visible, 0, minimum), handExcursion(visible, 21, minimum));
   if (motion < (sparse ? 0.29 : 0.22)) return null;
-  return { frames: resampleTo15Hz(samples), motion, handFrames: visible.length };
+  return { frames: resampleTo15Hz(samples), motion, handFrames: visible.length, start: samples[0].t };
+}
+
+export function verificationWindows(history, sparse, baseline = false) {
+  const windows = [];
+  const starts = new Set();
+  for (const millis of WINDOWS) {
+    const window = windowFor(history, millis, sparse, sparse && !baseline ? 320 : undefined);
+    if (!window || (!baseline && starts.has(window.start))) continue;
+    starts.add(window.start);
+    windows.push(window.frames);
+  }
+  return windows;
+}
+
+export function verificationInterval(sparse, baseline = false) {
+  return sparse && !baseline ? PROFILE.sparseEvaluateEvery : PROFILE.evaluateEvery;
 }
 
 export function targetEvidence(logits, embedding, metadata, indices) {
@@ -72,8 +88,9 @@ export class Confirmation {
       return false;
     }
     const elapsed = this.previous === null ? Infinity : timestamp - this.previous;
+    if (elapsed < 125) return false;
     this.previous = timestamp;
-    return elapsed >= 125 && elapsed <= 850;
+    return elapsed <= 850;
   }
 }
 

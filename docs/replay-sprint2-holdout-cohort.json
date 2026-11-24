@@ -1,0 +1,594 @@
+[
+  {
+    "sign": "apple",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/apple/a1ba-apple-2023_01_13_21_59_26.690-0.mp4",
+    "file": "apple-test-new0.mp4",
+    "sha256": "da1c7258b5342fd8c45473e69fe94b388d0ab162d13f71d7412db7daf668acb0",
+    "signer": "a1ba"
+  },
+  {
+    "sign": "apple",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/apple/ebdb-apple-2023_01_30_13_56_37.191-0.mp4",
+    "file": "apple-val-new0.mp4",
+    "sha256": "2cf551f88bcfca0b77ea742b8f26a77384867943a77e92b7445b504afce32c1d",
+    "signer": "ebdb"
+  },
+  {
+    "sign": "ball",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/ball/66e7-ball-2024_02_18_13_34_22.849-1.mp4",
+    "file": "ball-test-new0.mp4",
+    "sha256": "51ac44efe63907a27f6f07b41c9503205d3d117fb6038a7e20043fd5dfedb2d1",
+    "signer": "66e7"
+  },
+  {
+    "sign": "ball",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/ball/c6e5-ball-2023_08_17_15_25_37.067-0.mp4",
+    "file": "ball-val-new0.mp4",
+    "sha256": "7a54f5380554e947d6ab8f0fda7e9ed0f5a714227a89f0d4956fb7be85dc32ce",
+    "signer": "c6e5"
+  },
+  {
+    "sign": "book",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/book/af36-book-2023_01_06_12_20_54.566-0.mp4",
+    "file": "book-test-new0.mp4",
+    "sha256": "6c0ec61c90f0f441951da9eb7f2ed1a8591bb9b569efbfa70bf07f1125c6f539",
+    "signer": "af36"
+  },
+  {
+    "sign": "book",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/book/2b19-book-2023_01_26_19_22_30.861-0.mp4",
+    "file": "book-val-new0.mp4",
+    "sha256": "7670356d29c343bf92594a81cf85d0a73125fa664b058885394b4ea06a5a1b6c",
+    "signer": "2b19"
+  },
+  {
+    "sign": "cat",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/cat/616e-cat-2023_01_26_20_46_16.906-0.mp4",
+    "file": "cat-test-new0.mp4",
+    "sha256": "442d7e2337688c494fe7a2b3a8e62b0245c3250d7651d9673d97d487a3618214",
+    "signer": "616e"
+  },
+  {
+    "sign": "cat",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/cat/c6e5-cat-2023_01_25_18_21_52.594-0.mp4",
+    "file": "cat-val-new0.mp4",
+    "sha256": "5d9b863731bad206e0c239397f23f52e7bc654a72bf504158b70cfbea96df543",
+    "signer": "c6e5"
+  },
+  {
+    "sign": "dog",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/dog/616e-dog-2023_01_26_22_51_00.674-0.mp4",
+    "file": "dog-test-new0.mp4",
+    "sha256": "45009b00b4f33a68a12f6c80fd5466aa42360110ce0ffbb95ccd535755f3e5d3",
+    "signer": "616e"
+  },
+  {
+    "sign": "dog",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/dog/c6e5-dog-2023_01_25_17_58_30.510-0.mp4",
+    "file": "dog-val-new0.mp4",
+    "sha256": "d0bb41c7106a4faea1d2392e235520adf99ec4a68a5a2655cc94a899a3a51707",
+    "signer": "c6e5"
+  },
+  {
+    "sign": "draw",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/draw/66e7-draw-2024_02_21_17_18_35.576-1.mp4",
+    "file": "draw-test-new0.mp4",
+    "sha256": "cb2600d8cda4d15d40aa652cc81269b9d3d5ea4d4f953a6ade2768241a48941d",
+    "signer": "66e7"
+  },
+  {
+    "sign": "draw",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/draw/a1ba-draw-2023_08_27_23_49_21.421-0.mp4",
+    "file": "draw-test-new1.mp4",
+    "sha256": "f6f984e3a803c8159df0357e5bb57fae39aebc538220f7839438ed460d400e4c",
+    "signer": "a1ba"
+  },
+  {
+    "sign": "draw",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/draw/3d3f-draw-2024_02_20_13_07_18.878-1.mp4",
+    "file": "draw-test-new2.mp4",
+    "sha256": "3ad9084611d87734664c056b3e055a240aa5f3b32026c248aff19922c1c23b95",
+    "signer": "3d3f"
+  },
+  {
+    "sign": "draw",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/draw/6aaa-draw-2024_04_17_00_31_14.600-1.mp4",
+    "file": "draw-val-new0.mp4",
+    "sha256": "09039b741f0f706933f2edb18401d98a93883408dd11d1366197053973ce2af6",
+    "signer": "6aaa"
+  },
+  {
+    "sign": "draw",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/draw/ebdb-draw-2023_09_12_14_13_09.579-0.mp4",
+    "file": "draw-val-new1.mp4",
+    "sha256": "b234b9444a54046c82a63df45e6865a69bfc102ff3576d2112b9e36de4552caf",
+    "signer": "ebdb"
+  },
+  {
+    "sign": "drink",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/drink/111c-drink-2023_02_01_11_51_41.243-0.mp4",
+    "file": "drink-test-new0.mp4",
+    "sha256": "5c060cf4aa4c73ed0c7afe3e6495f90be942e006ce985c343321c09019f6bcbd",
+    "signer": "111c"
+  },
+  {
+    "sign": "drink",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/drink/a1ba-drink-2023_01_12_23_49_48.941-0.mp4",
+    "file": "drink-test-new1.mp4",
+    "sha256": "1a15f6c766bb99b9a07bb7b1c187ee083646694cc11b499d8c8beebded2cb3a4",
+    "signer": "a1ba"
+  },
+  {
+    "sign": "drink",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/drink/616e-drink-2023_01_26_20_41_18.982-0.mp4",
+    "file": "drink-test-new2.mp4",
+    "sha256": "a9b7470469334f60a1a0e53df1e4776b05dc397ace411a1d2e6274d2d49dd03a",
+    "signer": "616e"
+  },
+  {
+    "sign": "drink",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/drink/2b19-drink-2023_01_26_20_04_08.264-0.mp4",
+    "file": "drink-val-new0.mp4",
+    "sha256": "0e3084d4eff3d2d7a5e1f76c208d66575b041b6732a457ea4916d7feedc60354",
+    "signer": "2b19"
+  },
+  {
+    "sign": "drink",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/drink/c6e5-drink-2023_01_26_10_39_46.009-0.mp4",
+    "file": "drink-val-new1.mp4",
+    "sha256": "629014a3e16622fd2dd6697ad75651f5394aa45d1692e6af3cc7165f088d90ab",
+    "signer": "c6e5"
+  },
+  {
+    "sign": "food",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/food/111c-food-2023_02_01_14_02_36.220-0.mp4",
+    "file": "food-test-new0.mp4",
+    "sha256": "2782326a1a6416337d1b3dbca745fdd011ebc48b77295436e072aa022c60a480",
+    "signer": "111c"
+  },
+  {
+    "sign": "food",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/food/d5fd-food-2023_01_11_14_56_36.115-0.mp4",
+    "file": "food-val-new0.mp4",
+    "sha256": "9f188a0f382cc3fb363d840495f8d596af7c269524cd1a063e2528d03f721a5b",
+    "signer": "d5fd"
+  },
+  {
+    "sign": "green",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/green/a1ba-green-2023_01_13_22_20_17.446-0.mp4",
+    "file": "green-test-new0.mp4",
+    "sha256": "d5e4ea46a6b480d4a0f76c880dba5068b68be5a51b1b182335cdc7d4f5383029",
+    "signer": "a1ba"
+  },
+  {
+    "sign": "green",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/green/af6d-green-2023_01_25_18_10_54.788-0.mp4",
+    "file": "green-test-new1.mp4",
+    "sha256": "8895f70c4ccb9780b3c6128611cc1d610582e384c14d6582356c503f442ccfaa",
+    "signer": "af6d"
+  },
+  {
+    "sign": "green",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/green/111c-green-2023_01_29_11_27_37.208-0.mp4",
+    "file": "green-test-new2.mp4",
+    "sha256": "bf96199b95069210693399db3e123fed7a6e7bd92000b523b4405ea051648c8c",
+    "signer": "111c"
+  },
+  {
+    "sign": "green",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/green/2b19-green-2023_01_28_19_22_44.975-0.mp4",
+    "file": "green-val-new0.mp4",
+    "sha256": "d1ce45f2250f04373200cbef4c13546ddfe180560a793c4ed495266aced6a49a",
+    "signer": "2b19"
+  },
+  {
+    "sign": "green",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/green/d5fd-green-2023_01_11_14_25_18.200-0.mp4",
+    "file": "green-val-new1.mp4",
+    "sha256": "368fda09974b33e967c0444565947a74dc4f9fa2f1e437b90cc0f1d41d46dc5d",
+    "signer": "d5fd"
+  },
+  {
+    "sign": "hello",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/hello/111c-hello-2023_02_01_11_40_08.900-0.mp4",
+    "file": "hello-test-new0.mp4",
+    "sha256": "5dde97fec9109a6b253a20a19b08c2b938f87344c4ed23ef129dbf87051c7e86",
+    "signer": "111c"
+  },
+  {
+    "sign": "hello",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/hello/ebdb-hello-2023_01_30_14_33_24.349-0.mp4",
+    "file": "hello-val-new0.mp4",
+    "sha256": "25786de0d1d4fd0617cb1814114fd738643ebae50c69e6a7cea28453378f1aab",
+    "signer": "ebdb"
+  },
+  {
+    "sign": "jump",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/jump/616e-jump-2023_01_26_23_33_54.262-0.mp4",
+    "file": "jump-test-new0.mp4",
+    "sha256": "15684dc26ac12c6d9a0caf3e7e9fbe413ab19043f9a4d95bfea71ae78e60bdc1",
+    "signer": "616e"
+  },
+  {
+    "sign": "jump",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/jump/af36-jump-2023_01_31_10_17_19.611-0.mp4",
+    "file": "jump-test-new1.mp4",
+    "sha256": "1e03cf1e31c09c56a35603f261d1dc0d984f221e7008ceb42620ef63d929fe9e",
+    "signer": "af36"
+  },
+  {
+    "sign": "jump",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/jump/af6d-jump-2023_01_25_19_17_28.776-0.mp4",
+    "file": "jump-test-new2.mp4",
+    "sha256": "0290a8af7dfee6e8eca45a5cc607f642d57fb5a788ba5611e0ead379a00162b9",
+    "signer": "af6d"
+  },
+  {
+    "sign": "jump",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/jump/d5fd-jump-2023_01_11_15_00_05.886-0.mp4",
+    "file": "jump-val-new0.mp4",
+    "sha256": "fe379587c0492ae6f7d47f07119b36f8e9067d3083c69047c9eec7b0dbbf47dc",
+    "signer": "d5fd"
+  },
+  {
+    "sign": "jump",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/jump/c6e5-jump-2023_01_26_00_46_58.505-0.mp4",
+    "file": "jump-val-new1.mp4",
+    "sha256": "23063252ea938493db3dd409eaeed5e3b144977d71e3380b54a9a43ea57754c6",
+    "signer": "c6e5"
+  },
+  {
+    "sign": "milk",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/milk/111c-milk-2023_02_01_11_39_42.383-0.mp4",
+    "file": "milk-test-new0.mp4",
+    "sha256": "0df994ccf030bef54d6920343802f2a3eac0f779c905223545ee006d9f8e72aa",
+    "signer": "111c"
+  },
+  {
+    "sign": "milk",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/milk/a459-milk-2023_01_17_10_55_16.010-0.mp4",
+    "file": "milk-val-new0.mp4",
+    "sha256": "2fd75c6b6cc949e62c0988cf1016351621803f2100fd6044ac07a60e0588cfc3",
+    "signer": "a459"
+  },
+  {
+    "sign": "pencil",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/pencil/af6d-pencil-2023_01_25_19_48_53.517-0.mp4",
+    "file": "pencil-test-new0.mp4",
+    "sha256": "37f88182219080b251053716271d01402a5571cb444d1e8f4eb65b8b5d6c8485",
+    "signer": "af6d"
+  },
+  {
+    "sign": "pencil",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/pencil/111c-pencil-2023_01_26_16_19_25.658-0.mp4",
+    "file": "pencil-test-new1.mp4",
+    "sha256": "157b75457c8b3605511d7cfaf0bc3ae58e9925a24bc1bd473539add439c7bec3",
+    "signer": "111c"
+  },
+  {
+    "sign": "pencil",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/pencil/a1ba-pencil-2023_01_10_23_32_46.071-0.mp4",
+    "file": "pencil-test-new2.mp4",
+    "sha256": "46e64fd3d7c697727e9664d4d65dab0f1f81b4cc89003b7faf4ee4004da77c96",
+    "signer": "a1ba"
+  },
+  {
+    "sign": "pencil",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/pencil/a459-pencil-2023_01_18_18_40_38.246-0.mp4",
+    "file": "pencil-val-new0.mp4",
+    "sha256": "854d9bc4e12d8e64ff0a2d0358ffb0aa70ea3322401040103c5215cfc43e86c4",
+    "signer": "a459"
+  },
+  {
+    "sign": "pencil",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/pencil/ebdb-pencil-2023_01_30_16_24_56.315-0.mp4",
+    "file": "pencil-val-new1.mp4",
+    "sha256": "0581afd7b4be4dc426cc818d76bf12b4ca8170808109ca4800056a4680ffa433",
+    "signer": "ebdb"
+  },
+  {
+    "sign": "please",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/please/66d7-please-2023_01_26_16_56_37.057-0.mp4",
+    "file": "please-test-new0.mp4",
+    "sha256": "9bca19ed5dd740ee41ef0e8965129c4da322ac88076f1760602ac35d22538799",
+    "signer": "66d7"
+  },
+  {
+    "sign": "please",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/please/a1ba-please-2023_01_13_22_01_50.691-0.mp4",
+    "file": "please-test-new1.mp4",
+    "sha256": "48a4026e42121864cb8e7bd500a5eab25feb7903cc3f63c3648f4981f84200cc",
+    "signer": "a1ba"
+  },
+  {
+    "sign": "please",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/please/616e-please-2023_01_26_19_08_52.075-0.mp4",
+    "file": "please-test-new2.mp4",
+    "sha256": "0ed86b21a49a818a496c121946805d6b2cec8bf83a1561851abe045982904923",
+    "signer": "616e"
+  },
+  {
+    "sign": "please",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/please/c6e5-please-2023_01_26_10_08_10.188-0.mp4",
+    "file": "please-val-new0.mp4",
+    "sha256": "be11bb55aa47481cfc65bae993749423706d0fac058d5223878ca790ae79d6d9",
+    "signer": "c6e5"
+  },
+  {
+    "sign": "please",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/please/a459-please-2023_01_11_17_57_04.579-0.mp4",
+    "file": "please-val-new1.mp4",
+    "sha256": "a31a813b5aa1f962ef6c3be9ace1ecd6effcb6ecdf67d9e0f69346b3caf35d80",
+    "signer": "a459"
+  },
+  {
+    "sign": "red",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/red/af6d-red-2023_01_26_11_18_16.463-0.mp4",
+    "file": "red-test-new0.mp4",
+    "sha256": "c82cbd6deecd22a5851f6151fb638db35a51b1c440a497f4034150ce255b1658",
+    "signer": "af6d"
+  },
+  {
+    "sign": "red",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/red/d5fd-red-2023_01_11_14_43_14.422-0.mp4",
+    "file": "red-val-new0.mp4",
+    "sha256": "ed67d899361b82a19ef2e06581bcbdbfae4d390e989b17958e0d4799e516aa15",
+    "signer": "d5fd"
+  },
+  {
+    "sign": "rock",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/rock/66e7-rock-2024_02_21_17_08_09.569-1.mp4",
+    "file": "rock-test-new0.mp4",
+    "sha256": "17ef387e4dc845495cf774a0c7a84365ef30ba6c97aac3b9349457a897d060a1",
+    "signer": "66e7"
+  },
+  {
+    "sign": "rock",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/rock/a1ba-rock-2023_09_03_15_01_15.085-0.mp4",
+    "file": "rock-test-new1.mp4",
+    "sha256": "1a455bb00209393c920576bc8ca9e26830ebc9ebd958155c627516d2c8bdca94",
+    "signer": "a1ba"
+  },
+  {
+    "sign": "rock",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/rock/933d-rock-2024_03_18_18_42_30.852-1.mp4",
+    "file": "rock-test-new2.mp4",
+    "sha256": "1dc6e20f808430964661b0e0770b3e4f35af09f370a8cb9c7cb1afde69f0b92b",
+    "signer": "933d"
+  },
+  {
+    "sign": "rock",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/rock/f56c-rock-2024_04_02_14_08_23.087-1.mp4",
+    "file": "rock-val-new0.mp4",
+    "sha256": "6d85ef5977cfe51e97ff6574d9f185d3b6da07f12f3d7ad0cf136aefd611b55e",
+    "signer": "f56c"
+  },
+  {
+    "sign": "rock",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/rock/6aaa-rock-2024_04_26_11_34_02.958-1.mp4",
+    "file": "rock-val-new1.mp4",
+    "sha256": "0518d51810a387feef2cb306129ed997bed732bea0937013da47479bf9ae116f",
+    "signer": "6aaa"
+  },
+  {
+    "sign": "sit",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/sit/66e7-sit-2024_02_20_16_01_44.177-1.mp4",
+    "file": "sit-test-new0.mp4",
+    "sha256": "fe6490b63cc155673a1d1bbf8a09da6a198ed9f1d6d33f7a9cee20c75a17a520",
+    "signer": "66e7"
+  },
+  {
+    "sign": "sit",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/sit/c6e5-sit-2023_08_17_15_05_50.558-0.mp4",
+    "file": "sit-val-new0.mp4",
+    "sha256": "7803b5409b883bad7980f161307a868be8de2bfad22c1f74501514ae5991baed",
+    "signer": "c6e5"
+  },
+  {
+    "sign": "sleep",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/sleep/af6d-sleep-2023_01_26_16_48_23.165-0.mp4",
+    "file": "sleep-test-new0.mp4",
+    "sha256": "7eaa14f5e2db47db0e885c11520bae9894790ebe93a872b29a7d3fc127d36df0",
+    "signer": "af6d"
+  },
+  {
+    "sign": "sleep",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/sleep/616e-sleep-2023_01_26_19_54_05.102-0.mp4",
+    "file": "sleep-test-new1.mp4",
+    "sha256": "1f76a4207cc219d7644d236028f68e21e7b904f5f621b90b3632b96e4796f78b",
+    "signer": "616e"
+  },
+  {
+    "sign": "sleep",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/sleep/a1ba-sleep-2023_01_12_21_22_02.215-0.mp4",
+    "file": "sleep-test-new2.mp4",
+    "sha256": "7fe861a6b8cf5532a0869fd19c14801b8a968e61b5a2b710fc639ca72812e538",
+    "signer": "a1ba"
+  },
+  {
+    "sign": "sleep",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/sleep/2b19-sleep-2023_01_26_21_21_35.459-0.mp4",
+    "file": "sleep-val-new0.mp4",
+    "sha256": "e9fbb431c9fcd9d26134f95eb2f4e59fd129e324cc54bdb98bcb5ecd93cd257b",
+    "signer": "2b19"
+  },
+  {
+    "sign": "sleep",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/sleep/c6e5-sleep-2023_01_25_18_03_57.465-0.mp4",
+    "file": "sleep-val-new1.mp4",
+    "sha256": "467e02165f42bb4c494c195795202d90613820558809585ad02c890e7abaac14",
+    "signer": "c6e5"
+  },
+  {
+    "sign": "stop",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/stop/66e7-stop-2024_02_17_18_33_45.154-1.mp4",
+    "file": "stop-test-new0.mp4",
+    "sha256": "e0ba6c99917263d43407b0b3a326f1de95a4712896d6a0b0dd182692fa6b01d8",
+    "signer": "66e7"
+  },
+  {
+    "sign": "stop",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/stop/a1ba-stop-2023_08_30_23_28_36.775-0.mp4",
+    "file": "stop-test-new1.mp4",
+    "sha256": "744e794794f32f2c8efea2707ca99e3b30bd5eabb053c86d237368f4ac8f7cf8",
+    "signer": "a1ba"
+  },
+  {
+    "sign": "stop",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/stop/933d-stop-2024_03_13_17_12_32.746-1.mp4",
+    "file": "stop-test-new2.mp4",
+    "sha256": "96cad161c5632d67ff7afc2265a5ffd88b38a2033d6e82ee7f7c2a0ec781d1ac",
+    "signer": "933d"
+  },
+  {
+    "sign": "stop",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/stop/ebdb-stop-2023_09_12_15_29_12.019-0.mp4",
+    "file": "stop-val-new0.mp4",
+    "sha256": "3292cf4199a2b03904bc82dff8b1cbb37b38453493cbef222a0320b9566cf514",
+    "signer": "ebdb"
+  },
+  {
+    "sign": "stop",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/stop/f56c-stop-2024_03_29_19_18_48.499-1.mp4",
+    "file": "stop-val-new1.mp4",
+    "sha256": "43cb94dc61cc9a887a8ac61f2c4666e8c835af1338c659ccb8dda0d7324678dc",
+    "signer": "f56c"
+  },
+  {
+    "sign": "walk",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/walk/66e7-walk-2024_02_15_17_38_36.854-1.mp4",
+    "file": "walk-test-new0.mp4",
+    "sha256": "1e9d67b120e2620d0abb1178b5d6696884d56890b75c37f52be976b3c7b7fcb5",
+    "signer": "66e7"
+  },
+  {
+    "sign": "walk",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/walk/c6e5-walk-2023_08_17_20_36_11.593-0.mp4",
+    "file": "walk-val-new0.mp4",
+    "sha256": "ec89dac9580008fa94403fa2514e6d280c92584048773897c64d28cd9cc79197",
+    "signer": "c6e5"
+  },
+  {
+    "sign": "who",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/who/a1ba-who-2023_01_12_13_30_38.744-0.mp4",
+    "file": "who-test-new0.mp4",
+    "sha256": "5134dc7878e10febd755cb9d77a7d97d769b965b6fae568a894db1c58fcfced9",
+    "signer": "a1ba"
+  },
+  {
+    "sign": "who",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/who/66d7-who-2023_01_26_13_54_26.098-0.mp4",
+    "file": "who-test-new1.mp4",
+    "sha256": "ced27e4283c89a42fabcb1a3f50873fcf9970cc51e693950d9527268897ff6ec",
+    "signer": "66d7"
+  },
+  {
+    "sign": "who",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/who/111c-who-2023_02_01_14_07_18.204-0.mp4",
+    "file": "who-test-new2.mp4",
+    "sha256": "9fbbd40e4f07f442abf2728e08c2704b0a47d80d1801f0a170dfa5e3cc173d31",
+    "signer": "111c"
+  },
+  {
+    "sign": "who",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/who/2b19-who-2023_01_26_21_19_07.322-0.mp4",
+    "file": "who-val-new0.mp4",
+    "sha256": "454fbf37cd660fa0f5981afafb921b82670a839655f4608cfb204c2ed7e9d659",
+    "signer": "2b19"
+  },
+  {
+    "sign": "who",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/who/ebdb-who-2023_01_30_13_52_44.715-0.mp4",
+    "file": "who-val-new1.mp4",
+    "sha256": "e46252fd487c26fc3eac412fe32854cdb21da891dd34f11a9f66db50f68ee680",
+    "signer": "ebdb"
+  },
+  {
+    "sign": "yes",
+    "split": "test",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/yes/af6d-yes-2023_01_25_19_54_16.942-0.mp4",
+    "file": "yes-test-new0.mp4",
+    "sha256": "5e61dd16d2d402c46b5533f50c74b2362d9f1aff14b51e0685d8e1bffec41dd7",
+    "signer": "af6d"
+  },
+  {
+    "sign": "yes",
+    "split": "val",
+    "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/val/yes/d5fd-yes-2023_01_11_15_06_55.640-0.mp4",
+    "file": "yes-val-new0.mp4",
+    "sha256": "af931a9a67ab2907631b77a057e6649017a0663b6a8322158c9ee35377b2b7e5",
+    "signer": "d5fd"
+  }
+]

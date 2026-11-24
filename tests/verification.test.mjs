@@ -1,7 +1,22 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Confirmation, targetEvidence, windowFor } from '../src/verification.mjs';
+import { Confirmation, targetEvidence, verificationInterval, verificationWindows, windowFor } from '../src/verification.mjs';
 import { N_POINTS } from '../src/upstream-preprocess.mjs';
+
+test('short sparse motion uses one unique inference window and fresh confirmations', () => {
+  const samples = Array.from({ length: 3 }, (_, n) => {
+    const f = new Float32Array(N_POINTS * 3).fill(NaN);
+    for (let p = 0; p < 21; p++) f.set([.2 + p * .01, .4 + n * .05, 0], p * 3);
+    return { f, t: n * 200 };
+  });
+  assert.equal(verificationWindows(samples, true, true).length, 0);
+  assert.equal(verificationWindows(samples, true).length, 1);
+  assert.ok(verificationInterval(true) < 200);
+  const signal = new Confirmation();
+  assert.equal(signal.push(.8, 0, .6), false);
+  assert.equal(signal.push(.8, 120, .6), false);
+  assert.equal(signal.push(.8, 240, .6), true);
+});
 
 test('target is scored even when another class has a higher logit', () => {
   const metadata = { unknown_index: 2, policy: { temperature: 1 }, prototypes: new Float32Array([1,0,0,1]) };

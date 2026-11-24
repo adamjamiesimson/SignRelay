@@ -523,7 +523,7 @@ $('host').addEventListener('change', async event => {
     else { problem = ''; camera.stopCamera(); }
   }
   await dispatch({ type: 'settings', patch: { [key]: value } });
-  if (camera.attempt) camera.attempt.threshold = threshold(state.settings);
+  camera.setThreshold(threshold(state.settings));
 });
 $('host').addEventListener('input', event => {
   if (event.target.id === 'volume') say($('volume-value'), event.target.value + '%');

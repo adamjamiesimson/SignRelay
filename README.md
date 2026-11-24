@@ -30,6 +30,7 @@ pnpm start
 Set the environment variable **GAMESHOW_CHROME** to the full browser executable path when Chrome is installed elsewhere. Run **pnpm test:browser** after building. Test artifacts are written to **test-output/**. The app needs a secure context for camera and service workers. Use HTTPS for a remote host and the exact loopback address for the booth.
 
 - [Recognition architecture, sign selection and evaluation](docs/RECOGNITION.md)
+- [Final exhibition benchmarks, stress results and publication checks](docs/READINESS.md)
 - [Release and offline verification](docs/VERIFICATION.md)
 - [Booth operations and physical checks](docs/BOOTH.md)
 - [Asset credits and licences](docs/ASSETS.md)

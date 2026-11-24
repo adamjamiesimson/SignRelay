@@ -6,6 +6,7 @@ import { build } from 'esbuild';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const out = resolve(root, process.argv.includes('--evaluate') ? 'test-output/replay-site' :
+  process.argv.includes('--stress') ? 'test-output/stress-site' :
   process.argv.includes('--browser-test') ? 'test-output/browser-site' : 'dist');
 const pins = JSON.parse(await readFile(resolve(root, 'asset-pins.json'), 'utf8'));
 const lessonPins = JSON.parse(await readFile(resolve(root, 'public/lesson-credits.json'), 'utf8'));
@@ -34,12 +35,16 @@ if (process.argv.includes('--evaluate')) {
   await cp(resolve(root, 'scripts/replay.html'), resolve(out, 'replay.html'));
   await build({ ...cfg, entryPoints: ['scripts/replay-page.mjs'], outfile: resolve(out, 'replay-page.mjs'), format: 'esm' });
 }
+if (process.argv.includes('--stress')) {
+  await cp(resolve(root, 'scripts/stress.html'), resolve(out, 'stress.html'));
+  await build({ ...cfg, entryPoints: ['scripts/stress-page.mjs'], outfile: resolve(out, 'stress-page.mjs'), format: 'esm' });
+}
 async function collect(folder, prefix = '') {
   const items = [];
   for (const entry of await readdir(folder, { withFileTypes: true })) {
     const relative = prefix + entry.name;
     if (entry.isDirectory()) items.push(...await collect(resolve(folder, entry.name), relative + '/'));
-    else if (!['sw.js', 'runtime.json', 'replay.html', 'replay-page.mjs'].includes(relative)) {
+    else if (!['sw.js', 'runtime.json', 'replay.html', 'replay-page.mjs', 'stress.html', 'stress-page.mjs'].includes(relative)) {
       const bytes = await readFile(resolve(folder, entry.name));
       items.push({ path: relative, bytes: bytes.length, sha256: digest(bytes) });
     }

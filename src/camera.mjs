@@ -1,5 +1,5 @@
 import { startWorkers } from './workers.mjs';
-import { Confirmation, PROFILE, WINDOWS, windowFor } from './verification.mjs';
+import { Confirmation, PROFILE, verificationInterval, verificationWindows } from './verification.mjs';
 
 const links = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],
   [9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[17,0]];
@@ -31,6 +31,10 @@ export class Camera {
   constructor(video, overlay, notify, settings) {
     this.video = video;
     this.overlay = overlay;
+    this.context = overlay.getContext('2d');
+    this.overlaySize = { width: 0, height: 0 };
+    this.overlayObserver = new ResizeObserver(([entry]) => { this.overlaySize = entry.contentRect; });
+    this.overlayObserver.observe(overlay);
     this.notify = notify;
     this.settings = settings;
     this.history = [];
@@ -123,6 +127,12 @@ export class Camera {
     }, 900);
   }
 
+  setThreshold(threshold) {
+    if (!this.attempt || this.attempt.threshold === threshold) return;
+    this.attempt.threshold = threshold;
+    this.signal.reset();
+  }
+
   videoFrame(attempt) {
     this.frameHandle = this.video.requestVideoFrameCallback((now, frame) => {
       if (this.attempt !== attempt) return;
@@ -144,7 +154,9 @@ export class Camera {
     try {
       const bitmap = await createImageBitmap(this.video);
       if (this.attempt !== attempt) { bitmap.close(); return; }
-      const data = await this.workers.tracker.request('frame', { bitmap, timestamp, compact: attempt.compact }, [bitmap]);
+      const data = await this.workers.tracker.request('frame', {
+        bitmap, timestamp, compact: attempt.compact, overlay: this.settings().overlay,
+      }, [bitmap]);
       if (this.attempt === attempt) this.analyze(attempt, data);
     } catch (error) {
       if (this.attempt === attempt) this.fault(error.message, true);
@@ -155,41 +167,59 @@ export class Camera {
   }
 
   analyze(attempt, data) {
-    this.draw(data.hands);
     attempt.cadence.push(data.timestamp);
     while (attempt.cadence[0] < data.timestamp - 2200) attempt.cadence.shift();
     const span = data.timestamp - attempt.cadence[0];
     const fps = span > 300 ? (attempt.cadence.length - 1) * 1000 / span : null;
-    this.notify('hands', { count: data.hands.length, ms: data.ms, fps: fps === null ? null : Math.round(fps) });
-    const sparse = fps !== null && fps < PROFILE.sparseFps;
+    this.notify('hands', { count: data.handCount, ms: data.ms, fps: fps === null ? null : Math.round(fps) });
+    attempt.sparse = fps !== null && fps < PROFILE.sparseFps;
     if (attempt.cadence.length >= 4 && fps !== null && fps < 7) attempt.compact = true;
     if (data.timestamp - (this.history.at(-1)?.t ?? data.timestamp) > PROFILE.sparseGap) this.resetSignal();
     this.history.push({ t: data.timestamp, f: data.observation });
     while (this.history[0]?.t < data.timestamp - PROFILE.historyMs) this.history.shift();
-    if (this.verifying || data.timestamp - this.lastAnalysis < PROFILE.evaluateEvery) return;
-    const windows = WINDOWS.map(ms => windowFor(this.history, ms, sparse)).filter(Boolean).map(window => window.frames);
-    this.lastAnalysis = data.timestamp;
+    this.verifyLatest(attempt);
+    this.paintOverlay(data.hands);
+  }
+
+  verifyLatest(attempt) {
+    const sample = this.history.at(-1);
+    if (!attempt || !sample || this.verifying ||
+        sample.t - this.lastAnalysis < verificationInterval(attempt.sparse)) return;
+    const windows = verificationWindows(this.history, attempt.sparse);
+    this.lastAnalysis = sample.t;
     if (!windows.length) {
       this.signal.reset();
-      this.notify('evidence', { score: 0, p: 0, cosine: 0, unknown: 0, ms: data.ms });
+      this.notify('evidence', { score: 0, p: 0, cosine: 0, unknown: 0, ms: 0 });
       return;
     }
     this.verifying = true;
-    this.workers.classifier.request('verify', { timestamp: data.timestamp, targets: [attempt.word], windows }).then(reply => {
-      if (this.attempt !== attempt || performance.now() - reply.timestamp > 1200) return;
+    const cutoff = attempt.threshold;
+    this.workers.classifier.request('verify', { timestamp: sample.t, targets: [attempt.word], windows, stopAbove: cutoff }).then(reply => {
+      if (this.attempt !== attempt || performance.now() - reply.timestamp > 1200 || cutoff !== attempt.threshold) return;
       const [evidence] = reply.values;
-      this.notify('evidence', { ...evidence, ms: reply.ms });
-      if (this.signal.push(evidence.score, reply.timestamp, attempt.threshold)) this.notify('match', attempt.run);
+      this.notify('evidence', { ...evidence, ms: reply.ms, windows: reply.windowsRun });
+      if (this.signal.push(evidence.score, reply.timestamp, cutoff)) this.notify('match', attempt.run);
     }).catch(error => {
       if (this.attempt === attempt) this.fault(error.message, true);
-    }).finally(() => { this.verifying = false; });
+    }).finally(() => {
+      this.verifying = false;
+      this.verifyLatest(this.attempt);
+    });
+  }
+
+  paintOverlay(hands) {
+    this.overlayHands = hands;
+    if (this.overlayFrame !== undefined || (!hands.length && !this.overlayPainted)) return;
+    this.overlayFrame = requestAnimationFrame(() => {
+      this.overlayFrame = undefined;
+      this.draw(this.overlayHands);
+    });
   }
 
   draw(hands) {
     const canvas = this.overlay;
-    const context = canvas.getContext('2d');
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
+    const context = this.context;
+    const { width, height } = this.overlaySize;
     const deviceScale = Math.min(devicePixelRatio || 1, 2);
     const w = Math.max(1, Math.round(width * deviceScale));
     const h = Math.max(1, Math.round(height * deviceScale));
@@ -198,6 +228,7 @@ export class Camera {
       canvas.height = h;
     }
     context.clearRect(0, 0, w, h);
+    this.overlayPainted = false;
     if (!this.settings().overlay || !this.video.videoWidth || !hands.length) return;
     const ratio = Math.min(w / this.video.videoWidth, h / this.video.videoHeight);
     const frameW = this.video.videoWidth * ratio;
@@ -209,6 +240,7 @@ export class Camera {
     context.lineWidth = 2.2 * deviceScale;
     context.lineCap = 'round';
     context.fillStyle = '#e6ffe9';
+    this.overlayPainted = true;
     for (const hand of hands) {
       for (const [a, b] of links) {
         context.beginPath();
@@ -240,7 +272,10 @@ export class Camera {
     clearInterval(this.watchdog);
     if (this.frameHandle !== undefined) this.video.cancelVideoFrameCallback?.(this.frameHandle);
     this.frameHandle = undefined;
-    this.draw([]);
+    cancelAnimationFrame(this.overlayFrame);
+    this.overlayFrame = undefined;
+    this.overlayHands = [];
+    if (this.overlayPainted) this.draw([]);
     this.resetSignal();
   }
 

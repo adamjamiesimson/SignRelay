@@ -3,8 +3,9 @@ import { spawnSync } from 'node:child_process';
 
 const [project, site] = process.argv.slice(2);
 const valid = value => /^[a-z][a-z0-9-]{3,29}$/.test(value ?? '');
-if (!valid(project) || !valid(site) || site === 'signrelay') {
-  throw new Error('Pass the exact Firebase project and separate GameShow site IDs. The signrelay site is prohibited.');
+const production = new Set(['signrelay', 'signrelay-76f34']);
+if (!valid(project) || !valid(site) || production.has(site) || production.has(project)) {
+  throw new Error('Pass the exact independent Firebase project and GameShow site IDs. Original SignRelay project and site IDs are prohibited.');
 }
 const mapping = JSON.parse(await readFile('.firebaserc', 'utf8'));
 const config = JSON.parse(await readFile('firebase.json', 'utf8'));

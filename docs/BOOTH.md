@@ -9,6 +9,8 @@
 5. Turn off Wi-Fi and unplug Ethernet. Reload the same URL and repeat a challenge and lesson playback. For a service-worker-only check, stop the local server after Offline Ready, reload, and test lesson playback and camera again. Restart the local server before the show to have a second local copy of every asset.
 6. Remove rehearsal players, or use **Host controls → Session and backups → Reset session** and confirm it.
 
+When replacing an earlier kiosk, export a JSON backup first. Stop the old server, start the new package on port 8787, and open the same address in the same Chrome profile with access to the local server. If Diagnostics shows the earlier build, reload once, let the update download, close every GameShow tab, and wait a few seconds before reopening the address. Check for build **f7f9531a61d13c30** next to **Offline Ready**. Leave browser site data intact so scores remain available.
+
 ## Run the game
 
 1. Select **Join the game** or **Switch player**. Add a nickname or search by name or player ID. Share the numeric ID with participants who use the same nickname.
@@ -20,12 +22,12 @@
 
 Use one operator tab. A second tab can follow the leaderboard and refresh from IndexedDB. Close the original operator tab and reload the secondary tab to transfer controls. If Chrome loses a live tab unexpectedly, reopen the same URL and profile. The unfinished sign remains selected and can be restarted.
 
-## Physical acceptance check on 26 November
+## 20-minute live-webcam rehearsal
 
-- Ask a fluent ASL signer to review all ten clips, their short cues, and the variation accepted by the booth host. Bring the camera just above eye level and frame both hands from the upper chest to past the forehead.
-- Recruit several consenting beginners and at least one habitual left-handed signer. Start each timed trial from rest. For each target record the number of accepted clean and imperfect attempts, wrong-target/ordinary-motion accepts, timeouts, and time from visible sign onset to score. Try natural slow and fast signing and lighting extremes expected at the booth.
-- Include hands-down, held hand, reaching and idle movement trials. Unplug and reconnect the external camera. Verify denied permission and the fallback host flow.
-- Let the intended laptop run for the expected operating window with periodic sign trials and JSON exports. Verify that the camera still starts, signs still respond, and Chrome does not accumulate workers or memory across repeated rounds.
+1. **Set up, 3 minutes.** One person hosts while the other signs. Use the exhibition laptop, camera, external display and booth lighting. Open the offline kiosk and wait for both readiness indicators. Keep **Relaxed 0.60** and frame the face, upper chest and both hands. In the host diagnostics, check the analyzed frame rate while someone signs. Aim for at least 8 analyzed frames per second and close other heavy apps if it stays lower.
+2. **Play both roles, 8 minutes.** Create two rehearsal players with the same nickname. Take turns through five signs each, then swap host duties. Let each player watch the local clip before starting. Attempt a slow but natural version, an imperfect version, and a relaxed right- or left-handed version. Ask a fluent signer to check all ten demonstrations and their notes, including signs the wheel did not draw.
+3. **Check false awards and fallback, 4 minutes.** During timed rounds, try a different sign, idle hands and a normal reach. Confirm the score stays unchanged. Pause, switch to the other ID, and return to confirm the remaining time. Disconnect and reconnect the camera. Verify that the round can resume. Have the host award a genuinely correct missed sign once and use **Skip round** on a deliberately interrupted attempt.
+4. **Test offline and backups, 5 minutes.** Export JSON and CSV. Disable the laptop’s network and reload the exact kiosk URL. Check lesson playback, the live camera, score persistence, another completed round, and fullscreen. Restore the JSON only in this rehearsal session and verify the two IDs and scores. Re-enable the network afterward if needed and remove the rehearsal players before visitors arrive.
 
-The recorded replay figures describe supported video files. The physical checks establish how the booth setup and its visitors actually perform.
+For each live trial, note the sign, approximate analyzed FPS, automatic/manual/timeout result, and any false award or camera problem. Use this log to set the host fallback before opening. For longer validation, leave this setup running across the planned exhibition window with periodic rounds and JSON exports. The automated camera tests used prerecorded input.
 

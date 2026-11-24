@@ -19,6 +19,15 @@ try {
   const click = name => page.getByRole('button', { name, exact: true }).click();
   const spin = () => page.locator('#wheel-copy').getByRole('button', { name: 'Spin the wheel', exact: true }).click();
   const lesson = word => page.getByRole('heading', { name: word, exact: true }).waitFor();
+  const readPlayer = () => page.evaluate(() => new Promise((resolve, reject) => {
+    const req = indexedDB.open('signrelay-gameshow', 1);
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => {
+      const read = req.result.transaction('session').objectStore('session').get('show');
+      read.onsuccess = () => { resolve(read.result.people[0]); req.result.close(); };
+      read.onerror = () => reject(read.error);
+    };
+  }));
   await click('Host controls');
   await page.waitForFunction(() => document.querySelector('#diagnostics').textContent.includes('Model  Ready'));
   await click('Close host controls');
@@ -40,17 +49,18 @@ try {
   await spin();
   await lesson(wrong);
   await click('Ready');
+  await page.locator('#challenge-stage').waitFor({ state: 'visible' });
+  const began = performance.now();
+  const deadline = (await readPlayer()).pending.deadline;
   await page.getByRole('heading', { name: 'Nice try!', exact: true }).waitFor({ timeout: 26000 });
-  const results = await page.evaluate(() => new Promise((resolve, reject) => {
-    const req = indexedDB.open('signrelay-gameshow', 1);
-    req.onerror = () => reject(req.error);
-    req.onsuccess = () => {
-      const read = req.result.transaction('session').objectStore('session').get('show');
-      read.onsuccess = () => { resolve(read.result.people[0].results); req.result.close(); };
-    };
-  }));
+  const timeoutMs = Math.round(performance.now() - began);
+  assert.ok(timeoutMs >= 19_500 && timeoutMs <= 21_500, 'Wrong-target round deadline drift: ' + timeoutMs + ' ms');
+  const results = (await readPlayer()).results;
   assert.deepEqual(results.map(r => [r.sign,r.method]), [[target.toLowerCase(),'automatic'], [wrong.toLowerCase(),'timeout']]);
-  console.log('PASS prerecorded ' + target + ' through the real fake-camera path awarded one automatic +10; the same motion timed out for ' + wrong + '.');
+  const deadlineOffset = results[1].completedAt - deadline;
+  assert.ok(deadlineOffset >= 0 && deadlineOffset <= 1500, 'Invalid persisted timeout offset: ' + deadlineOffset + ' ms');
+  console.log('PASS prerecorded ' + target + ' through the fake-camera path awarded one automatic +10; ' +
+    wrong + ' timed out after ' + timeoutMs + ' ms, persisted ' + deadlineOffset + ' ms after deadline.');
 } finally {
   await browser?.close();
   await new Promise(resolve => server.close(resolve));

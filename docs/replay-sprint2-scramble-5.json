@@ -1,0 +1,3421 @@
+{
+  "split": "scramble",
+  "fps": 5,
+  "fixed": {
+    "baseline": [
+      {
+        "target": "please",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "drink",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "draw",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "jump",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "green",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "stop",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "sleep",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "who",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "rock",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "pencil",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      }
+    ],
+    "candidate": [
+      {
+        "target": "please",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "drink",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "draw",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "jump",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "green",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "stop",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "sleep",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "who",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "rock",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "pencil",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      }
+    ]
+  },
+  "sweep": {
+    "0.55": [
+      {
+        "target": "please",
+        "threshold": 0.55,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "drink",
+        "threshold": 0.55,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "draw",
+        "threshold": 0.55,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "jump",
+        "threshold": 0.55,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "green",
+        "threshold": 0.55,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "stop",
+        "threshold": 0.55,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "sleep",
+        "threshold": 0.55,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "who",
+        "threshold": 0.55,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "rock",
+        "threshold": 0.55,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "pencil",
+        "threshold": 0.55,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      }
+    ],
+    "0.575": [
+      {
+        "target": "please",
+        "threshold": 0.575,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "drink",
+        "threshold": 0.575,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "draw",
+        "threshold": 0.575,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "jump",
+        "threshold": 0.575,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "green",
+        "threshold": 0.575,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "stop",
+        "threshold": 0.575,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "sleep",
+        "threshold": 0.575,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "who",
+        "threshold": 0.575,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "rock",
+        "threshold": 0.575,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "pencil",
+        "threshold": 0.575,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      }
+    ],
+    "0.6": [
+      {
+        "target": "please",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "drink",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "draw",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "jump",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "green",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "stop",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "sleep",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "who",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "rock",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "pencil",
+        "threshold": 0.6,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      }
+    ],
+    "0.625": [
+      {
+        "target": "please",
+        "threshold": 0.625,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "drink",
+        "threshold": 0.625,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "draw",
+        "threshold": 0.625,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "jump",
+        "threshold": 0.625,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "green",
+        "threshold": 0.625,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "stop",
+        "threshold": 0.625,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "sleep",
+        "threshold": 0.625,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "who",
+        "threshold": 0.625,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "rock",
+        "threshold": 0.625,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "pencil",
+        "threshold": 0.625,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      }
+    ],
+    "0.65": [
+      {
+        "target": "please",
+        "threshold": 0.65,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "drink",
+        "threshold": 0.65,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "draw",
+        "threshold": 0.65,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "jump",
+        "threshold": 0.65,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "green",
+        "threshold": 0.65,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "stop",
+        "threshold": 0.65,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "sleep",
+        "threshold": 0.65,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "who",
+        "threshold": 0.65,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "rock",
+        "threshold": 0.65,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "pencil",
+        "threshold": 0.65,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      }
+    ],
+    "0.69": [
+      {
+        "target": "please",
+        "threshold": 0.69,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "drink",
+        "threshold": 0.69,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "draw",
+        "threshold": 0.69,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "jump",
+        "threshold": 0.69,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "green",
+        "threshold": 0.69,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "stop",
+        "threshold": 0.69,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "sleep",
+        "threshold": 0.69,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "who",
+        "threshold": 0.69,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "rock",
+        "threshold": 0.69,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "pencil",
+        "threshold": 0.69,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      }
+    ],
+    "0.79": [
+      {
+        "target": "please",
+        "threshold": 0.79,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "drink",
+        "threshold": 0.79,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "draw",
+        "threshold": 0.79,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "jump",
+        "threshold": 0.79,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "green",
+        "threshold": 0.79,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "stop",
+        "threshold": 0.79,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "sleep",
+        "threshold": 0.79,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 1,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "who",
+        "threshold": 0.79,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "rock",
+        "threshold": 0.79,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      },
+      {
+        "target": "pencil",
+        "threshold": 0.79,
+        "accepted": 0,
+        "positives": 0,
+        "wrong": 0,
+        "comparisons": 10,
+        "empty": 0,
+        "latencyMedianMs": null
+      }
+    ]
+  },
+  "thresholdStudy": null,
+  "timing": {
+    "baseline": {
+      "batches": 20,
+      "windows": 44,
+      "batchP50Ms": 60,
+      "batchP95Ms": 114,
+      "totalWorkerMs": 1278
+    },
+    "candidate": {
+      "batches": 46,
+      "windows": 85,
+      "batchP50Ms": 50,
+      "batchP95Ms": 119,
+      "totalWorkerMs": 2551
+    }
+  },
+  "trackerP50Ms": 102,
+  "trackerP95Ms": 220,
+  "errors": [],
+  "results": [
+    {
+      "sign": "please",
+      "split": "test",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/please/66d7-please-2023_01_26_16_56_37.057-0.mp4",
+      "file": "please-test-new0.mp4",
+      "sha256": "9bca19ed5dd740ee41ef0e8965129c4da322ac88076f1760602ac35d22538799",
+      "signer": "66d7",
+      "variant": "scrambled",
+      "tracked": 6,
+      "frames": 12,
+      "trackerMs": [
+        305,
+        251,
+        149,
+        145,
+        174,
+        126,
+        101,
+        177,
+        117,
+        85,
+        167,
+        62
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 8,
+          "workerMs": [
+            60,
+            97,
+            66,
+            28
+          ],
+          "values": {
+            "please": {
+              "0.55": 1200,
+              "0.575": 1200,
+              "0.6": 1200,
+              "0.625": 1200,
+              "0.65": 1200,
+              "0.69": 1200,
+              "0.79": 1200
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 17,
+          "workerMs": [
+            45,
+            59,
+            59,
+            95,
+            97,
+            73,
+            64,
+            28,
+            29
+          ],
+          "values": {
+            "please": {
+              "0.55": 800,
+              "0.575": 800,
+              "0.6": 800,
+              "0.625": 800,
+              "0.65": 800,
+              "0.69": 800,
+              "0.79": 800
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "sign": "drink",
+      "split": "test",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/drink/111c-drink-2023_02_01_11_51_41.243-0.mp4",
+      "file": "drink-test-new0.mp4",
+      "sha256": "5c060cf4aa4c73ed0c7afe3e6495f90be942e006ce985c343321c09019f6bcbd",
+      "signer": "111c",
+      "variant": "scrambled",
+      "tracked": 4,
+      "frames": 12,
+      "trackerMs": [
+        150,
+        163,
+        123,
+        103,
+        134,
+        56,
+        92,
+        127,
+        50,
+        47,
+        90,
+        57
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 6,
+          "workerMs": [
+            49,
+            47,
+            21,
+            26
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": 1200,
+              "0.575": 1200,
+              "0.6": 1200,
+              "0.625": 1200,
+              "0.65": 1200,
+              "0.69": 1200,
+              "0.79": 1200
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 11,
+          "workerMs": [
+            28,
+            32,
+            29,
+            49,
+            43,
+            22,
+            24,
+            32,
+            22
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": 800,
+              "0.575": 800,
+              "0.6": 800,
+              "0.625": 800,
+              "0.65": 800,
+              "0.69": 800,
+              "0.79": 800
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "sign": "draw",
+      "split": "test",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/draw/66e7-draw-2024_02_21_17_18_35.576-1.mp4",
+      "file": "draw-test-new0.mp4",
+      "sha256": "cb2600d8cda4d15d40aa652cc81269b9d3d5ea4d4f953a6ade2768241a48941d",
+      "signer": "66e7",
+      "variant": "scrambled",
+      "tracked": 5,
+      "frames": 11,
+      "trackerMs": [
+        91,
+        87,
+        133,
+        85,
+        90,
+        126,
+        128,
+        112,
+        92,
+        58,
+        110
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 5,
+          "workerMs": [
+            70,
+            58
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": 1600,
+              "0.575": 1600,
+              "0.6": 1600,
+              "0.625": 1600,
+              "0.65": 1600,
+              "0.69": 1600,
+              "0.79": 1600
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 9,
+          "workerMs": [
+            22,
+            66,
+            51,
+            63,
+            37
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": 1200,
+              "0.575": 1200,
+              "0.6": 1400,
+              "0.625": 1400,
+              "0.65": 1400,
+              "0.69": 1400,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "sign": "jump",
+      "split": "test",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/jump/616e-jump-2023_01_26_23_33_54.262-0.mp4",
+      "file": "jump-test-new0.mp4",
+      "sha256": "15684dc26ac12c6d9a0caf3e7e9fbe413ab19043f9a4d95bfea71ae78e60bdc1",
+      "signer": "616e",
+      "variant": "scrambled",
+      "tracked": 1,
+      "frames": 12,
+      "trackerMs": [
+        228,
+        168,
+        102,
+        63,
+        99,
+        55,
+        64,
+        92,
+        59,
+        57,
+        90,
+        50
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 0,
+          "workerMs": [],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 0,
+          "workerMs": [],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "sign": "green",
+      "split": "test",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/green/a1ba-green-2023_01_13_22_20_17.446-0.mp4",
+      "file": "green-test-new0.mp4",
+      "sha256": "d5e4ea46a6b480d4a0f76c880dba5068b68be5a51b1b182335cdc7d4f5383029",
+      "signer": "a1ba",
+      "variant": "scrambled",
+      "tracked": 2,
+      "frames": 9,
+      "trackerMs": [
+        94,
+        142,
+        87,
+        48,
+        101,
+        100,
+        98,
+        146,
+        107
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 0,
+          "workerMs": [],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 0,
+          "workerMs": [],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "sign": "stop",
+      "split": "test",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/stop/66e7-stop-2024_02_17_18_33_45.154-1.mp4",
+      "file": "stop-test-new0.mp4",
+      "sha256": "e0ba6c99917263d43407b0b3a326f1de95a4712896d6a0b0dd182692fa6b01d8",
+      "signer": "66e7",
+      "variant": "scrambled",
+      "tracked": 5,
+      "frames": 10,
+      "trackerMs": [
+        133,
+        87,
+        85,
+        55,
+        87,
+        187,
+        60,
+        93,
+        143,
+        155
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 1,
+          "workerMs": [
+            25
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 2,
+          "workerMs": [
+            32,
+            26
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "sign": "sleep",
+      "split": "test",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/sleep/af6d-sleep-2023_01_26_16_48_23.165-0.mp4",
+      "file": "sleep-test-new0.mp4",
+      "sha256": "7eaa14f5e2db47db0e885c11520bae9894790ebe93a872b29a7d3fc127d36df0",
+      "signer": "af6d",
+      "variant": "scrambled",
+      "tracked": 9,
+      "frames": 10,
+      "trackerMs": [
+        92,
+        190,
+        100,
+        163,
+        132,
+        109,
+        89,
+        125,
+        88,
+        135
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 9,
+          "workerMs": [
+            74,
+            68,
+            69
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": 1200,
+              "0.575": 1200,
+              "0.6": 1200,
+              "0.625": 1200,
+              "0.65": 1200,
+              "0.69": 1200,
+              "0.79": 1200
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 17,
+          "workerMs": [
+            30,
+            51,
+            50,
+            67,
+            69,
+            85,
+            66
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": 800,
+              "0.575": 800,
+              "0.6": 800,
+              "0.625": 800,
+              "0.65": 800,
+              "0.69": 800,
+              "0.79": 800
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "sign": "who",
+      "split": "test",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/who/a1ba-who-2023_01_12_13_30_38.744-0.mp4",
+      "file": "who-test-new0.mp4",
+      "sha256": "5134dc7878e10febd755cb9d77a7d97d769b965b6fae568a894db1c58fcfced9",
+      "signer": "a1ba",
+      "variant": "scrambled",
+      "tracked": 3,
+      "frames": 9,
+      "trackerMs": [
+        197,
+        140,
+        90,
+        49,
+        88,
+        56,
+        86,
+        137,
+        65
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 0,
+          "workerMs": [],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 0,
+          "workerMs": [],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "sign": "rock",
+      "split": "test",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/rock/66e7-rock-2024_02_21_17_08_09.569-1.mp4",
+      "file": "rock-test-new0.mp4",
+      "sha256": "17ef387e4dc845495cf774a0c7a84365ef30ba6c97aac3b9349457a897d060a1",
+      "signer": "66e7",
+      "variant": "scrambled",
+      "tracked": 5,
+      "frames": 11,
+      "trackerMs": [
+        87,
+        87,
+        143,
+        97,
+        120,
+        152,
+        120,
+        56,
+        117,
+        140,
+        143
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 3,
+          "workerMs": [
+            54,
+            33
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 5,
+          "workerMs": [
+            32,
+            51,
+            29,
+            31
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "sign": "pencil",
+      "split": "test",
+      "source": "https://signdata.cc.gatech.edu/data/popsign_v2_1/game/test/pencil/af6d-pencil-2023_01_25_19_48_53.517-0.mp4",
+      "file": "pencil-test-new0.mp4",
+      "sha256": "37f88182219080b251053716271d01402a5571cb444d1e8f4eb65b8b5d6c8485",
+      "signer": "af6d",
+      "variant": "scrambled",
+      "tracked": 12,
+      "frames": 12,
+      "trackerMs": [
+        261,
+        201,
+        209,
+        204,
+        135,
+        196,
+        272,
+        220,
+        157,
+        232,
+        136,
+        121
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 12,
+          "workerMs": [
+            92,
+            114,
+            126,
+            101
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 24,
+          "workerMs": [
+            42,
+            35,
+            58,
+            58,
+            119,
+            119,
+            125,
+            123,
+            102,
+            82
+          ],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "sign": "blank",
+      "variant": "synthetic-empty",
+      "tracked": 0,
+      "frames": 13,
+      "trackerMs": [
+        173,
+        103,
+        63,
+        64,
+        118,
+        65,
+        54,
+        92,
+        64,
+        73,
+        101,
+        58,
+        57
+      ],
+      "modes": {
+        "baseline": {
+          "usedWindows": 0,
+          "workerMs": [],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        },
+        "candidate": {
+          "usedWindows": 0,
+          "workerMs": [],
+          "values": {
+            "please": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "drink": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "draw": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "jump": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "green": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "stop": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "sleep": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "who": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "rock": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            },
+            "pencil": {
+              "0.55": null,
+              "0.575": null,
+              "0.6": null,
+              "0.625": null,
+              "0.65": null,
+              "0.69": null,
+              "0.79": null
+            }
+          }
+        }
+      }
+    }
+  ]
+}

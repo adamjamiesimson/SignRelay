@@ -10,7 +10,7 @@ const read = path => blob(path).toString('utf8');
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const paths = git('ls-tree', '-rz', '--name-only', revision).toString('utf8').split('\0').filter(Boolean);
 
-const forbidden = /(?:^|\/)(?:\.env(?:\.[^/]+)?|\.firebaserc|\.firebase|\.gitmodules|\.github|node_modules|dist|test-output|.*\.backup\.json|.*\.(?:y4m|mov|webm|pem|pfx|p12|key|zip|onnx|task|wasm))$/i;
+const forbidden = /(?:^|\/)(?:\.env(?:\.[^/]+)?|\.firebaserc|\.firebase|\.gitmodules|\.github|node_modules|dist|test-output|.*\.backup\.json|.*\.(?:csv|y4m|mov|webm|pem|pfx|p12|key|zip|onnx|task|wasm))$/i;
 assert.deepEqual(paths.filter(path => forbidden.test(path)), [], 'Unexpected sensitive or generated paths');
 assert.ok(paths.every(path => /^(?:public|scripts|src|docs|tests)\//.test(path) ||
   ['.gitattributes', '.gitignore', 'README.md', 'asset-pins.json', 'firebase.json', 'vercel.json', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml'].includes(path)),
@@ -37,6 +37,7 @@ const tokenPatterns = [
   /\b(?:gh[pousr]_[a-z0-9]{25,}|github_pat_[a-z0-9_]{25,}|AIza[0-9A-Za-z_-]{35}|AKIA[A-Z0-9]{16})\b/i,
   /-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----/,
   /https:\/\/[^:/\s]{3,}:[^@/\s]{5,}@/,
+  /"type"\s*:\s*"service_account"/,
 ];
 const suspect = [];
 for (const path of paths.filter(path => /\.(mjs|js|json|yaml|html|css|md)$/.test(path))) {

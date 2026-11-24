@@ -44,9 +44,19 @@ export function validateSettings(input) {
 
 export function freezeAttempt(p, now) {
   if (!p?.pending?.deadline) return;
+  if (now >= p.pending.deadline) {
+    recordResult(p, 'timeout', p.pending.deadline);
+    return;
+  }
   p.pending.remaining = timeLeft(p.pending, now);
   p.pending.deadline = null;
   p.pending.run = null;
+}
+
+function recordResult(person, method, completedAt) {
+  const { id, sign, selectedAt } = person.pending;
+  person.results.push({ id, sign, method, selectedAt, completedAt });
+  person.pending = null;
 }
 
 function update(state, action, supported) {
@@ -123,8 +133,7 @@ function update(state, action, supported) {
       if (!ownsRun || p.results.length >= MAX_ROUNDS || p.results.some(result => result.id === pending.id)) return false;
       if (!['automatic', 'manual', 'timeout'].includes(action.method)) return false;
       if ((action.method === 'timeout') !== (now >= pending.deadline)) return false;
-      p.results.push({ id: pending.id, sign: pending.sign, method: action.method, selectedAt: pending.selectedAt, completedAt: now });
-      p.pending = null;
+      recordResult(p, action.method, now);
       return true;
     }
     case 'correct': {
