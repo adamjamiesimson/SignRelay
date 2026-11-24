@@ -45,8 +45,8 @@ import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
 import { parseCalibrationExport, serialiseCalibration } from "@/lib/calibration-transfer";
 import { enrolmentReport, type EnrolmentReport } from "@/lib/asl-v31-personal";
-import { buildLanguageModel, displayText, predictNext, resolveAmbiguity } from "@/lib/asl-next-word";
-import { ASL_SENTENCE_PATTERNS } from "@/lib/asl-sentence-patterns";
+import { displayText, predictNext, resolveAmbiguity } from "@/lib/asl-next-word";
+import { nextWordModel } from "@/lib/next-word-corpus";
 import { AslV3Tracker } from "@/lib/asl-v3-tracker";
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
@@ -75,9 +75,6 @@ type Step = "welcome" | "workspace";
 type CameraState = "idle" | "requesting" | "loading" | "active" | "denied" | "error";
 type RecognitionState = "listening" | "processing" | "uncertain";
 type CalibrationState = "idle" | "countdown" | "recording" | "saving" | "saved" | "error";
-
-// Built once at module load: a few hundred gloss sequences into three small maps.
-const NEXT_WORD_MODEL = buildLanguageModel(ASL_SENTENCE_PATTERNS);
 
 const EMPTY_DETECTION: DetectionStatus = {
   person: false,
@@ -273,8 +270,11 @@ export function TranslatorExperience() {
   const withContext = useCallback((message: WorkerSuggestion): WorkerSuggestion => {
     const alternatives = message.alternatives;
     if (!alternatives || alternatives.length < 2) return message;
+    // Only languages whose words the corpus was written in get a say in a close call.
+    const languageModel = nextWordModel(selected);
+    if (!languageModel) return message;
     const transcript = entriesRef.current.map(entry => entry.gloss ?? entry.text);
-    const ranked = resolveAmbiguity(NEXT_WORD_MODEL, transcript, alternatives);
+    const ranked = resolveAmbiguity(languageModel, transcript, alternatives);
     const chosen = ranked[0];
     const original = alternatives[0];
     if (chosen.gloss === original.gloss || chosen.reason !== "context") return message;
@@ -282,7 +282,7 @@ export function TranslatorExperience() {
     const probability = alternatives.find(item => item.gloss === chosen.gloss)?.probability ?? message.confidence;
     setContextNote(`Close call: the detector could not separate ${displayText(original.gloss)} and ${displayText(chosen.gloss)}, so the sentence chose ${displayText(chosen.gloss)}.`);
     return { ...message, gloss: chosen.gloss, text: displayText(chosen.gloss), confidence: probability };
-  }, []);
+  }, [selected]);
 
   const resetRecognition = useCallback(() => {
     const tracker = engineRef.current;
@@ -932,13 +932,14 @@ export function TranslatorExperience() {
 
   // Words that usually follow the transcript, limited to what this signer can actually sign.
   const nextWords = useMemo(() => {
-    if (!entries.length) return [];
+    const languageModel = nextWordModel(selected);
+    if (!languageModel || !entries.length) return [];
     const glossary = new Set<string>();
     for (const template of calibrationTemplates) if (template.gloss) glossary.add(template.gloss.toUpperCase());
     for (const entry of entries) if (entry.gloss) glossary.add(entry.gloss.toUpperCase());
     const vocabulary = useAslV3 && glossary.size >= 3 ? glossary : undefined;
-    return predictNext(NEXT_WORD_MODEL, entries.map(entry => entry.gloss ?? entry.text), { limit: 3, vocabulary });
-  }, [calibrationTemplates, entries, useAslV3]);
+    return predictNext(languageModel, entries.map(entry => entry.gloss ?? entry.text), { limit: 3, vocabulary });
+  }, [calibrationTemplates, entries, selected, useAslV3]);
 
   const addNextWord = useCallback((gloss: string, text: string) => {
     // Added by an explicit click on a chip, so it is a confirmation rather than a detector guess.

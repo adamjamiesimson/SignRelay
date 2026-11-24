@@ -62,6 +62,26 @@ Measured on twelve public per-word clips from different signers and studios:
   0.75 bar that covers PLEASE and YES but not WATER, so it would need a lower bar and more collision
   risk than the signer's own recordings (0.93 same-sign, 0.27 different-sign).
 
+## Does any of this transfer to the other languages?
+
+The dataset does not, and neither does the training path without work — but the *pattern* does. The
+repository ships model-backed recognition for ASL (V3.1, 523 classes), BSL (Pose2Sign, 1,064), ISL
+(INCLUDE, 263), LSE (temporal landmark, 300), RSL (Slovo, 1,000), BdSL (VideoMAE, 401) and PSL (HFAD,
+776, one-shot), and signer-taught recognition for the remaining ~25 language options.
+
+| layer | reaches other languages? |
+|---|---|
+| the ISLR dataset | **No.** It is ASL: 250 American signs recorded by 21 Deaf signers. Merging it into the BSL, ISL, RSL or LSE models would teach those models American signs under the wrong labels. |
+| `import_islr.py` landmark conversion | **Yes, with a different label file.** Converting long-format MediaPipe rows into `[T, 86, 3]` is language-neutral; a dataset for another sign language only changes which glosses are attached. |
+| `merge_cache.py` | **Yes, unchanged.** It merges shards by signer and clip; it never looks at meaning. |
+| `train.py` | **Only for a V3.1-style model.** It trains the ASL Convformer on 15 Hz landmark sequences. BSL (Pose2Sign), ISL (transformer), RSL (MViTv2), BdSL (VideoMAE) and PSL (DTW) are different architectures with different input contracts, so a language that wants this trainer needs a dataset in this format first. |
+| next-word predictor | **Only ASL today**, deliberately. The corpus is English gloss in ASL order, so it is offered for ASL and withheld elsewhere; `lib/next-word-corpus.ts` is where a language's gloss sequences would be added. |
+| taught signs (your own vocabulary) | **Every language.** Each adapter can be taught on-device; ASL additionally matches taught signs by model embedding (0.93 same sign), while the other languages use DTW templates. |
+
+So the honest answer: a single dataset buys accuracy for one sign language. The machinery around it —
+conversion, signer-disjoint merge, reversible cache, device selection, the Kaggle runner — is reusable,
+and is what would make a second language cheap to add once its own dataset exists.
+
 The practical reading: internet data is the right tool for building a **shared** model that a stranger
 can use, and a poor substitute for **your own** two minutes of teaching. If a booth needs forty words
 that work today, teach them. If it needs a product that works for anyone, budget for PopSign plus a
