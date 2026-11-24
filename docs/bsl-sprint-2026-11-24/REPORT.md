@@ -58,18 +58,24 @@ legacy windows spanned ≈ 735 ms of 20 fps input, and 1–8 of their 16 frames 
 
 Raw derived results: [results/](results/). They contain labels, scores and counters only — no video or landmarks.
 
-## 4. What is still required (blocking a real baseline)
+## 4. BSL data access: what was tried (follow-up, 24 November)
 
-- **A licensed BSL video source.** BSL SignBank (`bslsignbank.ucl.ac.uk`), BSLDict (`www.robots.ox.ac.uk`) and
-  Wikimedia Commons were unreachable from the sandbox. They were added to the environment's allowlist, but
-  automated downloads from them were refused by this session's permission policy, so their terms could not be read
-  and no clips were fetched. To run the BSL baseline, either allow those downloads for this work or supply
-  licensed/consented BSL clips locally (git-ignored `evaluation/videos/`). Then:
-  1. fill `bsl-development.json` / `bsl-evaluation.json` (format: `foreign-controls.json`; categories
-     `supported` / `unsupported` / `non_sign` / `foreign_sign`; expected labels must be exact BSL-1K labels);
-  2. run the harness three times (baseline worker, legacy, v2) and the replay on the captured traces;
-  3. apply the adoption rule in [PROTOCOL.md](PROTOCOL.md).
-- **Physical-camera rehearsal** of the showcase candidates: [SHOWCASE_REHEARSAL.md](SHOWCASE_REHEARSAL.md).
+| Source | Result |
+| --- | --- |
+| **BSLDict** (Oxford VGG, CC BY 4.0 metadata, 14k dictionary clips, covers all 1,064 BSL-1K labels) | Metadata downloaded. Development/evaluation cohorts **frozen and committed** (`bsl-development.json`, `bsl-evaluation.json`: 300 supported + 60 unsupported each, source-disjoint). Video host `media.signbsl.com` returns **HTTP 403 (Cloudflare)** to direct requests from this environment. Not worked around. |
+| BSL SignBank (UCL DCAL) | Terms: non-commercial viewing only; *"do not … attempt to scrape any data from this site without written permission"*; no bulk downloads. **Not used.** |
+| BOBSL (BBC/Oxford) | Requires a signed BBC terms-of-use agreement and a personal password. Not obtainable autonomously. |
+| BSL-1K pose / reference landmarks | Never publicly released (`info/` returns 403; README lists BSL-1K data as "coming soon"). Experiment config **was** obtained (`run.sh`, `opt.pkl`): `pose_keys body lhnd rhnd`, 24 last frames, 16-frame input, stride 0.5. This confirms the audit. The pose branch also returns before any horizontal-flip augmentation, so the model was never trained to be left/right invariant, which supports anatomical hand slots. |
+| Wikimedia Commons | Only long continuous BSL films (CC BY 3.0) with no per-sign labels. Not usable for isolated-sign accuracy. |
+| Hugging Face, OSF | No labelled BSL isolated-sign video found. |
+
+**Genuine BSL recognition evidence therefore requires recordings supplied from outside this environment.** The
+complete procedure (exact links, licence terms, filenames, directory layout and the single evaluation command) is in
+[PROVIDING_RECORDINGS.md](PROVIDING_RECORDINGS.md). `npm run eval:bsl -- <manifest>` produces the baseline,
+legacy-vs-v2 and v2 numbers in one run. It was smoke-tested end to end here.
+
+Also delivered: a developer-only physical preview (`?perf&bslEngine=v2`, see SHOWCASE_REHEARSAL.md) and the
+vocabulary investigation ([VOCABULARY.md](VOCABULARY.md)).
 
 ## 5. Reproduce
 
