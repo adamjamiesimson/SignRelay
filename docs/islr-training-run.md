@@ -24,6 +24,13 @@ Verified on this machine, with a synthetic dataset in the published schema
 - a sign the vocabulary has never seen becomes a new class: a 3-clip synthetic run went from 523 to
   524 classes and trained (`classes 524 (+UNKNOWN)`).
 
+Also verified on synthetic data: `--init` seeds an empty cache from an import, and
+`train.py --vocabulary` keeps the class list to signs that actually have clips (4 classes instead of
+523 phantom PopSign ones) when training on one dataset alone.
+
+The competition slug is `asl-signs`; downloading it requires accepting the rules on the competition
+page once, which only the account holder can do.
+
 Not verified, because it needs things this machine does not have: the real dataset (behind Kaggle
 sign-in and rule acceptance), and a training budget. Sizes and times below are estimates to plan with,
 not measurements.
@@ -45,7 +52,7 @@ clips. Each step is skipped when its output already exists.
 # 1. Data (needs a Kaggle account and accepting the competition rules once)
 pip install kaggle
 mkdir -p ~/data/islr && cd ~/data/islr
-kaggle competitions download -c google-islr-2023      # name as shown on the competition page
+kaggle competitions download -c asl-signs              # "Google - Isolated Sign Language Recognition"
 unzip -q *.zip                                        # expect train.csv + train_landmark_files/
 du -sh .                                              # several GB of parquet; keep 30-40 GB free to convert
 
@@ -56,13 +63,15 @@ python engine-v3/pipeline/import_islr.py \
   --meta ~/data/islr/train.csv \
   --out ~/data/cache --max-per-class 120
 
-# 3. Merge into the cache the trainer reads (originals copied to {split}.base.* first)
-python engine-v3/pipeline/merge_cache.py --cache ~/data/cache --add islr
+# 3. Merge into the cache the trainer reads (originals copied to {split}.base.* first).
+#    --init seeds a cache when there is no PopSign cache yet, so the dataset can be trained alone.
+python engine-v3/pipeline/merge_cache.py --cache ~/data/cache --add islr --init
 python engine-v3/pipeline/merge_cache.py --cache ~/data/cache --restore   # undo, any time
 
 # 4. Train, keeping the existing checkpoint untouched
 python engine-v3/train/train.py --cache ~/data/cache --out runs/v3.2-islr \
-  --epochs 60 --balance 0.5 --fs-negatives
+  --epochs 60 --balance 0.5 --fs-negatives \
+  --vocabulary engine-v3/vocabulary/popsign_signs.json   # drop this to train on the dataset alone
 
 # 5. Export and compare against the shipped checkpoint before replacing anything
 python engine-v3/train/export_onnx.py --run runs/v3.2-islr --out runs/v3.2-islr/onnx

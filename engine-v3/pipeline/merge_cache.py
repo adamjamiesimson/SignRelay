@@ -32,9 +32,20 @@ def load_split(cache, stem):
     return {"pts": archive["pts"], "offsets": archive["offsets"], "meta": json.load(open(meta_path))}
 
 
-def merge_split(cache, add, split):
+def merge_split(cache, add, split, init=False):
     current = load_split(cache, split)
     if current is None:
+        if init:
+            # No existing cache for this split: start one from the import, so a dataset can be trained
+            # on its own before it is ever merged with anything.
+            shard = load_split(cache, f"{add}_{split}")
+            if shard is None:
+                return None
+            np.savez(os.path.join(cache, f"{split}.npz"), pts=shard["pts"], offsets=shard["offsets"].astype(np.int64))
+            json.dump(shard["meta"], open(os.path.join(cache, f"{split}.json"), "w"))
+            return {"base_clips": 0, "added_clips": len(shard["meta"]), "base_frames": 0,
+                    "added_frames": int(shard["offsets"][-1]), "total_clips": len(shard["meta"]),
+                    "total_frames": int(shard["offsets"][-1]), "classes": len({row["sign"] for row in shard["meta"]})}
         # A cache may hold only some splits; a missing one is reported by main, not fatal here.
         return None
     backup = load_split(cache, f"{split}.base")
@@ -85,6 +96,8 @@ def main():
     parser.add_argument("--cache", required=True)
     parser.add_argument("--add", default=None, help="prefix written by import_islr.py, e.g. islr")
     parser.add_argument("--restore", action="store_true")
+    parser.add_argument("--init", action="store_true",
+                        help="seed an empty cache from the import instead of merging into an existing one")
     args = parser.parse_args()
     if args.restore:
         restore(args.cache)
@@ -93,7 +106,7 @@ def main():
         raise SystemExit("pass --add <prefix> or --restore")
     report = {"cache": args.cache, "added": args.add, "splits": {}}
     for split in SPLITS:
-        result = merge_split(args.cache, args.add, split)
+        result = merge_split(args.cache, args.add, split, init=args.init)
         if result:
             report["splits"][split] = result
             print(f"{split}: {result['base_clips']} + {result['added_clips']} clips -> {result['total_clips']}")

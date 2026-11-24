@@ -110,6 +110,9 @@ def main():
     ap.add_argument("--no-face", action="store_true", help="ablation: drop face points at train and eval")
     ap.add_argument("--threads", type=int, default=4); ap.add_argument("--late-drop-epoch", type=int, default=0)
     ap.add_argument("--policy", default=None)
+    ap.add_argument("--vocabulary", default=None,
+                    help="signs to keep as classes in addition to the cache (default: the PopSign list). "
+                         "Pass a JSON list, or an empty list, when training on a different dataset alone.")
     ap.add_argument("--fs-negatives", action="store_true", help="add FSBoard fingerspelling windows as UNKNOWN")
     ap.add_argument("--balance", type=float, default=0.0,
                     help="class-balanced loss: weight_c = (median_count / count_c) ** balance (0 = off, 0.5 = inverse sqrt)")
@@ -118,8 +121,10 @@ def main():
     os.makedirs(a.out, exist_ok=True)
 
     policy = labels.load_policy(a.policy)
+    vocabulary_path = a.vocabulary or os.path.join(HERE, "..", "vocabulary", "popsign_signs.json")
+    vocabulary = set(json.load(open(vocabulary_path))) if os.path.exists(vocabulary_path) else set()
     all_signs = sorted({m["sign"] for s in ("train", "val") for m in json.load(open(f"{a.cache}/{s}.json"))}
-                       | set(json.load(open(os.path.join(HERE, "..", "vocabulary", "popsign_signs.json")))))
+                       | vocabulary)
     classes, mapping = labels.build(all_signs, policy)
     C = len(classes); UNK = C
     json.dump({"classes": classes, "unknown_index": UNK, "policy_version": policy["version"],

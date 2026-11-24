@@ -115,6 +115,14 @@ class IslrImportTests(unittest.TestCase):
         self.assertEqual(len(restored["pts"]), 40)
         self.assertEqual([row["key"] for row in read_json(os.path.join(self.cache, "train.json"))], ["popsign-A"])
 
+    def test_frame_size_override_reaches_the_stored_metadata(self):
+        self.run_pipeline("import_islr.py", "--landmarks", self.landmarks, "--meta", self.meta,
+                          "--out", self.cache, "--val-fraction", "0", "--test-fraction", "0",
+                          "--width", "1080", "--height", "1920")
+        meta = read_json(os.path.join(self.cache, "islr_train.json"))
+        self.assertEqual((meta[0]["width"], meta[0]["height"]), (1080, 1920),
+                         "a portrait source must record the size that was actually used")
+
     def test_splits_are_signer_disjoint(self):
         self.run_pipeline("import_islr.py", "--landmarks", self.landmarks, "--meta", self.meta,
                           "--out", self.cache, "--val-fraction", "0.34", "--test-fraction", "0.34")

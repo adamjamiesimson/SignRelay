@@ -64,7 +64,7 @@ def _points(value, expected):
     return np.asarray(rows, np.float32)
 
 
-def clip_points(row):
+def clip_points(row, width=WIDTH, height=HEIGHT):
     """One parquet row -> [T, 86, 3] in this project's point order."""
     left = _points(row.get("left_hand"), N_HAND)
     right = _points(row.get("right_hand"), N_HAND)
@@ -74,9 +74,9 @@ def clip_points(row):
     for hand in (left, right):
         hand[np.all(np.nan_to_num(hand, nan=0.0) == 0.0, axis=1)] = np.nan
     points = np.concatenate([left, right, pose[POSE], face[FACE]], axis=0).astype(np.float32)
-    long_side = float(max(WIDTH, HEIGHT))
-    points[:, 0] *= WIDTH / long_side
-    points[:, 1] *= HEIGHT / long_side
+    long_side = float(max(width, height))
+    points[:, 0] *= width / long_side
+    points[:, 1] *= height / long_side
     return points
 
 
@@ -111,6 +111,9 @@ def main():
     parser.add_argument("--limit", type=int, default=0, help="import at most this many clips (0 = all)")
     parser.add_argument("--max-per-class", type=int, default=0, help="cap clips per label (0 = no cap)")
     parser.add_argument("--min-hand-frames", type=int, default=3, help="drop clips with fewer hand frames")
+    parser.add_argument("--width", type=int, default=WIDTH, help="source frame width used for aspect correction")
+    parser.add_argument("--height", type=int, default=HEIGHT, help="source frame height")
+    parser.add_argument("--fps", type=float, default=FPS, help="frame rate the clips were recorded at")
     parser.add_argument("--check", action="store_true",
                         help="inspect one clip and report the layout, then stop (no import)")
     parser.add_argument("--val-fraction", type=float, default=0.1)
@@ -143,6 +146,7 @@ def main():
             report[group] = {"points": int(preview.shape[0]), "expected": expected,
                              "finite": int(np.isfinite(preview).sum())}
         report["label"] = str(_column(record, SIGN_COLUMNS))
+        report["frame_size"] = {"width": args.width, "height": args.height, "fps": args.fps}
         print(json.dumps(report, indent=2))
         missing = [group for group in ("left_hand", "right_hand", "pose", "face") if group not in columns]
         if missing:
@@ -168,14 +172,15 @@ def main():
         if not table:
             skipped += 1
             continue
-        points = np.stack([clip_points(row) for row in table], axis=0)
+        points = np.stack([clip_points(row, args.width, args.height) for row in table], axis=0)
         hands = hand_frames(points)
         if hands < args.min_hand_frames:
             skipped += 1
             continue
         rows.append({"key": f"{args.prefix}-{sequence}", "sign": sign, "signer": signer,
                      "sha256": "", "frames": int(len(points)), "hand_frames": hands,
-                     "width": WIDTH, "height": HEIGHT, "fps": FPS, "duration": round(len(points) / FPS, 3),
+                     "width": args.width, "height": args.height, "fps": args.fps,
+                     "duration": round(len(points) / args.fps, 3),
                      "split": None, "points": points})
         per_class[sign] += 1
         if args.limit and len(rows) >= args.limit:
@@ -197,7 +202,7 @@ def main():
 
     os.makedirs(args.out, exist_ok=True)
     summary = {"prefix": args.prefix, "clips": len(rows), "classes": len(per_class), "missing_files": missing,
-               "skipped": skipped, "signers": len(order), "width": WIDTH, "height": HEIGHT, "fps": FPS,
+               "skipped": skipped, "signers": len(order), "width": args.width, "height": args.height, "fps": args.fps,
                "single_split_classes": len(single_split), "single_split_examples": single_split[:10]}
     for split in ("train", "val", "test"):
         chosen = sorted((row for row in rows if row["split"] == split), key=lambda row: row["key"])

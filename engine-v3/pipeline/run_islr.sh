@@ -10,7 +10,7 @@ set -euo pipefail
 DATA=${1:-$HOME/data/islr}
 CACHE=${CACHE:-$DATA/cache}
 RUN=${RUN:-runs/v3.2-islr}
-COMPETITION=${COMPETITION:-google-islr-2023}
+COMPETITION=${COMPETITION:-asl-signs}
 HERE=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$HERE/../.." && pwd)
 
@@ -30,6 +30,7 @@ LANDMARKS=${LANDMARKS:-$DATA/train_landmark_files}
 [ -d "$LANDMARKS" ] || { echo "no $LANDMARKS — check what the zip extracted"; exit 1; }
 
 echo "== 2/5 layout check =="
+# The videos this dataset was extracted from are 1280x720 at 30 fps; override if that is not your download.
 python3 "$HERE/import_islr.py" --landmarks "$LANDMARKS" --meta "$DATA/train.csv" --out "$CACHE" --check
 
 echo "== 3/5 convert =="
@@ -37,12 +38,15 @@ python3 "$HERE/import_islr.py" --landmarks "$LANDMARKS" --meta "$DATA/train.csv"
   --max-per-class "${MAX_PER_CLASS:-120}"
 
 echo "== 4/5 merge (originals kept in *.base.*, undo with merge_cache.py --restore) =="
-python3 "$HERE/merge_cache.py" --cache "$CACHE" --add islr
+# --init seeds a cache when there is no existing one, so a dataset can be trained on its own.
+python3 "$HERE/merge_cache.py" --cache "$CACHE" --add islr --init
 
 echo "== 5/5 train a candidate =="
 cd "$REPO"
+# --vocabulary keeps the class list to signs that have clips; drop it to keep the full PopSign list.
+VOCAB=${VOCAB:-engine-v3/vocabulary/popsign_signs.json}
 python3 engine-v3/train/train.py --cache "$CACHE" --out "$RUN" --epochs "${EPOCHS:-60}" \
-  --balance 0.5 --fs-negatives
+  --balance 0.5 --fs-negatives --vocabulary "$VOCAB"
 
 cat <<DONE
 
