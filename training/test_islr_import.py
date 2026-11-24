@@ -46,6 +46,35 @@ def write_clip(path, frames, left_present=True):
     }), path)
 
 
+def write_long_clip(path, frames, hand_frames):
+    """The layout the competition actually ships: one row per landmark point, nulls for missing points."""
+    rng = np.random.default_rng(len(path) + frames)
+    rows = {"frame": [], "row_id": [], "type": [], "landmark_index": [], "x": [], "y": [], "z": []}
+    counts = {"face": 468, "pose": 33, "left_hand": 21, "right_hand": 21}
+    for frame in range(frames):
+        for kind, count in counts.items():
+            present = kind != "left_hand" or frame < hand_frames
+            for index in range(count):
+                rows["frame"].append(frame); rows["row_id"].append(len(rows["frame"]) - 1)
+                rows["type"].append(kind); rows["landmark_index"].append(index)
+                if present:
+                    rows["x"].append(float(rng.normal(0.5, 0.05)))
+                    rows["y"].append(float(rng.normal(0.5, 0.05)))
+                    rows["z"].append(float(rng.normal(0, 0.01)))
+                else:
+                    # Absent points arrive as null triples, which must stay missing rather than become 0,0
+                    rows["x"].append(None); rows["y"].append(None); rows["z"].append(None)
+    pq.write_table(pa.table({
+        "frame": pa.array(rows["frame"], pa.int32()), "row_id": pa.array(rows["row_id"], pa.int64()),
+        "type": pa.array(rows["type"], pa.string()), "landmark_index": pa.array(rows["landmark_index"], pa.int32()),
+        "x": pa.array(rows["x"], pa.float64()), "y": pa.array(rows["y"], pa.float64()),
+        "z": pa.array(rows["z"], pa.float64()),
+    }), path)
+
+
+LONG_ONLY = {"long": True}
+
+
 @unittest.skipUnless(AVAILABLE, "numpy and pyarrow are required to build the synthetic dataset")
 class IslrImportTests(unittest.TestCase):
     def setUp(self):
@@ -114,6 +143,27 @@ class IslrImportTests(unittest.TestCase):
         restored = np.load(os.path.join(self.cache, "train.npz"))
         self.assertEqual(len(restored["pts"]), 40)
         self.assertEqual([row["key"] for row in read_json(os.path.join(self.cache, "train.json"))], ["popsign-A"])
+
+    def test_long_format_rows_pivot_into_the_same_contract(self):
+        folder = os.path.join(self.landmarks, "444")
+        os.makedirs(folder)
+        write_long_clip(os.path.join(folder, "444001.parquet"), 20, hand_frames=8)
+        with open(self.meta, "a", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=["sequence_id", "participant_id", "sequence_label"])
+            writer.writerow({"sequence_id": "444001", "participant_id": "444", "sequence_label": "thanks"})
+        self.run_pipeline("import_islr.py", "--landmarks", self.landmarks, "--meta", self.meta,
+                          "--out", self.cache, "--val-fraction", "0", "--test-fraction", "0")
+        archive = np.load(os.path.join(self.cache, "islr_train.npz"))
+        meta = read_json(os.path.join(self.cache, "islr_train.json"))
+        self.assertEqual(archive["pts"].shape[1], 86)
+        index = [row["sign"] for row in meta].index("THANKS")
+        clip = archive["pts"][archive["offsets"][index]:archive["offsets"][index + 1]]
+        self.assertEqual(len(clip), 20, "one output frame per distinct frame in the file")
+        self.assertTrue(np.isfinite(clip[:, 21:42, :]).all(), "right hand is present throughout")
+        # The left hand only exists in the first 8 frames; the rest must read as missing, not as (0,0).
+        self.assertTrue(np.isfinite(clip[:8, :21, :]).any())
+        self.assertFalse(np.isfinite(clip[10:, :21, :]).any())
+        self.assertEqual(meta[index]["hand_frames"], 20)
 
     def test_frame_size_override_reaches_the_stored_metadata(self):
         self.run_pipeline("import_islr.py", "--landmarks", self.landmarks, "--meta", self.meta,

@@ -80,6 +80,52 @@ def clip_points(row, width=WIDTH, height=HEIGHT):
     return points
 
 
+# The competition's parquet files are long format: one row per landmark point, with `frame`, `type`,
+# `landmark_index`, `x`, `y`, `z`. Group sizes are the full MediaPipe counts; this project keeps a
+# subset of the pose and face points.
+GROUPS = {"left_hand": (N_HAND, 0), "right_hand": (N_HAND, N_HAND), "pose": (33, P_POSE0), "face": (468, P_FACE0)}
+
+
+def long_to_points(rows, width=WIDTH, height=HEIGHT):
+    """Pivot long-format landmark rows into [T, 86, 3] in this project's point order."""
+    frames = sorted({int(row["frame"]) for row in rows})
+    position = {frame: index for index, frame in enumerate(frames)}
+    count = len(frames)
+    hands = np.full((count, 42, 3), np.nan, np.float32)
+    pose = np.full((count, 33, 3), np.nan, np.float32)
+    face = np.full((count, 468, 3), np.nan, np.float32)
+    targets = {"left_hand": hands, "right_hand": hands, "pose": pose, "face": face}
+    offsets = {"left_hand": 0, "right_hand": N_HAND, "pose": 0, "face": 0}
+    for row in rows:
+        group = row.get("type")
+        target = targets.get(group)
+        if target is None:
+            continue
+        index = row.get("landmark_index")
+        if index is None:
+            continue
+        x, y, z = row.get("x"), row.get("y"), row.get("z")
+        # A point that was not detected is written as null rather than omitted, so a null triple simply
+        # stays missing instead of becoming a coordinate at the origin.
+        if x is None or y is None or z is None:
+            continue
+        target[position[int(row["frame"])], offsets[group] + int(index)] = (float(x), float(y), float(z))
+    for hand in (hands[:, :N_HAND], hands[:, N_HAND:]):
+        hand[np.all(np.nan_to_num(hand, nan=0.0) == 0.0, axis=2)] = np.nan
+    points = np.concatenate([hands[:, :N_HAND], hands[:, N_HAND:], pose[:, POSE], face[:, FACE]], axis=1).astype(np.float32)
+    long_side = float(max(width, height))
+    points[:, :, 0] *= width / long_side
+    points[:, :, 1] *= height / long_side
+    return points
+
+
+def clip_from_table(rows, width=WIDTH, height=HEIGHT):
+    """Accept either published layout: long rows (competition) or one row per frame (wide)."""
+    if rows and "type" in rows[0] and "landmark_index" in rows[0]:
+        return long_to_points(rows, width, height)
+    return np.stack([clip_points(row, width, height) for row in rows], axis=0)
+
+
 def hand_frames(points):
     return int(np.count_nonzero(np.any(np.isfinite(points[:, :42, :]), axis=(1, 2))))
 
@@ -128,30 +174,58 @@ def main():
         raise SystemExit(f"{args.meta} has no rows")
 
     if args.check:
-        record = records[0]
-        sequence = str(_column(record, ID_COLUMNS))
-        signer = str(_column(record, SIGNER_COLUMNS))
-        path = os.path.join(args.landmarks, signer, f"{sequence}.parquet")
-        if not os.path.exists(path):
-            raise SystemExit(f"{path} is missing — check that --landmarks points at train_landmark_files/")
+        # Inspect a clip that is actually present: a subset fetch leaves most of train.csv undownloaded,
+        # and reporting on a file that is not there would be a confusing way to say the path is right.
+        for record in records:
+            sequence = str(_column(record, ID_COLUMNS))
+            signer = str(_column(record, SIGNER_COLUMNS))
+            candidate = os.path.join(args.landmarks, signer, f"{sequence}.parquet")
+            if os.path.exists(candidate):
+                path = candidate
+                break
+        else:
+            raise SystemExit(f"no clip from {args.meta} exists under {args.landmarks} — check that "
+                             "--landmarks points at train_landmark_files/")
         table = pq.read_table(path)
         columns = table.column_names
-        report = {"clip": path, "columns": columns, "rows": table.num_rows}
-        for group, expected in (("left_hand", 21), ("right_hand", 21), ("pose", 33), ("face", 468)):
-            if group not in columns:
-                report[group] = f"MISSING (expected {expected} points)"
-                continue
-            value = table.column(group).to_pylist()[0]
-            preview = _points(value, expected)
-            report[group] = {"points": int(preview.shape[0]), "expected": expected,
-                             "finite": int(np.isfinite(preview).sum())}
+        rows = table.to_pylist()
+        long_form = "type" in columns and "landmark_index" in columns
+        report = {"clip": path, "columns": columns, "rows": table.num_rows,
+                  "layout": "long (one row per point)" if long_form else "wide (one row per frame)"}
+        if long_form:
+            points = long_to_points(rows, args.width, args.height)
+            frames = len(points)
+            report["frames"] = frames
+            report["groups"] = {
+                "left_hand": int(np.isfinite(points[:, :21, :]).any(axis=(0, 2)).sum()),
+                "right_hand": int(np.isfinite(points[:, 21:42, :]).any(axis=(0, 2)).sum()),
+                "pose": int(np.isfinite(points[:, 42:55, :]).any(axis=(0, 2)).sum()),
+                "face": int(np.isfinite(points[:, 55:, :]).any(axis=(0, 2)).sum()),
+            }
+            report["hand_frames"] = hand_frames(points)
+            report["types"] = sorted({row.get("type") for row in rows if row.get("type")})
+        else:
+            for group, expected in (("left_hand", 21), ("right_hand", 21), ("pose", 33), ("face", 468)):
+                if group not in columns:
+                    report[group] = f"MISSING (expected {expected} points)"
+                    continue
+                preview = _points(rows[0].get(group), expected)
+                report[group] = {"points": int(preview.shape[0]), "expected": expected,
+                                 "finite": int(np.isfinite(preview).sum())}
         report["label"] = str(_column(record, SIGN_COLUMNS))
         report["frame_size"] = {"width": args.width, "height": args.height, "fps": args.fps}
         print(json.dumps(report, indent=2))
+        if long_form:
+            if not report["groups"]["face"] or not (report["groups"]["left_hand"] or report["groups"]["right_hand"]):
+                raise SystemExit("long layout found but no face or hand points — check the type labels")
+            if not report["hand_frames"]:
+                raise SystemExit("no frame in this clip has a hand; check the coordinate convention")
+            print("layout looks importable")
+            return
         missing = [group for group in ("left_hand", "right_hand", "pose", "face") if group not in columns]
         if missing:
-            raise SystemExit(f"unexpected layout: no {missing} column(s); the importer expects the competition's "
-                             "per-frame landmark columns")
+            raise SystemExit(f"unexpected layout: no {missing} column(s); the importer expects either the "
+                             "competition's long landmark rows or per-frame landmark columns")
         print("layout looks importable")
         return
 
@@ -172,7 +246,7 @@ def main():
         if not table:
             skipped += 1
             continue
-        points = np.stack([clip_points(row, args.width, args.height) for row in table], axis=0)
+        points = clip_from_table(table, args.width, args.height)
         hands = hand_frames(points)
         if hands < args.min_hand_frames:
             skipped += 1

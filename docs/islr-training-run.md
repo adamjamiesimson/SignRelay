@@ -12,7 +12,10 @@ this project; check the rules before any commercial use.
 
 ## What is verified, and what is not
 
-Verified on this machine, with a synthetic dataset in the published schema
+Verified on this machine **with the real files as well as synthetic ones**: 66 downloaded clips
+imported to the contract (55 clips, 1,886 frames, 86 points, 66% of point-slots finite, every clip has
+hand frames), and `--check` correctly identified the real long-format layout that the importer had
+wrong. The rest of the verification below uses a synthetic dataset in the published schema
 (`training/test_islr_import.py`, 4 tests):
 
 - the importer writes the exact contract `train.py` reads: `pts` float16 `[sumT, 86, 3]`, `offsets`
@@ -45,6 +48,42 @@ It downloads and unpacks the competition files, checks the layout of the first c
 anything expensive, converts with a per-class cap, merges reversibly, and trains a candidate — then
 reminds you that the candidate is not shipped until it beats the current model on the signer's own
 clips. Each step is skipped when its output already exists.
+
+## What the competition files actually look like
+
+The published clips are **long format**, not one row per frame: `frame, row_id, type, landmark_index,
+x, y, z`, where `type` is `face`, `pose`, `left_hand` or `right_hand`. 543 rows per frame, and points
+that were not detected arrive as **null** triples rather than being omitted. The importer pivots this
+into the project's `[T, 86, 3]`; a null triple stays missing instead of becoming a coordinate at the
+origin, and `--check` reports the layout before an import runs. This was discovered from the real
+files — the importer originally assumed wide columns and would have failed on every clip.
+
+## Getting the data without the 40 GB bundle
+
+`download-all` is ~40 GB. `engine-v3/pipeline/fetch_islr_subset.py` reads the archive's central
+directory over HTTP range requests and fetches only the clips asked for, so a few signers' folders can
+be pulled on a laptop:
+
+```bash
+python engine-v3/pipeline/fetch_islr_subset.py \
+  --signers 49445 61333 36257 --csv ~/data/islr/train.csv --per-class 3 \
+  --out ~/data/islr --workers 8
+```
+
+Notes from doing it for real:
+
+- the archive is a ZIP64 file; the fetcher parses the 64-bit central directory, so it does not read the
+  other 39 GB;
+- the API redirects to a pre-signed URL that rejects a forwarded `Authorization` header, and its edge
+  answers the default Python user agent with 404 — both are handled, and neither is guessable, so they
+  are worth knowing before writing a client;
+- range reads reset under parallel load, so they retry with backoff;
+- throughput here was ~166 KB/s aggregate regardless of parallelism, i.e. **account- or
+  edge-throttled, not per-connection**. Budget by bandwidth, not by clip count: 250 clips/signer is
+  roughly 45 minutes at that rate, so a realistic 3-signer × 250-sign × 3-clip set is about three hours.
+  On a faster connection the same fetch is minutes.
+- training data has only 21 signers, ~4,800 clips each, and every signer covers all 250 signs, so
+  signer-disjoint splits are coarse: three signers is one train, one validation, one test.
 
 ## Steps, if you would rather run them one at a time
 
