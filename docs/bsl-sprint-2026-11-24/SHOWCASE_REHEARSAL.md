@@ -77,3 +77,24 @@ pseudonymous signer IDs):
 | --- | --- | --- | ---: | --- | ---: | ---: | --- |
 | HELLO | | legacy | /10 | | /10 | | |
 | HELLO | | v2 | /10 | | /10 | | |
+
+## Physical preview of the v2 input (no production change)
+
+The production page always uses the worker default (legacy input). A developer-only switch selects v2 on your own
+device: it works only together with `?perf`, and nothing visual changes apart from the existing `?perf` panel.
+
+Local preview (camera access works on `localhost`):
+
+```bash
+npm ci && npm run build:firebase && npm start
+```
+
+Open `http://localhost:3000/?perf&bslEngine=v2` (or `…/?perf&bslEngine=legacy` for the A/B), choose British Sign
+Language, and check that the first BSL stage line reads `BSL v2`. Run each rehearsal block with both engines.
+
+To share it with another device without touching the live site, Firebase preview channels serve a separate
+temporary URL. Only run this if you've authorized a preview deployment:
+
+```bash
+npx firebase-tools hosting:channel:deploy bsl-v2-preview --expires 7d --project signrelay-76f34
+```

@@ -100,6 +100,14 @@ export function TranslatorExperience() {
   const [privacyMessage, setPrivacyMessage] = useState("");
   // Opt-in device-test readout (`?perf`): timings only, nothing is stored or sent.
   const [perfMode] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("perf"));
+  // Developer preview only: `?perf&bslEngine=v2` selects the BSL-1K contract input on this device.
+  // Ignored without ?perf, so the normal page always uses the worker default.
+  const [bslEngine] = useState<"v2" | "legacy" | undefined>(() => {
+    if (typeof window === "undefined") return undefined;
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get("bslEngine");
+    return params.has("perf") && (value === "v2" || value === "legacy") ? value : undefined;
+  });
   const [perfReadout, setPerfReadout] = useState("");
   const [perfStages, setPerfStages] = useState<string[]>([]);
   const [perfWarning, setPerfWarning] = useState<string | null>(null);
@@ -231,8 +239,8 @@ export function TranslatorExperience() {
   useEffect(() => {
     templatesRef.current = calibrationTemplates;
     workerRef.current?.postMessage({ type: "templates", language: selected, templates: calibrationTemplates,
-      aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode });
-  }, [calibrationTemplates, selected, useAslV3, perfMode]);
+      aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode, bslEngine });
+  }, [calibrationTemplates, selected, useAslV3, perfMode, bslEngine]);
 
   const updateSuggestion = useCallback((next: WorkerSuggestion | null) => {
     if (next) stageCountsRef.current.shown++;
@@ -399,13 +407,13 @@ export function TranslatorExperience() {
       },
     );
     worker.postMessage({ type: "templates", language: selected, templates: templatesRef.current,
-      aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode });
+      aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode, bslEngine });
     workerRef.current = worker;
     return () => {
       worker.terminate();
       workerRef.current = null;
     };
-  }, [step, selected, handleWorkerMessage, updateSuggestion, useAslV3, perfMode]);
+  }, [step, selected, handleWorkerMessage, updateSuggestion, useAslV3, perfMode, bslEngine]);
 
   const stopCamera = useCallback(() => {
     cameraGenerationRef.current++;
