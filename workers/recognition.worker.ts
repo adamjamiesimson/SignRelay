@@ -8,7 +8,8 @@ import { analyzeSignMotion } from "@/lib/sign-motion";
 import { analyzeGenericSignMotion } from "@/lib/asl100-runtime";
 import { recognizeAsl1000 } from "@/lib/asl1000-runtime";
 import { recognizeIsl263 } from "@/lib/isl263-runtime";
-import { recognizeBsl1064 } from "@/lib/bsl1064-runtime";
+import { analyzeBsl1064, warmBsl1064, type BslEngine } from "@/lib/bsl1064-runtime";
+import { emptyBslDiagnostics, type BslDiagnostics } from "@/lib/bsl-diagnostics";
 import { recognizeLse300 } from "@/lib/lse300-runtime";
 import { TemplateMatchingClient, type TemplatePrediction } from "@/lib/template-matching-client";
 import { validHand } from "@/lib/asl-starter-recognition";
@@ -36,7 +37,17 @@ let queuedV3: { clip: Float32Array[]; closedAt: number; receivedAt: number; sess
 let diagnosticsEnabled = false;
 let diagnostics: AslV31Diagnostics = emptyAslV31Diagnostics();
 let lastDecisionAt = 0;
-const classifiers = { asl: recognizeAsl1000, bsl: recognizeBsl1064, isl: recognizeIsl263, lse: recognizeLse300 };
+const classifiers = { asl: recognizeAsl1000, isl: recognizeIsl263, lse: recognizeLse300 };
+// BSL: one model decision per completed movement, delivered as a suggestion
+// that the signer must add to the transcript. Never auto-confirmed or spoken.
+// v2 (BSL-1K input contract) stays opt-in until BSL video evidence meets the
+// adoption rule in docs/bsl-sprint-2026-11-24/PROTOCOL.md.
+export const DEFAULT_BSL_ENGINE: BslEngine = "legacy";
+let bslEngine: BslEngine = DEFAULT_BSL_ENGINE;
+let bslDiagnostics: BslDiagnostics = emptyBslDiagnostics(bslEngine);
+let bslEpisodeEvaluated = false;
+let lastBslSuggestion = { label: "", time: -Infinity };
+let lastBslDecisionAt = 0;
 const pending = new Map<LanguageId, { started: number; phase: "loading" | "inference"; controller: AbortController }>();
 const MODEL_LOAD_TIMEOUT_MS = 400000;
 const NORMAL_INFERENCE_TIMEOUT_MS = 20000;
@@ -98,6 +109,7 @@ function invalidatePrediction() {
 
 function resetEvidence() {
   v3Segmenter.reset();
+  bslEpisodeEvaluated = false;
   queuedV3 = undefined;
   invalidatePersonal();
   frames.length = 0;
@@ -123,6 +135,8 @@ function resetSession() {
   pending.clear();
   resetEvidence();
   lastConfirmation = { label: "", time: 0 };
+  lastBslSuggestion = { label: "", time: -Infinity };
+  bslDiagnostics = { ...emptyBslDiagnostics(bslEngine), model: bslDiagnostics.model === "ready" ? "ready" : "not-started" };
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
@@ -186,14 +200,98 @@ function diagnosticsSnapshot(): AslV31Diagnostics {
     lastDecision: diagnostics.lastDecision && { ...diagnostics.lastDecision, ageMs: performance.now() - lastDecisionAt } };
 }
 
+function warmBsl() {
+  if (bslDiagnostics.model === "ready" || pending.has("bsl")) return;
+  // The watchdog clock is the camera timestamp; it starts at the next frame.
+  const request = { started: frames.at(-1)?.timestamp ?? -1, phase: "loading" as "loading" | "inference", controller: new AbortController() };
+  pending.set("bsl", request);
+  bslDiagnostics.model = "loading";
+  const generation = modelGeneration;
+  warmBsl1064(request.controller.signal).then(() => {
+    bslDiagnostics.model = "ready";
+  }).catch(error => {
+    if (request.controller.signal.aborted || generation !== modelGeneration) { bslDiagnostics.model = "not-started"; return; }
+    bslDiagnostics.model = "failed";
+    bslDiagnostics.modelError = error instanceof Error ? error.message : String(error);
+  }).finally(() => { if (pending.get("bsl") === request) pending.delete("bsl"); });
+}
+
+/** Evaluate each completed BSL movement exactly once, as a reviewable suggestion. */
+function observeBsl(now: number, ready: boolean, session: number | undefined) {
+  if (!ready) { bslEpisodeEvaluated = false; return; }
+  if (bslEpisodeEvaluated) return;
+  // A sign completed while the model is still downloading waits for it
+  // (its frames stay in the buffer) instead of being dropped.
+  if (pending.get("bsl")?.phase === "loading") return;
+  bslEpisodeEvaluated = true;
+  bslDiagnostics.signsCompleted++;
+  if (pending.has("bsl") || now < retryAfter) {
+    bslDiagnostics.signsSkipped++;
+    return;
+  }
+  // Until the model has loaded once, the request may still be downloading it.
+  const request = { started: now, phase: (bslDiagnostics.model === "ready" ? "inference" : "loading") as "loading" | "inference",
+    controller: new AbortController() };
+  pending.set("bsl", request);
+  const generation = modelGeneration;
+  const submittedAt = performance.now();
+  const sequence = [...frames];
+  analyzeBsl1064(sequence, { engine: bslEngine, signal: request.controller.signal, onPhase: phase => {
+    if (pending.get("bsl") !== request) return;
+    request.phase = phase;
+    request.started = frames.at(-1)?.timestamp ?? now;
+  }, onDecision: decision => {
+    if (decision.windows) bslDiagnostics.inferences++;
+    bslDiagnostics.lastInferenceMs = decision.inferenceMs || bslDiagnostics.lastInferenceMs;
+    bslDiagnostics.decisions[decision.status]++;
+    bslDiagnostics.lastDecision = { ...decision, ageMs: 0 };
+    lastBslDecisionAt = performance.now();
+  } }).then(result => {
+    if (generation !== modelGeneration || request.controller.signal.aborted) return;
+    bslDiagnostics.model = "ready";
+    modelProblem = false;
+    const prediction = result?.prediction;
+    if (!prediction) return;
+    if ((frames.at(-1)?.timestamp ?? now) - now > MAX_PREDICTION_AGE_MS || performance.now() - submittedAt > MAX_PREDICTION_AGE_MS) {
+      bslDiagnostics.suggestionsStale++;
+      return;
+    }
+    if (prediction.label === lastBslSuggestion.label && now - lastBslSuggestion.time < COOLDOWN_MS) {
+      bslDiagnostics.duplicatesSuppressed++;
+      return;
+    }
+    lastBslSuggestion = { label: prediction.label, time: now };
+    bslDiagnostics.suggestionsPosted++;
+    self.postMessage({ type: "suggestion", session, gloss: prediction.label, text: prediction.text,
+      confidence: prediction.confidence, timestamp: Date.now(), source: "model" } satisfies WorkerMessage);
+  }).catch(error => {
+    if (generation !== modelGeneration || request.controller.signal.aborted) return;
+    bslDiagnostics.inferenceFailures++;
+    if (bslDiagnostics.model !== "ready") {
+      bslDiagnostics.model = "failed";
+      bslDiagnostics.modelError = error instanceof Error ? error.message : String(error);
+    }
+    modelProblem = true;
+    retryAfter = (frames.at(-1)?.timestamp ?? now) + 5000;
+  }).finally(() => { if (pending.get("bsl") === request) pending.delete("bsl"); });
+}
+
+function bslDiagnosticsSnapshot(): BslDiagnostics {
+  return { ...bslDiagnostics, decisions: { ...bslDiagnostics.decisions },
+    lastDecision: bslDiagnostics.lastDecision && { ...bslDiagnostics.lastDecision, ageMs: performance.now() - lastBslDecisionAt } };
+}
+
 self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   if (event.data.type === "templates") {
     activeLanguage = event.data.language;
     useAslV31 = activeLanguage === "asl" && event.data.aslEngine === "v3.1";
     diagnosticsEnabled = event.data.diagnostics === true;
+    bslEngine = event.data.bslEngine ?? DEFAULT_BSL_ENGINE;
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
     resetSession();
+    bslDiagnostics = emptyBslDiagnostics(bslEngine);
     personalMatcher.configure(personalTemplates);
+    if (activeLanguage === "bsl") warmBsl();
     return;
   }
   if (event.data.type === "reset") { resetSession(); return; }
@@ -208,6 +306,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     else if (gap === 0 || gap > trackingGapLimit([...frames.slice(-12), event.data.frame])) resetEvidence();
   }
   for (const [language, request] of pending) {
+    if (request.started < 0) request.started = now;
     const deadline = request.phase === "loading" ? MODEL_LOAD_TIMEOUT_MS : NORMAL_INFERENCE_TIMEOUT_MS;
     if (now - request.started < deadline) continue;
     if (request.phase === "loading") {
@@ -251,6 +350,12 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     // V3.1 pose slots 7 and 8 hold the shoulders (pose landmarks 11 and 12).
     if (Number.isFinite(v3Features[(42 + 7) * 3]) && Number.isFinite(v3Features[(42 + 8) * 3])) diagnostics.shoulderFrames++;
   }
+  if (activeLanguage === "bsl") {
+    bslDiagnostics.observations++;
+    if (hasHand) bslDiagnostics.handFrames++;
+    const pose = event.data.frame.pose;
+    if ((pose[11]?.visibility ?? 0) >= 0.5 && (pose[12]?.visibility ?? 0) >= 0.5) bslDiagnostics.shoulderFrames++;
+  }
   const v3Motion = useAslV31 ? v3Segmenter.observe(now, v3Features) : null;
   const observed = activeLanguage === "asl" && !useAslV31 ? analyzeSignMotion(frames) : null;
   const startsInConfirmedTail = observed?.completion === "departure" && !handReturnedAfterConfirmation
@@ -261,6 +366,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
   const departureEnd = observed?.completion === "departure" && !startsInConfirmedTail
     ? observed.sequence.at(-1)?.timestamp : undefined;
 
+  if (activeLanguage === "bsl") observeBsl(now, motion.ready, event.data.session);
   if (v3Motion) {
     // Limit the pipeline to one inference and one queued completed segment.
     // Camera analyses still receive their acknowledgement during model loading.
@@ -336,6 +442,7 @@ self.onmessage = async (event: MessageEvent<WorkerInput>) => {
     bufferSize: frames.length, feedback,
     source, motionReason: motion.reason,
     ...(diagnosticsEnabled && useAslV31 ? { diagnostics: diagnosticsSnapshot() } : {}),
+    ...(diagnosticsEnabled && activeLanguage === "bsl" ? { bslDiagnostics: bslDiagnosticsSnapshot() } : {}),
   } satisfies WorkerMessage);
 
   if (!result || result.confidence < CONFIDENCE_THRESHOLD) {

@@ -7,7 +7,10 @@ import { makeSign } from "./fixtures/asl-motion";
 // Decision arbitration with the real worker; model outputs are mocked.
 const mocks = vi.hoisted(() => ({ model: vi.fn(), bsl: vi.fn() }));
 vi.mock("../lib/asl1000-runtime", () => ({ recognizeAsl1000: mocks.model }));
-vi.mock("../lib/bsl1064-runtime", () => ({ recognizeBsl1064: mocks.bsl }));
+vi.mock("../lib/bsl1064-runtime", () => ({
+  analyzeBsl1064: async (...args: unknown[]) => ({ prediction: (await mocks.bsl(...args)) ?? null, decision: null }),
+  warmBsl1064: async () => {},
+}));
 type Port = { onmessage: (event: { data: WorkerInput }) => Promise<void>; postMessage: ReturnType<typeof vi.fn> };
 let worker: Port;
 async function freshWorker() {

@@ -3,7 +3,8 @@ import { RecognitionSession } from "../../lib/recognition-session";
 import { diagnoseHandedness } from "../../lib/handedness-diagnostic";
 import { summarizeTrials } from "../evaluation-metrics.mjs";
 import type { LanguageId } from "../../lib/model-adapters";
-import type { VisionFrame, WorkerConfirmation, WorkerMessage } from "../../lib/vision-types";
+import type { VisionFrame, WorkerConfirmation, WorkerMessage, WorkerSuggestion } from "../../lib/vision-types";
+import type { BslDecision } from "../../lib/bsl-diagnostics";
 import { TASKS_VERSION as TASKS_WASM_VERSION } from "../../lib/vision-runtime.mjs";
 import { loadVideoData, seekDecodedFrame } from "./video-frame-step";
 
@@ -26,10 +27,23 @@ let traceObserver: ((event: TraceEvent) => void) | undefined;
 const params = new URLSearchParams(location.search);
 const workerUrl = params.get("baseline") === "1" ? "/workers/baseline-recognition.worker.js"
   : params.get("pr28") === "1" ? "/workers/pr28-recognition.worker.js" : "/workers/recognition.worker.js";
+// BSL evaluation: request worker stage diagnostics and optionally pin the input engine.
+const labDiagnostics = params.get("diagnostics") === "1";
+const bslEngine = params.get("bslEngine") === "legacy" || params.get("bslEngine") === "v2" ? params.get("bslEngine") as "legacy" | "v2" : undefined;
 const session = new RecognitionSession(() => new Worker(workerUrl, { type: "module" }), message => {
   traceObserver?.({ type: "worker", message: structuredClone(message) });
   if (!trial) return;
   if (message.type === "confirmed") trial.confirmations.push(message);
+  if (message.type === "suggestion") trial.suggestions.push({ ...message, at: performance.now() - trial.started });
+  if (message.type === "analysis" && message.bslDiagnostics?.lastDecision) {
+    // Counters restart with each trial's templates message; one entry per new decision.
+    const total = Object.values(message.bslDiagnostics.decisions).reduce((sum, count) => sum + count, 0);
+    if (total > trial.bslDecisions.length) {
+      const decision: BslDecision & { ageMs?: number } = { ...message.bslDiagnostics.lastDecision };
+      delete decision.ageMs;
+      trial.bslDecisions.push({ ...decision, at: performance.now() - trial.started });
+    }
+  }
   if (message.type === "analysis") {
     trial.analyses++;
     if (message.feedback?.includes("could not run") || message.feedback?.includes("could not be checked")) {
@@ -53,8 +67,9 @@ function metadata() {
 }
 function startTrial() {
   const data = metadata();
-  session.postMessage({ type: "templates", language: data.language as LanguageId, templates: [] });
-  return { data, confirmations: [] as WorkerConfirmation[], frames: 0, hands: 0, analyses: 0,
+  session.postMessage({ type: "templates", language: data.language as LanguageId, templates: [], diagnostics: labDiagnostics, bslEngine });
+  return { data, confirmations: [] as WorkerConfirmation[], suggestions: [] as (WorkerSuggestion & { at: number })[],
+    bslDecisions: [] as (BslDecision & { at: number })[], frames: 0, hands: 0, analyses: 0,
     sources: {} as Record<string, number>, handedness: {} as Record<string, number>, errors: [] as string[], started: performance.now() };
 }
 function observe(frame: VisionFrame) {
@@ -88,6 +103,9 @@ async function finishTrial(extra: Record<string, unknown> = {}) {
   const accepted = trial.confirmations.map(message => message.gloss);
   const row = { ...trial.data, ...extra, predicted_gloss: accepted[0] ?? null, accepted: accepted.length > 0,
     accepted_glosses: accepted, confirmed_sources: trial.confirmations.map(message => message.source ?? "unknown"),
+    suggested_glosses: trial.suggestions.map(message => message.gloss),
+    suggestion_times_ms: trial.suggestions.map(message => Math.round(message.at)),
+    bsl_decisions: trial.bslDecisions, bsl_engine: bslEngine ?? "worker-default",
     frames: trial.frames, hand_frames: trial.hands, analyses: trial.analyses, candidate_sources: trial.sources, handedness_counts: trial.handedness,
     errors: trial.errors, status: trial.errors.length ? "error" : "complete", duration_ms: performance.now() - trial.started };
   trial = null; session.postMessage({ type: "reset" }); rows.push(row);
