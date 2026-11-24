@@ -1,7 +1,7 @@
 import { hasHand, N_POINTS, resampleTo15Hz, signingEvidence } from "../engine-v3/web/preprocess.mjs";
 
 type Sample = { t: number; f: Float32Array };
-type OpenSegment = { start: number; lastHand: number };
+type OpenSegment = { start: number; lastHand: number; fromDwell: boolean };
 type Segmentation = { reason: "hands" | "idle" | "moving" | "ready"; clip?: Float32Array[] };
 
 // These timings come from Engine V3.1's evaluated camera segmenter. The
@@ -25,6 +25,15 @@ const MAX_SAMPLES = 192;
 const MOTION_WINDOW_MS = 250;
 const MOTION_HOLD_MS = 600;
 const MOTION_EPSILON = 0.012;
+// Pointing signs - ME, YOU, that person - are a posture held still, not a movement: the hand arrives
+// and stops, so a movement-only rule can miss them entirely (a held 1.5 s point produced no clip at
+// all). A hold is therefore evidence of signing too, once the hand has deliberately come to rest. It
+// only opens a segment; it never keeps one open, because a still hand that counts as signing is how
+// the segmenter deadlocked before, waiting for a rest a visible hand cannot give.
+const DWELL_MS = 400;
+// A point is a short approach followed by a hold. A long movement that then rests is a sign with a
+// trailing hold, not a second sign, so only a brief approach arms the hold rule.
+const APPROACH_MAX_MS = 500;
 // Pose landmarks 11 and 12 in the 86-point layout: the shoulders `signingEvidence` uses.
 const SHOULDER_SLOTS = [42 + 7, 42 + 8];
 
@@ -54,6 +63,12 @@ export class AslV31Segmenter {
   private active: OpenSegment | null = null;
   private waitingForRestSince: number | null = null;
   private lastMotionAt = -Infinity;
+  /** When the present hand was last seen stationary, and whether a hold may still open a sign. */
+  private heldSince: number | null = null;
+  private dwellArmed = false;
+  /** When the current burst of movement began, and how long the last burst lasted. */
+  private motionStartedAt: number | null = null;
+  private lastApproachMs: number | null = null;
   private readonly restAware: boolean;
   private readonly motionEpsilon: number;
   /** Session counters for developer diagnostics; reset() keeps them, resetStats() clears them. */
@@ -73,6 +88,12 @@ export class AslV31Segmenter {
     this.active = null;
     this.waitingForRestSince = null;
     this.lastMotionAt = -Infinity;
+    this.heldSince = null;
+    // A hand that has always been still has not signed anything: only a hand that moved into place,
+    // or appeared in the frame, can open a segment by holding still.
+    this.dwellArmed = false;
+    this.motionStartedAt = null;
+    this.lastApproachMs = null;
   }
 
   /** Largest hand-point travel over the last MOTION_WINDOW_MS. Points missing in either frame
@@ -102,9 +123,9 @@ export class AslV31Segmenter {
   /** Where a sign may start: in signing space when the shoulders are visible, anywhere without
    * them. The first moving frame opens the segment, so the hand's travel into the sign is part of
    * the clip, and a hand that is merely resting never opens one. */
-  private canOpen(features: Float32Array, signing: boolean) {
+  private canOpen(features: Float32Array, signing: boolean, dwell: boolean) {
     if (!this.restAware) return signingEvidence(features);
-    return signing && (!shouldersVisible(features) || signingEvidence(features));
+    return (signing || dwell) && (!shouldersVisible(features) || signingEvidence(features));
   }
 
   suppressCurrentSegment() {
@@ -131,6 +152,23 @@ export class AslV31Segmenter {
     const moving = anyHand && this.restAware
       && (appeared || this.travel(timestamp, features) >= this.motionEpsilon);
     if (moving) this.lastMotionAt = timestamp;
+    // Track how long a present hand has been still, and whether a hold may open a sign yet.
+    if (!anyHand) {
+      this.heldSince = null;
+      this.motionStartedAt = null;
+    } else if (moving) {
+      this.heldSince = null;
+      this.dwellArmed = true;
+      if (this.motionStartedAt === null) this.motionStartedAt = timestamp;
+    } else {
+      if (this.motionStartedAt !== null) {
+        this.lastApproachMs = timestamp - this.motionStartedAt;
+        this.motionStartedAt = null;
+      }
+      if (this.heldSince === null) this.heldSince = timestamp;
+    }
+    const dwell = this.dwellArmed && this.heldSince !== null && timestamp - this.heldSince >= DWELL_MS
+      && this.lastApproachMs !== null && this.lastApproachMs <= APPROACH_MAX_MS;
     // Signing continues while the hand keeps moving, or within MOTION_HOLD_MS of its last movement.
     const signing = this.isSigning(timestamp, features);
     // Recorded before the rest wait returns, because travel is measured against these samples:
@@ -149,11 +187,11 @@ export class AslV31Segmenter {
       }
     }
 
-    if (!this.active && this.canOpen(features, signing)) {
+    if (!this.active && this.canOpen(features, signing, dwell)) {
       // The legacy path (restAware: false) opens on signing space and continues on any visible
       // hand, exactly as PR #67 did; the rest-aware path opens on movement inside signing space
       // and continues on movement alone.
-      this.active = { start: timestamp, lastHand: timestamp };
+      this.active = { start: timestamp, lastHand: timestamp, fromDwell: dwell && !signing };
       this.stats.opened++;
     }
     if (!this.active) return { reason: anyHand ? "idle" : "hands" };
@@ -170,6 +208,9 @@ export class AslV31Segmenter {
     if (!ended && !reachedLimit) return { reason: "moving" };
 
     this.active = null;
+    // One sign per movement: the hand must move again (or leave and return) before a still hand can
+    // open another, so a sign that ends in a held posture cannot immediately re-open itself.
+    this.dwellArmed = false;
     if (!ended) {
       this.waitingForRestSince = lastHand;
       this.stats.capped++;

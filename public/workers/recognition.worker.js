@@ -15297,6 +15297,8 @@ var MAX_SAMPLES = 192;
 var MOTION_WINDOW_MS = 250;
 var MOTION_HOLD_MS = 600;
 var MOTION_EPSILON = 0.012;
+var DWELL_MS = 400;
+var APPROACH_MAX_MS = 500;
 var SHOULDER_SLOTS = [42 + 7, 42 + 8];
 function shouldersVisible(features) {
   return SHOULDER_SLOTS.every((slot) => Number.isFinite(features[slot * 3]) && Number.isFinite(features[slot * 3 + 1]));
@@ -15307,6 +15309,12 @@ var AslV31Segmenter = class {
     this.active = null;
     this.waitingForRestSince = null;
     this.lastMotionAt = -Infinity;
+    /** When the present hand was last seen stationary, and whether a hold may still open a sign. */
+    this.heldSince = null;
+    this.dwellArmed = false;
+    /** When the current burst of movement began, and how long the last burst lasted. */
+    this.motionStartedAt = null;
+    this.lastApproachMs = null;
     /** Session counters for developer diagnostics; reset() keeps them, resetStats() clears them. */
     this.stats = { opened: 0, completed: 0, capped: 0, tooFewHands: 0 };
     this.restAware = options.restAware ?? true;
@@ -15320,6 +15328,10 @@ var AslV31Segmenter = class {
     this.active = null;
     this.waitingForRestSince = null;
     this.lastMotionAt = -Infinity;
+    this.heldSince = null;
+    this.dwellArmed = false;
+    this.motionStartedAt = null;
+    this.lastApproachMs = null;
   }
   /** Largest hand-point travel over the last MOTION_WINDOW_MS. Points missing in either frame
    * are skipped, so a partly tracked hand still reports the movement it does show. */
@@ -15345,9 +15357,9 @@ var AslV31Segmenter = class {
   /** Where a sign may start: in signing space when the shoulders are visible, anywhere without
    * them. The first moving frame opens the segment, so the hand's travel into the sign is part of
    * the clip, and a hand that is merely resting never opens one. */
-  canOpen(features, signing) {
+  canOpen(features, signing, dwell) {
     if (!this.restAware) return signingEvidence(features);
-    return signing && (!shouldersVisible(features) || signingEvidence(features));
+    return (signing || dwell) && (!shouldersVisible(features) || signingEvidence(features));
   }
   suppressCurrentSegment() {
     const last = this.samples.at(-1);
@@ -15366,6 +15378,21 @@ var AslV31Segmenter = class {
     const appeared = anyHand && !!previous && !hasHand(previous.f);
     const moving = anyHand && this.restAware && (appeared || this.travel(timestamp, features) >= this.motionEpsilon);
     if (moving) this.lastMotionAt = timestamp;
+    if (!anyHand) {
+      this.heldSince = null;
+      this.motionStartedAt = null;
+    } else if (moving) {
+      this.heldSince = null;
+      this.dwellArmed = true;
+      if (this.motionStartedAt === null) this.motionStartedAt = timestamp;
+    } else {
+      if (this.motionStartedAt !== null) {
+        this.lastApproachMs = timestamp - this.motionStartedAt;
+        this.motionStartedAt = null;
+      }
+      if (this.heldSince === null) this.heldSince = timestamp;
+    }
+    const dwell = this.dwellArmed && this.heldSince !== null && timestamp - this.heldSince >= DWELL_MS && this.lastApproachMs !== null && this.lastApproachMs <= APPROACH_MAX_MS;
     const signing = this.isSigning(timestamp, features);
     this.samples.push({ t: timestamp, f: features });
     while (this.samples.length > MAX_SAMPLES || this.samples[0].t < timestamp - MAX_SEGMENT_MS - MARGIN_MS * 2) {
@@ -15378,8 +15405,8 @@ var AslV31Segmenter = class {
         return { reason: anyHand ? "idle" : "hands" };
       }
     }
-    if (!this.active && this.canOpen(features, signing)) {
-      this.active = { start: timestamp, lastHand: timestamp };
+    if (!this.active && this.canOpen(features, signing, dwell)) {
+      this.active = { start: timestamp, lastHand: timestamp, fromDwell: dwell && !signing };
       this.stats.opened++;
     }
     if (!this.active) return { reason: anyHand ? "idle" : "hands" };
@@ -15389,6 +15416,7 @@ var AslV31Segmenter = class {
     const reachedLimit = timestamp - start > MAX_SEGMENT_MS;
     if (!ended && !reachedLimit) return { reason: "moving" };
     this.active = null;
+    this.dwellArmed = false;
     if (!ended) {
       this.waitingForRestSince = lastHand;
       this.stats.capped++;
@@ -15408,6 +15436,23 @@ var AslV31Segmenter = class {
 // lib/asl-next-word.ts
 var AMBIGUITY_MARGIN = 0.15;
 var ASL_SUGGESTION_AMBIGUITY_MARGIN = AMBIGUITY_MARGIN;
+
+// lib/asl-v31-text.ts
+var DISPLAY = {
+  MINEMY: "Me",
+  WEUS: "We",
+  HESHEIT: "He/She",
+  NIGHTNIGHT: "Night",
+  ALLGONE: "All gone",
+  SOBIG: "So big",
+  HAVETO: "Have to"
+};
+function displayTextForGloss(gloss) {
+  const key = gloss.trim().toUpperCase();
+  const mapped = DISPLAY[key];
+  if (mapped) return mapped;
+  return key.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 // engine-v3/web/decision.mjs
 function softmax5(z, T = 1) {
@@ -15611,7 +15656,7 @@ async function recognizeAslV31(frames2, options) {
       options.onDecision?.(describeDecision(decision, meta.policy, handFrames));
       options.onEmbedding?.(vector);
       if (decision.status !== "accepted" || !decision.label) return null;
-      const text = decision.label.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+      const text = displayTextForGloss(decision.label);
       const runnerUp = decision.top5[1];
       const alternatives = runnerUp && decision.scores.p_top1 - runnerUp.p <= ASL_SUGGESTION_AMBIGUITY_MARGIN ? decision.top5.slice(0, 3).map((item) => ({ gloss: item.label, probability: item.p })) : void 0;
       return { label: decision.label, text, confidence: decision.scores.p_top1, embedding: vector, alternatives };

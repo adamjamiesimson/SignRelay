@@ -913,6 +913,17 @@ export function TranslatorExperience() {
     };
 
     const report = useAslV3 ? enrolmentReport(embedding, calibrationWord.gloss, calibrationTemplates) : null;
+    // A word the shipped model has no class for is only ever recognised through this example, so saying
+    // so stops a signer repeating a sign the model could never produce.
+    let absentNote = "";
+    if (useAslV3) {
+      try {
+        const { hasAslV31Class } = await import("@/lib/asl-v31-runtime");
+        if (!(await hasAslV31Class(calibrationWord.gloss))) {
+          absentNote = ` The pretrained model has no word for ${calibrationWord.text}, so this example is what will recognise it.`;
+        }
+      } catch { absentNote = ""; }
+    }
 
     try {
       await saveCalibrationTemplate(template);
@@ -921,7 +932,7 @@ export function TranslatorExperience() {
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "saved";
       setCalibrationState("saved");
-      setCalibrationMessage(enrolmentMessage(report, calibrationWord.text, model.shortName));
+      setCalibrationMessage(enrolmentMessage(report, calibrationWord.text, model.shortName) + absentNote);
     } catch {
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "error";

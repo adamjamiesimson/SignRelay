@@ -152,6 +152,35 @@ describe("V3.1 segmentation (synthetic timing checks)", () => {
       expect(results.at(-1)?.reason).toBe("idle");
     });
 
+    it("recognises a pointing sign that is a short approach and a long hold", () => {
+      // ME and YOU are postures held still, not strokes: the hand comes up and stops. A movement-only
+      // rule produced no clip at all for a 1.5 s point, which is why the hold rule exists.
+      const segmenter = new AslV31Segmenter();
+      const results = [...feed(segmenter, 0, 5, index => 0.5 - index * 0.01), ...feed(segmenter, 500, 22, () => 0.45)];
+      expect(results.filter(result => result.clip)).toHaveLength(1);
+      expect(segmenter.stats.capped).toBe(0);
+    });
+
+    it("does not treat the trailing hold of a long sign as a second sign", () => {
+      const segmenter = new AslV31Segmenter();
+      const results = [...moving(segmenter, 0, 20), ...still(segmenter, 2000, 40)];
+      expect(results.filter(result => result.clip)).toHaveLength(1);
+    });
+
+    it("does not open a sign for a hand that has only ever been still", () => {
+      const segmenter = new AslV31Segmenter();
+      const results = feed(segmenter, 0, 40, () => 0.45);
+      expect(results.filter(result => result.clip)).toHaveLength(0);
+      expect(segmenter.stats.opened).toBe(0);
+    });
+
+    it("recognises two points separated by a retract", () => {
+      const segmenter = new AslV31Segmenter();
+      const first = [...feed(segmenter, 0, 4, index => 0.5 - index * 0.015), ...feed(segmenter, 400, 20, () => 0.44)];
+      const second = [...feed(segmenter, 2400, 4, index => 0.44 + index * 0.02), ...feed(segmenter, 2800, 20, () => 0.52)];
+      expect([...first, ...second].filter(result => result.clip)).toHaveLength(2);
+    });
+
     it("ends a capped sign when the movement stops and accepts the next one", () => {
       const segmenter = new AslV31Segmenter();
       const capped = moving(segmenter, 0, 45);

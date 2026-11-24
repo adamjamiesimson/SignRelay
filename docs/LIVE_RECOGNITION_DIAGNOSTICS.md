@@ -169,6 +169,38 @@ more collision risk than the signer's own recordings (0.93 same sign, 0.27 diffe
 STOP scored 0.24 and 0.13 across their two videos: those videos were not the same sign as each other,
 which is the variant problem again rather than a measurement artefact.
 
+## Why pointing signs (ME, YOU) need their own rule
+
+A pointing sign is a posture held still, not a stroke: the hand arrives and stops. The segmenter's
+signing test is movement, so a held point used to produce no clip at all - measured, a hand that
+approached and then held still for 1.5 s emitted nothing, and a purely static hold emitted nothing
+however long it lasted. A hold now counts as a sign when it follows a **short approach** (under 500 ms)
+and stays still for at least 400 ms. Two guards keep that from turning into noise:
+
+- a long movement that then rests is a sign with a trailing hold, not a second sign, so it does not
+  re-fire (verified: a moving sign followed by 4 s of stillness still produces exactly one clip);
+- a hand that has only ever been still opens nothing, and after any completed sign the hand must move
+  again before a hold can open another, so a resting hand cannot emit a stream of identical clips.
+
+## Words the model does not have
+
+`public/models/asl-v31/meta.json` holds 523 classes from PopSign, and several words people reach for
+first are simply not among them:
+
+| signed | what the model has |
+|---|---|
+| ME / MY / MINE | `MINEMY` - one class for all three, shown as **Me** in the transcript |
+| WE / US | `WEUS`, shown as **We** |
+| HE / SHE / IT | `HESHEIT`, shown as **He/She** |
+| **YOU** | **nothing** (only THANK-YOU and YOURSELF) |
+| **HAPPY** | **nothing** (SMILE and FINE are different signs) |
+
+No amount of signing more clearly fixes a missing class: those signs have to be taught. The teach panel
+now checks the model's class list after saving an example and says so - "The pretrained model has no
+word for You, so this example is what will recognise it" - instead of letting a signer repeat a sign
+that can never work. Taught examples are matched by embedding, which is what makes a word outside the
+523 recognisable at all.
+
 ## Keeping a taught dictionary honest
 
 Two ways a growing personal vocabulary silently degrades, both now reported at the moment of
