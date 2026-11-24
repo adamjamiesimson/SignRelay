@@ -1,0 +1,1119 @@
+{
+  "scope": "Offline replay of captured tracker observations through the real worker and ONNX model (Node, WASM).",
+  "manifest": "docs/bsl-sprint-2026-11-24/foreign-controls.json",
+  "worker_source": "workers/recognition.worker.ts",
+  "bsl_engine": "legacy",
+  "speed": 1,
+  "summary": {
+    "controls": {
+      "supported_trials": 0,
+      "correct": 0,
+      "wrong": 0,
+      "abstained": 0,
+      "accuracy_all_supported": null,
+      "coverage": null,
+      "precision_when_accepted": null,
+      "model_ranked_trials": 0,
+      "top1_threshold_free": null,
+      "top5_threshold_free": null,
+      "negative_trials": 26,
+      "false_accepts": 0,
+      "false_accept_rate": 0,
+      "negatives_by_category": {
+        "foreign_sign": {
+          "trials": 26,
+          "false_accepts": 0
+        }
+      },
+      "duplicate_outputs": 0,
+      "errors": 0,
+      "inference_ms": {
+        "windows_total_p50": 38.4,
+        "windows_total_p95": 66.7,
+        "samples": 4
+      },
+      "per_trial": [
+        {
+          "trial_id": "asl-hello-gtsignstudy4a.8031",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-hello-gtsignstudy4a.8033",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-please-gtsignstudy4a.8031",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-please-gtsignstudy4a.8033",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": [
+            "WANT 0.33",
+            "WHAT 0.13",
+            "HAPPY 0.06",
+            "HARD 0.05",
+            "LITTLE 0.03"
+          ]
+        },
+        {
+          "trial_id": "asl-thankyou-gtsignstudy4a.8033",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-thankyou-gtsignstudy4a.8031",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-make-c6e5-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-allgone-6aaa-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-close-d5fd-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-bee-a459-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-who-a459-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-bunny-ebdb-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-day-ebdb-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-taste-2b19-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-green-ebdb-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-basket-f56c-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": [
+            "WANT 0.65",
+            "WHAT 0.08",
+            "NOTHING 0.03",
+            "ONCE 0.03",
+            "SHOULD 0.01"
+          ]
+        },
+        {
+          "trial_id": "asl-sprint-lawnmower-c6e5-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-knock-f56c-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-on-2b19-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-teacher-c6e5-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-mailman-f56c-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": [
+            "WANT 0.52",
+            "WHAT 0.16",
+            "NOTHING 0.03",
+            "NATIONAL 0.03",
+            "ONCE 0.02"
+          ]
+        },
+        {
+          "trial_id": "asl-sprint-where-c6e5-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-yesterday-c6e5-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-dinner-f56c-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-read-ebdb-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-moose-ebdb-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": [
+            "WHAT 0.21",
+            "WANT 0.21",
+            "PROFESSOR 0.04",
+            "FIRST 0.02",
+            "ONCE 0.02"
+          ]
+        }
+      ]
+    },
+    "all": {
+      "supported_trials": 0,
+      "correct": 0,
+      "wrong": 0,
+      "abstained": 0,
+      "accuracy_all_supported": null,
+      "coverage": null,
+      "precision_when_accepted": null,
+      "model_ranked_trials": 0,
+      "top1_threshold_free": null,
+      "top5_threshold_free": null,
+      "negative_trials": 26,
+      "false_accepts": 0,
+      "false_accept_rate": 0,
+      "negatives_by_category": {
+        "foreign_sign": {
+          "trials": 26,
+          "false_accepts": 0
+        }
+      },
+      "duplicate_outputs": 0,
+      "errors": 0,
+      "inference_ms": {
+        "windows_total_p50": 38.4,
+        "windows_total_p95": 66.7,
+        "samples": 4
+      },
+      "per_trial": [
+        {
+          "trial_id": "asl-hello-gtsignstudy4a.8031",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-hello-gtsignstudy4a.8033",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-please-gtsignstudy4a.8031",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-please-gtsignstudy4a.8033",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": [
+            "WANT 0.33",
+            "WHAT 0.13",
+            "HAPPY 0.06",
+            "HARD 0.05",
+            "LITTLE 0.03"
+          ]
+        },
+        {
+          "trial_id": "asl-thankyou-gtsignstudy4a.8033",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-thankyou-gtsignstudy4a.8031",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-make-c6e5-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-allgone-6aaa-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-close-d5fd-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-bee-a459-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-who-a459-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-bunny-ebdb-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-day-ebdb-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-taste-2b19-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-green-ebdb-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-basket-f56c-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": [
+            "WANT 0.65",
+            "WHAT 0.08",
+            "NOTHING 0.03",
+            "ONCE 0.03",
+            "SHOULD 0.01"
+          ]
+        },
+        {
+          "trial_id": "asl-sprint-lawnmower-c6e5-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-knock-f56c-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-on-2b19-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-teacher-c6e5-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-mailman-f56c-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": [
+            "WANT 0.52",
+            "WHAT 0.16",
+            "NOTHING 0.03",
+            "NATIONAL 0.03",
+            "ONCE 0.02"
+          ]
+        },
+        {
+          "trial_id": "asl-sprint-where-c6e5-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-yesterday-c6e5-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-dinner-f56c-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-read-ebdb-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": []
+        },
+        {
+          "trial_id": "asl-sprint-moose-ebdb-A",
+          "expected": null,
+          "category": "foreign_sign",
+          "outcome": "rejected",
+          "accepted": [],
+          "best_top5": [
+            "WHAT 0.21",
+            "WANT 0.21",
+            "PROFESSOR 0.04",
+            "FIRST 0.02",
+            "ONCE 0.02"
+          ]
+        }
+      ]
+    }
+  },
+  "trials": [
+    {
+      "trial_id": "asl-hello-gtsignstudy4a.8031",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-gtsignstudy4a.8031",
+      "cohort": "controls",
+      "tags": [
+        "asl-hello",
+        "form-similar-to-bsl-hello"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 37,
+      "hand_frames": 11
+    },
+    {
+      "trial_id": "asl-hello-gtsignstudy4a.8033",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-gtsignstudy4a.8033",
+      "cohort": "controls",
+      "tags": [
+        "asl-hello",
+        "form-similar-to-bsl-hello"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 35,
+      "hand_frames": 9
+    },
+    {
+      "trial_id": "asl-please-gtsignstudy4a.8031",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-gtsignstudy4a.8031",
+      "cohort": "controls",
+      "tags": [
+        "asl-please"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 34,
+      "hand_frames": 17
+    },
+    {
+      "trial_id": "asl-please-gtsignstudy4a.8033",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-gtsignstudy4a.8033",
+      "cohort": "controls",
+      "tags": [
+        "asl-please"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [
+        {
+          "spanFrames": 16,
+          "handFrames": 16,
+          "slotDisagreements": 0,
+          "windows": 1,
+          "best": "WANT",
+          "top5": [
+            {
+              "label": "WANT",
+              "p": 0.3331098361121303
+            },
+            {
+              "label": "WHAT",
+              "p": 0.12830078460423933
+            },
+            {
+              "label": "HAPPY",
+              "p": 0.06347195573702555
+            },
+            {
+              "label": "HARD",
+              "p": 0.045235304037965995
+            },
+            {
+              "label": "LITTLE",
+              "p": 0.028996986441604835
+            }
+          ],
+          "pTop1": 0.3331098361121303,
+          "margin": 0.20480905150789097,
+          "inferenceMs": 66.7077479999989,
+          "status": "uncertain",
+          "reason": "not confident (top score 0.33 < 0.82)"
+        }
+      ],
+      "frames": 46,
+      "hand_frames": 45
+    },
+    {
+      "trial_id": "asl-thankyou-gtsignstudy4a.8033",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-gtsignstudy4a.8033",
+      "cohort": "controls",
+      "tags": [
+        "asl-thank-you"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 37,
+      "hand_frames": 15
+    },
+    {
+      "trial_id": "asl-thankyou-gtsignstudy4a.8031",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-gtsignstudy4a.8031",
+      "cohort": "controls",
+      "tags": [
+        "asl-thank-you"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 31,
+      "hand_frames": 4
+    },
+    {
+      "trial_id": "asl-sprint-make-c6e5-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-c6e5",
+      "cohort": "controls",
+      "tags": [
+        "asl-make"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 52,
+      "hand_frames": 15
+    },
+    {
+      "trial_id": "asl-sprint-allgone-6aaa-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-6aaa",
+      "cohort": "controls",
+      "tags": [
+        "asl-allgone"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 44,
+      "hand_frames": 19
+    },
+    {
+      "trial_id": "asl-sprint-close-d5fd-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-d5fd",
+      "cohort": "controls",
+      "tags": [
+        "asl-close"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 31,
+      "hand_frames": 30
+    },
+    {
+      "trial_id": "asl-sprint-bee-a459-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-a459",
+      "cohort": "controls",
+      "tags": [
+        "asl-bee"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 28,
+      "hand_frames": 8
+    },
+    {
+      "trial_id": "asl-sprint-who-a459-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-a459",
+      "cohort": "controls",
+      "tags": [
+        "asl-who"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 28,
+      "hand_frames": 27
+    },
+    {
+      "trial_id": "asl-sprint-bunny-ebdb-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-ebdb",
+      "cohort": "controls",
+      "tags": [
+        "asl-rabbit"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 46,
+      "hand_frames": 15
+    },
+    {
+      "trial_id": "asl-sprint-day-ebdb-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-ebdb",
+      "cohort": "controls",
+      "tags": [
+        "asl-day"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 42,
+      "hand_frames": 18
+    },
+    {
+      "trial_id": "asl-sprint-taste-2b19-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-2b19",
+      "cohort": "controls",
+      "tags": [
+        "asl-taste"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 50,
+      "hand_frames": 17
+    },
+    {
+      "trial_id": "asl-sprint-green-ebdb-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-ebdb",
+      "cohort": "controls",
+      "tags": [
+        "asl-green"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 37,
+      "hand_frames": 9
+    },
+    {
+      "trial_id": "asl-sprint-basket-f56c-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-f56c",
+      "cohort": "controls",
+      "tags": [
+        "asl-basket"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [
+        {
+          "spanFrames": 16,
+          "handFrames": 12,
+          "slotDisagreements": 0,
+          "windows": 1,
+          "best": "WANT",
+          "top5": [
+            {
+              "label": "WANT",
+              "p": 0.6520457434800779
+            },
+            {
+              "label": "WHAT",
+              "p": 0.08241785276511705
+            },
+            {
+              "label": "NOTHING",
+              "p": 0.03181056903681025
+            },
+            {
+              "label": "ONCE",
+              "p": 0.02959590378290593
+            },
+            {
+              "label": "SHOULD",
+              "p": 0.014750293489798732
+            }
+          ],
+          "pTop1": 0.6520457434800779,
+          "margin": 0.5696278907149609,
+          "inferenceMs": 34.979848000002676,
+          "status": "uncertain",
+          "reason": "not confident (top score 0.65 < 0.82)"
+        }
+      ],
+      "frames": 52,
+      "hand_frames": 23
+    },
+    {
+      "trial_id": "asl-sprint-lawnmower-c6e5-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-c6e5",
+      "cohort": "controls",
+      "tags": [
+        "asl-lawnmower"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 58,
+      "hand_frames": 24
+    },
+    {
+      "trial_id": "asl-sprint-knock-f56c-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-f56c",
+      "cohort": "controls",
+      "tags": [
+        "asl-knock"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 53,
+      "hand_frames": 21
+    },
+    {
+      "trial_id": "asl-sprint-on-2b19-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-2b19",
+      "cohort": "controls",
+      "tags": [
+        "asl-on"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 51,
+      "hand_frames": 11
+    },
+    {
+      "trial_id": "asl-sprint-teacher-c6e5-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-c6e5",
+      "cohort": "controls",
+      "tags": [
+        "asl-teacher"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 52,
+      "hand_frames": 26
+    },
+    {
+      "trial_id": "asl-sprint-mailman-f56c-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-f56c",
+      "cohort": "controls",
+      "tags": [
+        "asl-mailman"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [
+        {
+          "spanFrames": 16,
+          "handFrames": 13,
+          "slotDisagreements": 0,
+          "windows": 1,
+          "best": "WANT",
+          "top5": [
+            {
+              "label": "WANT",
+              "p": 0.5217414163182571
+            },
+            {
+              "label": "WHAT",
+              "p": 0.16390570796232493
+            },
+            {
+              "label": "NOTHING",
+              "p": 0.03333401782456465
+            },
+            {
+              "label": "NATIONAL",
+              "p": 0.027995495834383696
+            },
+            {
+              "label": "ONCE",
+              "p": 0.021714008745517776
+            }
+          ],
+          "pTop1": 0.5217414163182571,
+          "margin": 0.35783570835593215,
+          "inferenceMs": 38.370003000003635,
+          "status": "uncertain",
+          "reason": "not confident (top score 0.52 < 0.82)"
+        }
+      ],
+      "frames": 60,
+      "hand_frames": 24
+    },
+    {
+      "trial_id": "asl-sprint-where-c6e5-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-c6e5",
+      "cohort": "controls",
+      "tags": [
+        "asl-where"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 42,
+      "hand_frames": 15
+    },
+    {
+      "trial_id": "asl-sprint-yesterday-c6e5-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-c6e5",
+      "cohort": "controls",
+      "tags": [
+        "asl-yesterday"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 41,
+      "hand_frames": 24
+    },
+    {
+      "trial_id": "asl-sprint-dinner-f56c-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-f56c",
+      "cohort": "controls",
+      "tags": [
+        "asl-dinner"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 52,
+      "hand_frames": 17
+    },
+    {
+      "trial_id": "asl-sprint-read-ebdb-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-ebdb",
+      "cohort": "controls",
+      "tags": [
+        "asl-read"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [],
+      "frames": 38,
+      "hand_frames": 8
+    },
+    {
+      "trial_id": "asl-sprint-moose-ebdb-A",
+      "category": "foreign_sign",
+      "expected_gloss": null,
+      "signer_id": "popsign-v2-ebdb",
+      "cohort": "controls",
+      "tags": [
+        "asl-moose"
+      ],
+      "status": "complete",
+      "errors": [],
+      "suggested": [],
+      "confirmed": [],
+      "decisions": [
+        {
+          "spanFrames": 16,
+          "handFrames": 13,
+          "slotDisagreements": 0,
+          "windows": 1,
+          "best": "WHAT",
+          "top5": [
+            {
+              "label": "WHAT",
+              "p": 0.21276136888011848
+            },
+            {
+              "label": "WANT",
+              "p": 0.2065245777957217
+            },
+            {
+              "label": "PROFESSOR",
+              "p": 0.035750975273214754
+            },
+            {
+              "label": "FIRST",
+              "p": 0.0237875571694666
+            },
+            {
+              "label": "ONCE",
+              "p": 0.02187128187269204
+            }
+          ],
+          "pTop1": 0.21276136888011848,
+          "margin": 0.006236791084396787,
+          "inferenceMs": 37.90322900000319,
+          "status": "uncertain",
+          "reason": "not confident (top score 0.21 < 0.82)"
+        }
+      ],
+      "frames": 46,
+      "hand_frames": 18
+    }
+  ]
+}
