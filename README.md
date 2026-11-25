@@ -4,7 +4,7 @@ SignRelay is a privacy-first research web application that recognises **isolated
 
 Start with the [developer handoff](docs/DEVELOPER_HANDOFF.md) for a fresh checkout, asset installation and release verification.
 
-## What works now
+## What works now.
 
 - Forty sign-language workspaces have separate identities; RSL and Bangla have separate pretrained clip-recognition modes.
 - Camera permission is requested only after language selection.
@@ -44,7 +44,7 @@ The [17 September handoff](docs/pretrained-expansion-2026-09-17.md) records the 
 
 | Language | Status | Current vocabulary | Decoder |
 | --- | --- | --- | --- |
-| ASL | Experimental | 523 model classes + user-defined personal words | Engine V3.1 ONNX, MediaPipe tracking and on-device personal DTW templates |
+| ASL | Experimental | 523 model classes + user-defined personal words | Engine V3.1 ONNX, MediaPipe tracking, on-device personal DTW templates, and V3.1 embedding match for taught signs |
 | BSL | Experimental | 1,064 automatic BSL-1K signs + unlimited signer-taught words | Official BSL-1K Pose2Sign model + personal DTW templates |
 | ISL | Experimental | 263 automatic INCLUDE signs + unlimited signer-taught words | Official AI4Bharat INCLUDE transformer + personal DTW templates |
 | RSL | Experimental, slow clip mode | 967 pretrained word/phrase classes + 33 fingerspelling letters | Official Slovo MViTv2-small-32-2 RGB ONNX; no personal recordings required |
@@ -79,6 +79,31 @@ The normal workspace uses the frozen Engine V3.1 isolated-sign model trained on 
 ### PSL installation and use
 
 The 775-sign HFAD dictionary bundle (`public/models/psl776-hfad/`) is checksum-verified during the Firebase build. Choose Pakistani Sign Language and sign naturally; recognition runs continuously like ASL/BSL/ISL/LSE, not as a slow single-capture mode. Unlike those four, PSL is **not a trained neural classifier** - each of the 775 signs has exactly one official reference performance from [HFAD, Lahore](https://github.com/sign-language-translator/sign-language-datasets) (CC BY 4.0), and recognition is one-shot dynamic-time-warping distance matching against that single reference, using the same matching code already used for a signer's own personal templates. No accuracy evaluation exists - not against held-out signers, not live-camera, not at all. See [PSL attribution and limitations](public/models/psl776-hfad/ATTRIBUTION.md).
+
+### Taught ASL signs are matched by embedding, not by DTW alone
+
+When the ASL V3.1 engine is active, teaching a sign stores the 384-d embedding of the recording
+alongside it. A later sign is compared against every taught example by cosine similarity, and a match
+at 0.75 or better (beat by 0.15) is confirmed straight into the transcript.
+
+This is the reliable path for a signer whose style the 523-class PopSign head does not recognise.
+Measured on one live signer's captures: two takes of the same sign recorded twelve minutes apart
+scored **0.93**, every pair of different signs stayed at or below **0.27** (mean 0.06), and a sign
+that was never taught matched nothing, leaving the model's own answer in place. Alternatives were
+measured and rejected first: the WLASL-2000 Pose-TGCN engine in this repo answered PLEASE with
+SNOWMAN (0.87) and YES with AUDIOLOGIST (0.91) on the same windows, and averaging nine windows per
+sign changed no top-1.
+
+What it does not do: examples belong to the signer who recorded them, so a visitor who signs
+differently will not match the operator's enrolment. It fixes "my own signs are unreliable", not
+"any stranger's first attempt is accurate".
+
+Teaching scales without code changes. Personal signs browse the same 2,093-word concept library in
+every language (the 440 curated everyday concepts plus the WLASL-2000 labels), so a word is picked
+from the list rather than typed; two or three recordings per word are stored with their embeddings;
+and **Export signs** / **Import signs** move the whole taught vocabulary to another browser or booth
+laptop as JSON, so a large personal dictionary is backed up and replicable rather than re-recorded.
+358 of the 523 V3.1 model classes overlap the library; the remaining 1,735 concepts are teach-only.
 
 ## Architecture
 
@@ -116,7 +141,9 @@ npm ci
 npm run dev
 ```
 
-The camera requires a secure origin in production. Localhost is treated as secure by modern browsers.
+The first run also copies the MediaPipe runtime and installs the size- and SHA-256-pinned vision
+models into `public/vision/`; later runs reuse the verified files. The camera requires a secure
+origin in production. Localhost is treated as secure by modern browsers.
 
 ## Environment variables
 
@@ -156,6 +183,8 @@ Free GPU notebooks on Google Colab or Kaggle are appropriate for training; the d
 - [SLR500](https://ustc-slr.github.io/datasets/2015_csl/) offers 500 isolated CSL signs, but its official research agreement must be signed by a full-time staff member. No CSL vocabulary or model is bundled until that permission or an appropriate open alternative is available.
 
 Dataset names, vocabulary size and availability do not imply a licence suitable for deployment. The training pipeline requires a human-confirmed licence record.
+
+[docs/training-datasets.md](docs/training-datasets.md) lists the shortlist with licence, format and fit, including the landmark-only Google ISLR set that maps directly into the 86 slots, and the measured answer to whether public video can substitute for a signer's own teaching. [docs/islr-training-run.md](docs/islr-training-run.md) is the runbook for merging that dataset into the existing cache and retraining, with `engine-v3/pipeline/import_islr.py` and `merge_cache.py`.
 
 ## Testing
 
@@ -251,5 +280,5 @@ See [the security audit](docs/SECURITY-AUDIT-2026-09-11.md) for checked controls
 1. Create legally cleared, signer-independent ASL starter benchmarks.
 2. Train and export a compact temporal sequence model with a blank class.
 3. Add learned sign boundaries and continuous word error rate evaluation.
-4. Co-design shared adapters with native signers and language experts, prioritising the existing 40 language communities by data readiness and contributor interest.
+4. Co-design shared adapters with native signers and language experts, prioritising the existing 40+ language communities by data readiness and contributor interest.
 5. Add language-specific gloss-to-text decoding without hiding uncertainty.

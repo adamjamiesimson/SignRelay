@@ -15290,18 +15290,35 @@ function signingEvidence(f) {
 
 // lib/asl-v31-segmenter.ts
 var HAND_GAP_MS = 500;
-var MAX_SEGMENT_MS = 4e3;
+var MAX_SEGMENT_MS = 2500;
 var MARGIN_MS = 600;
 var MIN_OBSERVED_HAND_FRAMES = 3;
 var MAX_SAMPLES = 192;
+var MOTION_WINDOW_MS = 250;
+var MOTION_HOLD_MS = 600;
+var MOTION_EPSILON = 0.012;
+var DWELL_MS = 400;
+var APPROACH_MAX_MS = 500;
+var SHOULDER_SLOTS = [42 + 7, 42 + 8];
+function shouldersVisible(features) {
+  return SHOULDER_SLOTS.every((slot) => Number.isFinite(features[slot * 3]) && Number.isFinite(features[slot * 3 + 1]));
+}
 var AslV31Segmenter = class {
   constructor(options = {}) {
     this.samples = [];
     this.active = null;
     this.waitingForRestSince = null;
+    this.lastMotionAt = -Infinity;
+    /** When the present hand was last seen stationary, and whether a hold may still open a sign. */
+    this.heldSince = null;
+    this.dwellArmed = false;
+    /** When the current burst of movement began, and how long the last burst lasted. */
+    this.motionStartedAt = null;
+    this.lastApproachMs = null;
     /** Session counters for developer diagnostics; reset() keeps them, resetStats() clears them. */
     this.stats = { opened: 0, completed: 0, capped: 0, tooFewHands: 0 };
     this.restAware = options.restAware ?? true;
+    this.motionEpsilon = options.motionEpsilon ?? MOTION_EPSILON;
   }
   resetStats() {
     Object.assign(this.stats, { opened: 0, completed: 0, capped: 0, tooFewHands: 0 });
@@ -15310,12 +15327,45 @@ var AslV31Segmenter = class {
     this.samples = [];
     this.active = null;
     this.waitingForRestSince = null;
+    this.lastMotionAt = -Infinity;
+    this.heldSince = null;
+    this.dwellArmed = false;
+    this.motionStartedAt = null;
+    this.lastApproachMs = null;
+  }
+  /** Largest hand-point travel over the last MOTION_WINDOW_MS. Points missing in either frame
+   * are skipped, so a partly tracked hand still reports the movement it does show. */
+  travel(timestamp, features) {
+    const reference = this.samples.find((sample) => sample.t >= timestamp - MOTION_WINDOW_MS);
+    if (!reference) return 0;
+    let travel = 0;
+    for (let point3 = 0; point3 < 42; point3++) {
+      const offset = point3 * 3;
+      if (!Number.isFinite(features[offset]) || !Number.isFinite(features[offset + 1]) || !Number.isFinite(reference.f[offset]) || !Number.isFinite(reference.f[offset + 1])) continue;
+      const distance3 = Math.hypot(features[offset] - reference.f[offset], features[offset + 1] - reference.f[offset + 1]);
+      if (distance3 > travel) travel = distance3;
+    }
+    return travel;
+  }
+  /** Whether this frame continues a sign: a hand is present and it moved recently. Position is
+   * deliberately not part of this test - see the note on MOTION_WINDOW_MS. */
+  isSigning(timestamp, features) {
+    if (!hasHand(features)) return false;
+    if (!this.restAware) return true;
+    return timestamp - this.lastMotionAt <= MOTION_HOLD_MS;
+  }
+  /** Where a sign may start: in signing space when the shoulders are visible, anywhere without
+   * them. The first moving frame opens the segment, so the hand's travel into the sign is part of
+   * the clip, and a hand that is merely resting never opens one. */
+  canOpen(features, signing, dwell) {
+    if (!this.restAware) return signingEvidence(features);
+    return (signing || dwell) && (!shouldersVisible(features) || signingEvidence(features));
   }
   suppressCurrentSegment() {
     const last = this.samples.at(-1);
-    const stillVisible = last && hasHand(last.f);
+    const stillSigning = last ? this.isSigning(last.t, last.f) : false;
     this.reset();
-    if (stillVisible) this.waitingForRestSince = last.t;
+    if (last && stillSigning) this.waitingForRestSince = last.t;
   }
   observe(timestamp, features) {
     if (!Number.isFinite(timestamp) || features?.length !== N_POINTS * 3) {
@@ -15325,27 +15375,48 @@ var AslV31Segmenter = class {
     const previous = this.samples.at(-1);
     if (previous && timestamp <= previous.t) this.reset();
     const anyHand = hasHand(features);
-    const signing = this.restAware ? signingEvidence(features) : anyHand;
-    if (this.waitingForRestSince !== null) {
-      if (signing) this.waitingForRestSince = timestamp;
-      if (timestamp - this.waitingForRestSince <= HAND_GAP_MS) return { reason: anyHand ? "idle" : "hands" };
-      this.waitingForRestSince = null;
+    const appeared = anyHand && !!previous && !hasHand(previous.f);
+    const moving = anyHand && this.restAware && (appeared || this.travel(timestamp, features) >= this.motionEpsilon);
+    if (moving) this.lastMotionAt = timestamp;
+    if (!anyHand) {
+      this.heldSince = null;
+      this.motionStartedAt = null;
+    } else if (moving) {
+      this.heldSince = null;
+      this.dwellArmed = true;
+      if (this.motionStartedAt === null) this.motionStartedAt = timestamp;
+    } else {
+      if (this.motionStartedAt !== null) {
+        this.lastApproachMs = timestamp - this.motionStartedAt;
+        this.motionStartedAt = null;
+      }
+      if (this.heldSince === null) this.heldSince = timestamp;
     }
+    const dwell = this.dwellArmed && this.heldSince !== null && timestamp - this.heldSince >= DWELL_MS && this.lastApproachMs !== null && this.lastApproachMs <= APPROACH_MAX_MS;
+    const signing = this.isSigning(timestamp, features);
     this.samples.push({ t: timestamp, f: features });
     while (this.samples.length > MAX_SAMPLES || this.samples[0].t < timestamp - MAX_SEGMENT_MS - MARGIN_MS * 2) {
       this.samples.shift();
     }
-    if (!this.active && signingEvidence(features)) {
-      this.active = { start: timestamp, lastHand: timestamp };
+    if (this.waitingForRestSince !== null) {
+      if (timestamp - this.waitingForRestSince > HAND_GAP_MS) this.waitingForRestSince = null;
+      else {
+        if (signing) this.waitingForRestSince = timestamp;
+        return { reason: anyHand ? "idle" : "hands" };
+      }
+    }
+    if (!this.active && this.canOpen(features, signing, dwell)) {
+      this.active = { start: timestamp, lastHand: timestamp, fromDwell: dwell && !signing };
       this.stats.opened++;
     }
     if (!this.active) return { reason: anyHand ? "idle" : "hands" };
-    if (signing) this.active.lastHand = timestamp;
+    if (signing || anyHand) this.active.lastHand = timestamp;
     const { start, lastHand } = this.active;
-    const ended = !signing && timestamp - lastHand > HAND_GAP_MS;
+    const ended = !signing && (anyHand || timestamp - lastHand > HAND_GAP_MS);
     const reachedLimit = timestamp - start > MAX_SEGMENT_MS;
     if (!ended && !reachedLimit) return { reason: "moving" };
     this.active = null;
+    this.dwellArmed = false;
     if (!ended) {
       this.waitingForRestSince = lastHand;
       this.stats.capped++;
@@ -15361,6 +15432,29 @@ var AslV31Segmenter = class {
     return { reason: "ready", clip: resampleTo15Hz(segment) };
   }
 };
+
+// lib/asl-next-word.ts
+var AMBIGUITY_MARGIN = 0.15;
+var ASL_SUGGESTION_AMBIGUITY_MARGIN = AMBIGUITY_MARGIN;
+
+// lib/asl-v31-text.ts
+var DISPLAY = {
+  CALLONPHONE: "Call on phone",
+  TURNONLIGHT: "Turn on light",
+  MINEMY: "Me",
+  WEUS: "We",
+  HESHEIT: "He/She",
+  NIGHTNIGHT: "Night",
+  ALLGONE: "All gone",
+  SOBIG: "So big",
+  HAVETO: "Have to"
+};
+function displayTextForGloss(gloss) {
+  const key = gloss.trim().toUpperCase();
+  const mapped = DISPLAY[key];
+  if (mapped) return mapped;
+  return key.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 // engine-v3/web/decision.mjs
 function softmax5(z, T = 1) {
@@ -15394,12 +15488,14 @@ function decide(logits, emb, meta) {
 
 // lib/asl-v31-assets.mjs
 var ASL_V31_ASSET_PATH = "/models/asl-v31";
-var ASL_V31_POLICY = "strict";
+var ASL_V31_POLICY = "top1";
 var ASL_V31_ASSET_PINS = {
   "model.onnx": { bytes: 13740990, sha256: "b3e05424f4674d8235ac8bc51970cef6822e12ac629c4a02bca596bc7f5d3090" },
   "meta.json": { bytes: 1077990, sha256: "50d59fdada18cc5c43ac61585f3af9c81d828402e2c2ba27c5ebeae86489ad22" },
   "policy-strict.json": { bytes: 535, sha256: "751fd950bde3ab3166653bb1dd4884a155fd831bb92bc4a7a16a6691c5fb48e0" },
-  "policy-balanced.json": { bytes: 536, sha256: "feca858e67e0fa5bd89ee3be7ce80bd599a7c9ab0ac8d7f952c52648519e460a" }
+  "policy-balanced.json": { bytes: 536, sha256: "feca858e67e0fa5bd89ee3be7ce80bd599a7c9ab0ac8d7f952c52648519e460a" },
+  "policy-demo.json": { bytes: 970, sha256: "e47b25fea6e79d5ab7fd9654e8355c3f14250d1287855c7bbecf4ddeebb1e41f" },
+  "policy-top1.json": { bytes: 910, sha256: "bfb1862dd571c0572e72628d8f9051619e7df10dcbad8a8014d7e4db9f58b15d" }
 };
 
 // lib/asl-v31-diagnostics.ts
@@ -15440,6 +15536,7 @@ function emptyAslV31Diagnostics() {
     decisions: { accepted: 0, uncertain: 0, unknown: 0, "too-few-hands": 0 },
     suggestionsPosted: 0,
     suggestionsStale: 0,
+    personalMatches: 0,
     lastDecision: null
   };
 }
@@ -15500,6 +15597,30 @@ function model() {
 async function warmAslV31Model() {
   await model();
 }
+function normalise(values) {
+  const length = Math.hypot(...values);
+  return length ? Array.from(values, (value) => value / length) : Array.from(values);
+}
+async function embedAslV31(frames2, options = {}) {
+  options.signal?.throwIfAborted();
+  const prepared = prepareClip(frames2);
+  if (!prepared || frames2.filter(hasHand).length < 3) return null;
+  const { session } = await model();
+  const inputs = {
+    x: new qe("float32", prepared.x, [1, TMAX, N_POINTS, 3]),
+    valid: new qe("float32", prepared.valid, [1, TMAX, N_POINTS]),
+    fmask: new qe("float32", prepared.fmask, [1, TMAX])
+  };
+  let results;
+  try {
+    results = await session.run(inputs);
+    const embedding = results.embedding?.data;
+    return embedding instanceof Float32Array ? Float32Array.from(embedding) : null;
+  } finally {
+    Object.values(inputs).forEach((tensor) => tensor.dispose());
+    Object.values(results ?? {}).forEach((tensor) => tensor.dispose());
+  }
+}
 async function recognizeAslV31(frames2, options) {
   const prepared = prepareClip(frames2);
   if (!prepared) return null;
@@ -15533,15 +15654,65 @@ async function recognizeAslV31(frames2, options) {
         throw new Error("ASL V3.1 returned invalid inference outputs");
       }
       const decision = decide(logits, embedding, meta);
+      const vector = normalise(embedding);
       options.onDecision?.(describeDecision(decision, meta.policy, handFrames));
+      options.onEmbedding?.(vector);
       if (decision.status !== "accepted" || !decision.label) return null;
-      const text = decision.label.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
-      return { label: decision.label, text, confidence: decision.scores.p_top1 };
+      const text = displayTextForGloss(decision.label);
+      const runnerUp = decision.top5[1];
+      const alternatives = runnerUp && decision.scores.p_top1 - runnerUp.p <= ASL_SUGGESTION_AMBIGUITY_MARGIN ? decision.top5.slice(0, 3).map((item) => ({ gloss: item.label, probability: item.p })) : void 0;
+      return { label: decision.label, text, confidence: decision.scores.p_top1, embedding: vector, alternatives };
     } finally {
       Object.values(inputs).forEach((tensor) => tensor.dispose());
       Object.values(results ?? {}).forEach((tensor) => tensor.dispose());
     }
   });
+}
+
+// lib/asl-v31-personal.ts
+var PERSONAL_EMBEDDING_MIN_SIMILARITY = 0.75;
+var PERSONAL_EMBEDDING_MIN_MARGIN = 0.15;
+function usable2(values) {
+  return Array.isArray(values) && values.length > 0 && values.every(Number.isFinite);
+}
+function glossCentroids(templates) {
+  const sums = /* @__PURE__ */ new Map();
+  for (const template of templates) {
+    const sum = sums.get(template.gloss) ?? new Array(template.embedding.length).fill(0);
+    for (let i = 0; i < sum.length; i++) sum[i] += template.embedding[i];
+    sums.set(template.gloss, sum);
+  }
+  const centroids = /* @__PURE__ */ new Map();
+  for (const [gloss, sum] of sums) {
+    const length = Math.hypot(...sum);
+    centroids.set(gloss, length ? sum.map((value) => value / length) : sum);
+  }
+  return centroids;
+}
+function cosineSimilarity(a, b) {
+  const length = Math.min(a.length, b.length);
+  if (!length) return 0;
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  return normA && normB ? dot / Math.sqrt(normA * normB) : 0;
+}
+function matchPersonalEmbedding(embedding, templates) {
+  if (!embedding?.length) return null;
+  const taught = templates.filter((template) => usable2(template.embedding));
+  const centroid = glossCentroids(taught);
+  const scored = taught.map((template) => {
+    const individual = cosineSimilarity(embedding, template.embedding);
+    const pooled = centroid.get(template.gloss);
+    return { template, similarity: Math.max(individual, pooled ? cosineSimilarity(embedding, pooled) : -Infinity) };
+  }).sort((a, b) => b.similarity - a.similarity);
+  const [best, runnerUp] = scored;
+  if (!best || best.similarity < PERSONAL_EMBEDDING_MIN_SIMILARITY) return null;
+  if (runnerUp && runnerUp.template.gloss !== best.template.gloss && best.similarity - runnerUp.similarity < PERSONAL_EMBEDDING_MIN_MARGIN) return null;
+  return best;
 }
 
 // workers/recognition.worker.ts
@@ -15642,6 +15813,7 @@ function resetEvidence() {
   candidateSource = void 0;
 }
 function resetSession() {
+  lastCapture = void 0;
   diagnostics = { ...emptyAslV31Diagnostics(), model: v3ModelReady ? "ready" : "not-started" };
   v3Segmenter.resetStats();
   for (const request of pending.values()) request.controller.abort();
@@ -15651,6 +15823,21 @@ function resetSession() {
   modelProblem = false;
   retryAfter = 0;
   personalProblem = false;
+}
+var lastCapture;
+function captureSign() {
+  if (!lastCapture) return null;
+  const frames2 = lastCapture.clip.map((frame) => Array.from(frame, (value) => Number.isFinite(value) ? Math.round(value * 1e5) / 1e5 : null));
+  return {
+    tool: "signrelay-live-clip-v1",
+    capturedAt: new Date(lastCapture.at).toISOString(),
+    model: { version: "v3.1", sha256: ASL_V31_ASSET_PINS["model.onnx"].sha256, policy: ASL_V31_POLICY },
+    contract: { points: N_POINTS, fps: FPS, order: "hand slots 0-41 (left, right), pose slots 42-54, face slots 55-85; NaN = missing" },
+    frames: frames2.length,
+    decision: lastCapture.decision,
+    diagnostics: diagnosticsSnapshot(),
+    clip: frames2
+  };
 }
 function submitV3(now) {
   if (pending.has("asl") || now < retryAfter) return;
@@ -15666,12 +15853,18 @@ function submitV3(now) {
   const generation = modelGeneration;
   const startedAt = performance.now();
   if (!segment) diagnostics.model = "loading";
+  const capture = segment ? { clip: segment.clip, decision: null, at: Date.now() } : void 0;
+  const observed = {};
+  if (capture) lastCapture = capture;
   const task = segment ? recognizeAslV31(segment.clip, { signal: request.controller.signal, onDecision: (decision) => {
     diagnostics.inferences++;
     diagnostics.lastInferenceMs = performance.now() - startedAt;
     diagnostics.decisions[decision.status]++;
     diagnostics.lastDecision = { ...decision, ageMs: 0 };
     lastDecisionAt = performance.now();
+    if (capture) capture.decision = decision;
+  }, onEmbedding: (embedding) => {
+    observed.embedding = embedding;
   } }) : warmAslV31Model().then(() => {
     v3ModelReady = true;
     diagnostics.model = "ready";
@@ -15679,7 +15872,22 @@ function submitV3(now) {
   task.then((prediction2) => {
     if (generation !== modelGeneration || request.controller.signal.aborted) return;
     modelProblem = false;
-    if (!prediction2 || !segment) return;
+    if (!segment) return;
+    const personal = matchPersonalEmbedding(observed.embedding, personalTemplates);
+    if (personal) {
+      diagnostics.personalMatches++;
+      self.postMessage({
+        type: "confirmed",
+        session: segment.session,
+        gloss: personal.template.gloss,
+        text: personal.template.text,
+        confidence: personal.similarity,
+        timestamp: Date.now(),
+        source: "personal"
+      });
+      return;
+    }
+    if (!prediction2) return;
     if ((frames.at(-1)?.timestamp ?? now) - segment.closedAt > MAX_PREDICTION_AGE_MS || performance.now() - segment.receivedAt > MAX_PREDICTION_AGE_MS) {
       diagnostics.suggestionsStale++;
       return;
@@ -15692,7 +15900,8 @@ function submitV3(now) {
       text: prediction2.text,
       confidence: prediction2.confidence,
       timestamp: Date.now(),
-      source: "model"
+      source: "model",
+      alternatives: prediction2.alternatives
     });
   }).catch((error) => {
     if (generation !== modelGeneration || request.controller.signal.aborted) return;
@@ -15727,6 +15936,16 @@ self.onmessage = async (event) => {
     personalTemplates = templatesForLanguage(event.data.templates, activeLanguage);
     resetSession();
     personalMatcher.configure(personalTemplates);
+    return;
+  }
+  if (event.data.type === "capture") {
+    self.postMessage({ type: "clip", session: event.data.session, at: Date.now(), sign: captureSign() });
+    return;
+  }
+  if (event.data.type === "embed") {
+    const { requestId, frames: recorded, session } = event.data;
+    const reply = (embedding) => self.postMessage({ type: "embedding", session, requestId, embedding });
+    embedAslV31(recorded, {}).then((embedding) => reply(embedding ? Array.from(embedding) : null)).catch(() => reply(null));
     return;
   }
   if (event.data.type === "reset") {

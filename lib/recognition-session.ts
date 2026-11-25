@@ -17,6 +17,8 @@ export class RecognitionSession {
   private restarts: number[] = [];
   private recovering = false;
   private closed = false;
+  private embeddingRequest = 0;
+  private readonly embeddingWaiters = new Map<number, (value: number[] | null) => void>();
   /** Milliseconds from posting the last answered frame to its analysis. */
   lastRoundTripMs: number | null = null;
   /** Counters for the opt-in ?perf readout (numbers only). `replaced` frames
@@ -70,6 +72,27 @@ export class RecognitionSession {
     }
   }
 
+  /** Teach a sign: resolves with the V3.1 embedding for the recorded frames, or null if the worker
+   * cannot produce one (model busy, not loaded, or no hand in the recording). */
+  requestEmbedding(frames: Float32Array[], timeoutMs = 4000): Promise<number[] | null> {
+    if (this.closed || !this.worker || !frames.length) return Promise.resolve(null);
+    const requestId = ++this.embeddingRequest;
+    return new Promise(resolve => {
+      const timer = setTimeout(() => { this.embeddingWaiters.delete(requestId); resolve(null); }, timeoutMs);
+      this.embeddingWaiters.set(requestId, value => { clearTimeout(timer); resolve(value); });
+      try { this.worker!.postMessage({ type: "embed", requestId, frames, session: this.session } satisfies WorkerInput); }
+      catch { clearTimeout(timer); this.embeddingWaiters.delete(requestId); resolve(null); }
+    });
+  }
+
+  /** `?perf` only: ask the worker for the last classified window. Does not disturb the
+   * session, the in-flight frame or any pending result. */
+  requestCapture() {
+    if (this.closed || !this.worker) return;
+    try { this.worker.postMessage({ type: "capture", session: this.session } satisfies WorkerInput); }
+    catch { /* the watchdog or the next frame recovers the worker */ }
+  }
+
   resetStats() {
     Object.assign(this.stats, { offered: 0, forwarded: 0, replaced: 0, answered: 0, lastQueueAgeMs: null, recoveries: 0 });
   }
@@ -113,7 +136,11 @@ export class RecognitionSession {
           }
           this.onMessage(message);
           this.pump();
-        } else if (message.type === "confirmed" || message.type === "suggestion") this.onMessage(message);
+        } else if (message.type === "embedding") {
+          const waiter = this.embeddingWaiters.get(message.requestId);
+          this.embeddingWaiters.delete(message.requestId);
+          waiter?.(message.embedding);
+        } else if (message.type === "confirmed" || message.type === "suggestion" || message.type === "clip") this.onMessage(message);
       };
       worker.onerror = worker.onmessageerror = () => {
         if (worker === this.worker) this.recover("Recognition was interrupted. Restarting…");

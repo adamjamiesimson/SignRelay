@@ -90,13 +90,28 @@ def prepared(clips):
 @torch.no_grad()
 def predict(model, prepped, bs=256):
     model.eval(); logits, embs = [], []
+    device = next(model.parameters()).device
     ok = [i for i, p in enumerate(prepped) if p is not None]
-    for i in range(0, len(ok), bs):
-        x, v, m = batchify([prepped[j] for j in ok[i:i + bs]])
-        e = model.embed(x, v, m); logits.append(model.head(e)); embs.append(F.normalize(e, dim=-1))
+    with torch.no_grad():
+        for i in range(0, len(ok), bs):
+            x, v, m = batchify([prepped[j] for j in ok[i:i + bs]])
+            x, v, m = x.to(device), v.to(device), m.to(device)
+            e = model.embed(x, v, m); logits.append(model.head(e).cpu()); embs.append(F.normalize(e, dim=-1).cpu())
     L = torch.cat(logits).numpy() if logits else np.zeros((0, model.head.out_features))
     E = torch.cat(embs).numpy() if embs else np.zeros((0, model.head.in_features))
     return ok, L, E
+
+
+def resolve_device(requested="auto"):
+    """Pick the fastest available device; state dicts are always saved on the CPU so a run started on a
+    GPU can be resumed on a laptop."""
+    if requested != "auto":
+        return torch.device(requested)
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
 
 
 def main():
@@ -109,7 +124,11 @@ def main():
     ap.add_argument("--unknown-weight", type=float, default=0.3); ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--no-face", action="store_true", help="ablation: drop face points at train and eval")
     ap.add_argument("--threads", type=int, default=4); ap.add_argument("--late-drop-epoch", type=int, default=0)
+    ap.add_argument("--device", default="auto", help="auto, cpu, cuda or mps")
     ap.add_argument("--policy", default=None)
+    ap.add_argument("--vocabulary", default=None,
+                    help="signs to keep as classes in addition to the cache (default: the PopSign list). "
+                         "Pass a JSON list, or an empty list, when training on a different dataset alone.")
     ap.add_argument("--fs-negatives", action="store_true", help="add FSBoard fingerspelling windows as UNKNOWN")
     ap.add_argument("--balance", type=float, default=0.0,
                     help="class-balanced loss: weight_c = (median_count / count_c) ** balance (0 = off, 0.5 = inverse sqrt)")
@@ -118,8 +137,10 @@ def main():
     os.makedirs(a.out, exist_ok=True)
 
     policy = labels.load_policy(a.policy)
+    vocabulary_path = a.vocabulary or os.path.join(HERE, "..", "vocabulary", "popsign_signs.json")
+    vocabulary = set(json.load(open(vocabulary_path))) if os.path.exists(vocabulary_path) else set()
     all_signs = sorted({m["sign"] for s in ("train", "val") for m in json.load(open(f"{a.cache}/{s}.json"))}
-                       | set(json.load(open(os.path.join(HERE, "..", "vocabulary", "popsign_signs.json")))))
+                       | vocabulary)
     classes, mapping = labels.build(all_signs, policy)
     C = len(classes); UNK = C
     json.dump({"classes": classes, "unknown_index": UNK, "policy_version": policy["version"],
@@ -144,17 +165,19 @@ def main():
     va_prep = prepared([va_clips[i] for i in va_known]); va_true = np.array([va_y[i] for i in va_known])
     print(f"classes {C} (+UNKNOWN) | train clips {len(train)} | val known clips {len(va_known)}", flush=True)
 
-    model = SignModel(C + 1, d=a.dim, depth=a.depth, kind=a.kind)
+    device = resolve_device(a.device)
+    model = SignModel(C + 1, d=a.dim, depth=a.depth, kind=a.kind).to(device)
+    print("device", device, flush=True)
     print("params", sum(p.numel() for p in model.parameters()), flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=a.wd)
     steps_per_epoch = math.ceil(len(train) / a.bs); total = steps_per_epoch * a.epochs; warm = steps_per_epoch * 2
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1, (s + 1) / warm) * 0.5 * (1 + math.cos(math.pi * min(1, s / total))))
-    cw = torch.ones(C + 1); cw[UNK] = a.unknown_weight
+    cw = torch.ones(C + 1, device=device); cw[UNK] = a.unknown_weight
     if a.balance > 0:
         cnt = np.bincount([y for _, y in train if y != UNK], minlength=C).astype(np.float64)
         med = np.median(cnt[cnt > 0])
         w = np.where(cnt > 0, (med / np.maximum(cnt, 1)) ** a.balance, 1.0)
-        cw[:C] = torch.tensor(w, dtype=torch.float32)
+        cw[:C] = torch.tensor(w, dtype=torch.float32, device=device)
         print("class-balanced weights: min %.2f max %.2f" % (w.min(), w.max()), flush=True)
     start, best = 0, -1
     if os.path.exists(f"{a.out}/ckpt.pt"):
@@ -173,7 +196,8 @@ def main():
                 if p is None: continue
                 items.append(p); ys.append(y)
             if len(items) < 2: continue
-            x, v, m = batchify(items); yt = torch.tensor(ys)
+            x, v, m = batchify(items)
+            x, v, m = x.to(device), v.to(device), m.to(device); yt = torch.tensor(ys, device=device)
             tl_ = int(m.sum(1).max().item()); x, v, m = x[:, :tl_], v[:, :tl_], m[:, :tl_]  # crop shared padding
             loss = F.cross_entropy(model(x, v, m), yt, weight=cw, label_smoothing=a.smooth)
             opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0); opt.step(); sched.step()
@@ -187,8 +211,9 @@ def main():
         print(json.dumps(rec), flush=True)
         open(f"{a.out}/log.jsonl", "a").write(json.dumps(rec) + "\n")
         if acc > best:
-            best = acc; torch.save({"model": model.state_dict(), "epoch": ep, "val_top1": acc, "args": vars(a), "C": C}, f"{a.out}/best.pt")
-        torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "sched": sched.state_dict(), "epoch": ep, "best": best}, f"{a.out}/ckpt.pt")
+            best = acc; torch.save({"model": {k: v.detach().cpu() for k, v in model.state_dict().items()}, "epoch": ep, "val_top1": acc, "args": vars(a), "C": C}, f"{a.out}/best.pt")
+        torch.save({"model": {k: v.detach().cpu() for k, v in model.state_dict().items()},
+                    "opt": opt.state_dict(), "sched": sched.state_dict(), "epoch": ep, "best": best}, f"{a.out}/ckpt.pt")
     print("done best", best, flush=True)
 
 

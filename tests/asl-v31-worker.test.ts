@@ -26,7 +26,12 @@ async function configure(session = 1, language: "asl" | "csl" = "asl", withTempl
 async function feed(count: number, visible: boolean, session = 1) {
   for (let index = 0; index < count; index++) {
     const aslV3Features = new Float32Array(N_POINTS * 3).fill(NaN);
-    const point = { x: 0.4, y: 0.2, z: 0 };
+    // A sign is movement: the segmenter opens on a moving hand inside signing space, not on a
+    // hand that merely sits there, so the fixture strokes 0.02 of the frame per 100 ms frame.
+    const point = { x: 0.4 + 0.02 * (index % 5), y: 0.2, z: 0 };
+    // Shoulders put the signing-space limit at y = 0.76, so y = 0.2 is a signing hand.
+    aslV3Features.set([0.4, 0.5, 0], (42 + 7) * 3);
+    aslV3Features.set([0.6, 0.5, 0], (42 + 8) * 3);
     if (visible) aslV3Features.set([point.x, point.y, point.z]);
     await worker.onmessage({ data: { type: "frame", session, frameId: timestamp, frame: { timestamp, aslV3Features, pose: [], face: [],
       hands: visible ? [{ handedness: "Right", gesture: "None", gestureScore: 0, landmarks: Array.from({ length: 21 }, () => point) }] : [],
@@ -61,6 +66,43 @@ describe("selected V3.1 ASL worker", () => {
     expect(messages("analysis")).toHaveLength(21);
     expect(messages("confirmed")).toHaveLength(0);
     expect(messages("suggestion")).toEqual([expect.objectContaining({ session: 1, gloss: "THANK-YOU", text: "Thank You", source: "model" })]);
+  });
+
+  it("hands the landing-page developer the exact window and decision for a live misrecognition", async () => {
+    mock.recognize.mockImplementation(async (_frames: Float32Array[], options: { onDecision?: (decision: object) => void }) => {
+      options.onDecision?.({ status: "accepted", best: "THANK-YOU", top3: [{ label: "THANK-YOU", p: 0.92 }],
+        pTop1: 0.92, pUnknown: 0.01, proto: 0.9, handFrames: 12, reason: "" });
+      return suggestion;
+    });
+    await configure();
+    await worker.onmessage({ data: { type: "capture", session: 1 } });
+    expect(messages("clip")).toEqual([expect.objectContaining({ session: 1, sign: null })]);
+    await feed(9, true);
+    await feed(12, false);
+    await worker.onmessage({ data: { type: "capture", session: 1 } });
+    const [capture] = messages("clip").slice(-1) as { sign: Record<string, unknown> | null }[];
+    const sign = capture.sign as { tool: string; frames: number; clip: unknown[]; decision: { status: string } | null;
+      model: { sha256: string }; contract: { points: number } };
+    expect(sign.tool).toBe("signrelay-live-clip-v1");
+    expect(sign.frames).toBeGreaterThan(0);
+    expect(sign.clip).toHaveLength(sign.frames);
+    expect(sign.decision?.status).toBe("accepted");
+    expect(sign.model.sha256).toMatch(/^[a-f0-9]{64}$/);
+    expect(sign.contract.points).toBe(N_POINTS);
+  });
+
+  it("confirms a sign the signer taught instead of guessing from the 523-class head", async () => {
+    const embedding = [1, 0, 0, 0];
+    mock.recognize.mockImplementation(async (_frames: Float32Array[], options: { onEmbedding?: (value: number[]) => void }) => {
+      options.onEmbedding?.(embedding);
+      return { ...suggestion, label: "HOME", text: "Home", confidence: 0.3 };
+    });
+    await worker.onmessage({ data: { type: "templates", language: "asl", aslEngine: "v3.1", session: 1, diagnostics: false,
+      templates: [{ id: "p", gloss: "MORE", text: "More", createdAt: 1, frames: [], language: "asl", embedding }] } });
+    await feed(9, true);
+    await feed(12, false);
+    expect(messages("confirmed")).toEqual([expect.objectContaining({ gloss: "MORE", text: "More", source: "personal" })]);
+    expect(messages("suggestion")).toHaveLength(0);
   });
 
   it("does not run the ASL model in another language even when V3.1 was requested", async () => {

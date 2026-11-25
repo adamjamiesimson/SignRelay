@@ -1,4 +1,6 @@
 import * as ort from "onnxruntime-web";
+import { ASL_SUGGESTION_AMBIGUITY_MARGIN } from "./asl-next-word";
+import { displayTextForGloss } from "./asl-v31-text";
 import { decide } from "../engine-v3/web/decision.mjs";
 import { hasHand, N_POINTS, prepareClip, TMAX } from "../engine-v3/web/preprocess.mjs";
 import { ASL_V31_ASSET_PATH, ASL_V31_ASSET_PINS, ASL_V31_POLICY } from "./asl-v31-assets.mjs";
@@ -17,7 +19,12 @@ type DecisionMeta = {
   prototypes: Float32Array;
 };
 type Model = { session: ort.InferenceSession; meta: DecisionMeta };
-export type AslV31Suggestion = { label: string; text: string; confidence: number };
+export type AslV31Suggestion = { label: string; text: string; confidence: number;
+  /** Unit-length V3.1 embedding, so taught signs can be matched by cosine similarity. */
+  embedding?: number[];
+  /** Runner-up glosses with their probabilities, when they are close enough that the sentence
+   * should have a say in which one is shown. */
+  alternatives?: { gloss: string; probability: number }[] };
 
 let modelPromise: Promise<Model> | undefined;
 async function fetchPinned(file: keyof typeof ASL_V31_ASSET_PINS, signal: AbortSignal) {
@@ -63,13 +70,58 @@ function model() {
 
 /** Retain verified weights for the lifetime of the worker. Session resets still
  * cancel queued inference and invalidate all results from prior video. */
+/**
+ * Whether the shipped model has a class for this gloss. Signs like YOU and HAPPY are simply not among
+ * its 523 words, so nobody can recognise them by signing harder - teaching them is the only route, and
+ * the interface should say so rather than let a signer repeat a sign that can never work.
+ */
+export async function hasAslV31Class(gloss: string): Promise<boolean> {
+  const wanted = gloss.trim().toUpperCase();
+  const { meta } = await model();
+  return meta.classes.includes(wanted);
+}
+
 export async function warmAslV31Model() {
   await model();
 }
 
 /** `onDecision` receives every completed classification, accepted or not, for developer diagnostics. */
+/** Unit-length copy, so cosine similarity is a dot product downstream. */
+function normalise(values: Float32Array) {
+  const length = Math.hypot(...values);
+  return length ? Array.from(values, value => value / length) : Array.from(values);
+}
+
+/**
+ * Embedding for one taught sign, so a signer's own examples can be matched later. Returns null
+ * rather than throwing when the model cannot load: teaching still works through the frame matcher.
+ */
+export async function embedAslV31(frames: Float32Array[], options: InferenceOptions = {}): Promise<Float32Array | null> {
+  options.signal?.throwIfAborted();
+  const prepared = prepareClip(frames);
+  if (!prepared || frames.filter(hasHand).length < 3) return null;
+  const { session } = await model();
+  const inputs = {
+    x: new ort.Tensor("float32", prepared.x, [1, TMAX, N_POINTS, 3]),
+    valid: new ort.Tensor("float32", prepared.valid, [1, TMAX, N_POINTS]),
+    fmask: new ort.Tensor("float32", prepared.fmask, [1, TMAX]),
+  };
+  let results: Record<string, ort.Tensor> | undefined;
+  try {
+    results = await session.run(inputs);
+    const embedding = results.embedding?.data;
+    return embedding instanceof Float32Array ? Float32Array.from(embedding) : null;
+  } finally {
+    Object.values(inputs).forEach(tensor => tensor.dispose());
+    Object.values(results ?? {}).forEach(tensor => tensor.dispose());
+  }
+}
+
 export async function recognizeAslV31(frames: Float32Array[],
-  options: InferenceOptions & { onDecision?: (decision: AslV31Decision) => void }): Promise<AslV31Suggestion | null> {
+  options: InferenceOptions & { onDecision?: (decision: AslV31Decision) => void;
+    /** Called with the unit-length embedding for every completed classification, accepted or not, so a
+     * taught sign can still be matched when the model's own gate declines the window. */
+    onEmbedding?: (embedding: number[]) => void }): Promise<AslV31Suggestion | null> {
   const prepared = prepareClip(frames);
   if (!prepared) return null;
   options.signal?.throwIfAborted();
@@ -95,10 +147,18 @@ export async function recognizeAslV31(frames: Float32Array[],
         throw new Error("ASL V3.1 returned invalid inference outputs");
       }
       const decision = decide(logits, embedding, meta);
+      const vector = normalise(embedding);
       options.onDecision?.(describeDecision(decision, meta.policy, handFrames));
+      options.onEmbedding?.(vector);
       if (decision.status !== "accepted" || !decision.label) return null;
-      const text = decision.label.replace(/-/g, " ").toLowerCase().replace(/\b\w/g, (letter: string) => letter.toUpperCase());
-      return { label: decision.label, text, confidence: decision.scores.p_top1 };
+      const text = displayTextForGloss(decision.label);
+      // A near-tie between the top two is reported: the page can then let the sentence decide.
+      const runnerUp = decision.top5[1];
+      const alternatives = runnerUp && decision.scores.p_top1 - runnerUp.p <= ASL_SUGGESTION_AMBIGUITY_MARGIN
+        ? decision.top5.slice(0, 3).map((item: { label: string; p: number }) => ({ gloss: item.label, probability: item.p }))
+        : undefined;
+      // The embedding rides along so the worker can compare against signs this signer taught.
+      return { label: decision.label, text, confidence: decision.scores.p_top1, embedding: vector, alternatives };
     } finally {
       Object.values(inputs).forEach(tensor => tensor.dispose());
       Object.values(results ?? {}).forEach(tensor => tensor.dispose());

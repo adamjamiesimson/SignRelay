@@ -49,10 +49,16 @@ export type WorkerConfirmation = {
   source?: "personal" | "starter" | "model";
 };
 
-export type WorkerSuggestion = Omit<WorkerConfirmation, "type" | "source"> & { type: "suggestion"; source: "model" };
+export type WorkerSuggestion = Omit<WorkerConfirmation, "type" | "source"> & { type: "suggestion"; source: "model";
+  /** Close runner-up glosses, so the page can weigh them against the transcript's context. */
+  alternatives?: { gloss: string; probability: number }[] };
 
 export type WorkerMessage = WorkerAnalysis | WorkerConfirmation | WorkerSuggestion
-  | { type: "fault"; session?: number; message: string };
+  | { type: "fault"; session?: number; message: string }
+  /** `?perf` only: the landmark window and decision behind the last sign, so a live
+   * misrecognition can be replayed offline. Landmarks only - no image or video. */
+  | { type: "clip"; session?: number; at: number; sign: Record<string, unknown> | null }
+  | { type: "embedding"; session?: number; requestId: number; embedding: number[] | null };
 
 export type CalibrationTemplate = {
   id: string;
@@ -62,11 +68,19 @@ export type CalibrationTemplate = {
   text: string;
   createdAt: number;
   frames: number[][];
+  /** V3.1 embedding of the recorded sign (384 floats, unit length) when the example was taught with
+   * the ASL V3.1 engine active. Measured on a live signer: two takes of the same sign 12 minutes
+   * apart scored 0.93 cosine, while every different sign stayed at or below 0.27 - so a stored
+   * centroid recognises that signer far more reliably than the 523-class head. */
+  embedding?: number[];
 };
 
 export type WorkerInput = (
   | { type: "frame"; frame: VisionFrame }
   | { type: "reset" }
+  | { type: "capture" }
+  /** Turn a taught sign's frames into a V3.1 embedding the worker can match against later. */
+  | { type: "embed"; requestId: number; frames: Float32Array[] }
   | { type: "templates"; language: LanguageId; templates: CalibrationTemplate[]; aslEngine?: "v3.1"; diagnostics?: boolean }
 ) & { session?: number; frameId?: number };
 

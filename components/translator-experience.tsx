@@ -9,8 +9,8 @@ import {
   useState,
 } from "react";
 import {
-  ArrowLeft, BookPlus, Camera, CameraOff, ChevronDown, CircleHelp, Copy, History, Info, LockKeyhole, Pencil,
-  RotateCcw, Save, Square, Trash2, Volume2, X,
+  ArrowLeft, BookPlus, Camera, CameraOff, ChevronDown, CircleHelp, Copy, Download, History, Info, LockKeyhole, Pencil,
+  RotateCcw, Save, Square, Trash2, Upload, Volume2, X,
 } from "lucide-react";
 import {
   DEFAULT_SETTINGS,
@@ -43,6 +43,12 @@ import {
 } from "@/lib/model-adapters";
 import { isRecentDuplicate } from "@/lib/decoder";
 import { calibrationFrames, prepareCalibrationSequence } from "@/lib/personalized-recognition";
+import { parseCalibrationExport, serialiseCalibration } from "@/lib/calibration-transfer";
+import { enrolmentReport, type EnrolmentReport } from "@/lib/asl-v31-personal";
+import { displayText, predictNext, resolveAmbiguity } from "@/lib/asl-next-word";
+import { teachFirstSuggestions } from "@/lib/asl-v31-text";
+import MODEL_CLASSES from "../public/models/asl-v31/classes.json";
+import { nextWordModel } from "@/lib/next-word-corpus";
 import { AslV3Tracker } from "@/lib/asl-v3-tracker";
 import { VisionEngine } from "@/lib/vision-engine";
 import { RecognitionSession } from "@/lib/recognition-session";
@@ -71,6 +77,10 @@ type Step = "welcome" | "workspace";
 type CameraState = "idle" | "requesting" | "loading" | "active" | "denied" | "error";
 type RecognitionState = "listening" | "processing" | "uncertain";
 type CalibrationState = "idle" | "countdown" | "recording" | "saving" | "saved" | "error";
+
+/** The glosses the pretrained model itself can recognise: signable without teaching. */
+const MODEL_BACKED_WORDS: ReadonlySet<string> = new Set<string>(MODEL_CLASSES as readonly string[]);
+const entry_text_for = (word: string) => word.charAt(0) + word.slice(1).toLowerCase();
 
 const EMPTY_DETECTION: DetectionStatus = {
   person: false,
@@ -116,6 +126,8 @@ export function TranslatorExperience() {
   const [calibrationMessage, setCalibrationMessage] = useState("Type a word or short phrase, then record the complete sign one to three times.");
   const [countdown, setCountdown] = useState(3);
   const [tourOpen, setTourOpen] = useState(false);
+  /** Set when the sentence, not the detector, chose between two near-tied signs. */
+  const [contextNote, setContextNote] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const cameraButtonRef = useRef<HTMLButtonElement>(null);
@@ -189,14 +201,17 @@ export function TranslatorExperience() {
 
 
   const filteredCalibrationVocabulary = useMemo(() => {
-    const builtInStarter = selected === "asl" ? [] : PERSONAL_STARTER_VOCABULARY;
+    // ASL used to offer only the words already taught, so a new word had to be typed by hand. The
+    // concept prompts are language-neutral labels, so ASL now browses the same starter dictionary:
+    // teaching does not claim any of these share a sign form, it just labels what the signer records.
+    const builtInStarter = PERSONAL_STARTER_VOCABULARY;
     const knownGlosses = new Set<string>();
     return [...calibrationVocabulary, ...builtInStarter].filter((word) => {
       if (knownGlosses.has(word.gloss)) return false;
       knownGlosses.add(word.gloss);
       return true;
     });
-  }, [calibrationVocabulary, selected]);
+  }, [calibrationVocabulary]);
 
   const visibleCalibrationVocabulary = useMemo(() => {
     const search = vocabularySearch.trim().toLocaleLowerCase();
@@ -207,6 +222,13 @@ export function TranslatorExperience() {
   }, [filteredCalibrationVocabulary, vocabularySearch]);
 
   const showVocabularySearch = selected !== "asl" || filteredCalibrationVocabulary.length > 80 || vocabularySearch !== "";
+
+  /** Everyday words the pretrained model has no class for: teaching them is the only way to sign them. */
+  const teachFirst = useMemo(() => {
+    if (!useAslV3) return [];
+    const taught = new Set(calibrationTemplates.map(template => template.gloss.toUpperCase()));
+    return teachFirstSuggestions().filter(word => !taught.has(word)).slice(0, 8);
+  }, [calibrationTemplates, useAslV3]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -230,11 +252,50 @@ export function TranslatorExperience() {
       aslEngine: useAslV3 ? "v3.1" : undefined, diagnostics: perfMode });
   }, [calibrationTemplates, selected, useAslV3, perfMode]);
 
+  // `?perf` only: download the landmark window behind the last decision. Landmarks only;
+  // nothing is uploaded and no camera image is kept.
+  const saveSignCapture = useCallback((sign: Record<string, unknown> | null) => {
+    if (!sign) {
+      setRecognitionFeedback("No completed sign has been classified yet. Sign once, then save.");
+      return;
+    }
+    const url = URL.createObjectURL(new Blob([JSON.stringify(sign, null, 1)], { type: "application/json" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `signrelay-sign-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  }, []);
+
   const updateSuggestion = useCallback((next: WorkerSuggestion | null) => {
     if (next) stageCountsRef.current.shown++;
     suggestionRef.current = next;
     setSuggestion(next);
   }, []);
+
+  /**
+   * When the detector reports two near-tied signs, the sentence so far gets a say, the way a keyboard
+   * uses context to pick between "there" and "their". The detector's candidates are only reordered,
+   * never replaced, and the gate still decides whether anything is added.
+   */
+  const withContext = useCallback((message: WorkerSuggestion): WorkerSuggestion => {
+    const alternatives = message.alternatives;
+    if (!alternatives || alternatives.length < 2) return message;
+    // Only languages whose words the corpus was written in get a say in a close call.
+    const languageModel = nextWordModel(selected);
+    if (!languageModel) return message;
+    const transcript = entriesRef.current.map(entry => entry.gloss ?? entry.text);
+    const ranked = resolveAmbiguity(languageModel, transcript, alternatives);
+    const chosen = ranked[0];
+    const original = alternatives[0];
+    if (chosen.gloss === original.gloss || chosen.reason !== "context") return message;
+    // Keep the detector's own probability for the gloss it actually ranked first.
+    const probability = alternatives.find(item => item.gloss === chosen.gloss)?.probability ?? message.confidence;
+    setContextNote(`Close call: the detector could not separate ${displayText(original.gloss)} and ${displayText(chosen.gloss)}, so the sentence chose ${displayText(chosen.gloss)}.`);
+    return { ...message, gloss: chosen.gloss, text: displayText(chosen.gloss), confidence: probability };
+  }, [selected]);
 
   const resetRecognition = useCallback(() => {
     const tracker = engineRef.current;
@@ -358,17 +419,20 @@ export function TranslatorExperience() {
     // RecognitionSession drops messages from before every reset.
     if (message.type === "suggestion") {
       stageCountsRef.current.received++;
-      if (useAslV3 && engineRef.current && !document.hidden) updateSuggestion(message);
-      else stageCountsRef.current.ignored++;
+      if (useAslV3 && engineRef.current && !document.hidden) {
+        updateSuggestion(withContext(message));
+      } else stageCountsRef.current.ignored++;
     }
+    if (message.type === "clip") { saveSignCapture(message.sign ?? null); return; }
     if (message.type === "confirmed" && (!useAslV3 || message.source === "personal")) {
       updateSuggestion(null);
       appendWord(message);
     }
-  }, [appendWord, perfMode, updateSuggestion, useAslV3]);
+  }, [appendWord, perfMode, saveSignCapture, updateSuggestion, useAslV3, withContext]);
 
   const addSuggestedWord = () => {
     if (!suggestion || suggestion !== suggestionRef.current || document.hidden) return;
+    setContextNote(null);
     updateSuggestion(null);
     stageCountsRef.current.added++;
     if (settingsRef.current.autoSpeak) stageCountsRef.current.spoken++;
@@ -791,6 +855,21 @@ export function TranslatorExperience() {
     return () => { window.clearTimeout(timer); window.removeEventListener("hashchange", open); };
   }, []);
 
+  /** What the signer should do next, based on how this take compares with the ones already taught. */
+  const enrolmentMessage = (report: EnrolmentReport | null, word: string, shortName: string) => {
+    if (!report) return `${word} is now active for ${shortName}. Record two or three examples for better consistency.`;
+    if (report.verdict === "collides") {
+      return `${word} is saved, but it matched ${report.conflict!.gloss} too closely (${report.conflict!.similarity.toFixed(2)}), so the two cannot be told apart and neither will fire. Record ${word} again more clearly, or remove one of them.`;
+    }
+    if (report.verdict === "differs") {
+      return `These takes of ${word} disagree (${report.sameBest!.toFixed(2)}), so the sign would not be reliable. Record it again the same way as the first example.`;
+    }
+    if (report.verdict === "consistent") {
+      return `${word} matches your earlier example${report.sameBest! >= 0.9 ? " closely" : ""} (${report.sameBest!.toFixed(2)}). Two or three consistent takes is enough.`;
+    }
+    return `${word} is now active for ${shortName}. Record two or three examples for better consistency.`;
+  };
+
   const recordCalibration = useCallback(async () => {
     if (captureStateRef.current !== "idle" && captureStateRef.current !== "saved" && captureStateRef.current !== "error") return;
     const captureGeneration = ++captureGenerationRef.current;
@@ -830,6 +909,10 @@ export function TranslatorExperience() {
     }
 
     const createdAt = Date.now();
+    const embedding = useAslV3
+      ? await workerRef.current?.requestEmbedding(validFrames.map(frame => frame.aslV3Features).filter(Boolean) as Float32Array[])
+      : null;
+    if (captureGeneration !== captureGenerationRef.current) return;
     const template: CalibrationTemplate = {
       id: `${calibrationWord.gloss}-${createdAt}-${Math.random().toString(36).slice(2, 7)}`,
       language: selected,
@@ -837,7 +920,23 @@ export function TranslatorExperience() {
       text: calibrationWord.text,
       createdAt,
       frames: prepareCalibrationSequence(validFrames),
+      // V3.1 matches a signer to their own examples far more reliably than the 523-class head, so the
+      // embedding is stored with the example whenever the ASL V3.1 engine produced one.
+      ...(embedding ? { embedding } : {}),
     };
+
+    const report = useAslV3 ? enrolmentReport(embedding, calibrationWord.gloss, calibrationTemplates) : null;
+    // A word the shipped model has no class for is only ever recognised through this example, so saying
+    // so stops a signer repeating a sign the model could never produce.
+    let absentNote = "";
+    if (useAslV3) {
+      try {
+        const { hasAslV31Class } = await import("@/lib/asl-v31-runtime");
+        if (!(await hasAslV31Class(calibrationWord.gloss))) {
+          absentNote = ` The pretrained model has no word for ${calibrationWord.text}, so this example is what will recognise it.`;
+        }
+      } catch { absentNote = ""; }
+    }
 
     try {
       await saveCalibrationTemplate(template);
@@ -846,14 +945,33 @@ export function TranslatorExperience() {
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "saved";
       setCalibrationState("saved");
-      setCalibrationMessage(`${calibrationWord.text} is now active for ${model.shortName}. Record two or three examples for better consistency.`);
+      setCalibrationMessage(enrolmentMessage(report, calibrationWord.text, model.shortName) + absentNote);
     } catch {
       if (captureGeneration !== captureGenerationRef.current) return;
       captureStateRef.current = "error";
       setCalibrationState("error");
       setCalibrationMessage("This browser could not save the example. Check private-browsing storage settings and try again.");
     }
-  }, [calibrationWord, model.shortName, requestCamera, resetRecognition, selected, useAslV3]);
+  }, [calibrationTemplates, calibrationWord, model.shortName, requestCamera, resetRecognition, selected, useAslV3]);
+
+  // Words that usually follow the transcript, limited to what this signer can actually sign.
+  const nextWords = useMemo(() => {
+    const languageModel = nextWordModel(selected);
+    if (!languageModel || !entries.length) return [];
+    const glossary = new Set<string>();
+    for (const template of calibrationTemplates) if (template.gloss) glossary.add(template.gloss.toUpperCase());
+    for (const entry of entries) if (entry.gloss) glossary.add(entry.gloss.toUpperCase());
+    // A word the model itself can recognise is signable without teaching, so it belongs in the row too;
+    // a taught-only word only appears once it has actually been taught.
+    for (const word of MODEL_BACKED_WORDS) glossary.add(word);
+    const vocabulary = useAslV3 && glossary.size >= 3 ? glossary : undefined;
+    return predictNext(languageModel, entries.map(entry => entry.gloss ?? entry.text), { limit: 3, vocabulary });
+  }, [calibrationTemplates, entries, selected, useAslV3]);
+
+  const addNextWord = useCallback((gloss: string, text: string) => {
+    // Added by an explicit click on a chip, so it is a confirmation rather than a detector guess.
+    appendWord({ type: "confirmed", source: "starter", gloss, text, confidence: 1, timestamp: Date.now() });
+  }, [appendWord]);
 
   const selectCustomWord = () => {
     const customWord = createCustomVocabularyEntry(customWordInput);
@@ -870,6 +988,34 @@ export function TranslatorExperience() {
     setCalibrationState("idle");
     setCalibrationMessage(`${customWord.text} is selected for ${model.shortName}. Record two or three examples for the most reliable match.`);
   };
+
+  const exportSigns = useCallback(() => {
+    const url = URL.createObjectURL(new Blob([serialiseCalibration(
+      calibrationTemplates.filter(template => (template.language ?? "asl") === selected))], { type: "application/json" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `signrelay-${selected}-signs-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    setCalibrationMessage(`Exported ${trainedGlosses.size} taught ${model.shortName} sign${trainedGlosses.size === 1 ? "" : "s"}.`);
+  }, [calibrationTemplates, model.shortName, selected, trainedGlosses.size]);
+
+  const importSigns = useCallback(async (file: File) => {
+    try {
+      const { templates, skipped } = parseCalibrationExport(await file.text());
+      const mine = templates.filter(template => (template.language ?? "asl") === selected);
+      for (const template of mine) await saveCalibrationTemplate(template);
+      setCalibrationTemplates(await loadCalibrationTemplates());
+      const words = new Set(mine.map(template => template.gloss)).size;
+      setCalibrationMessage(mine.length
+        ? `Imported ${mine.length} example${mine.length === 1 ? "" : "s"} for ${words} sign${words === 1 ? "" : "s"}${skipped ? `, skipped ${skipped}` : ""}.`
+        : `Nothing to import for ${model.shortName}${skipped ? ` (skipped ${skipped})` : ""}.`);
+    } catch (error) {
+      setCalibrationMessage(error instanceof Error ? error.message : "That file could not be imported.");
+    }
+  }, [model.shortName, selected]);
 
   const removeCalibration = useCallback(async (gloss: string) => {
     const captureGeneration = ++captureGenerationRef.current;
@@ -1092,6 +1238,14 @@ export function TranslatorExperience() {
                       {perfStages.map(line => <span key={line.slice(0, 12)} style={{ display: "block" }}>{line}</span>)}
                     </p>
                   )}
+                  {perfMode && useAslV3 && (
+                    <div className="perf-actions" data-perf-actions>
+                      <button type="button" className="button secondary small" onClick={() => workerRef.current?.requestCapture()}>
+                        Save last sign (landmarks only)
+                      </button>
+                      <span className="calibration-message">Downloads the hand, pose and face points behind the last decision. No image or video leaves this device.</span>
+                    </div>
+                  )}
                 </div>
               </details>
             </section>
@@ -1109,6 +1263,7 @@ export function TranslatorExperience() {
                 <strong>{status.key === "checking-sign" ? displayedCandidate : status.detail}</strong>
               </div>
               {recognitionFeedback && !suggestion && <p className="calibration-message">{recognitionFeedback}</p>}
+              {contextNote && suggestion && <p className="calibration-message candidate-note">{contextNote}</p>}
               {suggestion && status.key === "checking-sign" && (
                 <button type="button" className="button secondary small" onClick={addSuggestedWord} aria-label={`Add to transcript: ${suggestion.text}`}>
                   Add to transcript
@@ -1152,6 +1307,18 @@ export function TranslatorExperience() {
                       </li>
                     ))}
                   </ol>
+                )}
+                {nextWords.length > 0 && (
+                  <div className="next-word-row">
+                    <span className="next-word-label">Next word</span>
+                    {nextWords.map((prediction) => (
+                      <button key={prediction.gloss} type="button" className="next-word-chip"
+                        onClick={() => addNextWord(prediction.gloss, prediction.text)}
+                        title={`${Math.round(prediction.probability * 100)}% of the words likely to follow`}>
+                        {prediction.text}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
 
@@ -1267,22 +1434,63 @@ export function TranslatorExperience() {
                 </ol>
                 <p className={`calibration-message ${calibrationState}`} role="status">{calibrationMessage}</p>
 
+                <div className="vocabulary-transfer">
+                  <span className="calibration-message">
+                    {trainedGlosses.size
+                      ? `${trainedGlosses.size} ${model.shortName} sign${trainedGlosses.size === 1 ? "" : "s"} taught with ${calibrationTemplates.filter(template => (template.language ?? "asl") === selected).length} examples.`
+                      : `Nothing taught yet: each sign needs one recording, and two or three makes it reliable.`}
+                  </span>
+                  <div className="vocabulary-transfer-actions">
+                    <button type="button" className="button secondary small" onClick={exportSigns} disabled={!trainedGlosses.size}>
+                      <Download aria-hidden="true" size={16} />Export signs
+                    </button>
+                    <label className="button secondary small vocabulary-import">
+                      <Upload aria-hidden="true" size={16} />Import signs
+                      <input type="file" accept="application/json,.json" className="sr-only"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          event.target.value = "";
+                          if (file) void importSigns(file);
+                        }} />
+                    </label>
+                  </div>
+                </div>
+
                 <div className="vocabulary-section">
                   <div className="vocabulary-section-heading">
-                    <h3>{selected === "asl" ? "Your signs" : `Your signs and ${model.shortName} concepts`}</h3>
+                    <h3>{`Sign library and your ${model.shortName} signs`}</h3>
                   </div>
                   {showVocabularySearch && (
                     <div className="custom-word-controls starter-library-search">
                       <label className="search-field">
-                        <span className="sr-only">{selected === "asl" ? "Search taught ASL signs" : `Search built-in ${model.shortName} concepts`}</span>
+                        <span className="sr-only">{`Search ${model.shortName} signs to teach`}</span>
                         <input
                           type="search"
                           value={vocabularySearch}
                           onChange={(event) => setVocabularySearch(event.target.value)}
-                          placeholder={selected === "asl" ? `Search your ${filteredCalibrationVocabulary.length.toLocaleString()} taught signs` : `Search ${model.vocabulary.length.toLocaleString()} concepts, e.g. doctor`}
-                          aria-label={selected === "asl" ? "Search taught ASL signs" : `Search built-in ${model.shortName} concepts`}
+                          placeholder={`Search ${filteredCalibrationVocabulary.length.toLocaleString()} words, e.g. doctor`}
+                          aria-label={`Search ${model.shortName} signs to teach`}
                         />
                       </label>
+                    </div>
+                  )}
+                  {teachFirst.length > 0 && (
+                    <div className="next-word-row" role="group" aria-label="Words the model has no class for">
+                      <span className="next-word-label">Teach first</span>
+                      {teachFirst.map((word) => (
+                        <button key={word} type="button" className="next-word-chip"
+                          onClick={() => {
+                            const entry = createCustomVocabularyEntry(word);
+                            if (!entry) return;
+                            captureGenerationRef.current++;
+                            setCalibrationWord(entry);
+                            captureStateRef.current = "idle";
+                            setCalibrationState("idle");
+                            setCalibrationMessage(`The pretrained model has no word for ${entry.text}, so recording it here is what will recognise it.`);
+                          }}>
+                          {entry_text_for(word)}
+                        </button>
+                      ))}
                     </div>
                   )}
                   {visibleCalibrationVocabulary.length ? (

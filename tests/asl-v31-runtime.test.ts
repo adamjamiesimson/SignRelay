@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ASL_V31_ASSET_PATH } from "../lib/asl-v31-assets.mjs";
+import { ASL_V31_ASSET_PATH, ASL_V31_POLICY } from "../lib/asl-v31-assets.mjs";
 import { N_POINTS } from "../engine-v3/web/preprocess.mjs";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -13,8 +13,8 @@ describe("V3.1 model input and asset checks", () => {
     await expect(warmAslV31Model()).rejects.toThrow("failed integrity verification");
     await expect(warmAslV31Model()).rejects.toThrow("failed integrity verification");
     expect(fetch.mock.calls.map(([url]) => url)).toEqual([
-      `${ASL_V31_ASSET_PATH}/model.onnx`, `${ASL_V31_ASSET_PATH}/meta.json`, `${ASL_V31_ASSET_PATH}/policy-strict.json`,
-      `${ASL_V31_ASSET_PATH}/model.onnx`, `${ASL_V31_ASSET_PATH}/meta.json`, `${ASL_V31_ASSET_PATH}/policy-strict.json`,
+      `${ASL_V31_ASSET_PATH}/model.onnx`, `${ASL_V31_ASSET_PATH}/meta.json`, `${ASL_V31_ASSET_PATH}/policy-${ASL_V31_POLICY}.json`,
+      `${ASL_V31_ASSET_PATH}/model.onnx`, `${ASL_V31_ASSET_PATH}/meta.json`, `${ASL_V31_ASSET_PATH}/policy-${ASL_V31_POLICY}.json`,
     ]);
   });
 
