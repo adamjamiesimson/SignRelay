@@ -4,7 +4,7 @@ SignRelay is a privacy-first research web application that recognises **isolated
 
 Start with the [developer handoff](docs/DEVELOPER_HANDOFF.md) for a fresh checkout, asset installation and release verification.
 
-## What works now
+## What works now.
 
 - Forty sign-language workspaces have separate identities; RSL and Bangla have separate pretrained clip-recognition modes.
 - Camera permission is requested only after language selection.
