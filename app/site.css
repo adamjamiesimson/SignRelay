@@ -12,7 +12,7 @@
 }
 .brand { display: inline-flex; align-items: center; gap: 10px; min-height: 40px; color: var(--text); font-weight: 650; letter-spacing: -0.01em; }
 .brand:hover { text-decoration: none; }
-.brand-mark { width: 28px; height: 28px; filter: grayscale(1) sepia(1) saturate(3) hue-rotate(85deg) brightness(1.2); }
+.brand-mark { width: 28px; height: 28px; }
 .brand-wordmark { font-size: 1.0625rem; }
 .site-nav { display: flex; align-items: center; gap: 4px; }
 .site-nav a, .site-menu a {
